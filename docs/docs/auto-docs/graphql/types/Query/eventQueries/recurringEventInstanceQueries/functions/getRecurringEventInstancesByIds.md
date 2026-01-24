@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getRecurringEventInstancesByIds**(`instanceIds`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L96)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:96](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L96)
 
 Retrieves multiple resolved recurring event instances by their specific IDs.
 This function performs a batch operation to efficiently fetch and resolve instances,
@@ -22,7 +22,7 @@ An array of recurring event instance IDs to retrieve.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

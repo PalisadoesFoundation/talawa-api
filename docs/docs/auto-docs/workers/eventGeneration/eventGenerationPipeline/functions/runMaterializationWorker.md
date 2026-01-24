@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **runMaterializationWorker**(`config`, `drizzleClient`, `logger`): `Promise`\<[`WorkerResult`](../interfaces/WorkerResult.md)\>
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L47)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:47](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L47)
 
 The main function for the materialization worker, orchestrating the entire pipeline
 from job discovery to execution and post-processing.
@@ -21,7 +21,7 @@ The configuration for the worker.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **triggerMaterializationWorker**(`drizzleClient`, `logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:293](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L293)
+Defined in: [src/workers/backgroundWorkerService.ts:293](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/backgroundWorkerService.ts#L293)
 
 Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
 
@@ -14,7 +14,7 @@ Manually triggers a run of the materialization worker, useful for testing or adm
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 ### logger
 

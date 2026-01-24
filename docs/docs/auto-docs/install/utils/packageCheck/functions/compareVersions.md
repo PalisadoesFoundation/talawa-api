@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **compareVersions**(`v1`, `v2`): `number`
 
-Defined in: [src/install/utils/packageCheck.ts:123](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/packageCheck.ts#L123)
+Defined in: [src/install/utils/packageCheck.ts:123](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/utils/packageCheck.ts#L123)
 
 Compare semantic versions
 

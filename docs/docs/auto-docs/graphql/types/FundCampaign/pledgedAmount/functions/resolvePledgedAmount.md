@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **resolvePledgedAmount**(`parent`, `_args`, `ctx`): `Promise`\<`bigint`\>
 
-Defined in: [src/graphql/types/FundCampaign/pledgedAmount.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaign/pledgedAmount.ts#L16)
+Defined in: [src/graphql/types/FundCampaign/pledgedAmount.ts:16](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/FundCampaign/pledgedAmount.ts#L16)
 
 Resolves the total pledged amount for a fund campaign.
 

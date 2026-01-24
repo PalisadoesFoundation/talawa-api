@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **isNotNullish**\<`T0`\>(`value`): `value is T0`
 
-Defined in: [src/utilities/isNotNullish.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/isNotNullish.ts#L12)
+Defined in: [src/utilities/isNotNullish.ts:12](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/isNotNullish.ts#L12)
 
 This function is used to check nullish state of a value passed to it. Nullish means the value being either `null` or `undefined`. If the value is found to be nullish, the function returns the boolean `false`, else it returns the boolean `true`.
 

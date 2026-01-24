@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **revokeAllUserPasswordResetTokens**(`drizzleClient`, `userId`): `Promise`\<`number`\>
 
-Defined in: [src/utilities/passwordResetTokenUtils.ts:177](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetTokenUtils.ts#L177)
+Defined in: [src/utilities/passwordResetTokenUtils.ts:177](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/passwordResetTokenUtils.ts#L177)
 
 Revokes all password reset tokens for a user (marks them as used).
 Useful when user successfully resets password or requests a new token.
@@ -15,7 +15,7 @@ Useful when user successfully resets password or requests a new token.
 
 ### drizzleClient
 
-`PostgresJsDatabase`\<[API Docs](/)\>
+`PostgresJsDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 The Drizzle database client
 

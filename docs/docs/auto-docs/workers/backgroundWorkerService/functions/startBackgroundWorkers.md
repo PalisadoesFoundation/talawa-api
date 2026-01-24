@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **startBackgroundWorkers**(`drizzleClient`, `logger`, `getMetricsSnapshots?`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L31)
+Defined in: [src/workers/backgroundWorkerService.ts:31](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/backgroundWorkerService.ts#L31)
 
 Initializes and starts all background workers, scheduling them to run at their configured intervals.
 
@@ -14,7 +14,7 @@ Initializes and starts all background workers, scheduling them to run at their c
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 Drizzle database client
 

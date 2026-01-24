@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Interface: DiscoveredWorkload
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L25)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:25](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/jobDiscovery.ts#L25)
 
 Represents a discovered workload for a single organization, including all
 recurring events that require EventGeneration.
@@ -15,7 +15,7 @@ recurring events that require EventGeneration.
 
 > **estimatedDurationMs**: `number`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L37)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:37](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/jobDiscovery.ts#L37)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:37](https://github.com/
 
 > **organizationId**: `string`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L26)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:26](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/jobDiscovery.ts#L26)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:26](https://github.com/
 
 > **priority**: `number`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L36)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:36](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/jobDiscovery.ts#L36)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:36](https://github.com/
 
 > **recurringEvents**: `object`[]
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L28)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/jobDiscovery.ts#L28)
 
 #### estimatedInstances
 
@@ -143,7 +143,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/
 
 > **windowConfig**: `object`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L27)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:27](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/jobDiscovery.ts#L27)
 
 #### configurationNotes
 

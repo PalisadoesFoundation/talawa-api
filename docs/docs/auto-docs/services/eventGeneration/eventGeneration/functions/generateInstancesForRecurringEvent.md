@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **generateInstancesForRecurringEvent**(`input`, `drizzleClient`, `logger`): `Promise`\<`number`\>
 
-Defined in: [src/services/eventGeneration/eventGeneration.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/eventGeneration.ts#L25)
+Defined in: [src/services/eventGeneration/eventGeneration.ts:25](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/eventGeneration.ts#L25)
 
 Generates and stores generated instances for a recurring event within a specified time window.
 This function fetches the base event template and recurrence rule, calculates all occurrences,
@@ -22,7 +22,7 @@ The input object containing the event ID, time window, and organization ID.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

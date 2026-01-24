@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **actionItemsByVolunteerGroup**: `void`
 
-Defined in: [src/graphql/types/Query/actionItemsByVolunteerGroup.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/actionItemsByVolunteerGroup.ts#L18)
+Defined in: [src/graphql/types/Query/actionItemsByVolunteerGroup.ts:18](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Query/actionItemsByVolunteerGroup.ts#L18)
 
 GraphQL Query: Fetches all ActionItems assigned to a specific volunteer group.
 Optionally filters by organization.

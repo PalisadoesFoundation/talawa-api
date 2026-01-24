@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Interface: BatchProcessingConfig
 
-Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L30)
+Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/types.ts#L30)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/Palisad
 
 > **batchSize**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L31)
+Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/types.ts#L31)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/Palisad
 
 > **maxConcurrentBatches**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L32)
+Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/types.ts#L32)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/Palisad
 
 > **retryAttempts**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L34)
+Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/types.ts#L34)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/Palisad
 
 > **timeoutMs**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L33)
+Defined in: [src/workers/eventGeneration/types.ts:33](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/types.ts#L33)

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **validateRecurrenceInput**(`recurrence`, `startDate`): `object`
 
-Defined in: [src/utilities/recurringEvent/validation.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/validation.ts#L15)
+Defined in: [src/utilities/recurringEvent/validation.ts:15](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recurringEvent/validation.ts#L15)
 
 Validates the recurrence input object against a set of rules to ensure its correctness.
 This function checks for logical consistency, such as ensuring the end date is after the

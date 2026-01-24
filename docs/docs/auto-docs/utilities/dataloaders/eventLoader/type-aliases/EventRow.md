@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 > **EventRow** = *typeof* `eventsTable.$inferSelect`
 
-Defined in: [src/utilities/dataloaders/eventLoader.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/eventLoader.ts#L18)
+Defined in: [src/utilities/dataloaders/eventLoader.ts:18](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/dataloaders/eventLoader.ts#L18)
 
 Type representing an event row from the database.

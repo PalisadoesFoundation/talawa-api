@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **isEndDateBasedEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEvent/types.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/types.ts#L44)
+Defined in: [src/utilities/recurringEvent/types.ts:44](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recurringEvent/types.ts#L44)
 
 Determines if a recurrence rule is end-date-based.
 An end-date-based event is defined by an `endDate`. It may or may not also have a `count`,

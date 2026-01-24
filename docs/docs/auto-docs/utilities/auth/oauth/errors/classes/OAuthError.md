@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
 # Class: OAuthError
 
-Defined in: [src/utilities/auth/oauth/errors.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L4)
+Defined in: [src/utilities/auth/oauth/errors.ts:4](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/errors.ts#L4)
 
 Base error class for OAuth-related errors
 
@@ -24,7 +24,7 @@ Base error class for OAuth-related errors
 
 > **new OAuthError**(`message`, `code`, `statusCode?`): `OAuthError`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L5)
+Defined in: [src/utilities/auth/oauth/errors.ts:5](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/errors.ts#L5)
 
 #### Parameters
 
@@ -54,7 +54,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:5](https://github.com/Palisadoes
 
 > **code**: `string`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L7)
+Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/errors.ts#L7)
 
 ***
 
@@ -62,4 +62,4 @@ Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/Palisadoes
 
 > `optional` **statusCode**: `number`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L8)
+Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/errors.ts#L8)

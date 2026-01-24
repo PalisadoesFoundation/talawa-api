@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **drizzleClient**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/drizzleClient.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/drizzleClient.ts#L28)
+Defined in: [src/fastifyPlugins/drizzleClient.ts:28](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/fastifyPlugins/drizzleClient.ts#L28)
 
 Integrates a drizzle client instance on a namespace `drizzleClient` on the global fastify instance.
 

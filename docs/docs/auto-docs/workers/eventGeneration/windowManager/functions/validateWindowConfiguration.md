@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **validateWindowConfiguration**(`windowConfig`): `object`
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:247](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L247)
+Defined in: [src/workers/eventGeneration/windowManager.ts:247](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/windowManager.ts#L247)
 
 Validates window configuration for processing
 

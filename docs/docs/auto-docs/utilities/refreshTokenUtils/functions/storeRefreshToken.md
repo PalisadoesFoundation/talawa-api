@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **storeRefreshToken**(`drizzleClient`, `userId`, `tokenHash`, `expiresAt`): `Promise`\<\{ `id`: `string`; \}\>
 
-Defined in: [src/utilities/refreshTokenUtils.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/refreshTokenUtils.ts#L38)
+Defined in: [src/utilities/refreshTokenUtils.ts:38](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/refreshTokenUtils.ts#L38)
 
 Stores a refresh token in the database.
 
@@ -14,7 +14,7 @@ Stores a refresh token in the database.
 
 ### drizzleClient
 
-`PostgresJsDatabase`\<[API Docs](/)\>
+`PostgresJsDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 The Drizzle database client
 

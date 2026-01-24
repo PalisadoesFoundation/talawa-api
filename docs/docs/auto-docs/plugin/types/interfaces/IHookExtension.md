@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: IHookExtension
 
-Defined in: [src/plugin/types.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L54)
+Defined in: [src/plugin/types.ts:54](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L54)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:54](https://github.com/PalisadoesFoundation/tal
 
 > **event**: `string`
 
-Defined in: [src/plugin/types.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L56)
+Defined in: [src/plugin/types.ts:56](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L56)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:56](https://github.com/PalisadoesFoundation/tal
 
 > `optional` **file**: `string`
 
-Defined in: [src/plugin/types.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L58)
+Defined in: [src/plugin/types.ts:58](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L58)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:58](https://github.com/PalisadoesFoundation/tal
 
 > **handler**: `string`
 
-Defined in: [src/plugin/types.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L57)
+Defined in: [src/plugin/types.ts:57](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L57)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:57](https://github.com/PalisadoesFoundation/tal
 
 > **type**: `"post"` \| `"pre"`
 
-Defined in: [src/plugin/types.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L55)
+Defined in: [src/plugin/types.ts:55](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L55)

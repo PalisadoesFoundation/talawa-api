@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Interface: WorkerDependencies
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L12)
+Defined in: [src/workers/eventGeneration/windowManager.ts:12](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/windowManager.ts#L12)
 
 Worker dependencies for window management functions
 
@@ -12,9 +12,9 @@ Worker dependencies for window management functions
 
 ### drizzleClient
 
-> **drizzleClient**: `NodePgDatabase`\<[API Docs](/)\>
+> **drizzleClient**: `NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L13)
+Defined in: [src/workers/eventGeneration/windowManager.ts:13](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/windowManager.ts#L13)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [src/workers/eventGeneration/windowManager.ts:13](https://github.com
 
 > **logger**: `FastifyBaseLogger`
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L14)
+Defined in: [src/workers/eventGeneration/windowManager.ts:14](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/windowManager.ts#L14)

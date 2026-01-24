@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **createActionItemLoader**(`db`, `cache`, `perf?`): `DataLoader`\<`string`, \{ `assignedAt`: `Date`; `categoryId`: `string` \| `null`; `completionAt`: `Date` \| `null`; `createdAt`: `Date`; `creatorId`: `string` \| `null`; `eventId`: `string` \| `null`; `id`: `string`; `isCompleted`: `boolean`; `isTemplate`: `boolean` \| `null`; `organizationId`: `string`; `postCompletionNotes`: `string` \| `null`; `preCompletionNotes`: `string` \| `null`; `recurringEventInstanceId`: `string` \| `null`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; `volunteerGroupId`: `string` \| `null`; `volunteerId`: `string` \| `null`; \} \| `null`, `string`\>
 
-Defined in: [src/utilities/dataloaders/actionItemLoader.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/actionItemLoader.ts#L36)
+Defined in: [src/utilities/dataloaders/actionItemLoader.ts:36](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/dataloaders/actionItemLoader.ts#L36)
 
 Creates a DataLoader for batching action item lookups by ID.
 When a cache service is provided, wraps the batch function with cache-first logic.

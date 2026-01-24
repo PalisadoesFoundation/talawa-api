@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getUnifiedEventsInDateRange**(`input`, `drizzleClient`, `logger`): `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:228](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L228)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:228](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L228)
 
 Retrieves a unified list of events, including both standalone events and generated
 instances of recurring events, within a specified date range. This is the primary function
@@ -22,7 +22,7 @@ The input object containing organizationId, date range, and optional filters.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

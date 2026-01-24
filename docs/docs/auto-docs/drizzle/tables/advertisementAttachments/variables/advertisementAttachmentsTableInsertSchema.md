@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > `const` **advertisementAttachmentsTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `advertisementId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `createdAt`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `creatorId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `mimeType`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `name`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `updatedAt`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `updaterId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; \}, \{ `name`: (`schema`) => `ZodString`; \}, `undefined`\>
 
-Defined in: [src/drizzle/tables/advertisementAttachments.ts:109](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/advertisementAttachments.ts#L109)
+Defined in: [src/drizzle/tables/advertisementAttachments.ts:109](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/drizzle/tables/advertisementAttachments.ts#L109)

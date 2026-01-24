@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **runSingleOrganizationWorker**(`organizationId`, `drizzleClient`, `logger`): `Promise`\<[`WorkerResult`](../interfaces/WorkerResult.md)\>
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:139](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L139)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:139](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L139)
 
 Manually triggers the materialization process for a single, specific organization.
 
@@ -20,7 +20,7 @@ The ID of the organization to process.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

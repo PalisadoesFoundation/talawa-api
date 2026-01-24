@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **extendGenerationWindow**(`organizationId`, `additionalMonths`, `drizzleClient`, `logger`): `Promise`\<`Date`\>
 
-Defined in: [src/services/eventGeneration/windowManager.ts:101](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/windowManager.ts#L101)
+Defined in: [src/services/eventGeneration/windowManager.ts:101](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/windowManager.ts#L101)
 
 Extends the Generation window for an organization by a specified number of months,
 allowing for the generation of future event instances.
@@ -27,7 +27,7 @@ The number of months to extend the window by.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **metricsCacheProxy**\<`TCache`\>(`cache`, `perf`): `object`
 
-Defined in: [src/services/metrics/metricsCacheProxy.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L7)
+Defined in: [src/services/metrics/metricsCacheProxy.ts:7](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/metrics/metricsCacheProxy.ts#L7)
 
 Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
 

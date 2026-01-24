@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 > `const` **Plugin**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `backup`: `boolean`; `createdAt`: `Date`; `id`: `string`; `isActivated`: `boolean`; `isInstalled`: `boolean`; `pluginId`: `string`; `updatedAt`: `Date` \| `null`; \}, \{ `backup`: `boolean`; `createdAt`: `Date`; `id`: `string`; `isActivated`: `boolean`; `isInstalled`: `boolean`; `pluginId`: `string`; `updatedAt`: `Date` \| `null`; \}\>
 
-Defined in: [src/graphql/types/Plugin/Plugin.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Plugin/Plugin.ts#L7)
+Defined in: [src/graphql/types/Plugin/Plugin.ts:7](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Plugin/Plugin.ts#L7)
 
 GraphQL type for Plugin

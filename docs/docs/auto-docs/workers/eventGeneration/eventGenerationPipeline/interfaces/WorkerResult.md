@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Interface: WorkerResult
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L30)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:30](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L30)
 
 Represents the result of a materialization worker run, summarizing the work done.
 
@@ -14,7 +14,7 @@ Represents the result of a materialization worker run, summarizing the work done
 
 > **errorsEncountered**: `number`
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L34)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:34](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L34)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:34](https://
 
 > **instancesCreated**: `number`
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L32)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:32](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L32)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:32](https://
 
 > **organizationsProcessed**: `number`
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L31)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:31](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L31)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:31](https://
 
 > **processingTimeMs**: `number`
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L35)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:35](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L35)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:35](https://
 
 > **windowsUpdated**: `number`
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L33)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:33](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/eventGenerationPipeline.ts#L33)

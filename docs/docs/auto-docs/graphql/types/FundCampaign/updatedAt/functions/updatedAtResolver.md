@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **updatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
-Defined in: [src/graphql/types/FundCampaign/updatedAt.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaign/updatedAt.ts#L23)
+Defined in: [src/graphql/types/FundCampaign/updatedAt.ts:23](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/FundCampaign/updatedAt.ts#L23)
 
 Resolver for the updatedAt field of FundCampaign type.
 Validates user authentication and authorization before returning the last update timestamp.
@@ -80,7 +80,7 @@ GraphQL context containing authentication and database clients
 
 `Promise`\<`Date` \| `null`\>
 
-`Promise<Date>` The timestamp when the fund campaign was last updated
+Promise<Date> The timestamp when the fund campaign was last updated
 
 ## Throws
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **executePostProcessing**(`executionResults`, `_metrics`, `config`, `deps`): `Promise`\<[`PostProcessingResult`](../interfaces/PostProcessingResult.md)\>
 
-Defined in: [src/workers/eventGeneration/postProcessor.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/postProcessor.ts#L30)
+Defined in: [src/workers/eventGeneration/postProcessor.ts:30](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventGeneration/postProcessor.ts#L30)
 
 Executes post-processing tasks after the materialization of event instances is complete.
 This includes operations like cleaning up old data and logging final statistics.

@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: IWebhookExtension
 
-Defined in: [src/plugin/types.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L61)
+Defined in: [src/plugin/types.ts:61](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L61)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:61](https://github.com/PalisadoesFoundation/tal
 
 > `optional` **description**: `string`
 
-Defined in: [src/plugin/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L65)
+Defined in: [src/plugin/types.ts:65](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L65)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:65](https://github.com/PalisadoesFoundation/tal
 
 > **handler**: `string`
 
-Defined in: [src/plugin/types.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L63)
+Defined in: [src/plugin/types.ts:63](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L63)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:63](https://github.com/PalisadoesFoundation/tal
 
 > `optional` **method**: `"DELETE"` \| `"GET"` \| `"PATCH"` \| `"POST"` \| `"PUT"`
 
-Defined in: [src/plugin/types.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L64)
+Defined in: [src/plugin/types.ts:64](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L64)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:64](https://github.com/PalisadoesFoundation/tal
 
 > **path**: `string`
 
-Defined in: [src/plugin/types.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L62)
+Defined in: [src/plugin/types.ts:62](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L62)

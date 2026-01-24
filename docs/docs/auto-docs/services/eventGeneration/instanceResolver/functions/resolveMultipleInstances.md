@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **resolveMultipleInstances**(`instances`, `templatesMap`, `exceptionsMap`, `logger`): [`ResolvedRecurringEventInstance`](../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]
 
-Defined in: [src/services/eventGeneration/instanceResolver.ts:155](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/instanceResolver.ts#L155)
+Defined in: [src/services/eventGeneration/instanceResolver.ts:155](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/instanceResolver.ts#L155)
 
 Resolves multiple generated instances in a batch operation to improve performance.
 This function iterates through a list of instances and applies the inheritance and

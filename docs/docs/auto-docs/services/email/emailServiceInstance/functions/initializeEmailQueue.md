@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **initializeEmailQueue**(`ctx`): `void`
 
-Defined in: [src/services/email/emailServiceInstance.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/emailServiceInstance.ts#L15)
+Defined in: [src/services/email/emailServiceInstance.ts:15](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/emailServiceInstance.ts#L15)
 
 Initialize email queue processor
 

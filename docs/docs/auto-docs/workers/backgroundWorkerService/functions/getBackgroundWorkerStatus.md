@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getBackgroundWorkerStatus**(): `object`
 
-Defined in: [src/workers/backgroundWorkerService.ts:325](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L325)
+Defined in: [src/workers/backgroundWorkerService.ts:325](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/backgroundWorkerService.ts#L325)
 
 Retrieves the current status of the background worker service, including scheduling information.
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **storeEmailVerificationToken**(`drizzleClient`, `userId`, `tokenHash`, `expiresAt`): `Promise`\<\{ `id`: `string`; \}\>
 
-Defined in: [src/utilities/emailVerificationTokenUtils.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailVerificationTokenUtils.ts#L65)
+Defined in: [src/utilities/emailVerificationTokenUtils.ts:65](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/emailVerificationTokenUtils.ts#L65)
 
 Stores an email verification token in the database.
 
@@ -14,7 +14,7 @@ Stores an email verification token in the database.
 
 ### drizzleClient
 
-`PostgresJsDatabase`\<[API Docs](/)\>
+`PostgresJsDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 The Drizzle database client
 

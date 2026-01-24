@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **resolveInstanceWithInheritance**(`input`): [`ResolvedRecurringEventInstance`](../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)
 
-Defined in: [src/services/eventGeneration/instanceResolver.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/instanceResolver.ts#L17)
+Defined in: [src/services/eventGeneration/instanceResolver.ts:17](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/instanceResolver.ts#L17)
 
 Resolves a single generated instance by combining the properties of the base event template
 with any applicable exceptions. This function forms the core of the inheritance logic,

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **NonEmptyString** = `string` & `object`
 
-Defined in: [src/services/email/types.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L4)
+Defined in: [src/services/email/types.ts:4](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/types.ts#L4)
 
 Branded type for non-empty strings to enforce validation at the type level.
 

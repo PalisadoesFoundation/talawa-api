@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **applyRecurrenceOverrides**(`newStartAt`, `originalRecurrence`, `inputRecurrence?`): `object`
 
-Defined in: [src/utilities/recurringEvent/calculation.ts:211](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/calculation.ts#L211)
+Defined in: [src/utilities/recurringEvent/calculation.ts:211](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recurringEvent/calculation.ts#L211)
 
 Applies calendar-style override logic for recurring event updates.
 This function implements the following rules:

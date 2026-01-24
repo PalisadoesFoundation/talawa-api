@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: IPluginContext
 
-Defined in: [src/plugin/types.ts:136](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L136)
+Defined in: [src/plugin/types.ts:136](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L136)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:136](https://github.com/PalisadoesFoundation/ta
 
 > **db**: `unknown`
 
-Defined in: [src/plugin/types.ts:137](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L137)
+Defined in: [src/plugin/types.ts:137](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L137)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:137](https://github.com/PalisadoesFoundation/ta
 
 > **graphql**: `unknown`
 
-Defined in: [src/plugin/types.ts:138](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L138)
+Defined in: [src/plugin/types.ts:138](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L138)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:138](https://github.com/PalisadoesFoundation/ta
 
 > **logger**: [`ILogger`](ILogger.md)
 
-Defined in: [src/plugin/types.ts:140](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L140)
+Defined in: [src/plugin/types.ts:140](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L140)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/plugin/types.ts:140](https://github.com/PalisadoesFoundation/ta
 
 > `optional` **pluginManager**: `unknown`
 
-Defined in: [src/plugin/types.ts:141](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L141)
+Defined in: [src/plugin/types.ts:141](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L141)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: [src/plugin/types.ts:141](https://github.com/PalisadoesFoundation/ta
 
 > **pubsub**: `unknown`
 
-Defined in: [src/plugin/types.ts:139](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L139)
+Defined in: [src/plugin/types.ts:139](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L139)

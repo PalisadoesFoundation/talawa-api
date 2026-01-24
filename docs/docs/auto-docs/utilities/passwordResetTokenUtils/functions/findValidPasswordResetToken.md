@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **findValidPasswordResetToken**(`drizzleClient`, `tokenHash`): `Promise`\<\{ `expiresAt`: `Date` \| `null`; `id`: `string`; `usedAt`: `Date` \| `null`; `userId`: `string`; \} \| `undefined`\>
 
-Defined in: [src/utilities/passwordResetTokenUtils.ts:106](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetTokenUtils.ts#L106)
+Defined in: [src/utilities/passwordResetTokenUtils.ts:106](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/passwordResetTokenUtils.ts#L106)
 
 Finds a valid (non-expired, non-used) password reset token by its hash.
 
@@ -19,7 +19,7 @@ timing regardless of token state.
 
 ### drizzleClient
 
-`PostgresJsDatabase`\<[API Docs](/)\>
+`PostgresJsDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 The Drizzle database client
 

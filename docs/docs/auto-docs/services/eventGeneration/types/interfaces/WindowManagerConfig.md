@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Interface: WindowManagerConfig
 
-Defined in: [src/services/eventGeneration/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L65)
+Defined in: [src/services/eventGeneration/types.ts:65](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/types.ts#L65)
 
 Configuration for window management
 
@@ -14,7 +14,7 @@ Configuration for window management
 
 > `optional` **historyRetentionMonths**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L68)
+Defined in: [src/services/eventGeneration/types.ts:68](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/types.ts#L68)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventGeneration/types.ts:68](https://github.com/Palisa
 
 > `optional` **hotWindowMonthsAhead**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L67)
+Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/types.ts#L67)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/Palisa
 
 > `optional` **maxInstancesPerRun**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L70)
+Defined in: [src/services/eventGeneration/types.ts:70](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/types.ts#L70)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventGeneration/types.ts:70](https://github.com/Palisa
 
 > **organizationId**: `string`
 
-Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L66)
+Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/types.ts#L66)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/Palisa
 
 > `optional` **processingPriority**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L69)
+Defined in: [src/services/eventGeneration/types.ts:69](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/types.ts#L69)

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **UpdateEventVolunteerInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `assignments?`: `string`[] \| `null`; `hasAccepted?`: `NonNullable`\<`boolean` \| `undefined`\> \| `null`; `isPublic?`: `NonNullable`\<`boolean` \| `undefined`\> \| `null`; \}\>
 
-Defined in: [src/graphql/inputs/UpdateEventVolunteerInput.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/UpdateEventVolunteerInput.ts#L18)
+Defined in: [src/graphql/inputs/UpdateEventVolunteerInput.ts:18](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/inputs/UpdateEventVolunteerInput.ts#L18)
 
 GraphQL input type for updating an EventVolunteer.
 Matches the old Talawa API UpdateEventVolunteerInput structure.

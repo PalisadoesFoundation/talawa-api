@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateAgendaCategoryInputSchema**: `ZodObject`\<\{ `description`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `eventId`: `ZodUUID`; `name`: `ZodString`; \}, \{ \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateAgendaCategoryInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreateAgendaCategoryInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationCreateAgendaCategoryInput.ts:5](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/inputs/MutationCreateAgendaCategoryInput.ts#L5)

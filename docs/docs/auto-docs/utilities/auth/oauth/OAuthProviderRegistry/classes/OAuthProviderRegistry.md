@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
 # Class: OAuthProviderRegistry
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L8)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:8](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L8)
 
 Registry for managing OAuth provider instances
 Singleton pattern to ensure one registry per application
@@ -15,7 +15,7 @@ Singleton pattern to ensure one registry per application
 
 > **clear**(): `void`
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:104](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L104)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:104](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L104)
 
 Clear all providers (for testing)
 
@@ -29,7 +29,7 @@ Clear all providers (for testing)
 
 > **get**(`providerName`): [`IOAuthProvider`](../../interfaces/IOAuthProvider/interfaces/IOAuthProvider.md)
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L54)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:54](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L54)
 
 Get provider by name
 
@@ -57,7 +57,7 @@ If provider not found
 
 > **has**(`providerName`): `boolean`
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L81)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:81](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L81)
 
 Check if provider is registered
 
@@ -81,7 +81,7 @@ True if provider exists
 
 > **listProviders**(): `string`[]
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:89](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L89)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:89](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L89)
 
 Get all registered provider names
 
@@ -97,7 +97,7 @@ Array of provider names
 
 > **register**(`provider`): `void`
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L27)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:27](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L27)
 
 Register an OAuth provider
 
@@ -123,7 +123,7 @@ If provider is already registered
 
 > **unregister**(`providerName`): `void`
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L97)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:97](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L97)
 
 Remove a provider from registry (for testing)
 
@@ -145,7 +145,7 @@ Name of provider to remove
 
 > `static` **getInstance**(): `OAuthProviderRegistry`
 
-Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/OAuthProviderRegistry.ts#L17)
+Defined in: [src/utilities/auth/oauth/OAuthProviderRegistry.ts:17](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/auth/oauth/OAuthProviderRegistry.ts#L17)
 
 Get singleton instance
 

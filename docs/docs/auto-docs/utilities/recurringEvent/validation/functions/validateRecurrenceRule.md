@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **validateRecurrenceRule**(`rule`): `object`
 
-Defined in: [src/utilities/recurringEvent/validation.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/validation.ts#L97)
+Defined in: [src/utilities/recurringEvent/validation.ts:97](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recurringEvent/validation.ts#L97)
 
 Validates a recurrence rule from the database to ensure its configuration is valid.
 This function checks for the presence of a valid frequency, ensures that the interval

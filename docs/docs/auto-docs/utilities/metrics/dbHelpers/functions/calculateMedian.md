@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **calculateMedian**(`values`): `number`
 
-Defined in: [src/utilities/metrics/dbHelpers.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L56)
+Defined in: [src/utilities/metrics/dbHelpers.ts:56](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/metrics/dbHelpers.ts#L56)
 
 Calculates the median of an array of numbers.
 For even-length arrays, returns the average of the two middle values.

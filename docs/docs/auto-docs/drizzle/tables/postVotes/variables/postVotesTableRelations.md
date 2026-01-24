@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > `const` **postVotesTableRelations**: `Relations`\<`"post_votes"`, \{ `creator`: `One`\<`"users"`, `false`\>; `post`: `One`\<`"posts"`, `true`\>; \}\>
 
-Defined in: [src/drizzle/tables/postVotes.ts:77](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/postVotes.ts#L77)
+Defined in: [src/drizzle/tables/postVotes.ts:77](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/drizzle/tables/postVotes.ts#L77)

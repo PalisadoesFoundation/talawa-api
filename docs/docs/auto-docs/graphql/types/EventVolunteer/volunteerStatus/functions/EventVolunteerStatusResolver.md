@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **EventVolunteerStatusResolver**(`parent`, `_args`, `ctx`): `Promise`\<[`VolunteerStatusType`](../type-aliases/VolunteerStatusType.md)\>
 
-Defined in: [src/graphql/types/EventVolunteer/volunteerStatus.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteer/volunteerStatus.ts#L12)
+Defined in: [src/graphql/types/EventVolunteer/volunteerStatus.ts:12](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/EventVolunteer/volunteerStatus.ts#L12)
 
 ## Parameters
 

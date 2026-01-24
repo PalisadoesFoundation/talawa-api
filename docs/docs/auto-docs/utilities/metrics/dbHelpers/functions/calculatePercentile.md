@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **calculatePercentile**(`values`, `percentile`): `number`
 
-Defined in: [src/utilities/metrics/dbHelpers.ts:116](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L116)
+Defined in: [src/utilities/metrics/dbHelpers.ts:116](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/metrics/dbHelpers.ts#L116)
 
 Calculates a percentile value from an array of numbers.
 Uses linear interpolation for values between data points.

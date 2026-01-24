@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **createEventLoader**(`db`, `cache`, `perf?`): `DataLoader`\<`string`, \{ `allDay`: `boolean`; `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `endAt`: `Date`; `id`: `string`; `isInviteOnly`: `boolean`; `isPublic`: `boolean`; `isRecurringEventTemplate`: `boolean`; `isRegisterable`: `boolean`; `location`: `string` \| `null`; `name`: `string`; `organizationId`: `string`; `startAt`: `Date`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \} \| `null`, `string`\>
 
-Defined in: [src/utilities/dataloaders/eventLoader.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/eventLoader.ts#L36)
+Defined in: [src/utilities/dataloaders/eventLoader.ts:36](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/dataloaders/eventLoader.ts#L36)
 
 Creates a DataLoader for batching event lookups by ID.
 When a cache service is provided, wraps the batch function with cache-first logic.

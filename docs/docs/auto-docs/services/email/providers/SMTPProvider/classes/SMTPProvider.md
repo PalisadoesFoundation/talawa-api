@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
 # Class: SMTPProvider
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L40)
+Defined in: [src/services/email/providers/SMTPProvider.ts:40](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/providers/SMTPProvider.ts#L40)
 
 SMTP implementation of IEmailProvider using Nodemailer.
 
@@ -21,7 +21,7 @@ It lazily initializes the transporter on first use.
 
 > **new SMTPProvider**(`config`): `SMTPProvider`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L50)
+Defined in: [src/services/email/providers/SMTPProvider.ts:50](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/providers/SMTPProvider.ts#L50)
 
 Creates an instance of SMTPProvider.
 
@@ -43,7 +43,7 @@ The SMTP configuration object containing host, port, and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:179](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L179)
+Defined in: [src/services/email/providers/SMTPProvider.ts:179](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/providers/SMTPProvider.ts#L179)
 
 Send multiple emails in bulk with rate limiting.
 Accepts sparse arrays (nullish values are skipped).
@@ -68,7 +68,7 @@ Accepts sparse arrays (nullish values are skipped).
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:121](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L121)
+Defined in: [src/services/email/providers/SMTPProvider.ts:121](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/providers/SMTPProvider.ts#L121)
 
 Send a single email using the configured SMTP server
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<`object` & `object`[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:126](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L126)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:126](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L126)
 
 Retrieves standalone events by a list of specific IDs.
 This function is designed for the `eventsByIds` query, ensuring that only standalone events
@@ -22,7 +22,7 @@ An array of event IDs to retrieve.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

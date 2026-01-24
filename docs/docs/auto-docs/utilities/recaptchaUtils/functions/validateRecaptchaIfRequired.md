@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **validateRecaptchaIfRequired**(`recaptchaToken`, `recaptchaSecretKey`, `argumentPath`): `Promise`\<`boolean` \| `undefined`\>
 
-Defined in: [src/utilities/recaptchaUtils.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recaptchaUtils.ts#L55)
+Defined in: [src/utilities/recaptchaUtils.ts:55](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recaptchaUtils.ts#L55)
 
 Validates reCAPTCHA token if required based on environment configuration.
 

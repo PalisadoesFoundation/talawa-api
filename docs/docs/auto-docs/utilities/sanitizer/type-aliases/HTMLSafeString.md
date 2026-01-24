@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **HTMLSafeString** = `string` & `object`
 
-Defined in: [src/utilities/sanitizer.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/sanitizer.ts#L15)
+Defined in: [src/utilities/sanitizer.ts:15](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/sanitizer.ts#L15)
 
 Branded type for strings that have been HTML-escaped for safe output.
 Use `escapeHTML()` to create instances of this type.

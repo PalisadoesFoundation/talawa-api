@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: DependencyInstallationResult
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L14)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:14](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/pluginDependencyInstaller.ts#L14)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:14](https://github.com/P
 
 > `optional` **error**: `string`
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L16)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/pluginDependencyInstaller.ts#L16)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/P
 
 > `optional` **output**: `string`
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L17)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/pluginDependencyInstaller.ts#L17)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/P
 
 > **success**: `boolean`
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L15)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:15](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/pluginDependencyInstaller.ts#L15)

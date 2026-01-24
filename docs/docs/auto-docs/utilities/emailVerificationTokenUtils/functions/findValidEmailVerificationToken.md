@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **findValidEmailVerificationToken**(`db`, `tokenHash`): `Promise`\<\{ `expiresAt`: `Date`; `id`: `string`; `userId`: `string`; \} \| `undefined`\>
 
-Defined in: [src/utilities/emailVerificationTokenUtils.ts:99](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailVerificationTokenUtils.ts#L99)
+Defined in: [src/utilities/emailVerificationTokenUtils.ts:99](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/emailVerificationTokenUtils.ts#L99)
 
 Finds a valid (non-expired, non-used) email verification token by its hash.
 
@@ -19,7 +19,7 @@ timing regardless of token state.
 
 ### db
 
-`PostgresJsDatabase`\<[API Docs](/)\>
+`PostgresJsDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 ### tokenHash
 

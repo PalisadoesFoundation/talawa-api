@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **generateCreateIndexSQL**(`tableDefinition`, `pluginId?`): `string`[]
 
-Defined in: [src/plugin/utils.ts:403](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L403)
+Defined in: [src/plugin/utils.ts:403](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/utils.ts#L403)
 
 Generates CREATE INDEX SQL for table indexes
 

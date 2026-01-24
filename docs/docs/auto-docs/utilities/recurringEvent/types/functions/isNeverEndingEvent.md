@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **isNeverEndingEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEvent/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/types.ts#L10)
+Defined in: [src/utilities/recurringEvent/types.ts:10](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recurringEvent/types.ts#L10)
 
 Determines if a recurrence rule represents a never-ending event.
 A never-ending event is one that has neither a `count` nor an `endDate`.

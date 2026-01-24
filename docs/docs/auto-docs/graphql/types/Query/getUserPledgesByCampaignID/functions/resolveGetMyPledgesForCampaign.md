@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **resolveGetMyPledgesForCampaign**(`_parent`, `args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: [src/graphql/types/Query/getUserPledgesByCampaignID.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/getUserPledgesByCampaignID.ts#L13)
+Defined in: [src/graphql/types/Query/getUserPledgesByCampaignID.ts:13](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Query/getUserPledgesByCampaignID.ts#L13)
 
 Resolver function to get pledges for the current user in a specific campaign.
 

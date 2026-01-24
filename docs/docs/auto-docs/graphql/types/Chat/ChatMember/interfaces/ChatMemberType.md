@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
 # Interface: ChatMemberType
 
-Defined in: [src/graphql/types/Chat/ChatMember.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L10)
+Defined in: [src/graphql/types/Chat/ChatMember.ts:10](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Chat/ChatMember.ts#L10)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/graphql/types/Chat/ChatMember.ts:10](https://github.com/Palisad
 
 > **member**: `object`
 
-Defined in: [src/graphql/types/Chat/ChatMember.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L11)
+Defined in: [src/graphql/types/Chat/ChatMember.ts:11](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Chat/ChatMember.ts#L11)
 
 #### addressLine1
 
@@ -144,4 +144,4 @@ Defined in: [src/graphql/types/Chat/ChatMember.ts:11](https://github.com/Palisad
 
 > **role**: `"administrator"` \| `"regular"`
 
-Defined in: [src/graphql/types/Chat/ChatMember.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L12)
+Defined in: [src/graphql/types/Chat/ChatMember.ts:12](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Chat/ChatMember.ts#L12)

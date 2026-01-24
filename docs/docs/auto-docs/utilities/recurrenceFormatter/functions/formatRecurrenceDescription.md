@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **formatRecurrenceDescription**(`rule`): `string`
 
-Defined in: [src/utilities/recurrenceFormatter.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurrenceFormatter.ts#L17)
+Defined in: [src/utilities/recurrenceFormatter.ts:17](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/recurrenceFormatter.ts#L17)
 
 Converts a recurrence rule into a human-readable description.
 

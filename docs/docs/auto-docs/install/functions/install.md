@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **install**(`config?`): `Promise`\<[`InstallResult`](../types/interfaces/InstallResult.md)\>
 
-Defined in: [src/install/index.ts:148](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/index.ts#L148)
+Defined in: [src/install/index.ts:148](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/index.ts#L148)
 
 Main installation function.
 

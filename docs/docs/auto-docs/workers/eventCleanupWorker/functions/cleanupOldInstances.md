@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **cleanupOldInstances**(`drizzleClient`, `logger`): `Promise`\<\{ `errorsEncountered`: `number`; `instancesDeleted`: `number`; `organizationsProcessed`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventCleanupWorker.ts#L14)
+Defined in: [src/workers/eventCleanupWorker.ts:14](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventCleanupWorker.ts#L14)
 
 The main method for the cleanup worker, which processes all organizations
 and removes instances that have passed their retention period.
@@ -15,7 +15,7 @@ and removes instances that have passed their retention period.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 ### logger
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **extractPluginZip**(`zipPath`, `pluginId`, `structure`): `Promise`\<`void`\>
 
-Defined in: [src/utilities/pluginInstaller/extraction.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/extraction.ts#L13)
+Defined in: [src/utilities/pluginInstaller/extraction.ts:13](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/pluginInstaller/extraction.ts#L13)
 
 Extracts API plugin files from zip to the available directory
 

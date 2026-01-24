@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > **ChatMemberRole** = `z.infer`\<*typeof* [`chatMembershipRoleEnum`](../../../../../drizzle/enums/chatMembershipRole/variables/chatMembershipRoleEnum.md)\>
 
-Defined in: [src/graphql/types/Chat/ChatMember.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L8)
+Defined in: [src/graphql/types/Chat/ChatMember.ts:8](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Chat/ChatMember.ts#L8)

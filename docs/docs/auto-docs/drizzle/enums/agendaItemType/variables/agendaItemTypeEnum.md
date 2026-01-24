@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 > `const` **agendaItemTypeEnum**: `ZodEnum`\<\{ `general`: `"general"`; `note`: `"note"`; `scripture`: `"scripture"`; `song`: `"song"`; \}\>
 
-Defined in: [src/drizzle/enums/agendaItemType.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/enums/agendaItemType.ts#L6)
+Defined in: [src/drizzle/enums/agendaItemType.ts:6](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/drizzle/enums/agendaItemType.ts#L6)
 
 Possible variants of the type of an agenda item.

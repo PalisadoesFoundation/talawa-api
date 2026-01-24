@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **resolveActionItemCategories**(`parent`, `args`, `ctx`): `Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/graphqlConnection/types/type-aliases/DefaultGraphQLConnection.md)\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \}\>\>
 
-Defined in: [src/graphql/types/Organization/actionItemCategories.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/actionItemCategories.ts#L56)
+Defined in: [src/graphql/types/Organization/actionItemCategories.ts:56](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Organization/actionItemCategories.ts#L56)
 
 ## Parameters
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/errorHandler.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/errorHandler.ts#L33)
+Defined in: [src/fastifyPlugins/errorHandler.ts:33](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/fastifyPlugins/errorHandler.ts#L33)
 
 Fastify error handler plugin for centralized error handling.
 

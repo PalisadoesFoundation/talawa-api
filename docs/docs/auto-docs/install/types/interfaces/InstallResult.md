@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: InstallResult
 
-Defined in: [src/install/types.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L47)
+Defined in: [src/install/types.ts:47](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/types.ts#L47)
 
 Installation result
 
@@ -14,7 +14,7 @@ Installation result
 
 > **duration**: `number`
 
-Defined in: [src/install/types.ts:51](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L51)
+Defined in: [src/install/types.ts:51](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/types.ts#L51)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/install/types.ts:51](https://github.com/PalisadoesFoundation/ta
 
 > `optional` **error**: `string`
 
-Defined in: [src/install/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L49)
+Defined in: [src/install/types.ts:49](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/types.ts#L49)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/install/types.ts:49](https://github.com/PalisadoesFoundation/ta
 
 > **packagesInstalled**: `string`[]
 
-Defined in: [src/install/types.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L50)
+Defined in: [src/install/types.ts:50](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/types.ts#L50)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [src/install/types.ts:50](https://github.com/PalisadoesFoundation/ta
 
 > **success**: `boolean`
 
-Defined in: [src/install/types.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L48)
+Defined in: [src/install/types.ts:48](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/types.ts#L48)

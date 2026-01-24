@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > **AgendaCategory** = *typeof* `agendaCategoriesTable.$inferSelect`
 
-Defined in: [src/graphql/types/AgendaCategory/AgendaCategory.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/AgendaCategory/AgendaCategory.ts#L4)
+Defined in: [src/graphql/types/AgendaCategory/AgendaCategory.ts:4](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/AgendaCategory/AgendaCategory.ts#L4)

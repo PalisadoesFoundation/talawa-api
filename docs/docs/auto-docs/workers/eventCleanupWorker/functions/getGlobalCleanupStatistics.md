@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getGlobalCleanupStatistics**(`drizzleClient`): `Promise`\<\{ `averageInstancesPerOrganization`: `number`; `newestInstanceDate`: `Date` \| `null`; `oldestInstanceDate`: `Date` \| `null`; `totalInstances`: `number`; `totalInstancesEligibleForCleanup`: `number`; `totalOrganizations`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:332](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventCleanupWorker.ts#L332)
+Defined in: [src/workers/eventCleanupWorker.ts:332](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/workers/eventCleanupWorker.ts#L332)
 
 Retrieves global statistics about the cleanup process across all organizations,
 including total instance counts and eligibility for cleanup.
@@ -15,7 +15,7 @@ including total instance counts and eligibility for cleanup.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 ## Returns
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/ActionItemCategory/updatedAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItemCategory/updatedAt.ts#L7)
+Defined in: [src/graphql/types/ActionItemCategory/updatedAt.ts:7](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/ActionItemCategory/updatedAt.ts#L7)
 
 ## Parameters
 

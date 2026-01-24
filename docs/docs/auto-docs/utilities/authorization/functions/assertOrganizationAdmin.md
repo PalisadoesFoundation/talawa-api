@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **assertOrganizationAdmin**(`currentUser`, `membership`, `errorMessage`): `void`
 
-Defined in: [src/utilities/authorization.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/authorization.ts#L7)
+Defined in: [src/utilities/authorization.ts:7](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/authorization.ts#L7)
 
 ## Parameters
 

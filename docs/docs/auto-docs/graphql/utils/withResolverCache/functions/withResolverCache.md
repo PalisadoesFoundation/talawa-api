@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **withResolverCache**\<`TParent`, `TArgs`, `TContext`, `TResult`\>(`options`, `resolver`): (`parent`, `args`, `context`) => `Promise`\<`TResult`\>
 
-Defined in: [src/graphql/utils/withResolverCache.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L96)
+Defined in: [src/graphql/utils/withResolverCache.ts:96](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/utils/withResolverCache.ts#L96)
 
 Wraps a GraphQL resolver with caching logic.
 

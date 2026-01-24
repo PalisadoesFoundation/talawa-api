@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 > **OperatingSystem** = `"windows"` \| `"linux"` \| `"macos"`
 
-Defined in: [src/install/types.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L7)
+Defined in: [src/install/types.ts:7](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/install/types.ts#L7)
 
 Supported operating systems

@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Enumeration: PluginStatus
 
-Defined in: [src/plugin/types.ts:115](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L115)
+Defined in: [src/plugin/types.ts:115](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L115)
 
 ## Enumeration Members
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:115](https://github.com/PalisadoesFoundation/ta
 
 > **ACTIVE**: `"active"`
 
-Defined in: [src/plugin/types.ts:116](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L116)
+Defined in: [src/plugin/types.ts:116](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L116)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:116](https://github.com/PalisadoesFoundation/ta
 
 > **ERROR**: `"error"`
 
-Defined in: [src/plugin/types.ts:118](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L118)
+Defined in: [src/plugin/types.ts:118](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L118)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:118](https://github.com/PalisadoesFoundation/ta
 
 > **INACTIVE**: `"inactive"`
 
-Defined in: [src/plugin/types.ts:117](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L117)
+Defined in: [src/plugin/types.ts:117](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L117)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:117](https://github.com/PalisadoesFoundation/ta
 
 > **LOADING**: `"loading"`
 
-Defined in: [src/plugin/types.ts:119](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L119)
+Defined in: [src/plugin/types.ts:119](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/plugin/types.ts#L119)

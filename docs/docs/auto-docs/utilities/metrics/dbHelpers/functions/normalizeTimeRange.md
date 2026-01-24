@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **normalizeTimeRange**(`startTime`, `endTime`): `object`
 
-Defined in: [src/utilities/metrics/dbHelpers.ts:319](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L319)
+Defined in: [src/utilities/metrics/dbHelpers.ts:319](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/metrics/dbHelpers.ts#L319)
 
 Normalizes a time range to ensure valid start and end times.
 If startTime is after endTime, they are swapped.

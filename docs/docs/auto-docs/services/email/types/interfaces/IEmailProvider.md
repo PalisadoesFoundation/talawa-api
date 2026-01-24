@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Interface: IEmailProvider
 
-Defined in: [src/services/email/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L31)
+Defined in: [src/services/email/types.ts:31](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/types.ts#L31)
 
 Email provider interface
 
@@ -14,7 +14,7 @@ Email provider interface
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](EmailResult.md)[]\>
 
-Defined in: [src/services/email/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L33)
+Defined in: [src/services/email/types.ts:33](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/types.ts#L33)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [src/services/email/types.ts:33](https://github.com/PalisadoesFounda
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](EmailResult.md)\>
 
-Defined in: [src/services/email/types.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L32)
+Defined in: [src/services/email/types.ts:32](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/email/types.ts#L32)
 
 #### Parameters
 

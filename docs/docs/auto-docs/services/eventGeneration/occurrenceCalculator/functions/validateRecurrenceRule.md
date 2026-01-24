@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **validateRecurrenceRule**(`recurrenceRule`): `boolean`
 
-Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:498](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/occurrenceCalculator.ts#L498)
+Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:498](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/occurrenceCalculator.ts#L498)
 
 Validates the configuration of a recurrence rule to ensure it has a valid frequency
 and a positive interval.

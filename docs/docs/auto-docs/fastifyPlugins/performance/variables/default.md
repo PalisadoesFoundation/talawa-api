@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/performance.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L57)
+Defined in: [src/fastifyPlugins/performance.ts:57](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/fastifyPlugins/performance.ts#L57)
 
 Fastify plugin that adds performance tracking to all requests.
 - Attaches a performance tracker to each request

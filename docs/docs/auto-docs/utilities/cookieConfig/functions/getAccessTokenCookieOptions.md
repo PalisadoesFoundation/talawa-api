@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getAccessTokenCookieOptions**(`options`, `maxAgeMs`): `CookieSerializeOptions`
 
-Defined in: [src/utilities/cookieConfig.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/cookieConfig.ts#L48)
+Defined in: [src/utilities/cookieConfig.ts:48](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/cookieConfig.ts#L48)
 
 Generates cookie options for access tokens.
 Access tokens are short-lived and used for API authentication.

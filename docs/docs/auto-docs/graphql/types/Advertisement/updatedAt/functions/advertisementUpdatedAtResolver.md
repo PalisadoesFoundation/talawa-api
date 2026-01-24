@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **advertisementUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/Advertisement/updatedAt.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Advertisement/updatedAt.ts#L6)
+Defined in: [src/graphql/types/Advertisement/updatedAt.ts:6](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/graphql/types/Advertisement/updatedAt.ts#L6)
 
 ## Parameters
 

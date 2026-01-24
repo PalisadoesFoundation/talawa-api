@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getEmailVerificationEmailHtml**(`ctx`): `string`
 
-Defined in: [src/utilities/emailTemplates.ts:149](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L149)
+Defined in: [src/utilities/emailTemplates.ts:149](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/utilities/emailTemplates.ts#L149)
 
 Generates HTML email content for email verification.
 Simple, non-branded design using community name.

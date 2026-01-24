@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **getNextOccurrenceDate**(`currentDate`, `recurrenceRule`): `Date`
 
-Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:413](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/occurrenceCalculator.ts#L413)
+Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:413](https://github.com/hkumar1729/talawa-api/blob/0d2a05d79b795ac9f77f76c2bbb56075e621d21c/src/services/eventGeneration/occurrenceCalculator.ts#L413)
 
 Calculates the next potential occurrence date based on the event's frequency and interval.
 This function correctly handles advancing the date for all supported frequency types.
