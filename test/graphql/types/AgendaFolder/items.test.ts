@@ -144,7 +144,9 @@ describe("AgendaFolder.items resolver", () => {
 
 	it("throws arguments_associated_resources_not_found when cursor exists but no rows returned", async () => {
 		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([]);
-		mocks.drizzleClient.query.agendaItemsTable.findFirst.mockResolvedValue(undefined);
+		mocks.drizzleClient.query.agendaItemsTable.findFirst.mockResolvedValue(
+			undefined,
+		);
 
 		await expect(
 			resolveItems(parent, { first: 2, after: encodeValidCursor() }, ctx),
