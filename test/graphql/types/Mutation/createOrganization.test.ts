@@ -85,32 +85,21 @@ describe("Mutation createOrganization", () => {
 	});
 
 	it("should return unexpected error when database insert returns empty", async () => {
-		// Mock the drizzle insert to return empty array
-		// We have to mock server.drizzleClient.transaction or insert
-		// createOrganization uses transaction -> insert -> values -> returning
+		// NOTE: This test mocks server.drizzleClient.transaction to simulate an empty insert result.
+		// This approach is tightly coupled to createOrganization's transaction usage and may break
+		// if the resolver's transaction structure changes. Consider using a more resilient approach
+		// (e.g., DB constraint violation via real test DB) if this test becomes flaky.
 
-		// We spy on 'transaction' to spy on the transaction object provided to callback?
-		// Or easier: spy on 'insert' of the table? But drizzle client structure is complex.
-		// The easiest way for simple "insert returns []" simulation in this codebase:
-		// Monkey patch the drizzle client method temporarily.
-
-		const originalTransaction = server.drizzleClient.transaction;
-
-		// We mock transaction to execute the callback but with a mocked tx object
-		server.drizzleClient.transaction = vi
-			.fn()
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
 			.mockImplementation(async (callback) => {
 				const mockTx = {
 					insert: vi.fn().mockReturnThis(),
 					values: vi.fn().mockReturnThis(),
 					returning: vi.fn().mockResolvedValue([]), // Return empty array to fail check
-					// createOrganization also calls query.organizationsTable.findFirst inside/outside tx?
-					// Actually findFirst is called outside tx usually for name check.
-					// Inside tx it inserts.
-					// It also inserts organizationMembersTable inside tx?
-					// createOrganization.ts: line 155: insert(organizationsTable).values(...).returning()
+					query: server.drizzleClient.query,
 				};
-				return callback(mockTx);
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
 			});
 
 		try {
@@ -128,8 +117,7 @@ describe("Mutation createOrganization", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 		} finally {
-			// Restore
-			server.drizzleClient.transaction = originalTransaction;
+			transactionSpy.mockRestore();
 		}
 	});
 

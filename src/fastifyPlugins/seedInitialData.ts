@@ -181,12 +181,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 		fastify.log.info("Successfully created the community in the database.");
 	}
 
-	// Notification templates seeding is out of scope for mutation performance tracking PR
-	// Guard behind feature flag - set ENABLE_NOTIFICATION_TEMPLATE_SEEDING=true to enable
-	if (
-		(fastify.envConfig as { ENABLE_NOTIFICATION_TEMPLATE_SEEDING?: boolean })
-			.ENABLE_NOTIFICATION_TEMPLATE_SEEDING === true
-	) {
+	// Guard notification template seeding behind feature flag. Set ENABLE_NOTIFICATION_TEMPLATE_SEEDING=true to enable.
+	if (fastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING === true) {
 		fastify.log.info("Checking and seeding notification templates.");
 
 		// Check if notification templates table exists before iterating

@@ -963,4 +963,264 @@ suite("Mutation field updateOrganization", () => {
 		expect(updatedOrg?.avatarName).toBeNull();
 		expect(updatedOrg?.avatarMimeType).toBeNull();
 	});
+
+	test("should handle rollback failure when avatar upload fails", async () => {
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Rollback Failure Org ${faker.string.ulid()}`,
+						description: "Test rollback failure",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Mock MinIO putObject to fail
+		const minioClient = server.minio.client;
+		const putObjectSpy = vi
+			.spyOn(minioClient, "putObject")
+			.mockRejectedValueOnce(new Error("Simulated Upload Failure"));
+
+		// Mock update to fail (simulating rollback failure)
+		const updateSpy = vi
+			.spyOn(server.drizzleClient, "update")
+			.mockImplementationOnce(() => {
+				// First call succeeds (the actual update)
+				return {
+					set: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue(undefined),
+					}),
+				} as unknown as ReturnType<typeof server.drizzleClient.update>;
+			})
+			.mockImplementationOnce(() => {
+				// Second call fails (the rollback)
+				return {
+					set: vi.fn().mockReturnValue({
+						where: vi
+							.fn()
+							.mockRejectedValue(new Error("Rollback update failed")),
+					}),
+				} as unknown as ReturnType<typeof server.drizzleClient.update>;
+			});
+
+		try {
+			const boundary = "----WebKitFormBoundaryTest";
+			const operations = {
+				query: `mutation UpdateOrg($input: MutationUpdateOrganizationInput!) {
+                updateOrganization(input: $input) { id }
+            }`,
+				variables: {
+					input: {
+						id: orgId,
+						name: "Updated Name",
+					},
+				},
+			};
+			const map = { "0": ["variables.input.avatar"] };
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				JSON.stringify(operations),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				JSON.stringify(map),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				"fake-image-content",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: body,
+			});
+
+			const result = response.json();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+		} finally {
+			putObjectSpy.mockRestore();
+			updateSpy.mockRestore();
+		}
+	});
+
+	test("should handle rollback failure when avatar removal fails", async () => {
+		// Create organization with avatar
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Remove Rollback Failure Org ${faker.string.ulid()}`,
+						description: "Test removal rollback failure",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Set avatar
+		await server.drizzleClient
+			.update(organizationsTable)
+			.set({
+				avatarName: "existing-avatar.png",
+				avatarMimeType: "image/png",
+			})
+			.where(eq(organizationsTable.id, orgId));
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Mock MinIO removeObject to fail
+		const minioClient = server.minio.client;
+		const removeObjectSpy = vi
+			.spyOn(minioClient, "removeObject")
+			.mockRejectedValueOnce(new Error("Simulated Removal Failure"));
+
+		// Mock update to fail on rollback
+		const updateSpy = vi
+			.spyOn(server.drizzleClient, "update")
+			.mockImplementationOnce(() => {
+				// First call succeeds (the actual update)
+				return {
+					set: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue(undefined),
+					}),
+				} as unknown as ReturnType<typeof server.drizzleClient.update>;
+			})
+			.mockImplementationOnce(() => {
+				// Second call fails (the rollback)
+				return {
+					set: vi.fn().mockReturnValue({
+						where: vi
+							.fn()
+							.mockRejectedValue(new Error("Rollback update failed")),
+					}),
+				} as unknown as ReturnType<typeof server.drizzleClient.update>;
+			});
+
+		try {
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						id: orgId,
+						name: "Updated Name",
+						avatar: null,
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+		} finally {
+			removeObjectSpy.mockRestore();
+			updateSpy.mockRestore();
+		}
+	});
+
+	test("should handle duplicate key error with code 23505", async () => {
+		// Create two organizations
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Duplicate Key Org 1 ${faker.string.ulid()}`,
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Duplicate Key Org 2 ${faker.string.ulid()}`,
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Mock transaction to throw duplicate key error
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockImplementationOnce(async (_callback) => {
+				const error = new Error("duplicate key value") as unknown as {
+					code: string;
+					message: string;
+				};
+				error.code = "23505";
+				throw error;
+			});
+
+		try {
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						id: org2Id,
+						name: createOrg1Result.data?.createOrganization?.name || "",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.message).toBe(
+				"Organization name already exists",
+			);
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		} finally {
+			transactionSpy.mockRestore();
+		}
+	});
 });

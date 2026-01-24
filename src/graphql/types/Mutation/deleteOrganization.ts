@@ -72,11 +72,12 @@ builder.mutationField("deleteOrganization", (t) =>
 							operators.eq(fields.id, parsedArgs.input.id),
 						with: {
 							advertisementsWhereOrganization: {
-								columns: {
-									type: true,
-								},
 								with: {
-									attachmentsWhereAdvertisement: true,
+									attachmentsWhereAdvertisement: {
+										columns: {
+											name: true,
+										},
+									},
 								},
 							},
 							chatsWhereOrganization: {
@@ -85,27 +86,30 @@ builder.mutationField("deleteOrganization", (t) =>
 								},
 							},
 							eventsWhereOrganization: {
-								columns: {
-									startAt: true,
-								},
 								with: {
-									attachmentsWhereEvent: true,
+									attachmentsWhereEvent: {
+										columns: {
+											name: true,
+										},
+									},
 								},
 							},
 							postsWhereOrganization: {
-								columns: {
-									pinnedAt: true,
-								},
 								with: {
-									attachmentsWherePost: true,
+									attachmentsWherePost: {
+										columns: {
+											name: true,
+										},
+									},
 								},
 							},
 							venuesWhereOrganization: {
-								columns: {
-									updatedAt: true,
-								},
 								with: {
-									attachmentsWhereVenue: true,
+									attachmentsWhereVenue: {
+										columns: {
+											name: true,
+										},
+									},
 								},
 							},
 						},

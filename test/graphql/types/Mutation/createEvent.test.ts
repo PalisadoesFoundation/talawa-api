@@ -1265,8 +1265,9 @@ suite("Mutation field createEvent", () => {
 
 		test("returns invalid_arguments when recurrence endDate is before startAt", async () => {
 			const organizationId = await createTestOrganization();
-			const startAt = new Date().toISOString();
+			// Compute pastDate first, then set startAt to be in the future relative to it
 			const pastDate = getPastDate(10); // 10 days ago
+			const startAt = getFutureDate(1); // 1 day in the future (ensures startAt is after pastDate)
 
 			const result = await createEvent({
 				input: {
@@ -1296,9 +1297,8 @@ suite("Mutation field createEvent", () => {
 			const organizationId = await createTestOrganization();
 
 			// Mock user lookup to return undefined (user deleted after token issued)
-			const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
+			const findFirstSpy = vi
+				.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 				.mockResolvedValue(undefined);
 
 			try {
@@ -1310,7 +1310,7 @@ suite("Mutation field createEvent", () => {
 				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 				expect(result.data?.createEvent).toBeNull();
 			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalFindFirst;
+				findFirstSpy.mockRestore();
 			}
 		});
 
@@ -1318,9 +1318,8 @@ suite("Mutation field createEvent", () => {
 			const organizationId = await createTestOrganization();
 
 			// Mock transaction to return empty array for event insert
-			const originalTransaction = server.drizzleClient.transaction;
-			server.drizzleClient.transaction = vi
-				.fn()
+			const transactionSpy = vi
+				.spyOn(server.drizzleClient, "transaction")
 				.mockImplementation(async (callback) => {
 					const mockTx = {
 						insert: vi.fn().mockImplementation((table) => {
@@ -1353,7 +1352,7 @@ suite("Mutation field createEvent", () => {
 				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 				expect(result.data?.createEvent).toBeNull();
 			} finally {
-				server.drizzleClient.transaction = originalTransaction;
+				transactionSpy.mockRestore();
 			}
 		});
 
@@ -1376,11 +1375,12 @@ suite("Mutation field createEvent", () => {
 			}
 
 			// Mock window lookup to return undefined (no window exists)
-			const originalWindowFindFirst =
-				server.drizzleClient.query.eventGenerationWindowsTable.findFirst;
-			const mockFindFirst = vi.fn().mockResolvedValue(undefined);
-			server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
-				mockFindFirst;
+			const findFirstSpy = vi
+				.spyOn(
+					server.drizzleClient.query.eventGenerationWindowsTable,
+					"findFirst",
+				)
+				.mockResolvedValue(undefined);
 
 			try {
 				const result = await createEvent({
@@ -1399,29 +1399,35 @@ suite("Mutation field createEvent", () => {
 				expect(result.data?.createEvent).toBeDefined();
 
 				// Verify the mock was called (window lookup happened)
-				expect(mockFindFirst).toHaveBeenCalled();
+				expect(findFirstSpy).toHaveBeenCalled();
 
-				// Restore findFirst before verification so we can actually query the created window
-				server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
-					originalWindowFindFirst;
+				// Restore spy before verification so we can actually query the created window
+				findFirstSpy.mockRestore();
 
-				// Small delay to ensure transaction is fully committed
-				await new Promise((resolve) => setTimeout(resolve, 100));
-
-				// Verify window was created
-				const window =
-					await server.drizzleClient.query.eventGenerationWindowsTable.findFirst(
-						{
-							where: (fields, operators) =>
-								operators.eq(fields.organizationId, organizationId),
-						},
-					);
+				// Poll for window to appear (transaction should be committed by now)
+				let window:
+					| Awaited<
+							ReturnType<
+								typeof server.drizzleClient.query.eventGenerationWindowsTable.findFirst
+							>
+					  >
+					| undefined;
+				for (let i = 0; i < 10; i++) {
+					window =
+						await server.drizzleClient.query.eventGenerationWindowsTable.findFirst(
+							{
+								where: (fields, operators) =>
+									operators.eq(fields.organizationId, organizationId),
+							},
+						);
+					if (window) break;
+					await new Promise((resolve) => setTimeout(resolve, 50));
+				}
 				expect(window).toBeDefined();
 				expect(window?.organizationId).toBe(organizationId);
 			} finally {
 				// Ensure cleanup even if test fails
-				server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
-					originalWindowFindFirst;
+				findFirstSpy.mockRestore();
 			}
 		});
 
@@ -1472,6 +1478,281 @@ suite("Mutation field createEvent", () => {
 				expect(flushSpy).toHaveBeenCalled();
 			} finally {
 				flushSpy.mockRestore();
+			}
+		});
+
+		test("should handle db delete error during rollback", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock MinIO to fail on second upload
+			const minioClient = server.minio.client;
+			let callCount = 0;
+			const putObjectSpy = vi
+				.spyOn(minioClient, "putObject")
+				.mockImplementation(async () => {
+					callCount++;
+					if (callCount === 2) {
+						throw new Error("Simulated Upload Failure");
+					}
+					return Promise.resolve({ etag: "mock-etag", versionId: null });
+				});
+
+			// Mock delete to fail
+			const deleteSpy = vi
+				.spyOn(server.drizzleClient, "delete")
+				.mockImplementationOnce(() => {
+					// First call succeeds (normal operation)
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]),
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+				})
+				.mockImplementationOnce(() => {
+					// Second call fails (rollback delete)
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi
+								.fn()
+								.mockRejectedValue(new Error("DB delete failed")),
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+				});
+
+			const removeObjectsSpy = vi
+				.spyOn(minioClient, "removeObjects")
+				.mockReturnValue(Promise.resolve([]));
+
+			try {
+				const boundary = "----Boundary";
+				const operations = {
+					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
+                    createEvent(input: $input) { id }
+                }`,
+					variables: {
+						input: {
+							name: `DB Delete Error Event ${faker.string.ulid()}`,
+							startAt: new Date(Date.now() + 60_000).toISOString(),
+							endAt: new Date(Date.now() + 3_600_000).toISOString(),
+							organizationId,
+							attachments: [null, null],
+						},
+					},
+				};
+				const map = {
+					"0": ["variables.input.attachments.0"],
+					"1": ["variables.input.attachments.1"],
+				};
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					JSON.stringify(operations),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					JSON.stringify(map),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test1.png"',
+					"Content-Type: image/png",
+					"",
+					"content1",
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="1"; filename="test2.png"',
+					"Content-Type: image/png",
+					"",
+					"content2",
+					`--${boundary}--`,
+				].join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					payload: body,
+				});
+
+				const result = response.json();
+				expect(result.errors).toBeDefined();
+			} finally {
+				putObjectSpy.mockRestore();
+				deleteSpy.mockRestore();
+				removeObjectsSpy.mockRestore();
+			}
+		});
+
+		test("should handle cleanup error during rollback", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock MinIO to fail on second upload
+			const minioClient = server.minio.client;
+			let callCount = 0;
+			const putObjectSpy = vi
+				.spyOn(minioClient, "putObject")
+				.mockImplementation(async () => {
+					callCount++;
+					if (callCount === 2) {
+						throw new Error("Simulated Upload Failure");
+					}
+					return Promise.resolve({ etag: "mock-etag", versionId: null });
+				});
+
+			// Mock removeObjects to fail
+			const removeObjectsSpy = vi
+				.spyOn(minioClient, "removeObjects")
+				.mockRejectedValueOnce(new Error("Cleanup failed"));
+
+			try {
+				const boundary = "----Boundary";
+				const operations = {
+					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
+                    createEvent(input: $input) { id }
+                }`,
+					variables: {
+						input: {
+							name: `Cleanup Error Event ${faker.string.ulid()}`,
+							startAt: new Date(Date.now() + 60_000).toISOString(),
+							endAt: new Date(Date.now() + 3_600_000).toISOString(),
+							organizationId,
+							attachments: [null, null],
+						},
+					},
+				};
+				const map = {
+					"0": ["variables.input.attachments.0"],
+					"1": ["variables.input.attachments.1"],
+				};
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					JSON.stringify(operations),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					JSON.stringify(map),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test1.png"',
+					"Content-Type: image/png",
+					"",
+					"content1",
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="1"; filename="test2.png"',
+					"Content-Type: image/png",
+					"",
+					"content2",
+					`--${boundary}--`,
+				].join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					payload: body,
+				});
+
+				const result = response.json();
+				expect(result.errors).toBeDefined();
+			} finally {
+				putObjectSpy.mockRestore();
+				removeObjectsSpy.mockRestore();
+			}
+		});
+
+		test("should handle rollback when event not found during delete", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock MinIO to fail
+			const minioClient = server.minio.client;
+			const putObjectSpy = vi
+				.spyOn(minioClient, "putObject")
+				.mockRejectedValueOnce(new Error("Simulated Upload Failure"));
+
+			// Mock delete to return empty array (event not found)
+			const deleteSpy = vi
+				.spyOn(server.drizzleClient, "delete")
+				.mockImplementationOnce(() => {
+					// First call succeeds (normal operation)
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]),
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+				})
+				.mockImplementationOnce(() => {
+					// Second call returns empty (event not found during rollback)
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]),
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+				});
+
+			const removeObjectsSpy = vi
+				.spyOn(minioClient, "removeObjects")
+				.mockReturnValue(Promise.resolve([]));
+
+			try {
+				const boundary = "----Boundary";
+				const operations = {
+					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
+                    createEvent(input: $input) { id }
+                }`,
+					variables: {
+						input: {
+							name: `Not Found Event ${faker.string.ulid()}`,
+							startAt: new Date(Date.now() + 60_000).toISOString(),
+							endAt: new Date(Date.now() + 3_600_000).toISOString(),
+							organizationId,
+							attachments: [null],
+						},
+					},
+				};
+				const map = {
+					"0": ["variables.input.attachments.0"],
+				};
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					JSON.stringify(operations),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					JSON.stringify(map),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test1.png"',
+					"Content-Type: image/png",
+					"",
+					"content1",
+					`--${boundary}--`,
+				].join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					payload: body,
+				});
+
+				const result = response.json();
+				expect(result.errors).toBeDefined();
+			} finally {
+				putObjectSpy.mockRestore();
+				deleteSpy.mockRestore();
+				removeObjectsSpy.mockRestore();
 			}
 		});
 	});
