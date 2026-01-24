@@ -18,7 +18,6 @@ WHERE nt.event_type = keep.event_type
   AND nt.id <> keep.id
   AND nt.created_at > keep.created_at;
 
--- Prefer concurrent index creation to avoid blocking writes.
--- NOTE: CREATE INDEX CONCURRENTLY cannot run inside a transaction.
-CREATE UNIQUE INDEX CONCURRENTLY "notification_templates_event_type_channel_type_index"
+-- Drizzle migrator runs migrations inside a transaction, so avoid CONCURRENTLY.
+CREATE UNIQUE INDEX "notification_templates_event_type_channel_type_index"
   ON "notification_templates" USING btree ("event_type","channel_type");
