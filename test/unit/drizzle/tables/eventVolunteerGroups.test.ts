@@ -1,4 +1,4 @@
-import { getTableName } from "drizzle-orm";
+import { getTableColumns, getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
@@ -22,7 +22,7 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 
 		describe("columns", () => {
 			it("should define all expected columns", () => {
-				const columns = Object.keys(eventVolunteerGroupsTable);
+				const columns = Object.keys(getTableColumns(eventVolunteerGroupsTable));
 
 				expect(columns).toContain("id");
 				expect(columns).toContain("eventId");
@@ -83,6 +83,22 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 					(fk) => fk.reference().columns.some((c) => c.name === "leader_id"),
 				);
 				expect(fk?.reference().foreignTable).toBe(usersTable);
+			});
+
+			it("should reference usersTable from creatorId", () => {
+				const fk = getTableConfig(eventVolunteerGroupsTable).foreignKeys.find(
+					(fk) => fk.reference().columns.some((c) => c.name === "creator_id"),
+				);
+				expect(fk?.reference().foreignTable).toBe(usersTable);
+				expect(fk?.onDelete).toBe("set null");
+			});
+
+			it("should reference usersTable from updaterId", () => {
+				const fk = getTableConfig(eventVolunteerGroupsTable).foreignKeys.find(
+					(fk) => fk.reference().columns.some((c) => c.name === "updater_id"),
+				);
+				expect(fk?.reference().foreignTable).toBe(usersTable);
+				expect(fk?.onDelete).toBe("set null");
 			});
 		});
 
