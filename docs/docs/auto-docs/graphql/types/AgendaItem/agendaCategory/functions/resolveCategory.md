@@ -6,7 +6,7 @@
 
 > **resolveCategory**(`parent`, `_args`, `ctx`): `Promise`\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `eventId`: `string`; `id`: `string`; `isDefaultCategory`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \}\>
 
-Defined in: [src/graphql/types/AgendaItem/agendaCategory.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/AgendaItem/agendaCategory.ts#L9)
+Defined in: src/graphql/types/AgendaItem/agendaCategory.ts:9
 
 ## Parameters
 

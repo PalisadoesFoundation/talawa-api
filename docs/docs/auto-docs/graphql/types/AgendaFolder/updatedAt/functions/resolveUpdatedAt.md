@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
-Defined in: [src/graphql/types/AgendaFolder/updatedAt.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/AgendaFolder/updatedAt.ts#L17)
+Defined in: src/graphql/types/AgendaFolder/updatedAt.ts:17
 
 Resolver function for the AgendaFolder.updatedAt field.
 Exported for testing purposes.

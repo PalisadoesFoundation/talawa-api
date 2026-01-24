@@ -6,7 +6,7 @@
 
 > **getNodeVersionFromPackageJson**(`packageJsonPath`): `string` \| `null`
 
-Defined in: [src/install/utils/packageCheck.ts:158](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/packageCheck.ts#L158)
+Defined in: src/install/utils/packageCheck.ts:158
 
 Get Node.js version requirement from package.json
 

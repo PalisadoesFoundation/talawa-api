@@ -6,7 +6,7 @@
 
 > **storeEmailVerificationToken**(`drizzleClient`, `userId`, `tokenHash`, `expiresAt`): `Promise`\<\{ `id`: `string`; \}\>
 
-Defined in: [src/utilities/emailVerificationTokenUtils.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailVerificationTokenUtils.ts#L65)
+Defined in: src/utilities/emailVerificationTokenUtils.ts:65
 
 Stores an email verification token in the database.
 

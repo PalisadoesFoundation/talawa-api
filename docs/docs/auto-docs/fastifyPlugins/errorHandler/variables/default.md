@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/errorHandler.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/errorHandler.ts#L33)
+Defined in: src/fastifyPlugins/errorHandler.ts:33
 
 Fastify error handler plugin for centralized error handling.
 

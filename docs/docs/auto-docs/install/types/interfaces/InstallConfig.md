@@ -4,7 +4,7 @@
 
 # Interface: InstallConfig
 
-Defined in: [src/install/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L31)
+Defined in: src/install/types.ts:31
 
 Installation configuration
 
@@ -14,7 +14,7 @@ Installation configuration
 
 > **mode**: [`InstallMode`](../type-aliases/InstallMode.md)
 
-Defined in: [src/install/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L33)
+Defined in: src/install/types.ts:33
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/install/types.ts:33](https://github.com/PalisadoesFoundation/ta
 
 > **os**: [`OperatingSystem`](../type-aliases/OperatingSystem.md)
 
-Defined in: [src/install/types.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L32)
+Defined in: src/install/types.ts:32
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/install/types.ts:32](https://github.com/PalisadoesFoundation/ta
 
 > **skipPrereqs**: `boolean`
 
-Defined in: [src/install/types.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L34)
+Defined in: src/install/types.ts:34
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [src/install/types.ts:34](https://github.com/PalisadoesFoundation/ta
 
 > **verbose**: `boolean`
 
-Defined in: [src/install/types.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L35)
+Defined in: src/install/types.ts:35

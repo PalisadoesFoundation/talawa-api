@@ -6,7 +6,7 @@
 
 > **assertOrganizationAdmin**(`currentUser`, `membership`, `errorMessage`): `void`
 
-Defined in: [src/utilities/authorization.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/authorization.ts#L7)
+Defined in: src/utilities/authorization.ts:7
 
 ## Parameters
 

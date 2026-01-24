@@ -4,7 +4,7 @@
 
 # Interface: OperationMetrics
 
-Defined in: [src/workers/metrics/types.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L4)
+Defined in: src/workers/metrics/types.ts:4
 
 Metrics for a specific operation type.
 
@@ -14,7 +14,7 @@ Metrics for a specific operation type.
 
 > **avgMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L12)
+Defined in: src/workers/metrics/types.ts:12
 
 Average time per execution in milliseconds
 
@@ -24,7 +24,7 @@ Average time per execution in milliseconds
 
 > **count**: `number`
 
-Defined in: [src/workers/metrics/types.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L8)
+Defined in: src/workers/metrics/types.ts:8
 
 Total number of executions
 
@@ -34,7 +34,7 @@ Total number of executions
 
 > **maxMaxMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L23)
+Defined in: src/workers/metrics/types.ts:23
 
 Maximum of per-snapshot maximum durations in milliseconds.
 This represents the largest maximum duration observed across all snapshots.
@@ -45,7 +45,7 @@ This represents the largest maximum duration observed across all snapshots.
 
 > **medianMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L25)
+Defined in: src/workers/metrics/types.ts:25
 
 Median execution time in milliseconds (p50)
 
@@ -55,7 +55,7 @@ Median execution time in milliseconds (p50)
 
 > **minMaxMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L18)
+Defined in: src/workers/metrics/types.ts:18
 
 Minimum of per-snapshot maximum durations in milliseconds.
 This represents the smallest maximum duration observed across all snapshots,
@@ -67,7 +67,7 @@ not the true minimum operation duration (which requires tracking individual oper
 
 > **operation**: `string`
 
-Defined in: [src/workers/metrics/types.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L6)
+Defined in: src/workers/metrics/types.ts:6
 
 Operation name
 
@@ -77,7 +77,7 @@ Operation name
 
 > **p95Ms**: `number`
 
-Defined in: [src/workers/metrics/types.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L27)
+Defined in: src/workers/metrics/types.ts:27
 
 95th percentile execution time in milliseconds (p95)
 
@@ -87,7 +87,7 @@ Defined in: [src/workers/metrics/types.ts:27](https://github.com/PalisadoesFound
 
 > **p99Ms**: `number`
 
-Defined in: [src/workers/metrics/types.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L29)
+Defined in: src/workers/metrics/types.ts:29
 
 99th percentile execution time in milliseconds (p99)
 
@@ -97,6 +97,6 @@ Defined in: [src/workers/metrics/types.ts:29](https://github.com/PalisadoesFound
 
 > **totalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L10)
+Defined in: src/workers/metrics/types.ts:10
 
 Total time in milliseconds

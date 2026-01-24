@@ -6,7 +6,7 @@
 
 > **getCreatePluginInput**(): `object`
 
-Defined in: [src/graphql/types/Plugin/inputs.ts:130](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Plugin/inputs.ts#L130)
+Defined in: src/graphql/types/Plugin/inputs.ts:130
 
 ## Returns
 

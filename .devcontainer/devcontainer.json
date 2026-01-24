@@ -70,7 +70,8 @@
 		}
 	},
 	"init": true,
-	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
+	// "initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
+	"initializeCommand": "if not exist .env copy envFiles\\.env.devcontainer .env",
 	"name": "talawa_api",
 	"overrideCommand": true,
 	"postCreateCommand": "./.devcontainer/post-create.sh",

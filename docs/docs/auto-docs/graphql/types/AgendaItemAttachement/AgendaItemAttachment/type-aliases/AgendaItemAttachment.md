@@ -6,4 +6,4 @@
 
 > **AgendaItemAttachment** = *typeof* `agendaItemAttachmentsTable.$inferSelect`
 
-Defined in: [src/graphql/types/AgendaItemAttachement/AgendaItemAttachment.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/AgendaItemAttachement/AgendaItemAttachment.ts#L4)
+Defined in: src/graphql/types/AgendaItemAttachement/AgendaItemAttachment.ts:4

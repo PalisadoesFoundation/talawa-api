@@ -6,7 +6,7 @@
 
 > **debug**(`message`): `void`
 
-Defined in: [src/install/utils/logger.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/logger.ts#L69)
+Defined in: src/install/utils/logger.ts:69
 
 Log a debug message (dim, only in verbose mode)
 

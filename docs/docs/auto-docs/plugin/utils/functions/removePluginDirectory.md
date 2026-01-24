@@ -6,7 +6,7 @@
 
 > **removePluginDirectory**(`pluginId`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/utils.ts:587](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L587)
+Defined in: src/plugin/utils.ts:587
 
 Removes a plugin directory from the filesystem
 
