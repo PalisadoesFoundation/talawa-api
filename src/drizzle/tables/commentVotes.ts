@@ -9,13 +9,14 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { commentVoteTypeValues } from "../enums/commentVoteType";
 import { commentsTable } from "./comments";
 import { usersTable } from "./users";
 
-export const commentVoteTypeEnum = pgEnum("comment_vote_type", [
-	"down_vote",
-	"up_vote",
-]);
+export const commentVoteTypePgEnum = pgEnum(
+	"comment_vote_type",
+	commentVoteTypeValues,
+);
 
 /**
  * Drizzle orm postgres table definition for comment votes.
@@ -56,7 +57,7 @@ export const commentVotesTable = pgTable(
 		/**
 		 * Type of the vote.
 		 */
-		type: commentVoteTypeEnum("type").notNull(),
+		type: commentVoteTypePgEnum("type").notNull(),
 		/**
 		 * Date time at the time the vote was last updated.
 		 */
