@@ -158,6 +158,22 @@ describe("AgendaFolder.items resolver", () => {
 		);
 	});
 
+	it("returns items when cursor is provided (forward)", async () => {
+		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([
+			{ id: "item-2", name: "Bravo" },
+			{ id: "item-3", name: "Charlie" },
+		] as never);
+
+		const result = await resolveItems(
+			parent,
+			{ first: 2, after: encodeValidCursor() },
+			ctx,
+		);
+
+		expect(result.edges).toHaveLength(2);
+		expect(result.edges[0]?.node?.name).toBe("Bravo");
+	});
+
 	it("throws arguments_associated_resources_not_found when cursor exists but no rows returned", async () => {
 		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([]);
 		mocks.drizzleClient.query.agendaItemsTable.findFirst.mockResolvedValue(
@@ -190,6 +206,18 @@ describe("AgendaFolder.items resolver", () => {
 		expect(result.edges[0]?.node?.name).toBe("Bravo");
 		expect(result.pageInfo.hasPreviousPage).toBe(false);
 		expect(result.pageInfo.hasNextPage).toBe(true);
+	});
+
+	it("supports inverse pagination without cursor", async () => {
+		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([
+			{ id: "item-3", name: "Charlie" },
+			{ id: "item-2", name: "Bravo" },
+		] as never);
+
+		const result = await resolveItems(parent, { last: 2 }, ctx);
+
+		expect(result.edges).toHaveLength(2);
+		expect(result.edges[0]?.node?.name).toBe("Bravo");
 	});
 
 	it("returns hasNextPage true when more items exist", async () => {
