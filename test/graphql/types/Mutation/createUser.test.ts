@@ -833,6 +833,81 @@ suite("Mutation field createUser", () => {
 			}
 		});
 
+		test("should return invalid_arguments when avatar mime type is not allowed", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+			const adminToken =
+				administratorUserSignInResult.data.signIn.authenticationToken;
+
+			const boundary = "----BoundaryInvalidAvatar";
+			const operations = {
+				query: `mutation CreateUser($input: MutationCreateUserInput!) {
+                        createUser(input: $input) { user { id } }
+                    }`,
+				variables: {
+					input: {
+						emailAddress: `invalidAvatar${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "Invalid Avatar User",
+						password: "password",
+						role: "regular",
+						avatar: null,
+					},
+				},
+			};
+			const map = { "0": ["variables.input.avatar"] };
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				JSON.stringify(operations),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				JSON.stringify(map),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.txt"',
+				"Content-Type: text/plain",
+				"",
+				"not-an-image",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${adminToken}`,
+				},
+				payload: body,
+			});
+
+			const result = response.json();
+			expect(result.data?.createUser).toBeNull();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.[0]?.extensions?.issues).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						message: 'Mime type "text/plain" is not allowed.',
+					}),
+				]),
+			);
+		});
+
 		test("should use default refresh token expiry when API_REFRESH_TOKEN_EXPIRES_IN is not configured", async () => {
 			const administratorUserSignInResult = await mercuriusClient.query(
 				Query_signIn,

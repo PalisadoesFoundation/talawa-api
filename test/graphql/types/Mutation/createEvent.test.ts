@@ -1447,6 +1447,56 @@ suite("Mutation field createEvent", () => {
 			expect(result.data?.createEvent).toBeDefined();
 		});
 
+		test("should clamp windowEndDate when endDate is before startAt", async () => {
+			const organizationId = await createTestOrganization();
+			const startAt = getFutureDate(30, 10);
+			const endDate = getPastDate(1, 10);
+
+			const recurringEventModule = await import(
+				"~/src/utilities/recurringEvent"
+			);
+			const eventGenerationModule = await import(
+				"~/src/services/eventGeneration"
+			);
+
+			const validateSpy = vi
+				.spyOn(recurringEventModule, "validateRecurrenceInput")
+				.mockReturnValue({ isValid: true, errors: [] });
+
+			const generateSpy = vi
+				.spyOn(eventGenerationModule, "generateInstancesForRecurringEvent")
+				.mockResolvedValue(0);
+
+			try {
+				const result = await createEvent({
+					input: {
+						...baseEventInput(organizationId),
+						startAt,
+						recurrence: {
+							frequency: "DAILY",
+							interval: 1,
+							endDate,
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toBeDefined();
+
+				expect(generateSpy).toHaveBeenCalled();
+				const callArgs = generateSpy.mock.calls[0]?.[0];
+				expect(callArgs?.windowStartDate.toISOString()).toBe(
+					new Date(startAt).toISOString(),
+				);
+				expect(callArgs?.windowEndDate.toISOString()).toBe(
+					new Date(startAt).toISOString(),
+				);
+			} finally {
+				validateSpy.mockRestore();
+				generateSpy.mockRestore();
+			}
+		});
+
 		test("should execute log.debug path when creating recurring event (window calculation)", async () => {
 			const organizationId = await createTestOrganization();
 			const startAt = getFutureDate(30, 10);

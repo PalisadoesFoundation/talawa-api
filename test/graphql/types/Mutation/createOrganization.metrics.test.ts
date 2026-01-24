@@ -75,10 +75,13 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			for (let i = 0; i < 30; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				const newSnapshots = snapshots.slice(
-					0,
-					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
-				);
+				const newSnapshots =
+					newSnapshotsCount > 0
+						? snapshots.slice(
+								initialSnapshotCount,
+								initialSnapshotCount + newSnapshotsCount,
+							)
+						: [];
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createOrganization"] !== undefined,
 				);
@@ -109,7 +112,6 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			});
 
 			// Verify mutation failed
-			// Verify mutation failed
 			expect(result.data.createOrganization).toBeNull();
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
@@ -120,10 +122,9 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 
 			for (let i = 0; i < 30; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
 				const newSnapshots = snapshots.slice(
-					0,
-					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
+					initialSnapshotCount,
+					snapshots.length,
 				);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createOrganization"] !== undefined,

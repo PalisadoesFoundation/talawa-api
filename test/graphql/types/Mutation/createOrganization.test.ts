@@ -260,6 +260,65 @@ describe("Mutation createOrganization", () => {
 		}
 	});
 
+	it("should return invalid_arguments when avatar mime type is not allowed", async () => {
+		const boundary = "----BoundaryInvalidAvatar";
+		const operations = {
+			query: `mutation CreateOrg($input: MutationCreateOrganizationInput!) {
+                createOrganization(input: $input) { id }
+            }`,
+			variables: {
+				input: {
+					name: `Invalid Avatar Org ${faker.string.ulid()}`,
+					description: "Invalid avatar mime test",
+					countryCode: "us",
+					city: "Test City",
+					postalCode: "12345",
+					addressLine1: "123 St",
+					state: "NY",
+					avatar: null,
+				},
+			},
+		};
+		const map = { "0": ["variables.input.avatar"] };
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			JSON.stringify(operations),
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			JSON.stringify(map),
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="test.txt"',
+			"Content-Type: text/plain",
+			"",
+			"not-an-image",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${authToken}`,
+			},
+			payload: body,
+		});
+
+		const result = response.json();
+		expect(result.data?.createOrganization).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					message: 'Mime type "text/plain" is not allowed.',
+				}),
+			]),
+		);
+	});
+
 	it("should handle avatar set to null explicitly", async () => {
 		const name = `Null Avatar Org ${faker.string.ulid()}`;
 

@@ -96,7 +96,10 @@ export const notificationTemplatesTable = pgTable(
 		index().on(self.channelType),
 		index().on(self.createdAt),
 		// Unique constraint: ensures one template per (eventType, channelType) pair
-		uniqueIndex().on(self.eventType, self.channelType),
+		uniqueIndex("notification_templates_event_type_channel_type_index").on(
+			self.eventType,
+			self.channelType,
+		),
 	],
 );
 

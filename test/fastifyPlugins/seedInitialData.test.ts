@@ -145,6 +145,12 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 			expect(mockInsert).toHaveBeenCalledTimes(12);
 			expect(mockInsert).toHaveBeenCalledWith(notificationTemplatesTable);
 			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(12);
+			expect(mockOnConflictDoNothing).toHaveBeenCalledWith({
+				target: [
+					notificationTemplatesTable.eventType,
+					notificationTemplatesTable.channelType,
+				],
+			});
 		});
 
 		it("should handle missing notificationTemplatesTable gracefully when flag is enabled", async () => {
@@ -231,6 +237,17 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 			expect(mockInsert).toHaveBeenCalledWith(notificationTemplatesTable);
 
 			parseSpy.mockRestore();
+		});
+
+		it("should surface error when template insert chain fails", async () => {
+			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
+
+			const insertError = new Error("Insert failed");
+			mockReturning.mockRejectedValueOnce(insertError);
+
+			await expect(
+				seedInitialDataPlugin(mockFastify as FastifyInstance, {}),
+			).rejects.toThrow("Insert failed");
 		});
 	});
 
