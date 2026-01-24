@@ -5,4 +5,4 @@ import { z } from "zod";
  */
 export const commentVoteTypeValues = ["down_vote", "up_vote"] as const;
 
-export const commentVoteTypeEnum = z.enum(commentVoteTypeValues);
+export const commentVoteTypeZodEnum = z.enum(commentVoteTypeValues);
