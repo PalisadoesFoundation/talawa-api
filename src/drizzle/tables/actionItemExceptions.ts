@@ -7,6 +7,7 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { actionItemCategoriesTable } from "./actionItemCategories";
 import { actionItemsTable } from "./actionItems";
 import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
@@ -96,4 +97,8 @@ export const actionItemExceptionsTableRelations = relations(
 			references: [actionItemCategoriesTable.id],
 		}),
 	}),
+);
+
+export const actionItemExceptionsTableInsertSchema = createInsertSchema(
+	actionItemExceptionsTable,
 );
