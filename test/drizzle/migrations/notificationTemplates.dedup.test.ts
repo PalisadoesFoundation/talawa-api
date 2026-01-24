@@ -154,12 +154,12 @@ describe("notification_templates migration deduplication", () => {
 			`);
 			throw new Error("Expected pre-check to abort on duplicates.");
 		} catch (error) {
+			const duplicateMessage =
+				"Found 1 duplicate (event_type, channel_type) pairs in notification_templates.";
 			if (error instanceof Error && error.cause instanceof Error) {
-				expect(error.cause.message).toContain(
-					"Found 1 duplicate (event_type, channel_type) pairs in notification_templates.",
-				);
+				expect(error.cause.message).toContain(duplicateMessage);
 			} else if (error instanceof Error) {
-				expect(error.message).toContain("Failed query:");
+				expect(error.message).toContain(duplicateMessage);
 			} else {
 				throw error;
 			}
