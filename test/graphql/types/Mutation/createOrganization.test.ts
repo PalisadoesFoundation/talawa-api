@@ -61,44 +61,52 @@ describe("Mutation createOrganization", () => {
 	it("should return unauthorized error when user is not administrator", async () => {
 		// Create a regular (non-admin) user
 		const emailAddress = `regular${faker.string.ulid()}@email.com`;
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress,
-					isEmailAddressVerified: false,
-					name: "Regular User",
-					password: "password",
-					role: "regular",
+		let regularUserToken: string | undefined;
+		let createdUserId: string | undefined;
+
+		try {
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress,
+							isEmailAddressVerified: false,
+							name: "Regular User",
+							password: "password",
+							role: "regular",
+						},
+					},
 				},
-			},
-		});
-		assertToBeNonNullish(
-			createUserResult.data?.createUser?.authenticationToken,
-		);
-		const regularUserToken =
-			createUserResult.data.createUser.authenticationToken;
+			);
+			assertToBeNonNullish(
+				createUserResult.data?.createUser?.authenticationToken,
+			);
+			regularUserToken = createUserResult.data.createUser.authenticationToken;
+			createdUserId = createUserResult.data?.createUser?.user?.id;
 
-		// Try to create organization as regular user
-		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
-			headers: { authorization: `bearer ${regularUserToken}` },
-			variables: {
-				input: {
-					name: `Unauthorized Org ${faker.string.ulid()}`,
-					countryCode: "us",
-				},
-			},
-		});
-
-		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
-		expect(result.data?.createOrganization).toBeNull();
-
-		// Cleanup: delete the created user
-		if (createUserResult.data?.createUser?.user?.id) {
-			await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+			// Try to create organization as regular user
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${regularUserToken}` },
+				variables: {
+					input: {
+						name: `Unauthorized Org ${faker.string.ulid()}`,
+						countryCode: "us",
+					},
+				},
 			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
+			expect(result.data?.createOrganization).toBeNull();
+		} finally {
+			// Cleanup: delete the created user
+			if (createdUserId && regularUserToken) {
+				await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+					headers: { authorization: `bearer ${regularUserToken}` },
+				});
+			}
 		}
 	});
 

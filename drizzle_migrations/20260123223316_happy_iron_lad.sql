@@ -8,16 +8,25 @@ FROM "notification_templates"
 GROUP BY event_type, channel_type
 HAVING COUNT(*) > 1;
 
--- Deduplicate by keeping the oldest row per (event_type, channel_type).
--- If your deployment needs a different strategy, replace this with a targeted
--- migration or update seedInitialData behavior before applying the index.
+-- Deduplicate deterministically: keep the earliest created row per pair.
+-- If created_at ties or is NULL, fall back to id ordering to ensure one row remains.
+WITH ranked AS (
+  SELECT
+    id,
+    ROW_NUMBER() OVER (
+      PARTITION BY event_type, channel_type
+      ORDER BY created_at ASC NULLS FIRST, id ASC
+    ) AS rn
+  FROM "notification_templates"
+)
 DELETE FROM "notification_templates" AS nt
-USING "notification_templates" AS keep
-WHERE nt.event_type = keep.event_type
-  AND nt.channel_type = keep.channel_type
-  AND nt.id <> keep.id
-  AND nt.created_at > keep.created_at;
+USING ranked
+WHERE nt.id = ranked.id
+  AND ranked.rn > 1;
 
--- Drizzle migrator runs migrations inside a transaction, so avoid CONCURRENTLY.
-CREATE UNIQUE INDEX "notification_templates_event_type_channel_type_index"
+-- Drizzle migrator runs migrations inside a transaction, so end it before
+-- creating the concurrent index and begin a new one afterwards.
+COMMIT;
+CREATE UNIQUE INDEX CONCURRENTLY "notification_templates_event_type_channel_type_index"
   ON "notification_templates" USING btree ("event_type","channel_type");
+BEGIN;

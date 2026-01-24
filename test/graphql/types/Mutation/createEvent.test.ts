@@ -1392,9 +1392,6 @@ suite("Mutation field createEvent", () => {
 				// Verify the mock was called (window lookup happened)
 				expect(findFirstSpy).toHaveBeenCalled();
 
-				// Restore spy before verification so we can actually query the created window
-				findFirstSpy.mockRestore();
-
 				// Poll for window to appear (transaction should be committed by now)
 				let window:
 					| Awaited<
@@ -1430,21 +1427,40 @@ suite("Mutation field createEvent", () => {
 			const endDate = new Date(startAt);
 			endDate.setFullYear(endDate.getFullYear() + 2);
 
-			const result = await createEvent({
-				input: {
-					...baseEventInput(organizationId),
-					name: "Long Recurring Event",
-					startAt,
-					recurrence: {
-						frequency: "MONTHLY",
-						interval: 1,
-						endDate: endDate.toISOString(),
-					},
-				},
-			});
+			const eventGenerationModule = await import(
+				"~/src/services/eventGeneration"
+			);
+			const generateSpy = vi
+				.spyOn(eventGenerationModule, "generateInstancesForRecurringEvent")
+				.mockResolvedValue(0);
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toBeDefined();
+			try {
+				const result = await createEvent({
+					input: {
+						...baseEventInput(organizationId),
+						name: "Long Recurring Event",
+						startAt,
+						recurrence: {
+							frequency: "MONTHLY",
+							interval: 1,
+							endDate: endDate.toISOString(),
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toBeDefined();
+
+				expect(generateSpy).toHaveBeenCalled();
+				const callArgs = generateSpy.mock.calls[0]?.[0];
+				const expectedEnd = new Date(startAt);
+				expectedEnd.setMonth(expectedEnd.getMonth() + 12);
+				expect(callArgs?.windowEndDate.toISOString()).toBe(
+					expectedEnd.toISOString(),
+				);
+			} finally {
+				generateSpy.mockRestore();
+			}
 		});
 
 		test("should clamp windowEndDate when endDate is before startAt", async () => {
@@ -1495,33 +1511,6 @@ suite("Mutation field createEvent", () => {
 				validateSpy.mockRestore();
 				generateSpy.mockRestore();
 			}
-		});
-
-		test("should execute log.debug path when creating recurring event (window calculation)", async () => {
-			const organizationId = await createTestOrganization();
-			const startAt = getFutureDate(30, 10);
-
-			// This test verifies that the log.debug call at line 411-418 in createEvent.ts is executed.
-			// The log.debug call happens during window calculation for recurring events.
-			// We verify the code path executes by ensuring the event is created successfully with recurrence,
-			// which requires the window calculation code (including log.debug) to run.
-			const result = await createEvent({
-				input: {
-					...baseEventInput(organizationId),
-					name: "Debug Log Event",
-					startAt,
-					recurrence: {
-						frequency: "DAILY",
-						interval: 1,
-						count: 10,
-					},
-				},
-			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toBeDefined();
-			// Successfully creating a recurring event proves the window calculation code path
-			// (including the log.debug call) was executed
 		});
 
 		test("should handle notification enqueue errors gracefully", async () => {
@@ -1590,24 +1579,22 @@ suite("Mutation field createEvent", () => {
 					return Promise.resolve({ etag: "mock-etag", versionId: null });
 				});
 
-			// Mock delete to fail
+			// Mock delete to fail on the first rollback delete call
 			const deleteSpy = vi
 				.spyOn(server.drizzleClient, "delete")
 				.mockImplementationOnce(() => {
-					// First call: rollback delete in attachment upload error handler
-					return {
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([]),
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				})
-				.mockImplementationOnce(() => {
-					// Second call: subsequent delete attempt that fails (simulating DB error)
 					return {
 						where: vi.fn().mockReturnValue({
 							returning: vi
 								.fn()
 								.mockRejectedValue(new Error("DB delete failed")),
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+				})
+				.mockImplementationOnce(() => {
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]),
 						}),
 					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
 				});

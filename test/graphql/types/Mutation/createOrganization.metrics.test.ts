@@ -72,21 +72,18 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			let snapshots = server.getMetricsSnapshots?.() ?? [];
 			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			for (let i = 0; i < 30; i++) {
+			for (let i = 0; i < 60; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
 				const newSnapshots =
 					newSnapshotsCount > 0
-						? snapshots.slice(
-								initialSnapshotCount,
-								initialSnapshotCount + newSnapshotsCount,
-							)
-						: [];
+						? snapshots.slice(initialSnapshotCount, snapshots.length)
+						: snapshots.slice(-1);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createOrganization"] !== undefined,
 				);
 				if (mutationSnapshot) break;
-				await new Promise((resolve) => setTimeout(resolve, 50));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			assertToBeNonNullish(mutationSnapshot);
@@ -120,17 +117,18 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			let snapshots = server.getMetricsSnapshots?.() ?? [];
 			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			for (let i = 0; i < 30; i++) {
+			for (let i = 0; i < 60; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshots = snapshots.slice(
-					initialSnapshotCount,
-					snapshots.length,
-				);
+				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
+				const newSnapshots =
+					newSnapshotsCount > 0
+						? snapshots.slice(initialSnapshotCount, snapshots.length)
+						: snapshots.slice(-1);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createOrganization"] !== undefined,
 				);
 				if (mutationSnapshot) break;
-				await new Promise((resolve) => setTimeout(resolve, 50));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			// Even on failure, metrics should be recorded

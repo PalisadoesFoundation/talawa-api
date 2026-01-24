@@ -820,7 +820,9 @@ suite("Mutation field createUser", () => {
 				});
 
 				const result = response.json();
+				expect(result.data?.createUser).toBeNull();
 				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+				expect(putObjectSpy).toHaveBeenCalled();
 
 				// Verify deletion
 				const user = await server.drizzleClient.query.usersTable.findFirst({
