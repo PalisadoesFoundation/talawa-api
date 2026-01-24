@@ -83,7 +83,7 @@ describe("MutationUpdateAgendaItemSequenceInput Schema", () => {
 	});
 
 	describe("refinement rule", () => {
-		it("should reject when only id is provided", () => {
+		it("should reject when required sequence field is missing", () => {
 			const result = MutationUpdateAgendaItemSequenceInputSchema.safeParse({
 				id: validId,
 			});

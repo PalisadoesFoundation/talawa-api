@@ -44,7 +44,7 @@ export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 
 const cursorSchema = agendaItemsTableInsertSchema
 	.pick({
-		name: true,
+		sequence: true,
 	})
 	.extend({
 		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
@@ -79,8 +79,8 @@ export const resolveItems = async (
 	const { cursor, isInversed, limit } = parsedArgs;
 
 	const orderBy = isInversed
-		? [desc(agendaItemsTable.name), desc(agendaItemsTable.id)]
-		: [asc(agendaItemsTable.name), asc(agendaItemsTable.id)];
+		? [desc(agendaItemsTable.sequence), desc(agendaItemsTable.id)]
+		: [asc(agendaItemsTable.sequence), asc(agendaItemsTable.id)];
 
 	let where: SQL | undefined;
 
@@ -95,17 +95,17 @@ export const resolveItems = async (
 							and(
 								eq(agendaItemsTable.folderId, parent.id),
 								eq(agendaItemsTable.id, cursor.id),
-								eq(agendaItemsTable.name, cursor.name),
+								eq(agendaItemsTable.sequence, cursor.sequence),
 							),
 						),
 				),
 				eq(agendaItemsTable.folderId, parent.id),
 				or(
 					and(
-						eq(agendaItemsTable.name, cursor.name),
+						eq(agendaItemsTable.sequence, cursor.sequence),
 						lt(agendaItemsTable.id, cursor.id),
 					),
-					lt(agendaItemsTable.name, cursor.name),
+					lt(agendaItemsTable.sequence, cursor.sequence),
 				),
 			);
 		} else {
@@ -122,17 +122,17 @@ export const resolveItems = async (
 							and(
 								eq(agendaItemsTable.folderId, parent.id),
 								eq(agendaItemsTable.id, cursor.id),
-								eq(agendaItemsTable.name, cursor.name),
+								eq(agendaItemsTable.sequence, cursor.sequence),
 							),
 						),
 				),
 				eq(agendaItemsTable.folderId, parent.id),
 				or(
 					and(
-						eq(agendaItemsTable.name, cursor.name),
+						eq(agendaItemsTable.sequence, cursor.sequence),
 						gt(agendaItemsTable.id, cursor.id),
 					),
-					gt(agendaItemsTable.name, cursor.name),
+					gt(agendaItemsTable.sequence, cursor.sequence),
 				),
 			);
 		} else {
@@ -147,22 +147,35 @@ export const resolveItems = async (
 	});
 
 	if (cursor !== undefined && agendaItems.length === 0) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "arguments_associated_resources_not_found",
-				issues: [
-					{
-						argumentPath: [isInversed ? "before" : "after"],
-					},
-				],
-			},
-		});
+		const cursorExists =
+			await ctx.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { id: true },
+				where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.folderId, parent.id),
+						operators.eq(fields.id, cursor.id),
+						operators.eq(fields.sequence, cursor.sequence),
+					),
+			});
+
+		if (cursorExists === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: [isInversed ? "before" : "after"],
+						},
+					],
+				},
+			});
+		}
 	}
 
 	return transformToDefaultGraphQLConnection({
 		createCursor: (agendaItem) => ({
 			id: agendaItem.id,
-			name: agendaItem.name,
+			sequence: agendaItem.sequence,
 		}),
 		createNode: (agendaItem) => agendaItem,
 		parsedArgs,

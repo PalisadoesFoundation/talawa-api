@@ -124,7 +124,7 @@ async function createAgendaItem() {
 	const agendaItemId = itemRes.data?.createAgendaItem?.id;
 	assertToBeNonNullish(agendaItemId);
 
-	return agendaItemId;
+	return { agendaItemId, organizationId: orgId };
 }
 
 suite("Mutation.updateAgendaItemSequence", () => {
@@ -133,7 +133,7 @@ suite("Mutation.updateAgendaItemSequence", () => {
 	});
 
 	test("should update agenda item sequence successfully", async () => {
-		const agendaItemId = await createAgendaItem();
+		const { agendaItemId } = await createAgendaItem();
 
 		const result = await mercuriusClient.mutate(
 			MUTATION_updateAgendaItemSequence,
@@ -208,7 +208,7 @@ suite("Mutation.updateAgendaItemSequence", () => {
 	});
 
 	test("should throw unauthorized_action_on_arguments_associated_resources for non-admin user", async () => {
-		const agendaItemId = await createAgendaItem();
+		const { agendaItemId, organizationId } = await createAgendaItem();
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -224,7 +224,20 @@ suite("Mutation.updateAgendaItemSequence", () => {
 		});
 
 		const userToken = userRes.data?.createUser?.authenticationToken;
+		const userId = userRes.data?.createUser?.user?.id;
 		assertToBeNonNullish(userToken);
+		assertToBeNonNullish(userId);
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					memberId: userId,
+					role: "regular",
+				},
+			},
+		});
 
 		const result = await mercuriusClient.mutate(
 			MUTATION_updateAgendaItemSequence,
@@ -245,7 +258,7 @@ suite("Mutation.updateAgendaItemSequence", () => {
 	});
 
 	test("should throw unexpected error when update returns nothing", async () => {
-		const agendaItemId = await createAgendaItem();
+		const { agendaItemId } = await createAgendaItem();
 
 		const txSpy = vi
 			.spyOn(server.drizzleClient, "update")
