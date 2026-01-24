@@ -1,5 +1,5 @@
 {
-  "id": "3b74c517-1a92-4f2d-a767-47e6c3339d79",
+  "id": "6d4e365c-760c-47f9-9a23-6eb661491ebb",
   "prevId": "e4680473-e361-4598-882f-14b689482add",
   "version": "7",
   "dialect": "postgresql",
@@ -10972,8 +10972,8 @@
       "name": "comment_vote_type",
       "schema": "public",
       "values": [
-        "upvote",
-        "downvote"
+        "down_vote",
+        "up_vote"
       ]
     },
     "public.frequency": {
