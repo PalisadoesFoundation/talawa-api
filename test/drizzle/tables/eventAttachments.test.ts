@@ -247,9 +247,9 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				many,
 			});
 
-			const post = relationsResult.event as unknown as RelationCall;
-			expect(post.type).toBe("one");
-			expect(post.table).toBe(eventsTable);
+			const event = relationsResult.event as unknown as RelationCall;
+			expect(event.type).toBe("one");
+			expect(event.table).toBe(eventsTable);
 		});
 	});
 
@@ -280,7 +280,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			const validData = {
 				name: "a",
 				mimeType: "image/png",
-				postId: faker.string.uuid(),
+				eventId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 			};
 			const result = eventAttachmentsTableInsertSchema.safeParse(validData);
@@ -448,7 +448,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.returning();
 
 			expect(deleted).toBeDefined();
-			expect(deleted?.eventId).toBe(eventAttachmentsTable);
+			expect(deleted?.eventId).toBe(eventAttachmentsEventId);
 
 			const [verifyDeleted] = await server.drizzleClient
 				.select()
@@ -459,7 +459,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			expect(verifyDeleted).toBeUndefined();
 		});
 
-		it("should not find postAttachments by old creatorId after user deletion", async () => {
+		it("should not find eventAttachments by old creatorId after user deletion", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const eventId = await createTestEvent();
 			const name = faker.system.fileName();
@@ -591,7 +591,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 
 			const eventAttachmentId = inserted.eventId;
 
-			// Delete the post
+			// Delete the event
 			await server.drizzleClient
 				.delete(eventsTable)
 				.where(eq(eventsTable.id, eventAttachmentId));
@@ -706,6 +706,24 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			if (result) {
 				expect(result.mimeType).toBe(validMimeType);
 			}
+		});
+
+		it("should reject invalid enum values in insert schema", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const eventId = await createTestEvent();
+			const name = faker.system.fileName();
+			const invalidMimeType = "not/a/real-type";
+			const createdAt = faker.date.recent();
+
+			await expect(
+				server.drizzleClient.insert(eventAttachmentsTable).values({
+					name,
+					creatorId: userId,
+					mimeType: invalidMimeType,
+					eventId,
+					createdAt: createdAt,
+				}),
+			).rejects.toThrow();
 		});
 	});
 });
