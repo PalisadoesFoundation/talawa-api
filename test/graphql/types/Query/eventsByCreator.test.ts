@@ -411,6 +411,11 @@ suite("Query field eventsByCreator", () => {
 		});
 
 		test("should return standalone events created by user", async () => {
+			const { userId: creatorId, authToken: creatorToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(creatorId);
+			assertToBeNonNullish(creatorToken);
+
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -436,7 +441,7 @@ suite("Query field eventsByCreator", () => {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						memberId: adminUserId,
+						memberId: creatorId,
 						organizationId: orgId,
 						role: "administrator",
 					},
@@ -446,7 +451,7 @@ suite("Query field eventsByCreator", () => {
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `bearer ${creatorToken}` },
 					variables: {
 						input: {
 							name: "Test Event 1",
@@ -462,8 +467,8 @@ suite("Query field eventsByCreator", () => {
 			assertToBeNonNullish(event1Id);
 
 			const result = await mercuriusClient.query(Query_eventsByCreator, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { userId: adminUserId },
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId },
 			});
 
 			expect(result.errors).toBeUndefined();
@@ -478,11 +483,16 @@ suite("Query field eventsByCreator", () => {
 			expect(testEvent).toMatchObject({
 				id: event1Id,
 				name: "Test Event 1",
-				creator: { id: adminUserId },
+				creator: { id: creatorId },
 			});
 		});
 
 		test("should return multiple standalone events created by user, sorted by startAt", async () => {
+			const { userId: creatorId, authToken: creatorToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(creatorId);
+			assertToBeNonNullish(creatorToken);
+
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -508,7 +518,7 @@ suite("Query field eventsByCreator", () => {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						memberId: adminUserId,
+						memberId: creatorId,
 						organizationId: orgId,
 						role: "administrator",
 					},
@@ -519,7 +529,7 @@ suite("Query field eventsByCreator", () => {
 			const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
 
 			await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
 					input: {
 						name: "Later Event",
@@ -532,7 +542,7 @@ suite("Query field eventsByCreator", () => {
 			});
 
 			await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
 					input: {
 						name: "Earlier Event",
@@ -545,8 +555,8 @@ suite("Query field eventsByCreator", () => {
 			});
 
 			const result = await mercuriusClient.query(Query_eventsByCreator, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { userId: adminUserId },
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId },
 			});
 
 			expect(result.errors).toBeUndefined();
@@ -574,6 +584,11 @@ suite("Query field eventsByCreator", () => {
 		});
 
 		test("should sort events with same start time by ID", async () => {
+			const { userId: creatorId, authToken: creatorToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(creatorId);
+			assertToBeNonNullish(creatorToken);
+
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -599,7 +614,7 @@ suite("Query field eventsByCreator", () => {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						memberId: adminUserId,
+						memberId: creatorId,
 						organizationId: orgId,
 						role: "administrator",
 					},
@@ -611,7 +626,7 @@ suite("Query field eventsByCreator", () => {
 			const sameEndTime = new Date(sameStartTime.getTime() + 60 * 60 * 1000);
 
 			await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
 					input: {
 						name: "Same Time Event A",
@@ -624,7 +639,7 @@ suite("Query field eventsByCreator", () => {
 			});
 
 			await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
 					input: {
 						name: "Same Time Event B",
@@ -637,8 +652,8 @@ suite("Query field eventsByCreator", () => {
 			});
 
 			const result = await mercuriusClient.query(Query_eventsByCreator, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { userId: adminUserId },
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId },
 			});
 
 			expect(result.errors).toBeUndefined();
