@@ -1,22 +1,19 @@
 import { faker } from "@faker-js/faker";
 import { eq, getTableName } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
-
-import { server } from "../../server";
+import { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
 
 import {
 	membershipRequestsTable,
 	membershipRequestsTableInsertSchema,
 	membershipRequestsTableRelations,
 } from "~/src/drizzle/tables/membershipRequests";
-
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
-
+import { server } from "../../server";
 
 describe("src/drizzle/tables/membershipRequests.ts", () => {
-
-
 	async function createTestOrganization() {
 		const [org] = await server.drizzleClient
 			.insert(organizationsTable)
@@ -47,13 +44,9 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 		return user.id;
 	}
 
-
-
 	describe("Table Definition", () => {
 		it("should have correct table name", () => {
-			expect(getTableName(membershipRequestsTable)).toBe(
-				"membership_requests",
-			);
+			expect(getTableName(membershipRequestsTable)).toBe("membership_requests");
 		});
 
 		it("should define expected columns", () => {
@@ -65,7 +58,38 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 		});
 	});
 
+	describe("Indexes and Constraints", () => {
+		it("should define expected indexes", () => {
+			const tableConfig = getTableConfig(membershipRequestsTable);
 
+			expect(tableConfig.indexes.length).toBeGreaterThanOrEqual(2);
+
+			const indexedColumns = tableConfig.indexes.map((idx) =>
+				idx.config.columns
+					.map((c: any) => c.name)
+					.sort()
+					.join(","),
+			);
+
+			expect(indexedColumns).toContain("user_id");
+			expect(indexedColumns).toContain("organization_id");
+		});
+
+		it("should define unique constraint on (userId, organizationId)", () => {
+			const tableConfig = getTableConfig(membershipRequestsTable);
+
+			const uniqueColumns = tableConfig.uniqueConstraints.map((uc) =>
+				uc.columns
+					.map((c) => c.name)
+					.sort()
+					.join(","),
+			);
+
+			expect(uniqueColumns).toContain(
+				["user_id", "organization_id"].sort().join(","),
+			);
+		});
+	});
 
 	describe("Insert Schema Validation", () => {
 		it("should reject empty payload", () => {
@@ -89,11 +113,18 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			});
 			expect(result.success).toBe(false);
 		});
-	});
+		it("should accept all valid status enum values", () => {
+			for (const status of MembershipRequestStatusValues) {
+				const result = membershipRequestsTableInsertSchema.safeParse({
+					userId: faker.string.uuid(),
+					organizationId: faker.string.uuid(),
+					status,
+				});
 
-	/* ------------------------------------------------------------------ */
-	/* Database Operations                                                 */
-	/* ------------------------------------------------------------------ */
+				expect(result.success).toBe(true);
+			}
+		});
+	});
 
 	describe("Database Operations", () => {
 		it("should insert with default status = pending", async () => {
@@ -183,14 +214,10 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 		});
 	});
 
-
-
 	describe("Relations", () => {
 		it("should define relations config", () => {
 			expect(membershipRequestsTableRelations).toBeDefined();
-			expect(typeof membershipRequestsTableRelations.config).toBe(
-				"function",
-			);
+			expect(typeof membershipRequestsTableRelations.config).toBe("function");
 		});
 
 		it("should expose user, organization, and membership relations", () => {
@@ -198,9 +225,7 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				one: (table: unknown) => ({ table }),
 			};
 
-			const relations = membershipRequestsTableRelations.config(
-				mock as any,
-			);
+			const relations = membershipRequestsTableRelations.config(mock as any);
 
 			expect(relations.user).toBeDefined();
 			expect(relations.organization).toBeDefined();
