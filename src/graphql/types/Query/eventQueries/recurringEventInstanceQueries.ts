@@ -292,6 +292,20 @@ export async function getRecurringEventInstancesByBaseIds(
 
 	// Enforce default limit if not provided to prevent unbounded queries
 	const DEFAULT_LIMIT = 1000;
+
+	// Defensive validation for limit and offset parameters
+	if (limit !== undefined && limit < 1) {
+		throw new Error(
+			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
+		);
+	}
+
+	if (offset !== undefined && offset < 0) {
+		throw new Error(
+			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
+		);
+	}
+
 	const effectiveLimit = limit ?? DEFAULT_LIMIT;
 
 	try {

@@ -832,8 +832,11 @@ describe("Organization Events Resolver Tests", () => {
 
 			// Verify start date is set to start of today (not exact timing check)
 			expect(callArgs.startDate).toBeInstanceOf(Date);
-			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
+			expect(callArgs.startDate.getFullYear()).toBe(
+				expectedStart.getFullYear(),
+			);
 			expect(callArgs.startDate.getMonth()).toBe(expectedStart.getMonth());
+			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
 
 			const expectedEnd = new Date();
 			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
@@ -841,7 +844,9 @@ describe("Organization Events Resolver Tests", () => {
 
 			// Verify end date is approximately 1 month from now
 			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
+			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
 		});
 
 		it("should handle upcomingOnly=true", async () => {
@@ -1053,7 +1058,9 @@ describe("Organization Events Resolver Tests", () => {
 
 			// Verify end date is approximately 1 month from now
 			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
+			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
 		});
 
 		it("should handle upcomingOnly: true with default end date logic", async () => {
@@ -1193,7 +1200,9 @@ describe("Organization Events Resolver Tests", () => {
 
 			// Verify end date is approximately 1 month from now
 			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
+			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
 		});
 
 		it("should handle upcomingOnly: true with default end date logic", async () => {

@@ -5,6 +5,11 @@ import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import {
+	Mutation_createUser,
+	Mutation_deleteUser,
+	Query_signIn,
+} from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -12,7 +17,7 @@ const gql = initGraphQLTada<{
 	scalars: ClientCustomScalars;
 }>();
 
-export const Mutation_linkOAuthAccount =
+const Mutation_linkOAuthAccount =
 	gql(`mutation Mutation_linkOAuthAccount($input: OAuthLoginInput!) {
     linkOAuthAccount(input: $input) {
         id
@@ -26,12 +31,6 @@ export const Mutation_linkOAuthAccount =
         }
     }
 }`);
-
-import {
-	Mutation_createUser,
-	Mutation_deleteUser,
-	Query_signIn,
-} from "../documentNodes";
 
 suite("Mutation linkOAuthAccount", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];

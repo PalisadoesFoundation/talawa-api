@@ -34,11 +34,11 @@ builder.queryField("eventsByAttendee", (t) =>
 				description: "ID of the user whose attended events to fetch",
 			}),
 			limit: t.arg.int({
-				description: "Number of events to return",
+				description: "Number of events to return (max: 100)",
 				defaultValue: 100,
 			}),
 			offset: t.arg.int({
-				description: "Number of events to skip",
+				description: "Number of events to skip (max: 10000)",
 				defaultValue: 0,
 			}),
 		},

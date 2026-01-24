@@ -76,9 +76,9 @@ Fetches all recurring event instances that belong to a specific base recurring e
 ```graphql
 getRecurringEvents(
   baseRecurringEventId: ID!
-  includeCancelled: Boolean
-  limit: Int
-  offset: Int
+  includeCancelled: Boolean = false
+  limit: Int = 1000
+  offset: Int = 0
 ): [Event!]
 ```
 
@@ -98,7 +98,7 @@ Number of events to return. Defaults to 1000. Max 1000.
 
 #### [<code style={{ fontWeight: 'normal' }}>getRecurringEvents.<b>offset</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Number of events to skip. Defaults to 0.
+Number of events to skip. Defaults to 0. Max 10000.
 
 ### Type
 

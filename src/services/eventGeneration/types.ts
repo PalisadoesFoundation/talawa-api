@@ -52,13 +52,18 @@ export interface CalculatedOccurrence {
 }
 
 /**
+ * Event template with attachments
+ */
+export type EventTemplateWithAttachments = typeof eventsTable.$inferSelect & {
+	attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+};
+
+/**
  * Input for resolving instance with inheritance
  */
 export interface ResolveInstanceInput {
 	generatedInstance: typeof recurringEventInstancesTable.$inferSelect;
-	baseTemplate: typeof eventsTable.$inferSelect & {
-		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
-	};
+	baseTemplate: EventTemplateWithAttachments;
 	exception?: typeof eventExceptionsTable.$inferSelect;
 }
 

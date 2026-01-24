@@ -1436,6 +1436,302 @@ suite("Query field eventsByAttendee", () => {
 			expect(generatedInstances.length).toBe(3);
 			expect(generatedInstances[0]?.baseRecurringEventId).toBe(eventId);
 		});
+
+		test("should skip attendee record when recurringEventInstance relation is null", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Missing Instance Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a recurring event
+			const recurringEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Missing Instance Test Event",
+							description: "Recurring event to test missing instance relation",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 3,
+							},
+						},
+					},
+				},
+			);
+			const baseEventId = recurringEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Volunteer to generate instances
+			const adminVolunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: baseEventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			const adminVolunteerId =
+				adminVolunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(adminVolunteerId);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: adminVolunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Get an instance ID
+			const adminEventsResult = await mercuriusClient.query(
+				Query_eventsByVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId: adminUserId },
+				},
+			);
+			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
+				id: string;
+				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}>;
+			const instance = adminEvents?.find(
+				(e) =>
+					e.name === "Missing Instance Test Event" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
+			);
+			assertToBeNonNullish(instance);
+			const instanceId = instance.id;
+
+			// Register user for that specific instance
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						recurringEventInstanceId: instanceId,
+					},
+				},
+			});
+
+			// Delete the recurringEventInstance record to orphan the attendee record
+			await server.drizzleClient
+				.delete(recurringEventInstancesTable)
+				.where(eq(recurringEventInstancesTable.id, instanceId));
+
+			// Query events - should NOT include the orphaned instance
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as Array<{
+				id: string;
+				name: string;
+			}>;
+			assertToBeNonNullish(events);
+
+			// Should NOT contain the orphaned instance - resolver skips when relation is null
+			const hasOrphanedInstance = events.some((e) => e.id === instanceId);
+			expect(hasOrphanedInstance).toBe(false);
+
+			// Should be empty since user only had that one registration
+			expect(events.length).toBe(0);
+		});
+
+		test("should return template when all instances are cancelled", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `All Cancelled Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a recurring event
+			const recurringEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "All Cancelled Template Test",
+							description: "Recurring event to test all cancelled fallback",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 3,
+							},
+						},
+					},
+				},
+			);
+			const baseEventId = recurringEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Volunteer to generate instances
+			const adminVolunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: baseEventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			const adminVolunteerId =
+				adminVolunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(adminVolunteerId);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: adminVolunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Get all instances
+			const adminEventsResult = await mercuriusClient.query(
+				Query_eventsByVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId: adminUserId },
+				},
+			);
+			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
+				id: string;
+				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}>;
+			const instances = adminEvents?.filter(
+				(e) =>
+					e.name === "All Cancelled Template Test" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
+			);
+			expect(instances?.length).toBeGreaterThanOrEqual(3);
+
+			// Cancel ALL instances
+			await server.drizzleClient
+				.update(recurringEventInstancesTable)
+				.set({ isCancelled: true })
+				.where(
+					eq(recurringEventInstancesTable.baseRecurringEventId, baseEventId),
+				);
+
+			// Register user for the BASE EVENT (template)
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						eventId: baseEventId,
+					},
+				},
+			});
+
+			// Query attended events
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as Array<{
+				id: string;
+				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}>;
+			assertToBeNonNullish(events);
+
+			// Should contain exactly 1 event: the template itself (fallback)
+			expect(events.length).toBe(1);
+			const returnedEvent = events[0];
+			assertToBeNonNullish(returnedEvent);
+
+			// Verify it's the template, not an instance
+			expect(returnedEvent.id).toBe(baseEventId);
+			expect(returnedEvent.name).toBe("All Cancelled Template Test");
+			expect(returnedEvent.isGenerated).toBeFalsy(); // null or false
+			expect(returnedEvent.baseRecurringEventId).toBeNull();
+		});
 	});
 
 	suite("error handling", () => {

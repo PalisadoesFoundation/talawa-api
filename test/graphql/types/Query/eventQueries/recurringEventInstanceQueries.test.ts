@@ -1069,6 +1069,102 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 			"Failed to get recurring event instances by base IDs",
 		);
 	});
+
+	it("should throw error when limit is less than 1", async () => {
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ limit: 0 },
+			),
+		).rejects.toThrow(
+			"Invalid limit: 0. Limit must be greater than or equal to 1.",
+		);
+
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ limit: -5 },
+			),
+		).rejects.toThrow(
+			"Invalid limit: -5. Limit must be greater than or equal to 1.",
+		);
+
+		// Verify query was never called
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when offset is negative", async () => {
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ offset: -1 },
+			),
+		).rejects.toThrow(
+			"Invalid offset: -1. Offset must be greater than or equal to 0.",
+		);
+
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ offset: -100 },
+			),
+		).rejects.toThrow(
+			"Invalid offset: -100. Offset must be greater than or equal to 0.",
+		);
+
+		// Verify query was never called
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should accept valid limit and offset values", async () => {
+		// Test limit = 1 (minimum valid)
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ limit: 1 },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: 1,
+			}),
+		);
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+
+		// Test offset = 0 (minimum valid)
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ offset: 0 },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				offset: 0,
+			}),
+		);
+	});
 });
 
 describe("getRecurringEventInstancesByBaseId", () => {

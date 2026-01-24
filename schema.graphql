@@ -4978,10 +4978,10 @@ type Query {
   Query field to fetch all events a user is registered for or has attended.
   """
   eventsByAttendee(
-    """Number of events to return"""
+    """Number of events to return (max: 100)"""
     limit: Int = 100
 
-    """Number of events to skip"""
+    """Number of events to skip (max: 10000)"""
     offset: Int = 0
 
     """ID of the user whose attended events to fetch"""
@@ -5111,13 +5111,13 @@ type Query {
     baseRecurringEventId: ID!
 
     """Whether to include cancelled instances. Defaults to false."""
-    includeCancelled: Boolean
+    includeCancelled: Boolean = false
 
     """Number of events to return. Defaults to 1000. Max 1000."""
-    limit: Int
+    limit: Int = 1000
 
-    """Number of events to skip. Defaults to 0."""
-    offset: Int
+    """Number of events to skip. Defaults to 0. Max 10000."""
+    offset: Int = 0
   ): [Event!]
 
   """Query field to get volunteer memberships."""

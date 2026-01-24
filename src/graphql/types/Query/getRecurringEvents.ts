@@ -4,10 +4,12 @@ import { Event } from "~/src/graphql/types/Event/Event";
 import { getRecurringEventInstanceByBaseId } from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+const MAX_OFFSET = 10_000;
+
 const queryGetRecurringEventsSchema = z.object({
 	baseRecurringEventId: z.string().uuid(),
 	limit: z.number().int().min(1).max(1000).optional(),
-	offset: z.number().int().min(0).optional(),
+	offset: z.number().int().min(0).max(MAX_OFFSET).optional(),
 	includeCancelled: z.boolean().optional(),
 });
 
@@ -29,15 +31,18 @@ builder.queryField("getRecurringEvents", (t) =>
 			limit: t.arg.int({
 				description: "Number of events to return. Defaults to 1000. Max 1000.",
 				required: false,
+				defaultValue: 1000,
 			}),
 			offset: t.arg.int({
-				description: "Number of events to skip. Defaults to 0.",
+				description: `Number of events to skip. Defaults to 0. Max ${MAX_OFFSET}.`,
 				required: false,
+				defaultValue: 0,
 			}),
 			includeCancelled: t.arg.boolean({
 				description:
 					"Whether to include cancelled instances. Defaults to false.",
 				required: false,
+				defaultValue: false,
 			}),
 		},
 		description:
