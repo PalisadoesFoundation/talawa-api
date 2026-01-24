@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -12,7 +12,7 @@ Worker dependencies for window management functions
 
 ### drizzleClient
 
-> **drizzleClient**: `NodePgDatabase`\<[API Docs](/)\>
+> **drizzleClient**: `NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 Defined in: src/workers/eventGeneration/windowManager.ts:13
 

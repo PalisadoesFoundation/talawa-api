@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: queryActionItemsByOrgInputSchema
 
-> `const` **queryActionItemsByOrgInputSchema**: `ZodObject`\<\{ `organizationId`: `ZodUUID`; \}, `$strip`\>
+> `const` **queryActionItemsByOrgInputSchema**: `ZodObject`\<\{ `organizationId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `organizationId`: `string`; \}, \{ `organizationId`: `string`; \}\>
 
 Defined in: src/graphql/inputs/QueryActionItemInput.ts:8
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -12,7 +12,7 @@ Service dependencies that need to be injected
 
 ### drizzleClient
 
-> **drizzleClient**: `NodePgDatabase`\<[API Docs](/)\>
+> **drizzleClient**: `NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 Defined in: src/services/eventGeneration/types.ts:77
 

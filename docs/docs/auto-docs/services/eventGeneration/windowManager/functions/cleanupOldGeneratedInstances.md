@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -21,7 +21,7 @@ The ID of the organization for which to clean up instances.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[API Docs](/)\>
+`NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
 The Drizzle ORM client for database access.
 

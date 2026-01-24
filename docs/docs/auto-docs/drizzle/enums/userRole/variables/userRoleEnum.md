@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: userRoleEnum
 
-> `const` **userRoleEnum**: `ZodEnum`\<\{ `administrator`: `"administrator"`; `regular`: `"regular"`; \}\>
+> `const` **userRoleEnum**: `ZodEnum`\<\[`"administrator"`, `"regular"`\]\>
 
 Defined in: src/drizzle/enums/userRole.ts:6
 

@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: venueAttachmentMimeTypeEnum
 
-> `const` **venueAttachmentMimeTypeEnum**: `ZodEnum`\<\{ `image/avif`: `"image/avif"`; `image/jpeg`: `"image/jpeg"`; `image/png`: `"image/png"`; `image/webp`: `"image/webp"`; `video/mp4`: `"video/mp4"`; `video/webm`: `"video/webm"`; \}\>
+> `const` **venueAttachmentMimeTypeEnum**: `ZodEnum`\<\[`"image/avif"`, `"image/jpeg"`, `"image/png"`, `"image/webp"`, `"video/mp4"`, `"video/webm"`\]\>
 
 Defined in: src/drizzle/enums/venueAttachmentMimeType.ts:8
 

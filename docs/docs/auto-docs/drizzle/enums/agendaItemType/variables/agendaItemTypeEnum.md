@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: agendaItemTypeEnum
 
-> `const` **agendaItemTypeEnum**: `ZodEnum`\<\{ `general`: `"general"`; `note`: `"note"`; `scripture`: `"scripture"`; `song`: `"song"`; \}\>
+> `const` **agendaItemTypeEnum**: `ZodEnum`\<\[`"general"`, `"note"`, `"scripture"`, `"song"`\]\>
 
 Defined in: src/drizzle/enums/agendaItemType.ts:6
 

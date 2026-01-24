@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: volunteerMembershipOrderByInputEnum
 
-> `const` **volunteerMembershipOrderByInputEnum**: `ZodEnum`\<\{ `createdAt_ASC`: `"createdAt_ASC"`; `createdAt_DESC`: `"createdAt_DESC"`; \}\>
+> `const` **volunteerMembershipOrderByInputEnum**: `ZodEnum`\<\[`"createdAt_ASC"`, `"createdAt_DESC"`\]\>
 
 Defined in: src/graphql/inputs/VolunteerMembershipOrderByInput.ts:8
 

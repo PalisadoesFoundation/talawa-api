@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationReadNotificationInputSchema
 
-> `const` **mutationReadNotificationInputSchema**: `ZodObject`\<\{ `notificationIds`: `ZodArray`\<`ZodString`\>; \}, `$strip`\>
+> `const` **mutationReadNotificationInputSchema**: `ZodObject`\<\{ `notificationIds`: `ZodArray`\<`ZodString`, `"many"`\>; \}, `"strip"`, `ZodTypeAny`, \{ `notificationIds`: `string`[]; \}, \{ `notificationIds`: `string`[]; \}\>
 
 Defined in: src/graphql/inputs/MutationReadNotificationinput.ts:4

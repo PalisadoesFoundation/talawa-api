@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationUpdateAgendaCategoryInputSchema
 
-> `const` **mutationUpdateAgendaCategoryInputSchema**: `ZodObject`\<\{ `description`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `id`: `ZodUUID`; `name`: `ZodOptional`\<`ZodString`\>; \}, \{ \}\>
+> `const` **mutationUpdateAgendaCategoryInputSchema**: `ZodEffects`\<`ZodObject`\<`object` & `object`, `"strip"`, `ZodTypeAny`, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; \}, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; \}\>, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; \}, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; \}\>
 
 Defined in: src/graphql/inputs/MutationUpdateAgendaCategoryInput.ts:5

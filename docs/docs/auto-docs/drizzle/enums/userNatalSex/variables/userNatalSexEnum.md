@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: userNatalSexEnum
 
-> `const` **userNatalSexEnum**: `ZodEnum`\<\{ `female`: `"female"`; `intersex`: `"intersex"`; `male`: `"male"`; \}\>
+> `const` **userNatalSexEnum**: `ZodEnum`\<\[`"female"`, `"intersex"`, `"male"`\]\>
 
 Defined in: src/drizzle/enums/userNatalSex.ts:6
 

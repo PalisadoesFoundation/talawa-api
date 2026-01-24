@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationDeleteEntireRecurringEventSeriesInputSchema
 
-> `const` **mutationDeleteEntireRecurringEventSeriesInputSchema**: `ZodObject`\<\{ `id`: `ZodUUID`; \}, `$strip`\>
+> `const` **mutationDeleteEntireRecurringEventSeriesInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
 
 Defined in: src/graphql/inputs/MutationDeleteEntireRecurringEventSeriesInput.ts:5

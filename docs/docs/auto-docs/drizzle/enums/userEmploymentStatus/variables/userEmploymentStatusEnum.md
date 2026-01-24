@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: userEmploymentStatusEnum
 
-> `const` **userEmploymentStatusEnum**: `ZodEnum`\<\{ `full_time`: `"full_time"`; `part_time`: `"part_time"`; `unemployed`: `"unemployed"`; \}\>
+> `const` **userEmploymentStatusEnum**: `ZodEnum`\<\[`"full_time"`, `"part_time"`, `"unemployed"`\]\>
 
 Defined in: src/drizzle/enums/userEmploymentStatus.ts:6
 

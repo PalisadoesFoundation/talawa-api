@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationVerifyEmailInputSchema
 
-> `const` **mutationVerifyEmailInputSchema**: `ZodObject`\<\{ `token`: `ZodString`; \}, `$strip`\>
+> `const` **mutationVerifyEmailInputSchema**: `ZodObject`\<\{ `token`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `token`: `string`; \}, \{ `token`: `string`; \}\>
 
 Defined in: src/graphql/inputs/MutationVerifyEmailInput.ts:24
 

@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationDeleteFundCampaignPledgeInputSchema
 
-> `const` **mutationDeleteFundCampaignPledgeInputSchema**: `ZodObject`\<\{ `id`: `ZodUUID`; \}, `$strip`\>
+> `const` **mutationDeleteFundCampaignPledgeInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
 
 Defined in: src/graphql/inputs/MutationDeleteFundCampaignPledgeInput.ts:5

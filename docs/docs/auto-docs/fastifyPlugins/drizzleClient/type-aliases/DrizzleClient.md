@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Type Alias: DrizzleClient
 
-> **DrizzleClient** = `PostgresJsDatabase`\<*typeof* [API Docs](/)\>
+> **DrizzleClient** = `PostgresJsDatabase`\<*typeof* [`drizzle/schema`](../../../drizzle/schema/README.md)\>
 
 Defined in: src/fastifyPlugins/drizzleClient.ts:15
 

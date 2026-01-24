@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: metricsFilterInputSchema
 
-> `const` **metricsFilterInputSchema**: `ZodObject`\<\{ `complexityRange`: `ZodOptional`\<`ZodObject`\<\{ `max`: `ZodNumber`; `min`: `ZodNumber`; \}, `$strip`\>\>; `minCacheHitRate`: `ZodOptional`\<`ZodNumber`\>; `operationNames`: `ZodOptional`\<`ZodArray`\<`ZodString`\>\>; `slowOperationsOnly`: `ZodDefault`\<`ZodBoolean`\>; \}, `$strip`\>
+> `const` **metricsFilterInputSchema**: `ZodObject`\<\{ `complexityRange`: `ZodOptional`\<`ZodEffects`\<`ZodObject`\<\{ `max`: `ZodNumber`; `min`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `max`: `number`; `min`: `number`; \}, \{ `max`: `number`; `min`: `number`; \}\>, \{ `max`: `number`; `min`: `number`; \}, \{ `max`: `number`; `min`: `number`; \}\>\>; `minCacheHitRate`: `ZodOptional`\<`ZodNumber`\>; `operationNames`: `ZodOptional`\<`ZodArray`\<`ZodString`, `"many"`\>\>; `slowOperationsOnly`: `ZodDefault`\<`ZodBoolean`\>; \}, `"strip"`, `ZodTypeAny`, \{ `complexityRange?`: \{ `max`: `number`; `min`: `number`; \}; `minCacheHitRate?`: `number`; `operationNames?`: `string`[]; `slowOperationsOnly`: `boolean`; \}, \{ `complexityRange?`: \{ `max`: `number`; `min`: `number`; \}; `minCacheHitRate?`: `number`; `operationNames?`: `string`[]; `slowOperationsOnly?`: `boolean`; \}\>
 
 Defined in: src/graphql/inputs/MetricsFilterInput.ts:51
 

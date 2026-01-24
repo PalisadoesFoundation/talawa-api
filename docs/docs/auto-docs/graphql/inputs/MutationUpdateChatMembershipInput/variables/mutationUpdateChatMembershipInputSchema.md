@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationUpdateChatMembershipInputSchema
 
-> `const` **mutationUpdateChatMembershipInputSchema**: `ZodObject`\<\{ `chatId`: `ZodUUID`; `memberId`: `ZodUUID`; `role`: `ZodString`; \}, \{ \}\>
+> `const` **mutationUpdateChatMembershipInputSchema**: `ZodObject`\<`Pick`\<\{ `chatId`: `ZodString`; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `lastReadAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `memberId`: `ZodString`; `role`: `ZodString`; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"role"` \| `"chatId"` \| `"memberId"`\>, `"strip"`, `ZodTypeAny`, \{ `chatId`: `string`; `memberId`: `string`; `role`: `string`; \}, \{ `chatId`: `string`; `memberId`: `string`; `role`: `string`; \}\>
 
 Defined in: src/graphql/inputs/MutationUpdateChatMembershipInput.ts:6

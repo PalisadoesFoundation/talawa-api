@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: MutationUpdateActionItemInputSchema
 
-> `const` **MutationUpdateActionItemInputSchema**: `ZodObject`\<\{ `categoryId`: `ZodOptional`\<`ZodNullable`\<`ZodUUID`\>\>; `id`: `ZodUUID`; `isCompleted`: `ZodBoolean`; `postCompletionNotes`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `preCompletionNotes`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `volunteerGroupId`: `ZodOptional`\<`ZodNullable`\<`ZodUUID`\>\>; `volunteerId`: `ZodOptional`\<`ZodNullable`\<`ZodUUID`\>\>; \}, \{ \}\>
+> `const` **MutationUpdateActionItemInputSchema**: `ZodObject`\<`Pick`\<\{ `assignedAt`: `ZodDate`; `categoryId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `completionAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `eventId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `id`: `ZodOptional`\<`ZodString`\>; `isCompleted`: `ZodBoolean`; `isTemplate`: `ZodOptional`\<`ZodNullable`\<`ZodBoolean`\>\>; `organizationId`: `ZodString`; `postCompletionNotes`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `preCompletionNotes`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `recurringEventInstanceId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `volunteerGroupId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `volunteerId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"volunteerId"` \| `"volunteerGroupId"` \| `"categoryId"` \| `"isCompleted"` \| `"postCompletionNotes"` \| `"preCompletionNotes"`\> & `object`, `"strip"`, `ZodTypeAny`, \{ `categoryId?`: `string` \| `null`; `id`: `string`; `isCompleted`: `boolean`; `postCompletionNotes?`: `string` \| `null`; `preCompletionNotes?`: `string` \| `null`; `volunteerGroupId?`: `string` \| `null`; `volunteerId?`: `string` \| `null`; \}, \{ `categoryId?`: `string` \| `null`; `id`: `string`; `isCompleted`: `boolean`; `postCompletionNotes?`: `string` \| `null`; `preCompletionNotes?`: `string` \| `null`; `volunteerGroupId?`: `string` \| `null`; `volunteerId?`: `string` \| `null`; \}\>
 
 Defined in: src/graphql/inputs/MutationUpdateActionItemInput.ts:5

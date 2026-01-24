@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: commentVoteTypeEnum
 
-> `const` **commentVoteTypeEnum**: `ZodEnum`\<\{ `down_vote`: `"down_vote"`; `up_vote`: `"up_vote"`; \}\>
+> `const` **commentVoteTypeEnum**: `ZodEnum`\<\[`"down_vote"`, `"up_vote"`\]\>
 
 Defined in: src/drizzle/enums/commentVoteType.ts:6
 

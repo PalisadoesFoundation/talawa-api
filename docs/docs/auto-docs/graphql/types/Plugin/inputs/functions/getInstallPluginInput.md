@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -14,7 +14,7 @@ Defined in: src/graphql/types/Plugin/inputs.ts:135
 
 ### schema
 
-> **schema**: `ZodObject`\<\{ `pluginId`: `ZodString`; \}, `$strip`\> = `installPluginInputSchema`
+> **schema**: `ZodObject`\<\{ `pluginId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `pluginId`: `string`; \}, \{ `pluginId`: `string`; \}\> = `installPluginInputSchema`
 
 ### type
 

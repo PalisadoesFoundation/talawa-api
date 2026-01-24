@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: rejectMembershipRequestInputSchema
 
-> `const` **rejectMembershipRequestInputSchema**: `ZodObject`\<\{ `membershipRequestId`: `ZodString`; \}, `$strip`\>
+> `const` **rejectMembershipRequestInputSchema**: `ZodObject`\<\{ `membershipRequestId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `membershipRequestId`: `string`; \}, \{ `membershipRequestId`: `string`; \}\>
 
 Defined in: src/graphql/inputs/MutationRejectMembershipRequestInput.ts:4

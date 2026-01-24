@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: mutationUpdateAgendaFolderInputSchema
 
-> `const` **mutationUpdateAgendaFolderInputSchema**: `ZodObject`\<\{ `description`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `id`: `ZodUUID`; `name`: `ZodOptional`\<`ZodString`\>; `sequence`: `ZodNullable`\<`ZodOptional`\<`ZodInt`\>\>; \}, \{ \}\>
+> `const` **mutationUpdateAgendaFolderInputSchema**: `ZodEffects`\<`ZodObject`\<`object` & `object`, `"strip"`, `ZodTypeAny`, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; `sequence?`: `number` \| `null`; \}, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; `sequence?`: `number` \| `null`; \}\>, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; `sequence?`: `number` \| `null`; \}, \{ `description?`: `string` \| `null`; `id`: `string`; `name?`: `string`; `sequence?`: `number` \| `null`; \}\>
 
 Defined in: src/graphql/inputs/MutationUpdateAgendaFolderInput.ts:5

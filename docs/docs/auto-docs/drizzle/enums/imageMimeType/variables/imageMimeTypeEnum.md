@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: imageMimeTypeEnum
 
-> `const` **imageMimeTypeEnum**: `ZodEnum`\<\{ `image/avif`: `"image/avif"`; `image/jpeg`: `"image/jpeg"`; `image/png`: `"image/png"`; `image/webp`: `"image/webp"`; \}\>
+> `const` **imageMimeTypeEnum**: `ZodEnum`\<\[`"image/avif"`, `"image/jpeg"`, `"image/png"`, `"image/webp"`\]\>
 
 Defined in: src/drizzle/enums/imageMimeType.ts:6
 

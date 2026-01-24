@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: queryFundCampaignPledgesByUserInputSchema
 
-> `const` **queryFundCampaignPledgesByUserInputSchema**: `ZodObject`\<\{ `userId`: `ZodUUID`; \}, `$strip`\>
+> `const` **queryFundCampaignPledgesByUserInputSchema**: `ZodObject`\<\{ `userId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `userId`: `string`; \}, \{ `userId`: `string`; \}\>
 
 Defined in: src/graphql/inputs/QueryFundCampaignPledgeInput.ts:56
 

@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: videoMimeTypeEnum
 
-> `const` **videoMimeTypeEnum**: `ZodEnum`\<\{ `video/mp4`: `"video/mp4"`; `video/webm`: `"video/webm"`; \}\>
+> `const` **videoMimeTypeEnum**: `ZodEnum`\<\[`"video/mp4"`, `"video/webm"`\]\>
 
 Defined in: src/drizzle/enums/videoMimeType.ts:6
 

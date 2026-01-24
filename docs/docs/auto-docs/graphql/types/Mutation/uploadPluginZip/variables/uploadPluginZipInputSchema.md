@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
 # Variable: uploadPluginZipInputSchema
 
-> `const` **uploadPluginZipInputSchema**: `ZodObject`\<\{ `activate`: `ZodDefault`\<`ZodOptional`\<`ZodBoolean`\>\>; `pluginZip`: `ZodCustom`\<`Promise`\<`FileUpload`\>, `Promise`\<`FileUpload`\>\>; \}, `$strip`\>
+> `const` **uploadPluginZipInputSchema**: `ZodObject`\<\{ `activate`: `ZodDefault`\<`ZodOptional`\<`ZodBoolean`\>\>; `pluginZip`: `ZodType`\<`Promise`\<`FileUpload`\>, `ZodTypeDef`, `Promise`\<`FileUpload`\>\>; \}, `"strip"`, `ZodTypeAny`, \{ `activate`: `boolean`; `pluginZip`: `Promise`\<`FileUpload`\>; \}, \{ `activate?`: `boolean`; `pluginZip`: `Promise`\<`FileUpload`\>; \}\>
 
 Defined in: src/graphql/types/Mutation/uploadPluginZip.ts:9

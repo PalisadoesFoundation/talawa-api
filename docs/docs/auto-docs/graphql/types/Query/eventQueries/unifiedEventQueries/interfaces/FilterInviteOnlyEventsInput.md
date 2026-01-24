@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../../README.md)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:50
 
 ### drizzleClient
 
-> **drizzleClient**: `NodePgDatabase`\<[API Docs](/)\>
+> **drizzleClient**: `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
 
 Defined in: src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:60
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -80,7 +80,7 @@ GraphQL context containing authentication and database clients
 
 `Promise`\<`Date` \| `null`\>
 
-`Promise<Date>` The timestamp when the fund campaign was last updated
+Promise<Date> The timestamp when the fund campaign was last updated
 
 ## Throws
 

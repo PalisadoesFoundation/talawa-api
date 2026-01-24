@@ -1,9 +1,9 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: queryEventInputSchema
 
-> `const` **queryEventInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `$strip`\>
+> `const` **queryEventInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
 
 Defined in: src/graphql/inputs/QueryEventInput.ts:4

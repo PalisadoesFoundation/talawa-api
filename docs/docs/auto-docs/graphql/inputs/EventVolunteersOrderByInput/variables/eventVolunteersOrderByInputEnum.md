@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: eventVolunteersOrderByInputEnum
 
-> `const` **eventVolunteersOrderByInputEnum**: `ZodEnum`\<\{ `hoursVolunteered_ASC`: `"hoursVolunteered_ASC"`; `hoursVolunteered_DESC`: `"hoursVolunteered_DESC"`; \}\>
+> `const` **eventVolunteersOrderByInputEnum**: `ZodEnum`\<\[`"hoursVolunteered_ASC"`, `"hoursVolunteered_DESC"`\]\>
 
 Defined in: src/graphql/inputs/EventVolunteersOrderByInput.ts:8
 

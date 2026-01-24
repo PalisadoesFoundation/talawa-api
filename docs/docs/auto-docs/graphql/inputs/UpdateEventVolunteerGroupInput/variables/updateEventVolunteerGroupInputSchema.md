@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Variable: updateEventVolunteerGroupInputSchema
 
-> `const` **updateEventVolunteerGroupInputSchema**: `ZodObject`\<\{ `description`: `ZodOptional`\<`ZodString`\>; `eventId`: `ZodString`; `name`: `ZodOptional`\<`ZodString`\>; `volunteersRequired`: `ZodOptional`\<`ZodNumber`\>; \}, `$strip`\>
+> `const` **updateEventVolunteerGroupInputSchema**: `ZodObject`\<\{ `description`: `ZodOptional`\<`ZodString`\>; `eventId`: `ZodString`; `name`: `ZodOptional`\<`ZodString`\>; `volunteersRequired`: `ZodOptional`\<`ZodNumber`\>; \}, `"strip"`, `ZodTypeAny`, \{ `description?`: `string`; `eventId`: `string`; `name?`: `string`; `volunteersRequired?`: `number`; \}, \{ `description?`: `string`; `eventId`: `string`; `name?`: `string`; `volunteersRequired?`: `number`; \}\>
 
 Defined in: src/graphql/inputs/UpdateEventVolunteerGroupInput.ts:8
 
