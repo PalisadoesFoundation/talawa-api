@@ -650,6 +650,8 @@ describe("getUnifiedEventsInDateRange", () => {
 		});
 
 		it("should preserve original error when rethrowing", async () => {
+			expect.assertions(3);
+
 			const customError = new Error("Custom error message");
 			customError.name = "CustomError";
 			mockGetStandaloneEventsInDateRange.mockRejectedValue(customError);
@@ -1064,6 +1066,8 @@ describe("getEventsByIds", () => {
 		});
 
 		it("should preserve original error when rethrowing", async () => {
+			expect.assertions(3);
+
 			const eventIds = ["standalone-1"];
 			const customError = new Error("Custom error message");
 			customError.name = "CustomError";
