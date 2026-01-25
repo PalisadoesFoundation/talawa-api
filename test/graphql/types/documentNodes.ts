@@ -888,7 +888,7 @@ export const Mutation_updateAgendaFolder = gql(`
 `);
 
 export const MUTATION_updateAgendaItemSequence = gql(`
-  mutation MUTATION_updateAgendaItemSequence($input: MutationUpdateAgendaItemSequenceInput!) {
+  mutation Mutation_updateAgendaItemSequence($input: MutationUpdateAgendaItemSequenceInput!) {
     updateAgendaItemSequence(input: $input) {
       id
       sequence

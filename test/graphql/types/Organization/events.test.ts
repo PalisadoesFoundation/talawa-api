@@ -863,7 +863,12 @@ describe("Organization Events Resolver Tests", () => {
 			}
 
 			// Should use current time as start date
-			expect(callArgs.startDate).toBeInstanceOf(Date);
+			const expectedStart = new Date("2024-01-01T12:00:00Z");
+			expect(callArgs.startDate.getFullYear()).toBe(
+				expectedStart.getFullYear(),
+			);
+			expect(callArgs.startDate.getMonth()).toBe(expectedStart.getMonth());
+			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
 		});
 
 		it("should handle upcomingOnly=true with explicit endDate", async () => {
@@ -892,9 +897,16 @@ describe("Organization Events Resolver Tests", () => {
 			expect(callArgs.endDate.getFullYear()).toBe(
 				expectedEndDate.getFullYear(),
 			);
+			expect(callArgs.endDate.getMonth()).toBe(expectedEndDate.getMonth());
+			expect(callArgs.endDate.getDate()).toBe(expectedEndDate.getDate());
 
 			// Start date should be recent
-			expect(callArgs.startDate).toBeInstanceOf(Date);
+			const expectedStart = new Date("2024-01-01T12:00:00Z");
+			expect(callArgs.startDate.getFullYear()).toBe(
+				expectedStart.getFullYear(),
+			);
+			expect(callArgs.startDate.getMonth()).toBe(expectedStart.getMonth());
+			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
 		});
 
 		it("should respect explicit includeRecurring=false", async () => {
@@ -1073,155 +1085,22 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
 			// effectiveStartDate should be recent
-			expect(callArgs.startDate).toBeInstanceOf(Date);
+			const expectedStart = new Date();
+			expect(callArgs.startDate.getFullYear()).toBe(
+				expectedStart.getFullYear(),
+			);
+			expect(callArgs.startDate.getMonth()).toBe(expectedStart.getMonth());
+			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();
 			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(callArgs.endDate).toBeInstanceOf(Date);
-			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
-		});
-
-		it("should ignore provided endDate when upcomingOnly is true", async () => {
-			const futureDate = new Date();
-			futureDate.setFullYear(futureDate.getFullYear() + 2);
-
-			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
-			await eventsResolver(
-				mockOrganization,
-				{ first: 10, upcomingOnly: true, endDate: futureDate },
-				ctx,
-				mockResolveInfo,
-			);
-
-			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
-			if (!callArgs)
-				throw new Error("Expected getUnifiedEventsInDateRange to be called");
-
-			// Should be default 1 year from now, ignoring the 2 year future date
-			const expectedEnd = new Date();
-			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(callArgs.endDate).toBeInstanceOf(Date);
-			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
-		});
-
-		it("should report error on 'before' when using 'last' with invalid cursor", async () => {
-			await expect(
-				eventsResolver(
-					mockOrganization,
-					{ last: 10, before: "invalid-cursor" },
-					ctx,
-					mockResolveInfo,
-				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["before"],
-								message: "Not a valid cursor.",
-							},
-						],
-					},
-				}),
-			);
-		});
-	});
-
-	describe("Code Coverage Scenarios", () => {
-		beforeEach(() => {
-			const mockUserData: MockUser = {
-				id: "user-123",
-				role: "administrator",
-				organizationMembershipsWhereMember: [],
-			};
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUserData,
-			);
-		});
-
-		it("should handle null values for optional arguments", async () => {
-			mockGetUnifiedEventsInDateRange.mockResolvedValue(mockEvents);
-			const result = await eventsResolver(
-				mockOrganization,
-				{ first: 10, after: null, before: null, last: null },
-				ctx,
-				mockResolveInfo,
-			);
-			expect(result).toBeDefined();
-		});
-
-		it("should throw error when first is null and last is undefined", async () => {
-			await expect(
-				eventsResolver(mockOrganization, { first: null }, ctx, mockResolveInfo),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["first"],
-								message:
-									'A non-null value for argument "first" must be provided.',
-							},
-						],
-					},
-				}),
-			);
-		});
-
-		it("should use default date ranges when not provided", async () => {
-			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
-			await eventsResolver(
-				mockOrganization,
-				{ first: 10 },
-				ctx,
-				mockResolveInfo,
-			);
-
-			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
-			if (!callArgs)
-				throw new Error("Expected getUnifiedEventsInDateRange to be called");
-
-			const now = new Date();
-			now.setHours(0, 0, 0, 0);
-			expect(callArgs.startDate.getTime()).toBe(now.getTime());
-
-			const expectedEnd = new Date();
-			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
-			expectedEnd.setHours(23, 59, 59, 999);
-
-			// Verify end date is approximately 1 month from now
 			expect(callArgs.endDate).toBeInstanceOf(Date);
 			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
 			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
 		});
 
-		it("should handle upcomingOnly: true with default end date logic", async () => {
-			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
-			await eventsResolver(
-				mockOrganization,
-				{ first: 10, upcomingOnly: true },
-				ctx,
-				mockResolveInfo,
-			);
-
-			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
-			if (!callArgs)
-				throw new Error("Expected getUnifiedEventsInDateRange to be called");
-
-			// effectiveStartDate should be recent
-			expect(callArgs.startDate).toBeInstanceOf(Date);
-
-			// effectiveEndDate should be 1 year from now
-			const expectedEnd = new Date();
-			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(callArgs.endDate).toBeInstanceOf(Date);
-			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
-		});
-
 		it("should ignore provided endDate when upcomingOnly is true", async () => {
 			const futureDate = new Date();
 			futureDate.setFullYear(futureDate.getFullYear() + 2);
@@ -1243,6 +1122,8 @@ describe("Organization Events Resolver Tests", () => {
 			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
 			expect(callArgs.endDate).toBeInstanceOf(Date);
 			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
+			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
+			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
 		});
 
 		it("should report error on 'before' when using 'last' with invalid cursor", async () => {

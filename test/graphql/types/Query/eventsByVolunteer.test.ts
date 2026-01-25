@@ -709,6 +709,8 @@ suite("Query field eventsByVolunteer", () => {
 			// Step 2: proper regular user volunteers for THAT specific instance
 			const { userId: regularUserId, authToken: regularAuthToken } =
 				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(regularUserId);
+			assertToBeNonNullish(regularAuthToken);
 
 			// Make test user an org member so they can volunteer for the non-public event
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
