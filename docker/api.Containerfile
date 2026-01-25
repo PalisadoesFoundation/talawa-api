@@ -2,7 +2,7 @@
 
 ARG API_GID=1000
 ARG API_UID=1000
-ARG PNPM_VERSION=10.28.1
+ARG PNPM_VERSION=10.26.1
 
 # https://github.com/devcontainers/templates/tree/main/src/debian
 # This build stage sets up and switches to the `talawa` non root user, sets up fnm 
