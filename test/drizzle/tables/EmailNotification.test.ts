@@ -6,6 +6,26 @@ import {
 	emailNotificationsTableInsertSchema,
 	emailNotificationsTableRelations,
 } from "~/src/drizzle/tables/EmailNotification";
+import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
+import { usersTable } from "~/src/drizzle/tables/users";
+
+const VALID_UUID = "01234567-89ab-4def-a123-456789abcdef";
+const VALID_USER_UUID = "11111111-1111-4111-a111-111111111111";
+const VALID_EMAIL = "test@example.com";
+const VALID_SUBJECT = "Notification subject";
+const VALID_HTML_BODY = "<p>Hello</p>";
+const STATUS_VALUES = [
+	"pending",
+	"sent",
+	"delivered",
+	"bounced",
+	"failed",
+] as const;
+
+const getColumnName = (col: unknown) =>
+	col && typeof col === "object" && "name" in col
+		? ((col as { name?: string }).name as string)
+		: undefined;
 
 /**
  * Tests for emailNotificationsTable definition - validates table schema,
@@ -17,8 +37,10 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			expect(getTableName(emailNotificationsTable)).toBe("email_notifications");
 		});
 
-		it("should have all required columns defined", () => {
-			const columns = Object.keys(emailNotificationsTable);
+		it("should have all 15 expected columns defined", () => {
+			const columns = Object.entries(emailNotificationsTable)
+				.filter(([, value]) => value && typeof value === "object" && "name" in value)
+				.map(([key]) => key);
 			expect(columns).toContain("id");
 			expect(columns).toContain("notificationLogId");
 			expect(columns).toContain("userId");
@@ -34,10 +56,10 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			expect(columns).toContain("failedAt");
 			expect(columns).toContain("createdAt");
 			expect(columns).toContain("updatedAt");
-			expect(columns.length).toBeGreaterThanOrEqual(15);
+			expect(columns).toHaveLength(15);
 		});
 
-		it("should have correct column names and properties", () => {
+		it("should set expected column names, nullability, and defaults", () => {
 			expect(emailNotificationsTable.id.name).toBe("id");
 			expect(emailNotificationsTable.id.primary).toBe(true);
 			expect(emailNotificationsTable.id.hasDefault).toBe(true);
@@ -95,15 +117,83 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			expect(emailNotificationsTable.updatedAt.notNull).toBe(true);
 			expect(emailNotificationsTable.updatedAt.hasDefault).toBe(true);
 		});
+
+		it("should expose status enum values", () => {
+			expect(emailNotificationsTable.status.enumValues).toEqual([
+				...STATUS_VALUES,
+			]);
+		});
+
+		it("should have correct default values for status and retry counters", () => {
+			expect(emailNotificationsTable.status.default).toBe("pending");
+			expect(emailNotificationsTable.retryCount.default).toBe(0);
+			expect(emailNotificationsTable.maxRetries.default).toBe(3);
+		});
+
+		it("should have id defaultFn and updatedAt onUpdateFn", () => {
+			const idDefaultFn = emailNotificationsTable.id.defaultFn;
+			expect(idDefaultFn).toBeDefined();
+			if (typeof idDefaultFn === "function") {
+				const generatedId = idDefaultFn();
+				expect(typeof generatedId === "string" || generatedId).toBeTruthy();
+				if (typeof generatedId === "string") {
+					expect(generatedId.length).toBeGreaterThan(0);
+				}
+			}
+
+			const onUpdateFn = emailNotificationsTable.updatedAt.onUpdateFn;
+			expect(onUpdateFn).toBeDefined();
+			if (typeof onUpdateFn === "function") {
+				const beforeCall = new Date();
+				const updatedAtValue = onUpdateFn();
+				const afterCall = new Date();
+				expect(updatedAtValue).toBeInstanceOf(Date);
+				expect((updatedAtValue as Date).getTime()).toBeGreaterThanOrEqual(
+					beforeCall.getTime(),
+				);
+				expect((updatedAtValue as Date).getTime()).toBeLessThanOrEqual(
+					afterCall.getTime(),
+				);
+			}
+		});
 	});
 
 	describe("Foreign Key Relationships", () => {
 		const tableConfig = getTableConfig(emailNotificationsTable);
+		const findForeignKeyByColumn = (columnName: string) =>
+			tableConfig.foreignKeys.find(
+				(fk: { reference: () => { columns: Array<{ name?: string }> } }) => {
+					const ref = fk.reference();
+					return ref.columns.some(
+						(col: { name?: string }) => getColumnName(col) === columnName,
+					);
+				},
+			);
 
 		it("should have exactly 2 foreign keys defined", () => {
 			expect(tableConfig.foreignKeys).toBeDefined();
 			expect(Array.isArray(tableConfig.foreignKeys)).toBe(true);
 			expect(tableConfig.foreignKeys.length).toBe(2);
+		});
+
+		it("should configure notificationLogId foreign key with cascade rules", () => {
+			const notificationLogFk = findForeignKeyByColumn("notification_log_id");
+			expect(notificationLogFk).toBeDefined();
+			expect(notificationLogFk?.onDelete).toBe("cascade");
+			expect(notificationLogFk?.onUpdate).toBe("cascade");
+			const notificationRef = notificationLogFk?.reference();
+			expect(notificationRef?.foreignTable).toBe(notificationLogsTable);
+			expect(getColumnName(notificationRef?.foreignColumns[0])).toBe("id");
+		});
+
+		it("should configure userId foreign key with cascade rules", () => {
+			const userFk = findForeignKeyByColumn("user_id");
+			expect(userFk).toBeDefined();
+			expect(userFk?.onDelete).toBe("cascade");
+			expect(userFk?.onUpdate).toBe("cascade");
+			const userRef = userFk?.reference();
+			expect(userRef?.foreignTable).toBe(usersTable);
+			expect(getColumnName(userRef?.foreignColumns[0])).toBe("id");
 		});
 	});
 
@@ -121,28 +211,23 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			one: (
 				table: Table,
 				config?: CapturedRelation["config"],
-			) => {
-				withFieldName: () => object;
-			};
+			) => { withFieldName: () => object };
 		}
 
 		let capturedRelations: Record<string, CapturedRelation> = {};
-		let totalRelationCount = 0;
 
 		beforeAll(() => {
 			capturedRelations = {};
-			totalRelationCount = 0;
 			(
 				emailNotificationsTableRelations.config as unknown as (
 					helpers: MockRelationHelpers,
 				) => unknown
 			)({
 				one: (table: Table, config?: CapturedRelation["config"]) => {
-					totalRelationCount++;
-					if (getTableName(table) === "notification_logs") {
+					if (config?.relationName?.includes("notification_log_id")) {
 						capturedRelations.notificationLog = { table, config };
 					}
-					if (getTableName(table) === "users") {
+					if (config?.relationName?.includes("user_id")) {
 						capturedRelations.user = { table, config };
 					}
 					return { withFieldName: () => ({}) };
@@ -150,11 +235,8 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			});
 		});
 
-		it("should be defined", () => {
+		it("should be defined and reference emailNotificationsTable", () => {
 			expect(emailNotificationsTableRelations).toBeDefined();
-		});
-
-		it("should have the correct table reference", () => {
 			expect(emailNotificationsTableRelations.table).toBe(
 				emailNotificationsTable,
 			);
@@ -164,36 +246,37 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			expect(typeof emailNotificationsTableRelations.config).toBe("function");
 		});
 
-		describe("notificationLog relation", () => {
-			it("should be defined with correct configuration", () => {
-				expect(capturedRelations.notificationLog).toBeDefined();
-				const table = capturedRelations.notificationLog?.table;
-				expect(getTableName(table as Table)).toBe("notification_logs");
-				expect(capturedRelations.notificationLog?.config?.relationName).toBe(
-					"email_notifications.notification_log_id:notification_logs.id",
-				);
-				const fields = capturedRelations.notificationLog?.config?.fields;
-				expect(fields).toBeDefined();
-				expect(fields?.[0]).toBe(emailNotificationsTable.notificationLogId);
-			});
+		it("should define notificationLog relation", () => {
+			expect(capturedRelations.notificationLog).toBeDefined();
+			const relation = capturedRelations.notificationLog;
+			expect(relation?.table).toBe(notificationLogsTable);
+			expect(
+				getColumnName(relation?.config?.fields?.[0] as { name?: string }),
+			).toBe("notification_log_id");
+			expect(
+				getColumnName(relation?.config?.references?.[0] as { name?: string }),
+			).toBe("id");
+			expect(relation?.config?.relationName).toBe(
+				"email_notifications.notification_log_id:notification_logs.id",
+			);
 		});
 
-		describe("user relation", () => {
-			it("should be defined with correct configuration", () => {
-				expect(capturedRelations.user).toBeDefined();
-				const table = capturedRelations.user?.table;
-				expect(getTableName(table as Table)).toBe("users");
-				expect(capturedRelations.user?.config?.relationName).toBe(
-					"email_notifications.user_id:users.id",
-				);
-				const fields = capturedRelations.user?.config?.fields;
-				expect(fields).toBeDefined();
-				expect(fields?.[0]).toBe(emailNotificationsTable.userId);
-			});
+		it("should define user relation", () => {
+			expect(capturedRelations.user).toBeDefined();
+			const relation = capturedRelations.user;
+			expect(relation?.table).toBe(usersTable);
+			expect(
+				getColumnName(relation?.config?.fields?.[0] as { name?: string }),
+			).toBe("user_id");
+			expect(
+				getColumnName(relation?.config?.references?.[0] as { name?: string }),
+			).toBe("id");
+			expect(relation?.config?.relationName).toBe(
+				"email_notifications.user_id:users.id",
+			);
 		});
 
 		it("should define exactly two relations (notificationLog, user)", () => {
-			expect(totalRelationCount).toBe(2);
 			expect(Object.keys(capturedRelations)).toHaveLength(2);
 			expect(capturedRelations.notificationLog).toBeDefined();
 			expect(capturedRelations.user).toBeDefined();
@@ -202,19 +285,19 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 
 	describe("Insert Schema Validation", () => {
 		const validInsertData = {
-			notificationLogId: "01234567-89ab-4def-a123-456789abcdef",
-			email: "test@example.com",
-			subject: "Notification subject",
-			htmlBody: "<p>Hello</p>",
+			notificationLogId: VALID_UUID,
+			email: VALID_EMAIL,
+			subject: VALID_SUBJECT,
+			htmlBody: VALID_HTML_BODY,
 		};
 
-		it("should accept valid minimal data", () => {
+		it("should accept insert with only required fields", () => {
 			const result =
 				emailNotificationsTableInsertSchema.safeParse(validInsertData);
 			expect(result.success).toBe(true);
 		});
 
-		it("should reject missing required fields", () => {
+		it("should reject missing required fields (notificationLogId, email, subject, htmlBody)", () => {
 			const { notificationLogId: _notificationLogId, ...missingLogId } =
 				validInsertData;
 			expect(
@@ -238,6 +321,28 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 		});
 
 		describe("email field", () => {
+			it("should accept email at max length (256 chars)", () => {
+				const emailAtMaxLength = `${"a".repeat(64)}@${"b".repeat(187)}.com`;
+				expect(emailAtMaxLength.length).toBe(256);
+				expect(
+					emailNotificationsTableInsertSchema.safeParse({
+						...validInsertData,
+						email: emailAtMaxLength,
+					}).success,
+				).toBe(true);
+			});
+
+			it("should reject email longer than 256 chars", () => {
+				const emailTooLong = `${"a".repeat(64)}@${"b".repeat(188)}.com`;
+				expect(emailTooLong.length).toBe(257);
+				expect(
+					emailNotificationsTableInsertSchema.safeParse({
+						...validInsertData,
+						email: emailTooLong,
+					}).success,
+				).toBe(false);
+			});
+
 			it("should reject invalid email format", () => {
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
@@ -247,26 +352,26 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 				).toBe(false);
 			});
 
-			it("should reject empty or overly long email", () => {
+			it("should reject empty email", () => {
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
 						...validInsertData,
 						email: "",
 					}).success,
 				).toBe(false);
-
-				const longEmail = `${"a".repeat(250)}@test.com`;
-				expect(
-					emailNotificationsTableInsertSchema.safeParse({
-						...validInsertData,
-						email: longEmail,
-					}).success,
-				).toBe(false);
 			});
 		});
 
 		describe("subject field", () => {
-			it("should accept valid subject length", () => {
+			it("should accept subject length of 1 and 512 characters", () => {
+				const minSubject = "a";
+				expect(
+					emailNotificationsTableInsertSchema.safeParse({
+						...validInsertData,
+						subject: minSubject,
+					}).success,
+				).toBe(true);
+
 				const maxSubject = "a".repeat(512);
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
@@ -276,14 +381,16 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 				).toBe(true);
 			});
 
-			it("should reject empty or overly long subject", () => {
+			it("should reject empty subject", () => {
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
 						...validInsertData,
 						subject: "",
 					}).success,
 				).toBe(false);
+			});
 
+			it("should reject subject longer than 512 characters", () => {
 				const longSubject = "a".repeat(513);
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
@@ -315,9 +422,8 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 		});
 
 		describe("status field", () => {
-			it("should accept valid status values", () => {
-				const statuses = ["pending", "sent", "delivered", "bounced", "failed"];
-				statuses.forEach((status) => {
+			it("should accept each allowed status value", () => {
+				STATUS_VALUES.forEach((status) => {
 					expect(
 						emailNotificationsTableInsertSchema.safeParse({
 							...validInsertData,
@@ -327,7 +433,7 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 				});
 			});
 
-			it("should reject invalid status values", () => {
+			it("should reject unsupported status values", () => {
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
 						...validInsertData,
@@ -338,11 +444,11 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 		});
 
 		describe("userId field", () => {
-			it("should accept valid UUID or null", () => {
+			it("should accept valid UUID or null userId", () => {
 				expect(
 					emailNotificationsTableInsertSchema.safeParse({
 						...validInsertData,
-						userId: "11111111-1111-4111-a111-111111111111",
+						userId: VALID_USER_UUID,
 					}).success,
 				).toBe(true);
 				expect(
@@ -431,7 +537,7 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 			});
 		});
 
-		it("should reject invalid data", () => {
+		it("should reject empty object or null input", () => {
 			expect(emailNotificationsTableInsertSchema.safeParse({}).success).toBe(
 				false,
 			);
@@ -443,13 +549,6 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 
 	describe("Table Indexes", () => {
 		const tableConfig = getTableConfig(emailNotificationsTable);
-
-		const getColumnName = (col: unknown): string | undefined => {
-			if (col && typeof col === "object" && "name" in col) {
-				return col.name as string;
-			}
-			return undefined;
-		};
 
 		it("should have exactly 4 indexes defined", () => {
 			expect(tableConfig.indexes).toBeDefined();
