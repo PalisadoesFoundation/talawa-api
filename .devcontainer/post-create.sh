@@ -1,35 +1,63 @@
 #!/bin/sh
 set -eu
 
-# Preflight checks
-for cmd in fnm corepack pnpm; do
+echo "[devcontainer] Starting post-create setup..."
+
+# --------------------------------------------------------------------
+# Preflight: required base tools
+# --------------------------------------------------------------------
+for cmd in fnm corepack; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "Error: Required command '$cmd' is not installed." >&2
+    echo "[ERROR] Required command '$cmd' is not installed." >&2
     exit 1
   fi
 done
 
-# Create directories if they don't exist
+# --------------------------------------------------------------------
+# Node.js setup via fnm (non-interactive)
+# --------------------------------------------------------------------
+fnm install
+fnm use
+
+# --------------------------------------------------------------------
+# Corepack + pnpm (NON-INTERACTIVE, PINNED)
+# Repo pins pnpm to 10.26.1 via packageManager
+# --------------------------------------------------------------------
+echo "[devcontainer] Enabling corepack..."
+corepack enable
+
+echo "[devcontainer] Activating pinned pnpm version (10.26.1)..."
+corepack prepare pnpm@10.26.1 --activate
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "[ERROR] pnpm is not available after corepack setup." >&2
+  exit 1
+fi
+
+pnpm --version
+
+# --------------------------------------------------------------------
+# Workspace directories
+# --------------------------------------------------------------------
 mkdir -p .pnpm-store node_modules
 
-# Fix permissions
-# We check writability first to avoid unnecessary sudo usage.
-# If chown fails on a non-writable directory, we fail fast to prevent hidden issues.
+# --------------------------------------------------------------------
+# Permissions (fail fast if broken)
+# --------------------------------------------------------------------
 if [ ! -w ".pnpm-store" ] || [ ! -w "node_modules" ]; then
-  # Use current user's UID:GID for ownership to ensure portability
   if ! sudo -n chown -R "$(id -u):$(id -g)" .pnpm-store node_modules; then
     echo "
-[ERROR] 'chown' failed for .pnpm-store or node_modules.
-Directories are not writable and sudo failed to change ownership to $(id -u):$(id -g).
-Please fix ownership permissions via Docker Compose volumes options or ensure
-the container user has write access.
+[ERROR] Failed to fix permissions for pnpm directories.
+Please ensure Docker volumes are writable by the container user.
 " >&2
     exit 1
   fi
 fi
 
-# Install dependencies and tools
-fnm install
-fnm use
-corepack enable
-pnpm install
+# --------------------------------------------------------------------
+# Install dependencies
+# --------------------------------------------------------------------
+echo "[devcontainer] Installing dependencies..."
+pnpm install --frozen-lockfile
+
+echo "[devcontainer] Post-create setup complete."
