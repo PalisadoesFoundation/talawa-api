@@ -2,6 +2,7 @@
 
 ARG API_GID=1000
 ARG API_UID=1000
+ARG PNPM_VERSION=10.28.1
 
 # https://github.com/devcontainers/templates/tree/main/src/debian
 # This build stage sets up and switches to the `talawa` non root user, sets up fnm 
@@ -49,10 +50,11 @@ ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 RUN /home/talawa/.local/share/fnm/fnm install 24.12.0 && /home/talawa/.local/share/fnm/fnm default 24.12.0
 # Enable corepack for pnpm management
 RUN corepack enable
-RUN corepack install -g pnpm@10.26.1
+RUN corepack install -g pnpm@${PNPM_VERSION}
 WORKDIR /home/talawa/api
 
 FROM node:24.12.0-bookworm-slim AS base
+ARG PNPM_VERSION
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
@@ -71,7 +73,7 @@ USER talawa
 WORKDIR /home/talawa/api
 
 # Install pnpm for talawa user (corepack already enabled at system level)
-RUN corepack install -g pnpm@10.26.1
+RUN corepack install -g pnpm@${PNPM_VERSION}
 
 FROM base AS non_production
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
