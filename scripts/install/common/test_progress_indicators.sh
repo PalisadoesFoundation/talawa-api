@@ -48,8 +48,30 @@ print_section "Test 3: Combined timing and spinner"
 info "Running a task with both timer and spinner..."
 with_timer "Complex operation" with_spinner "Working" sleep 2
 
-# Test 4: Timing summary
-print_timing_summary
+# Test 4: Timing summary with output verification
+print_section "Test 4: Timing summary"
+info "Verifying timing summary output..."
+
+# Capture timing summary output
+output=$(print_timing_summary 2>&1)
+
+# Verify the output contains expected entries
+if ! echo "$output" | grep -q '\[FAIL\] Failing task'; then
+  error "Timing summary missing failure entry for 'Failing task'"
+  exit 1
+fi
+
+if ! echo "$output" | grep -q '\[OK\] Quick task'; then
+  error "Timing summary missing success entry for 'Quick task'"
+  exit 1
+fi
+
+if ! echo "$output" | grep -q 'Total time:'; then
+  error "Timing summary missing total time"
+  exit 1
+fi
+
+success "Timing summary output verification passed"
 
 # Test 5: Installation summary (success case)
 print_section "Test 5: Installation summary (success)"

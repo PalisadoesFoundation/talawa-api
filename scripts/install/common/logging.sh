@@ -78,7 +78,7 @@ with_timer() {
   set +e
   "$@"
   exit_code=$?
-  [[ $errexit == *e* ]] && set -e
+  case "$errexit" in *e*) set -e ;; esac
   
   t1=$(date +%s)
   elapsed=$((t1 - t0))
@@ -116,8 +116,10 @@ with_spinner() {
     sleep 0.2
   done
   
-  # Clear spinner line
-  printf "\r"
+  # Clear spinner line completely (overwrite with spaces)
+  # Calculate max line length: "[INFO] " (7) + message + " " (1) + spinner char (1) + padding (3)
+  local line_length=$((${#msg} + 12))
+  printf "\r%-*s\r" "$line_length" ""
   
   # Wait for process and capture exit code
   local exit_code errexit
@@ -125,7 +127,7 @@ with_spinner() {
   set +e
   wait "$pid"
   exit_code=$?
-  [[ $errexit == *e* ]] && set -e
+  case "$errexit" in *e*) set -e ;; esac
   
   if [ $exit_code -eq 0 ]; then
     success "$msg"
