@@ -1,20 +1,21 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
+import { eventsTable } from "~/src/drizzle/tables/events";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
-	Mutation_deleteOrganization,
 	Query_signIn,
 } from "../documentNodes";
 
 describe("Mutation createEvent - Performance Metrics", () => {
 	let authToken: string;
-	let orgId: string | undefined;
-	let userId: string | undefined;
+	const createdEventIds: string[] = [];
+	const createdOrgIds: string[] = [];
 
 	beforeEach(async () => {
 		// Sign in as admin to get auth token
@@ -27,75 +28,60 @@ describe("Mutation createEvent - Performance Metrics", () => {
 			},
 		});
 		assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-		assertToBeNonNullish(signInResult.data.signIn?.user?.id);
 		authToken = signInResult.data.signIn.authenticationToken;
-		userId = signInResult.data.signIn.user.id;
-
-		// Create an organization for events
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						name: `Test Org ${faker.string.ulid()}`,
-						description: "Test organization for events",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createOrgResult.data.createOrganization?.id);
-		orgId = createOrgResult.data.createOrganization.id;
-
-		// Create membership for the user
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					memberId: userId,
-					organizationId: orgId,
-					role: "administrator",
-				},
-			},
-		});
 	});
 
 	afterEach(async () => {
-		// Clean up created organization
-		if (orgId) {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						id: orgId,
-					},
-				},
-			});
-			orgId = undefined;
+		// Clean up created events
+		for (const eventId of createdEventIds) {
+			try {
+				await server.drizzleClient
+					.delete(eventsTable)
+					.where(eq(eventsTable.id, eventId));
+			} catch (_error) {
+				// Ignore cleanup errors - event might already be deleted
+			}
 		}
+		createdEventIds.length = 0;
+
+		// Clean up created organizations
+		for (const orgId of createdOrgIds) {
+			try {
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, orgId));
+			} catch (_error) {
+				// Ignore cleanup errors - organization might already be deleted
+			}
+		}
+		createdOrgIds.length = 0;
 	});
 
 	describe("metrics collection", () => {
 		it("should record mutation:createEvent metric on successful mutation", async () => {
-			// Assert org was created - fail fast if setup failed
-			assertToBeNonNullish(orgId);
+			// Create organization first
+			const orgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							name: `Test Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(orgResult.data.createOrganization?.id);
+			const orgId = orgResult.data.createOrganization.id;
+			createdOrgIds.push(orgId);
 
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
 				(snapshot) => snapshot.ops["mutation:createEvent"] !== undefined,
 			);
-
-			// Future date for event
-			const startAt = new Date();
-			startAt.setDate(startAt.getDate() + 1);
-			const endAt = new Date(startAt);
-			endAt.setHours(endAt.getHours() + 2);
 
 			// Execute mutation
 			const result = await mercuriusClient.mutate(Mutation_createEvent, {
@@ -105,10 +91,11 @@ describe("Mutation createEvent - Performance Metrics", () => {
 				variables: {
 					input: {
 						organizationId: orgId,
-						name: "Test Event",
-						description: "Test event for metrics",
-						startAt: startAt.toISOString(),
-						endAt: endAt.toISOString(),
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event description",
+						startAt: new Date(Date.now() + 3600000).toISOString(),
+						endAt: new Date(Date.now() + 7200000).toISOString(),
+						location: "Test Location",
 					},
 				},
 			});
@@ -116,6 +103,7 @@ describe("Mutation createEvent - Performance Metrics", () => {
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data.createEvent?.id);
+			createdEventIds.push(result.data.createEvent.id);
 
 			const snapshot = await snapshotPromise;
 			const op = snapshot.ops["mutation:createEvent"];
@@ -124,34 +112,30 @@ describe("Mutation createEvent - Performance Metrics", () => {
 			expect(op.ms).toBeGreaterThanOrEqual(0);
 		});
 
-		it("should record mutation:createEvent metric on authentication failure", async () => {
+		it("should record mutation:createEvent metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
 				(snapshot) => snapshot.ops["mutation:createEvent"] !== undefined,
 			);
 
-			// Future date for event
-			const startAt = new Date();
-			startAt.setDate(startAt.getDate() + 1);
-			const endAt = new Date(startAt);
-			endAt.setHours(endAt.getHours() + 2);
-
 			// Execute mutation without auth token (should fail)
 			const result = await mercuriusClient.mutate(Mutation_createEvent, {
 				variables: {
 					input: {
-						organizationId: orgId ?? "fake-org-id",
-						name: "Test Event",
-						description: "Test event",
-						startAt: startAt.toISOString(),
-						endAt: endAt.toISOString(),
+						organizationId: faker.string.uuid(),
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event description",
+						startAt: new Date(Date.now() + 3600000).toISOString(),
+						endAt: new Date(Date.now() + 7200000).toISOString(),
+						location: "Test Location",
 					},
 				},
 			});
 
-			// Verify mutation failed
+			// Verify mutation failed with unauthenticated error
 			expect(result.data.createEvent).toBeNull();
 			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 
 			// Even on failure, metrics should be recorded
 			const snapshot = await snapshotPromise;

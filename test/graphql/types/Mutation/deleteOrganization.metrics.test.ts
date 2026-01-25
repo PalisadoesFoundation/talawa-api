@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -28,8 +28,8 @@ describe("Mutation deleteOrganization - Performance Metrics", () => {
 
 	describe("metrics collection", () => {
 		it("should record mutation:deleteOrganization metric on successful mutation", async () => {
-			// Create an organization to delete
-			const createOrgResult = await mercuriusClient.mutate(
+			// Create organization first
+			const createResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
 					headers: {
@@ -37,31 +37,35 @@ describe("Mutation deleteOrganization - Performance Metrics", () => {
 					},
 					variables: {
 						input: {
-							name: `Test Org ${faker.string.ulid()}`,
-							description: "Test organization for deletion",
+							name: `Test Org ${faker.string.uuid()}`,
+							countryCode: "us",
 						},
 					},
 				},
 			);
-			assertToBeNonNullish(createOrgResult.data.createOrganization?.id);
-			const orgId = createOrgResult.data.createOrganization.id;
+			assertToBeNonNullish(createResult.data.createOrganization?.id);
+			const orgId = createResult.data.createOrganization.id;
 
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:deleteOrganization"] !== undefined,
+				(snapshot) =>
+					snapshot.ops["mutation:deleteOrganization"] !== undefined,
 			);
 
-			// Execute delete mutation
-			const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						id: orgId,
+			// Execute mutation
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: orgId,
+						},
 					},
 				},
-			});
+			);
 
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
@@ -74,24 +78,29 @@ describe("Mutation deleteOrganization - Performance Metrics", () => {
 			expect(op.ms).toBeGreaterThanOrEqual(0);
 		});
 
-		it("should record mutation:deleteOrganization metric on authentication failure", async () => {
+		it("should record mutation:deleteOrganization metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:deleteOrganization"] !== undefined,
+				(snapshot) =>
+					snapshot.ops["mutation:deleteOrganization"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
-			const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				variables: {
-					input: {
-						id: "fake-org-id",
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					variables: {
+						input: {
+							id: faker.string.uuid(),
+						},
 					},
 				},
-			});
+			);
 
-			// Verify mutation failed
+			// Verify mutation failed with unauthenticated error
 			expect(result.data.deleteOrganization).toBeNull();
 			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 
 			// Even on failure, metrics should be recorded
 			const snapshot = await snapshotPromise;

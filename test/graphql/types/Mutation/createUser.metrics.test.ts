@@ -30,14 +30,18 @@ describe("Mutation createUser - Performance Metrics", () => {
 	afterEach(async () => {
 		// Clean up any created users if needed
 		if (createdUserId) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: { id: createdUserId },
-				},
-			});
+			try {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: { id: createdUserId },
+					},
+				});
+			} catch (_error) {
+				// Ignore cleanup errors - user might already be deleted
+			}
 			createdUserId = undefined;
 		}
 	});

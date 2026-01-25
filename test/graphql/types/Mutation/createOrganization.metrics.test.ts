@@ -1,17 +1,18 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
-	Mutation_deleteOrganization,
 	Query_signIn,
 } from "../documentNodes";
 
 describe("Mutation createOrganization - Performance Metrics", () => {
 	let authToken: string;
-	let createdOrgId: string | undefined;
+	const createdOrgIds: string[] = [];
 
 	beforeEach(async () => {
 		// Sign in as admin to get auth token
@@ -28,46 +29,47 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 	});
 
 	afterEach(async () => {
-		// Clean up created organization
-		if (createdOrgId) {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						id: createdOrgId,
-					},
-				},
-			});
-			createdOrgId = undefined;
+		// Clean up any created organizations
+		for (const orgId of createdOrgIds) {
+			try {
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, orgId));
+			} catch (_error) {
+				// Ignore cleanup errors - organization might already be deleted
+			}
 		}
+		createdOrgIds.length = 0;
 	});
 
 	describe("metrics collection", () => {
 		it("should record mutation:createOrganization metric on successful mutation", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:createOrganization"] !== undefined,
+				(snapshot) =>
+					snapshot.ops["mutation:createOrganization"] !== undefined,
 			);
 
 			// Execute mutation
-			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						name: `Test Org ${faker.string.ulid()}`,
-						description: "Test organization for metrics",
+			const result = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							name: `Test Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
 					},
 				},
-			});
+			);
 
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data.createOrganization?.id);
-			createdOrgId = result.data.createOrganization.id;
+			createdOrgIds.push(result.data.createOrganization.id);
 
 			const snapshot = await snapshotPromise;
 			const op = snapshot.ops["mutation:createOrganization"];
@@ -76,23 +78,27 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			expect(op.ms).toBeGreaterThanOrEqual(0);
 		});
 
-		it("should record mutation:createOrganization metric on authentication failure", async () => {
+		it("should record mutation:createOrganization metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:createOrganization"] !== undefined,
+				(snapshot) =>
+					snapshot.ops["mutation:createOrganization"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
-			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
-				variables: {
-					input: {
-						name: `Test Org ${faker.string.ulid()}`,
-						description: "Test organization",
+			const result = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					variables: {
+						input: {
+							name: `Test Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
 					},
 				},
-			});
+			);
 
-			// Verify mutation failed
+			// Verify mutation failed with unauthenticated error
 			expect(result.data.createOrganization).toBeNull();
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");

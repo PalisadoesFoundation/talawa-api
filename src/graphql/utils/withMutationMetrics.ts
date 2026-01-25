@@ -1,12 +1,11 @@
-import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import type { GraphQLContext } from "~/src/graphql/context";
 
 /**
  * Context type containing an optional performance tracker.
  * Used for mutation instrumentation with graceful degradation.
+ * Accepts GraphQLContext or any object with optional perf property.
  */
-export interface MutationContext {
-	perf?: PerformanceTracker;
-}
+export type MutationContext = Pick<GraphQLContext, "perf">;
 
 /**
  * Executes a mutation with performance tracking.

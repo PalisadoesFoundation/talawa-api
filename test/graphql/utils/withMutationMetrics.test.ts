@@ -1,8 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeMutation } from "~/src/graphql/utils/withMutationMetrics";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 describe("withMutationMetrics", () => {
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
+
 	describe("executeMutation", () => {
 		it("should track mutation timing when perf is available", async () => {
 			const perf = createPerformanceTracker();
@@ -130,7 +134,7 @@ describe("withMutationMetrics", () => {
 
 			expect(op).toBeDefined();
 			expect(op?.ms).toBeDefined();
-			expect(op?.ms).toBeGreaterThanOrEqual(0);
+			expect(op?.ms).toBeGreaterThanOrEqual(9);
 		});
 	});
 });
