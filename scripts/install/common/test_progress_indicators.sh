@@ -9,6 +9,16 @@ source "${SCRIPT_DIR}/logging.sh"
 
 print_banner "Testing Progress Indicators"
 
+# Test 0: Timing summary with no data
+print_section "Test 0: Timing summary (no data)"
+info "Verifying timing summary when no data is recorded..."
+empty_output=$(print_timing_summary 2>&1)
+if ! echo "$empty_output" | grep -q 'No timing data recorded.'; then
+  error "Timing summary should report no data recorded"
+  exit 1
+fi
+success "Empty timing summary output verification passed"
+
 # Test 1: with_timer
 print_section "Test 1: with_timer"
 info "Running a 2-second task with timing..."
