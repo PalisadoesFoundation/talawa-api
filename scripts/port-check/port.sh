@@ -43,7 +43,7 @@ for port in "${ports[@]}"; do
  # Check for Linux systems
   if [[ "$OS" == "Linux" ]]; then
    # Using lsof to check port usage
-    usage=$(sudo lsof -i :$port)
+    usage=$(sudo lsof -i :"$port")
     if [ -n "$usage" ]; then
       echo " Port $port is in use locally:"
       echo "$usage"
