@@ -933,4 +933,6 @@ jobs:
 
       - name: cleanup devcontainer
         if: always()
+        env:
+          COMPOSE_PROJECT_NAME: talawa-api-cli
         run: docker compose down
