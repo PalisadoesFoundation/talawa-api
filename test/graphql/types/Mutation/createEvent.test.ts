@@ -1744,7 +1744,7 @@ suite("Mutation field createEvent", () => {
 	});
 
 	suite("Notification Flush Error Path Coverage", () => {
-		test("logs and continues when notification context is null", async () => {
+		test("successfully creates event with notification service enabled", async () => {
 			const organizationId = await createTestOrganization();
 
 			// This tests when ctx.notification is falsy (null/undefined) and the optional chaining prevents errors
@@ -1761,22 +1761,40 @@ suite("Mutation field createEvent", () => {
 			);
 		});
 
-		test("handles case where notification optional chaining short-circuits", async () => {
+		test("successfully creates event when notification service is unavailable", async () => {
 			const organizationId = await createTestOrganization();
 
-			// Multiple non-recurring event creations to exercise different notification paths
-			const result1 = await createEvent({
-				input: { ...baseEventInput(organizationId), name: "Event 1" },
-			});
+			// Mock NotificationService to simulate it being unavailable (enqueue throws error)
+			// The optional chaining in ctx.notification?.enqueueEventCreated() should prevent errors
+			const NotificationService = await import(
+				"~/src/services/notification/NotificationService"
+			);
+			const mockEnqueue = vi
+				.spyOn(NotificationService.default.prototype, "enqueueEventCreated")
+				.mockImplementationOnce(() => {
+					throw new Error("Notification service unavailable");
+				});
 
-			const result2 = await createEvent({
-				input: { ...baseEventInput(organizationId), name: "Event 2" },
-			});
+			try {
+				// Despite notification service failure, createEvent should succeed
+				// because optional chaining short-circuits the error
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
 
-			expect(result1.errors).toBeUndefined();
-			expect(result2.errors).toBeUndefined();
-			expect(result1.data?.createEvent?.name).toBe("Event 1");
-			expect(result2.data?.createEvent?.name).toBe("Event 2");
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						name: "Test Event",
+					}),
+				);
+
+				// Verify that notification enqueue was attempted but didn't break the mutation
+				expect(mockEnqueue).toHaveBeenCalled();
+			} finally {
+				mockEnqueue.mockRestore();
+			}
 		});
 	});
 
