@@ -496,8 +496,6 @@ builder.mutationField("createEvent", (t) =>
 						// RETURNING guarantees createdEventAttachments.length === attachments.length,
 						// so pairs[i].fileUpload is always defined
 
-						// Track successfully uploaded attachments for cleanup on partial failure
-						const uploaded: string[] = [];
 						try {
 							const uploadResults = await Promise.allSettled(
 								pairs.map(({ attachment, fileUpload }) =>
@@ -515,28 +513,33 @@ builder.mutationField("createEvent", (t) =>
 								),
 							);
 
-							// Check if any uploads failed
+							// Collect all successfully uploaded object names
+							const uploadedNames: string[] = [];
+							let firstError: Error | undefined;
+
 							for (let i = 0; i < uploadResults.length; i++) {
 								const result = uploadResults[i];
 								const pair = pairs[i];
-								if (result?.status === "fulfilled") {
-									if (pair) {
-										uploaded.push(pair.attachment.name);
-									}
-								} else if (result?.status === "rejected") {
-									// At least one upload failed, clean up successfully uploaded files
-									await Promise.all(
-										uploaded.map((name) =>
-											ctx.minio.client.removeObject(ctx.minio.bucketName, name),
-										),
-									);
-									// Rethrow the original error
-									throw result.reason;
+
+								if (result?.status === "fulfilled" && pair) {
+									uploadedNames.push(pair.attachment.name);
+								} else if (result?.status === "rejected" && !firstError) {
+									firstError = result.reason;
 								}
+							}
+
+							// If any uploads failed, clean up all successfully uploaded files
+							if (firstError) {
+								await Promise.all(
+									uploadedNames.map((name) =>
+										ctx.minio.client.removeObject(ctx.minio.bucketName, name),
+									),
+								);
+								throw firstError;
 							}
 						} catch (e) {
 							ctx.log.error(
-								{ error: e, uploadedAttachments: uploaded },
+								{ error: e },
 								"Error uploading event attachments to MinIO",
 							);
 							throw e;
