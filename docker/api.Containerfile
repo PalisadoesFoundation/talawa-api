@@ -11,6 +11,7 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm AS devcontainer
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
 ARG API_UID
+ARG PNPM_VERSION
 # For the subsequent shell commands makes the shell exit immediately if any command exits with a non zero exit code, makes the shell consider the exit code of the first command amongst the commands connected using the pipe operator `|` that exits with a non zero exit code for it to exit immediately(by default the shell considers the exit code of the last command amongst the commands connected with a pipe operator `|` for it to determine whether the operation was successful), tells the shell that following strings passed to it are commands to be executed and not paths to script files. 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
