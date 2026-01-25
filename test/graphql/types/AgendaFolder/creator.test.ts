@@ -178,7 +178,32 @@ describe("AgendaFolder.creator resolver", () => {
 		const result = await resolveCreator(mockAgendaFolder, {}, ctx);
 		expect(result).toEqual(creatorUser);
 	});
+	it("should allow access if user is global administrator", async () => {
+		const currentUser = {
+			id: "user-123",
+			role: "administrator",
+		};
 
+		const creatorUser = {
+			id: "creator-123",
+			role: "member",
+		};
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(currentUser)
+			.mockResolvedValueOnce(creatorUser);
+
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+			startAt: new Date(),
+			organization: {
+				countryCode: "US",
+				membershipsWhereOrganization: [],
+			},
+		});
+
+		const result = await resolveCreator(mockAgendaFolder, {}, ctx);
+		expect(result).toEqual(creatorUser);
+	});
 	it("should allow access if user is organization administrator", async () => {
 		const currentUser = {
 			id: "user-123",
