@@ -22,7 +22,11 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 > `optional` **excludeInstanceIds**: `string`[]
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L28)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L38)
+
+Optional array of instance IDs to exclude from the results.
+Useful for filtering out specific instances that should not be returned,
+such as instances that have already been processed or displayed.
 
 ***
 
@@ -38,9 +42,10 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 > `optional` **limit**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L26)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L27)
 
 Optional maximum number of instances to return (defaults to 1000).
+Must be a positive integer.
 
 ***
 
@@ -48,7 +53,10 @@ Optional maximum number of instances to return (defaults to 1000).
 
 > `optional` **offset**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L27)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L32)
+
+Optional number of instances to skip (defaults to 0).
+Must be a non-negative integer.
 
 ***
 

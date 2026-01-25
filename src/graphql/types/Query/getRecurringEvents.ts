@@ -175,21 +175,16 @@ builder.queryField("getRecurringEvents", (t) =>
 					},
 				);
 
-				// Transform recurring instances to include attachments (empty for instances)
-				const eventsWithAttachments = recurringInstances.map((instance) => ({
-					...instance,
-					attachments: [], // Recurring event instances don't have direct attachments
-				}));
-
 				ctx.log.debug(
 					{
 						baseRecurringEventId,
-						instanceCount: eventsWithAttachments.length,
+						instanceCount: recurringInstances.length,
 					},
 					"Retrieved recurring events by base ID",
 				);
 
-				return eventsWithAttachments;
+				// Return instances with inherited attachments from base template
+				return recurringInstances;
 			} catch (error) {
 				ctx.log.error(
 					{

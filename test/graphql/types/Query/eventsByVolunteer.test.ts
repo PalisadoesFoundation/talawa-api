@@ -2272,17 +2272,17 @@ suite("Query field eventsByVolunteer", () => {
 			// Local query to fetch attachments
 			// Verify we can retrieve attachment details
 			const Query_eventsByVolunteerWithAttachments = gql(`
-				query eventsByVolunteer($userId: ID!) {
-					eventsByVolunteer(userId: $userId) {
-						id
-						name
-						attachments {
-							mimeType
-							url
-						}
+			query Query_eventsByVolunteerWithAttachments($userId: ID!) {
+				eventsByVolunteer(userId: $userId) {
+					id
+					name
+					attachments {
+						mimeType
+						url
 					}
 				}
-			`);
+			}
+		`);
 
 			const result = await mercuriusClient.query(
 				Query_eventsByVolunteerWithAttachments,

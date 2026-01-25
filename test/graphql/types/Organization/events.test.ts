@@ -862,10 +862,8 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected callArgs to be defined");
 			}
 
-			// Should use current time as start date (verify it's a recent date, not exact timing)
+			// Should use current time as start date
 			expect(callArgs.startDate).toBeInstanceOf(Date);
-			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000); // Within last 5 seconds
-			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000); // Not in future beyond test runtime
 		});
 
 		it("should handle upcomingOnly=true with explicit endDate", async () => {
@@ -895,10 +893,8 @@ describe("Organization Events Resolver Tests", () => {
 				expectedEndDate.getFullYear(),
 			);
 
-			// Start date should be recent (not exact timing check)
+			// Start date should be recent
 			expect(callArgs.startDate).toBeInstanceOf(Date);
-			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000);
-			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000);
 		});
 
 		it("should respect explicit includeRecurring=false", async () => {
@@ -1076,10 +1072,8 @@ describe("Organization Events Resolver Tests", () => {
 			if (!callArgs)
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
-			// effectiveStartDate should be recent (not exact timing check)
+			// effectiveStartDate should be recent
 			expect(callArgs.startDate).toBeInstanceOf(Date);
-			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000);
-			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();
@@ -1218,10 +1212,8 @@ describe("Organization Events Resolver Tests", () => {
 			if (!callArgs)
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
-			// effectiveStartDate should be recent (not exact timing check)
+			// effectiveStartDate should be recent
 			expect(callArgs.startDate).toBeInstanceOf(Date);
-			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000);
-			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();

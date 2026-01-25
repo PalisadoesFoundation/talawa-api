@@ -67,8 +67,8 @@ builder.queryField("eventsByAdmin", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
-			const limit = parsedArgs.data.limit ?? 100;
-			const offset = parsedArgs.data.offset ?? 0;
+			const limit = parsedArgs.data.limit;
+			const offset = parsedArgs.data.offset;
 
 			// Get current user for authorization
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({

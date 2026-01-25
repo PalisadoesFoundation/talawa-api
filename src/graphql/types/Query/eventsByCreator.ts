@@ -148,18 +148,22 @@ builder.queryField("eventsByCreator", (t) =>
 
 				// Step 3: Fetch instances for these templates (with windowed limit)
 				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
+				let recurringInstancesFetched = 0;
 
-				const instances = await getRecurringEventInstancesByBaseIds(
-					baseRecurringEventIds,
-					ctx.drizzleClient,
-					ctx.log,
-					{ limit: effectiveWindow, includeCancelled: false },
-				);
+				if (baseRecurringEventIds.length > 0) {
+					const instances = await getRecurringEventInstancesByBaseIds(
+						baseRecurringEventIds,
+						ctx.drizzleClient,
+						ctx.log,
+						{ limit: effectiveWindow, includeCancelled: false },
+					);
 
-				// Transform instances to unified format
-				const activeInstances = instances.map(mapRecurringInstanceToEvent);
+					// Transform instances to unified format
+					const activeInstances = instances.map(mapRecurringInstanceToEvent);
+					recurringInstancesFetched = activeInstances.length;
 
-				allEvents.push(...activeInstances);
+					allEvents.push(...activeInstances);
+				}
 
 				// Sort by start time and ID for stable sort
 				allEvents.sort((a, b) => {
@@ -180,7 +184,7 @@ builder.queryField("eventsByCreator", (t) =>
 						totalEventsFetched: allEvents.length,
 						paginatedCount: paginatedEvents.length,
 						standaloneFetched: standaloneEvents.length,
-						recurringInstancesFetched: activeInstances.length,
+						recurringInstancesFetched,
 						effectiveWindow,
 					},
 					"Retrieved events by creator",

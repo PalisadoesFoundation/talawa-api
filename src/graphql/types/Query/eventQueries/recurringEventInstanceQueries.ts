@@ -22,9 +22,19 @@ export interface GetRecurringEventInstancesInput {
 	includeCancelled?: boolean;
 	/**
 	 * Optional maximum number of instances to return (defaults to 1000).
+	 * Must be a positive integer.
 	 */
 	limit?: number;
+	/**
+	 * Optional number of instances to skip (defaults to 0).
+	 * Must be a non-negative integer.
+	 */
 	offset?: number;
+	/**
+	 * Optional array of instance IDs to exclude from the results.
+	 * Useful for filtering out specific instances that should not be returned,
+	 * such as instances that have already been processed or displayed.
+	 */
 	excludeInstanceIds?: string[];
 }
 
@@ -52,6 +62,19 @@ export async function getRecurringEventInstancesInDateRange(
 		offset,
 		excludeInstanceIds,
 	} = input;
+
+	// Defensive validation for limit and offset parameters
+	if (limit !== undefined && limit < 1) {
+		throw new Error(
+			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
+		);
+	}
+
+	if (offset !== undefined && offset < 0) {
+		throw new Error(
+			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
+		);
+	}
 
 	try {
 		// Step 1: Get recurring event instances for the date range
