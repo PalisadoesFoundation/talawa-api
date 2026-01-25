@@ -80,6 +80,11 @@ if ! echo "$output" | grep -q '\[OK\] Quick task'; then
   exit 1
 fi
 
+if ! echo "$output" | grep -q '\[OK\] Complex operation'; then
+  error "Timing summary missing success entry for 'Complex operation'"
+  exit 1
+fi
+
 if ! echo "$output" | grep -q 'Total time:'; then
   error "Timing summary missing total time"
   exit 1
