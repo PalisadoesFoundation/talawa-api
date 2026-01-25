@@ -1995,5 +1995,226 @@ suite("Query field eventsByAttendee", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.eventsByAttendee).toEqual([]);
 		});
+
+		test("should not fall back to base template when instances exist outside pagination window", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Pagination Window Test Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create Template B with instances in the near future (starting in 1 day, daily for 5 days)
+			const templateBResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Template B - Near Future",
+							description: "Template with near future instances",
+							organizationId: orgId,
+							startAt: new Date(
+								Date.now() + 1 * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							endAt: new Date(
+								Date.now() + 1 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000,
+							).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 5,
+							},
+						},
+					},
+				},
+			);
+			const templateBId = templateBResult.data?.createEvent?.id;
+			assertToBeNonNullish(templateBId);
+
+			// Create Template A with instances far in the future (starting in 100 days, daily for 5 days)
+			const templateAResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Template A - Far Future",
+							description: "Template with far future instances",
+							organizationId: orgId,
+							startAt: new Date(
+								Date.now() + 100 * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							endAt: new Date(
+								Date.now() + 100 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000,
+							).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 5,
+							},
+						},
+					},
+				},
+			);
+			const templateAId = templateAResult.data?.createEvent?.id;
+			assertToBeNonNullish(templateAId);
+
+			// Volunteer admin for both templates to generate instances
+			const volunteerBResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: templateBId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(volunteerBResult.data?.createEventVolunteer?.id);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: volunteerBResult.data.createEventVolunteer.id,
+					data: { hasAccepted: true },
+				},
+			});
+
+			const volunteerAResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: templateAId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(volunteerAResult.data?.createEventVolunteer?.id);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: volunteerAResult.data.createEventVolunteer.id,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Register user for BOTH templates
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						eventId: templateBId,
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						eventId: templateAId,
+					},
+				},
+			});
+
+			// Query with pagination that only covers Template B's instances (limit 5)
+			const firstPageResult = await mercuriusClient.query(
+				Query_eventsByAttendee,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId, limit: 5, offset: 0 },
+				},
+			);
+
+			expect(firstPageResult.errors).toBeUndefined();
+			const firstPageEvents = firstPageResult.data?.eventsByAttendee as Array<{
+				id: string;
+				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}>;
+			assertToBeNonNullish(firstPageEvents);
+
+			// Should return 5 instances from Template B
+			expect(firstPageEvents.length).toBe(5);
+			expect(
+				firstPageEvents.every((e) => e.baseRecurringEventId === templateBId),
+			).toBe(true);
+			expect(firstPageEvents.every((e) => e.isGenerated === true)).toBe(true);
+
+			// CRITICAL: Template A should NOT appear as its base event fallback
+			// This is the bug we're fixing - templates with instances outside the window
+			// should not fall back to their base event
+			const hasTemplateABase = firstPageEvents.some(
+				(e) => e.id === templateAId,
+			);
+			expect(hasTemplateABase).toBe(false);
+
+			// Query next page to verify Template A instances appear later (not the base template)
+			const laterPageResult = await mercuriusClient.query(
+				Query_eventsByAttendee,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId, limit: 10, offset: 5 },
+				},
+			);
+
+			expect(laterPageResult.errors).toBeUndefined();
+			const laterPageEvents = laterPageResult.data?.eventsByAttendee as Array<{
+				id: string;
+				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}>;
+			assertToBeNonNullish(laterPageEvents);
+
+			// Eventually we should get Template A instances (generated instances, not the base template)
+			const hasTemplateAInstances = laterPageEvents.some(
+				(e) => e.baseRecurringEventId === templateAId && e.isGenerated === true,
+			);
+			expect(hasTemplateAInstances).toBe(true);
+
+			// The base template itself should never appear
+			const hasTemplateABaseInLaterPage = laterPageEvents.some(
+				(e) => e.id === templateAId && e.isGenerated !== true,
+			);
+			expect(hasTemplateABaseInLaterPage).toBe(false);
+		});
 	});
 });

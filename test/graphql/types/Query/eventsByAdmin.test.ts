@@ -604,7 +604,7 @@ suite("Query field eventsByAdmin", () => {
 			const recurringEvents = events.filter(
 				(e) => e.name === "Admin Recurring Tomorrow Event",
 			);
-			expect(recurringEvents.length).toBeGreaterThanOrEqual(1);
+			expect(recurringEvents.length).toBeGreaterThanOrEqual(3);
 
 			// Should have at least the base template or generated instances
 			const hasTemplateOrInstance = recurringEvents.some(

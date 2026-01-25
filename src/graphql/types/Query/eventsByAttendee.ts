@@ -192,6 +192,28 @@ builder.queryField("eventsByAttendee", (t) =>
 
 				// If we have templates, fetch their instance references
 				if (recurringTemplateIds.length > 0) {
+					// First, check globally which templates have ANY active instances
+					// This prevents incorrect fallback for templates with instances outside the pagination window
+					const globalTemplateCheck =
+						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
+							{
+								columns: { baseRecurringEventId: true },
+								where: and(
+									inArray(
+										recurringEventInstancesTable.baseRecurringEventId,
+										recurringTemplateIds,
+									),
+									eq(recurringEventInstancesTable.isCancelled, false),
+								),
+								// No limit or orderBy - we just need to know which templates have instances
+							},
+						);
+
+					const templatesWithInstances = new Set(
+						globalTemplateCheck.map((t) => t.baseRecurringEventId),
+					);
+
+					// Then fetch the actual instances within the pagination window
 					const windowSize = offset + limit;
 					const templateInstances =
 						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
@@ -215,10 +237,6 @@ builder.queryField("eventsByAttendee", (t) =>
 								limit: windowSize,
 							},
 						);
-
-					const templatesWithInstances = new Set(
-						templateInstances.map((ti) => ti.baseRecurringEventId),
-					);
 
 					for (const instance of templateInstances) {
 						allReferenceEvents.push({
