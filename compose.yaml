@@ -88,7 +88,7 @@ services:
 
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
     # https://docs.docker.com/reference/compose-file/build/#publishing-built-images
-    # https://docs.docker.com/reference/compose-file/services/#image 
+    # https://docs.docker.com/reference/compose-file/services/#image
     # image: ghcr.io/talawa/api:latest
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
@@ -206,7 +206,7 @@ services:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
-        # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_db
+      # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_db
       - POSTGRES_DB=${POSTGRES_DB:?error}
         # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_password
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
@@ -249,7 +249,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 10s
     networks:
-      - redis  # Connect Redis to the Redis network
+      - redis # Connect Redis to the Redis network
     restart: unless-stopped
     volumes:
       - source: redis_data
