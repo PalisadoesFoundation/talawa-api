@@ -1014,6 +1014,9 @@ describe("Organization Events Resolver Tests", () => {
 
 	describe("Code Coverage Scenarios", () => {
 		beforeEach(() => {
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date("2024-01-01T12:00:00Z"));
+
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "administrator",
@@ -1022,6 +1025,10 @@ describe("Organization Events Resolver Tests", () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
 		});
 
 		it("should throw error when first is null and last is undefined", async () => {
