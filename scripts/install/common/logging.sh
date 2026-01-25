@@ -62,6 +62,7 @@ print_log_location() {
 # Timing tracking (compatible with bash 3.2+)
 __TIMING_LABELS=()
 __TIMING_VALUES=()
+__TIMING_STATUS=()
 
 # with_timer: Execute a command and record its execution time
 # Usage: with_timer "label" command [args...]
@@ -87,8 +88,10 @@ with_timer() {
   __TIMING_VALUES+=("$elapsed")
   
   if [ $exit_code -eq 0 ]; then
+    __TIMING_STATUS+=("OK")
     success "$label completed in ${elapsed}s"
   else
+    __TIMING_STATUS+=("FAIL")
     error "$label failed after ${elapsed}s"
   fi
   
@@ -146,7 +149,8 @@ print_timing_summary() {
     local total=0
     local i
     for i in "${!__TIMING_LABELS[@]}"; do
-      printf "[OK] %s: %ss\n" "${__TIMING_LABELS[$i]}" "${__TIMING_VALUES[$i]}"
+      local status="${__TIMING_STATUS[$i]:-OK}"
+      printf "[%s] %s: %ss\n" "$status" "${__TIMING_LABELS[$i]}" "${__TIMING_VALUES[$i]}"
       total=$((total + ${__TIMING_VALUES[$i]}))
     done
     printf "%s\n" "----------------------------------------"
@@ -158,13 +162,21 @@ print_timing_summary() {
 }
 
 # print_installation_summary: Display final installation summary
+# Usage: print_installation_summary [exit_code]
 print_installation_summary() {
+  local exit_code="${1:-0}"
   printf "\n"
   printf "%s\n" "========================================"
   printf "%s\n" "Installation Summary"
   printf "%s\n" "========================================"
-  printf "%s\n" "[OK] Core dependencies verified"
-  printf "%s\n" "[OK] Installation completed successfully"
+  
+  if [ "$exit_code" -eq 0 ]; then
+    printf "%s\n" "[OK] Core dependencies verified"
+    printf "%s\n" "[OK] Installation completed successfully"
+  else
+    printf "%s\n" "[x] Installation failed (exit code: $exit_code)"
+  fi
+  
   printf "See log: %s\n" "${LOG_FILE}"
   printf "%s\n" "========================================"
   printf "\n"

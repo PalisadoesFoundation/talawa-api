@@ -51,8 +51,13 @@ with_timer "Complex operation" with_spinner "Working" sleep 2
 # Test 4: Timing summary
 print_timing_summary
 
-# Test 5: Installation summary
-print_installation_summary
+# Test 5: Installation summary (success case)
+print_section "Test 5: Installation summary (success)"
+print_installation_summary 0
+
+# Test 5b: Installation summary (failure case)
+print_section "Test 5b: Installation summary (failure)"
+print_installation_summary 1
 
 print_log_location
 
