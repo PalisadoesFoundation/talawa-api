@@ -1,1 +1,0 @@
-ALTER TABLE "funds" ALTER COLUMN "name" SET DATA TYPE varchar(256);

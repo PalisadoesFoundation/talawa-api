@@ -1,1 +1,0 @@
-ALTER TABLE "event_exceptions" ALTER COLUMN "creator_id" DROP NOT NULL;

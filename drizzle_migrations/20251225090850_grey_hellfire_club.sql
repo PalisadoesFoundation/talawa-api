@@ -1,4 +1,0 @@
-CREATE INDEX "event_attendees_user_invited_event_idx" ON "event_attendees" USING btree ("user_id","is_invited","event_id");--> statement-breakpoint
-CREATE INDEX "event_attendees_user_invited_recurring_instance_idx" ON "event_attendees" USING btree ("user_id","is_invited","recurring_event_instance_id");--> statement-breakpoint
-CREATE INDEX "event_attendees_user_registered_event_idx" ON "event_attendees" USING btree ("user_id","is_registered","event_id");--> statement-breakpoint
-CREATE INDEX "event_attendees_user_registered_recurring_instance_idx" ON "event_attendees" USING btree ("user_id","is_registered","recurring_event_instance_id");

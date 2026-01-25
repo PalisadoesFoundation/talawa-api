@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
@@ -66,25 +66,21 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) =>
-					snapshot.ops["mutation:updateOrganization"] !== undefined,
+				(snapshot) => snapshot.ops["mutation:updateOrganization"] !== undefined,
 			);
 
 			// Execute mutation
-			const result = await mercuriusClient.mutate(
-				Mutation_updateOrganization,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: orgId,
-							name: `Updated Org ${faker.string.uuid()}`,
-						},
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: orgId,
+						name: `Updated Org ${faker.string.uuid()}`,
 					},
 				},
-			);
+			});
 
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
@@ -100,22 +96,18 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 		it("should record mutation:updateOrganization metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) =>
-					snapshot.ops["mutation:updateOrganization"] !== undefined,
+				(snapshot) => snapshot.ops["mutation:updateOrganization"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
-			const result = await mercuriusClient.mutate(
-				Mutation_updateOrganization,
-				{
-					variables: {
-						input: {
-							id: faker.string.uuid(),
-							name: `Updated Org ${faker.string.uuid()}`,
-						},
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+						name: `Updated Org ${faker.string.uuid()}`,
 					},
 				},
-			);
+			});
 
 			// Verify mutation failed with unauthenticated error
 			expect(result.data.updateOrganization).toBeNull();

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -48,24 +48,20 @@ describe("Mutation deleteOrganization - Performance Metrics", () => {
 
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) =>
-					snapshot.ops["mutation:deleteOrganization"] !== undefined,
+				(snapshot) => snapshot.ops["mutation:deleteOrganization"] !== undefined,
 			);
 
 			// Execute mutation
-			const result = await mercuriusClient.mutate(
-				Mutation_deleteOrganization,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: orgId,
-						},
+			const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: orgId,
 					},
 				},
-			);
+			});
 
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
@@ -81,21 +77,17 @@ describe("Mutation deleteOrganization - Performance Metrics", () => {
 		it("should record mutation:deleteOrganization metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) =>
-					snapshot.ops["mutation:deleteOrganization"] !== undefined,
+				(snapshot) => snapshot.ops["mutation:deleteOrganization"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
-			const result = await mercuriusClient.mutate(
-				Mutation_deleteOrganization,
-				{
-					variables: {
-						input: {
-							id: faker.string.uuid(),
-						},
+			const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				variables: {
+					input: {
+						id: faker.string.uuid(),
 					},
 				},
-			);
+			});
 
 			// Verify mutation failed with unauthenticated error
 			expect(result.data.deleteOrganization).toBeNull();

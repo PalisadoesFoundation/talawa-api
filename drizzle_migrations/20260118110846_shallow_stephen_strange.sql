@@ -1,1 +1,0 @@
-CREATE INDEX "agenda_item_url_updater_id_index" ON "agenda_item_url" USING btree ("updater_id");

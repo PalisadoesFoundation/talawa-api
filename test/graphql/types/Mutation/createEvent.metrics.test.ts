@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";

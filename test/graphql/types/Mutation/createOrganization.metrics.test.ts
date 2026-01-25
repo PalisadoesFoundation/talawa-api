@@ -1,14 +1,11 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import {
-	Mutation_createOrganization,
-	Query_signIn,
-} from "../documentNodes";
+import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
 
 describe("Mutation createOrganization - Performance Metrics", () => {
 	let authToken: string;
@@ -46,25 +43,21 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 		it("should record mutation:createOrganization metric on successful mutation", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) =>
-					snapshot.ops["mutation:createOrganization"] !== undefined,
+				(snapshot) => snapshot.ops["mutation:createOrganization"] !== undefined,
 			);
 
 			// Execute mutation
-			const result = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							name: `Test Org ${faker.string.uuid()}`,
-							countryCode: "us",
-						},
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						countryCode: "us",
 					},
 				},
-			);
+			});
 
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
@@ -81,22 +74,18 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 		it("should record mutation:createOrganization metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) =>
-					snapshot.ops["mutation:createOrganization"] !== undefined,
+				(snapshot) => snapshot.ops["mutation:createOrganization"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
-			const result = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					variables: {
-						input: {
-							name: `Test Org ${faker.string.uuid()}`,
-							countryCode: "us",
-						},
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						countryCode: "us",
 					},
 				},
-			);
+			});
 
 			// Verify mutation failed with unauthenticated error
 			expect(result.data.createOrganization).toBeNull();
