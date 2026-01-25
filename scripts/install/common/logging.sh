@@ -29,8 +29,8 @@ _log_write() {
 
 info()    { _log_write "[INFO] $*"; }
 warn()    { _log_write "WARNING: $*" "stderr"; }
-error()   { _log_write "✗ ERROR: $*" "stderr"; }
-success() { _log_write "✓ $*"; }
+error()   { _log_write "[x] ERROR: $*" "stderr"; }
+success() { _log_write "[OK] $*"; }
 debug()   { [ "$DEBUG" = "1" ] && _log_write "[DEBUG] $*" || true; }
 
 print_banner() {
@@ -68,11 +68,17 @@ __TIMING_VALUES=()
 with_timer() {
   local label="$1"
   shift
-  local t0 t1 elapsed
+  local t0 t1 elapsed exit_code errexit
   
   t0=$(date +%s)
+  
+  # Temporarily disable errexit to capture exit code
+  errexit=$-
+  set +e
   "$@"
-  local exit_code=$?
+  exit_code=$?
+  [[ $errexit == *e* ]] && set -e
+  
   t1=$(date +%s)
   elapsed=$((t1 - t0))
   
@@ -111,8 +117,12 @@ with_spinner() {
   printf "\r"
   
   # Wait for process and capture exit code
+  local exit_code errexit
+  errexit=$-
+  set +e
   wait "$pid"
-  local exit_code=$?
+  exit_code=$?
+  [[ $errexit == *e* ]] && set -e
   
   if [ $exit_code -eq 0 ]; then
     success "$msg"
@@ -136,7 +146,7 @@ print_timing_summary() {
     local total=0
     local i
     for i in "${!__TIMING_LABELS[@]}"; do
-      printf "✓ %s: %ss\n" "${__TIMING_LABELS[$i]}" "${__TIMING_VALUES[$i]}"
+      printf "[OK] %s: %ss\n" "${__TIMING_LABELS[$i]}" "${__TIMING_VALUES[$i]}"
       total=$((total + ${__TIMING_VALUES[$i]}))
     done
     printf "%s\n" "----------------------------------------"
@@ -153,9 +163,9 @@ print_installation_summary() {
   printf "%s\n" "========================================"
   printf "%s\n" "Installation Summary"
   printf "%s\n" "========================================"
-  printf "%s\n" "✓ Core dependencies verified"
-  printf "%s\n" "✓ Installation completed successfully"
-  printf "✓ See log: %s\n" "${LOG_FILE}"
+  printf "%s\n" "[OK] Core dependencies verified"
+  printf "%s\n" "[OK] Installation completed successfully"
+  printf "See log: %s\n" "${LOG_FILE}"
   printf "%s\n" "========================================"
   printf "\n"
 }
