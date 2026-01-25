@@ -1,7 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { communitiesTable } from "~/src/drizzle/tables/communities";
-import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import { usersTable } from "~/src/drizzle/tables/users";
 import seedInitialDataPlugin from "~/src/fastifyPlugins/seedInitialData";
 
@@ -26,7 +25,6 @@ type MockFastifyInstance = Partial<FastifyInstance> & {
 		API_COMMUNITY_WEBSITE_URL: string | null;
 		API_COMMUNITY_X_URL: string | null;
 		API_COMMUNITY_YOUTUBE_URL: string | null;
-		ENABLE_NOTIFICATION_TEMPLATE_SEEDING?: boolean;
 	};
 	drizzleClient: {
 		query: {
@@ -36,36 +34,17 @@ type MockFastifyInstance = Partial<FastifyInstance> & {
 			communitiesTable: {
 				findFirst: ReturnType<typeof vi.fn>;
 			};
-			notificationTemplatesTable?: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
 		};
 		insert: ReturnType<typeof vi.fn>;
 		update: ReturnType<typeof vi.fn>;
 	};
 };
 
-describe("seedInitialData Plugin - Notification Templates", () => {
+describe("seedInitialData Plugin", () => {
 	let mockFastify: MockFastifyInstance;
-	let mockInsert: ReturnType<typeof vi.fn>;
-	let mockValues: ReturnType<typeof vi.fn>;
-	let mockOnConflictDoNothing: ReturnType<typeof vi.fn>;
-	let mockReturning: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-
-		// Mock returning to return array with id (simulating successful insert)
-		mockReturning = vi.fn().mockResolvedValue([{ id: "test-id" }]);
-		mockOnConflictDoNothing = vi.fn().mockReturnValue({
-			returning: mockReturning,
-		});
-		mockValues = vi.fn().mockReturnValue({
-			onConflictDoNothing: mockOnConflictDoNothing,
-		});
-		mockInsert = vi.fn().mockReturnValue({
-			values: mockValues,
-		});
 
 		mockFastify = {
 			log: {
@@ -88,7 +67,6 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 				API_COMMUNITY_WEBSITE_URL: null,
 				API_COMMUNITY_X_URL: null,
 				API_COMMUNITY_YOUTUBE_URL: null,
-				ENABLE_NOTIFICATION_TEMPLATE_SEEDING: false,
 			},
 			drizzleClient: {
 				query: {
@@ -102,9 +80,8 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 							logoMimeType: null,
 						}),
 					},
-					notificationTemplatesTable: {},
 				},
-				insert: mockInsert,
+				insert: vi.fn(),
 				update: vi.fn(),
 			},
 		} as MockFastifyInstance;
@@ -112,143 +89,6 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 
 	afterEach(() => {
 		vi.restoreAllMocks();
-	});
-
-	describe("notification template seeding feature flag", () => {
-		it("should skip seeding when ENABLE_NOTIFICATION_TEMPLATE_SEEDING is false", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = false;
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Should not attempt to insert
-			expect(mockInsert).not.toHaveBeenCalled();
-			expect(mockFastify.log.info).not.toHaveBeenCalledWith(
-				expect.stringContaining("Seeded template:"),
-			);
-		});
-
-		it("should skip seeding when ENABLE_NOTIFICATION_TEMPLATE_SEEDING is undefined", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = undefined;
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Should not attempt to insert
-			expect(mockInsert).not.toHaveBeenCalled();
-		});
-
-		it("should seed templates when ENABLE_NOTIFICATION_TEMPLATE_SEEDING is true", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Should attempt to insert 12 templates
-			expect(mockInsert).toHaveBeenCalledTimes(12);
-			expect(mockInsert).toHaveBeenCalledWith(notificationTemplatesTable);
-			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(12);
-			expect(mockOnConflictDoNothing).toHaveBeenCalledWith({
-				target: [
-					notificationTemplatesTable.eventType,
-					notificationTemplatesTable.channelType,
-				],
-			});
-		});
-
-		it("should handle missing notificationTemplatesTable gracefully when flag is enabled", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
-			(
-				mockFastify.drizzleClient.query as unknown as {
-					notificationTemplatesTable?: { findFirst: ReturnType<typeof vi.fn> };
-				}
-			).notificationTemplatesTable = undefined;
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Should log warning and skip seeding
-			expect(mockFastify.log.warn).toHaveBeenCalledWith(
-				"Notification templates table not found in drizzle schema. Skipping seeding.",
-			);
-
-			// Should not attempt to insert
-			expect(mockInsert).not.toHaveBeenCalled();
-		});
-
-		it("should log 'Seeded template' when insert succeeds", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
-			mockReturning.mockResolvedValue([{ id: "test-id" }]);
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Verify "Seeded template" log was called for each template
-			const seededCalls = (
-				mockFastify.log.info as ReturnType<typeof vi.fn>
-			).mock.calls.filter((call) =>
-				call[0]?.toString().includes("Seeded template:"),
-			);
-			expect(seededCalls).toHaveLength(12);
-		});
-
-		it("should log 'Template already exists' when onConflictDoNothing prevents insert", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
-			// Mock returning to return empty array (simulating conflict - no insert occurred)
-			mockReturning.mockResolvedValue([]);
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Verify "already exists" log was called for each template
-			const alreadyExistsCalls = (
-				mockFastify.log.info as ReturnType<typeof vi.fn>
-			).mock.calls.filter((call) =>
-				call[0]?.toString().includes("Template already exists:"),
-			);
-			expect(alreadyExistsCalls).toHaveLength(12);
-		});
-
-		it("should call notificationTemplatesTableInsertSchema.parse for each template", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
-
-			// Spy on the parse function
-			const { notificationTemplatesTableInsertSchema } = await import(
-				"~/src/drizzle/tables/NotificationTemplate"
-			);
-			const parseSpy = vi
-				.spyOn(notificationTemplatesTableInsertSchema, "parse")
-				.mockImplementation(
-					(x: unknown) =>
-						x as ReturnType<
-							typeof notificationTemplatesTableInsertSchema.parse
-						>,
-				);
-
-			// Track inserted values to verify parse was called
-			const insertedValues: unknown[] = [];
-			mockValues.mockImplementation((values) => {
-				insertedValues.push(values);
-				return {
-					onConflictDoNothing: mockOnConflictDoNothing,
-				};
-			});
-
-			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
-
-			// Verify parse was called for each template (12 templates)
-			expect(parseSpy).toHaveBeenCalledTimes(12);
-			expect(insertedValues).toHaveLength(12);
-			// Verify insert was called with notificationTemplatesTable
-			expect(mockInsert).toHaveBeenCalledWith(notificationTemplatesTable);
-
-			parseSpy.mockRestore();
-		});
-
-		it("should surface error when template insert chain fails", async () => {
-			mockFastify.envConfig.ENABLE_NOTIFICATION_TEMPLATE_SEEDING = true;
-
-			const insertError = new Error("Insert failed");
-			mockReturning.mockRejectedValueOnce(insertError);
-
-			await expect(
-				seedInitialDataPlugin(mockFastify as FastifyInstance, {}),
-			).rejects.toThrow("Insert failed");
-		});
 	});
 
 	describe("administrator user seeding", () => {
