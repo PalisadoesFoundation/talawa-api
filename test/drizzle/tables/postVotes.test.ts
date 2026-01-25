@@ -695,5 +695,21 @@ describe("src/drizzle/tables/postVotes", () => {
 				expect(result.type).toBe(type);
 			}
 		});
+
+		it("should reject invalid enum values at database level", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const postId = await createTestPost();
+
+			await expect(
+				server.drizzleClient
+					.insert(postVotesTable)
+					.values({
+						type: "invalid_vote_type" as "up_vote", // Type assertion to bypass TS
+						postId,
+						creatorId: userId,
+					})
+					.returning(),
+			).rejects.toThrow();
+		});
 	});
 });
