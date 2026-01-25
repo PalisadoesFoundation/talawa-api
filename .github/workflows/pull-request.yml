@@ -53,6 +53,16 @@ jobs:
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           echo "Error: Close this PR and try again."
           exit 1
+      - name: Lint shell scripts (shellcheck)
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          files=(scripts/**/*.sh)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No shell scripts found to lint."
+          else
+            shellcheck -x --severity=error "${files[@]}"
+          fi
 
   Python-Compliance:
     name: Check Python Code Style
@@ -275,6 +285,7 @@ jobs:
             'Caddyfile$'
             'codegen.ts$'
             '^Dockerfile.*'
+            '^docker/.*'
             '^docker-compose.*'
             '^drizzle_migrations/.*'
             '^scripts/.*'
@@ -297,6 +308,8 @@ jobs:
             'LICENSE$'
             'tsconfig.json$'
             'vitest.config.ts$'
+            'vitest.*.config.ts$'
+            'codecov.yml$'
             'pnpm-lock.yaml$'
             'package.json$'
             'package-lock.json$'
@@ -418,6 +431,7 @@ jobs:
     needs:
       [
         Code-Quality-Checks,
+        Devcontainer-Validation,
         python_checks,
         check_type_errors,
         check_mock_isolation,
@@ -893,3 +907,25 @@ jobs:
       - name: Cleanup - Free ports by stopping containers
         if: always()
         run: docker compose down
+
+  Devcontainer-Validation:
+    name: Validate devcontainer lifecycle (non-interactive, pnpm available)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Devcontainer CLI
+        run: npm install -g @devcontainers/cli
+
+      - name: Start devcontainer (must not prompt)
+        env:
+          COMPOSE_PROJECT_NAME: talawa-api-ci
+        run: |
+          devcontainer up --workspace-folder .
+
+      - name: Verify pnpm is available inside devcontainer
+        env:
+          COMPOSE_PROJECT_NAME: talawa-api-ci
+        run: |
+          devcontainer exec --workspace-folder . pnpm --version

@@ -77,5 +77,6 @@
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",
-	"workspaceFolder": "/home/talawa/api"
+	"workspaceFolder": "/home/talawa/api",
+	"runServices": ["api"]
 }
