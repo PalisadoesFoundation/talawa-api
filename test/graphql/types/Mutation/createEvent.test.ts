@@ -2577,4 +2577,174 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(result.errors[0]?.message).toContain("upload failed");
 		expect(result.data?.createEvent).toBeNull();
 	});
+
+	test("MinIO removal during cleanup is atomic with transaction rollback", async () => {
+		const organizationId = await createTestOrganization();
+
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		// First upload succeeds, second fails
+		putObjectSpy
+			.mockResolvedValueOnce({ etag: "etag-1", versionId: null })
+			.mockRejectedValueOnce(new Error("second upload failed"));
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) { id }
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null, null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file1.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-1",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file2.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-2",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Mutation should fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("second upload failed");
+		expect(result.data?.createEvent).toBeNull();
+
+		// Cleanup was attempted for the first successfully uploaded file
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+
+		// Verify the database transaction was rolled back - no event created
+		const eventCountAfter =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+		expect(eventCountAfter).toHaveLength(0);
+	});
+
+	test("Promise.allSettled ensures partial upload failures trigger cleanup of successful uploads", async () => {
+		const organizationId = await createTestOrganization();
+
+		// This test verifies that the Promise.allSettled pattern correctly identifies
+		// which uploads succeeded and cleans them up when any upload fails
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		let uploadCallCount = 0;
+
+		vi.spyOn(server.minio.client, "putObject").mockImplementation(async () => {
+			uploadCallCount++;
+			// Simulate a failure on the second upload
+			if (uploadCallCount === 2) {
+				throw new Error("partial upload failure");
+			}
+			return { etag: `test-etag-${uploadCallCount}`, versionId: null };
+		});
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) { id }
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null, null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file1.png"',
+			"Content-Type: image/png",
+			"",
+			"content1",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file2.png"',
+			"Content-Type: image/png",
+			"",
+			"content2",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Should fail due to upload error
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createEvent).toBeNull();
+
+		// Since Promise.allSettled is used, cleanup should happen:
+		// - First upload succeeded, so it should be removed
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+
+		// Verify transaction rollback - no event was created
+		const events = await server.drizzleClient.query.eventsTable.findMany({
+			where: (fields, operators) =>
+				operators.eq(fields.organizationId, organizationId),
+		});
+		expect(events).toHaveLength(0);
+	});
 });

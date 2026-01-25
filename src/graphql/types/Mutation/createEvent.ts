@@ -496,21 +496,51 @@ builder.mutationField("createEvent", (t) =>
 						// RETURNING guarantees createdEventAttachments.length === attachments.length,
 						// so pairs[i].fileUpload is always defined
 
-						await Promise.all(
-							pairs.map(({ attachment, fileUpload }) =>
-								ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									(
-										fileUpload as NonNullable<typeof fileUpload>
-									).createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
+						// Track successfully uploaded attachments for cleanup on partial failure
+						const uploaded: string[] = [];
+						try {
+							const uploadResults = await Promise.allSettled(
+								pairs.map(({ attachment, fileUpload }) =>
+									ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										(
+											fileUpload as NonNullable<typeof fileUpload>
+										).createReadStream(),
+										undefined,
+										{
+											"content-type": attachment.mimeType,
+										},
+									),
 								),
-							),
-						);
+							);
+
+							// Check if any uploads failed
+							for (let i = 0; i < uploadResults.length; i++) {
+								const result = uploadResults[i];
+								const pair = pairs[i];
+								if (result?.status === "fulfilled") {
+									if (pair) {
+										uploaded.push(pair.attachment.name);
+									}
+								} else if (result?.status === "rejected") {
+									// At least one upload failed, clean up successfully uploaded files
+									await Promise.all(
+										uploaded.map((name) =>
+											ctx.minio.client.removeObject(ctx.minio.bucketName, name),
+										),
+									);
+									// Rethrow the original error
+									throw result.reason;
+								}
+							}
+						} catch (e) {
+							ctx.log.error(
+								{ error: e, uploadedAttachments: uploaded },
+								"Error uploading event attachments to MinIO",
+							);
+							throw e;
+						}
 					}
 
 					const finalEvent = Object.assign(createdEvent, {
