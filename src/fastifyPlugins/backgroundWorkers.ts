@@ -25,7 +25,7 @@ const backgroundWorkersPlugin = async (fastify: FastifyInstance) => {
 	if (!getMetricsSnapshots) {
 		fastify.log.error(
 			"Performance plugin dependency not properly registered: getMetricsSnapshots is undefined. " +
-			"Ensure the performance plugin is registered before backgroundWorkers.",
+				"Ensure the performance plugin is registered before backgroundWorkers.",
 		);
 		throw new Error(
 			"Required dependency 'getMetricsSnapshots' from performance plugin is not available",

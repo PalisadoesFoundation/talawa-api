@@ -13,57 +13,60 @@ const execAsync = promisify(exec);
  * (invalidateEntity/invalidateEntityLists) in their resolver body.
  */
 describe("require_cache_invalidation GritQL rule", () => {
-  const fixtureDir = join(__dirname, "__fixtures__");
-  const diagnosticMessage = "Mutation may need cache invalidation";
+	const fixtureDir = join(__dirname, "__fixtures__");
+	const diagnosticMessage = "Mutation may need cache invalidation";
 
-  /**
-   * Helper to run biome lint on a file and capture output.
-   * Returns { stdout, stderr, exitCode }
-   */
-  async function runBiomeLint(
-    filePath: string,
-  ): Promise<{ stdout: string; stderr: string; output: string; exitCode: number }> {
-    try {
-      const { stdout, stderr } = await execAsync(
-        `pnpm biome lint "${filePath}" --max-diagnostics=100`,
-        { cwd: join(__dirname, "../../..") },
-      );
-      return { stdout, stderr, output: stdout + stderr, exitCode: 0 };
-    } catch (error) {
-      // exec throws on non-zero exit code - capture the output anyway
-      const execError = error as {
-        stdout?: string;
-        stderr?: string;
-        code?: number;
-      };
-      const stdout = execError.stdout ?? "";
-      const stderr = execError.stderr ?? "";
-      return {
-        stdout,
-        stderr,
-        output: stdout + stderr,
-        exitCode: execError.code ?? 1,
-      };
-    }
-  }
+	/**
+	 * Helper to run biome lint on a file and capture output.
+	 * Returns { stdout, stderr, exitCode }
+	 */
+	async function runBiomeLint(filePath: string): Promise<{
+		stdout: string;
+		stderr: string;
+		output: string;
+		exitCode: number;
+	}> {
+		try {
+			const { stdout, stderr } = await execAsync(
+				`pnpm biome lint "${filePath}" --max-diagnostics=100`,
+				{ cwd: join(__dirname, "../../..") },
+			);
+			return { stdout, stderr, output: stdout + stderr, exitCode: 0 };
+		} catch (error) {
+			// exec throws on non-zero exit code - capture the output anyway
+			const execError = error as {
+				stdout?: string;
+				stderr?: string;
+				code?: number;
+			};
+			const stdout = execError.stdout ?? "";
+			const stderr = execError.stderr ?? "";
+			return {
+				stdout,
+				stderr,
+				output: stdout + stderr,
+				exitCode: execError.code ?? 1,
+			};
+		}
+	}
 
-  beforeAll(async () => {
-    await mkdir(fixtureDir, { recursive: true });
-  });
+	beforeAll(async () => {
+		await mkdir(fixtureDir, { recursive: true });
+	});
 
-  afterAll(async () => {
-    await rm(fixtureDir, { recursive: true, force: true });
-  });
+	afterAll(async () => {
+		await rm(fixtureDir, { recursive: true, force: true });
+	});
 
-  // ============================================================
-  // POSITIVE CASES - Should NOT trigger warning
-  // ============================================================
-  describe("positive cases (should NOT trigger warning)", () => {
-    it("should not warn when invalidateEntity is called", async () => {
-      const filePath = join(fixtureDir, "positive_invalidateEntity.ts");
-      await writeFile(
-        filePath,
-        `
+	// ============================================================
+	// POSITIVE CASES - Should NOT trigger warning
+	// ============================================================
+	describe("positive cases (should NOT trigger warning)", () => {
+		it("should not warn when invalidateEntity is called", async () => {
+			const filePath = join(fixtureDir, "positive_invalidateEntity.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -77,17 +80,17 @@ builder.mutationField("updateFoo", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { stdout } = await runBiomeLint(filePath);
-      expect(stdout).not.toContain(diagnosticMessage);
-    });
+			const { stdout } = await runBiomeLint(filePath);
+			expect(stdout).not.toContain(diagnosticMessage);
+		});
 
-    it("should not warn when invalidateEntityLists is called", async () => {
-      const filePath = join(fixtureDir, "positive_invalidateEntityLists.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should not warn when invalidateEntityLists is called", async () => {
+			const filePath = join(fixtureDir, "positive_invalidateEntityLists.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntityLists } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -101,17 +104,17 @@ builder.mutationField("createBar", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { stdout } = await runBiomeLint(filePath);
-      expect(stdout).not.toContain(diagnosticMessage);
-    });
+			const { stdout } = await runBiomeLint(filePath);
+			expect(stdout).not.toContain(diagnosticMessage);
+		});
 
-    it("should not warn when both invalidation functions are called", async () => {
-      const filePath = join(fixtureDir, "positive_both.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should not warn when both invalidation functions are called", async () => {
+			const filePath = join(fixtureDir, "positive_both.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity, invalidateEntityLists } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -128,17 +131,17 @@ builder.mutationField("updateBaz", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { stdout } = await runBiomeLint(filePath);
-      expect(stdout).not.toContain(diagnosticMessage);
-    });
+			const { stdout } = await runBiomeLint(filePath);
+			expect(stdout).not.toContain(diagnosticMessage);
+		});
 
-    it("should not warn when invalidation is inside try/catch for graceful degradation", async () => {
-      const filePath = join(fixtureDir, "positive_tryCatch.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should not warn when invalidation is inside try/catch for graceful degradation", async () => {
+			const filePath = join(fixtureDir, "positive_tryCatch.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity, invalidateEntityLists } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -163,17 +166,17 @@ builder.mutationField("updateWithGracefulDegradation", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { stdout } = await runBiomeLint(filePath);
-      expect(stdout).not.toContain(diagnosticMessage);
-    });
+			const { stdout } = await runBiomeLint(filePath);
+			expect(stdout).not.toContain(diagnosticMessage);
+		});
 
-    it("should not warn when invalidation is in .then() after transaction commit", async () => {
-      const filePath = join(fixtureDir, "positive_thenChain.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should not warn when invalidation is in .then() after transaction commit", async () => {
+			const filePath = join(fixtureDir, "positive_thenChain.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity, invalidateEntityLists } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -197,17 +200,17 @@ builder.mutationField("updateAfterCommit", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { stdout } = await runBiomeLint(filePath);
-      expect(stdout).not.toContain(diagnosticMessage);
-    });
+			const { stdout } = await runBiomeLint(filePath);
+			expect(stdout).not.toContain(diagnosticMessage);
+		});
 
-    it("should not warn when invalidation uses multiple arguments (real-world pattern)", async () => {
-      const filePath = join(fixtureDir, "positive_multipleArgs.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should not warn when invalidation uses multiple arguments (real-world pattern)", async () => {
+			const filePath = join(fixtureDir, "positive_multipleArgs.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity, invalidateEntityLists } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -234,23 +237,23 @@ builder.mutationField("updateWithMultipleArgs", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      // Should not warn - invalidation functions are called with multiple args
-      expect(output).not.toContain(diagnosticMessage);
-    });
-  });
+			const { output } = await runBiomeLint(filePath);
+			// Should not warn - invalidation functions are called with multiple args
+			expect(output).not.toContain(diagnosticMessage);
+		});
+	});
 
-  // ============================================================
-  // NEGATIVE CASES - Should trigger warning
-  // ============================================================
-  describe("negative cases (should trigger warning)", () => {
-    it("should warn when mutation has no cache invalidation", async () => {
-      const filePath = join(fixtureDir, "negative_noInvalidation.ts");
-      await writeFile(
-        filePath,
-        `
+	// ============================================================
+	// NEGATIVE CASES - Should trigger warning
+	// ============================================================
+	describe("negative cases (should trigger warning)", () => {
+		it("should warn when mutation has no cache invalidation", async () => {
+			const filePath = join(fixtureDir, "negative_noInvalidation.ts");
+			await writeFile(
+				filePath,
+				`
 import { builder } from "~/src/graphql/builder";
 
 builder.mutationField("updateWithoutCache", (t) =>
@@ -262,18 +265,18 @@ builder.mutationField("updateWithoutCache", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      expect(output).toContain(diagnosticMessage);
-      expect(output).toContain("updateWithoutCache");
-    });
+			const { output } = await runBiomeLint(filePath);
+			expect(output).toContain(diagnosticMessage);
+			expect(output).toContain("updateWithoutCache");
+		});
 
-    it("should warn when invalidation is commented out", async () => {
-      const filePath = join(fixtureDir, "negative_commentedOut.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should warn when invalidation is commented out", async () => {
+			const filePath = join(fixtureDir, "negative_commentedOut.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -287,18 +290,18 @@ builder.mutationField("updateCommentedCache", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      expect(output).toContain(diagnosticMessage);
-      expect(output).toContain("updateCommentedCache");
-    });
+			const { output } = await runBiomeLint(filePath);
+			expect(output).toContain(diagnosticMessage);
+			expect(output).toContain("updateCommentedCache");
+		});
 
-    it("should warn when function is imported but not called", async () => {
-      const filePath = join(fixtureDir, "negative_importedNotCalled.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should warn when function is imported but not called", async () => {
+			const filePath = join(fixtureDir, "negative_importedNotCalled.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity, invalidateEntityLists } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -313,18 +316,18 @@ builder.mutationField("updateImportedNotCalled", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      expect(output).toContain(diagnosticMessage);
-      expect(output).toContain("updateImportedNotCalled");
-    });
+			const { output } = await runBiomeLint(filePath);
+			expect(output).toContain(diagnosticMessage);
+			expect(output).toContain("updateImportedNotCalled");
+		});
 
-    it("should warn when invalidation is in a different function scope", async () => {
-      const filePath = join(fixtureDir, "negative_differentScope.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should warn when invalidation is in a different function scope", async () => {
+			const filePath = join(fixtureDir, "negative_differentScope.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -343,23 +346,23 @@ builder.mutationField("updateDifferentScope", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      expect(output).toContain(diagnosticMessage);
-      expect(output).toContain("updateDifferentScope");
-    });
-  });
+			const { output } = await runBiomeLint(filePath);
+			expect(output).toContain(diagnosticMessage);
+			expect(output).toContain("updateDifferentScope");
+		});
+	});
 
-  // ============================================================
-  // EDGE CASES
-  // ============================================================
-  describe("edge cases", () => {
-    it("should warn for each mutation without invalidation in multi-mutation file", async () => {
-      const filePath = join(fixtureDir, "edge_multipleMutations.ts");
-      await writeFile(
-        filePath,
-        `
+	// ============================================================
+	// EDGE CASES
+	// ============================================================
+	describe("edge cases", () => {
+		it("should warn for each mutation without invalidation in multi-mutation file", async () => {
+			const filePath = join(fixtureDir, "edge_multipleMutations.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -393,22 +396,22 @@ builder.mutationField("alsoWithoutCache", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      // Should warn for 2 mutations, not 3
-      expect(output).toContain("withoutCache");
-      expect(output).toContain("alsoWithoutCache");
-      // Should NOT warn for the one with invalidation (it has cache calls so no warning)
-      // The warning message includes the mutation name in quotes, so check for pattern
-      expect(output.match(/"withCache"/g)?.length || 0).toBeLessThanOrEqual(1);
-    });
+			const { output } = await runBiomeLint(filePath);
+			// Should warn for 2 mutations, not 3
+			expect(output).toContain("withoutCache");
+			expect(output).toContain("alsoWithoutCache");
+			// Should NOT warn for the one with invalidation (it has cache calls so no warning)
+			// The warning message includes the mutation name in quotes, so check for pattern
+			expect(output.match(/"withCache"/g)?.length || 0).toBeLessThanOrEqual(1);
+		});
 
-    it("should detect invalidation in nested arrow functions", async () => {
-      const filePath = join(fixtureDir, "edge_nestedFunctions.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should detect invalidation in nested arrow functions", async () => {
+			const filePath = join(fixtureDir, "edge_nestedFunctions.ts");
+			await writeFile(
+				filePath,
+				`
 import { invalidateEntity } from "~/src/services/caching";
 import { builder } from "~/src/graphql/builder";
 
@@ -430,18 +433,18 @@ builder.mutationField("nestedInvalidation", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      // The rule should detect invalidateEntity even in nested functions
-      expect(output).not.toContain(diagnosticMessage);
-    });
+			const { output } = await runBiomeLint(filePath);
+			// The rule should detect invalidateEntity even in nested functions
+			expect(output).not.toContain(diagnosticMessage);
+		});
 
-    it("should handle empty resolver gracefully", async () => {
-      const filePath = join(fixtureDir, "edge_emptyResolver.ts");
-      await writeFile(
-        filePath,
-        `
+		it("should handle empty resolver gracefully", async () => {
+			const filePath = join(fixtureDir, "edge_emptyResolver.ts");
+			await writeFile(
+				filePath,
+				`
 import { builder } from "~/src/graphql/builder";
 
 builder.mutationField("emptyResolver", (t) =>
@@ -452,12 +455,12 @@ builder.mutationField("emptyResolver", (t) =>
   })
 );
 `,
-      );
+			);
 
-      const { output } = await runBiomeLint(filePath);
-      // Empty resolver should still trigger warning (no invalidation)
-      expect(output).toContain(diagnosticMessage);
-      expect(output).toContain("emptyResolver");
-    });
-  });
+			const { output } = await runBiomeLint(filePath);
+			// Empty resolver should still trigger warning (no invalidation)
+			expect(output).toContain(diagnosticMessage);
+			expect(output).toContain("emptyResolver");
+		});
+	});
 });
