@@ -9,7 +9,7 @@ describe("postVoteTypeZodEnum", () => {
 		});
 	});
 
-	describe("rejected MIME types", () => {
+	describe("rejected vote types", () => {
 		it.each([
 			["vote_down"],
 			["votedown"],
