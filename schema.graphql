@@ -762,7 +762,7 @@ type Event {
   allDay: Boolean
 
   """
-  A list of attachments associated with the event, such as images or documents.
+  A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.
   """
   attachments: [EventAttachment!]
 

@@ -32,7 +32,7 @@ export function mapRecurringInstanceToEvent(
 		sequenceNumber: instance.sequenceNumber,
 		totalCount: instance.totalCount,
 		hasExceptions: instance.hasExceptions,
-		attachments: instance.attachments,
+		attachments: instance.attachments ?? [],
 		eventType: "generated" as const,
 		isGenerated: true,
 	};

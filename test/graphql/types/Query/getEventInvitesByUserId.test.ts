@@ -39,15 +39,21 @@ suite("Query field getEventInvitesByUserId", () => {
 				},
 			);
 			expect(result.data?.getEventInvitesByUserId).toBeUndefined();
-			const hasInvalidIdError = result.errors?.some(
-				(err) =>
-					err.extensions?.code === "invalid_arguments" ||
-					err.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
-					/ID cannot represent|Expected ID|got invalid value|invalid.*uuid/i.test(
-						err.message,
-					),
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["userId"],
+									message: "Invalid UUID",
+								}),
+							]),
+						}),
+					}),
+				]),
 			);
-			expect(hasInvalidIdError).toBe(true);
 		});
 	});
 

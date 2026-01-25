@@ -13,7 +13,7 @@ const MAX_OFFSET = 10_000;
 
 const queryEventsByCreatorArgumentsSchema = z.object({
 	userId: z.string().uuid(),
-	limit: z.number().int().nonnegative().max(100).optional(),
+	limit: z.number().int().min(1).max(100).optional(),
 	offset: z.number().int().nonnegative().max(MAX_OFFSET).optional(),
 });
 

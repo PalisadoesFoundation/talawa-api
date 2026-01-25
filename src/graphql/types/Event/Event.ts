@@ -22,10 +22,35 @@ Event.implement({
 	description:
 		"Represents an event, which can be a standalone occurrence or a materialized instance of a recurring series. This unified type allows for consistent handling of all events.",
 	fields: (t) => ({
-		attachments: t.expose("attachments", {
+		attachments: t.field({
 			description:
-				"A list of attachments associated with the event, such as images or documents.",
+				"A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.",
 			type: t.listRef(EventAttachment),
+			resolve: async (event, _args, { drizzleClient }) => {
+				// 1. If the event object already has attachments, return them
+				if (
+					"attachments" in event &&
+					event.attachments &&
+					event.attachments.length > 0
+				) {
+					return event.attachments;
+				}
+
+				// 2. If it's a generated instance (has baseRecurringEventId), fall back to base event attachments
+				const evt = event as { baseRecurringEventId?: string | null };
+				const baseId = evt.baseRecurringEventId;
+				if (baseId) {
+					// Fetch attachments for the base event
+					const baseAttachments =
+						await drizzleClient.query.eventAttachmentsTable.findMany({
+							where: (fields, { eq }) => eq(fields.eventId, baseId),
+						});
+					return baseAttachments;
+				}
+
+				// 3. Otherwise return empty array
+				return [];
+			},
 		}),
 		description: t.string({
 			description:

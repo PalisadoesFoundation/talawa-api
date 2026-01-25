@@ -161,7 +161,7 @@ A boolean flag indicating if the event lasts for the entire day.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventAttachment!]</b></code>](/auto-schema/types/objects/event-attachment.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
 
-A list of attachments associated with the event, such as images or documents.
+A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>attendees</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[User!]</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
 

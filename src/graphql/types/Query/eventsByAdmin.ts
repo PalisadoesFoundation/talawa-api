@@ -168,19 +168,20 @@ builder.queryField("eventsByAdmin", (t) =>
 				// Step 4: For each template, get active instances up to effective window
 				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
 
-				const instances = await getRecurringEventInstancesByBaseIds(
-					baseRecurringEventIds,
-					ctx.drizzleClient,
-					ctx.log,
-					{
-						limit: effectiveWindow,
-						includeCancelled: false,
-					},
-				);
+				if (baseRecurringEventIds.length > 0) {
+					const instances = await getRecurringEventInstancesByBaseIds(
+						baseRecurringEventIds,
+						ctx.drizzleClient,
+						ctx.log,
+						{
+							limit: effectiveWindow,
+							includeCancelled: false,
+						},
+					);
 
-				const activeInstances = instances.map(mapRecurringInstanceToEvent);
-
-				allEvents.push(...activeInstances);
+					const activeInstances = instances.map(mapRecurringInstanceToEvent);
+					allEvents.push(...activeInstances);
+				}
 
 				// Sort by start time (and ID for ties)
 				allEvents.sort((a, b) => {
