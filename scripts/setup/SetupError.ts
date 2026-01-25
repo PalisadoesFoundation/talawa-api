@@ -17,6 +17,7 @@ export enum SetupErrorCode {
 export interface SetupErrorContext {
 	operation?: string;
 	filePath?: string;
+	details?: unknown;
 	[key: string]: unknown;
 }
 
