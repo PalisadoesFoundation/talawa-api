@@ -6,7 +6,7 @@
 
 > **executeMutation**\<`T`\>(`mutationName`, `ctx`, `fn`): `Promise`\<`T`\>
 
-Defined in: [src/graphql/utils/withMutationMetrics.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withMutationMetrics.ts#L34)
+Defined in: [src/graphql/utils/withMutationMetrics.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withMutationMetrics.ts#L33)
 
 Executes a mutation with performance tracking.
 
@@ -30,7 +30,7 @@ Name of the mutation (e.g., "createUser", "deleteOrganization")
 
 ### ctx
 
-[`MutationContext`](../interfaces/MutationContext.md)
+[`MutationContext`](../type-aliases/MutationContext.md)
 
 GraphQL context containing an optional perf tracker
 
