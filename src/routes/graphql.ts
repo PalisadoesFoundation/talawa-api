@@ -40,7 +40,6 @@ const SPECIFIC_ERROR_ALLOWLIST = [
 	"An error occurred while fetching users",
 	"An error occurred while fetching events",
 	"Invalid UUID",
-	"uuid",
 	"database_error",
 ] as const;
 
@@ -51,9 +50,23 @@ function getPublicErrorMessage(
 	const msg = error.message;
 	if (!msg) return defaultMessage;
 
-	// Allow SPECIFIC_ERROR_ALLOWLIST messages
-	if (SPECIFIC_ERROR_ALLOWLIST.some((allowed) => msg.includes(allowed))) {
+	// Allow SPECIFIC_ERROR_ALLOWLIST messages (exact match only)
+	if (
+		SPECIFIC_ERROR_ALLOWLIST.includes(
+			msg as (typeof SPECIFIC_ERROR_ALLOWLIST)[number],
+		)
+	) {
 		return msg;
+	}
+
+	// Also check for messages that end with a period (resolver error messages)
+	const msgWithoutPeriod = msg.endsWith(".") ? msg.slice(0, -1) : msg;
+	if (
+		SPECIFIC_ERROR_ALLOWLIST.includes(
+			msgWithoutPeriod as (typeof SPECIFIC_ERROR_ALLOWLIST)[number],
+		)
+	) {
+		return msgWithoutPeriod;
 	}
 
 	// Mask sensitive/unsafe messages
@@ -434,7 +447,27 @@ export const graphql = fastifyPlugin(async (fastify) => {
 									? JSON.parse(normalized.details)
 									: normalized.details;
 
-							if (Array.isArray(details) && details.length > 0) {
+							// Handle treeified Zod error format (from normalizeError)
+							if (
+								details &&
+								typeof details === "object" &&
+								"properties" in details
+							) {
+								const properties = details.properties as Record<
+									string,
+									{ errors: string[] }
+								>;
+								if (properties.id && Array.isArray(properties.id.errors)) {
+									const uuidError = properties.id.errors.find(
+										(err: string) => err === "Invalid UUID",
+									);
+									if (uuidError) {
+										message = "Invalid uuid";
+									}
+								}
+							}
+							// Handle array format (legacy or direct Zod errors)
+							else if (Array.isArray(details) && details.length > 0) {
 								// Extract the first validation error message
 								const firstError = details[0];
 								if (
@@ -442,7 +475,16 @@ export const graphql = fastifyPlugin(async (fastify) => {
 									typeof firstError === "object" &&
 									"message" in firstError
 								) {
-									message = String(firstError.message);
+									const zodMessage = String(firstError.message);
+									// For UUID validation errors, preserve the "Invalid UUID" message
+									if (
+										zodMessage === "Invalid UUID" ||
+										zodMessage === "Invalid uuid"
+									) {
+										message = "Invalid uuid";
+									} else {
+										message = zodMessage;
+									}
 								}
 							}
 						} catch {
@@ -473,7 +515,85 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// Preserve specific resolver error messages that are safe to expose
 				// These are specific error messages that tests and resolvers expect to be preserved
 				let message = String(normalized.message || "An error occurred");
-				message = getPublicErrorMessage(error, message);
+
+				// Check for ZodError patterns in the original error message (for production mode)
+				const errorMessage = String(error.message || "");
+				if (
+					normalized.code === ErrorCode.INTERNAL_SERVER_ERROR &&
+					errorMessage.includes("Invalid UUID")
+				) {
+					message = "Invalid uuid";
+				}
+				// Special handling for Zod validation errors
+				if (
+					(normalized.code === ErrorCode.INTERNAL_SERVER_ERROR ||
+						normalized.code === ErrorCode.INVALID_ARGUMENTS) &&
+					normalized.details
+				) {
+					try {
+						let details = normalized.details;
+
+						// If details is a string, try to parse it as JSON
+						if (typeof details === "string") {
+							details = JSON.parse(details);
+						}
+
+						// Handle treeified Zod error format (from normalizeError)
+						if (
+							details &&
+							typeof details === "object" &&
+							"properties" in details
+						) {
+							const properties = details.properties as Record<
+								string,
+								{ errors: string[] }
+							>;
+							if (properties.id && Array.isArray(properties.id.errors)) {
+								const uuidError = properties.id.errors.find(
+									(err: string) => err === "Invalid UUID",
+								);
+								if (uuidError) {
+									message = "Invalid uuid";
+								}
+							}
+						}
+						// Handle array format (legacy or direct Zod errors)
+						else if (Array.isArray(details) && details.length > 0) {
+							const firstError = details[0];
+							if (
+								firstError &&
+								typeof firstError === "object" &&
+								"message" in firstError
+							) {
+								const zodMessage = String(firstError.message);
+								// For UUID validation errors, preserve the "Invalid UUID" message
+								if (zodMessage === "Invalid UUID") {
+									message = "Invalid uuid";
+								}
+							}
+						}
+					} catch {
+						// If parsing fails, check if the original error message contains ZodError patterns
+						const errorMessage = String(error.message || "");
+						const originalErrorMessage = String(
+							(error as { originalError?: { message?: unknown } }).originalError
+								?.message || "",
+						);
+
+						// Check if this looks like a ZodError with UUID validation
+						if (
+							originalErrorMessage.includes("Invalid UUID") ||
+							errorMessage.includes("Invalid UUID")
+						) {
+							message = "Invalid uuid";
+						} else {
+							// If parsing fails, use the public error message function
+							message = getPublicErrorMessage(error, message);
+						}
+					}
+				} else {
+					message = getPublicErrorMessage(error, message);
+				}
 
 				return {
 					message,
