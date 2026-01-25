@@ -530,11 +530,20 @@ builder.mutationField("createEvent", (t) =>
 
 							// If any uploads failed, clean up all successfully uploaded files
 							if (firstError) {
-								await Promise.all(
+								const cleanupResults = await Promise.allSettled(
 									uploadedNames.map((name) =>
 										ctx.minio.client.removeObject(ctx.minio.bucketName, name),
 									),
 								);
+								const cleanupFailures = cleanupResults.filter(
+									(r) => r.status === "rejected",
+								);
+								if (cleanupFailures.length) {
+									ctx.log.error(
+										{ cleanupFailures },
+										"Failed to cleanup some uploaded attachments",
+									);
+								}
 								throw firstError;
 							}
 						} catch (e) {
