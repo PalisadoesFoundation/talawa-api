@@ -910,10 +910,11 @@ jobs:
 
   Devcontainer-Validation:
     name: Validate devcontainer lifecycle (non-interactive, pnpm available)
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Install Devcontainer CLI
         run: npm install -g @devcontainers/cli
@@ -929,3 +930,7 @@ jobs:
           COMPOSE_PROJECT_NAME: talawa-api-ci
         run: |
           devcontainer exec --workspace-folder . pnpm --version
+
+      - name: cleanup devcontainer
+        if: always()
+        run: docker compose down
