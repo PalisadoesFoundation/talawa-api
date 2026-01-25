@@ -908,20 +908,25 @@ jobs:
         if: always()
         run: docker compose down
 
-  Devcontainer-Validation:
-    name: Validate devcontainer build (non-interactive, pnpm available)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+Devcontainer-Validation:
+  name: Validate devcontainer lifecycle (non-interactive, pnpm available)
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Install Devcontainer CLI
-        run: npm install -g @devcontainers/cli
+    - name: Install Devcontainer CLI
+      run: npm install -g @devcontainers/cli
 
-      - name: Build devcontainer (must not prompt)
-        run: |
-          devcontainer build --workspace-folder .
+    - name: Start devcontainer (must not prompt)
+      env:
+        COMPOSE_PROJECT_NAME: talawa-api-ci
+      run: |
+        devcontainer up --workspace-folder .
 
-      - name: Verify pnpm is available inside devcontainer
-        run: |
-          devcontainer exec --workspace-folder . pnpm --version
+    - name: Verify pnpm is available inside devcontainer
+      env:
+        COMPOSE_PROJECT_NAME: talawa-api-ci
+      run: |
+        devcontainer exec --workspace-folder . pnpm --version
+

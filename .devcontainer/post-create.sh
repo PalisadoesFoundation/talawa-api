@@ -20,13 +20,14 @@ fnm install
 fnm use
 
 # --------------------------------------------------------------------
-# Corepack + pnpm (NON-INTERACTIVE)
+# Corepack + pnpm (NON-INTERACTIVE, PINNED)
+# Repo pins pnpm to 10.26.1 via packageManager
 # --------------------------------------------------------------------
 echo "[devcontainer] Enabling corepack..."
 corepack enable
 
-echo "[devcontainer] Preparing pnpm..."
-corepack prepare pnpm@latest --activate
+echo "[devcontainer] Activating pinned pnpm version (10.26.1)..."
+corepack prepare pnpm@10.26.1 --activate
 
 if ! command -v pnpm >/dev/null 2>&1; then
   echo "[ERROR] pnpm is not available after corepack setup." >&2
@@ -57,6 +58,6 @@ fi
 # Install dependencies
 # --------------------------------------------------------------------
 echo "[devcontainer] Installing dependencies..."
-pnpm install
+pnpm install --frozen-lockfile
 
 echo "[devcontainer] Post-create setup complete."
