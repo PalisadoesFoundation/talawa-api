@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import {
@@ -389,6 +390,74 @@ describe("src/drizzle/tables/eventGenerationWindows.ts", () => {
 		});
 	});
 
+	describe("Index Configuration", () => {
+		const tableConfig = getTableConfig(eventGenerationWindowsTable);
+
+		const getColumnName = (
+			col: (typeof tableConfig.indexes)[0]["config"]["columns"][0] | undefined,
+		): string | undefined =>
+			col && "name" in col ? (col.name as string) : undefined;
+
+		it("should have index on organizationId", () => {
+			const idx = tableConfig.indexes.find(
+				(i) => getColumnName(i.config.columns[0]) === "organization_id",
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have composite index on isEnabled and processingPriority", () => {
+			const idx = tableConfig.indexes.find(
+				(i) =>
+					i.config.columns.length === 2 &&
+					i.config.columns.some((c) => getColumnName(c) === "is_enabled") &&
+					i.config.columns.some(
+						(c) => getColumnName(c) === "processing_priority",
+					),
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have index on lastProcessedAt", () => {
+			const idx = tableConfig.indexes.find(
+				(i) => getColumnName(i.config.columns[0]) === "last_processed_at",
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have index on currentWindowEndDate", () => {
+			const idx = tableConfig.indexes.find(
+				(i) => getColumnName(i.config.columns[0]) === "current_window_end_date",
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have index on retentionStartDate", () => {
+			const idx = tableConfig.indexes.find(
+				(i) => getColumnName(i.config.columns[0]) === "retention_start_date",
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have composite worker processing index on isEnabled, processingPriority, and lastProcessedAt", () => {
+			const idx = tableConfig.indexes.find(
+				(i) =>
+					i.config.columns.length === 3 &&
+					i.config.columns.some((c) => getColumnName(c) === "is_enabled") &&
+					i.config.columns.some(
+						(c) => getColumnName(c) === "processing_priority",
+					) &&
+					i.config.columns.some(
+						(c) => getColumnName(c) === "last_processed_at",
+					),
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have exactly 6 indexes", () => {
+			expect(tableConfig.indexes.length).toBe(6);
+		});
+	});
+
 	describe("Database Operations", () => {
 		it("should successfully insert a record with required fields", async () => {
 			const orgId = await createTestOrganization();
@@ -486,6 +555,100 @@ describe("src/drizzle/tables/eventGenerationWindows.ts", () => {
 					where: eq(eventGenerationWindowsTable.id, inserted.id),
 				});
 			expect(result).toBeUndefined();
+		});
+
+		it("should auto-generate UUID when id is not provided", async () => {
+			const orgId = await createTestOrganization();
+			const user = await createRegularUserUsingAdmin();
+			const now = new Date();
+
+			const [result] = await server.drizzleClient
+				.insert(eventGenerationWindowsTable)
+				.values({
+					organizationId: orgId,
+					currentWindowEndDate: now,
+					retentionStartDate: now,
+					createdById: user.userId,
+				})
+				.returning();
+
+			expect(result).toBeDefined();
+			if (!result) throw new Error("Insert failed");
+
+			// Verify UUID was auto-generated
+			expect(result.id).toBeDefined();
+			expect(typeof result.id).toBe("string");
+			// UUIDv7 format check (basic validation)
+			expect(result.id).toMatch(
+				/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+			);
+		});
+
+		it("should set updatedAt to null on insert by default", async () => {
+			const orgId = await createTestOrganization();
+			const user = await createRegularUserUsingAdmin();
+			const now = new Date();
+
+			const [result] = await server.drizzleClient
+				.insert(eventGenerationWindowsTable)
+				.values({
+					organizationId: orgId,
+					currentWindowEndDate: now,
+					retentionStartDate: now,
+					createdById: user.userId,
+				})
+				.returning();
+
+			expect(result).toBeDefined();
+			if (!result) throw new Error("Insert failed");
+
+			// Verify updatedAt defaults to null
+			expect(result.updatedAt).toBeNull();
+		});
+
+		it("should automatically set updatedAt when record is updated", async () => {
+			const orgId = await createTestOrganization();
+			const user = await createRegularUserUsingAdmin();
+			const now = new Date();
+
+			// Insert record
+			const [inserted] = await server.drizzleClient
+				.insert(eventGenerationWindowsTable)
+				.values({
+					organizationId: orgId,
+					currentWindowEndDate: now,
+					retentionStartDate: now,
+					createdById: user.userId,
+				})
+				.returning();
+
+			expect(inserted).toBeDefined();
+			if (!inserted) throw new Error("Insert failed");
+			expect(inserted.updatedAt).toBeNull();
+
+			// Wait a moment to ensure timestamp difference
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			// Update the record
+			const [updated] = await server.drizzleClient
+				.update(eventGenerationWindowsTable)
+				.set({
+					processingPriority: 8,
+				})
+				.where(eq(eventGenerationWindowsTable.id, inserted.id))
+				.returning();
+
+			expect(updated).toBeDefined();
+			if (!updated) throw new Error("Update failed");
+
+			// Verify updatedAt was automatically set to a non-null date
+			expect(updated.updatedAt).not.toBeNull();
+			expect(updated.updatedAt).toBeInstanceOf(Date);
+			if (updated.updatedAt) {
+				expect(updated.updatedAt.getTime()).toBeGreaterThan(
+					inserted.createdAt.getTime(),
+				);
+			}
 		});
 	});
 });
