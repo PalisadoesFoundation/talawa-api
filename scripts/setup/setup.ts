@@ -1,12 +1,34 @@
-import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path, { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
+import { emailSetup } from "./emailSetup";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
+import {
+	generateJwtSecret,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+	validateEmail,
+	validatePort,
+	validatePositiveInteger,
+	validateURL,
+} from "./validators";
+
+// Re-export validators for backward compatibility
+export {
+	generateJwtSecret,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+	validateEmail,
+	validatePort,
+	validatePositiveInteger,
+	validateURL,
+} from "./validators";
 
 // Define a union type of all allowed environment keys
 export type SetupKey =
@@ -21,6 +43,8 @@ export type SetupKey =
 	| "API_IS_PINO_PRETTY"
 	| "API_JWT_EXPIRES_IN"
 	| "API_JWT_SECRET"
+	| "API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS"
+	| "API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET"
 	| "API_LOG_LEVEL"
 	| "API_MINIO_ACCESS_KEY"
 	| "API_MINIO_END_POINT"
@@ -61,7 +85,29 @@ export type SetupKey =
 	| "CADDY_TALAWA_API_HOST"
 	| "CADDY_TALAWA_API_PORT"
 	| "API_OTEL_ENABLED"
-	| "API_OTEL_SAMPLING_RATIO";
+	| "API_OTEL_SAMPLING_RATIO"
+	| "API_EMAIL_PROVIDER"
+	| "AWS_SES_REGION"
+	| "AWS_ACCESS_KEY_ID"
+	| "AWS_SECRET_ACCESS_KEY"
+	| "AWS_SES_FROM_EMAIL"
+	| "AWS_SES_FROM_NAME"
+	| "GOOGLE_CLIENT_ID"
+	| "GOOGLE_CLIENT_SECRET"
+	| "GOOGLE_REDIRECT_URI"
+	| "GITHUB_CLIENT_ID"
+	| "GITHUB_CLIENT_SECRET"
+	| "GITHUB_REDIRECT_URI"
+	| "API_OAUTH_REQUEST_TIMEOUT_MS"
+	| "API_METRICS_ENABLED"
+	| "API_METRICS_API_KEY"
+	| "API_METRICS_SLOW_REQUEST_MS"
+	| "API_METRICS_SLOW_OPERATION_MS"
+	| "API_METRICS_CACHE_TTL_SECONDS"
+	| "API_METRICS_AGGREGATION_ENABLED"
+	| "API_METRICS_AGGREGATION_CRON_SCHEDULE"
+	| "API_METRICS_AGGREGATION_WINDOW_MINUTES"
+	| "API_METRICS_SNAPSHOT_RETENTION_COUNT";
 
 // Replace the index signature with a constrained mapping
 // Allow string indexing so tests and dynamic access are permitted
@@ -70,6 +116,113 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 };
 
 const envFileName = ".env";
+let backupCreated = false;
+let cleanupInProgress = false;
+let sigintHandler: (() => void | Promise<void>) | null = null;
+
+/**
+ * Restores .env file from backup if one was created during setup.
+ * Guards against concurrent cleanup attempts.
+ * @returns Boolean indicating restoration status:
+ *   - `true` if restoration was successful
+ *   - `true` if no backup was created (nothing to restore, not an error)
+ *   - `false` if restoration failed (backup exists but could not be restored)
+ *   - `false` if cleanup is already in progress (prevents concurrent cleanup)
+ */
+async function restoreBackup(): Promise<boolean> {
+	// Note: There's a tiny window for a race condition between the check and set
+	// of cleanupInProgress. This is acceptable for SIGINT handler cleanup as:
+	// 1. SIGINT is typically a user-initiated single event
+	// 2. The worst case is redundant cleanup attempts, which are safe
+	// 3. The finally block ensures cleanupInProgress is always reset
+	if (cleanupInProgress) {
+		// Prevent multiple simultaneous cleanup attempts
+		return false;
+	}
+
+	cleanupInProgress = true;
+
+	try {
+		if (!backupCreated) {
+			console.log("📋 No backup was created yet, nothing to restore");
+			return true; // Not an error, just nothing to do
+		}
+
+		try {
+			// Validate that backup actually exists when backupCreated is true
+			// This ensures state consistency: if backupCreated is true, we should have a backup
+			const backupDir = ".backup";
+			try {
+				await fs.access(backupDir);
+			} catch (err: unknown) {
+				const error = err as NodeJS.ErrnoException;
+				if (error.code === "ENOENT") {
+					console.warn(
+						"⚠️  Backup was marked as created but backup directory does not exist",
+					);
+					return false; // State inconsistency: backupCreated=true but no backup dir
+				}
+				throw err; // Re-throw other errors
+			}
+
+			await restoreLatestBackup();
+			console.log("✅ Original configuration restored successfully");
+			return true;
+		} catch (error: unknown) {
+			console.error("❌ Failed to restore backup:", error);
+			console.error(
+				"\n   You may need to manually restore from the .backup directory",
+			);
+			return false;
+		}
+	} finally {
+		cleanupInProgress = false;
+	}
+}
+
+/**
+ * Test-only export to allow testing the cleanupInProgress guard
+ * @internal
+ */
+export function __test__setCleanupInProgress(value: boolean): void {
+	cleanupInProgress = value;
+}
+
+/**
+ * Test-only export to allow testing restoreBackup function
+ * @internal
+ */
+export async function __test__restoreBackup(): Promise<boolean> {
+	return restoreBackup();
+}
+
+/**
+ * SIGINT handler that restores backup and exits
+ * Defined at module scope to allow removal before re-registration
+ */
+async function sigintHandlerFunction(): Promise<void> {
+	console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
+	console.log("=".repeat(60));
+	console.log("📋 Cleaning up and restoring previous configuration...");
+	console.log(`${"=".repeat(60)}\n`);
+
+	const restored = await restoreBackup();
+
+	if (restored) {
+		console.log(
+			"\n✅ Your environment has been restored to its previous state",
+		);
+		console.log("   You can safely run setup again when ready\n");
+		process.exit(0); // Clean exit since we restored successfully
+	} else {
+		console.log("\n⚠️  Cleanup incomplete - please check your .env file");
+		console.log(
+			"   Run setup again or restore manually from .backup directory\n",
+		);
+		process.exit(1); // Error exit since restoration failed
+	}
+}
+
 async function restoreLatestBackup(): Promise<void> {
 	const backupDir = ".backup";
 	const envPrefix = ".env.";
@@ -78,10 +231,10 @@ async function restoreLatestBackup(): Promise<void> {
 	} catch (err: unknown) {
 		const error = err as NodeJS.ErrnoException;
 		if (error.code === "ENOENT") {
-			console.warn("Backup directory .backup does not exist");
+			console.warn("⚠️  Backup directory .backup does not exist");
 			return;
 		}
-		console.error("Error accessing backup directory:", error);
+		console.error("❌ Error accessing backup directory:", error);
 		throw error;
 	}
 	try {
@@ -102,92 +255,33 @@ async function restoreLatestBackup(): Promise<void> {
 			if (latestBackup) {
 				const backupPath = path.join(backupDir, latestBackup.name);
 				console.log(`Restoring from latest backup: ${backupPath}`);
-				await fs.copyFile(backupPath, ".env");
+				// Use atomic write: write to temp file first, then rename
+				// This ensures the .env file is either fully restored or unchanged
+				const tempPath = ".env.tmp";
+				try {
+					await fs.copyFile(backupPath, tempPath);
+					await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
+				} catch (err) {
+					// Clean up temp file if it exists (e.g., if copyFile succeeded but rename failed)
+					try {
+						await fs.unlink(tempPath);
+					} catch {
+						// Ignore cleanup errors - temp file may not exist or already be removed
+					}
+					throw err; // Re-throw the original error after cleanup attempt
+				}
 			} else {
-				console.warn("No valid backup files found with epoch timestamps");
+				console.warn("⚠️  No valid backup files found with epoch timestamps");
 			}
 		} else {
-			console.warn("No backup files found in .backup directory");
+			console.warn("⚠️  No backup files found in .backup directory");
 		}
 	} catch (readError) {
-		console.error("Error reading backup directory:", readError);
+		console.error("❌ Error reading backup directory:", readError);
 		throw readError;
 	}
 }
-export function generateJwtSecret(): string {
-	try {
-		return crypto.randomBytes(64).toString("hex");
-	} catch (err) {
-		console.error(
-			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
-			err,
-		);
-		throw new Error("Failed to generate JWT secret");
-	}
-}
-export function validateURL(input: string): true | string {
-	try {
-		const url = new URL(input);
-		const protocol = url.protocol.toLowerCase();
-		if (protocol !== "http:" && protocol !== "https:") {
-			return "Please enter a valid URL with http:// or https:// protocol.";
-		}
-		return true;
-	} catch (_error) {
-		return "Please enter a valid URL.";
-	}
-}
-export function validatePort(input: string): true | string {
-	const portNumber = Number(input);
-	if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
-		return "Please enter a valid port number (1-65535).";
-	}
-	return true;
-}
-export function validateEmail(input: string): true | string {
-	if (!input.trim()) {
-		return "Email cannot be empty.";
-	}
-	if (input.length > 254) {
-		return "Email is too long.";
-	}
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	if (!emailRegex.test(input)) {
-		return "Invalid email format. Please enter a valid email address.";
-	}
-	return true;
-}
-export function validateCloudBeaverAdmin(input: string): true | string {
-	if (!input) return "Admin name is required";
-	if (input.length < 3) return "Admin name must be at least 3 characters long";
-	if (!/^[a-zA-Z0-9_]+$/.test(input))
-		return "Admin name can only contain letters, numbers, and underscores";
-	return true;
-}
-export function validateCloudBeaverPassword(input: string): true | string {
-	if (!input) return "Password is required";
-	if (input.length < 8) return "Password must be at least 8 characters long";
-	if (!/[A-Za-z]/.test(input) || !/[0-9]/.test(input)) {
-		return "Password must contain both letters and numbers";
-	}
-	return true;
-}
-export function validateCloudBeaverURL(input: string): true | string {
-	if (!input) return "Server URL is required";
-	try {
-		const url = new URL(input);
-		if (!["http:", "https:"].includes(url.protocol)) {
-			return "URL must use HTTP or HTTPS protocol";
-		}
-		const port = url.port || (url.protocol === "https:" ? "443" : "80");
-		if (!/^\d+$/.test(port) || Number.parseInt(port, 10) > 65535) {
-			return "Invalid port in URL";
-		}
-		return true;
-	} catch {
-		return "Invalid URL format";
-	}
-}
+
 export function isBooleanString(input: unknown): input is "true" | "false" {
 	return typeof input === "string" && (input === "true" || input === "false");
 }
@@ -298,6 +392,94 @@ export async function observabilitySetup(
 	}
 	return answers;
 }
+
+/**
+ * Sets up metrics configuration.
+ * Prompts user to configure performance monitoring settings.
+ * @param answers - Current setup answers object
+ * @returns Updated answers object with metrics configuration
+ */
+export async function metricsSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		console.log("\n--- Performance Metrics Configuration ---");
+		console.log("Configure performance monitoring for your API.");
+		console.log();
+
+		answers.API_METRICS_ENABLED = await promptList(
+			"API_METRICS_ENABLED",
+			"Enable performance metrics collection?",
+			["true", "false"],
+			"true",
+		);
+
+		if (answers.API_METRICS_ENABLED === "true") {
+			const apiKeyInput = await promptInput(
+				"API_METRICS_API_KEY",
+				"API key for /metrics/perf endpoint (leave empty for no auth):",
+				"",
+			);
+			// Normalize empty string to undefined so schema treats it as truly optional
+			answers.API_METRICS_API_KEY = apiKeyInput.trim() || undefined;
+
+			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
+				"API_METRICS_SLOW_REQUEST_MS",
+				"Slow request threshold in milliseconds:",
+				"500",
+				validatePositiveInteger,
+			);
+
+			answers.API_METRICS_SLOW_OPERATION_MS = await promptInput(
+				"API_METRICS_SLOW_OPERATION_MS",
+				"Slow operation threshold in milliseconds:",
+				"200",
+				validatePositiveInteger,
+			);
+
+			answers.API_METRICS_AGGREGATION_ENABLED = await promptList(
+				"API_METRICS_AGGREGATION_ENABLED",
+				"Enable background metrics aggregation?",
+				["true", "false"],
+				"true",
+			);
+
+			if (answers.API_METRICS_AGGREGATION_ENABLED === "true") {
+				answers.API_METRICS_AGGREGATION_CRON_SCHEDULE = await promptInput(
+					"API_METRICS_AGGREGATION_CRON_SCHEDULE",
+					"Aggregation cron schedule (default: every 5 minutes):",
+					"*/5 * * * *",
+				);
+
+				answers.API_METRICS_AGGREGATION_WINDOW_MINUTES = await promptInput(
+					"API_METRICS_AGGREGATION_WINDOW_MINUTES",
+					"Aggregation window in minutes:",
+					"5",
+					validatePositiveInteger,
+				);
+
+				answers.API_METRICS_CACHE_TTL_SECONDS = await promptInput(
+					"API_METRICS_CACHE_TTL_SECONDS",
+					"Cache TTL for aggregated metrics in seconds:",
+					"300",
+					validatePositiveInteger,
+				);
+			}
+
+			answers.API_METRICS_SNAPSHOT_RETENTION_COUNT = await promptInput(
+				"API_METRICS_SNAPSHOT_RETENTION_COUNT",
+				"Maximum snapshots to retain in memory:",
+				"1000",
+				validatePositiveInteger,
+			);
+		}
+
+		console.log("\nMetrics configuration completed!");
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
+}
 async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
 	await restoreLatestBackup();
@@ -392,6 +574,171 @@ export async function reCaptchaSetup(
 	}
 	return answers;
 }
+
+/**
+ * Sets up OAuth provider configuration.
+ * Prompts user to select which providers to configure and collects credentials.
+ * @param answers - Current setup answers object
+ * @returns Updated answers object with OAuth configuration
+ */
+export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
+	try {
+		const providers = await promptList(
+			"oauthProviders",
+			"Which OAuth providers would you like to configure?",
+			[
+				"Google OAuth",
+				"GitHub OAuth",
+				"Both Google and GitHub",
+				"Skip OAuth setup",
+			],
+			"Skip OAuth setup",
+		);
+
+		if (providers === "Skip OAuth setup") {
+			return answers;
+		}
+
+		const setupGoogle =
+			providers === "Google OAuth" || providers === "Both Google and GitHub";
+		const setupGitHub =
+			providers === "GitHub OAuth" || providers === "Both Google and GitHub";
+
+		if (setupGoogle) {
+			console.log("\n--- Google OAuth Configuration ---");
+			console.log("Get your Google OAuth credentials from:");
+			console.log("https://console.developers.google.com/apis/credentials");
+			console.log("Make sure to:");
+			console.log("1. Create OAuth 2.0 Client ID");
+			console.log("2. Add your redirect URI to authorized redirect URIs");
+			console.log();
+
+			answers.GOOGLE_CLIENT_ID = await promptInput(
+				"GOOGLE_CLIENT_ID",
+				"Enter Google OAuth Client ID:",
+				answers.GOOGLE_CLIENT_ID,
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "Google Client ID cannot be empty.";
+					}
+					return true;
+				},
+			);
+
+			answers.GOOGLE_CLIENT_SECRET = await promptInput(
+				"GOOGLE_CLIENT_SECRET",
+				"Enter Google OAuth Client Secret:",
+				answers.GOOGLE_CLIENT_SECRET,
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "Google Client Secret cannot be empty.";
+					}
+					return true;
+				},
+			);
+
+			answers.GOOGLE_REDIRECT_URI = await promptInput(
+				"GOOGLE_REDIRECT_URI",
+				"Enter Google OAuth Redirect URI:",
+				answers.GOOGLE_REDIRECT_URI ||
+					"http://localhost:4000/auth/google/callback",
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "Google Redirect URI cannot be empty.";
+					}
+					try {
+						new URL(input.trim());
+						return true;
+					} catch {
+						return "Please enter a valid URL.";
+					}
+				},
+			);
+		}
+
+		if (setupGitHub) {
+			console.log("\n--- GitHub OAuth Configuration ---");
+			console.log("Get your GitHub OAuth credentials from:");
+			console.log("https://github.com/settings/developers");
+			console.log("Make sure to:");
+			console.log("1. Create a new OAuth App");
+			console.log("2. Set the correct Authorization callback URL");
+			console.log();
+
+			answers.GITHUB_CLIENT_ID = await promptInput(
+				"GITHUB_CLIENT_ID",
+				"Enter GitHub OAuth Client ID:",
+				answers.GITHUB_CLIENT_ID,
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "GitHub Client ID cannot be empty.";
+					}
+					return true;
+				},
+			);
+
+			answers.GITHUB_CLIENT_SECRET = await promptInput(
+				"GITHUB_CLIENT_SECRET",
+				"Enter GitHub OAuth Client Secret:",
+				answers.GITHUB_CLIENT_SECRET,
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "GitHub Client Secret cannot be empty.";
+					}
+					return true;
+				},
+			);
+
+			answers.GITHUB_REDIRECT_URI = await promptInput(
+				"GITHUB_REDIRECT_URI",
+				"Enter GitHub OAuth Redirect URI:",
+				answers.GITHUB_REDIRECT_URI ||
+					"http://localhost:4000/auth/github/callback",
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "GitHub Redirect URI cannot be empty.";
+					}
+					try {
+						new URL(input.trim());
+						return true;
+					} catch {
+						return "Please enter a valid URL.";
+					}
+				},
+			);
+		}
+
+		// Configure OAuth request timeout
+		const useDefaultTimeout = await promptConfirm(
+			"useDefaultOAuthTimeout",
+			"Use recommended default OAuth request timeout settings (10 seconds)?",
+			true,
+		);
+
+		if (useDefaultTimeout) {
+			answers.API_OAUTH_REQUEST_TIMEOUT_MS = "10000";
+		} else {
+			answers.API_OAUTH_REQUEST_TIMEOUT_MS = await promptInput(
+				"API_OAUTH_REQUEST_TIMEOUT_MS",
+				"Enter OAuth request timeout in milliseconds:",
+				answers.API_OAUTH_REQUEST_TIMEOUT_MS || "10000",
+				(input: string) => {
+					const timeout = Number.parseInt(input, 10);
+					if (Number.isNaN(timeout) || timeout < 1000 || timeout > 60000) {
+						return "Timeout must be between 1000 and 60000 milliseconds.";
+					}
+					return true;
+				},
+			);
+		}
+
+		console.log("\nOAuth provider configuration completed!");
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
+}
+
 export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
 		answers.API_BASE_URL = await promptInput(
@@ -443,6 +790,34 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				return true;
 			},
 		);
+
+		answers.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS = await promptInput(
+			"API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS",
+			"Email verification token expiration (seconds):",
+			"86400",
+			(input: string) => {
+				const seconds = Number.parseInt(input, 10);
+				if (Number.isNaN(seconds) || seconds < 60) {
+					return "Expiration must be at least 60 seconds.";
+				}
+				return true;
+			},
+		);
+
+		const emailVerificationSecret = generateJwtSecret();
+		answers.API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET = await promptInput(
+			"API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET",
+			"Email verification HMAC secret:",
+			emailVerificationSecret,
+			(input: string) => {
+				const trimmed = input.trim();
+				if (trimmed.length < 32) {
+					return "HMAC secret must be at least 32 characters long.";
+				}
+				return true;
+			},
+		);
+
 		answers.API_LOG_LEVEL = await promptList(
 			"API_LOG_LEVEL",
 			"Log level:",
@@ -464,15 +839,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio port:",
 			"9000",
 		);
-		const existingMinioPassword =
+		// Treat empty string as unset so users can supply a new secret
+		const rawMinioPassword =
 			answers.MINIO_ROOT_PASSWORD ?? process.env.MINIO_ROOT_PASSWORD;
+		const existingMinioPassword = rawMinioPassword || undefined;
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
 			existingMinioPassword ?? "password",
 		);
 		if (existingMinioPassword !== undefined) {
-			// Configured password found (including empty string), validate against it
+			// Configured non-empty password found, validate against it
 			const minioPassword = existingMinioPassword;
 			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
 				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
@@ -484,7 +861,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
 		} else {
-			// No configured value: set both answers.MINIO_ROOT_PASSWORD and
+			// No configured value (or empty): set both answers.MINIO_ROOT_PASSWORD and
 			// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
 			// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
 			answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
@@ -514,15 +891,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Postgres host:",
 			"postgres",
 		);
-		const postgresPassword =
+		// Treat empty string as unset so users can supply a new secret
+		const rawPostgresPassword =
 			answers.POSTGRES_PASSWORD ?? process.env.POSTGRES_PASSWORD;
+		const postgresPassword = rawPostgresPassword || undefined;
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
 			postgresPassword ?? "password",
 		);
 		if (postgresPassword !== undefined) {
-			// Configured password found (including empty string), validate against it
+			// Configured non-empty password found, validate against it
 			const postgresPasswordLocal = postgresPassword;
 			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
 				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
@@ -534,7 +913,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
 		} else {
-			// No configured value: set both answers.POSTGRES_PASSWORD and
+			// No configured value (or empty): set both answers.POSTGRES_PASSWORD and
 			// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
 			// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
 			answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
@@ -547,6 +926,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"API_POSTGRES_PORT",
 			"Postgres port:",
 			"5432",
+			validatePort,
 		);
 		answers.API_POSTGRES_SSL_MODE = await promptList(
 			"API_POSTGRES_SSL_MODE",
@@ -582,7 +962,7 @@ export async function cloudbeaverSetup(
 		answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
 			"CLOUDBEAVER_ADMIN_PASSWORD",
 			"CloudBeaver admin password:",
-			"password",
+			process.env.CLOUDBEAVER_ADMIN_PASSWORD ?? "",
 			validateCloudBeaverPassword,
 		);
 		answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
@@ -661,11 +1041,32 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				}
 			}
 		}
+		// Use already-synced API_MINIO_SECRET_KEY as default if available
+		const minioPasswordDefault =
+			answers.API_MINIO_SECRET_KEY ??
+			answers.MINIO_ROOT_PASSWORD ??
+			process.env.MINIO_ROOT_PASSWORD ??
+			"password";
 		answers.MINIO_ROOT_PASSWORD = await promptInput(
 			"MINIO_ROOT_PASSWORD",
 			"Minio root password:",
-			"password",
+			minioPasswordDefault,
 		);
+		// Sync back to API_MINIO_SECRET_KEY if it was set
+		if (answers.API_MINIO_SECRET_KEY !== undefined) {
+			if (answers.MINIO_ROOT_PASSWORD !== answers.API_MINIO_SECRET_KEY) {
+				// User changed MINIO_ROOT_PASSWORD, update API_MINIO_SECRET_KEY to match
+				answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+				process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+				console.log(
+					"ℹ️  API_MINIO_SECRET_KEY updated to match MINIO_ROOT_PASSWORD",
+				);
+			}
+		} else {
+			// No API_MINIO_SECRET_KEY set yet, set it now
+			answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+			process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+		}
 		answers.MINIO_ROOT_USER = await promptInput(
 			"MINIO_ROOT_USER",
 			"Minio root user:",
@@ -698,11 +1099,32 @@ export async function postgresSetup(
 				validatePort,
 			);
 		}
+		// Use already-synced API_POSTGRES_PASSWORD as default if available
+		const postgresPasswordDefault =
+			answers.API_POSTGRES_PASSWORD ??
+			answers.POSTGRES_PASSWORD ??
+			process.env.POSTGRES_PASSWORD ??
+			"password";
 		answers.POSTGRES_PASSWORD = await promptInput(
 			"POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			postgresPasswordDefault,
 		);
+		// Sync back to API_POSTGRES_PASSWORD if it was set
+		if (answers.API_POSTGRES_PASSWORD !== undefined) {
+			if (answers.POSTGRES_PASSWORD !== answers.API_POSTGRES_PASSWORD) {
+				// User changed POSTGRES_PASSWORD, update API_POSTGRES_PASSWORD to match
+				answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+				process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+				console.log(
+					"ℹ️  API_POSTGRES_PASSWORD updated to match POSTGRES_PASSWORD",
+				);
+			}
+		} else {
+			// No API_POSTGRES_PASSWORD set yet, set it now
+			answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+			process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+		}
 		answers.POSTGRES_USER = await promptInput(
 			"POSTGRES_USER",
 			"Postgres user:",
@@ -760,7 +1182,13 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	}
 	return answers;
 }
+
 export async function setup(): Promise<SetupAnswers> {
+	// Reset state variables at the start of each setup call
+	// This ensures clean state for tests and multiple setup() calls
+	backupCreated = false;
+	cleanupInProgress = false;
+
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
 	if (await checkEnvFile()) {
@@ -774,12 +1202,15 @@ export async function setup(): Promise<SetupAnswers> {
 		}
 	}
 	dotenv.config({ path: envFileName });
-	process.once("SIGINT", async () => {
-		console.log("\nProcess interrupted! Undoing changes...");
-		answers = {};
-		await restoreLatestBackup();
-		process.exit(1);
-	});
+
+	// Remove previous SIGINT handler if one exists to prevent accumulation
+	if (sigintHandler) {
+		process.removeListener("SIGINT", sigintHandler);
+	}
+
+	// Register the SIGINT handler
+	sigintHandler = sigintHandlerFunction;
+	process.once("SIGINT", sigintHandler);
 	if (await checkEnvFile()) {
 		const isInteractive =
 			initialCI !== "true" && process.stdin && process.stdin.isTTY;
@@ -802,7 +1233,7 @@ export async function setup(): Promise<SetupAnswers> {
 			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
 		}
 		try {
-			await envFileBackup(shouldBackup);
+			backupCreated = await envFileBackup(shouldBackup);
 		} catch (err) {
 			if (process.env.NODE_ENV === "production" || initialCI === "true") {
 				console.error("envFileBackup failed (fatal):", err);
@@ -813,6 +1244,14 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	answers = await setCI(answers);
 	await initializeEnvFile(answers);
+	const useDefaultApi = await promptConfirm(
+		"useDefaultApi",
+		"Use recommended default API settings?",
+		true,
+	);
+	if (!useDefaultApi) {
+		answers = await apiSetup(answers);
+	}
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
 		"Use recommended default Minio settings?",
@@ -847,14 +1286,6 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultCaddy) {
 		answers = await caddySetup(answers);
 	}
-	const useDefaultApi = await promptConfirm(
-		"useDefaultApi",
-		"Use recommended default API settings?",
-		true,
-	);
-	if (!useDefaultApi) {
-		answers = await apiSetup(answers);
-	}
 	answers = await administratorEmail(answers);
 	const setupReCaptcha = await promptConfirm(
 		"setupReCaptcha",
@@ -863,6 +1294,23 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupReCaptcha) {
 		answers = await reCaptchaSetup(answers);
+	}
+	answers = await emailSetup(answers);
+	const setupOAuth = await promptConfirm(
+		"setupOAuth",
+		"Do you want to set up OAuth providers now?",
+		false,
+	);
+	if (setupOAuth) {
+		answers = await oauthSetup(answers);
+	}
+	const setupMetrics = await promptConfirm(
+		"setupMetrics",
+		"Do you want to configure performance metrics settings now?",
+		false,
+	);
+	if (setupMetrics) {
+		answers = await metricsSetup(answers);
 	}
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");

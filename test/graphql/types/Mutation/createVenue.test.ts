@@ -51,8 +51,8 @@ const Mutation_createVenue = graphql(`
  * - Lines 200-209 (defensive Postgres driver bug check) are tested via transaction mocking.
  * - Achieves 100% statement coverage with all business logic tested.
  *
- * Known Validation Gaps:
- * - Negative capacity values (e.g., -10) are currently accepted by the API
+ * Known Validation Notes:
+ * - Negative capacity values (e.g., -10) are rejected by the API
  * - Whitespace-only names (e.g., " ") are currently accepted by the API
  * - Consider adding validation in createVenue.ts resolver for these edge cases
  *
@@ -357,11 +357,89 @@ suite("Mutation field createVenue", () => {
 								issues: expect.arrayContaining([
 									expect.objectContaining({
 										argumentPath: ["input", "organizationId"],
-										message: expect.stringContaining("uuid"),
+										message: "Invalid UUID",
 									}),
 								]),
 							}),
 							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+
+			test("rejects negative capacity value", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+								capacity: -10,
+							},
+						},
+					},
+				);
+
+				// Negative capacity should be rejected by the schema
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							message: expect.any(String),
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "capacity"],
+									}),
+								]),
+							}),
 							path: ["createVenue"],
 						}),
 					]),
@@ -1618,70 +1696,6 @@ suite("Mutation field createVenue", () => {
 				expect(createVenueResult.data.createVenue?.capacity).toBe(1000000);
 			});
 
-			test("accepts negative capacity value (documents current API behavior)", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				const createOrganizationResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								name: `TestOrg_${faker.string.ulid()}`,
-								description: faker.lorem.sentence(),
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					createOrganizationResult.data.createOrganization?.id,
-				);
-				createdResources.organizationIds.push(
-					createOrganizationResult.data.createOrganization.id,
-				);
-
-				const createVenueResult = await mercuriusClient.mutate(
-					Mutation_createVenue,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								organizationId:
-									createOrganizationResult.data.createOrganization.id,
-								name: `Venue_${faker.string.ulid()}`,
-								description: faker.lorem.sentence(),
-								capacity: -10, // Negative capacity currently accepted
-							},
-						},
-					},
-				);
-
-				// Documents that API currently accepts negative capacity
-				expect(createVenueResult.errors).toBeUndefined();
-				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
-				expect(createVenueResult.data.createVenue.capacity).toBe(-10);
-			});
-
 			test("accepts whitespace-only venue name (documents current API behavior)", async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
@@ -1732,7 +1746,7 @@ suite("Mutation field createVenue", () => {
 							input: {
 								organizationId:
 									createOrganizationResult.data.createOrganization.id,
-								name: "   ", // Whitespace-only name currently accepted
+								name: "   ", // Whitespace-only name accepted
 								description: faker.lorem.sentence(),
 							},
 						},

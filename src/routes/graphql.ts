@@ -1,3 +1,4 @@
+import { type Span, trace } from "@opentelemetry/api";
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
@@ -10,6 +11,8 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import { observabilityConfig } from "../config/observability";
+import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -20,6 +23,10 @@ import {
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
+import {
+	isPerformanceTracker,
+	type PerformanceTracker,
+} from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
@@ -53,6 +60,19 @@ type InitialContext = {
 			socket: WebSocket;
 	  }
 );
+
+/**
+ * Type for the data passed to the subscription onConnect callback.
+ * Contains the authorization payload and optional socket with performance tracker.
+ */
+type SubscriptionConnectionData = {
+	payload?: { authorization?: string };
+	socket?: {
+		request?: {
+			perf?: PerformanceTracker;
+		};
+	};
+};
 
 export type CreateContext = (
 	initialContext: InitialContext,
@@ -157,9 +177,15 @@ export const createContext: CreateContext = async (initialContext) => {
 	});
 
 	return {
-		cache: fastify.cache,
+		cache: request.perf
+			? metricsCacheProxy(fastify.cache, request.perf)
+			: fastify.cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient, fastify.cache),
+		dataloaders: createDataloaders(
+			fastify.drizzleClient,
+			fastify.cache,
+			request.perf,
+		),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -172,6 +198,7 @@ export const createContext: CreateContext = async (initialContext) => {
 
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
+		perf: request.perf,
 	};
 };
 
@@ -246,8 +273,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			};
 		},
 		subscription: {
-			onConnect: async (data) => {
-				const { payload } = data;
+			onConnect: async (data: SubscriptionConnectionData) => {
+				const { payload, socket } = data;
 				if (!payload?.authorization) {
 					return false;
 				}
@@ -261,6 +288,14 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						"Subscription connection authorized.",
 					);
 
+					// Extract perf from socket.request.perf if available
+					const perf =
+						socket?.request &&
+						"perf" in socket.request &&
+						isPerformanceTracker(socket.request.perf)
+							? socket.request.perf
+							: undefined;
+
 					return {
 						cache: fastify.cache,
 						currentClient: {
@@ -270,6 +305,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						dataloaders: createDataloaders(
 							fastify.drizzleClient,
 							fastify.cache,
+							perf,
 						),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
@@ -280,6 +316,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						log: fastify.log,
 						minio: fastify.minio,
 						notification: new NotificationService(),
+						perf,
 					};
 				} catch (error) {
 					fastify.log.error(
@@ -342,6 +379,52 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			);
 		}
 	});
+
+	// GraphQL operation tracing - create spans for each operation
+	if (observabilityConfig.enabled) {
+		const tracer = trace.getTracer("talawa-api");
+
+		fastify.graphql.addHook(
+			"preExecution",
+			async (_schema, document, context) => {
+				// Extract operation name from the document - avoid logging PII
+				const operationDefinition = document.definitions.find(
+					(def) => def.kind === "OperationDefinition",
+				);
+				const operationName =
+					(operationDefinition &&
+						"name" in operationDefinition &&
+						operationDefinition.name?.value) ||
+					"anonymous";
+				const operationType =
+					(operationDefinition &&
+						"operation" in operationDefinition &&
+						operationDefinition.operation) ||
+					"unknown";
+
+				// Start a span for the GraphQL operation
+				const span = tracer.startSpan(`graphql:${operationName}`);
+				span.setAttribute("graphql.operation.name", operationName);
+				span.setAttribute("graphql.operation.type", operationType);
+
+				// Store span on context for later cleanup
+				(context as { _tracingSpan?: Span })._tracingSpan = span;
+			},
+		);
+
+		fastify.graphql.addHook("onResolution", async (execution, context) => {
+			// End the span created in preExecution
+			const span = (context as { _tracingSpan?: Span })._tracingSpan;
+			if (span) {
+				// Record if there were errors (without logging error details/PII)
+				if (execution.errors && execution.errors.length > 0) {
+					span.setAttribute("graphql.errors.count", execution.errors.length);
+				}
+				span.end();
+			}
+		});
+	}
+
 	fastify.graphql.addHook(
 		"preExecution",
 		async (schema, context, document, variables) => {
@@ -365,6 +448,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			if (operationType === "mutation") {
 				complexity.complexity +=
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
+			}
+
+			// Track GraphQL complexity score in performance tracker
+			if (request.perf) {
+				request.perf.trackComplexity(complexity.complexity);
 			}
 
 			// Get the IP address of the client making the request

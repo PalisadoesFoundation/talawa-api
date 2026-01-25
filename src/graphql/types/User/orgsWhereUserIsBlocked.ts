@@ -21,7 +21,7 @@ const cursorSchema = z.object({
 	createdAt: z.string().refine((val) => !Number.isNaN(Date.parse(val)), {
 		message: "Invalid date format for createdAt",
 	}),
-	organizationId: z.string().uuid(),
+	organizationId: z.string(),
 });
 
 const blockedUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema

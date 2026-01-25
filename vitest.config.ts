@@ -44,7 +44,10 @@ if (isCI) {
 }
 
 // Skip global setup for pure unit tests that don't need server/db
-const isUnitTest = process.argv.some((arg) => arg.includes("test/unit/"));
+// Skip global setup for pure unit tests that don't need server/db
+const isUnitTest = process.argv.some((arg) =>
+	/test[\\/](unit|install)[\\/]/.test(arg),
+);
 
 export default defineConfig({
 	plugins: [tsconfigPaths()],

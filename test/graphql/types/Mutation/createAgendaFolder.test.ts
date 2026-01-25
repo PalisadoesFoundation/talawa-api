@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -22,81 +22,89 @@ let cachedAdminAuth: {
 	userId: string;
 } | null = null;
 
-// Helper function to get admin authentication token and user id
 async function getAdminAuth() {
-	if (cachedAdminAuth !== null) {
-		return cachedAdminAuth;
-	}
-	try {
-		if (
-			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
-		}
+	if (cachedAdminAuth) return cachedAdminAuth;
 
-		// Fetching admin authentication token and user id from the database
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		// Check for GraphQL errors
-		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${
-					adminSignInResult.errors[0]?.message || "Unknown error"
-				}`,
-			);
-		}
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-		assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
+	mercuriusClient.setHeaders({});
 
-		cachedAdminAuth = {
-			token: adminSignInResult.data.signIn.authenticationToken,
-			userId: adminSignInResult.data.signIn.user.id,
-		};
+	const {
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
+		API_ADMINISTRATOR_USER_PASSWORD: password,
+	} = server.envConfig;
 
-		return cachedAdminAuth;
-	} catch (error) {
+	if (!email || !password) {
 		throw new Error(
-			`Failed to get admin authentication token: ${
-				error instanceof Error ? error.message : "Unknown error"
-			}`,
+			"Missing admin credentials for tests. " +
+				"Please set API_ADMINISTRATOR_USER_EMAIL_ADDRESS and " +
+				"API_ADMINISTRATOR_USER_PASSWORD in your environment.",
 		);
 	}
+
+	const result = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(result.data?.signIn?.user?.id);
+
+	cachedAdminAuth = {
+		token: result.data.signIn.authenticationToken,
+		userId: result.data.signIn.user.id,
+	};
+
+	return cachedAdminAuth;
 }
 
-// This Helper function creates an environment consisting of an organization and an event
-async function createOrganizationAndEvent(
-	adminAuthToken: string,
-	adminUserId: string,
-) {
-	const createOrganizationResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
+async function getAdminUserId() {
+	const auth = await getAdminAuth();
+	return auth.userId;
+}
+
+async function addOrganizationMembership(params: {
+	adminAuthToken: string;
+	memberId: string;
+	organizationId: string;
+	role: "administrator" | "regular";
+}) {
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
 		{
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
+			headers: { authorization: `bearer ${params.adminAuthToken}` },
 			variables: {
 				input: {
-					name: `Org ${faker.string.uuid()}`,
-					countryCode: "us",
+					memberId: params.memberId,
+					organizationId: params.organizationId,
+					role: params.role,
 				},
 			},
 		},
 	);
 
-	assertToBeNonNullish(createOrganizationResult.data?.createOrganization);
+	expect(result.errors).toBeUndefined();
+}
 
-	const organizationId = createOrganizationResult.data.createOrganization.id;
+async function createOrganizationAndEvent(
+	adminAuthToken: string,
+	adminUserId: string,
+) {
+	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${adminAuthToken}` },
+		variables: {
+			input: {
+				name: `Org ${faker.string.uuid()}`,
+				countryCode: "us",
+			},
+		},
+	});
 
-	// Ensure the admin user is a member of the organization to create events
+	assertToBeNonNullish(orgResult.data?.createOrganization);
+	const organizationId = orgResult.data.createOrganization.id;
+
 	await addOrganizationMembership({
 		adminAuthToken,
 		memberId: adminUserId,
@@ -104,11 +112,8 @@ async function createOrganizationAndEvent(
 		role: "administrator",
 	});
 
-	// Helper function to check if the event was created successfully
-	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-		headers: {
-			authorization: `bearer ${adminAuthToken}`,
-		},
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
@@ -120,110 +125,70 @@ async function createOrganizationAndEvent(
 		},
 	});
 
-	assertToBeNonNullish(createEventResult.data?.createEvent);
-
-	const eventId = createEventResult.data.createEvent.id;
+	assertToBeNonNullish(eventResult.data?.createEvent);
+	const eventId = eventResult.data.createEvent.id;
 
 	return {
 		organizationId,
 		eventId,
 		cleanup: async () => {
 			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: eventId,
-					},
-				},
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: eventId } },
 			});
 
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: organizationId,
-					},
-				},
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
 			});
 		},
 	};
-}
-
-// This helper function is to make adminstrator member of an organization
-async function addOrganizationMembership(params: {
-	adminAuthToken: string;
-	memberId: string;
-	organizationId: string;
-	role: "administrator" | "regular";
-}) {
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${params.adminAuthToken}` },
-		variables: {
-			input: {
-				memberId: params.memberId,
-				organizationId: params.organizationId,
-				role: params.role,
-			},
-		},
-	});
-}
-
-// This helper function is to get the admin user id from the cached admin authentication
-async function getAdminUserId(): Promise<string> {
-	if (cachedAdminAuth?.userId) {
-		return cachedAdminAuth.userId;
-	}
-	const auth = await getAdminAuth();
-	return auth.userId;
 }
 
 suite("Mutation field createAgendaFolder", () => {
 	const testCleanupFunctions: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
+		vi.restoreAllMocks();
+
 		for (const cleanup of testCleanupFunctions.reverse()) {
 			try {
 				await cleanup();
-			} catch (error) {
-				console.error("Cleanup failed:", error);
+			} catch {
+				// Cleanup errors are intentionally swallowed to prevent cascading failures
+				// during teardown. The test result is already determined at this point.
 			}
 		}
-
 		testCleanupFunctions.length = 0;
 	});
 
-	suite("Authorization and Authentication", () => {
-		test("Returns an error if the client is not authenticated", async () => {
+	suite("Authentication & Authorization", () => {
+		test("Returns error when client is not authenticated", async () => {
 			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
 				variables: {
 					input: {
-						name: "Test Folder",
 						eventId: faker.string.uuid(),
-						isAgendaItemFolder: true,
+						organizationId: faker.string.uuid(),
+						name: "Folder",
+						sequence: 1,
 					},
 				},
 			});
 
-			expect(result.data?.createAgendaFolder).toEqual(null);
-
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
+						path: ["createAgendaFolder"],
 						extensions: expect.objectContaining({
 							code: "unauthenticated",
 						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
 					}),
 				]),
 			);
 		});
 
-		test("Returns an error if the user is present in the token but not in the database", async () => {
+		test("Returns error when token user does not exist in DB", async () => {
 			const regularUser = await createRegularUserUsingAdmin();
 
 			await server.drizzleClient
@@ -236,89 +201,169 @@ suite("Mutation field createAgendaFolder", () => {
 				},
 				variables: {
 					input: {
-						name: "Test Folder",
 						eventId: faker.string.uuid(),
-						isAgendaItemFolder: true,
+						organizationId: faker.string.uuid(),
+						name: "Folder",
+						sequence: 1,
 					},
 				},
 			});
 
-			expect(result.data.createAgendaFolder).toEqual(null);
-
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
 							code: "unauthenticated",
 						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
 					}),
 				]),
 			);
 		});
+	});
 
-		test("Returns an error when a non-member regular user tries to create a folder", async () => {
-			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
-				getAdminAuth(),
-				createRegularUserUsingAdmin(),
-			]);
-
-			const { cleanup, eventId } = await createOrganizationAndEvent(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-
+	suite("Input Validation", () => {
+		test("Returns error for empty name", async () => {
+			const { token } = await getAdminAuth();
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
 			testCleanupFunctions.push(cleanup);
 
 			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${regularUser.authToken}`,
-				},
+				headers: { authorization: `bearer ${token}` },
 				variables: {
 					input: {
-						name: "Test Folder",
 						eventId,
-						isAgendaItemFolder: true,
+						organizationId,
+						name: "",
+						sequence: 1,
 					},
 				},
 			});
 
-			expect(result.data.createAgendaFolder).toEqual(null);
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "eventId"],
-								}),
-							]),
+							code: "invalid_arguments",
 						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
 					}),
 				]),
 			);
 		});
 
-		test("Returns an error when an organization member without admin rights tries to create a folder", async () => {
-			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
+		test("Returns error for invalid arguments", async () => {
+			const { token } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						eventId: "not-a-uuid",
+						organizationId: "also-not-a-uuid",
+						name: "Folder",
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Resource Existence", () => {
+		test("Returns error when event does not exist", async () => {
+			const { token } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						eventId: faker.string.uuid(),
+						organizationId: faker.string.uuid(),
+						name: "Folder",
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Authorization Logic", () => {
+		test("Returns error when organizationId does not match event organization", async () => {
+			const [{ token }, orgAdmin] = await Promise.all([
 				getAdminAuth(),
 				createRegularUserUsingAdmin(),
 			]);
 
 			const { cleanup, eventId, organizationId } =
-				await createOrganizationAndEvent(
-					adminAuthToken,
-					await getAdminUserId(),
-				);
-
+				await createOrganizationAndEvent(token, await getAdminUserId());
 			testCleanupFunctions.push(cleanup);
 
 			await addOrganizationMembership({
-				adminAuthToken,
+				adminAuthToken: token,
+				memberId: orgAdmin.userId,
+				organizationId,
+				role: "administrator",
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${orgAdmin.authToken}` },
+				variables: {
+					input: {
+						eventId,
+						organizationId: faker.string.uuid(),
+						name: "Folder",
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("Returns error when regular member tries to create folder", async () => {
+			const [{ token }, regularUser] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
+
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
+			testCleanupFunctions.push(cleanup);
+
+			await addOrganizationMembership({
+				adminAuthToken: token,
 				memberId: regularUser.userId,
 				organizationId,
 				role: "regular",
@@ -330,383 +375,21 @@ suite("Mutation field createAgendaFolder", () => {
 				},
 				variables: {
 					input: {
-						name: "Test Folder",
 						eventId,
-						isAgendaItemFolder: true,
-					},
-				},
-			});
-
-			expect(result.data.createAgendaFolder).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "eventId"],
-								}),
-							]),
-						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
-					}),
-				]),
-			);
-		});
-		test("Allows super admin to create folder WITHOUT organization membership", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			// Create a new Organization to isolate this test context
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: {
-						input: {
-							name: `Org ${faker.string.uuid()}`,
-							countryCode: "us",
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(createOrgResult.data?.createOrganization);
-			const organizationId = createOrgResult.data.createOrganization.id;
-
-			// Create a separate user to act as the Organization Administrator
-			// This user will own the event, ensuring the Super Admin has no direct ownership relation
-			const regularUser = await createRegularUserUsingAdmin();
-
-			await addOrganizationMembership({
-				adminAuthToken,
-				memberId: regularUser.userId,
-				organizationId,
-				role: "administrator",
-			});
-
-			// Create the target Event using the Organization Administrator's credentials
-			const createEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `bearer ${regularUser.authToken}` },
-					variables: {
-						input: {
-							name: `Event ${faker.string.uuid()}`,
-							organizationId,
-							startAt: new Date(Date.now() + 86400000).toISOString(),
-							endAt: new Date(Date.now() + 90000000).toISOString(),
-							description: "Test event for super admin bypass",
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(createEventResult.data?.createEvent);
-			const eventId = createEventResult.data.createEvent.id;
-
-			// Register cleanup operations immediately to ensure database hygiene on failure
-			testCleanupFunctions.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: eventId } },
-				});
-
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: organizationId } },
-				});
-			});
-
-			// Execute Mutation: Super Admin attempts to create a folder
-			// Note: The Admin is NOT a member of the organization, validating the global role bypass
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						name: "Super Admin Global Access Folder",
-						eventId,
-						isAgendaItemFolder: false,
-					},
-				},
-			});
-
-			// Verify the folder was created successfully
-			assertToBeNonNullish(result.data?.createAgendaFolder);
-			expect(result.data.createAgendaFolder.name).toEqual(
-				"Super Admin Global Access Folder",
-			);
-			expect(result.errors).toBeUndefined();
-		});
-
-		test("Allows super admin to create folder as organization administrator", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, eventId } = await createOrganizationAndEvent(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						name: "Super Admin Folder",
-						eventId,
-						isAgendaItemFolder: false,
-					},
-				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaFolder);
-			expect(result.data.createAgendaFolder.name).toEqual("Super Admin Folder");
-			expect(result.errors).toBeUndefined();
-		});
-	});
-
-	suite("Input Validation", () => {
-		test("Returns an error when invalid arguments are provided", async () => {
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				variables: {
-					input: {
-						name: 123 as unknown as string,
-						eventId: "not-a-uuid",
-						isAgendaItemFolder: true,
+						organizationId,
+						name: "Folder",
+						sequence: 1,
 					},
 				},
 			});
 
 			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
-
-			const errors = result.errors ?? [];
-			expect(
-				errors.some(
-					(error) =>
-						error.extensions?.code === "invalid_arguments" ||
-						error.message.includes("got invalid value") ||
-						error.message.includes("cannot represent a non string value") ||
-						error.message.includes("Graphql validation error"),
-				),
-			).toBe(true);
-		});
-	});
-
-	suite("Resource Existence", () => {
-		test("Returns an error when event does not exist", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						name: "Test Folder",
-						eventId: faker.string.uuid(),
-						isAgendaItemFolder: true,
-					},
-				},
-			});
-
-			expect(result.data.createAgendaFolder).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "eventId"],
-								}),
-							]),
+							code: "unauthorized_action_on_arguments_associated_resources",
 						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when parent folder does not exist", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, eventId } = await createOrganizationAndEvent(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						name: "Test Folder",
-						eventId,
-						parentFolderId: faker.string.uuid(),
-						isAgendaItemFolder: false,
-					},
-				},
-			});
-
-			expect(result.data.createAgendaFolder).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "parentFolderId"],
-								}),
-							]),
-						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when parent folder belongs to different event", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-			const adminUserId = await getAdminUserId();
-
-			const { cleanup: cleanup1, eventId: eventId1 } =
-				await createOrganizationAndEvent(adminAuthToken, adminUserId);
-			testCleanupFunctions.push(cleanup1);
-
-			const { cleanup: cleanup2, eventId: eventId2 } =
-				await createOrganizationAndEvent(adminAuthToken, adminUserId);
-			testCleanupFunctions.push(cleanup2);
-
-			const createParentFolderResult = await mercuriusClient.mutate(
-				Mutation_createAgendaFolder,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							name: "Parent Folder",
-							eventId: eventId1,
-							isAgendaItemFolder: false,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(createParentFolderResult.data?.createAgendaFolder);
-			const parentFolderId =
-				createParentFolderResult.data.createAgendaFolder.id;
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						name: "Child Folder",
-						eventId: eventId2,
-						parentFolderId,
-						isAgendaItemFolder: false,
-					},
-				},
-			});
-
-			expect(result.data.createAgendaFolder).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "parentFolderId"],
-									message:
-										"This agenda folder does not belong to the provided event.",
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "eventId"],
-									message:
-										"This event does not contain the provided parent agenda folder.",
-								}),
-							]),
-						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when parent folder cannot have children", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, eventId } = await createOrganizationAndEvent(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-
-			testCleanupFunctions.push(cleanup);
-
-			const createParentFolderResult = await mercuriusClient.mutate(
-				Mutation_createAgendaFolder,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							name: "Parent Folder",
-							eventId,
-							isAgendaItemFolder: true,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(createParentFolderResult.data?.createAgendaFolder);
-			const parentFolderId =
-				createParentFolderResult.data.createAgendaFolder.id;
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						name: "Child Folder",
-						eventId,
-						parentFolderId,
-						isAgendaItemFolder: false,
-					},
-				},
-			});
-
-			expect(result.data.createAgendaFolder).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "parentFolderId"],
-									message:
-										"This agenda folder cannot be a parent folder for other agenda folders.",
-								}),
-							]),
-						}),
-						message: expect.any(String),
-						path: ["createAgendaFolder"],
 					}),
 				]),
 			);
@@ -714,102 +397,101 @@ suite("Mutation field createAgendaFolder", () => {
 	});
 
 	suite("Successful Creation", () => {
-		test("Creates agenda folder successfully when admin user creates it", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
+		test("Successfully creates agenda folder", async () => {
+			const [{ token }, orgAdmin] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
 
-			const { cleanup, eventId } = await createOrganizationAndEvent(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
 			testCleanupFunctions.push(cleanup);
 
+			await addOrganizationMembership({
+				adminAuthToken: token,
+				memberId: orgAdmin.userId,
+				organizationId,
+				role: "administrator",
+			});
+
 			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
+				headers: { authorization: `bearer ${orgAdmin.authToken}` },
 				variables: {
 					input: {
-						name: "Test Folder",
 						eventId,
-						isAgendaItemFolder: true,
+						organizationId,
+						name: "Agenda Folder",
+						description: "Test folder",
+						sequence: 1,
 					},
 				},
 			});
 
-			assertToBeNonNullish(result.data?.createAgendaFolder);
-			const createdFolder = result.data.createAgendaFolder as {
-				id: string;
-				name: string | null;
-				isAgendaItemFolder: boolean;
-				event: { id: string } | null;
-			};
-			expect(createdFolder.name).toEqual("Test Folder");
-			assertToBeNonNullish(createdFolder.event);
-			expect(createdFolder.event.id).toEqual(eventId);
-			expect(createdFolder.isAgendaItemFolder).toEqual(true);
 			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createAgendaFolder);
+			expect(result.data.createAgendaFolder).toMatchObject({
+				name: "Agenda Folder",
+				description: "Test folder",
+				sequence: 1,
+			});
+			expect(result.data.createAgendaFolder.id).toBeDefined();
+			expect(result.data.createAgendaFolder.event?.id).toBe(eventId);
 		});
+	});
 
-		test("Creates agenda folder with parent folder successfully", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
+	suite("Error Handling", () => {
+		test("Returns unexpected error when insert returns empty array", async () => {
+			const { token } = await getAdminAuth();
 
-			const { cleanup, eventId } = await createOrganizationAndEvent(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
 			testCleanupFunctions.push(cleanup);
 
-			const createParentFolderResult = await mercuriusClient.mutate(
-				Mutation_createAgendaFolder,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							name: "Parent Folder",
-							eventId,
-							isAgendaItemFolder: false,
-						},
-					},
+			const originalInsert = server.drizzleClient.insert.bind(
+				server.drizzleClient,
+			);
+
+			vi.spyOn(server.drizzleClient, "insert").mockImplementationOnce(
+				(table: unknown) => {
+					const tableName =
+						typeof table === "object" &&
+						table !== null &&
+						(table as Record<symbol, unknown>)[Symbol.for("drizzle:Name")];
+
+					if (tableName === "agenda_folders") {
+						return {
+							values: () => ({
+								returning: async () => [],
+							}),
+						} as unknown as ReturnType<typeof server.drizzleClient.insert>;
+					}
+
+					return originalInsert(table as never);
 				},
 			);
 
-			assertToBeNonNullish(createParentFolderResult.data?.createAgendaFolder);
-			const parentFolderId =
-				createParentFolderResult.data.createAgendaFolder.id;
-
 			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
+				headers: { authorization: `bearer ${token}` },
 				variables: {
 					input: {
-						name: "Child Folder",
 						eventId,
-						parentFolderId,
-						isAgendaItemFolder: false,
+						organizationId,
+						name: "Folder",
+						sequence: 1,
 					},
 				},
 			});
 
-			assertToBeNonNullish(result.data?.createAgendaFolder);
-			const createdFolder = result.data.createAgendaFolder as {
-				id: string;
-				name: string | null;
-				isAgendaItemFolder: boolean;
-				event: { id: string } | null;
-				parentFolder: { id: string } | null;
-			};
-			expect(createdFolder.name).toEqual("Child Folder");
-			assertToBeNonNullish(createdFolder.event);
-			expect(createdFolder.event.id).toEqual(eventId);
-			assertToBeNonNullish(createdFolder.parentFolder);
-			expect(createdFolder.parentFolder.id).toEqual(parentFolderId);
-			expect(createdFolder.isAgendaItemFolder).toEqual(false);
-			expect(result.errors).toBeUndefined();
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+					}),
+				]),
+			);
 		});
 	});
 });

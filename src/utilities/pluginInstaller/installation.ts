@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { ulid } from "ulidx";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
+import { rootLogger } from "~/src/utilities/logging/logger";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { extractPluginZip } from "./extraction";
 import type { PluginInstallationOptions } from "./types";
@@ -82,7 +83,7 @@ export async function installPluginFromZip(
 		// Extract plugin files
 		await extractPluginZip(tempPath, pluginId, structure);
 
-		console.log(`Plugin files extracted successfully for: ${pluginId}`);
+		rootLogger.info({ pluginId }, "Plugin files extracted successfully");
 
 		// Create or update plugin record in database
 		let plugin: unknown;
@@ -123,7 +124,10 @@ export async function installPluginFromZip(
 					// Activate plugin
 					await pluginManager.activatePlugin(pluginId);
 				} catch (error) {
-					console.error(`Failed to activate plugin ${pluginId}:`, error);
+					rootLogger.error(
+						{ pluginId, err: error },
+						"Failed to activate plugin",
+					);
 					// Don't throw error, just log it - plugin is installed but not activated
 				}
 			}
@@ -153,7 +157,7 @@ export async function installPluginFromZip(
 		try {
 			await import("node:fs/promises").then((fs) => fs.unlink(tempPath));
 		} catch (error) {
-			console.error("Failed to clean up temporary file:", error);
+			rootLogger.warn({ err: error }, "Failed to clean up temporary file");
 		}
 	}
 }

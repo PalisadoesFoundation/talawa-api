@@ -12,7 +12,7 @@ describe("ActionItem Resolver - Updater Field", () => {
 
 	beforeEach(() => {
 		mockActionItem = {
-			id: "01234567-89ab-cdef-0123-456789abcdef",
+			id: "01234567-89ab-4def-a123-456789abcdef",
 			organizationId: "org-123",
 			updaterId: "user-456",
 			assignedAt: new Date("2024-01-01T10:00:00Z"),

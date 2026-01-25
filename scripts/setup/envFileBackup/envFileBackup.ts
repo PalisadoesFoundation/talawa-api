@@ -1,9 +1,11 @@
 import fs, { constants } from "node:fs";
 import path from "node:path";
 
-export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
+export const envFileBackup = async (
+	shouldBackup: boolean,
+): Promise<boolean> => {
 	try {
-		if (!shouldBackup) return;
+		if (!shouldBackup) return false;
 
 		const cwd = process.cwd();
 		const envPath = path.join(cwd, ".env");
@@ -19,10 +21,12 @@ export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 			await fs.promises.copyFile(envPath, timestampedFile);
 
 			console.log(`\n Backup created at ${timestampedFile}`);
+			return true;
 		} catch (err) {
 			const e = err as NodeJS.ErrnoException;
 			if (e.code === "ENOENT") {
 				console.log("\n  No .env file found to backup.");
+				return false;
 			} else {
 				throw err;
 			}

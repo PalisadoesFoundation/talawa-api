@@ -71,15 +71,22 @@ export const Details = ({
   );
 };
 
+Input type for updating an agenda folder.
+
 ```graphql
 input MutationUpdateAgendaFolderInput {
+  description: String
   id: ID!
   name: String
-  parentFolderId: ID
+  sequence: Int
 }
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaFolderInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Description of the agenda folder.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaFolderInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -89,9 +96,9 @@ Global identifier of the agenda folder.
 
 Name of the agenda folder.
 
-#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaFolderInput.<b>parentFolderId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaFolderInput.<b>sequence</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Global identifier of the agenda folder the agenda folder is contained within.
+Sequence number of folder
 
 ### Member Of
 

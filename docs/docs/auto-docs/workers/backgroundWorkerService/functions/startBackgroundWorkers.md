@@ -4,9 +4,9 @@
 
 # Function: startBackgroundWorkers()
 
-> **startBackgroundWorkers**(`drizzleClient`, `logger`, `cache?`): `Promise`\<`void`\>
+> **startBackgroundWorkers**(`drizzleClient`, `logger`, `getMetricsSnapshots?`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L27)
+Defined in: [src/workers/backgroundWorkerService.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L31)
 
 Initializes and starts all background workers, scheduling them to run at their configured intervals.
 
@@ -16,19 +16,19 @@ Initializes and starts all background workers, scheduling them to run at their c
 
 `NodePgDatabase`\<[API Docs](/)\>
 
-The database client for queries.
+Drizzle database client
 
 ### logger
 
 `FastifyBaseLogger`
 
-The logger instance.
+Fastify logger instance
 
-### cache?
+### getMetricsSnapshots?
 
-[`CacheService`](../../../services/caching/CacheService/interfaces/CacheService.md)
+(`windowMinutes?`) => [`PerfSnapshot`](../../../utilities/metrics/performanceTracker/type-aliases/PerfSnapshot.md)[]
 
-Optional cache service for cache warming on startup.
+Optional function to retrieve performance snapshots for metrics aggregation
 
 ## Returns
 

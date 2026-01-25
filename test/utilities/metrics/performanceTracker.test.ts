@@ -1,7 +1,18 @@
-import { describe, expect, it, vi } from "vitest";
-import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	createPerformanceTracker,
+	isPerformanceTracker,
+} from "~/src/utilities/metrics/performanceTracker";
 
 describe("Performance Tracker", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it("should create a performance tracker with initial empty snapshot", () => {
 		const tracker = createPerformanceTracker();
 		const snapshot = tracker.snapshot();
@@ -82,7 +93,7 @@ describe("Performance Tracker", () => {
 
 		const asyncFn = vi.fn(async () => {
 			// Simulate async work with a delay
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await vi.advanceTimersByTimeAsync(10);
 			return "result";
 		});
 
@@ -105,7 +116,7 @@ describe("Performance Tracker", () => {
 		const tracker = createPerformanceTracker();
 
 		const asyncFn = vi.fn(async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 			throw new Error("Test error");
 		});
 
@@ -118,18 +129,18 @@ describe("Performance Tracker", () => {
 		const errorOp = snapshot.ops["error-op"];
 		expect(errorOp).toBeDefined();
 		expect(errorOp?.count).toBe(1);
-		expect(errorOp?.ms).toBeGreaterThanOrEqual(4);
+		expect(errorOp?.ms).toBeGreaterThanOrEqual(5);
 	});
 
 	it("should track multiple async operations with same name", async () => {
 		const tracker = createPerformanceTracker();
 
 		await tracker.time("query", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await vi.advanceTimersByTimeAsync(10);
 		});
 
 		await tracker.time("query", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 		});
 
 		const snapshot = tracker.snapshot();
@@ -147,7 +158,7 @@ describe("Performance Tracker", () => {
 		const end = tracker.start("manual-op");
 
 		// Simulate some work
-		await new Promise((resolve) => setTimeout(resolve, 10));
+		await vi.advanceTimersByTimeAsync(10);
 
 		end();
 
@@ -164,15 +175,15 @@ describe("Performance Tracker", () => {
 		const tracker = createPerformanceTracker();
 
 		await tracker.time("op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 		});
 
 		await tracker.time("op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await vi.advanceTimersByTimeAsync(20);
 		});
 
 		await tracker.time("op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await vi.advanceTimersByTimeAsync(10);
 		});
 
 		const snapshot = tracker.snapshot();
@@ -191,7 +202,7 @@ describe("Performance Tracker", () => {
 
 		tracker.trackDb(100);
 		await tracker.time("query", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await vi.advanceTimersByTimeAsync(10);
 		});
 
 		const snapshot = tracker.snapshot();
@@ -208,11 +219,11 @@ describe("Performance Tracker", () => {
 		tracker.trackCacheMiss();
 
 		await tracker.time("query", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await vi.advanceTimersByTimeAsync(10);
 		});
 
 		await tracker.time("render", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 		});
 
 		const snapshot = tracker.snapshot();
@@ -307,21 +318,24 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 10 });
+		// Use a higher threshold (50ms) to avoid timing-related flakiness in CI
+		const tracker = createPerformanceTracker({ slowMs: 50 });
 
+		// Fast operation - well under threshold
 		await tracker.time("fast-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 		});
 
+		// Slow operation - clearly over threshold
 		await tracker.time("slow-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await vi.advanceTimersByTimeAsync(100);
 		});
 
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
-		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(10);
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should calculate hit rate correctly", () => {
@@ -348,10 +362,10 @@ describe("Performance Tracker", () => {
 
 		tracker.trackDb(10);
 		await tracker.time("op1", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 		});
 		await tracker.time("op2", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await vi.advanceTimersByTimeAsync(5);
 		});
 
 		const snapshot = tracker.snapshot();
@@ -365,7 +379,7 @@ describe("Performance Tracker", () => {
 		// Create 60 slow operations
 		for (let i = 0; i < 60; i++) {
 			await tracker.time(`slow-${i}`, async () => {
-				await new Promise((resolve) => setTimeout(resolve, 10));
+				await vi.advanceTimersByTimeAsync(10);
 			});
 		}
 
@@ -378,11 +392,11 @@ describe("Performance Tracker", () => {
 		const tracker = createPerformanceTracker({ slowMs: 50 });
 
 		await tracker.time("op1", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 30));
+			await vi.advanceTimersByTimeAsync(30);
 		});
 
 		await tracker.time("op2", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 60));
+			await vi.advanceTimersByTimeAsync(60);
 		});
 
 		const snapshot = tracker.snapshot();
@@ -393,10 +407,9 @@ describe("Performance Tracker", () => {
 
 	it("records op timings and cache stats", async () => {
 		const perf = createPerformanceTracker({ slowMs: 1 });
-		await perf.time(
-			"db:users.byId",
-			async () => new Promise((r) => setTimeout(r, 2)),
-		);
+		await perf.time("db:users.byId", async () => {
+			await vi.advanceTimersByTimeAsync(2);
+		});
 		perf.trackCacheHit();
 		perf.trackCacheMiss();
 		perf.trackCacheMiss();
@@ -455,7 +468,7 @@ describe("Performance Tracker", () => {
 		for (let i = 0; i < 50; i++) {
 			await tracker.time(`slow-${i}`, async () => {
 				// Use increasing delays: 10ms, 11ms, 12ms, ... 59ms
-				await new Promise((resolve) => setTimeout(resolve, 10 + i));
+				await vi.advanceTimersByTimeAsync(10 + i);
 			});
 		}
 
@@ -465,7 +478,7 @@ describe("Performance Tracker", () => {
 
 		// Add one more that's slower than the minimum (50ms >> 10ms minimum)
 		await tracker.time("very-slow-replacement", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await vi.advanceTimersByTimeAsync(50);
 		});
 
 		const snapshotAfter = tracker.snapshot();
@@ -489,7 +502,7 @@ describe("Performance Tracker", () => {
 			await tracker.time(`slow-${i}`, async () => {
 				// Use increasing delays: 20ms, 21ms, 22ms, ... 69ms
 				// This ensures minMs will be at least 20ms
-				await new Promise((resolve) => setTimeout(resolve, 20 + i));
+				await vi.advanceTimersByTimeAsync(20 + i);
 			});
 		}
 
@@ -508,7 +521,7 @@ describe("Performance Tracker", () => {
 		// This tests the case where roundedMs <= minMs (line 174 condition is false)
 		await tracker.time("not-slower-than-min", async () => {
 			// Use a small delay that's guaranteed to be less than minMs
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await vi.advanceTimersByTimeAsync(10);
 		});
 
 		const snapshotAfter = tracker.snapshot();
@@ -597,7 +610,7 @@ describe("Performance Tracker", () => {
 		// and hit the if (!cur) { continue; } branch when it encounters slow[0] (undefined)
 		// The loop will skip the undefined entry and continue processing other valid entries
 		await tracker.time("very-slow", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await vi.advanceTimersByTimeAsync(50);
 		});
 
 		// Verify the tracker still works correctly after encountering undefined entries
@@ -635,7 +648,7 @@ describe("Performance Tracker", () => {
 		// because all entries are invalid (ms = null), so the loop skips them all,
 		// leaving minIdx = -1 and minMs = Infinity, which triggers the return on line 180
 		await tracker.time("very-slow", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await vi.advanceTimersByTimeAsync(50);
 		});
 
 		// The defensive check should have been triggered (minIdx === -1 || minMs === Infinity)
@@ -646,5 +659,128 @@ describe("Performance Tracker", () => {
 		// Verify the very-slow operation was NOT added (defensive check returned early)
 		const verySlowOp = snapshotAfter.slow.find((op) => op?.op === "very-slow");
 		expect(verySlowOp).toBeUndefined();
+	});
+});
+
+describe("isPerformanceTracker", () => {
+	it("should return true for a valid PerformanceTracker", () => {
+		const tracker = createPerformanceTracker();
+		expect(isPerformanceTracker(tracker)).toBe(true);
+	});
+
+	it("should return false for null", () => {
+		expect(isPerformanceTracker(null)).toBe(false);
+	});
+
+	it("should return false for undefined", () => {
+		expect(isPerformanceTracker(undefined)).toBe(false);
+	});
+
+	it("should return false for a non-object value", () => {
+		expect(isPerformanceTracker("string")).toBe(false);
+		expect(isPerformanceTracker(123)).toBe(false);
+		expect(isPerformanceTracker(true)).toBe(false);
+		expect(isPerformanceTracker([])).toBe(false);
+	});
+
+	it("should return false for an object missing trackComplexity", () => {
+		const invalidTracker = {
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing snapshot", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing trackDb", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing trackCacheHit", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing trackCacheMiss", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			time: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing time", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing start", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			time: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return true for an object with all required methods", () => {
+		const validTracker = {
+			time: () => {},
+			start: () => {},
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+		};
+		expect(isPerformanceTracker(validTracker)).toBe(true);
+	});
+
+	it("should return false for an empty object", () => {
+		expect(isPerformanceTracker({})).toBe(false);
 	});
 });

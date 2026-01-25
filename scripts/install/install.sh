@@ -2,6 +2,23 @@
 
 set -euo pipefail
 
+# Prevent the script from being sourced - must be executed directly
+if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
+    echo "" >&2
+    echo "✗ Error: This script must be executed, not sourced" >&2
+    echo "" >&2
+    echo "  Incorrect:" >&2
+    echo "    . install.sh" >&2
+    echo "    source install.sh" >&2
+    echo "" >&2
+    echo "  Correct:" >&2
+    echo "    ./install.sh" >&2
+    echo "    bash install.sh" >&2
+    echo "" >&2
+    # shellcheck disable=SC2317
+    return 1 2>/dev/null || exit 1
+fi
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

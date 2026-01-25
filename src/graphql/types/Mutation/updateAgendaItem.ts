@@ -1,6 +1,8 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachments";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateAgendaItemInput,
@@ -173,7 +175,6 @@ builder.mutationField("updateAgendaItem", (t) =>
 					await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 						columns: {
 							eventId: true,
-							isAgendaItemFolder: true,
 						},
 						where: (fields, operators) => operators.eq(fields.id, folderId),
 					});
@@ -207,21 +208,6 @@ builder.mutationField("updateAgendaItem", (t) =>
 						},
 					});
 				}
-
-				if (!existingAgendaFolder.isAgendaItemFolder) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder cannot be a folder to agenda items.",
-								},
-							],
-						},
-					});
-				}
 			}
 
 			const currentUserOrganizationMembership =
@@ -245,29 +231,92 @@ builder.mutationField("updateAgendaItem", (t) =>
 				});
 			}
 
-			const [updatedAgendaItem] = await ctx.drizzleClient
-				.update(agendaItemsTable)
-				.set({
-					description: parsedArgs.input.description,
-					duration: parsedArgs.input.duration,
-					folderId: parsedArgs.input.folderId,
-					key: parsedArgs.input.key,
-					name: parsedArgs.input.name,
+			// Use transaction to atomically update agenda item and replace attachments
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				// Build explicit partial update object to protect NOT NULL columns
+				const updates: Partial<typeof agendaItemsTable.$inferInsert> = {
 					updaterId: currentUserId,
-				})
-				.where(eq(agendaItemsTable.id, parsedArgs.input.id))
-				.returning();
+				};
 
-			// Updated agenda item not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
-			if (updatedAgendaItem === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
+				if (parsedArgs.input.description !== undefined) {
+					updates.description = parsedArgs.input.description;
+				}
+				if (parsedArgs.input.duration !== undefined) {
+					updates.duration = parsedArgs.input.duration;
+				}
+				if (parsedArgs.input.folderId !== undefined) {
+					updates.folderId = parsedArgs.input.folderId;
+				}
+				if (parsedArgs.input.key !== undefined) {
+					updates.key = parsedArgs.input.key;
+				}
+				if (parsedArgs.input.name !== undefined) {
+					updates.name = parsedArgs.input.name;
+				}
 
-			return updatedAgendaItem;
+				const [updatedAgendaItem] = await tx
+					.update(agendaItemsTable)
+					.set(updates)
+					.where(eq(agendaItemsTable.id, parsedArgs.input.id))
+					.returning();
+
+				// Updated agenda item not being returned means it was deleted or its id changed.
+				/* c8 ignore start */
+				if (updatedAgendaItem === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
+
+				/* c8 ignore stop */
+
+				// Handle attachments if provided - replace all existing with new set
+				if (isNotNullish(parsedArgs.input.attachments)) {
+					// Delete existing attachments
+					await tx
+						.delete(agendaItemAttachmentsTable)
+						.where(
+							eq(agendaItemAttachmentsTable.agendaItemId, parsedArgs.input.id),
+						);
+
+					// Insert new attachments if any
+					if (parsedArgs.input.attachments.length > 0) {
+						await tx.insert(agendaItemAttachmentsTable).values(
+							parsedArgs.input.attachments.map((attachment) => ({
+								agendaItemId: updatedAgendaItem.id,
+								creatorId: currentUserId,
+								fileHash: attachment.fileHash,
+								mimeType: attachment.mimeType,
+								name: attachment.name,
+								objectName: attachment.objectName,
+							})),
+						);
+					}
+				}
+
+				// Handle urls if provided - replace all existing with new set
+				if (parsedArgs.input.url !== undefined) {
+					// Delete existing urls
+					await tx
+						.delete(agendaItemUrlTable)
+						.where(eq(agendaItemUrlTable.agendaItemId, parsedArgs.input.id));
+
+					if (parsedArgs.input.url.length > 0) {
+						await tx.insert(agendaItemUrlTable).values(
+							parsedArgs.input.url.map((u) => ({
+								agendaItemId: updatedAgendaItem.id,
+								url: u.url,
+								creatorId: currentUserId,
+								updaterId: currentUserId,
+							})),
+						);
+					}
+				}
+
+				return updatedAgendaItem;
+			});
 		},
 		type: AgendaItem,
 	}),

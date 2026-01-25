@@ -78,6 +78,12 @@ type TestCtx = {
 	currentClient: {
 		user: { id: string } | undefined;
 	};
+	log: {
+		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
+	};
 	[key: string]: unknown;
 };
 
@@ -95,6 +101,12 @@ function makeCtx(isAdmin = true, userId = "1"): TestCtx {
 			},
 		},
 		currentClient: { user: userId ? { id: userId } : undefined },
+		log: {
+			info: vi.fn(),
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
+		},
 	};
 }
 
@@ -252,6 +264,11 @@ describe("uploadPluginZip mutation", () => {
 			const ctx = makeCtx();
 			const args = { input: validInput };
 			await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.anything() }),
+				expect.any(String),
+			);
 		});
 
 		it("handles non-Error objects from installPluginFromZip", async () => {
@@ -261,6 +278,8 @@ describe("uploadPluginZip mutation", () => {
 			const ctx = makeCtx();
 			const args = { input: validInput };
 			await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalled();
 		});
 
 		it("handles null/undefined errors from installPluginFromZip", async () => {
@@ -270,6 +289,8 @@ describe("uploadPluginZip mutation", () => {
 			const ctx = makeCtx();
 			const args = { input: validInput };
 			await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalled();
 		});
 
 		it("handles database query errors", async () => {
