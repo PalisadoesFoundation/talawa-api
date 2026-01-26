@@ -2760,8 +2760,8 @@ export const Query_getEventInvitesByUserId = gql(`
 `);
 
 export const Query_getRecurringEvents = gql(`
-  query Query_getRecurringEvents($baseRecurringEventId: ID!) {
-    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId) {
+  query Query_getRecurringEvents($baseRecurringEventId: ID!, $includeCancelled: Boolean, $limit: Int, $offset: Int) {
+    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId, includeCancelled: $includeCancelled, limit: $limit, offset: $offset) {
       id
       name
       description
@@ -2771,6 +2771,7 @@ export const Query_getRecurringEvents = gql(`
       isRegisterable
       location
       isRecurringEventTemplate
+      isCancelled
       recurrenceRule {
         id
       }
