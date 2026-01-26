@@ -21,20 +21,18 @@ fnm install
 fnm use
 
 # --------------------------------------------------------------------
-# Corepack + pnpm (NON-INTERACTIVE, PINNED)
-# Repo pins pnpm to 10.26.1 via packageManager
+# Corepack + pnpm (STRICTLY NON-INTERACTIVE)
 # --------------------------------------------------------------------
 echo "[devcontainer] Enabling corepack..."
 corepack enable
 
-echo "[devcontainer] Activating pinned pnpm version (10.26.1)..."
-corepack prepare pnpm@10.26.1 --activate
+# IMPORTANT: Explicit activation using package.json version
+PNPM_VERSION="$(node -p "require('./package.json').packageManager.split('@')[1]")"
 
-if ! command -v pnpm >/dev/null 2>&1; then
-  echo "[ERROR] pnpm is not available after corepack setup." >&2
-  exit 1
-fi
+echo "[devcontainer] Activating pnpm@${PNPM_VERSION}..."
+corepack prepare "pnpm@${PNPM_VERSION}" --activate
 
+# Verify pnpm is usable WITHOUT triggering prompt
 pnpm --version
 
 # --------------------------------------------------------------------
@@ -43,14 +41,11 @@ pnpm --version
 mkdir -p .pnpm-store node_modules
 
 # --------------------------------------------------------------------
-# Permissions (fail fast if broken)
+# Permissions (fail fast)
 # --------------------------------------------------------------------
 if [ ! -w ".pnpm-store" ] || [ ! -w "node_modules" ]; then
   if ! sudo -n chown -R "$(id -u):$(id -g)" .pnpm-store node_modules; then
-    echo "
-[ERROR] Failed to fix permissions for pnpm directories.
-Please ensure Docker volumes are writable by the container user.
-" >&2
+    echo "[ERROR] Failed to fix pnpm directory permissions." >&2
     exit 1
   fi
 fi
@@ -59,6 +54,6 @@ fi
 # Install dependencies
 # --------------------------------------------------------------------
 echo "[devcontainer] Installing dependencies..."
-pnpm install --frozen-lockfile
+pnpm install
 
 echo "[devcontainer] Post-create setup complete."
