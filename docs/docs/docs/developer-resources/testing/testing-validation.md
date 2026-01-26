@@ -29,25 +29,21 @@ The rest of this page will assist you in being an active contributor to the code
 ### Running Tests
 
 **Run all tests:**
-
 ```bash
 pnpm run check_tests
 ```
 
 **Run specific test file:**
-
 ```bash
 pnpm run check_tests -- /path/to/test/file
 ```
 
 **Run with coverage:**
-
 ```bash
 pnpm run run_tests
 ```
 
 **Run with test sharding:**
-
 ```bash
 pnpm run test:shard
 ```
@@ -55,25 +51,21 @@ pnpm run test:shard
 ### Linting and Formatting
 
 **Fix linting & formatting issues:**
-
 ```bash
 pnpm run format:fix
 ```
 
 **Check linting & formatting:**
-
 ```bash
 pnpm run format:check
 ```
 
 **Check for sanitization issues:**
-
 ```bash
 pnpm run lint:sanitization
 ```
 
 **Check TSDoc comments:**
-
 ```bash
 pnpm run lint:tsdoc
 ```
@@ -81,7 +73,6 @@ pnpm run lint:tsdoc
 ### Type Checking
 
 **Run TypeScript type checker:**
-
 ```bash
 pnpm run typecheck
 ```
@@ -93,7 +84,6 @@ We use Codecov flags to separate and track coverage metrics for different types 
 ### Unit Flag
 
 The `unit` flag tracks coverage for:
-
 - `test/unit/`: Unit tests for isolated logic
 - `src/utilities/`: Utility functions
 - `src/services/`: Service layer code
@@ -101,7 +91,6 @@ The `unit` flag tracks coverage for:
 ### Integration Flag
 
 The `integration` flag tracks coverage for:
-
 - `test/drizzle/`: Database integration tests
 - `test/graphql/`: GraphQL API integration tests
 - `test/install/`: Installation and setup tests
@@ -159,7 +148,7 @@ This pattern is a heuristic and may flag safe code:
 2.  **External Sanitization:** If you sanitize the string _before_ the resolver or in a separate function call that isn't named `escapeHTML`, the plugin will not detect it.
     ```typescript
     const safeBio = escapeHTML(user.bio);
-    t.string({ resolve: () => safeBio }); // Warning: Plugin only sees the resolver body
+    t.string({ resolve: () => safeBio });  // Warning: Plugin only sees the resolver body
     ```
 3.  **Pattern Scope:** It currently only matches `t.string(...)`. It does not catch `t.field({ type: 'String', ... })`.
 
@@ -188,6 +177,7 @@ We started implementing integration tests because for the current requirements t
 The GraphQL schema cannot be tested without running the graphql server itself because it is an internal implementation detail of the graphql engine. The old approach, when the API used a MongoDB backend, only tested the resolvers which does not account for this.
 
 The end users will be interacting with the graphql schema and not the typescript graphql resolvers. So, the tests should be written in a way that asserts against the runtime behavior of that graphql schema.
+
 
 #### Integration Testing
 
@@ -281,7 +271,6 @@ The function returns an object with two properties:
 ### How Contributors Should Use It
 
 Follow these steps:
-
 #### Unit Testing Resolvers (With exposed mocks for verification)
 
 ```ts
@@ -306,7 +295,7 @@ test("should return user data", async () => {
   // Verify interactions with dependencies
   expect(mocks.drizzleClient.query).toHaveBeenCalledWith(
     expect.stringContaining("SELECT"),
-    expect.arrayContaining(["user123"]),
+    expect.arrayContaining(["user123"])
   );
 });
 ```
@@ -334,9 +323,9 @@ const { context, mocks } = createMockGraphQLContext({
 });
 ```
 
-### GraphQL Resolver Type Safety Guidelines
+### GraphQL Resolver Type Safety Guidelines 
 
-#### Best Practices
+####  Best Practices
 
 1. Use Schema-Generated Types Only
 
@@ -357,6 +346,7 @@ const { context, mocks } = createMockGraphQLContext({
 #### Correct Example
 
 ```ts
+
 import { eq } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { GraphQLContext } from "../../context";
@@ -366,12 +356,12 @@ export const resolver = async (
   _args: Record<string, never>,
   ctx: GraphQLContext,
 ) => {
-  if (!ctx.currentClient.isAuthenticated)
-    throw new Error("Authentication required");
+  if (!ctx.currentClient.isAuthenticated) throw new Error("Authentication required");
   return ctx.drizzleClient.query.usersTable.findFirst({
     where: eq(ctx.usersTable.id, parent.updaterId),
   });
 };
+
 ```
 
 ---
@@ -379,26 +369,27 @@ export const resolver = async (
 #### Incorrect Example
 
 ```ts
+
 import type { CustomContextType } from "../../customContext"; //  Custom context
 import type { EventType } from "../../types/Event"; //  Manual type
 export const resolver = async (
   parent: EventType, //  Avoid this
   _args: Record<string, never>,
   ctx: CustomContextType, //  Avoid this
-) => {
-  /* Inconsistent and error-prone */
-};
+) => { /* Inconsistent and error-prone */ };
+
 ```
 
 ---
 
 #### Key Rules
+-  Always use `GraphQLContext` from `context.ts`.  
+-  Use `typeof table.$inferSelect` for Drizzle entities.  
+-  Never define custom types for resolvers.
 
-- Always use `GraphQLContext` from `context.ts`.
-- Use `typeof table.$inferSelect` for Drizzle entities.
-- Never define custom types for resolvers.
+This ensures type safety and consistency across your GraphQL resolvers. 
 
-This ensures type safety and consistency across your GraphQL resolvers.
+
 
 ### Future Considerations
 
@@ -678,6 +669,7 @@ ws://127.0.0.1:4000/graphql
 1. Launch the terminal application on your device.
 
 2. Retrieve IPv4 Address:
+
    - **For Windows Users**: Enter the command `ipconfig`.
    - **For Linux/OSX Users**: Enter the command `ifconfig`.
    - Copy the `IPv4 Address` displayed (e.g., `192.168.12.233`).
@@ -1065,7 +1057,6 @@ We use CloudBeaver which is a lightweight web application designed for comprehen
    Username: talawa
    Password: password
    ```
-
    - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
 5. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
 6. Check the following boxes in the Database list:
@@ -1214,8 +1205,8 @@ Sometimes you may want to start all over again from scratch. These steps will re
    ```bash
    devcontainer build --workspace-folder .
    devcontainer up --workspace-folder .
+   docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
-   **The development server will start automatically once the container is ready.**
 
 Now you can resume your development work.
 
@@ -1224,11 +1215,9 @@ Now you can resume your development work.
 To ensure reliable test execution, especially in parallel environments, it is critical to properly isolate mocks in your tests.
 
 ### The Rule
-
 If you use `vi.mock()`, `vi.fn()`, or `vi.spyOn()` in a test file, you **MUST** include a cleanup hook to reset the mocks after each test.
 
 ### How to Implement
-
 Add the following `afterEach` hook to your test file:
 
 ```typescript
@@ -1243,25 +1232,22 @@ afterEach(() => {
 
 Vitest provides several cleanup methods. Here's when to use each:
 
-| Method                 | What It Does                                        | When to Use                                                                 |
-| ---------------------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
-| `vi.clearAllMocks()`   | Clears call history and results                     | **Recommended default** - Resets mock state while preserving implementation |
-| `vi.resetAllMocks()`   | Clears history + resets implementation to `vi.fn()` | When you need to remove custom mock implementations                         |
-| `vi.restoreAllMocks()` | Clears history + restores original implementation   | Only for `vi.spyOn()` - restores the real function                          |
-| `vi.resetModules()`    | Clears module cache                                 | When module-level state causes issues (rare)                                |
+| Method | What It Does | When to Use |
+|--------|--------------|-------------|
+| `vi.clearAllMocks()` | Clears call history and results | **Recommended default** - Resets mock state while preserving implementation |
+| `vi.resetAllMocks()` | Clears history + resets implementation to `vi.fn()` | When you need to remove custom mock implementations |
+| `vi.restoreAllMocks()` | Clears history + restores original implementation | Only for `vi.spyOn()` - restores the real function |
+| `vi.resetModules()` | Clears module cache | When module-level state causes issues (rare) |
 
 **Best Practice:** Use `vi.clearAllMocks()` in most cases. It's the safest option that works for all mock types.
 
 ### Why?
-
 Without this cleanup, mocks from one test can leak into others, causing:
-
 - Flaky tests that fail randomly
 - "Spooky action at a distance" where a change in one file breaks an unrelated test
 - Failures when running tests in parallel (sharding)
 
 ### Verification
-
 We have a script that verifies this rule. You can run it locally:
 
 ```bash
@@ -1279,12 +1265,10 @@ npm run check_mock_isolation -- --fix
 **`MOCK_ISOLATION_FAIL_ON_ERROR`**
 
 Controls whether the check fails the build or just warns:
-
 - `true` - Exits with code 1 if violations are found (fails CI)
 - `false` or unset - Exits with code 0 with warnings (default)
 
 Example:
-
 ```bash
 MOCK_ISOLATION_FAIL_ON_ERROR=true npm run check_mock_isolation
 ```
@@ -1294,7 +1278,6 @@ MOCK_ISOLATION_FAIL_ON_ERROR=true npm run check_mock_isolation
 **"No problems found" but tests still fail in parallel**
 
 Check for:
-
 - Global state mutations outside of mocks
 - Database fixtures not properly isolated
 - Shared test data between files
