@@ -5,6 +5,7 @@
 
 set -euo pipefail
 
+# Log file location (can be overridden by setting LOG_FILE env var)
 : "${LOG_FILE:=/tmp/talawa-install-$$.log}"
 : "${DEBUG:=0}"
 
@@ -60,13 +61,32 @@ print_log_location() {
 }
 
 # Timing tracking (compatible with bash 3.2+)
+declare -a __TIMING_LABELS
+declare -a __TIMING_VALUES
+declare -a __TIMING_STATUS
 __TIMING_LABELS=()
 __TIMING_VALUES=()
 __TIMING_STATUS=()
 
+# reset_timing: Clear all timing data (useful for testing)
+reset_timing() {
+  __TIMING_LABELS=()
+  __TIMING_VALUES=()
+  __TIMING_STATUS=()
+}
+
 # with_timer: Execute a command and record its execution time
 # Usage: with_timer "label" command [args...]
+# Arguments:
+#   $1 - Label for the operation (required)
+#   $@ - Command and arguments to execute (required)
+# Returns: Exit code of the executed command
+# Side effects: Updates timing tracking arrays
 with_timer() {
+  if [ $# -lt 2 ]; then
+    error "with_timer requires at least 2 arguments: label and command"
+    return 1
+  fi
   local label="$1"
   shift
   local t0 t1 elapsed exit_code errexit
@@ -78,6 +98,7 @@ with_timer() {
   set +e
   "$@"
   exit_code=$?
+  # Restore errexit if it was set
   case "$errexit" in *e*) set -e ;; esac
   
   t1=$(date +%s)
@@ -100,13 +121,25 @@ with_timer() {
 
 # with_spinner: Execute a command with a visual spinner
 # Usage: with_spinner "message" command [args...]
+# Arguments:
+#   $1 - Message to display (required)
+#   $@ - Command and arguments to execute (required)
 with_spinner() {
+  if [ $# -lt 2 ]; then
+    error "with_spinner requires at least 2 arguments: message and command"
+    return 1
+  fi
   local msg="$1"
   shift
   
   # Run command in background
   ( "$@" ) &
   local pid=$!
+
+  # Clean up background process on script termination
+  # We use a trap to ensure we don't leave the background process running if user hits Ctrl+C
+  trap "kill $pid 2>/dev/null || true; return" INT TERM
+  
   local spin='|/-\'
   local i=0
   
@@ -116,10 +149,9 @@ with_spinner() {
     sleep 0.2
   done
   
-  # Clear spinner line completely (overwrite with spaces)
-  # Calculate max line length: "[INFO] " (7) + message + " " (1) + spinner char (1) + padding (3)
-  local line_length=$((${#msg} + 12))
-  printf "\r%-*s\r" "$line_length" ""
+  # Clear spinner line completely
+  # Use a sufficiently large width (80 chars) to clear the line
+  printf "\r%-80s\r" ""
   
   # Wait for process and capture exit code
   local exit_code errexit
@@ -127,7 +159,11 @@ with_spinner() {
   set +e
   wait "$pid"
   exit_code=$?
+  # Restore errexit if it was set
   case "$errexit" in *e*) set -e ;; esac
+
+  # Clear trap
+  trap - INT TERM
   
   if [ $exit_code -eq 0 ]; then
     success "$msg"
@@ -189,4 +225,5 @@ export LOG_FILE
 export -f \
   info warn error success debug \
   print_banner print_step print_section print_log_location \
-  with_timer with_spinner print_timing_summary print_installation_summary
+  with_timer with_spinner print_timing_summary print_installation_summary \
+  reset_timing

@@ -24,6 +24,7 @@ fi
 success "Empty timing summary output verification passed"
 
 # Test 1: with_timer
+reset_timing # Ensure clean state
 print_section "Test 1: with_timer"
 info "Running a ${SLEEP_SHORT}-second task with timing..."
 with_timer "Quick task" sleep "$SLEEP_SHORT"
@@ -40,7 +41,20 @@ if with_timer "Failing task" bash -c 'exit 2'; then
 fi
 info "Failure test passed - exit code properly captured"
 
+# Test 1c: with_timer input validation
+print_section "Test 1c: with_timer input validation"
+if with_timer "Label only, no command" 2>/dev/null; then
+  error "Expected with_timer to fail with missing arguments"
+  exit 1
+fi
+if with_timer 2>/dev/null; then
+  error "Expected with_timer to fail with no arguments"
+  exit 1
+fi
+success "Input validation passed"
+
 # Test 2: with_spinner
+reset_timing
 print_section "Test 2: with_spinner"
 info "Running a ${SLEEP_SHORT}-second task with spinner..."
 with_spinner "Processing data" sleep "$SLEEP_SHORT"
@@ -57,13 +71,92 @@ if with_spinner "Failing spinner task" bash -c 'exit 3'; then
 fi
 info "Failure test passed - exit code properly captured"
 
+# Test 2c: with_spinner input validation
+print_section "Test 2c: with_spinner input validation"
+if with_spinner "Message only, no command" 2>/dev/null; then
+  error "Expected with_spinner to fail with missing arguments"
+  exit 1
+fi
+if with_spinner 2>/dev/null; then
+  error "Expected with_spinner to fail with no arguments"
+  exit 1
+fi
+success "Input validation passed"
+
+# Test 2d: with_spinner signal handling (Interrupt)
+print_section "Test 2d: with_spinner signal handling"
+info "Testing spinner cleanup on SIGINT..."
+
+# Create a temporary script to run the spinner
+CAT_SCRIPT="${SCRIPT_DIR}/_temp_spinner_test.sh"
+cat > "$CAT_SCRIPT" <<EOF
+#!/bin/bash
+source "${SCRIPT_DIR}/logging.sh"
+# Mark this process so we can find it
+with_spinner "Spinning indefinitely" sleep 30 &
+wait
+EOF
+chmod +x "$CAT_SCRIPT"
+
+# Run the script in background
+"$CAT_SCRIPT" &
+SCRIPT_PID=$!
+info "Started background script PID: $SCRIPT_PID"
+
+# Wait for it to initialize and start sleep
+sleep 1
+
+# Check if sleep is running
+if ! pgrep -P $SCRIPT_PID -f "sleep 30" > /dev/null; then
+  # Try finding sleep generally if pgrep -P fails (compatibility)
+  if ! pgrep -f "sleep 30" > /dev/null; then
+     warn "Could not find sleep process, test might be flaky"
+  fi
+fi
+
+# Send SIGINT to the script
+info "Sending SIGINT to script..."
+kill -INT $SCRIPT_PID
+
+# Wait for script to exit
+wait $SCRIPT_PID || true
+
+# Verify sleep is gone
+sleep 0.5
+if pgrep -f "sleep 30" | grep -v grep > /dev/null; then
+   # Double check pgrep might find other sleeps? Make sure it's the one we started?
+   # But sleep 30 is specific enough for this test context usually.
+   # Ideally we would check if it's a child of the killed process, but the parent is dead.
+   # So we just check if any sleep 30 is left.
+   if pgrep -f "sleep 30" > /dev/null; then
+      error "Background 'sleep 30' process persists after SIGINT!"
+      # Cleanup
+      pkill -f "sleep 30" || true
+      rm -f "$CAT_SCRIPT"
+      exit 1
+   fi
+fi
+
+rm -f "$CAT_SCRIPT"
+success "Signal handling verification passed: Background process cleaned up."
+
 # Test 3: Combined with_timer and with_spinner
+reset_timing
 print_section "Test 3: Combined timing and spinner"
 info "Running a task with both timer and spinner..."
 with_timer "Complex operation" with_spinner "Working" sleep "$SLEEP_SHORT"
 
 # Test 4: Timing summary with output verification
+reset_timing
 print_section "Test 4: Timing summary"
+info "Populating timing data for summary verification..."
+with_timer "Quick task" sleep 0.1
+with_timer "Complex operation" sleep 0.1
+# Faming task failure
+if ! with_timer "Failing task" bash -c "exit 1" >/dev/null 2>&1; then
+  true # ignore failure
+fi
+
 info "Verifying timing summary output..."
 
 # Capture timing summary output

@@ -32,6 +32,12 @@ with_timer "Database migration" with_spinner "Applying schema changes" sleep 2
 print_step "3" "3" "Configuring environment"
 with_timer "Environment setup" sleep 1
 
+# Example 5: Handling failures (script won't exit if checked in if-statement)
+print_step "4" "4" "Optional verification"
+if ! with_timer "Optional check" bash -c "exit 1"; then
+  warn "Optional check failed, but installation continues..."
+fi
+
 # Display final summaries
 print_timing_summary
 print_installation_summary
