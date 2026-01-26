@@ -39,7 +39,9 @@ describe("src/drizzle/tables/EmailNotification.ts - Table Definition Tests", () 
 
 		it("should have all 15 expected columns defined", () => {
 			const columns = Object.entries(emailNotificationsTable)
-				.filter(([, value]) => value && typeof value === "object" && "name" in value)
+				.filter(
+					([, value]) => value && typeof value === "object" && "name" in value,
+				)
 				.map(([key]) => key);
 			expect(columns).toContain("id");
 			expect(columns).toContain("notificationLogId");
