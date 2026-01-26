@@ -139,6 +139,8 @@ with_spinner() {
   # Clean up background process on script termination
   # We use a trap to ensure we don't leave the background process running if user hits Ctrl+C
   local interrupted=0
+  local saved_traps
+  saved_traps=$(trap -p INT TERM)
   trap 'kill $pid 2>/dev/null || true; interrupted=1' INT TERM
   
   local spin='|/-\'
@@ -166,8 +168,12 @@ with_spinner() {
   # Restore errexit if it was set
   case "$errexit" in *e*) set -e ;; esac
 
-  # Clear trap
-  trap - INT TERM
+  # Restore traps
+  if [ -n "$saved_traps" ]; then
+    eval "$saved_traps"
+  else
+    trap - INT TERM
+  fi
 
   # If interrupted, return appropriate exit code
   if [ "$interrupted" -eq 1 ]; then
