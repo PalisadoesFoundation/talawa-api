@@ -79,15 +79,15 @@ builder.queryField("getRecurringEvents", (t) =>
 			const offset = inputOffset ?? 0;
 			const includeCancelled = inputIncludeCancelled ?? false;
 
-			if (offset > 10000) {
+			if (offset > MAX_OFFSET) {
 				throw new TalawaGraphQLError({
-					message: "Offset cannot exceed 10000",
+					message: `Offset cannot exceed ${MAX_OFFSET}`,
 					extensions: {
 						code: "invalid_arguments",
 						issues: [
 							{
 								argumentPath: ["offset"],
-								message: "Offset cannot exceed 10000",
+								message: `Offset cannot exceed ${MAX_OFFSET}`,
 							},
 						],
 					},
