@@ -312,12 +312,11 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
+			// Create a recurring event template with recurrence
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
 					instanceCount: 3,
 				});
-
-			// Cancel the second instance
 			const instanceToCancel = instanceIds[1];
 			assertToBeNonNullish(instanceToCancel);
 			await cancelInstances([instanceToCancel]);
@@ -578,6 +577,74 @@ suite("Query field getRecurringEvents", () => {
 			const instances = result.data?.getRecurringEvents;
 			assertToBeNonNullish(instances);
 			expect(instances).toHaveLength(5);
+		});
+
+		test("should handle boundary conditions for limit and offset", async () => {
+			// Setup: Create recurring event with 5 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			// Test max limit + 1
+			const resultMaxLimit = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						baseRecurringEventId: templateId,
+						limit: 1001,
+					},
+				},
+			);
+
+			// Should fail validation
+			expect(resultMaxLimit.data?.getRecurringEvents).toBeNull();
+			expect(resultMaxLimit.errors).toBeDefined();
+
+			// Test negative limit
+			const resultNegativeLimit = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						baseRecurringEventId: templateId,
+						limit: -1,
+					},
+				},
+			);
+
+			// Should fail validation
+			expect(resultNegativeLimit.data?.getRecurringEvents).toBeNull();
+			expect(resultNegativeLimit.errors).toBeDefined();
+
+			// Test negative offset
+			const resultNegativeOffset = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						baseRecurringEventId: templateId,
+						offset: -1,
+					},
+				},
+			);
+
+			// Should fail validation
+			expect(resultNegativeOffset.data?.getRecurringEvents).toBeNull();
+			expect(resultNegativeOffset.errors).toBeDefined();
 		});
 	});
 

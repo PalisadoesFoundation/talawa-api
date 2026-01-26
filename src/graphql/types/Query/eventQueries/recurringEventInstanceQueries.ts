@@ -557,7 +557,10 @@ export async function getRecurringEventInstancesByBaseId(
 		const instances =
 			await drizzleClient.query.recurringEventInstancesTable.findMany({
 				where: and(...whereConditions),
-				orderBy: asc(recurringEventInstancesTable.actualStartTime),
+				orderBy: [
+					asc(recurringEventInstancesTable.actualStartTime),
+					asc(recurringEventInstancesTable.id), // Deterministic tie-breaker
+				],
 				limit,
 				offset,
 			});
