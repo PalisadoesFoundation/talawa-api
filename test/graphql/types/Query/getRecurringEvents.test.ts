@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { and, eq } from "drizzle-orm";
 import { expect, suite, test } from "vitest";
+import { organizationMembershipsTable } from "../../../../src/drizzle/tables/organizationMemberships";
 import { assertToBeNonNullish } from "../../../helpers";
 import {
 	cancelInstances,
@@ -612,7 +614,18 @@ suite("Query field getRecurringEvents", () => {
 
 			// Should fail validation
 			expect(resultMaxLimit.data?.getRecurringEvents).toBeNull();
-			expect(resultMaxLimit.errors).toBeDefined();
+			expect(resultMaxLimit.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["limit"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 
 			// Test max offset + 1
 			const resultMaxOffset = await mercuriusClient.query(
@@ -628,7 +641,18 @@ suite("Query field getRecurringEvents", () => {
 
 			// Should fail validation
 			expect(resultMaxOffset.data?.getRecurringEvents).toBeNull();
-			expect(resultMaxOffset.errors).toBeDefined();
+			expect(resultMaxOffset.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["offset"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 
 			// Test negative limit
 			const resultNegativeLimit = await mercuriusClient.query(
@@ -644,7 +668,18 @@ suite("Query field getRecurringEvents", () => {
 
 			// Should fail validation
 			expect(resultNegativeLimit.data?.getRecurringEvents).toBeNull();
-			expect(resultNegativeLimit.errors).toBeDefined();
+			expect(resultNegativeLimit.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["limit"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 
 			// Test negative offset
 			const resultNegativeOffset = await mercuriusClient.query(
@@ -660,7 +695,111 @@ suite("Query field getRecurringEvents", () => {
 
 			// Should fail validation
 			expect(resultNegativeOffset.data?.getRecurringEvents).toBeNull();
-			expect(resultNegativeOffset.errors).toBeDefined();
+			expect(resultNegativeOffset.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["offset"] }),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Authorization Scenarios", () => {
+		test("should allow organization member (non-global-admin) to access", async () => {
+			// Create a regular user
+			const { authToken: regularUserToken, userId: regularUserId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(regularUserToken);
+			assertToBeNonNullish(regularUserId);
+
+			// Create organization as admin
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			// Add regular user as member
+			await server.drizzleClient.insert(organizationMembershipsTable).values({
+				organizationId,
+				memberId: regularUserId,
+				role: "regular",
+			});
+
+			// Create recurring event template
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 3 },
+			);
+
+			// Query as regular user
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${regularUserToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(3);
+		});
+
+		test("should allow global administrator to access even if not a member", async () => {
+			// Create organization as admin
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			// Create recurring event template
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 3 },
+			);
+
+			// Remove admin from organization membership
+			await server.drizzleClient
+				.delete(organizationMembershipsTable)
+				.where(
+					and(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+						eq(organizationMembershipsTable.memberId, adminUserId),
+					),
+				);
+
+			// Query as admin
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(3);
 		});
 	});
 
