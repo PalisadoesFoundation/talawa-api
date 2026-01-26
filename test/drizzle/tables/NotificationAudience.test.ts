@@ -105,6 +105,7 @@ async function waitForNotifications(
 	userId: string,
 	authToken: string,
 	timeoutMs = 10000,
+	predicate?: (notification: NotificationListItem) => boolean,
 ): Promise<NotificationListItem[]> {
 	const start = Date.now();
 
@@ -136,7 +137,14 @@ async function waitForNotifications(
 		});
 
 		if (normalized.length > 0) {
-			return normalized;
+			if (predicate) {
+				const matchingNotification = normalized.find(predicate);
+				if (matchingNotification) {
+					return normalized;
+				}
+			} else {
+				return normalized;
+			}
 		}
 
 		await new Promise((resolve) => setTimeout(resolve, 200));
@@ -254,6 +262,9 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 					userId,
 					authToken,
 					8000,
+					(notification) =>
+						notification.id === firstNotification.id &&
+						notification.isRead === true,
 				);
 
 				const updated = updatedNotifications.find(
@@ -565,25 +576,28 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 	});
 
 	describe("Default Values", () => {
-		it("should accept data without isRead field", () => {
-			const validData = {
+		it("should default isRead to false when absent and allow explicit override to true", () => {
+			const dataWithoutIsRead = {
 				notificationId: faker.string.uuid(),
 				userId: faker.string.uuid(),
 			};
-			const result = notificationAudienceTableInsertSchema.safeParse(validData);
-			expect(result.success).toBe(true);
-		});
+			const resultWithoutIsRead =
+				notificationAudienceTableInsertSchema.safeParse(dataWithoutIsRead);
+			expect(resultWithoutIsRead.success).toBe(true);
+			if (resultWithoutIsRead.success) {
+				expect(resultWithoutIsRead.data.isRead).toBeUndefined();
+			}
 
-		it("should allow overriding isRead default", () => {
-			const validData = {
+			const dataWithIsRead = {
 				notificationId: faker.string.uuid(),
 				userId: faker.string.uuid(),
 				isRead: true,
 			};
-			const result = notificationAudienceTableInsertSchema.safeParse(validData);
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.isRead).toBe(true);
+			const resultWithIsRead =
+				notificationAudienceTableInsertSchema.safeParse(dataWithIsRead);
+			expect(resultWithIsRead.success).toBe(true);
+			if (resultWithIsRead.success) {
+				expect(resultWithIsRead.data.isRead).toBe(true);
 			}
 		});
 	});
