@@ -419,6 +419,9 @@ suite("Organization field tagFolders", () => {
         backwardResult.data.organization.tagFolders.pageInfo.hasNextPage,
       ).toBe(true);
       expect(
+        backwardResult.data.organization.tagFolders.pageInfo.hasPreviousPage,
+      ).toBe(true);
+      expect(
         backwardResult.data.organization.tagFolders.pageInfo.startCursor,
       ).toBeDefined();
       expect(
