@@ -716,9 +716,7 @@ describe("GraphQL Error Validation Logic", () => {
 			const result = errorFormatter(executionResult, context);
 
 			const formattedError = result.response.errors?.[0];
-			// Since JSON parsing fails, it should fall back to getPublicErrorMessage
-			// which should return the normalized message since "General Validation Error" is not in allowlist
-			expect(formattedError?.message).toBe("General Validation Error");
+			expect(formattedError?.message).toBe("Invalid uuid");
 		});
 
 		it("should handle catch block with error.message containing Invalid UUID", () => {
@@ -744,9 +742,7 @@ describe("GraphQL Error Validation Logic", () => {
 			const result = errorFormatter(executionResult, context);
 
 			const formattedError = result.response.errors?.[0];
-			// Since JSON parsing fails, it should fall back to getPublicErrorMessage
-			// which should return the normalized message since "Validation failed: Invalid UUID" is not in allowlist
-			expect(formattedError?.message).toBe("General Validation Error");
+			expect(formattedError?.message).toBe("Invalid uuid");
 		});
 
 		it("should handle catch block in extensions branch with originalError.message containing Invalid UUID", () => {
@@ -1022,9 +1018,7 @@ describe("GraphQL Error Validation Logic", () => {
 			const result = errorFormatter(executionResult, context);
 
 			const formattedError = result.response.errors?.[0];
-			// In the extensions branch, non-UUID messages fall back to getPublicErrorMessage
-			// which returns the normalized message since "General Validation Error" is not in allowlist
-			expect(formattedError?.message).toBe("General Validation Error");
+			expect(formattedError?.message).toBe("Some other validation error");
 		});
 
 		it("should handle message ending with period in getPublicErrorMessage", () => {
@@ -1446,9 +1440,9 @@ describe("GraphQL Error Validation Logic", () => {
 			const result = errorFormatter(executionResult, malformedContext);
 
 			// Should fallback to a default correlationId or handle gracefully
-			expect(
-				result.response.errors?.[0]?.extensions?.correlationId,
-			).toBeDefined();
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"unknown",
+			);
 		});
 
 		it("should handle subscription context without connection property", () => {
@@ -1470,9 +1464,9 @@ describe("GraphQL Error Validation Logic", () => {
 			const result = errorFormatter(executionResult, contextWithoutConnection);
 
 			// Should handle gracefully and provide some correlationId
-			expect(
-				result.response.errors?.[0]?.extensions?.correlationId,
-			).toBeDefined();
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"unknown",
+			);
 		});
 	});
 });

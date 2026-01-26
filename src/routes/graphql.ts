@@ -277,6 +277,70 @@ export const FILE_UPLOAD_CONFIG = {
 } as const;
 
 /**
+ * Helper to extract meaningful messages from Zod error details.
+ * Encapsulates logic for parsing JSON/treeified details and handling specific validation messages like UUID errors.
+ */
+function extractZodMessage(
+	normalizedDetails: unknown,
+	error: unknown,
+	fallbackMessage: string,
+): string {
+	try {
+		const details =
+			typeof normalizedDetails === "string"
+				? JSON.parse(normalizedDetails)
+				: normalizedDetails;
+
+		// Handle treeified Zod error format
+		if (details && typeof details === "object" && "properties" in details) {
+			const properties = details.properties as Record<
+				string,
+				{ errors: string[] }
+			>;
+			if (properties.id && Array.isArray(properties.id.errors)) {
+				if (properties.id.errors.includes("Invalid UUID")) {
+					return "Invalid uuid";
+				}
+			}
+		}
+		// Handle array format
+		else if (Array.isArray(details) && details.length > 0) {
+			const firstError = details[0];
+			if (
+				firstError &&
+				typeof firstError === "object" &&
+				"message" in firstError
+			) {
+				const zodMessage = String(firstError.message);
+				if (zodMessage === "Invalid UUID" || zodMessage === "Invalid uuid") {
+					return "Invalid uuid";
+				}
+				return zodMessage;
+			}
+		}
+	} catch {
+		// ignore parsing errors
+	}
+
+	// Fallback: Check for Zod patterns in original error messages
+	const castError = error as {
+		message?: string;
+		originalError?: { message?: string };
+	};
+	const errorMessage = castError.message || "";
+	const originalErrorMessage = castError.originalError?.message || "";
+
+	if (
+		errorMessage.includes("Invalid UUID") ||
+		originalErrorMessage.includes("Invalid UUID")
+	) {
+		return "Invalid uuid";
+	}
+
+	return getPublicErrorMessage(castError, fallbackMessage);
+}
+
+/**
  * This fastify route plugin function is initializes mercurius on the fastify instance and directs incoming requests on the `/graphql` route to it.
  */
 export const graphql = fastifyPlugin(async (fastify) => {
@@ -440,57 +504,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						normalized.code === ErrorCode.INVALID_ARGUMENTS &&
 						normalized.details
 					) {
-						try {
-							// Try to parse details as JSON array (Zod validation errors)
-							const details =
-								typeof normalized.details === "string"
-									? JSON.parse(normalized.details)
-									: normalized.details;
-
-							// Handle treeified Zod error format (from normalizeError)
-							if (
-								details &&
-								typeof details === "object" &&
-								"properties" in details
-							) {
-								const properties = details.properties as Record<
-									string,
-									{ errors: string[] }
-								>;
-								if (properties.id && Array.isArray(properties.id.errors)) {
-									const uuidError = properties.id.errors.find(
-										(err: string) => err === "Invalid UUID",
-									);
-									if (uuidError) {
-										message = "Invalid uuid";
-									}
-								}
-							}
-							// Handle array format (legacy or direct Zod errors)
-							else if (Array.isArray(details) && details.length > 0) {
-								// Extract the first validation error message
-								const firstError = details[0];
-								if (
-									firstError &&
-									typeof firstError === "object" &&
-									"message" in firstError
-								) {
-									const zodMessage = String(firstError.message);
-									// For UUID validation errors, preserve the "Invalid UUID" message
-									if (
-										zodMessage === "Invalid UUID" ||
-										zodMessage === "Invalid uuid"
-									) {
-										message = "Invalid uuid";
-									} else {
-										message = zodMessage;
-									}
-								}
-							}
-						} catch {
-							// If parsing fails, fall back to checking original error message
-							message = getPublicErrorMessage(error, message);
-						}
+						message = extractZodMessage(normalized.details, error, message);
 					} else {
 						// Preserve specific resolver error messages that are safe to expose
 						message = getPublicErrorMessage(error, message);
@@ -530,67 +544,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						normalized.code === ErrorCode.INVALID_ARGUMENTS) &&
 					normalized.details
 				) {
-					try {
-						let details = normalized.details;
-
-						// If details is a string, try to parse it as JSON
-						if (typeof details === "string") {
-							details = JSON.parse(details);
-						}
-
-						// Handle treeified Zod error format (from normalizeError)
-						if (
-							details &&
-							typeof details === "object" &&
-							"properties" in details
-						) {
-							const properties = details.properties as Record<
-								string,
-								{ errors: string[] }
-							>;
-							if (properties.id && Array.isArray(properties.id.errors)) {
-								const uuidError = properties.id.errors.find(
-									(err: string) => err === "Invalid UUID",
-								);
-								if (uuidError) {
-									message = "Invalid uuid";
-								}
-							}
-						}
-						// Handle array format (legacy or direct Zod errors)
-						else if (Array.isArray(details) && details.length > 0) {
-							const firstError = details[0];
-							if (
-								firstError &&
-								typeof firstError === "object" &&
-								"message" in firstError
-							) {
-								const zodMessage = String(firstError.message);
-								// For UUID validation errors, preserve the "Invalid UUID" message
-								if (zodMessage === "Invalid UUID") {
-									message = "Invalid uuid";
-								}
-							}
-						}
-					} catch {
-						// If parsing fails, check if the original error message contains ZodError patterns
-						const errorMessage = String(error.message || "");
-						const originalErrorMessage = String(
-							(error as { originalError?: { message?: unknown } }).originalError
-								?.message || "",
-						);
-
-						// Check if this looks like a ZodError with UUID validation
-						if (
-							originalErrorMessage.includes("Invalid UUID") ||
-							errorMessage.includes("Invalid UUID")
-						) {
-							message = "Invalid uuid";
-						} else {
-							// If parsing fails, use the public error message function
-							message = getPublicErrorMessage(error, message);
-						}
-					}
+					message = extractZodMessage(normalized.details, error, message);
 				} else {
 					message = getPublicErrorMessage(error, message);
 				}
@@ -638,6 +592,13 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				);
 
 				// Check for specific error types and set appropriate status codes
+				// Priority ordering ensures that we handle the most specific and critical errors first:
+				// 1. UNAUTHENTICATED: Missing credentials; highest priority to block access immediately.
+				// 2. UNAUTHORIZED: Valid credentials but insufficient permissions; check logic before validation.
+				// 3. INVALID_ARGUMENTS: Application-level validation; processed if auth is successful.
+				// 4. NOT_FOUND: Resource lookup; logically happens after input validation.
+				// 5. RATE_LIMIT_EXCEEDED: Operational safeguard; checked independently but grouped here.
+				// Fallback: Defaults to the first error's httpStatus or 500 if no known code is matched.
 				if (errorCodes.includes(ErrorCode.UNAUTHENTICATED)) {
 					statusCode = 401;
 				} else if (
