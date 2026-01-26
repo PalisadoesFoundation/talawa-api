@@ -112,6 +112,8 @@ Most of these steps are specific to Linux. You will need to modify them accordin
     {"outcome":"success",   "containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34",   "composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
     ```
 
+9.  **The development server will start automatically and be available on port 4000.**
+
 All done!
 
 #### Using the VScode IDE
@@ -125,6 +127,7 @@ You can setup the app using the VScode IDE. Here are the steps to follow:
    - Make sure you have downloaded `devcontainer` extension of vs code.
 1. This will open a new Visual Studio Code window with the project running inside a Docker container. This will take a few minutes to complete.
 1. Wait till the process is complete and you see ports being forwarded in the terminal.
+1. **The development server will start automatically once the container is ready.**
 1. You can check logs by clicking `Connecting to Dev Container (show log)`;
 1. Create a new terminal in Visual Studio Code by pressing ``Ctrl+Shift+` ``.
 1. Run the `pwd` command to confirm you are in the `/home/talawa/api` directory.
@@ -138,41 +141,31 @@ All done!
 
 ### Development Server Startup
 
-The Development Server startup methodology depends on your environment.
+**The development server now starts automatically when you launch the development container.**
 
-#### From the CLI
+#### Automatic Startup
 
-After a successful installation of the DevContainer environment, use these commands to start the application's Docker container.
+The server starts automatically in these scenarios:
 
-1. To run in attached Mode
+- **VSCode DevContainer**: Opens and starts server automatically
+- **CLI DevContainer**: Runs `devcontainer up` and server starts automatically
 
-   ```
-   docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
-   ```
+The server will be available on port 4000 (or your configured port) and automatically restarts when you modify code.
 
-2. To run in detached Mode
+#### Manual Control (if needed)
 
-   ```
-   docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
-   ```
+If you need to stop and restart the server manually:
 
-#### Within VScode
+```bash
+# Stop the running server
+pkill -f "pnpm run start_development_server"
 
-You can run the app after closing the terminal or restating the vscode using these commands:
+# Start in normal mode
+pnpm run start_development_server
 
-1. for normal mode
-
-   ```bash
-      pnpm run start_development_server
-   ```
-
-1. for debugging mode
-
-   ```bash
-      pnpm run start_development_server_with_debugger
-   ```
-
-**Note:** These commands will start the server in development mode.
+# Start in debugging mode
+pnpm run start_development_server_with_debugger
+```
 
 ### Development Server Shutdown
 
