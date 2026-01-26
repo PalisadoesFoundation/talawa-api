@@ -190,6 +190,64 @@ suite("Query field getRecurringEvents", () => {
 				]),
 			);
 		});
+
+		test("should return an error when offset exceeds MAX_OFFSET (10000)", async () => {
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+					offset: 10001,
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+			// The validation error should be present regardless of the specific error code
+			// as the zod schema will catch this at the resolver level
+		});
+
+		test("should return an error when offset is negative", async () => {
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+					offset: -1,
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+		});
+
+		test("should return an error when limit exceeds maximum (1000)", async () => {
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+					limit: 1001,
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+		});
+
+		test("should return an error when limit is less than 1", async () => {
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+					limit: 0,
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+		});
 	});
 
 	suite("when authentication is required", () => {

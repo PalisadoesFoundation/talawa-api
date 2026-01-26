@@ -1,11 +1,30 @@
+import { eq } from "drizzle-orm";
+import { initGraphQLTada } from "gql.tada";
 import type { MockInstance } from "vitest";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { usersTable } from "~/src/drizzle/tables/users";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import type { EmailJob, EmailResult } from "~/src/services/email/types";
+import { EMAIL_VERIFICATION_RATE_LIMITS } from "~/src/utilities/emailVerificationRateLimit";
 import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_sendVerificationEmail } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+export const Mutation_sendVerificationEmail =
+	gql(`mutation Mutation_sendVerificationEmail {
+    sendVerificationEmail {
+        success
+        message
+    }
+}`);
 
 suite("Mutation field sendVerificationEmail", () => {
 	let sendEmailSpy: MockInstance<(job: EmailJob) => Promise<EmailResult>>;
@@ -63,10 +82,6 @@ suite("Mutation field sendVerificationEmail", () => {
 		const { userId, authToken } = await createRegularUserUsingAdmin();
 
 		// Manually mark user as verified directly in DB
-		const { eq } = await import("drizzle-orm");
-		const { usersTable } = await import("~/src/drizzle/tables/users");
-		const { server } = await import("../../../../test/server");
-
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ isEmailAddressVerified: true })
@@ -97,9 +112,6 @@ suite("Mutation field sendVerificationEmail", () => {
 		const { userId, authToken } = await createRegularUserUsingAdmin();
 
 		// Mock the rate limit store
-		const { EMAIL_VERIFICATION_RATE_LIMITS } = await import(
-			"~/src/utilities/emailVerificationRateLimit"
-		);
 		EMAIL_VERIFICATION_RATE_LIMITS.set(userId, {
 			count: 3,
 			windowStart: Date.now(),
@@ -124,10 +136,6 @@ suite("Mutation field sendVerificationEmail", () => {
 		const { userId, authToken } = await createRegularUserUsingAdmin();
 
 		// Delete the user from DB
-		const { eq } = await import("drizzle-orm");
-		const { usersTable } = await import("~/src/drizzle/tables/users");
-		const { server } = await import("../../../../test/server");
-
 		await server.drizzleClient
 			.delete(usersTable)
 			.where(eq(usersTable.id, userId));
