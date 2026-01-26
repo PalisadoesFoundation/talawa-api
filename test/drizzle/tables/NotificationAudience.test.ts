@@ -151,128 +151,127 @@ afterEach(() => {
 
 describe("src/drizzle/tables/NotificationAudience.ts", () => {
 	describe("NotificationAudience GraphQL integration", () => {
-		it(
-			"exposes audience read state via GraphQL and updates readAt on read",
-			async () => {
-				await ensureInAppPostCreatedTemplate();
+		it("exposes audience read state via GraphQL and updates readAt on read", async () => {
+			await ensureInAppPostCreatedTemplate();
 
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
+			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
+				},
+			});
+
+			if (adminSignInResult.errors) {
+				throw new Error(
+					`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
+				);
+			}
+
+			const adminToken =
+				adminSignInResult.data?.signIn?.authenticationToken ?? null;
+			assertToBeNonNullish(adminToken);
+
+			const { userId, authToken } = await createRegularUserUsingAdmin();
+			const cleanups: Array<() => Promise<void>> = [];
+
+			cleanups.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
 				});
+			});
 
-				if (adminSignInResult.errors) {
-					throw new Error(
-						`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
-					);
-				}
+			const organizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+					},
+				},
+			);
 
-				const adminToken =
-					adminSignInResult.data?.signIn?.authenticationToken ?? null;
-				assertToBeNonNullish(adminToken);
+			const organizationId = organizationResult.data?.createOrganization?.id;
+			assertToBeNonNullish(organizationId);
 
-				const { userId, authToken } = await createRegularUserUsingAdmin();
-				const cleanups: Array<() => Promise<void>> = [];
-
-				cleanups.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteUser, {
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: { input: { id: userId } },
-					});
+			cleanups.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: organizationId } },
 				});
+			});
 
-				const organizationResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId: userId,
+						organizationId,
+						role: "regular",
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId,
+						caption: `Post ${faker.lorem.words(2)}`,
+					},
+				},
+			});
+
+			try {
+				const notifications = await waitForNotifications(
+					userId,
+					authToken,
+					12000,
+				);
+				expect(notifications.length).toBeGreaterThan(0);
+
+				const firstNotification = notifications[0];
+				assertToBeNonNullish(firstNotification);
+				expect(firstNotification.isRead).toBe(false);
+				expect(firstNotification.readAt).toBeNull();
+				expect(firstNotification.createdAt).toBeTruthy();
+
+				const markReadResult = await mercuriusClient.mutate(
+					Mutation_readNotification,
 					{
-						headers: { authorization: `bearer ${adminToken}` },
+						headers: { authorization: `bearer ${authToken}` },
 						variables: {
-							input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+							input: { notificationIds: [firstNotification.id] },
 						},
 					},
 				);
 
-				const organizationId = organizationResult.data?.createOrganization?.id;
-				assertToBeNonNullish(organizationId);
+				expect(markReadResult.errors).toBeUndefined();
 
-				cleanups.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: { input: { id: organizationId } },
-					});
-				});
+				const updatedNotifications = await waitForNotifications(
+					userId,
+					authToken,
+					8000,
+				);
 
-				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							memberId: userId,
-							organizationId,
-							role: "regular",
-						},
-					},
-				});
+				const updated = updatedNotifications.find(
+					(notification) => notification.id === firstNotification.id,
+				);
 
-				await mercuriusClient.mutate(Mutation_createPost, {
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							organizationId,
-							caption: `Post ${faker.lorem.words(2)}`,
-						},
-					},
-				});
-
-				try {
-					const notifications = await waitForNotifications(userId, authToken, 12000);
-					expect(notifications.length).toBeGreaterThan(0);
-
-					const firstNotification = notifications[0];
-					assertToBeNonNullish(firstNotification);
-					expect(firstNotification.isRead).toBe(false);
-					expect(firstNotification.readAt).toBeNull();
-					expect(firstNotification.createdAt).toBeTruthy();
-
-					const markReadResult = await mercuriusClient.mutate(
-						Mutation_readNotification,
-						{
-							headers: { authorization: `bearer ${authToken}` },
-							variables: {
-								input: { notificationIds: [firstNotification.id] },
-							},
-						},
-					);
-
-					expect(markReadResult.errors).toBeUndefined();
-
-					const updatedNotifications = await waitForNotifications(
-						userId,
-						authToken,
-						8000,
-					);
-
-					const updated = updatedNotifications.find(
-						(notification) => notification.id === firstNotification.id,
-					);
-
-					expect(updated?.isRead).toBe(true);
-					expect(updated?.readAt).not.toBeNull();
-				} finally {
-					for (const cleanup of cleanups.reverse()) {
-						try {
-							await cleanup();
-						} catch (error) {
-							console.error("Cleanup failed:", error);
-						}
+				expect(updated?.isRead).toBe(true);
+				expect(updated?.readAt).not.toBeNull();
+			} finally {
+				for (const cleanup of cleanups.reverse()) {
+					try {
+						await cleanup();
+					} catch (error) {
+						console.error("Cleanup failed:", error);
 					}
 				}
-			},
-			20000,
-		);
+			}
+		}, 20000);
 	});
 
 	describe("Foreign Key Relationships", () => {
@@ -293,7 +292,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 
 			await expect(
 				server.drizzleClient.insert(notificationAudienceTable).values({
-					notificationId: "" as any,
+					notificationId: "" as unknown as string,
 					userId: userId,
 				}),
 			).rejects.toThrow();
@@ -317,7 +316,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 			await expect(
 				server.drizzleClient.insert(notificationAudienceTable).values({
 					notificationId: notificationId,
-					userId: "" as any,
+					userId: "" as unknown as string,
 				}),
 			).rejects.toThrow();
 		});
@@ -374,9 +373,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 		});
 
 		it("should have a config function", () => {
-			expect(typeof notificationAudienceTableRelations.config).toBe(
-				"function",
-			);
+			expect(typeof notificationAudienceTableRelations.config).toBe("function");
 		});
 
 		it("should define all relations", () => {
@@ -440,9 +437,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 					),
 				).toBe(true);
 				expect(
-					result.error.issues.some((issue) =>
-						issue.path.includes("userId"),
-					),
+					result.error.issues.some((issue) => issue.path.includes("userId")),
 				).toBe(true);
 			}
 		});
@@ -492,8 +487,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				notificationId: faker.string.uuid(),
 				userId: faker.string.uuid(),
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -503,8 +497,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				userId: faker.string.uuid(),
 				isRead: true,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -514,8 +507,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				userId: faker.string.uuid(),
 				isRead: false,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -524,8 +516,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				notificationId: faker.string.uuid(),
 				userId: faker.string.uuid(),
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.isRead).toBeUndefined();
@@ -539,8 +530,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				isRead: true,
 				readAt: new Date(),
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -550,8 +540,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				userId: faker.string.uuid(),
 				readAt: null,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 	});
@@ -576,13 +565,12 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 	});
 
 	describe("Default Values", () => {
-		it("should set isRead to false by default", () => {
+		it("should accept data without isRead field", () => {
 			const validData = {
 				notificationId: faker.string.uuid(),
 				userId: faker.string.uuid(),
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -592,8 +580,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				userId: faker.string.uuid(),
 				isRead: true,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.isRead).toBe(true);
@@ -609,21 +596,16 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 			expect(notificationAudienceTable.userId.notNull).toBe(true);
 		});
 
-		it("should validate composite key uniqueness in schema", () => {
-			const validData1 = {
-				notificationId: faker.string.uuid(),
-				userId: faker.string.uuid(),
-			};
-			const validData2 = {
-				notificationId: faker.string.uuid(),
-				userId: faker.string.uuid(),
-			};
+		it("should validate composite key configuration in table schema", () => {
+			const tableConfig = getTableConfig(notificationAudienceTable);
+			const primaryKeyColumns = tableConfig.primaryKeys[0]?.columns.map(
+				(col) => col.name,
+			);
 
-			const result1 = notificationAudienceTableInsertSchema.safeParse(validData1);
-			const result2 = notificationAudienceTableInsertSchema.safeParse(validData2);
-			
-			expect(result1.success).toBe(true);
-			expect(result2.success).toBe(true);
+			expect(primaryKeyColumns).toBeDefined();
+			expect(primaryKeyColumns).toContain("notification_id");
+			expect(primaryKeyColumns).toContain("user_id");
+			expect(primaryKeyColumns).toHaveLength(2);
 		});
 	});
 
@@ -661,8 +643,8 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 		});
 
 		it("should have timestamps with timezone support", () => {
-			expect(notificationAudienceTable.createdAt).toBeDefined();
-			expect(notificationAudienceTable.readAt).toBeDefined();
+			expect(notificationAudienceTable.createdAt.dataType).toBe("date");
+			expect(notificationAudienceTable.readAt.dataType).toBe("date");
 		});
 	});
 
@@ -673,8 +655,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				userId: faker.string.uuid(),
 				isRead: false,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.isRead).toBe(false);
@@ -689,8 +670,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				isRead: true,
 				readAt: now,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.readAt).toEqual(now);
@@ -704,16 +684,27 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				isRead: false,
 				readAt: null,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 	});
 
 	describe("Column Precision", () => {
 		it("should have timestamps with correct precision", () => {
-			expect(notificationAudienceTable.createdAt).toBeDefined();
-			expect(notificationAudienceTable.readAt).toBeDefined();
+			const tableConfig = getTableConfig(notificationAudienceTable);
+			const createdAtCol = tableConfig.columns.find(
+				(col) => col.name === "created_at",
+			);
+			const readAtCol = tableConfig.columns.find(
+				(col) => col.name === "read_at",
+			);
+
+			expect(createdAtCol).toBeDefined();
+			expect(readAtCol).toBeDefined();
+			expect((createdAtCol as unknown as { precision: number }).precision).toBe(
+				3,
+			);
+			expect((readAtCol as unknown as { precision: number }).precision).toBe(3);
 		});
 	});
 
@@ -728,8 +719,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 			expect(uuidRegex.test(validData.notificationId)).toBe(true);
 			expect(uuidRegex.test(validData.userId)).toBe(true);
 
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -739,8 +729,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 				userId: faker.string.uuid(),
 				isRead: true,
 			};
-			const result =
-				notificationAudienceTableInsertSchema.safeParse(validData);
+			const result = notificationAudienceTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
@@ -748,7 +737,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 			const invalidData = {
 				notificationId: faker.string.uuid(),
 				userId: faker.string.uuid(),
-				isRead: "true" as any,
+				isRead: "true" as unknown as boolean,
 			};
 			const result =
 				notificationAudienceTableInsertSchema.safeParse(invalidData);
