@@ -66,7 +66,12 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 
 			const indexedColumns = tableConfig.indexes.map((idx) =>
 				idx.config.columns
-					.map((c: any) => c.name)
+					.map((c) => {
+						if ("name" in c) {
+							return c.name;
+						}
+						throw new Error("Unexpected index column type");
+					})
 					.sort()
 					.join(","),
 			);
@@ -170,6 +175,11 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.values({ userId, organizationId: orgId })
 				.returning();
 
+			if (!inserted) {
+				throw new Error("Insert failed");
+			}
+			const { membershipRequestId } = inserted;
+
 			await server.drizzleClient
 				.delete(organizationsTable)
 				.where(eq(organizationsTable.id, orgId));
@@ -178,10 +188,7 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.select()
 				.from(membershipRequestsTable)
 				.where(
-					eq(
-						membershipRequestsTable.membershipRequestId,
-						inserted!.membershipRequestId,
-					),
+					eq(membershipRequestsTable.membershipRequestId, membershipRequestId),
 				);
 
 			expect(rows.length).toBe(0);
@@ -196,6 +203,11 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.values({ userId, organizationId: orgId })
 				.returning();
 
+			if (!inserted) {
+				throw new Error("Insert failed");
+			}
+			const { membershipRequestId } = inserted;
+
 			await server.drizzleClient
 				.delete(usersTable)
 				.where(eq(usersTable.id, userId));
@@ -204,10 +216,7 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.select()
 				.from(membershipRequestsTable)
 				.where(
-					eq(
-						membershipRequestsTable.membershipRequestId,
-						inserted!.membershipRequestId,
-					),
+					eq(membershipRequestsTable.membershipRequestId, membershipRequestId),
 				);
 
 			expect(rows.length).toBe(0);
@@ -220,12 +229,21 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			expect(typeof membershipRequestsTableRelations.config).toBe("function");
 		});
 
-		it("should expose user, organization, and membership relations", () => {
-			const mock = {
-				one: (table: unknown) => ({ table }),
+		it("should define expected relations", () => {
+			const mockRelations = {
+				one: () => ({
+					withFieldName: () => ({}),
+				}),
+				many: () => ({
+					withFieldName: () => ({}),
+				}),
 			};
 
-			const relations = membershipRequestsTableRelations.config(mock as any);
+			const relations = membershipRequestsTableRelations.config(
+				mockRelations as unknown as Parameters<
+					typeof membershipRequestsTableRelations.config
+				>[0],
+			);
 
 			expect(relations.user).toBeDefined();
 			expect(relations.organization).toBeDefined();
