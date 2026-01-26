@@ -543,7 +543,10 @@ export async function getRecurringEventInstancesByBaseId(
 
 	try {
 		const whereConditions = [
-			eq(recurringEventInstancesTable.baseRecurringEventId, baseRecurringEventId),
+			eq(
+				recurringEventInstancesTable.baseRecurringEventId,
+				baseRecurringEventId,
+			),
 		];
 
 		if (!includeCancelled) {

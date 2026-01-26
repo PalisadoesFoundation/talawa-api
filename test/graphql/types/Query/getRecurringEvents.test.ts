@@ -312,11 +312,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 3 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 3,
+				});
 
 			// Cancel the second instance
 			const instanceToCancel = instanceIds[1];
@@ -356,11 +355,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 3 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 3,
+				});
 
 			// Cancel the second instance
 			const instanceToCancel = instanceIds[1];
@@ -399,11 +397,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 3 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 3,
+				});
 
 			// Cancel the second instance
 			const instanceToCancel = instanceIds[1];
@@ -477,11 +474,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 5 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 5,
+				});
 
 			// Query with offset: 2
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -518,11 +514,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 5 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 5,
+				});
 
 			// Query with limit: 2, offset: 1
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -600,11 +595,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 5 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 5,
+				});
 
 			// Cancel the 3rd instance (index 2)
 			const instanceToCancel = instanceIds[2];
@@ -659,11 +653,10 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 
-			const { templateId, instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 5 },
-			);
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
+					instanceCount: 5,
+				});
 
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },

@@ -109,7 +109,8 @@ Event.implement({
 				"isRecurringEventTemplate" in event && event.isRecurringEventTemplate,
 		}),
 		isCancelled: t.boolean({
-			description: "A boolean flag indicating if this instance has been cancelled.",
+			description:
+				"A boolean flag indicating if this instance has been cancelled.",
 			resolve: (event) => "isCancelled" in event && !!event.isCancelled,
 		}),
 		baseEvent: t.field({
