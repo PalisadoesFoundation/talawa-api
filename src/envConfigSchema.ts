@@ -354,15 +354,6 @@ export const envConfigSchema = Type.Object({
 	 */
 	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
 	/**
-	 * Whether to enable notification template seeding at startup.
-	 * Defaults to false. Set to true to enable automatic seeding of notification templates.
-	 */
-	ENABLE_NOTIFICATION_TEMPLATE_SEEDING: Type.Optional(
-		Type.Boolean({
-			default: false,
-		}),
-	),
-	/**
 	 * Sampling ratio for OpenTelemetry traces.
 	 * Value between 0 (no traces) and 1 (all traces).
 	 * Default: 1 (sample all traces)

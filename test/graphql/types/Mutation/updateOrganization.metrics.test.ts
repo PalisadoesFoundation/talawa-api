@@ -66,7 +66,8 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:updateOrganization"] !== undefined,
+				(snapshot) =>
+					snapshot.ops?.["mutation:updateOrganization"] !== undefined,
 			);
 
 			// Execute mutation
@@ -87,7 +88,10 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 			assertToBeNonNullish(result.data.updateOrganization?.id);
 
 			const snapshot = await snapshotPromise;
-			const op = snapshot.ops["mutation:updateOrganization"];
+			assertToBeNonNullish(snapshot.ops);
+			const op = snapshot.ops["mutation:updateOrganization"] as
+				| { count: number; ms: number }
+				| undefined;
 			assertToBeNonNullish(op);
 			expect(op.count).toBeGreaterThanOrEqual(1);
 			expect(op.ms).toBeGreaterThanOrEqual(0);
@@ -96,7 +100,8 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 		it("should record mutation:updateOrganization metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:updateOrganization"] !== undefined,
+				(snapshot) =>
+					snapshot.ops?.["mutation:updateOrganization"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
@@ -116,7 +121,10 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 
 			// Even on failure, metrics should be recorded
 			const snapshot = await snapshotPromise;
-			const op = snapshot.ops["mutation:updateOrganization"];
+			assertToBeNonNullish(snapshot.ops);
+			const op = snapshot.ops["mutation:updateOrganization"] as
+				| { count: number; ms?: number }
+				| undefined;
 			assertToBeNonNullish(op);
 			expect(op.count).toBeGreaterThanOrEqual(1);
 		});

@@ -80,7 +80,7 @@ describe("Mutation createEvent - Performance Metrics", () => {
 
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:createEvent"] !== undefined,
+				(snapshot) => snapshot.ops?.["mutation:createEvent"] !== undefined,
 			);
 
 			// Execute mutation
@@ -106,7 +106,10 @@ describe("Mutation createEvent - Performance Metrics", () => {
 			createdEventIds.push(result.data.createEvent.id);
 
 			const snapshot = await snapshotPromise;
-			const op = snapshot.ops["mutation:createEvent"];
+			assertToBeNonNullish(snapshot.ops);
+			const op = snapshot.ops["mutation:createEvent"] as
+				| { count: number; ms: number }
+				| undefined;
 			assertToBeNonNullish(op);
 			expect(op.count).toBeGreaterThanOrEqual(1);
 			expect(op.ms).toBeGreaterThanOrEqual(0);
@@ -115,7 +118,7 @@ describe("Mutation createEvent - Performance Metrics", () => {
 		it("should record mutation:createEvent metric even on authentication failure", async () => {
 			const snapshotPromise = waitForMetricsSnapshot(
 				server,
-				(snapshot) => snapshot.ops["mutation:createEvent"] !== undefined,
+				(snapshot) => snapshot.ops?.["mutation:createEvent"] !== undefined,
 			);
 
 			// Execute mutation without auth token (should fail)
@@ -139,7 +142,10 @@ describe("Mutation createEvent - Performance Metrics", () => {
 
 			// Even on failure, metrics should be recorded
 			const snapshot = await snapshotPromise;
-			const op = snapshot.ops["mutation:createEvent"];
+			assertToBeNonNullish(snapshot.ops);
+			const op = snapshot.ops["mutation:createEvent"] as
+				| { count: number; ms?: number }
+				| undefined;
 			assertToBeNonNullish(op);
 			expect(op.count).toBeGreaterThanOrEqual(1);
 		});

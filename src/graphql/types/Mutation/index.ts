@@ -64,7 +64,6 @@ import "./signUp";
 import "./updateAdvertisement";
 import "./updateAgendaFolder";
 import "./updateAgendaItem";
-import "./updateAgendaItemSequence";
 import "./updateChat";
 import "./updateChatMembership";
 import "./updateChatMessage";

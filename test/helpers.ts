@@ -1,5 +1,4 @@
 import { isDeepStrictEqual } from "node:util";
-import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 
 /**
  * This function is used to narrow the type of a value passed to it to not be equal to `null` or `undefined`. More information can be found at the following links:
@@ -48,30 +47,45 @@ export const isSubSequence = <T>(sequence: T[], subsequence: T[]) => {
 	return j === subsequence.length;
 };
 
-export type MetricsSnapshotPredicate = (snapshot: PerfSnapshot) => boolean;
-
+/**
+ * Waits for a metrics snapshot that matches the given predicate.
+ * Polls the server's metrics snapshots until the predicate returns true or timeout is reached.
+ *
+ * @param server - Fastify server instance with getMetricsSnapshots method
+ * @param predicate - Function that checks if a snapshot matches the desired condition
+ * @param timeoutMs - Maximum time to wait in milliseconds (default: 5000)
+ * @param pollIntervalMs - Interval between polls in milliseconds (default: 100)
+ * @returns Promise that resolves to the matching snapshot, or rejects if timeout
+ *
+ * @example
+ * ```typescript
+ * const snapshot = await waitForMetricsSnapshot(
+ *   server,
+ *   (snapshot) => snapshot.ops["mutation:createUser"] !== undefined
+ * );
+ * ```
+ */
 export async function waitForMetricsSnapshot(
-	app: { onMetricsSnapshot?: (snapshot: PerfSnapshot) => void },
-	predicate: MetricsSnapshotPredicate,
-	timeoutMs = 2000,
-): Promise<PerfSnapshot> {
-	return await new Promise((resolve, reject) => {
-		const previous = app.onMetricsSnapshot;
-		let resolved = false;
-		const timer = setTimeout(() => {
-			if (resolved) return;
-			resolved = true;
-			app.onMetricsSnapshot = previous;
-			reject(new Error("Timed out waiting for metrics snapshot."));
-		}, timeoutMs);
+	server: { getMetricsSnapshots?: (windowMinutes?: number) => unknown[] },
+	predicate: (snapshot: { ops?: Record<string, unknown> }) => boolean,
+	timeoutMs = 5000,
+	pollIntervalMs = 100,
+): Promise<{ ops?: Record<string, unknown> }> {
+	const startTime = Date.now();
 
-		app.onMetricsSnapshot = (snapshot) => {
-			previous?.(snapshot);
-			if (resolved || !predicate(snapshot)) return;
-			resolved = true;
-			clearTimeout(timer);
-			app.onMetricsSnapshot = previous;
-			resolve(snapshot);
-		};
-	});
+	while (Date.now() - startTime < timeoutMs) {
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		for (const snapshot of snapshots) {
+			if (
+				typeof snapshot === "object" &&
+				snapshot !== null &&
+				predicate(snapshot as { ops?: Record<string, unknown> })
+			) {
+				return snapshot as { ops?: Record<string, unknown> };
+			}
+		}
+		await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+	}
+
+	throw new Error(`Timeout waiting for metrics snapshot after ${timeoutMs}ms`);
 }

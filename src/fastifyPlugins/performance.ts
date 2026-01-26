@@ -32,12 +32,6 @@ declare module "fastify" {
 		getMetricsSnapshots?: (windowMinutes?: number) => PerfSnapshot[];
 
 		/**
-		 * Optional hook for tests to receive snapshots deterministically.
-		 * @internal
-		 */
-		onMetricsSnapshot?: (snapshot: PerfSnapshot) => void;
-
-		/**
 		 * Metrics cache service for caching aggregated metrics data.
 		 * Available after cache service plugin is registered.
 		 */
@@ -209,12 +203,10 @@ export default fp(
 
 			// Store snapshot in recent buffer with timestamp
 			if (snap) {
-				const snapshot = { ...snap };
 				recent.unshift({
-					snapshot,
+					snapshot: { ...snap },
 					timestamp: Date.now(),
 				});
-				app.onMetricsSnapshot?.(snapshot);
 				// Keep only last N snapshots (configurable via env var)
 				if (recent.length > retentionCount) {
 					recent.length = retentionCount;

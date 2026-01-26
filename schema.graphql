@@ -2637,12 +2637,6 @@ type Mutation {
   """Mutation field to update an agenda item."""
   updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
 
-  """Mutation field to update the sequence of an agenda item."""
-  updateAgendaItemSequence(
-    """Input containing the agenda item ID and new sequence value."""
-    input: MutationUpdateAgendaItemSequenceInput!
-  ): AgendaItem
-
   """Mutation field to update a chat."""
   updateChat(input: MutationUpdateChatInput!): Chat
 
@@ -3743,15 +3737,6 @@ input MutationUpdateAgendaItemInput {
   """Name of the agenda item."""
   name: String
   url: [UpdateAgendaItemUrlInput!]
-}
-
-""""""
-input MutationUpdateAgendaItemSequenceInput {
-  """Global identifier of the agenda item."""
-  id: ID!
-
-  """Sequence of agenda item."""
-  sequence: Int!
 }
 
 """"""
