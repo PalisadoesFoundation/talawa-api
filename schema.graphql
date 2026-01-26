@@ -823,6 +823,9 @@ type Event {
   """
   id: ID!
 
+  """A boolean flag indicating if this instance has been cancelled."""
+  isCancelled: Boolean
+
   """
   A boolean flag indicating if this event was generated from a recurrence template.
   """

@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -113,7 +114,6 @@ export async function cancelInstances(instanceIds: string[]) {
 	if (instanceIds.length === 0) return;
 
 	// Drizzle update with inArray
-	const { inArray } = await import("drizzle-orm");
 	await server.drizzleClient
 		.update(recurringEventInstancesTable)
 		.set({ isCancelled: true })
