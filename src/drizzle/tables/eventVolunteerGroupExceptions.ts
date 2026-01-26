@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
@@ -44,18 +45,27 @@ export const eventVolunteerGroupExceptionsTableRelations = relations(
 		volunteerGroup: one(eventVolunteerGroupsTable, {
 			fields: [eventVolunteerGroupExceptionsTable.volunteerGroupId],
 			references: [eventVolunteerGroupsTable.id],
+			relationName:
+				"event_volunteer_groups.id:event_volunteer_group_exceptions.volunteer_group_id",
 		}),
 		recurringEventInstance: one(recurringEventInstancesTable, {
 			fields: [eventVolunteerGroupExceptionsTable.recurringEventInstanceId],
 			references: [recurringEventInstancesTable.id],
+			relationName:
+				"recurring_event_instances.id:event_volunteer_group_exceptions.recurring_event_instance_id",
 		}),
 		createdByUser: one(usersTable, {
 			fields: [eventVolunteerGroupExceptionsTable.createdBy],
 			references: [usersTable.id],
+			relationName: "event_volunteer_group_exceptions.created_by:users.id",
 		}),
 		updatedByUser: one(usersTable, {
 			fields: [eventVolunteerGroupExceptionsTable.updatedBy],
 			references: [usersTable.id],
+			relationName: "event_volunteer_group_exceptions.updated_by:users.id",
 		}),
 	}),
 );
+
+export const eventVolunteerGroupExceptionsTableInsertSchema =
+	createInsertSchema(eventVolunteerGroupExceptionsTable);
