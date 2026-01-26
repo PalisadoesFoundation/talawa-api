@@ -138,7 +138,8 @@ with_spinner() {
 
   # Clean up background process on script termination
   # We use a trap to ensure we don't leave the background process running if user hits Ctrl+C
-  trap "kill $pid 2>/dev/null || true" INT TERM
+  local interrupted=0
+  trap 'kill $pid 2>/dev/null || true; interrupted=1' INT TERM
   
   local spin='|/-\'
   local i=0
@@ -149,6 +150,7 @@ with_spinner() {
     printf "\r[INFO] %s %c" "$msg" "${spin:index:1}"
     i=$((i + 1))
     sleep 0.2
+    [ "$interrupted" -eq 1 ] && break
   done
   
   # Clear spinner line completely
@@ -166,6 +168,12 @@ with_spinner() {
 
   # Clear trap
   trap - INT TERM
+
+  # If interrupted, return appropriate exit code
+  if [ "$interrupted" -eq 1 ]; then
+    error "$msg interrupted"
+    return 130
+  fi
   
   if [ $exit_code -eq 0 ]; then
     success "$msg"

@@ -7,6 +7,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/logging.sh"
 
+# Track overall exit status
+final_exit_code=0
+
+# Error handler to capture failures and still print summary
+cleanup() {
+  final_exit_code=$?
+  print_timing_summary
+  print_installation_summary "$final_exit_code"
+  print_log_location
+}
+trap cleanup EXIT
+
 # Start installation
 print_banner "Example Installation Script"
 
@@ -38,9 +50,9 @@ if ! with_timer "Optional check" bash -c "exit 1"; then
   warn "Optional check failed, but installation continues..."
 fi
 
-# Display final summaries
-print_timing_summary
-print_installation_summary
-print_log_location
+# Display final summaries (handled by trap)
+# print_timing_summary
+# print_installation_summary
+# print_log_location
 
 info "Installation completed successfully!"

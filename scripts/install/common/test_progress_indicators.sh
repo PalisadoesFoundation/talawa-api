@@ -89,12 +89,14 @@ info "Testing spinner cleanup on SIGINT..."
 
 # Create a temporary script to run the spinner
 CAT_SCRIPT="${SCRIPT_DIR}/_temp_spinner_test.sh"
+# Ensure we clean up the test script even if we fail early
 trap "rm -f '$CAT_SCRIPT'" EXIT INT TERM
+
 cat > "$CAT_SCRIPT" <<EOF
 #!/bin/bash
 source "${SCRIPT_DIR}/logging.sh"
 # Mark this process so we can find it
-with_spinner "Spinning indefinitely" sleep 30 &
+with_spinner "Spinning indefinitely" sleep 33 &
 wait
 EOF
 chmod +x "$CAT_SCRIPT"
@@ -107,12 +109,9 @@ info "Started background script PID: $SCRIPT_PID"
 # Wait for it to initialize and start sleep
 sleep 1
 
-# Check if sleep is running
-if ! pgrep -P $SCRIPT_PID -f "sleep 30" > /dev/null; then
-  # Try finding sleep generally if pgrep -P fails (compatibility)
-  if ! pgrep -f "sleep 30" > /dev/null; then
-     warn "Could not find sleep process, test might be flaky"
-  fi
+# Check if sleep is running using unique identifier
+if ! pgrep -f "sleep 33" > /dev/null; then
+   warn "Could not find 'sleep 33' process, test might be flaky"
 fi
 
 # Send SIGINT to the script
@@ -124,21 +123,19 @@ wait $SCRIPT_PID || true
 
 # Verify sleep is gone
 sleep 0.5
-if pgrep -f "sleep 30" > /dev/null; then
-   # Double check pgrep might find other sleeps? Make sure it's the one we started?
-   # But sleep 30 is specific enough for this test context usually.
-   # Ideally we would check if it's a child of the killed process, but the parent is dead.
-   # So we just check if any sleep 30 is left.
-   if pgrep -f "sleep 30" > /dev/null; then
-      error "Background 'sleep 30' process persists after SIGINT!"
-      # Cleanup
-      pkill -f "sleep 30" || true
-      rm -f "$CAT_SCRIPT"
-      exit 1
-   fi
+
+# Check if sleep is still running
+if pgrep -f "sleep 33" > /dev/null; then
+   error "Background 'sleep 33' process persists after SIGINT!"
+   # Cleanup
+   pkill -f "sleep 33" || true
+   rm -f "$CAT_SCRIPT"
+   exit 1
 fi
 
 rm -f "$CAT_SCRIPT"
+# Clear the specific trap for this test section (optional, or just rely on script exit)
+trap - EXIT INT TERM
 success "Signal handling verification passed: Background process cleaned up."
 
 # Test 3: Combined with_timer and with_spinner
