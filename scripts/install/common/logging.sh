@@ -138,14 +138,16 @@ with_spinner() {
 
   # Clean up background process on script termination
   # We use a trap to ensure we don't leave the background process running if user hits Ctrl+C
-  trap "kill $pid 2>/dev/null || true; return" INT TERM
+  trap "kill $pid 2>/dev/null || true" INT TERM
   
   local spin='|/-\'
   local i=0
   
   # Show spinner while process is running
   while kill -0 "$pid" 2>/dev/null; do
-    printf "\r[INFO] %s %c" "$msg" "${spin:i++%4:1}"
+    local index=$((i % 4))
+    printf "\r[INFO] %s %c" "$msg" "${spin:index:1}"
+    i=$((i + 1))
     sleep 0.2
   done
   

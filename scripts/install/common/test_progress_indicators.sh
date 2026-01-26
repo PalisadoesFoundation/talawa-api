@@ -89,6 +89,7 @@ info "Testing spinner cleanup on SIGINT..."
 
 # Create a temporary script to run the spinner
 CAT_SCRIPT="${SCRIPT_DIR}/_temp_spinner_test.sh"
+trap "rm -f '$CAT_SCRIPT'" EXIT INT TERM
 cat > "$CAT_SCRIPT" <<EOF
 #!/bin/bash
 source "${SCRIPT_DIR}/logging.sh"
@@ -123,7 +124,7 @@ wait $SCRIPT_PID || true
 
 # Verify sleep is gone
 sleep 0.5
-if pgrep -f "sleep 30" | grep -v grep > /dev/null; then
+if pgrep -f "sleep 30" > /dev/null; then
    # Double check pgrep might find other sleeps? Make sure it's the one we started?
    # But sleep 30 is specific enough for this test context usually.
    # Ideally we would check if it's a child of the killed process, but the parent is dead.
@@ -152,7 +153,7 @@ print_section "Test 4: Timing summary"
 info "Populating timing data for summary verification..."
 with_timer "Quick task" sleep 0.1
 with_timer "Complex operation" sleep 0.1
-# Faming task failure
+# Failing task failure
 if ! with_timer "Failing task" bash -c "exit 1" >/dev/null 2>&1; then
   true # ignore failure
 fi
