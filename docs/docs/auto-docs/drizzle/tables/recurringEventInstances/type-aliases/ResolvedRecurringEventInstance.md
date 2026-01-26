@@ -45,6 +45,14 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:332](https://github.c
 
 ***
 
+### attachments
+
+> **attachments**: *typeof* `eventAttachmentsTable.$inferSelect`[]
+
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:337](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L337)
+
+***
+
 ### baseRecurringEventId
 
 > **baseRecurringEventId**: `string`

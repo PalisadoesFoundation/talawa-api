@@ -43,3 +43,7 @@ import "./hasSubmittedFeedback";
 import "./verifyPasswordResetToken";
 import "./agendaCategoriesByEventId";
 import "./agendaFoldersByEventId";
+import "./eventsByCreator";
+import "./eventsByAttendee";
+import "./eventsByVolunteer";
+import "./eventsByAdmin";
