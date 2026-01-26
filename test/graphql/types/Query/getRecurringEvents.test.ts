@@ -614,6 +614,22 @@ suite("Query field getRecurringEvents", () => {
 			expect(resultMaxLimit.data?.getRecurringEvents).toBeNull();
 			expect(resultMaxLimit.errors).toBeDefined();
 
+			// Test max offset + 1
+			const resultMaxOffset = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						baseRecurringEventId: templateId,
+						offset: 10001,
+					},
+				},
+			);
+
+			// Should fail validation
+			expect(resultMaxOffset.data?.getRecurringEvents).toBeNull();
+			expect(resultMaxOffset.errors).toBeDefined();
+
 			// Test negative limit
 			const resultNegativeLimit = await mercuriusClient.query(
 				Query_getRecurringEvents,

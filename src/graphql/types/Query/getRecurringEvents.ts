@@ -79,6 +79,21 @@ builder.queryField("getRecurringEvents", (t) =>
 			const offset = inputOffset ?? 0;
 			const includeCancelled = inputIncludeCancelled ?? false;
 
+			if (offset > 10000) {
+				throw new TalawaGraphQLError({
+					message: "Offset cannot exceed 10000",
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["offset"],
+								message: "Offset cannot exceed 10000",
+							},
+						],
+					},
+				});
+			}
+
 			const currentUserId = ctx.currentClient.user.id;
 
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
