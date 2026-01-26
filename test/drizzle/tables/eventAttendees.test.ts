@@ -1045,6 +1045,29 @@ describe("eventAttendeesTable", () => {
 				expect(result3?.eventId).toBeNull();
 				expect(result3?.recurringEventInstanceId).toBe(recurringInstanceId);
 			});
+
+			it("should document database behavior when both eventId and recurringEventInstanceId are set", async () => {
+				const { userId } = await createRegularUserUsingAdmin();
+				const eventId = await createTestEvent();
+				const recurringInstanceId = await createTestRecurringEventInstance();
+
+				const [result] = await server.drizzleClient
+					.insert(eventAttendeesTable)
+					.values({
+						userId: userId,
+						eventId: eventId,
+						recurringEventInstanceId: recurringInstanceId,
+					})
+					.returning();
+
+				expect(result).toBeDefined();
+				if (!result) {
+					throw new Error("Insert did not return a result");
+				}
+				// Database allows both to be set
+				expect(result.eventId).toBe(eventId);
+				expect(result.recurringEventInstanceId).toBe(recurringInstanceId);
+			});
 		});
 
 		describe("Timestamp Timezone and Precision Handling", () => {
