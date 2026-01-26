@@ -705,5 +705,23 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				expect(result.mimeType).toBe(validMimeType);
 			}
 		});
+
+		it("should reject invalid enum values in insert schema", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const eventId = await createTestEvent();
+			const name = faker.system.fileName();
+			const invalidMimeType = "not/a/real-type";
+			const createdAt = faker.date.recent();
+
+			await expect(
+				server.drizzleClient.insert(eventAttachmentsTable).values({
+					name,
+					creatorId: userId,
+					mimeType: invalidMimeType,
+					eventId,
+					createdAt: createdAt,
+				}),
+			).rejects.toThrow();
+		});
 	});
 });
