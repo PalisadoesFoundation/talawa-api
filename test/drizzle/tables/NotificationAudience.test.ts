@@ -1,51 +1,278 @@
 import { faker } from "@faker-js/faker";
+import { getTableConfig } from "drizzle-orm/pg-core";
+import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
-import { describe, expect, it } from "vitest";
+import {
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createPost,
+	Mutation_deleteOrganization,
+	Mutation_deleteUser,
+	Mutation_readNotification,
+	Query_signIn,
+	Query_user_notifications,
+} from "test/graphql/types/documentNodes";
+import { assertToBeNonNullish } from "test/helpers";
+import { afterEach, describe, expect, it } from "vitest";
 import {
 	notificationAudienceTable,
 	notificationAudienceTableRelations,
 	notificationLogsTable,
+	notificationTemplatesTable,
 	usersTable,
 } from "~/src/drizzle/schema";
 import { notificationAudienceTableInsertSchema } from "~/src/drizzle/tables/NotificationAudience";
 import { server } from "../../server";
 
+const POST_CREATED_EVENT_TYPE = "post_created";
+
+type GraphQLNotification = {
+	id: string | null;
+	isRead: boolean | null;
+	readAt: string | null;
+	createdAt: string | null;
+};
+
+type NotificationListItem = {
+	id: string;
+	isRead: boolean;
+	readAt: string | null;
+	createdAt: string | null;
+};
+
+const getColumnName = (col: unknown): string | undefined =>
+	col && typeof col === "object" && "name" in col
+		? (col as { name: string }).name
+		: undefined;
+
+async function ensureInAppPostCreatedTemplate(): Promise<string> {
+	const existing =
+		await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+			where: (fields, operators) =>
+				operators.and(
+					operators.eq(fields.eventType, POST_CREATED_EVENT_TYPE),
+					operators.eq(fields.channelType, "in_app"),
+				),
+		});
+
+	if (existing?.id) {
+		return existing.id;
+	}
+
+	const [template] = await server.drizzleClient
+		.insert(notificationTemplatesTable)
+		.values({
+			name: "New Post Created",
+			eventType: POST_CREATED_EVENT_TYPE,
+			title: "New post created",
+			body: "A post was created",
+			channelType: "in_app",
+			linkedRouteName: "/post/{postId}",
+		})
+		.returning({ id: notificationTemplatesTable.id });
+
+	if (!template?.id) {
+		throw new Error("Failed to create notification template for tests");
+	}
+
+	return template.id;
+}
+
+async function createNotificationLogForTests(): Promise<string> {
+	const templateId = await ensureInAppPostCreatedTemplate();
+	const notificationId = faker.string.uuid();
+	const [notification] = await server.drizzleClient
+		.insert(notificationLogsTable)
+		.values({
+			id: notificationId,
+			templateId,
+			renderedContent: { title: "Test notification", body: "Body" },
+			variables: {},
+			eventType: POST_CREATED_EVENT_TYPE,
+			channel: "in_app",
+			status: "delivered",
+		})
+		.returning({ id: notificationLogsTable.id });
+
+	if (!notification?.id) {
+		throw new Error("Failed to create notification log for tests");
+	}
+
+	return notification.id;
+}
+
+async function waitForNotifications(
+	userId: string,
+	authToken: string,
+	timeoutMs = 10000,
+): Promise<NotificationListItem[]> {
+	const start = Date.now();
+
+	while (Date.now() - start < timeoutMs) {
+		const response = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: { id: userId },
+				notificationInput: { first: 10 },
+			},
+		});
+
+		const raw = (response.data?.user?.notifications ??
+			[]) as GraphQLNotification[];
+
+		const normalized = raw.flatMap((notification) => {
+			if (!notification?.id || typeof notification.isRead !== "boolean") {
+				return [];
+			}
+
+			return [
+				{
+					id: notification.id,
+					isRead: notification.isRead,
+					readAt: notification.readAt,
+					createdAt: notification.createdAt,
+				},
+			];
+		});
+
+		if (normalized.length > 0) {
+			return normalized;
+		}
+
+		await new Promise((resolve) => setTimeout(resolve, 200));
+	}
+
+	return [];
+}
+
+afterEach(() => {
+	mercuriusClient.setHeaders({});
+});
+
 describe("src/drizzle/tables/NotificationAudience.ts", () => {
-	describe("notificationAudience Table Schema", () => {
-		it("should have the correct schema", () => {
-			const columns = Object.keys(notificationAudienceTable);
-			expect(columns).toContain("notificationId");
-			expect(columns).toContain("userId");
-			expect(columns).toContain("isRead");
-			expect(columns).toContain("readAt");
-			expect(columns).toContain("createdAt");
-		});
+	describe("NotificationAudience GraphQL integration", () => {
+		it(
+			"exposes audience read state via GraphQL and updates readAt on read",
+			async () => {
+				await ensureInAppPostCreatedTemplate();
 
-		it("should have correct primary key configuration", () => {
-			expect(notificationAudienceTable.notificationId).toBeDefined();
-			expect(notificationAudienceTable.userId).toBeDefined();
-		});
+				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
 
-		it("should have required fields configured as not null", () => {
-			expect(notificationAudienceTable.notificationId.notNull).toBe(true);
-			expect(notificationAudienceTable.userId.notNull).toBe(true);
-			expect(notificationAudienceTable.isRead.notNull).toBe(true);
-			expect(notificationAudienceTable.createdAt.notNull).toBe(true);
-		});
+				if (adminSignInResult.errors) {
+					throw new Error(
+						`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
+					);
+				}
 
-		it("should have default values configured", () => {
-			expect(notificationAudienceTable.isRead.hasDefault).toBe(true);
-			expect(notificationAudienceTable.createdAt.hasDefault).toBe(true);
-		});
+				const adminToken =
+					adminSignInResult.data?.signIn?.authenticationToken ?? null;
+				assertToBeNonNullish(adminToken);
 
-		it("should have isRead default to false", () => {
-			const defaultValue = notificationAudienceTable.isRead.default;
-			expect(defaultValue).toBe(false);
-		});
+				const { userId, authToken } = await createRegularUserUsingAdmin();
+				const cleanups: Array<() => Promise<void>> = [];
 
-		it("should have nullable readAt field", () => {
-			expect(notificationAudienceTable.readAt.notNull).toBe(false);
-		});
+				cleanups.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: { input: { id: userId } },
+					});
+				});
+
+				const organizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+						},
+					},
+				);
+
+				const organizationId = organizationResult.data?.createOrganization?.id;
+				assertToBeNonNullish(organizationId);
+
+				cleanups.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: { input: { id: organizationId } },
+					});
+				});
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							memberId: userId,
+							organizationId,
+							role: "regular",
+						},
+					},
+				});
+
+				await mercuriusClient.mutate(Mutation_createPost, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							organizationId,
+							caption: `Post ${faker.lorem.words(2)}`,
+						},
+					},
+				});
+
+				try {
+					const notifications = await waitForNotifications(userId, authToken, 12000);
+					expect(notifications.length).toBeGreaterThan(0);
+
+					const firstNotification = notifications[0];
+					assertToBeNonNullish(firstNotification);
+					expect(firstNotification.isRead).toBe(false);
+					expect(firstNotification.readAt).toBeNull();
+					expect(firstNotification.createdAt).toBeTruthy();
+
+					const markReadResult = await mercuriusClient.mutate(
+						Mutation_readNotification,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: { notificationIds: [firstNotification.id] },
+							},
+						},
+					);
+
+					expect(markReadResult.errors).toBeUndefined();
+
+					const updatedNotifications = await waitForNotifications(
+						userId,
+						authToken,
+						8000,
+					);
+
+					const updated = updatedNotifications.find(
+						(notification) => notification.id === firstNotification.id,
+					);
+
+					expect(updated?.isRead).toBe(true);
+					expect(updated?.readAt).not.toBeNull();
+				} finally {
+					for (const cleanup of cleanups.reverse()) {
+						try {
+							await cleanup();
+						} catch (error) {
+							console.error("Cleanup failed:", error);
+						}
+					}
+				}
+			},
+			20000,
+		);
 	});
 
 	describe("Foreign Key Relationships", () => {
@@ -74,7 +301,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 
 		it("should reject insert with invalid userId foreign key", async () => {
 			const invalidUserId = faker.string.uuid();
-			const notificationId = faker.string.uuid();
+			const notificationId = await createNotificationLogForTests();
 
 			await expect(
 				server.drizzleClient.insert(notificationAudienceTable).values({
@@ -85,7 +312,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 		});
 
 		it("should reject insert with empty userId", async () => {
-			const notificationId = faker.string.uuid();
+			const notificationId = await createNotificationLogForTests();
 
 			await expect(
 				server.drizzleClient.insert(notificationAudienceTable).values({
@@ -330,23 +557,21 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 	});
 
 	describe("Index Configuration", () => {
-		it("should have indexes defined on the table", () => {
-			const tableConfigs = Object.getOwnPropertyNames(
-				notificationAudienceTable,
-			);
-			expect(tableConfigs.length).toBeGreaterThan(0);
-		});
+		it("should define indexes for notification_id, user_id, and is_read", () => {
+			const tableConfig = getTableConfig(notificationAudienceTable);
 
-		it("should have index on notificationId column", () => {
-			expect(notificationAudienceTable.notificationId).toBeDefined();
-		});
+			expect(tableConfig.indexes).toHaveLength(3);
 
-		it("should have index on userId column", () => {
-			expect(notificationAudienceTable.userId).toBeDefined();
-		});
+			const hasIndexFor = (columnName: string) =>
+				tableConfig.indexes.some((index) =>
+					index.config.columns.some(
+						(column) => getColumnName(column) === columnName,
+					),
+				);
 
-		it("should have index on isRead column", () => {
-			expect(notificationAudienceTable.isRead).toBeDefined();
+			expect(hasIndexFor("notification_id")).toBe(true);
+			expect(hasIndexFor("user_id")).toBe(true);
+			expect(hasIndexFor("is_read")).toBe(true);
 		});
 	});
 
@@ -403,12 +628,24 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 	});
 
 	describe("Cascade Delete Behavior", () => {
-		it("should define cascade delete constraint on notificationId", () => {
-			expect(notificationAudienceTable.notificationId).toBeDefined();
-		});
+		it("should cascade deletes from notification and user parents", () => {
+			const tableConfig = getTableConfig(notificationAudienceTable);
 
-		it("should define cascade delete constraint on userId", () => {
-			expect(notificationAudienceTable.userId).toBeDefined();
+			const findFkForColumn = (columnName: string) =>
+				tableConfig.foreignKeys.find((fk) => {
+					const reference = fk.reference();
+					return reference.columns.some(
+						(column) => getColumnName(column) === columnName,
+					);
+				});
+
+			const notificationFk = findFkForColumn("notification_id");
+			const userFk = findFkForColumn("user_id");
+
+			expect(notificationFk).toBeDefined();
+			expect(notificationFk?.onDelete).toBe("cascade");
+			expect(userFk).toBeDefined();
+			expect(userFk?.onDelete).toBe("cascade");
 		});
 	});
 
