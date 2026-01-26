@@ -221,15 +221,39 @@ suite("Query field getRecurringEvents", () => {
 
 	suite("when authentication is required", () => {
 		test("should validate that the query requires authentication", async () => {
+			// Create valid recurring event first
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 1 },
+			);
+
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${authToken}` },
+				// No authorization header
 				variables: {
-					baseRecurringEventId: faker.string.uuid(),
+					baseRecurringEventId: templateId,
 				},
 			});
 
 			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "unauthenticated" }),
+					}),
+				]),
+			);
 		});
 	});
 
@@ -253,50 +277,63 @@ suite("Query field getRecurringEvents", () => {
 				},
 			);
 
-			if (organizationCreateResult.data?.createOrganization) {
-				const organizationId =
-					organizationCreateResult.data.createOrganization.id;
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
 
-				// Create a regular event as admin
-				const eventCreateResult = await mercuriusClient.mutate(
-					Mutation_createEvent,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: faker.lorem.words(3),
-								description: faker.lorem.sentence(),
-								organizationId,
-								startAt: faker.date.future().toISOString(),
-								endAt: faker.date.future().toISOString(),
+			// Add admin as member so they can create events
+			await server.drizzleClient.insert(organizationMembershipsTable).values({
+				organizationId,
+				memberId: adminUserId,
+				role: "admin",
+			});
+
+			const startAt = faker.date.future();
+			const endAt = new Date(startAt.getTime() + 3600000); // 1 hour later
+
+			// Create a recurring event template as admin
+			const eventCreateResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.lorem.words(3),
+							description: faker.lorem.sentence(),
+							organizationId,
+							startAt: startAt.toISOString(),
+							endAt: endAt.toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								interval: 1,
+								count: 3,
 							},
 						},
 					},
-				);
+				},
+			);
 
-				if (eventCreateResult.data?.createEvent) {
-					const eventId = eventCreateResult.data.createEvent.id;
+			assertToBeNonNullish(eventCreateResult.data?.createEvent);
+			const eventId = eventCreateResult.data.createEvent.id;
 
-					// Now try to access as regular user who is not a member of the organization
-					const result = await mercuriusClient.query(Query_getRecurringEvents, {
-						headers: { authorization: `bearer ${regularUserToken}` },
-						variables: {
-							baseRecurringEventId: eventId,
-						},
-					});
+			// Now try to access as regular user who is not a member of the organization
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${regularUserToken}` },
+				variables: {
+					baseRecurringEventId: eventId,
+				},
+			});
 
-					expect(result.data?.getRecurringEvents).toBeNull();
-					expect(result.errors).toEqual(
-						expect.arrayContaining([
-							expect.objectContaining({
-								extensions: expect.objectContaining({
-									code: "arguments_associated_resources_not_found",
-								}),
-							}),
-						]),
-					);
-				}
-			}
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+					}),
+				]),
+			);
 		});
 	});
 
