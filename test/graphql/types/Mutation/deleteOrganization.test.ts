@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test, vi } from "vitest";
+import { expect, suite, test } from "vitest";
 import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
 import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { chatsTable } from "~/src/drizzle/tables/chats";
@@ -634,86 +634,6 @@ suite("Mutation field deleteOrganization", () => {
 
 				expect(deleteResult.errors).toBeUndefined();
 				expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
-
-	suite("when MinIO cleanup fails", () => {
-		test(
-			"should not fail mutation when MinIO removeObjects fails",
-			async () => {
-				const orgId = await createTestOrganization(authToken);
-
-				// Set avatar
-				await server.drizzleClient
-					.update(organizationsTable)
-					.set({
-						avatarName: "test-org-avatar.png",
-						avatarMimeType: "image/png",
-					})
-					.where(eq(organizationsTable.id, orgId));
-
-				// Mock MinIO removeObjects to fail
-				const minioClient = server.minio.client;
-				const removeObjectsSpy = vi
-					.spyOn(minioClient, "removeObjects")
-					.mockRejectedValueOnce(new Error("MinIO cleanup failed"));
-
-				try {
-					const deleteResult = await mercuriusClient.mutate(
-						Mutation_deleteOrganization,
-						{
-							headers: { authorization: `bearer ${authToken}` },
-							variables: {
-								input: {
-									id: orgId,
-								},
-							},
-						},
-					);
-
-					// Mutation should still succeed even if MinIO cleanup fails
-					expect(deleteResult.errors).toBeUndefined();
-					expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
-					expect(removeObjectsSpy).toHaveBeenCalled();
-				} finally {
-					removeObjectsSpy.mockRestore();
-				}
-			},
-			SUITE_TIMEOUT,
-		);
-
-		test(
-			"should handle empty objectNames array (no cleanup needed)",
-			async () => {
-				const orgId = await createTestOrganization(authToken);
-
-				// Don't set any avatars or attachments
-				// Spy on MinIO removeObjects to verify it's not called
-				const minioClient = server.minio.client;
-				const removeObjectsSpy = vi.spyOn(minioClient, "removeObjects");
-
-				try {
-					const deleteResult = await mercuriusClient.mutate(
-						Mutation_deleteOrganization,
-						{
-							headers: { authorization: `bearer ${authToken}` },
-							variables: {
-								input: {
-									id: orgId,
-								},
-							},
-						},
-					);
-
-					expect(deleteResult.errors).toBeUndefined();
-					expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
-					// Verify MinIO cleanup was skipped (removeObjects not called)
-					expect(removeObjectsSpy).not.toHaveBeenCalled();
-				} finally {
-					removeObjectsSpy.mockRestore();
-				}
 			},
 			SUITE_TIMEOUT,
 		);

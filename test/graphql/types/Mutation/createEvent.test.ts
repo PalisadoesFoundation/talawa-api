@@ -1,16 +1,12 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import {
 	agendaCategoriesTable,
 	agendaFoldersTable,
-	eventsTable,
 } from "~/src/drizzle/schema";
-import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
-import NotificationService from "~/src/services/notification/NotificationService";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -955,979 +951,204 @@ suite("Mutation field createEvent", () => {
 
 			expectSuccessfulEvent(result, "Midnight Launch Event");
 		});
+	});
+});
 
-		suite("Default Agenda Folder and Category Creation", () => {
-			test("creates default agenda folder and category for standalone events", async () => {
-				const organizationId = await createTestOrganization();
+suite("Default Agenda Folder and Category Creation", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+	test("creates default agenda folder and category for standalone events", async () => {
+		const organizationId = await createTestOrganization();
 
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				expect(result.errors).toBeUndefined();
-				assertToBeNonNullish(result.data?.createEvent);
-
-				const eventId = result.data.createEvent.id;
-
-				const defaultFolder =
-					await server.drizzleClient.query.agendaFoldersTable.findFirst({
-						where: (fields, operators) => operators.eq(fields.eventId, eventId),
-					});
-
-				const defaultCategory =
-					await server.drizzleClient.query.agendaCategoriesTable.findFirst({
-						where: (fields, operators) => operators.eq(fields.eventId, eventId),
-					});
-
-				expect(defaultFolder).toEqual(
-					expect.objectContaining({
-						eventId,
-						organizationId,
-						isDefaultFolder: true,
-						sequence: 1,
-						name: "Default",
-						creatorId: adminUserId,
-					}),
-				);
-
-				expect(defaultCategory).toEqual(
-					expect.objectContaining({
-						eventId,
-						organizationId,
-						isDefaultCategory: true,
-						name: "Default",
-						creatorId: adminUserId,
-					}),
-				);
-			});
-
-			test("creates default agenda folder and category for recurring events", async () => {
-				const organizationId = await createTestOrganization();
-
-				const result = await createEvent({
-					input: {
-						...baseEventInput(organizationId),
-						recurrence: {
-							frequency: "WEEKLY",
-							interval: 1,
-							count: 3,
-						},
-					},
-				});
-
-				expect(result.errors).toBeUndefined();
-				assertToBeNonNullish(result.data?.createEvent);
-
-				const eventId = result.data.createEvent.id;
-
-				const defaultFolder =
-					await server.drizzleClient.query.agendaFoldersTable.findFirst({
-						where: (fields, operators) => operators.eq(fields.eventId, eventId),
-					});
-
-				const defaultCategory =
-					await server.drizzleClient.query.agendaCategoriesTable.findFirst({
-						where: (fields, operators) => operators.eq(fields.eventId, eventId),
-					});
-
-				expect(defaultFolder?.isDefaultFolder).toBe(true);
-				expect(defaultCategory?.isDefaultCategory).toBe(true);
-			});
-
-			test("rolls back transaction if default agenda folder insert fails", async () => {
-				const organizationId = await createTestOrganization();
-
-				vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-					async (callback) => {
-						const mockTx = {
-							...server.drizzleClient,
-							insert: vi.fn().mockImplementation((table) => {
-								if (table === agendaFoldersTable) {
-									return {
-										values: vi.fn().mockReturnThis(),
-										returning: vi.fn().mockResolvedValue([]),
-									};
-								}
-								// Return a mock for all other tables to avoid real database writes
-								return {
-									values: vi.fn().mockReturnThis(),
-									returning: vi.fn().mockResolvedValue([
-										{
-											id: faker.string.uuid(),
-											name: "Test Event",
-											organizationId,
-											creatorId: adminUserId,
-										},
-									]),
-								};
-							}),
-						};
-
-						return callback(
-							mockTx as unknown as Parameters<typeof callback>[0],
-						);
-					},
-				);
-
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				expect(result.data?.createEvent).toBeNull();
-				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-			});
-
-			test("rolls back transaction if default agenda category insert fails", async () => {
-				const organizationId = await createTestOrganization();
-
-				vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-					async (callback) => {
-						const mockTx = {
-							...server.drizzleClient,
-							insert: vi.fn().mockImplementation((table) => {
-								if (table === agendaCategoriesTable) {
-									return {
-										values: vi.fn().mockReturnThis(),
-										returning: vi.fn().mockResolvedValue([]),
-									};
-								}
-								// Return a mock for all other tables to avoid real database writes
-								return {
-									values: vi.fn().mockReturnThis(),
-									returning: vi.fn().mockResolvedValue([
-										{
-											id: faker.string.uuid(),
-											name: "Test Event",
-											organizationId,
-											creatorId: adminUserId,
-										},
-									]),
-								};
-							}),
-						};
-
-						return callback(
-							mockTx as unknown as Parameters<typeof callback>[0],
-						);
-					},
-				);
-
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				expect(result.data?.createEvent).toBeNull();
-				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-			});
-
-			test("creates separate default folder and category for multiple events", async () => {
-				const organizationId = await createTestOrganization();
-
-				const event1 = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				const event2 = await createEvent({
-					input: { ...baseEventInput(organizationId), name: "Second Event" },
-				});
-
-				assertToBeNonNullish(event1.data?.createEvent);
-				assertToBeNonNullish(event2.data?.createEvent);
-
-				const defaultFolders =
-					await server.drizzleClient.query.agendaFoldersTable.findMany({
-						where: (fields, operators) =>
-							operators.eq(fields.organizationId, organizationId),
-					});
-
-				const defaultCategories =
-					await server.drizzleClient.query.agendaCategoriesTable.findMany({
-						where: (fields, operators) =>
-							operators.eq(fields.organizationId, organizationId),
-					});
-
-				expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
-				expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
-
-				expect(
-					defaultCategories.filter((c) => c.isDefaultCategory),
-				).toHaveLength(2);
-				expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
-			});
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
 		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+
+		const eventId = result.data.createEvent.id;
+
+		const defaultFolder =
+			await server.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		const defaultCategory =
+			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(defaultFolder).toEqual(
+			expect.objectContaining({
+				eventId,
+				organizationId,
+				isDefaultFolder: true,
+				sequence: 1,
+				name: "Default",
+				creatorId: adminUserId,
+			}),
+		);
+
+		expect(defaultCategory).toEqual(
+			expect.objectContaining({
+				eventId,
+				organizationId,
+				isDefaultCategory: true,
+				name: "Default",
+				creatorId: adminUserId,
+			}),
+		);
 	});
 
-	suite("Rollback and Edge Cases", () => {
-		test("should rollback transaction and cleanup minio on attachment upload failure", async () => {
-			const organizationId = await createTestOrganization();
+	test("creates default agenda folder and category for recurring events", async () => {
+		const organizationId = await createTestOrganization();
 
-			// Mock MinIO
-			const minioClient = server.minio.client;
-
-			let callCount = 0;
-			const putObjectSpy = vi
-				.spyOn(minioClient, "putObject")
-				.mockImplementation(async () => {
-					callCount++;
-					// Fail on the second file
-					if (callCount === 2) {
-						throw new Error("Simulated Upload Failure");
-					}
-					return Promise.resolve({ etag: "mock-etag", versionId: null });
-				});
-
-			const removeObjectsSpy = vi
-				.spyOn(minioClient, "removeObjects")
-				.mockReturnValue(Promise.resolve([]));
-
-			const boundary = "----Boundary";
-			const operations = {
-				query: `mutation CreateEvent($input: MutationCreateEventInput!) {
-                    createEvent(input: $input) { id }
-                }`,
-				variables: {
-					input: {
-						name: `Rollback Event ${faker.string.ulid()}`,
-						startAt: new Date(Date.now() + 60_000).toISOString(),
-						endAt: new Date(Date.now() + 3_600_000).toISOString(),
-						organizationId,
-						location: "Test Loc",
-						description: "Rollback verify",
-						// 2 attachments
-						attachments: [null, null],
-					},
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				recurrence: {
+					frequency: "WEEKLY",
+					interval: 1,
+					count: 3,
 				},
-			};
-			const map = {
-				"0": ["variables.input.attachments.0"],
-				"1": ["variables.input.attachments.1"],
-			};
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				JSON.stringify(operations),
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				JSON.stringify(map),
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test1.png"',
-				"Content-Type: image/png",
-				"",
-				"content1",
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="1"; filename="test2.png"',
-				"Content-Type: image/png",
-				"",
-				"content2",
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				payload: body,
-			});
-
-			const result = response.json();
-			// We expect execution error (rethrown uploadError)
-			// Depending on graphql-upload/mercurius handling, it might be in errors.
-			expect(result.errors).toBeDefined();
-
-			// Verify Rollback
-			const event = await server.drizzleClient.query.eventsTable.findFirst({
-				where: eq(eventsTable.name, operations.variables.input.name),
-			});
-			expect(event).toBeUndefined();
-
-			// Verify Cleanup (removeObjects called)
-			if (!putObjectSpy.mock.calls[0]) {
-				throw new Error("putObjectSpy was not called");
-			}
-			const successfulUploadKey = putObjectSpy.mock.calls[0][1] as string;
-			expect(removeObjectsSpy).toHaveBeenCalledWith(
-				expect.any(String),
-				expect.arrayContaining([successfulUploadKey]),
-			);
-
-			putObjectSpy.mockRestore();
-			removeObjectsSpy.mockRestore();
+			},
 		});
 
-		test("returns invalid_arguments when recurrence endDate is before startAt", async () => {
-			const organizationId = await createTestOrganization();
-			// Compute pastDate first, then set startAt to be in the future relative to it
-			const pastDate = getPastDate(10); // 10 days ago
-			const startAt = getFutureDate(1); // 1 day in the future (ensures startAt is after pastDate)
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
 
-			const result = await createEvent({
-				input: {
-					...baseEventInput(organizationId),
-					startAt,
-					recurrence: {
-						frequency: "WEEKLY",
-						interval: 1,
-						endDate: pastDate,
-					},
-				},
+		const eventId = result.data.createEvent.id;
+
+		const defaultFolder =
+			await server.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
 			});
 
-			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-			expect(result.data?.createEvent).toBeNull();
-		});
+		const defaultCategory =
+			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(defaultFolder?.isDefaultFolder).toBe(true);
+		expect(defaultCategory?.isDefaultCategory).toBe(true);
 	});
 
-	suite("error handling and edge cases", () => {
-		test("should return unauthenticated error when user lookup fails after token exists", async () => {
-			const organizationId = await createTestOrganization();
+	test("rolls back transaction if default agenda folder insert fails", async () => {
+		const organizationId = await createTestOrganization();
 
-			// Mock user lookup to return undefined (user deleted after token issued)
-			const findFirstSpy = vi
-				.spyOn(server.drizzleClient.query.usersTable, "findFirst")
-				.mockResolvedValue(undefined);
-
-			try {
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
-				expect(result.data?.createEvent).toBeNull();
-			} finally {
-				findFirstSpy.mockRestore();
-			}
-		});
-
-		test("should handle empty insert result for createdEvent", async () => {
-			const organizationId = await createTestOrganization();
-
-			// Mock transaction to return empty array for event insert
-			const transactionSpy = vi
-				.spyOn(server.drizzleClient, "transaction")
-				.mockImplementation(async (callback) => {
-					const mockTx = {
-						insert: vi.fn().mockImplementation((table) => {
-							// Return empty array for eventsTable insert
-							if (table === eventsTable) {
-								return {
-									values: vi.fn().mockReturnThis(),
-									returning: vi.fn().mockResolvedValue([]),
-								};
-							}
-							// For other tables, return normal mock
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						if (table === agendaFoldersTable) {
 							return {
 								values: vi.fn().mockReturnThis(),
-								returning: vi
-									.fn()
-									.mockResolvedValue([{ id: faker.string.uuid() }]),
+								returning: vi.fn().mockResolvedValue([]),
 							};
-						}),
-						query: server.drizzleClient.query,
-					};
-					return callback(mockTx as unknown as Parameters<typeof callback>[0]);
-				});
-
-			try {
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-				expect(result.data?.createEvent).toBeNull();
-			} finally {
-				transactionSpy.mockRestore();
-			}
-		});
-
-		test("should initialize generation window when no window exists for recurring event", async () => {
-			const organizationId = await createTestOrganization();
-
-			// Ensure no window exists for this organization before the test
-			const existingWindow =
-				await server.drizzleClient.query.eventGenerationWindowsTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.organizationId, organizationId),
-				});
-			if (existingWindow) {
-				// Clean up any existing window to ensure a fresh test
-				await server.drizzleClient
-					.delete(eventGenerationWindowsTable)
-					.where(
-						eq(eventGenerationWindowsTable.organizationId, organizationId),
-					);
-			}
-
-			// Mock window lookup to return undefined (no window exists)
-			const findFirstSpy = vi
-				.spyOn(
-					server.drizzleClient.query.eventGenerationWindowsTable,
-					"findFirst",
-				)
-				.mockResolvedValue(undefined);
-			const eventGenerationModule = await import(
-				"~/src/services/eventGeneration"
-			);
-			const initializeSpy = vi
-				.spyOn(eventGenerationModule, "initializeGenerationWindow")
-				.mockResolvedValue({
-					id: "test-window-id",
-					organizationId,
-					hotWindowMonthsAhead: 12,
-					historyRetentionMonths: 3,
-					currentWindowEndDate: new Date(),
-					retentionStartDate: new Date(),
-					lastProcessedAt: new Date(),
-					lastProcessedInstanceCount: 0,
-					isEnabled: true,
-					processingPriority: 5,
-					maxInstancesPerRun: 1000,
-					configurationNotes: null,
-					createdById: "00000000-0000-0000-0000-000000000001",
-					lastUpdatedById: null,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				});
-
-			try {
-				const result = await createEvent({
-					input: {
-						...baseEventInput(organizationId),
-						recurrence: {
-							frequency: "WEEKLY",
-							interval: 1,
-							never: true, // Required: must specify exactly one of endDate, count, or never
-						},
-					},
-				});
-
-				// Should succeed and create window
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.createEvent).toBeDefined();
-
-				// Verify the mock was called (window lookup happened)
-				expect(findFirstSpy).toHaveBeenCalled();
-
-				// Verify initialization path was executed
-				expect(initializeSpy).toHaveBeenCalledWith(
-					expect.objectContaining({ organizationId }),
-					expect.any(Object),
-					expect.any(Object),
-				);
-			} finally {
-				// Ensure cleanup even if test fails
-				findFirstSpy.mockRestore();
-				initializeSpy.mockRestore();
-			}
-		});
-
-		test("should cap windowEndDate at default window when endDate exceeds 12 months", async () => {
-			const organizationId = await createTestOrganization();
-			const startAt = getFutureDate(30, 10);
-			// Set endDate to be 2 years in the future (should be capped at 12 months)
-			const endDate = new Date(startAt);
-			endDate.setFullYear(endDate.getFullYear() + 2);
-
-			const eventGenerationModule = await import(
-				"~/src/services/eventGeneration"
-			);
-			const generateSpy = vi
-				.spyOn(eventGenerationModule, "generateInstancesForRecurringEvent")
-				.mockResolvedValue(0);
-
-			try {
-				const result = await createEvent({
-					input: {
-						...baseEventInput(organizationId),
-						name: "Long Recurring Event",
-						startAt,
-						recurrence: {
-							frequency: "MONTHLY",
-							interval: 1,
-							endDate: endDate.toISOString(),
-						},
-					},
-				});
-
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.createEvent).toBeDefined();
-
-				expect(generateSpy).toHaveBeenCalled();
-				const callArgs = generateSpy.mock.calls[0]?.[0];
-				const expectedEnd = new Date(startAt);
-				expectedEnd.setMonth(expectedEnd.getMonth() + 12);
-				expect(callArgs?.windowEndDate.toISOString()).toBe(
-					expectedEnd.toISOString(),
-				);
-			} finally {
-				generateSpy.mockRestore();
-			}
-		});
-
-		test("should clamp windowEndDate when endDate is before startAt", async () => {
-			const organizationId = await createTestOrganization();
-			const startAt = getFutureDate(30, 10);
-			const endDate = getPastDate(1, 10);
-
-			const recurringEventModule = await import(
-				"~/src/utilities/recurringEvent"
-			);
-			const eventGenerationModule = await import(
-				"~/src/services/eventGeneration"
-			);
-
-			const validateSpy = vi
-				.spyOn(recurringEventModule, "validateRecurrenceInput")
-				.mockReturnValue({ isValid: true, errors: [] });
-
-			const generateSpy = vi
-				.spyOn(eventGenerationModule, "generateInstancesForRecurringEvent")
-				.mockResolvedValue(0);
-
-			try {
-				const result = await createEvent({
-					input: {
-						...baseEventInput(organizationId),
-						startAt,
-						recurrence: {
-							frequency: "DAILY",
-							interval: 1,
-							endDate,
-						},
-					},
-				});
-
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.createEvent).toBeDefined();
-
-				expect(generateSpy).toHaveBeenCalled();
-				const callArgs = generateSpy.mock.calls[0]?.[0];
-				expect(callArgs?.windowStartDate.toISOString()).toBe(
-					new Date(startAt).toISOString(),
-				);
-				expect(callArgs?.windowEndDate.toISOString()).toBe(
-					new Date(startAt).toISOString(),
-				);
-			} finally {
-				validateSpy.mockRestore();
-				generateSpy.mockRestore();
-			}
-		});
-
-		test("should handle notification enqueue errors gracefully", async () => {
-			const organizationId = await createTestOrganization();
-
-			// Spy on NotificationService.prototype.enqueueEventCreated and make it throw
-			const enqueueSpy = vi
-				.spyOn(NotificationService.prototype, "enqueueEventCreated")
-				.mockImplementation(() => {
-					throw new Error("Simulated enqueue failure");
-				});
-
-			try {
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				// Mutation should succeed even if notification enqueue fails
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.createEvent).toBeDefined();
-
-				// Verify the error was logged (check server.log if accessible, or just verify mutation succeeded)
-				expect(enqueueSpy).toHaveBeenCalled();
-			} finally {
-				enqueueSpy.mockRestore();
-			}
-		});
-
-		test("should handle notification flush errors gracefully", async () => {
-			const organizationId = await createTestOrganization();
-
-			// Spy on NotificationService.prototype.flush and make it throw
-			const flushSpy = vi
-				.spyOn(NotificationService.prototype, "flush")
-				.mockRejectedValue(new Error("Simulated flush failure"));
-
-			try {
-				const result = await createEvent({
-					input: baseEventInput(organizationId),
-				});
-
-				// Mutation should succeed even if flush fails
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.createEvent).toBeDefined();
-
-				// Verify flush was called
-				expect(flushSpy).toHaveBeenCalled();
-			} finally {
-				flushSpy.mockRestore();
-			}
-		});
-
-		test("should handle db delete error during rollback", async () => {
-			const organizationId = await createTestOrganization();
-
-			// Mock MinIO to fail on second upload
-			const minioClient = server.minio.client;
-			let callCount = 0;
-			const putObjectSpy = vi
-				.spyOn(minioClient, "putObject")
-				.mockImplementation(async () => {
-					callCount++;
-					if (callCount === 2) {
-						throw new Error("Simulated Upload Failure");
-					}
-					return Promise.resolve({ etag: "mock-etag", versionId: null });
-				});
-
-			// Mock delete to fail on the first rollback delete call
-			const deleteSpy = vi
-				.spyOn(server.drizzleClient, "delete")
-				.mockImplementationOnce(() => {
-					return {
-						where: vi.fn().mockReturnValue({
-							returning: vi
-								.fn()
-								.mockRejectedValue(new Error("DB delete failed")),
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				})
-				.mockImplementationOnce(() => {
-					return {
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([]),
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				});
-
-			const removeObjectsSpy = vi
-				.spyOn(minioClient, "removeObjects")
-				.mockReturnValue(Promise.resolve([]));
-
-			try {
-				const boundary = "----Boundary";
-				const operations = {
-					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
-                    createEvent(input: $input) { id }
-                }`,
-					variables: {
-						input: {
-							name: `DB Delete Error Event ${faker.string.ulid()}`,
-							startAt: new Date(Date.now() + 60_000).toISOString(),
-							endAt: new Date(Date.now() + 3_600_000).toISOString(),
-							organizationId,
-							attachments: [null, null],
-						},
-					},
-				};
-				const map = {
-					"0": ["variables.input.attachments.0"],
-					"1": ["variables.input.attachments.1"],
+						}
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
+					}),
 				};
 
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					JSON.stringify(operations),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					JSON.stringify(map),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="test1.png"',
-					"Content-Type: image/png",
-					"",
-					"content1",
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="1"; filename="test2.png"',
-					"Content-Type: image/png",
-					"",
-					"content2",
-					`--${boundary}--`,
-				].join("\r\n");
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
 
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: body,
-				});
-
-				const result = response.json();
-				expect(result.errors).toBeDefined();
-				expect(result.data?.createEvent).toBeNull();
-				expect(putObjectSpy).toHaveBeenCalled();
-				expect(deleteSpy).toHaveBeenCalled();
-				expect(removeObjectsSpy).toHaveBeenCalled();
-			} finally {
-				putObjectSpy.mockRestore();
-				deleteSpy.mockRestore();
-				removeObjectsSpy.mockRestore();
-			}
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
 		});
 
-		test("should handle cleanup error during rollback", async () => {
-			const organizationId = await createTestOrganization();
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
 
-			// Mock MinIO to fail on second upload
-			const minioClient = server.minio.client;
-			let callCount = 0;
-			const putObjectSpy = vi
-				.spyOn(minioClient, "putObject")
-				.mockImplementation(async () => {
-					callCount++;
-					if (callCount === 2) {
-						throw new Error("Simulated Upload Failure");
-					}
-					return Promise.resolve({ etag: "mock-etag", versionId: null });
-				});
+	test("rolls back transaction if default agenda category insert fails", async () => {
+		const organizationId = await createTestOrganization();
 
-			// Mock removeObjects to fail
-			const removeObjectsSpy = vi
-				.spyOn(minioClient, "removeObjects")
-				.mockRejectedValueOnce(new Error("Cleanup failed"));
-
-			try {
-				const boundary = "----Boundary";
-				const operations = {
-					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
-                    createEvent(input: $input) { id }
-                }`,
-					variables: {
-						input: {
-							name: `Cleanup Error Event ${faker.string.ulid()}`,
-							startAt: new Date(Date.now() + 60_000).toISOString(),
-							endAt: new Date(Date.now() + 3_600_000).toISOString(),
-							organizationId,
-							attachments: [null, null],
-						},
-					},
-				};
-				const map = {
-					"0": ["variables.input.attachments.0"],
-					"1": ["variables.input.attachments.1"],
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						if (table === agendaCategoriesTable) {
+							return {
+								values: vi.fn().mockReturnThis(),
+								returning: vi.fn().mockResolvedValue([]),
+							};
+						}
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
+					}),
 				};
 
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					JSON.stringify(operations),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					JSON.stringify(map),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="test1.png"',
-					"Content-Type: image/png",
-					"",
-					"content1",
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="1"; filename="test2.png"',
-					"Content-Type: image/png",
-					"",
-					"content2",
-					`--${boundary}--`,
-				].join("\r\n");
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
 
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: body,
-				});
-
-				const result = response.json();
-				expect(result.errors).toBeDefined();
-				expect(result.data?.createEvent).toBeNull();
-				expect(putObjectSpy).toHaveBeenCalled();
-				expect(removeObjectsSpy).toHaveBeenCalled();
-			} finally {
-				putObjectSpy.mockRestore();
-				removeObjectsSpy.mockRestore();
-			}
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
 		});
 
-		test("should handle rollback when event not found during delete (deleted.length === 0)", async () => {
-			const organizationId = await createTestOrganization();
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
 
-			// Mock MinIO to fail
-			const minioClient = server.minio.client;
-			const putObjectSpy = vi
-				.spyOn(minioClient, "putObject")
-				.mockRejectedValueOnce(new Error("Simulated Upload Failure"));
+	test("creates separate default folder and category for multiple events", async () => {
+		const organizationId = await createTestOrganization();
 
-			// Mock delete to return empty array (event not found during rollback - deleted.length === 0)
-			const deleteSpy = vi
-				.spyOn(server.drizzleClient, "delete")
-				.mockImplementationOnce(() => {
-					return {
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([]),
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				});
-
-			const removeObjectsSpy = vi
-				.spyOn(minioClient, "removeObjects")
-				.mockReturnValue(Promise.resolve([]));
-
-			try {
-				const boundary = "----Boundary";
-				const operations = {
-					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
-                    createEvent(input: $input) { id }
-                }`,
-					variables: {
-						input: {
-							name: `Not Found Event ${faker.string.ulid()}`,
-							startAt: new Date(Date.now() + 60_000).toISOString(),
-							endAt: new Date(Date.now() + 3_600_000).toISOString(),
-							organizationId,
-							attachments: [null],
-						},
-					},
-				};
-				const map = {
-					"0": ["variables.input.attachments.0"],
-				};
-
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					JSON.stringify(operations),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					JSON.stringify(map),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="test1.png"',
-					"Content-Type: image/png",
-					"",
-					"content1",
-					`--${boundary}--`,
-				].join("\r\n");
-
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: body,
-				});
-
-				const result = response.json();
-				expect(result.errors).toBeDefined();
-				expect(result.data?.createEvent).toBeNull();
-				expect(putObjectSpy).toHaveBeenCalled();
-				expect(deleteSpy).toHaveBeenCalled();
-				expect(removeObjectsSpy).toHaveBeenCalled();
-			} finally {
-				putObjectSpy.mockRestore();
-				deleteSpy.mockRestore();
-				removeObjectsSpy.mockRestore();
-			}
+		const event1 = await createEvent({
+			input: baseEventInput(organizationId),
 		});
 
-		test("should handle rollback when event delete succeeds (deleted.length > 0)", async () => {
-			const organizationId = await createTestOrganization();
-
-			// Mock MinIO to fail
-			const minioClient = server.minio.client;
-			const putObjectSpy = vi
-				.spyOn(minioClient, "putObject")
-				.mockRejectedValueOnce(new Error("Simulated Upload Failure"));
-
-			// Mock delete to return non-empty array (rollback delete succeeds - deleted.length > 0)
-			const deleteSpy = vi
-				.spyOn(server.drizzleClient, "delete")
-				.mockImplementationOnce(() => {
-					return {
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([{ id: "test-event-id" }]),
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				});
-
-			const removeObjectsSpy = vi
-				.spyOn(minioClient, "removeObjects")
-				.mockReturnValue(Promise.resolve([]));
-
-			try {
-				const boundary = "----Boundary";
-				const operations = {
-					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
-                    createEvent(input: $input) { id }
-                }`,
-					variables: {
-						input: {
-							name: `Rollback Success Event ${faker.string.ulid()}`,
-							startAt: new Date(Date.now() + 60_000).toISOString(),
-							endAt: new Date(Date.now() + 3_600_000).toISOString(),
-							organizationId,
-							attachments: [null],
-						},
-					},
-				};
-				const map = {
-					"0": ["variables.input.attachments.0"],
-				};
-
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					JSON.stringify(operations),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					JSON.stringify(map),
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="test1.png"',
-					"Content-Type: image/png",
-					"",
-					"content1",
-					`--${boundary}--`,
-				].join("\r\n");
-
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: body,
-				});
-
-				const result = response.json();
-				expect(result.errors).toBeDefined();
-				expect(result.data?.createEvent).toBeNull();
-				expect(putObjectSpy).toHaveBeenCalled();
-				expect(deleteSpy).toHaveBeenCalled();
-				expect(removeObjectsSpy).toHaveBeenCalled();
-			} finally {
-				putObjectSpy.mockRestore();
-				deleteSpy.mockRestore();
-				removeObjectsSpy.mockRestore();
-			}
+		const event2 = await createEvent({
+			input: { ...baseEventInput(organizationId), name: "Second Event" },
 		});
+
+		assertToBeNonNullish(event1.data?.createEvent);
+		assertToBeNonNullish(event2.data?.createEvent);
+
+		const defaultFolders =
+			await server.drizzleClient.query.agendaFoldersTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		const defaultCategories =
+			await server.drizzleClient.query.agendaCategoriesTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
+		expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
+
+		expect(defaultCategories.filter((c) => c.isDefaultCategory)).toHaveLength(
+			2,
+		);
+		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
 	});
 });

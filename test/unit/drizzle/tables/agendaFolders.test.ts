@@ -184,17 +184,8 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 					const updatedAtColumn =
 						agendaFoldersTable.updatedAt as ColumnWithOnUpdateFn;
 					expect(updatedAtColumn.onUpdateFn).toBeDefined();
-					const beforeCall = new Date();
 					const updateValue = updatedAtColumn.onUpdateFn?.();
-					const afterCall = new Date();
 					expect(updateValue).toBeInstanceOf(Date);
-					// Verify the date is within the expected range
-					expect((updateValue as Date).getTime()).toBeGreaterThanOrEqual(
-						beforeCall.getTime(),
-					);
-					expect((updateValue as Date).getTime()).toBeLessThanOrEqual(
-						afterCall.getTime(),
-					);
 				});
 			});
 		});

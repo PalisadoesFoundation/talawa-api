@@ -4,13 +4,14 @@
 
 # Function: getStandaloneEventsByIds()
 
-> **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<`object` & `object`[]\>
+> **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`, `options?`): `Promise`\<`object` & `object`[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:126](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L126)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:127](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L127)
 
-Retrieves standalone events by a list of specific IDs.
-This function is designed for the `eventsByIds` query, ensuring that only standalone events
-(not recurring templates or instances) are returned.
+Retrieves standalone events (and optionally recurring templates) by a list of specific IDs.
+This function is designed for the `eventsByIds` query. By default, only standalone events
+(not recurring templates or instances) are returned. When `options.includeTemplates` is true,
+recurring event templates matching the IDs are also included.
 
 ## Parameters
 
@@ -32,9 +33,16 @@ The Drizzle ORM client for database access.
 
 The logger for logging debug and error messages.
 
+### options?
+
+Optional. `includeTemplates`: when true, includes recurring event templates in the result; default false.
+
+#### includeTemplates?
+
+`boolean`
+
 ## Returns
 
 `Promise`\<`object` & `object`[]\>
 
-- A promise that resolves to an array of the requested standalone event objects,
-         including their attachments.
+- A promise that resolves to an array of the requested event objects, including their attachments.
