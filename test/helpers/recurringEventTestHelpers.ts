@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";

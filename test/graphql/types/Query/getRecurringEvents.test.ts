@@ -319,7 +319,9 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			// Cancel the second instance
-			await cancelInstances([instanceIds[1]]);
+			const instanceToCancel = instanceIds[1];
+			assertToBeNonNullish(instanceToCancel);
+			await cancelInstances([instanceToCancel]);
 
 			// Query with includeCancelled: true
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -361,7 +363,9 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			// Cancel the second instance
-			await cancelInstances([instanceIds[1]]);
+			const instanceToCancel = instanceIds[1];
+			assertToBeNonNullish(instanceToCancel);
+			await cancelInstances([instanceToCancel]);
 
 			// Query with includeCancelled: false
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -402,7 +406,9 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			// Cancel the second instance
-			await cancelInstances([instanceIds[1]]);
+			const instanceToCancel = instanceIds[1];
+			assertToBeNonNullish(instanceToCancel);
+			await cancelInstances([instanceToCancel]);
 
 			// Query without includeCancelled
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -492,7 +498,11 @@ suite("Query field getRecurringEvents", () => {
 			expect(instances).toHaveLength(3); // 5 - 2 = 3
 
 			// Verify we skipped the first 2
-			expect(instances[0].id).toBe(instanceIds[2]);
+			const expectedInstanceId = instanceIds[2];
+			const firstInstance = instances[0];
+			assertToBeNonNullish(expectedInstanceId);
+			assertToBeNonNullish(firstInstance);
+			expect(firstInstance.id).toBe(expectedInstanceId);
 		});
 
 		test("should respect both limit and offset parameters", async () => {
@@ -530,8 +540,16 @@ suite("Query field getRecurringEvents", () => {
 			expect(instances).toHaveLength(2);
 
 			// Verify we skipped the first 1 and took 2
-			expect(instances[0].id).toBe(instanceIds[1]);
-			expect(instances[1].id).toBe(instanceIds[2]);
+			const expectedInstanceId1 = instanceIds[1];
+			const expectedInstanceId2 = instanceIds[2];
+			const firstInstance = instances[0];
+			const secondInstance = instances[1];
+			assertToBeNonNullish(expectedInstanceId1);
+			assertToBeNonNullish(expectedInstanceId2);
+			assertToBeNonNullish(firstInstance);
+			assertToBeNonNullish(secondInstance);
+			expect(firstInstance.id).toBe(expectedInstanceId1);
+			expect(secondInstance.id).toBe(expectedInstanceId2);
 		});
 
 		test("should use default limit of 1000", async () => {
@@ -589,7 +607,9 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			// Cancel the 3rd instance (index 2)
-			await cancelInstances([instanceIds[2]]);
+			const instanceToCancel = instanceIds[2];
+			assertToBeNonNullish(instanceToCancel);
+			await cancelInstances([instanceToCancel]);
 
 			// Query with includeCancelled: false (default), limit: 3, offset: 0
 			// Should return indices 0, 1, 3 (skipping 2)
@@ -607,9 +627,23 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(instances);
 			expect(instances).toHaveLength(3);
 
-			expect(instances[0].id).toBe(instanceIds[0]);
-			expect(instances[1].id).toBe(instanceIds[1]);
-			expect(instances[2].id).toBe(instanceIds[3]); // Skipped 2
+			const expectedInstanceId0 = instanceIds[0];
+			const expectedInstanceId1 = instanceIds[1];
+			const expectedInstanceId3 = instanceIds[3];
+			const instance0 = instances[0];
+			const instance1 = instances[1];
+			const instance2 = instances[2];
+
+			assertToBeNonNullish(expectedInstanceId0);
+			assertToBeNonNullish(expectedInstanceId1);
+			assertToBeNonNullish(expectedInstanceId3);
+			assertToBeNonNullish(instance0);
+			assertToBeNonNullish(instance1);
+			assertToBeNonNullish(instance2);
+
+			expect(instance0.id).toBe(expectedInstanceId0);
+			expect(instance1.id).toBe(expectedInstanceId1);
+			expect(instance2.id).toBe(expectedInstanceId3); // Skipped 2
 		});
 
 		test("should maintain stable ordering", async () => {
