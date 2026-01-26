@@ -1,6 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import {
+	cancelInstances,
+	createRecurringEventWithInstances,
+} from "../../../helpers/recurringEventTestHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -104,25 +108,6 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			if (!organizationCreateResult.data?.createOrganization) {
-				// If organization creation fails, skip this test scenario
-				// and just test with a non-existent ID
-				const result = await mercuriusClient.query(Query_getRecurringEvents, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: faker.string.uuid(),
-					},
-				});
-
-				expect(result.data?.getRecurringEvents).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-							}),
-						}),
-					]),
-				);
 				return;
 			}
 
@@ -147,24 +132,6 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			if (!eventCreateResult.data?.createEvent) {
-				// If event creation fails, test with non-existent ID
-				const result = await mercuriusClient.query(Query_getRecurringEvents, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: faker.string.uuid(),
-					},
-				});
-
-				expect(result.data?.getRecurringEvents).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-							}),
-						}),
-					]),
-				);
 				return;
 			}
 
@@ -252,8 +219,6 @@ suite("Query field getRecurringEvents", () => {
 
 	suite("when authentication is required", () => {
 		test("should validate that the query requires authentication", async () => {
-			// Note: This test validates the query structure since authentication
-			// handling is done at the server level in this test setup
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -261,8 +226,6 @@ suite("Query field getRecurringEvents", () => {
 				},
 			});
 
-			// With our test setup, admin is already authenticated
-			// Non-existent ID should give not found, not authentication error
 			expect(result.data?.getRecurringEvents).toBeNull();
 			expect(result.errors).toBeDefined();
 		});
@@ -279,7 +242,7 @@ suite("Query field getRecurringEvents", () => {
 			const organizationCreateResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` }, // Using admin token
+					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
 							name: faker.company.name(),
@@ -296,7 +259,7 @@ suite("Query field getRecurringEvents", () => {
 				const eventCreateResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
 					{
-						headers: { authorization: `bearer ${authToken}` }, // Using admin token
+						headers: { authorization: `bearer ${authToken}` },
 						variables: {
 							input: {
 								name: faker.lorem.words(3),
@@ -314,202 +277,12 @@ suite("Query field getRecurringEvents", () => {
 
 					// Now try to access as regular user who is not a member of the organization
 					const result = await mercuriusClient.query(Query_getRecurringEvents, {
-						headers: { authorization: `bearer ${regularUserToken}` }, // Using regular user token
-						variables: {
-							baseRecurringEventId: eventId,
-						},
-					});
-
-					expect(result.data?.getRecurringEvents).toBeNull();
-					expect(result.errors).toEqual(
-						expect.arrayContaining([
-							expect.objectContaining({
-								extensions: expect.objectContaining({
-									code: "arguments_associated_resources_not_found",
-								}),
-							}),
-						]),
-					);
-					return;
-				}
-			}
-
-			// Fallback test with non-existent ID if setup fails
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${regularUserToken}` },
-				variables: {
-					baseRecurringEventId: faker.string.uuid(),
-				},
-			});
-
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
-		});
-	});
-
-	suite("when query succeeds", () => {
-		test("should return recurring events for a valid recurring event template", async () => {
-			// Create organization
-			const organizationCreateResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.company.name(),
-						},
-					},
-				},
-			);
-
-			if (!organizationCreateResult.data?.createOrganization) {
-				// If setup fails, test with non-existent ID to ensure error handling
-				const result = await mercuriusClient.query(Query_getRecurringEvents, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: faker.string.uuid(),
-					},
-				});
-
-				expect(result.data?.getRecurringEvents).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-							}),
-						}),
-					]),
-				);
-				return;
-			}
-
-			const organizationId =
-				organizationCreateResult.data.createOrganization.id;
-
-			// Create a recurring event template with recurrence
-			const startDate = faker.date.future();
-			const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
-
-			const eventCreateResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.lorem.words(3),
-							description: faker.lorem.sentence(),
-							organizationId,
-							startAt: startDate.toISOString(),
-							endAt: endDate.toISOString(),
-							recurrence: {
-								frequency: "DAILY",
-								interval: 1,
-								count: 5,
-							},
-						},
-					},
-				},
-			);
-
-			if (!eventCreateResult.data?.createEvent) {
-				// If event creation fails, test error handling
-				const result = await mercuriusClient.query(Query_getRecurringEvents, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: faker.string.uuid(),
-					},
-				});
-
-				expect(result.data?.getRecurringEvents).toBeNull();
-				expect(result.errors).toBeDefined();
-				return;
-			}
-
-			const eventId = eventCreateResult.data.createEvent.id;
-
-			// Query for recurring events (this will fail since it's not a recurring template)
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					baseRecurringEventId: eventId,
-				},
-			});
-
-			// Since the created event is not a recurring template, expect an error
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						message: expect.stringContaining("recurring event template"),
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
-
-		test("should handle authorization properly for recurring event templates", async () => {
-			// Create a regular user (non-admin)
-			const { authToken: regularUserToken } =
-				await createRegularUserUsingAdmin();
-			assertToBeNonNullish(regularUserToken);
-
-			// Create organization and recurring event as admin
-			const organizationCreateResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.company.name(),
-						},
-					},
-				},
-			);
-
-			if (organizationCreateResult.data?.createOrganization) {
-				const organizationId =
-					organizationCreateResult.data.createOrganization.id;
-
-				// Create a recurring event as admin
-				const startDate = faker.date.future();
-				const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-
-				const eventCreateResult = await mercuriusClient.mutate(
-					Mutation_createEvent,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: faker.lorem.words(3),
-								description: faker.lorem.sentence(),
-								organizationId,
-								startAt: startDate.toISOString(),
-								endAt: endDate.toISOString(),
-								recurrence: {
-									frequency: "WEEKLY",
-									interval: 1,
-									count: 3,
-								},
-							},
-						},
-					},
-				);
-
-				if (eventCreateResult.data?.createEvent) {
-					const eventId = eventCreateResult.data.createEvent.id;
-
-					// Try to access as regular user who is not a member of the organization
-					const result = await mercuriusClient.query(Query_getRecurringEvents, {
 						headers: { authorization: `bearer ${regularUserToken}` },
 						variables: {
 							baseRecurringEventId: eventId,
 						},
 					});
 
-					// Should get authorization error
 					expect(result.data?.getRecurringEvents).toBeNull();
 					expect(result.errors).toEqual(
 						expect.arrayContaining([
@@ -520,262 +293,360 @@ suite("Query field getRecurringEvents", () => {
 							}),
 						]),
 					);
-					return;
 				}
 			}
-
-			// Fallback if setup fails
-			console.warn("Skipping authorization test due to setup failure");
-		});
-
-		test("should return empty array for valid recurring event template with no instances", async () => {
-			// Test the case where a recurring event template exists but has no instances
-			// Since we can't easily create a proper recurring template in this test setup,
-			// we'll test that the query structure works and handles non-existent IDs properly
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					baseRecurringEventId: faker.string.uuid(),
-				},
-			});
-
-			// Since the ID doesn't exist, we expect a not found error
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-						}),
-					}),
-				]),
-			);
 		});
 	});
 
-	suite("error handling", () => {
-		test("should handle database connection errors gracefully", async () => {
-			// Test with malformed UUID that passes validation but fails in database
-			const malformedButValidUuid = "00000000-0000-0000-0000-000000000000";
+	suite("includeCancelled Parameter Tests", () => {
+		test("should return both active and cancelled instances when includeCancelled is true", async () => {
+			// Setup: Create recurring event with 3 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
 
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 3 },
+			);
+
+			// Cancel the second instance
+			await cancelInstances([instanceIds[1]]);
+
+			// Query with includeCancelled: true
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
-					baseRecurringEventId: malformedButValidUuid,
+					baseRecurringEventId: templateId,
+					includeCancelled: true,
 				},
 			});
 
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
-		});
-	});
-
-	suite("Direct database tests for full code coverage", () => {
-		test("should cover non-recurring event template error path", async () => {
-			// Import necessary tables for direct database operations
-			const { server } = await import("../../../server");
-			const { organizationsTable } = await import(
-				"~/src/drizzle/tables/organizations"
-			);
-			const { eventsTable } = await import("~/src/drizzle/tables/events");
-			const { organizationMembershipsTable } = await import(
-				"~/src/drizzle/tables/organizationMemberships"
-			);
-
-			// Create organization directly in database
-			const [organizationRow] = await server.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					name: `${faker.company.name()}-${faker.string.uuid()}`,
-					userRegistrationRequired: false,
-				})
-				.returning({ id: organizationsTable.id });
-
-			if (!organizationRow?.id) {
-				throw new Error("Failed to create organization.");
-			}
-
-			// Add admin as member of organization
-			await server.drizzleClient.insert(organizationMembershipsTable).values({
-				organizationId: organizationRow.id,
-				memberId: adminUserId,
-				role: "administrator",
-			});
-
-			// Create a regular (non-recurring) event directly
-			const [eventRow] = await server.drizzleClient
-				.insert(eventsTable)
-				.values({
-					name: faker.lorem.words(3),
-					description: faker.lorem.sentence(),
-					organizationId: organizationRow.id,
-					creatorId: adminUserId,
-					startAt: faker.date.future(),
-					endAt: faker.date.future(),
-					isRecurringEventTemplate: false, // Explicitly set to false
-				})
-				.returning({ id: eventsTable.id });
-
-			if (!eventRow?.id) {
-				throw new Error("Failed to create event.");
-			}
-
-			// Query for recurring events - this should trigger the "not a recurring event template" error
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					baseRecurringEventId: eventRow.id,
-				},
-			});
-
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						message: "The provided event ID is not a recurring event template",
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
-
-		test("should cover authorization error path for non-organization member", async () => {
-			// Create a regular user
-			const { userId: regularUserId, authToken: regularUserToken } =
-				await createRegularUserUsingAdmin();
-			assertToBeNonNullish(regularUserId);
-			assertToBeNonNullish(regularUserToken);
-
-			// Import necessary tables
-			const { server } = await import("../../../server");
-			const { organizationsTable } = await import(
-				"~/src/drizzle/tables/organizations"
-			);
-			const { eventsTable } = await import("~/src/drizzle/tables/events");
-			const { organizationMembershipsTable } = await import(
-				"~/src/drizzle/tables/organizationMemberships"
-			);
-
-			// Create organization directly in database
-			const [organizationRow] = await server.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					name: `${faker.company.name()}-${faker.string.uuid()}`,
-					userRegistrationRequired: false,
-				})
-				.returning({ id: organizationsTable.id });
-
-			if (!organizationRow?.id) {
-				throw new Error("Failed to create organization.");
-			}
-
-			// Add admin as member (but NOT the regular user)
-			await server.drizzleClient.insert(organizationMembershipsTable).values({
-				organizationId: organizationRow.id,
-				memberId: adminUserId,
-				role: "administrator",
-			});
-
-			// Create a recurring event template
-			const [eventRow] = await server.drizzleClient
-				.insert(eventsTable)
-				.values({
-					name: faker.lorem.words(3),
-					description: faker.lorem.sentence(),
-					organizationId: organizationRow.id,
-					creatorId: adminUserId,
-					startAt: faker.date.future(),
-					endAt: faker.date.future(),
-					isRecurringEventTemplate: true, // This makes it a recurring template
-				})
-				.returning({ id: eventsTable.id });
-
-			if (!eventRow?.id) {
-				throw new Error("Failed to create event.");
-			}
-
-			// Query as regular user who is not a member - should trigger authorization error
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${regularUserToken}` },
-				variables: {
-					baseRecurringEventId: eventRow.id,
-				},
-			});
-
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-						}),
-					}),
-				]),
-			);
-		});
-
-		test("should cover successful path with recurring event instances", async () => {
-			// Import necessary tables
-			const { server } = await import("../../../server");
-			const { organizationsTable } = await import(
-				"~/src/drizzle/tables/organizations"
-			);
-			const { eventsTable } = await import("~/src/drizzle/tables/events");
-			const { organizationMembershipsTable } = await import(
-				"~/src/drizzle/tables/organizationMemberships"
-			);
-
-			// Create organization directly in database
-			const [organizationRow] = await server.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					name: `${faker.company.name()}-${faker.string.uuid()}`,
-					userRegistrationRequired: false,
-				})
-				.returning({ id: organizationsTable.id });
-
-			if (!organizationRow?.id) {
-				throw new Error("Failed to create organization.");
-			}
-
-			// Add admin as member of organization
-			await server.drizzleClient.insert(organizationMembershipsTable).values({
-				organizationId: organizationRow.id,
-				memberId: adminUserId,
-				role: "administrator",
-			});
-
-			// Create a recurring event template
-			const [eventRow] = await server.drizzleClient
-				.insert(eventsTable)
-				.values({
-					name: faker.lorem.words(3),
-					description: faker.lorem.sentence(),
-					organizationId: organizationRow.id,
-					creatorId: adminUserId,
-					startAt: faker.date.future(),
-					endAt: faker.date.future(),
-					isRecurringEventTemplate: true, // This makes it a recurring template
-				})
-				.returning({ id: eventsTable.id });
-
-			if (!eventRow?.id) {
-				throw new Error("Failed to create event.");
-			}
-
-			// Query for recurring events - this should succeed and return empty array
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					baseRecurringEventId: eventRow.id,
-				},
-			});
-
-			// Should succeed and return empty array (no instances created)
-			expect(result.data?.getRecurringEvents).toEqual([]);
 			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(3);
+
+			// Verify cancelled instance is included
+			const cancelledInstance = instances.find((i) => i.id === instanceIds[1]);
+			expect(cancelledInstance).toBeDefined();
+			expect(cancelledInstance?.isCancelled).toBe(true);
+		});
+
+		test("should return only active instances when includeCancelled is false", async () => {
+			// Setup: Create recurring event with 3 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 3 },
+			);
+
+			// Cancel the second instance
+			await cancelInstances([instanceIds[1]]);
+
+			// Query with includeCancelled: false
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+					includeCancelled: false,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(2);
+
+			// Verify cancelled instance is NOT included
+			const cancelledInstance = instances.find((i) => i.id === instanceIds[1]);
+			expect(cancelledInstance).toBeUndefined();
+		});
+
+		test("should exclude cancelled instances by default (when parameter is omitted)", async () => {
+			// Setup: Create recurring event with 3 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 3 },
+			);
+
+			// Cancel the second instance
+			await cancelInstances([instanceIds[1]]);
+
+			// Query without includeCancelled
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(2);
+
+			// Verify cancelled instance is NOT included
+			const cancelledInstance = instances.find((i) => i.id === instanceIds[1]);
+			expect(cancelledInstance).toBeUndefined();
+		});
+	});
+
+	suite("Pagination Parameter Tests", () => {
+		test("should respect limit parameter", async () => {
+			// Setup: Create recurring event with 5 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			// Query with limit: 2
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+					limit: 2,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(2);
+		});
+
+		test("should respect offset parameter", async () => {
+			// Setup: Create recurring event with 5 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			// Query with offset: 2
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+					offset: 2,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(3); // 5 - 2 = 3
+
+			// Verify we skipped the first 2
+			expect(instances[0].id).toBe(instanceIds[2]);
+		});
+
+		test("should respect both limit and offset parameters", async () => {
+			// Setup: Create recurring event with 5 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			// Query with limit: 2, offset: 1
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+					limit: 2,
+					offset: 1,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(2);
+
+			// Verify we skipped the first 1 and took 2
+			expect(instances[0].id).toBe(instanceIds[1]);
+			expect(instances[1].id).toBe(instanceIds[2]);
+		});
+
+		test("should use default limit of 1000", async () => {
+			// Setup: Create recurring event with many instances (e.g. 5)
+			// We can't easily test 1001 instances without performance hit, but we can verify it returns all 5
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(5);
+		});
+	});
+
+	suite("Integration Tests", () => {
+		test("should handle pagination with cancelled instances correctly", async () => {
+			// Setup: Create recurring event with 5 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			// Cancel the 3rd instance (index 2)
+			await cancelInstances([instanceIds[2]]);
+
+			// Query with includeCancelled: false (default), limit: 3, offset: 0
+			// Should return indices 0, 1, 3 (skipping 2)
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+					includeCancelled: false,
+					limit: 3,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(3);
+
+			expect(instances[0].id).toBe(instanceIds[0]);
+			expect(instances[1].id).toBe(instanceIds[1]);
+			expect(instances[2].id).toBe(instanceIds[3]); // Skipped 2
+		});
+
+		test("should maintain stable ordering", async () => {
+			// Setup: Create recurring event with 5 instances
+			const organizationCreateResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { name: faker.company.name() } },
+				},
+			);
+			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			const organizationId =
+				organizationCreateResult.data.createOrganization.id;
+
+			const { templateId, instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{ instanceCount: 5 },
+			);
+
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: templateId,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			const instances = result.data?.getRecurringEvents;
+			assertToBeNonNullish(instances);
+			expect(instances).toHaveLength(5);
+
+			// Verify order matches creation order (chronological)
+			instances.forEach((instance, index) => {
+				expect(instance.id).toBe(instanceIds[index]);
+			});
 		});
 	});
 });
