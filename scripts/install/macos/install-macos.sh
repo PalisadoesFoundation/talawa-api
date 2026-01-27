@@ -21,6 +21,8 @@ set -euo pipefail
 
 # Export OS_TYPE for shared libs
 export OS_TYPE="macos"
+GREEN='\033[0;32m'
+NC='\033[0m'
 
 # Arguments
 INSTALL_MODE="${1:-docker}"
@@ -125,9 +127,9 @@ else
     for p in git curl jq unzip; do
         if is_package_installed "$p"; then
             success "$p is already installed"
-    else
+        else
             install_package "$p"
-    fi
+        fi
     done
 fi
 
@@ -135,7 +137,7 @@ fi
 # Step 3: Install Docker (optional)
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 
 if [ "$INSTALL_MODE" = "docker" ]; then
     if command_exists docker; then
@@ -164,7 +166,7 @@ fi
 # Step 4: Install fnm (Fast Node Manager)
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
 
 if command_exists fnm; then
     success "fnm is already installed"
@@ -183,7 +185,7 @@ fi
 # Step 5: Read versions from package.json
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
 # Extract Node.js version using safe parsing
 # The 'lts' default is used if engines.node is not specified
@@ -268,7 +270,7 @@ info "Target pnpm version: $PNPM_VERSION"
 # Step 6: Install Node.js
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
@@ -382,7 +384,7 @@ success "Node.js installed: $(node --version)"
 # Step 7: Install pnpm
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 # Verify npm is available before installing pnpm
 if ! command_exists npm; then
@@ -471,7 +473,7 @@ success "pnpm installed: v$(pnpm --version)"
 # Step 8: Install project dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
 # Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
 LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"

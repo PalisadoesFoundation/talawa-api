@@ -12,6 +12,10 @@ set -euo pipefail
 
 _lower() { printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'; }
 
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
 detect_os() {
   local uname_s
   uname_s="$(uname -s 2>/dev/null || echo unknown)"
