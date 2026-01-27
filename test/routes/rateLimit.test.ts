@@ -131,6 +131,51 @@ describe("REST rate limiting", () => {
 		expect(r2.headers["x-ratelimit-limit"]).toBe("2");
 		expect(Number(r2.headers["x-ratelimit-remaining"])).toBe(0);
 		expect(r3.json().error.code).toBe("rate_limit_exceeded");
+
+		const resetHeader = Number(r2.headers["x-ratelimit-reset"]);
+		expect(resetHeader).toBeGreaterThan(Date.now() / 1000);
+	});
+
+	it("should scope limits by route and method", async () => {
+		const app = Fastify();
+		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+
+		// Route 1
+		app.get(
+			"/route1",
+			{ preHandler: app.rateLimit({ name: "test", windowMs: 60000, max: 2 }) },
+			async () => ({ ok: true }),
+		);
+		// Route 2 (same tier settings, different route)
+		app.get(
+			"/route2",
+			{ preHandler: app.rateLimit({ name: "test", windowMs: 60000, max: 2 }) },
+			async () => ({ ok: true }),
+		);
+		// Route 1 POST (same route, different method)
+		app.post(
+			"/route1",
+			{ preHandler: app.rateLimit({ name: "test", windowMs: 60000, max: 2 }) },
+			async () => ({ ok: true }),
+		);
+
+		// Consume route 1 GET
+		await app.inject({ method: "GET", url: "/route1" });
+		await app.inject({ method: "GET", url: "/route1" });
+		const r1Exceeded = await app.inject({ method: "GET", url: "/route1" });
+		expect(r1Exceeded.statusCode).toBe(429);
+
+		// Route 2 GET should be fresh
+		const r2 = await app.inject({ method: "GET", url: "/route2" });
+		expect(r2.statusCode).toBe(200);
+		expect(r2.headers["x-ratelimit-remaining"]).toBe("1");
+
+		// Route 1 POST should be fresh
+		const r1Post = await app.inject({ method: "POST", url: "/route1" });
+		expect(r1Post.statusCode).toBe(200);
+		expect(r1Post.headers["x-ratelimit-remaining"]).toBe("1");
 	});
 
 	it("should allow healthcheck requests and limit when exceeded", async () => {
@@ -202,7 +247,7 @@ describe("REST rate limiting", () => {
 		const r = await app.inject({ method: "GET", url: "/open" });
 		expect(r.statusCode).toBe(200);
 		expect(r.headers["x-ratelimit-limit"]).toBeDefined();
-		expect(r.headers["x-ratelimit-remaining"]).toBeDefined();
+		expect(r.headers["x-ratelimit-remaining"]).toBe("Infinity");
 	});
 
 	it("should allow request and set headers when redis is missing (degrade)", async () => {
