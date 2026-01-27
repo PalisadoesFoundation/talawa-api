@@ -362,6 +362,12 @@ export function validatePortNumbers(answers: SetupAnswers): void {
 		);
 	}
 }
+
+/**
+ * Validates sampling ratio input for inquirer prompts.
+ * Returns true for valid input, or an error message string for invalid input.
+ * Note: This uses the inquirer validator pattern (true|string) rather than throwing errors.
+ */
 export function validateSamplingRatio(input: string): true | string {
 	const ratio = Number.parseFloat(input);
 	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {

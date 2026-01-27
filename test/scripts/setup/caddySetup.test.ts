@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { caddySetup } from "scripts/setup/services/caddySetup";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -30,7 +29,6 @@ describe("Setup -> caddySetup", () => {
 		}
 
 		const answers = await caddySetup({});
-		dotenv.config({ path: ".env" });
 
 		const expectedEnv = {
 			CADDY_HTTP_MAPPED_PORT: "801",

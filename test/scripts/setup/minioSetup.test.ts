@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
@@ -10,9 +10,13 @@ import { setup } from "scripts/setup/setup";
 
 describe("Setup -> minioSetup", () => {
 	const originalEnv = { ...process.env };
+	const originalIsTTY = process.stdin?.isTTY;
 
 	afterEach(() => {
 		process.env = { ...originalEnv };
+		if (process.stdin) {
+			process.stdin.isTTY = originalIsTTY;
+		}
 		vi.resetAllMocks();
 	});
 

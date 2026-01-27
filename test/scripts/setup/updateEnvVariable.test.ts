@@ -17,7 +17,9 @@ describe("updateEnvVariable", () => {
 	});
 
 	it("should update an existing variable in .env", async () => {
-		vi.spyOn(fs.promises, "readFile").mockResolvedValue("EXISTING_VAR=old_value");
+		vi.spyOn(fs.promises, "readFile").mockResolvedValue(
+			"EXISTING_VAR=old_value",
+		);
 
 		await updateEnvVariable({ EXISTING_VAR: "new_value" });
 
@@ -32,7 +34,9 @@ describe("updateEnvVariable", () => {
 	});
 
 	it("should add a new variable if it does not exist", async () => {
-		vi.spyOn(fs.promises, "readFile").mockResolvedValue("EXISTING_VAR=old_value");
+		vi.spyOn(fs.promises, "readFile").mockResolvedValue(
+			"EXISTING_VAR=old_value",
+		);
 
 		await updateEnvVariable({ NEW_VAR: "new_value" });
 
@@ -45,7 +49,9 @@ describe("updateEnvVariable", () => {
 	});
 
 	it("should create a backup before updating .env", async () => {
-		vi.spyOn(fs.promises, "readFile").mockResolvedValue("EXISTING_VAR=old_value");
+		vi.spyOn(fs.promises, "readFile").mockResolvedValue(
+			"EXISTING_VAR=old_value",
+		);
 
 		await updateEnvVariable({ EXISTING_VAR: "new_value" });
 
@@ -53,12 +59,16 @@ describe("updateEnvVariable", () => {
 	});
 
 	it("should restore from backup if an error occurs", async () => {
-		vi.spyOn(fs.promises, "readFile").mockResolvedValue("EXISTING_VAR=old_value");
-		vi.spyOn(fs.promises, "writeFile").mockRejectedValue(new Error("Write failed"));
-
-		await expect(updateEnvVariable({ EXISTING_VAR: "new_value" })).rejects.toThrow(
-			"Write failed",
+		vi.spyOn(fs.promises, "readFile").mockResolvedValue(
+			"EXISTING_VAR=old_value",
 		);
+		vi.spyOn(fs.promises, "writeFile").mockRejectedValue(
+			new Error("Write failed"),
+		);
+
+		await expect(
+			updateEnvVariable({ EXISTING_VAR: "new_value" }),
+		).rejects.toThrow("Write failed");
 
 		expect(fs.promises.copyFile).toHaveBeenCalledWith(envFileName, backupFile);
 		// Should verify restore (copy backup to envFile)

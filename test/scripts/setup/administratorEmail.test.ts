@@ -1,12 +1,4 @@
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	type MockInstance,
-	vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
@@ -56,13 +48,6 @@ describe("Setup -> askForAdministratorEmail", () => {
 	});
 
 	it("should handle prompt errors correctly", async () => {
-		const promptError = new Error("inquirer failure");
-		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
-
-		await expect(administratorEmail({})).rejects.toThrow("inquirer failure");
-	});
-
-	it("should handle inquirer failure gracefully when no backup exists", async () => {
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
 

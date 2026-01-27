@@ -15,12 +15,11 @@ import {
 } from "scripts/setup/validators";
 import {
 	afterEach,
-	beforeEach,
 	beforeAll,
+	beforeEach,
 	describe,
 	expect,
 	it,
-	type MockInstance,
 	vi,
 } from "vitest";
 
@@ -49,6 +48,8 @@ async function waitFor(
 
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
+	const originalIsTTY = process.stdin?.isTTY;
+
 	beforeAll(() => {
 		dotenv.config({ path: ".env" });
 	});
@@ -65,6 +66,9 @@ describe("Setup -> apiSetup", () => {
 
 	afterEach(() => {
 		process.env = { ...originalEnv };
+		if (process.stdin) {
+			process.stdin.isTTY = originalIsTTY;
+		}
 		vi.resetAllMocks();
 	});
 
@@ -148,9 +152,8 @@ describe("Setup -> apiSetup", () => {
 		await expect(apiSetup({})).rejects.toThrow("Prompt failed");
 	});
 
-	it("should not prompt for API_MINIO_SECRET_KEY or API_POSTGRES_* (set in service functions)", async () => {
-		// These values are now set automatically in minioSetup() and postgresSetup()
-		// apiSetup() should NOT prompt for them
+	it("should prompt for all API configuration values including Minio and Postgres", async () => {
+		// apiSetup prompts for Minio and Postgres values which are later synced by service functions
 		const promptMock = vi.spyOn(inquirer, "prompt");
 
 		// Mock all prompts that apiSetup actually makes (PostgreSQL prompts moved to postgresSetup)
@@ -295,7 +298,7 @@ describe("generateJwtSecret", () => {
 			});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -371,7 +374,7 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		// Mock file system to indicate no .env file exists (so no backup will be created)
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);

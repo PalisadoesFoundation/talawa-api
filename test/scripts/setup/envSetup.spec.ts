@@ -47,9 +47,9 @@ describe("initializeEnvFile", () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
 
-		vi.spyOn(console, "log").mockImplementation(() => { });
-		vi.spyOn(console, "warn").mockImplementation(() => { });
-		vi.spyOn(console, "error").mockImplementation(() => { });
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
 		// Mock writeFile to avoid writing to disk
 		vi.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined);
 	});
@@ -66,7 +66,10 @@ describe("initializeEnvFile", () => {
 
 		await initializeEnvFile(answers);
 
-		expect(fs.promises.readFile).toHaveBeenCalledWith("envFiles/.env.devcontainer", { encoding: "utf-8" });
+		expect(fs.promises.readFile).toHaveBeenCalledWith(
+			"envFiles/.env.devcontainer",
+			{ encoding: "utf-8" },
+		);
 	});
 
 	it("should throw an error if the environment file is missing", async () => {
@@ -79,7 +82,9 @@ describe("initializeEnvFile", () => {
 
 	it("should catch errors if reading the env file fails", async () => {
 		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined); // file exists
-		vi.spyOn(fs.promises, "readFile").mockRejectedValue(new Error("File read error"));
+		vi.spyOn(fs.promises, "readFile").mockRejectedValue(
+			new Error("File read error"),
+		);
 		// Ensure initializeEnvFile does NOT log the file content or secrets
 		// initializeEnvFile rethrows the error with a generic message
 		await expect(initializeEnvFile({})).rejects.toThrow(
@@ -99,7 +104,9 @@ describe("initializeEnvFile", () => {
 
 		await initializeEnvFile(answers);
 
-		expect(fs.promises.readFile).toHaveBeenCalledWith("envFiles/.env.ci", { encoding: "utf-8" });
+		expect(fs.promises.readFile).toHaveBeenCalledWith("envFiles/.env.ci", {
+			encoding: "utf-8",
+		});
 	});
 
 	it("should throw error if inquirer fails", async () => {

@@ -5,13 +5,17 @@ import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { postgresSetup } from "scripts/setup/services/postgresSetup";
 import { setup } from "scripts/setup/setup";
-import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("Setup -> postgresSetup", () => {
 	const originalEnv = { ...process.env };
+	const originalIsTTY = process.stdin?.isTTY;
 
 	afterEach(() => {
 		process.env = { ...originalEnv };
+		if (process.stdin) {
+			process.stdin.isTTY = originalIsTTY;
+		}
 		vi.resetAllMocks();
 	});
 

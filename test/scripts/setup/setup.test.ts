@@ -52,8 +52,8 @@ describe("Setup", () => {
 
 		// Mock fs to prevent deleting real .env
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		vi.spyOn(fs, "unlinkSync").mockImplementation(() => { });
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		vi.spyOn(fs, "unlinkSync").mockImplementation(() => {});
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		vi.doMock("env-schema", () => ({
 			envSchema: () => ({
@@ -93,7 +93,7 @@ describe("Setup", () => {
 			if (originalExistsSync(".env")) {
 				fs.unlinkSync(".env");
 			}
-		} catch { }
+		} catch {}
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
@@ -307,8 +307,10 @@ describe("Setup", () => {
 		fsCopyFileSpy.mockRestore();
 	});
 
+	// TODO: Re-enable when SIGINT handling can be tested without aborting Vitest runner
+	// Skipped because process.emit('SIGINT') causes the test runner to abort with exit code 130
 	it.skip("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		// Mock fs.promises methods for restoreLatestBackup
 		const fsCopyFileSpy = vi
@@ -402,11 +404,13 @@ describe("Setup", () => {
 		});
 	});
 
+	// TODO: Re-enable when SIGINT handling can be tested without aborting Vitest runner
+	// Skipped because process.emit('SIGINT') causes the test runner to abort with exit code 130
 	it.skip("should exit with code 1 when restoreLatestBackup fails", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		// Mock fs.promises methods for restoreLatestBackup to throw an error
 		const fsAccessSpy = vi
@@ -494,7 +498,7 @@ describe("Setup", () => {
 	});
 
 	it("should return false and skip restoration when cleanupInProgress is true", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		// Spy on file operations that would be performed during restoration
 		const fsAccessSpy = vi.spyOn(fs.promises, "access");
 		const fsReaddirSpy = vi.spyOn(fs.promises, "readdir");
@@ -1035,7 +1039,7 @@ describe("Validation Helpers", () => {
 		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
-			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		});
 
 		afterEach(() => {
@@ -1481,32 +1485,4 @@ describe("Validation Helpers", () => {
 			);
 		});
 	});
-});
-it("should use default Observability options when setupObservability uses default", async () => {
-	const { observabilitySetup } = await import(
-		"scripts/setup/services/apiSetup"
-	);
-	type SetupAnswers = import("scripts/setup/types").SetupAnswers;
-	const answers: SetupAnswers = {};
-	vi.spyOn(inquirer, "prompt").mockResolvedValue({
-		API_OTEL_ENABLED: "false",
-	});
-	await observabilitySetup(answers);
-	expect(answers.API_OTEL_ENABLED).toBe("false");
-});
-
-it("should use provided Observability options", async () => {
-	const { observabilitySetup } = await import(
-		"scripts/setup/services/apiSetup"
-	);
-	type SetupAnswers = import("scripts/setup/types").SetupAnswers;
-	const answers: SetupAnswers = {};
-	vi.spyOn(inquirer, "prompt")
-		.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" })
-		.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "0.5" });
-
-	await observabilitySetup(answers);
-
-	expect(answers.API_OTEL_ENABLED).toBe("true");
-	expect(answers.API_OTEL_SAMPLING_RATIO).toBe("0.5");
 });

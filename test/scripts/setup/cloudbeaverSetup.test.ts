@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
@@ -14,9 +14,13 @@ import {
 
 describe("Setup -> cloudbeaverSetup", () => {
 	const originalEnv = { ...process.env };
+	const originalIsTTY = process.stdin?.isTTY;
 
 	afterEach(() => {
 		process.env = { ...originalEnv };
+		if (process.stdin) {
+			process.stdin.isTTY = originalIsTTY;
+		}
 		vi.resetAllMocks();
 	});
 
