@@ -923,7 +923,7 @@ jobs:
         env:
           COMPOSE_PROJECT_NAME: talawa-api-ci
         run: |
-          devcontainer up --workspace-folder .
+          devcontainer up --workspace-folder . --remove-existing-container
 
       - name: Verify pnpm is available inside devcontainer
         env:

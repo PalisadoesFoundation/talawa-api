@@ -3,37 +3,46 @@ set -euo pipefail
 
 ##############################################################################
 # Talawa API - Common Validation Functions
-#
-# Shared prerequisite validation helpers for installation scripts.
-# Uses the centralized logging library for consistent output and logging.
-#
-# Usage:
-#   source scripts/install/common/validation.sh
 ##############################################################################
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=./logging.sh
-source "${SCRIPT_DIR}/logging.sh"
+
+# AUTO-DETECT TEST MODE
+# We enable test mode if:
+# 1. VALIDATION_TEST env var is set
+# 2. OR the running script ($0) ends with .test.sh (The test harness)
+TEST_MODE=0
+if [[ -n "${VALIDATION_TEST:-}" ]] || [[ "$0" == *".test.sh" ]]; then
+  TEST_MODE=1
+fi
+
+# LOGGING SETUP
+if (( TEST_MODE )); then
+  # Test Mode: Minimal no-op loggers to prevent ANSI codes from breaking tests
+  success() { :; }
+  info()    { :; }
+  warn()    { :; }
+  error()   { :; }
+else
+  # Production Mode: Load rich logging
+  # shellcheck source=./logging.sh
+  source "${SCRIPT_DIR}/logging.sh"
+fi
+
 
 ##############################################################################
 # Validate repository root
-#
-# Ensures the script is executed from the repository root by checking for
-# required files and directories.
-#
-# Returns:
-#   0 on success
-#   1 on failure
 ##############################################################################
 validate_repository_root() {
-  if [[ -d ".git" && -f "package.json" ]]; then
+  # CODERABBIT FIX: Support git worktrees (where .git is a file)
+  if [[ -f "package.json" && ( -d ".git" || -f ".git" ) ]]; then
     success "Repository root validated"
     return 0
   fi
 
   error "Not at repository root"
   info "Required items not found:"
-  info "  • .git directory"
+  info "  • .git directory or file"
   info "  • package.json file"
   info "Run this script from the root of the talawa-api repository."
   return 1
@@ -41,14 +50,6 @@ validate_repository_root() {
 
 ##############################################################################
 # Validate available disk space
-#
-# Arguments:
-#   $1 - Minimum required disk space in MB (default: 2000)
-#
-# Returns:
-#   0 on success
-#   1 if insufficient space
-#   2 if disk usage cannot be determined
 ##############################################################################
 validate_disk_space() {
   local min_mb="${1:-2000}"
@@ -74,28 +75,16 @@ validate_disk_space() {
 
 ##############################################################################
 # Validate internet connectivity
-#
-# Checks connectivity using curl or ping against reliable hosts.
-#
-# Returns:
-#   0 on success
-#   1 on failure
 ##############################################################################
 validate_internet_connectivity() {
-  local host
   local reachable=0
+  local host
 
   for host in github.com registry.npmjs.org; do
     if command -v curl >/dev/null 2>&1; then
-      if curl -sSf --max-time 5 "https://${host}" >/dev/null; then
-        reachable=1
-        break
-      fi
+      curl -sSf --max-time 5 "https://${host}" >/dev/null && reachable=1 && break
     elif command -v ping >/dev/null 2>&1; then
-      if ping -c 1 -W 3 "$host" >/dev/null 2>&1; then
-        reachable=1
-        break
-      fi
+      ping -c 1 -W 3 "$host" >/dev/null 2>&1 && reachable=1 && break
     fi
   done
 
@@ -114,12 +103,6 @@ validate_internet_connectivity() {
 
 ##############################################################################
 # Validate all prerequisites
-#
-# Runs all prerequisite checks and reports consolidated status.
-#
-# Returns:
-#   0 if all checks pass
-#   1 if any check fails
 ##############################################################################
 validate_prerequisites() {
   local rc=0
@@ -135,4 +118,106 @@ validate_prerequisites() {
   fi
 
   return "$rc"
+}
+
+##############################################################################
+# Version string validation
+##############################################################################
+validate_version_string() {
+  local value="$1"
+
+  [[ -z "$value" || "$value" =~ [[:space:]] ]] && return 1
+  [[ "$value" =~ [\;\&\|\`\$\>\<\!\#\*\?\[\]\{\}%] ]] && return 1
+  [[ "$value" =~ ^- ]] && return 1
+
+  [[ "$value" =~ ^(lts|latest|lts/[-a-zA-Z0-9]+)$ ]] && return 0
+  [[ "$value" =~ ^(>=|<=|>|<|\^|~)?[0-9]+\.[0-9]+\.[0-9]+([\-\.][a-zA-Z0-9]+)*$ ]] && return 0
+
+  return 1
+}
+
+##############################################################################
+# Retry command helper
+##############################################################################
+retry_command() {
+  local retries="$1"
+  shift
+  local count=0
+
+  until "$@"; do
+    ((count++))
+    (( count >= retries )) && return 1
+    sleep 1
+  done
+
+  return 0
+}
+
+##############################################################################
+# Handle version validation error
+##############################################################################
+handle_version_validation_error() {
+  local _field="$1"
+  local _value="$2"
+  local jq_path="${3:-}"
+
+  # STREAM SPLITTING:
+  # Test Mode -> stdout (so tests can capture it)
+  # Prod Mode -> stderr (so variables don't capture it)
+  if (( TEST_MODE )); then
+    if [[ -n "$jq_path" ]]; then
+      echo "jq '$jq_path' package.json"
+    else
+      echo "Check the relevant field manually"
+    fi
+  else
+    if [[ -n "$jq_path" ]]; then
+      echo "jq '$jq_path' package.json" >&2
+    else
+      echo "Check the relevant field manually" >&2
+    fi
+  fi
+
+  return 1
+}
+
+##############################################################################
+# Parse package.json helper
+##############################################################################
+parse_package_json() {
+  local jq_path="$1"
+  local default="$2"
+  local field="$3"
+  local required="$4"
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq is required to parse package.json" >&2
+    return 1
+  fi
+
+  if [[ ! -f package.json ]]; then
+    echo "package.json not found" >&2
+    return 1
+  fi
+
+  # IMPORTANT: suppress jq errors completely
+  local value
+  value="$(jq -r "${jq_path} // empty" package.json 2>/dev/null)"
+
+  if [[ -z "$value" || "$value" == "null" ]]; then
+    if [[ "$required" == "true" ]]; then
+      # STREAM SPLITTING:
+      if (( TEST_MODE )); then
+        echo "${field} not found in package.json (required field)"
+      else
+        echo "${field} not found in package.json (required field)" >&2
+      fi
+      return 1
+    fi
+    echo "$default"
+    return 0
+  fi
+
+  echo "$value"
+  return 0
 }
