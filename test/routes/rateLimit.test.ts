@@ -234,15 +234,16 @@ describe("REST rate limiting", () => {
 		const fakeRedis = new FakeRedisZ();
 		// Mock pipeline to return an error
 		fakeRedis.pipeline = () => {
-			return {
-				zremrangebyscore: () => {},
-				zcard: () => {},
-				zadd: () => {},
-				zrange: () => {},
-				expire: () => {},
+			const mockPipeline = {
+				zremrangebyscore: () => mockPipeline,
+				zcard: () => mockPipeline,
+				zadd: () => mockPipeline,
+				zrange: () => mockPipeline,
+				expire: () => mockPipeline,
 				exec: async () => [[new Error("Redis failure"), null]],
-				// biome-ignore lint/suspicious/noExplicitAny: mocking redis pipeline for testing
-			} as unknown as any;
+			};
+			// biome-ignore lint/suspicious/noExplicitAny: mocking redis pipeline type is complex
+			return mockPipeline as unknown as any;
 		};
 
 		app.decorate("redis", fakeRedis as unknown as FastifyRedis);
