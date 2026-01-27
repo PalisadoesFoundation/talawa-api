@@ -34,10 +34,6 @@ check_docker_requirements() {
         error "Docker is not installed."
         if [[ "$OS_TYPE" == "macos" ]]; then
              warn "Docker Desktop is required but not installed."
-             # Logic to install Docker on macOS could go here or be handled by the caller.
-             # In this refactor, we are mostly doing detection, but the original script installed it.
-             # The issue says "detection-only for Docker".
-             # So we will just error out or warn.
              warn "Please install Docker Desktop from https://www.docker.com/products/docker-desktop"
              return 1
         else
