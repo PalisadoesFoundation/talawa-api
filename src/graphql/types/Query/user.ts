@@ -24,43 +24,51 @@ builder.queryField("user", (t) =>
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a user.",
 		resolve: async (_parent, args, ctx) => {
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = queryUserArgumentsSchema.safeParse(args);
+			const resolver = async () => {
+				const {
+					data: parsedArgs,
+					error,
+					success,
+				} = queryUserArgumentsSchema.safeParse(args);
 
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: error.issues.map((issue) => ({
+								argumentPath: issue.path,
+								message: issue.message,
+							})),
+						},
+					});
+				}
+
+				const user = await ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.id),
 				});
+
+				if (user === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["input", "id"],
+								},
+							],
+						},
+					});
+				}
+
+				return user;
+			};
+
+			if (ctx.perf) {
+				return await ctx.perf.time("query:user", resolver);
 			}
 
-			const user = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) =>
-					operators.eq(fields.id, parsedArgs.input.id),
-			});
-
-			if (user === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-				});
-			}
-
-			return user;
+			return await resolver();
 		},
 		type: User,
 	}),
