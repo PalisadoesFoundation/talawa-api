@@ -73,7 +73,7 @@
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
 	"overrideCommand": true,
-	"postCreateCommand": "./.devcontainer/post-create.sh",
+	"postCreateCommand": "bash ./.devcontainer/post-create.sh",
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",

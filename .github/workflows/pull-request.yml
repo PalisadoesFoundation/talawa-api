@@ -135,7 +135,19 @@ jobs:
       - name: Get changed files
         id: changed-files
         run: |
-          echo "all_changed_files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          # Retrieve changed files (Added, Copied, Modified, Renamed, Type changed)
+          DIFF_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          
+          # Iterate and check if file exists on disk to prevent "File Not Found" errors
+          EXISTING_FILES=""
+          for file in $DIFF_FILES; do
+            if [ -f "$file" ]; then
+              EXISTING_FILES="$EXISTING_FILES $file"
+            fi
+          done
+          
+          # Use xargs to trim whitespace and output to GITHUB_OUTPUT
+          echo "all_changed_files=$(echo "$EXISTING_FILES" | xargs)" >> $GITHUB_OUTPUT
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -143,6 +155,7 @@ jobs:
           python-version: 3.9
 
       - name: Run Disable Statements Check
+        if: steps.changed-files.outputs.all_changed_files != ''
         run: |
           python .github-central/.github/workflows/scripts/disable_statements_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
