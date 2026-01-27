@@ -1,9 +1,16 @@
+import type { SetupAnswers } from "scripts/setup/types";
 import {
+	isBooleanString,
+	validateAllAnswers,
+	validateBooleanFields,
 	validateHmacSecretLength,
 	validateJwtSecretLength,
+	validatePortNumbers,
+	validateRequiredFields,
+	validateSamplingRatio,
 	validateTokenExpiration,
 } from "scripts/setup/validators";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 describe("Setup -> Validators", () => {
 	describe("validateJwtSecretLength", () => {
@@ -74,6 +81,158 @@ describe("Setup -> Validators", () => {
 			expect(validateHmacSecretLength(shortPadded)).toBe(
 				"HMAC secret must be at least 32 characters long.",
 			);
+		});
+	});
+
+	describe("isBooleanString", () => {
+		it("should return true for 'true' or 'false'", () => {
+			expect(isBooleanString("true")).toBe(true);
+			expect(isBooleanString("false")).toBe(true);
+		});
+
+		it("should return false for other strings", () => {
+			expect(isBooleanString("yes")).toBe(false);
+			expect(isBooleanString("no")).toBe(false);
+			expect(isBooleanString("1")).toBe(false);
+			expect(isBooleanString("")).toBe(false);
+		});
+
+		it("should return false for non-string values", () => {
+			expect(isBooleanString(true)).toBe(false);
+			expect(isBooleanString(1)).toBe(false);
+			expect(isBooleanString(null)).toBe(false);
+			expect(isBooleanString(undefined)).toBe(false);
+		});
+	});
+
+	describe("validateRequiredFields", () => {
+		it("should not throw when required fields are present", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "true",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@example.com",
+			};
+			expect(() => validateRequiredFields(answers)).not.toThrow();
+		});
+
+		it("should throw error when required fields are missing", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "true",
+			};
+			expect(() => validateRequiredFields(answers)).toThrow(
+				"Missing required configuration fields: API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
+			);
+		});
+
+		it("should throw error when fields are empty strings", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "",
+			};
+			expect(() => validateRequiredFields(answers)).toThrow(
+				"Missing required configuration fields: CI, API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
+			);
+		});
+	});
+
+	describe("validateBooleanFields", () => {
+		it("should valid valid boolean strings", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "true",
+				useDefaultApi: "false",
+			};
+			expect(() => validateBooleanFields(answers)).not.toThrow();
+		});
+
+		it("should allow undefined optional boolean fields", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "true",
+			};
+			expect(() => validateBooleanFields(answers)).not.toThrow();
+		});
+
+		it("should throw for invalid boolean strings", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "yes",
+				API_IS_GRAPHIQL: "1",
+			};
+			expect(() => validateBooleanFields(answers)).toThrow(
+				'Boolean fields must be "true" or "false": CI, API_IS_GRAPHIQL',
+			);
+		});
+	});
+
+	describe("validatePortNumbers", () => {
+		it("should pass for valid ports", () => {
+			const answers: Partial<SetupAnswers> = {
+				API_PORT: "4000",
+				API_MINIO_PORT: "9000",
+			};
+			expect(() => validatePortNumbers(answers)).not.toThrow();
+		});
+
+		it("should allow undefined optional ports", () => {
+			const answers: Partial<SetupAnswers> = {};
+			expect(() => validatePortNumbers(answers)).not.toThrow();
+		});
+
+		it("should throw for invalid ports", () => {
+			const answers: Partial<SetupAnswers> = {
+				API_PORT: "0",
+				API_MINIO_PORT: "70000",
+				POSTGRES_MAPPED_PORT: "abc",
+			};
+			expect(() => validatePortNumbers(answers)).toThrow(
+				/Port numbers must be between 1 and 65535:/,
+			);
+			// Check that specific fields are mentioned (order might vary)
+			try {
+				validatePortNumbers(answers);
+			} catch (e: any) {
+				expect(e.message).toContain("API_PORT");
+				expect(e.message).toContain("API_MINIO_PORT");
+				expect(e.message).toContain("POSTGRES_MAPPED_PORT");
+			}
+		});
+	});
+
+	describe("validateSamplingRatio", () => {
+		it("should return true for valid ratios (0-1)", () => {
+			expect(validateSamplingRatio("0")).toBe(true);
+			expect(validateSamplingRatio("0.5")).toBe(true);
+			expect(validateSamplingRatio("1.0")).toBe(true);
+		});
+
+		it("should return error for invalid ratios", () => {
+			expect(validateSamplingRatio("-0.1")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("1.1")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("abc")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+		});
+	});
+
+	describe("validateAllAnswers", () => {
+		it("should pass for valid configuration", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "true",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@example.com",
+				API_PORT: "4000",
+			};
+			// Mock console.log to avoid noise
+			const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+			expect(() => validateAllAnswers(answers)).not.toThrow();
+			spy.mockRestore();
+		});
+
+		it("should throw if validation fails", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "invalid",
+			};
+			expect(() => validateAllAnswers(answers)).toThrow();
 		});
 	});
 });
