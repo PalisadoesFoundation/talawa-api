@@ -126,8 +126,11 @@ describe("Query organizations - Performance Tracking", () => {
 			);
 
 			const resultPromise = organizationsQueryResolver(null, {}, context);
-			await vi.advanceTimersByTimeAsync(5);
-			await expect(resultPromise).rejects.toThrow();
+			// Advance timers and wait for rejection in parallel to avoid unhandled rejection
+			await Promise.all([
+				vi.advanceTimersByTimeAsync(5),
+				expect(resultPromise).rejects.toThrow(),
+			]);
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["query:organizations"];
@@ -150,8 +153,11 @@ describe("Query organizations - Performance Tracking", () => {
 			);
 
 			const resultPromise = organizationsQueryResolver(null, {}, context);
-			await vi.advanceTimersByTimeAsync(5);
-			await expect(resultPromise).rejects.toThrow();
+			// Advance timers and wait for rejection in parallel to avoid unhandled rejection
+			await Promise.all([
+				vi.advanceTimersByTimeAsync(5),
+				expect(resultPromise).rejects.toThrow(),
+			]);
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["query:organizations"];

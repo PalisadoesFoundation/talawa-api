@@ -95,7 +95,8 @@ describe("Query event - Performance Tracking", () => {
 				{ input: { id: eventId } },
 				context,
 			);
-			await vi.advanceTimersByTimeAsync(10);
+			// Use runAllTimersAsync to ensure all timers complete
+			await vi.runAllTimersAsync();
 			const result = await resultPromise;
 
 			expect(result).toEqual(mockEvent);
@@ -184,8 +185,11 @@ describe("Query event - Performance Tracking", () => {
 				{ input: { id: eventId } },
 				context,
 			);
-			await vi.advanceTimersByTimeAsync(5);
-			await expect(resultPromise).rejects.toThrow();
+			// Advance timers and wait for rejection in parallel to avoid unhandled rejection
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(resultPromise).rejects.toThrow(),
+			]);
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["query:event"];

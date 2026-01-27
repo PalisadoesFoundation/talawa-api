@@ -107,8 +107,11 @@ describe("Query user - Performance Tracking", () => {
 				{ input: { id: userId } },
 				context,
 			);
-			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow();
+			// Advance timers and wait for rejection in parallel to avoid unhandled rejection
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(resultPromise).rejects.toThrow(),
+			]);
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["query:user"];
