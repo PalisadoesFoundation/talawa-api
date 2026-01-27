@@ -61,7 +61,6 @@ print_log_location() {
 }
 
 # Timing tracking (compatible with bash 3.2+)
-# Timing tracking (compatible with bash 3.2+)
 declare -a __TIMING_LABELS
 declare -a __TIMING_VALUES
 declare -a __TIMING_STATUS

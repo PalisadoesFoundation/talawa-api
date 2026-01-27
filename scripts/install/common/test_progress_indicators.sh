@@ -97,14 +97,20 @@ info "Testing spinner cleanup on SIGINT..."
 
 # Create a temporary script to run the spinner
 CAT_SCRIPT="${SCRIPT_DIR}/_temp_spinner_test.sh"
-# Ensure we clean up the test script even if we fail early
-trap "rm -f '$CAT_SCRIPT'" EXIT INT TERM
+PID_FILE="${SCRIPT_DIR}/_temp_spinner_pid"
+# Ensure we clean up the test script and PID file even if we fail early
+trap "rm -f '$CAT_SCRIPT' '$PID_FILE'" EXIT INT TERM
 
 cat > "$CAT_SCRIPT" <<EOF
 #!/bin/bash
 source "${SCRIPT_DIR}/logging.sh"
-# Mark this process so we can find it
-with_spinner "Spinning indefinitely" sleep 33 &
+
+# We need to capture the PID of the sleep command started by with_spinner
+# Usage of explicit bash -c ensures \$\$ expands to the PID of the new shell,
+# which exec then replaces with sleep.
+export PID_FILE
+
+with_spinner "Spinning indefinitely" bash -c "echo \\$\\$ > '$PID_FILE'; exec sleep 33" &
 wait
 EOF
 chmod +x "$CAT_SCRIPT"
@@ -114,12 +120,24 @@ chmod +x "$CAT_SCRIPT"
 SCRIPT_PID=$!
 info "Started background script PID: $SCRIPT_PID"
 
-# Wait for it to initialize and start sleep
-sleep 1
+# Wait for it to initialize and write the PID file
+count=0
+while [ ! -s "$PID_FILE" ]; do
+    sleep 0.1
+    count=$((count + 1))
+    if [ "$count" -gt 50 ]; then
+        error "Timeout waiting for PID file"
+        rm -f "$CAT_SCRIPT" "$PID_FILE"
+        exit 1
+    fi
+done
 
-# Check if sleep is running using unique identifier
-if ! pgrep -f "sleep 33" > /dev/null; then
-   warn "Could not find 'sleep 33' process, test might be flaky"
+SLEEP_PID=$(cat "$PID_FILE")
+info "Background sleep process started with PID: $SLEEP_PID"
+
+# Check if sleep is running
+if ! kill -0 "$SLEEP_PID" 2>/dev/null; then
+   warn "Process $SLEEP_PID not running, test might be flaky"
 fi
 
 # Send SIGINT to the script
@@ -133,15 +151,15 @@ wait $SCRIPT_PID || true
 sleep 0.5
 
 # Check if sleep is still running
-if pgrep -f "sleep 33" > /dev/null; then
-   error "Background 'sleep 33' process persists after SIGINT!"
+if kill -0 "$SLEEP_PID" 2>/dev/null; then
+   error "Background sleep process $SLEEP_PID persists after SIGINT!"
    # Cleanup
-   pkill -f "sleep 33" || true
-   rm -f "$CAT_SCRIPT"
+   kill "$SLEEP_PID" || true
+   rm -f "$CAT_SCRIPT" "$PID_FILE"
    exit 1
 fi
 
-rm -f "$CAT_SCRIPT"
+rm -f "$CAT_SCRIPT" "$PID_FILE"
 # Clear the specific trap for this test section (optional, or just rely on script exit)
 trap - EXIT INT TERM
 success "Signal handling verification passed: Background process cleaned up."

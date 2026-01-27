@@ -3,11 +3,12 @@
 	// https://biomejs.dev/reference/configuration/#schema
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	// GritQL plugin for escapeHTML enforcement (see biome_plugins/require_escapeHTML.grit)
-	"plugins": ["./biome_plugins/require_escapeHTML.grit"],
+	// GritQL plugin for escapeHTML enforcement (see biome_plugins/require_escapeHTML.grit)
+	// "plugins": ["./biome_plugins/require_escapeHTML.grit"],
 	// https://biomejs.dev/reference/configuration/#files
 	"files": {
 		// https://biomejs.dev/reference/configuration/#filesignore
-		"includes": [
+		"include": [
 			"**",
 			"!drizzle_migrations",
 			"!node_modules",
@@ -20,8 +21,7 @@
 			"!docs/docusaurus.config.ts",
 			"!docs/src",
 			"!docs/sidebars.ts",
-			"!sample_data",
-			"!**/*.grit"
+			"!sample_data"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true
@@ -38,7 +38,7 @@
 	},
 	"overrides": [
 		{
-			"includes": [
+			"include": [
 				"src/install/**",
 				"src/tracing.ts",
 				"src/observability/**",
@@ -60,12 +60,9 @@
 		}
 	],
 	// https://biomejs.dev/reference/configuration/#vcs
-	"assist": {
-		"actions": {
-			"source": {
-				"organizeImports": "on"
-			}
-		}
+	// https://biomejs.dev/reference/configuration/#vcs
+	"organizeImports": {
+		"enabled": true
 	},
 	// https://biomejs.dev/reference/configuration/#vcs
 	"vcs": {
