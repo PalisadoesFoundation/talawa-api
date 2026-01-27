@@ -1,18 +1,11 @@
 import { promises as fs } from "node:fs";
 import path, { resolve } from "node:path";
 import process from "node:process";
-import { URL, pathToFileURL } from "node:url";
+import { pathToFileURL, URL } from "node:url";
 import dotenv from "dotenv";
 import { emailSetup } from "./emailSetup";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
-import { updateEnvVariable } from "./updateEnvVariable";
-import {
-	validatePositiveInteger,
-	validateSamplingRatio,
-} from "./validators";
-
-import type { SetupAnswers } from "./types";
 import { administratorEmail } from "./services/administratorSetup";
 import { apiSetup } from "./services/apiSetup";
 import { caddySetup } from "./services/caddySetup";
@@ -20,6 +13,9 @@ import { setCI } from "./services/ciSetup";
 import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 import { minioSetup } from "./services/minioSetup";
 import { postgresSetup } from "./services/postgresSetup";
+import type { SetupAnswers } from "./types";
+import { updateEnvVariable } from "./updateEnvVariable";
+import { validatePositiveInteger } from "./validators";
 
 const envFileName = ".env";
 let backupCreated = false;
@@ -139,8 +135,7 @@ async function restoreLatestBackup(): Promise<void> {
 				} catch (err) {
 					try {
 						await fs.unlink(tempPath);
-					} catch {
-					}
+					} catch {}
 					throw err;
 				}
 			} else {
@@ -154,7 +149,6 @@ async function restoreLatestBackup(): Promise<void> {
 		throw readError;
 	}
 }
-
 
 export async function metricsSetup(
 	answers: SetupAnswers,
@@ -372,7 +366,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"GOOGLE_REDIRECT_URI",
 				"Enter Google OAuth Redirect URI:",
 				answers.GOOGLE_REDIRECT_URI ||
-				"http://localhost:4000/auth/google/callback",
+					"http://localhost:4000/auth/google/callback",
 				(input: string) => {
 					if (input.trim().length < 1) {
 						return "Google Redirect URI cannot be empty.";
@@ -424,7 +418,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"GITHUB_REDIRECT_URI",
 				"Enter GitHub OAuth Redirect URI:",
 				answers.GITHUB_REDIRECT_URI ||
-				"http://localhost:4000/auth/github/callback",
+					"http://localhost:4000/auth/github/callback",
 				(input: string) => {
 					if (input.trim().length < 1) {
 						return "GitHub Redirect URI cannot be empty.";

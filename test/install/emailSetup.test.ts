@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { emailSetup } from "../../scripts/setup/emailSetup";
 import * as promptHelpers from "../../scripts/setup/promptHelpers";
-import type { SetupAnswers } from "../../scripts/setup/setup";
+import type { SetupAnswers } from "../../scripts/setup/types";
 
 // Mutable mock for SESProvider to allow per-test behavior control
 const mocks = vi.hoisted(() => ({

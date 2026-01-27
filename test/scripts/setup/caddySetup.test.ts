@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { caddySetup } from "scripts/setup/setup";
+import { caddySetup } from "scripts/setup/services/caddySetup";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");

@@ -3,8 +3,9 @@ vi.mock("inquirer");
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { postgresSetup, setup } from "scripts/setup/setup";
-import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { postgresSetup } from "scripts/setup/services/postgresSetup";
+import { setup } from "scripts/setup/setup";
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
 describe("Setup -> postgresSetup", () => {
 	const originalEnv = { ...process.env };
@@ -12,6 +13,15 @@ describe("Setup -> postgresSetup", () => {
 	afterEach(() => {
 		process.env = { ...originalEnv };
 		vi.resetAllMocks();
+	});
+
+	// Ensure tests are non-interactive to skip shouldBackup prompt
+	beforeEach(() => {
+		if (process.stdin) {
+			process.stdin.isTTY = false;
+		}
+		// Mock fs.promises.access to simulate .env existence
+		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
 	});
 
 	it("should prompt the user for Postgres configuration and update process.env", async () => {
@@ -41,19 +51,23 @@ describe("Setup -> postgresSetup", () => {
 
 	it("should prompt extended Postgres fields when user chooses custom Postgres (CI=false)", async () => {
 		const mockResponses = [
-			{ envReconfigure: "true" },
+			{ envReconfigure: true },
 			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
+			{ useDefaultApi: true },
+			{ useDefaultMinio: true },
+			{ useDefaultCloudbeaver: true },
 			{ useDefaultPostgres: false },
 			{ POSTGRES_DB: "customDatabase" },
 			{ POSTGRES_MAPPED_HOST_IP: "1.2.3.4" },
 			{ POSTGRES_MAPPED_PORT: "5433" },
 			{ POSTGRES_PASSWORD: "myPassword" },
 			{ POSTGRES_USER: "myUser" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@postgres.com" },
+			{ setupReCaptcha: false },
+			{ configureEmail: false },
+			{ setupOAuth: false },
+			{ setupMetrics: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -77,36 +91,9 @@ describe("Setup -> postgresSetup", () => {
 	});
 
 	it("should handle prompt errors correctly", async () => {
-		const processExitSpy = vi
-			.spyOn(process, "exit")
-			.mockImplementation(() => undefined as never);
-		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".backup") return true;
-			return false;
-		});
-		(
-			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
-				(path: fs.PathLike) => string[]
-			>
-		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
-
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
 
-		const consoleErrorSpy = vi.spyOn(console, "error");
-
-		await postgresSetup({});
-
-		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
-			".backup/.env.1700000000",
-			".env",
-		);
-		expect(processExitSpy).toHaveBeenCalledWith(1);
-
-		vi.clearAllMocks();
+		await expect(postgresSetup({})).rejects.toThrow("Prompt failed");
 	});
 });

@@ -1,11 +1,12 @@
-import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
 vi.mock("inquirer");
 
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { minioSetup, setup } from "scripts/setup/setup";
+import { minioSetup } from "scripts/setup/services/minioSetup";
+import { setup } from "scripts/setup/setup";
 
 describe("Setup -> minioSetup", () => {
 	const originalEnv = { ...process.env };
@@ -13,6 +14,15 @@ describe("Setup -> minioSetup", () => {
 	afterEach(() => {
 		process.env = { ...originalEnv };
 		vi.resetAllMocks();
+	});
+
+	// Ensure tests are non-interactive to skip shouldBackup prompt
+	beforeEach(() => {
+		if (process.stdin) {
+			process.stdin.isTTY = false;
+		}
+		// Mock fs.promises.access to simulate .env existence
+		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
 	});
 
 	it("should prompt the user for Minio configuration and update process.env", async () => {
@@ -45,6 +55,7 @@ describe("Setup -> minioSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
+			{ useDefaultApi: true },
 			{ useDefaultMinio: false },
 			{ MINIO_BROWSER: "on" },
 			{ MINIO_API_MAPPED_HOST_IP: "1.2.3.4" },
@@ -55,9 +66,12 @@ describe("Setup -> minioSetup", () => {
 			{ MINIO_ROOT_USER: "mocked-user" },
 			{ useDefaultCloudbeaver: true },
 			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: true },
+			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
+			{ configureEmail: false },
+			{ setupOAuth: false },
+			{ setupMetrics: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -94,8 +108,8 @@ describe("Setup -> minioSetup", () => {
 			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9000" }) // Conflict: same as API port
 			// Response for the re-prompt after conflict detection
 			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9001" })
-			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" })
-			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" });
+			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" })
+			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
 
 		const consoleWarnSpy = vi.spyOn(console, "warn");
 
@@ -115,36 +129,9 @@ describe("Setup -> minioSetup", () => {
 		expect(promptMock).toHaveBeenCalledTimes(8);
 	});
 	it("should handle prompt errors correctly", async () => {
-		const processExitSpy = vi
-			.spyOn(process, "exit")
-			.mockImplementation(() => undefined as never);
-		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".backup") return true;
-			return false;
-		});
-		(
-			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
-				(path: fs.PathLike) => string[]
-			>
-		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		const promptError = new Error("inquirer failure");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
 
-		const mockError = new Error("Prompt failed");
-		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
-
-		const consoleErrorSpy = vi.spyOn(console, "error");
-
-		await minioSetup({});
-
-		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
-			".backup/.env.1700000000",
-			".env",
-		);
-		expect(processExitSpy).toHaveBeenCalledWith(1);
-
-		vi.clearAllMocks();
+		await expect(minioSetup({})).rejects.toThrow("inquirer failure");
 	});
 });
