@@ -10,8 +10,7 @@ class FakeRedisZ {
 
 	pipeline() {
 		const self = this;
-		// biome-ignore lint/suspicious/noExplicitAny: mocking redis pipeline for testing
-		const commands: (() => Promise<any>)[] = [];
+		const commands: (() => Promise<unknown>)[] = [];
 
 		return {
 			zremrangebyscore(
@@ -180,5 +179,90 @@ describe("REST rate limiting", () => {
 		const r2 = await app.inject({ method: "GET", url: "/healthcheck-strict" });
 		expect(r2.statusCode).toBe(429);
 		expect(r2.headers["x-ratelimit-remaining"]).toBe("0");
+	});
+
+	it("should set headers for open tier", async () => {
+		const app = Fastify();
+		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+
+		app.get(
+			"/open",
+			{
+				preHandler: app.rateLimit({
+					name: "open",
+					windowMs: 60000,
+					max: Number.POSITIVE_INFINITY,
+				}),
+			},
+			async () => ({ ok: true }),
+		);
+
+		const r = await app.inject({ method: "GET", url: "/open" });
+		expect(r.statusCode).toBe(200);
+		expect(r.headers["x-ratelimit-limit"]).toBeDefined();
+		expect(r.headers["x-ratelimit-remaining"]).toBeDefined();
+	});
+
+	it("should allow request and set headers when redis is missing (degrade)", async () => {
+		const app = Fastify();
+		// No redis decoration
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+
+		app.get(
+			"/degrade",
+			{
+				preHandler: app.rateLimit({
+					name: "degrade",
+					windowMs: 60000,
+					max: 10,
+				}),
+			},
+			async () => ({ ok: true }),
+		);
+
+		const r = await app.inject({ method: "GET", url: "/degrade" });
+		expect(r.statusCode).toBe(200);
+		expect(r.headers["x-ratelimit-limit"]).toBe("10");
+		expect(r.headers["x-ratelimit-remaining"]).toBeDefined();
+	});
+
+	it("should handle redis pipeline errors by allowing request", async () => {
+		const app = Fastify();
+		const fakeRedis = new FakeRedisZ();
+		// Mock pipeline to return an error
+		fakeRedis.pipeline = () => {
+			return {
+				zremrangebyscore: () => {},
+				zcard: () => {},
+				zadd: () => {},
+				zrange: () => {},
+				expire: () => {},
+				exec: async () => [[new Error("Redis failure"), null]],
+			} as unknown as any;
+		};
+
+		app.decorate("redis", fakeRedis as unknown as FastifyRedis);
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+
+		app.get(
+			"/error",
+			{
+				preHandler: app.rateLimit({
+					name: "error",
+					windowMs: 60000,
+					max: 10,
+				}),
+			},
+			async () => ({ ok: true }),
+		);
+
+		const r = await app.inject({ method: "GET", url: "/error" });
+		expect(r.statusCode).toBe(200);
+		// Should still set headers due to degradation path in leakyBucket catch block
+		expect(r.headers["x-ratelimit-limit"]).toBeDefined();
 	});
 });

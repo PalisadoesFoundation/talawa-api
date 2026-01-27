@@ -61,13 +61,17 @@ export default fp(async function rateLimitPlugin(app: FastifyInstance) {
 
 			if (!Number.isFinite(tier.max)) {
 				// open tier: no limiting
-				return async (_req, _reply) => {
-					/* noop */
+				return async (_req, reply) => {
+					setHeaders(reply, tier, 0, Date.now() + tier.windowMs);
 				};
 			}
 
 			const handler: preHandlerHookHandler = async (req, reply) => {
-				if (!redis) return; // degrade
+				if (!redis) {
+					// degrade
+					setHeaders(reply, tier, tier.max, Date.now() + tier.windowMs);
+					return;
+				}
 
 				// make route-scoped key: tier + identity + method + path
 				const who = identityFromRequest(req);

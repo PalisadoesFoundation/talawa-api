@@ -25,8 +25,7 @@ type RedisZ = {
 		withScores?: "WITHSCORES",
 	): Promise<string[]>;
 	expire(key: string, seconds: number): Promise<number>;
-	// biome-ignore lint/suspicious/noExplicitAny: Pipeline type is complex to mock fully
-	pipeline(): any;
+	pipeline(): unknown;
 };
 
 /**
@@ -51,8 +50,21 @@ export async function leakyBucket(
 
 	try {
 		// Use a simple pipeline/transaction to ensure atomicity
-		// biome-ignore lint/suspicious/noExplicitAny: Pipeline type is complex to mock fully
-		const pipeline = redis.pipeline() as any;
+		const pipeline = redis.pipeline() as {
+			zremrangebyscore: (
+				key: string,
+				min: string | number,
+				max: string | number,
+			) => void;
+			zcard: (key: string) => void;
+			zrange: (
+				key: string,
+				start: number,
+				stop: number,
+				withScores: string,
+			) => void;
+			exec: () => Promise<Array<[Error | null, unknown]>>;
+		};
 		pipeline.zremrangebyscore(key, "-inf", cutoff);
 		pipeline.zcard(key);
 		pipeline.zrange(key, 0, 0, "WITHSCORES");
@@ -62,14 +74,21 @@ export async function leakyBucket(
 			throw new Error("Redis pipeline failed");
 		}
 
+		// check for errors in results
+		for (const [err] of results) {
+			if (err) {
+				throw err;
+			}
+		}
+
 		// results[0] -> zremrangebyscore (error, count)
 		// results[1] -> zcard (error, count)
 		// results[2] -> zrange (error, [member, score])
 
-		const count = results[1][1] as number;
+		const count = (results[1]?.[1] as number) ?? 0;
 
 		if (count >= max) {
-			const oldest = results[2][1] as string[];
+			const oldest = results[2]?.[1] as string[];
 			const firstScore = oldest && oldest.length >= 2 ? Number(oldest[1]) : now;
 			const resetAt = firstScore + windowMs;
 			return { allowed: false, remaining: 0, resetAt };
@@ -77,8 +96,17 @@ export async function leakyBucket(
 
 		// allow and record
 		const uniqueId = randomBytes(8).toString("hex");
-		// biome-ignore lint/suspicious/noExplicitAny: Pipeline type is complex to mock fully
-		const pipeline2 = redis.pipeline() as any;
+		const pipeline2 = redis.pipeline() as {
+			zadd: (key: string, score: number, member: string) => void;
+			expire: (key: string, seconds: number) => void;
+			zrange: (
+				key: string,
+				start: number,
+				stop: number,
+				withScores: string,
+			) => void;
+			exec: () => Promise<Array<[Error | null, unknown]>>;
+		};
 		pipeline2.zadd(key, now, `${now}-${uniqueId}`);
 		pipeline2.expire(key, Math.ceil(windowMs / 1000));
 		pipeline2.zrange(key, 0, 0, "WITHSCORES");
@@ -88,7 +116,14 @@ export async function leakyBucket(
 			throw new Error("Redis pipeline failed");
 		}
 
-		const earliest = results2[2][1] as string[];
+		// check for errors in results2
+		for (const [err] of results2) {
+			if (err) {
+				throw err;
+			}
+		}
+
+		const earliest = results2[2]?.[1] as string[];
 		const firstScore =
 			earliest && earliest.length >= 2 ? Number(earliest[1]) : now;
 		const resetAt = firstScore + windowMs;
