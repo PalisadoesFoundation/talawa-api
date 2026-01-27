@@ -18,11 +18,13 @@ declare module "fastify" {
 				| RateLimitTier,
 		): preHandlerHookHandler;
 	}
+	interface FastifyRequest {
+		currentUser?: { id: string };
+	}
 }
 
 function identityFromRequest(req: FastifyRequest): string {
 	// Prefer authenticated userId, fallback to IP
-	// @ts-expect-error adapt to your auth/user context shape
 	const userId: string | undefined = req.currentUser?.id;
 	const ip = req.ip;
 	return userId ? `user:${userId}` : `ip:${ip}`;
@@ -59,7 +61,9 @@ export default fp(async function rateLimitPlugin(app: FastifyInstance) {
 
 			if (!Number.isFinite(tier.max)) {
 				// open tier: no limiting
-				return async (_req, _reply, done) => done();
+				return async (_req, _reply) => {
+					/* noop */
+				};
 			}
 
 			const handler: preHandlerHookHandler = async (req, reply) => {

@@ -6,7 +6,7 @@
 
 > `const` **rateLimitTiers**: `object`
 
-Defined in: src/config/rateLimits.ts:7
+Defined in: [src/config/rateLimits.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/rateLimits.ts#L7)
 
 ## Type Declaration
 

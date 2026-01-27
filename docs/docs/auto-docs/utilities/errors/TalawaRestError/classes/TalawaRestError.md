@@ -4,7 +4,7 @@
 
 # Class: TalawaRestError
 
-Defined in: src/utilities/errors/TalawaRestError.ts:10
+Defined in: [src/utilities/errors/TalawaRestError.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/TalawaRestError.ts#L10)
 
 ## Extends
 
@@ -16,7 +16,7 @@ Defined in: src/utilities/errors/TalawaRestError.ts:10
 
 > **new TalawaRestError**(`options`): `TalawaRestError`
 
-Defined in: src/utilities/errors/TalawaRestError.ts:15
+Defined in: [src/utilities/errors/TalawaRestError.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/TalawaRestError.ts#L15)
 
 #### Parameters
 
@@ -38,7 +38,7 @@ Defined in: src/utilities/errors/TalawaRestError.ts:15
 
 > `readonly` **code**: [`ErrorCode`](../../errorCodes/enumerations/ErrorCode.md)
 
-Defined in: src/utilities/errors/TalawaRestError.ts:11
+Defined in: [src/utilities/errors/TalawaRestError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/TalawaRestError.ts#L11)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: src/utilities/errors/TalawaRestError.ts:11
 
 > `readonly` `optional` **details**: `Record`\<`string`, `unknown`\>
 
-Defined in: src/utilities/errors/TalawaRestError.ts:12
+Defined in: [src/utilities/errors/TalawaRestError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/TalawaRestError.ts#L12)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: src/utilities/errors/TalawaRestError.ts:12
 
 > `readonly` **statusCode**: `number`
 
-Defined in: src/utilities/errors/TalawaRestError.ts:13
+Defined in: [src/utilities/errors/TalawaRestError.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/TalawaRestError.ts#L13)

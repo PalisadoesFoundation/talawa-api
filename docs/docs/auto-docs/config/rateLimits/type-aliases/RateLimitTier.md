@@ -6,7 +6,7 @@
 
 > **RateLimitTier** = `object`
 
-Defined in: src/config/rateLimits.ts:1
+Defined in: [src/config/rateLimits.ts:1](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/rateLimits.ts#L1)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: src/config/rateLimits.ts:1
 
 > **max**: `number`
 
-Defined in: src/config/rateLimits.ts:4
+Defined in: [src/config/rateLimits.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/rateLimits.ts#L4)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/config/rateLimits.ts:4
 
 > **name**: `string`
 
-Defined in: src/config/rateLimits.ts:2
+Defined in: [src/config/rateLimits.ts:2](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/rateLimits.ts#L2)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: src/config/rateLimits.ts:2
 
 > **windowMs**: `number`
 
-Defined in: src/config/rateLimits.ts:3
+Defined in: [src/config/rateLimits.ts:3](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/rateLimits.ts#L3)

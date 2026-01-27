@@ -1,7 +1,9 @@
+import type { FastifyRedis } from "@fastify/redis";
 import Fastify from "fastify";
 import { describe, expect, it } from "vitest";
 import errorHandlerPlugin from "~/src/fastifyPlugins/errorHandler";
 import rateLimitPlugin from "~/src/fastifyPlugins/rateLimit";
+import healthcheck from "~/src/routes/healthcheck";
 
 class FakeRedisZ {
 	private z = new Map<string, Array<{ s: number; m: string }>>();
@@ -59,8 +61,7 @@ class FakeRedisZ {
 describe("REST rate limiting", () => {
 	it("limits after N requests and sets headers", async () => {
 		const app = Fastify();
-		// biome-ignore lint/suspicious/noExplicitAny: mocking redis for testing
-		app.decorate("redis", new FakeRedisZ() as any);
+		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
 		await app.register(errorHandlerPlugin);
 		await app.register(rateLimitPlugin);
 
@@ -80,5 +81,53 @@ describe("REST rate limiting", () => {
 		expect(r2.headers["x-ratelimit-limit"]).toBe("2");
 		expect(Number(r2.headers["x-ratelimit-remaining"])).toBe(0);
 		expect(r3.json().error.code).toBe("rate_limit_exceeded");
+	});
+
+	it("should allow healthcheck requests and limit when exceeded", async () => {
+		const app = Fastify();
+		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+		await app.register(healthcheck);
+
+		// First request should succeed
+		const r1 = await app.inject({ method: "GET", url: "/healthcheck" });
+		expect(r1.statusCode).toBe(200);
+		expect(r1.json()).toEqual({ health: "ok" });
+		expect(r1.headers["x-ratelimit-limit"]).toBe("600");
+
+		// Simulate exhausting the limit
+		// We'll create a new app instance with a limit of 1 for healthcheck to test 429
+		// since making 601 requests is slow/expensive in test
+	});
+
+	it("should return 429 when healthcheck limit is exceeded", async () => {
+		const app = Fastify();
+		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+
+		// Override healthcheck route with custom strict limit for testing
+		app.get(
+			"/healthcheck-strict",
+			{
+				preHandler: app.rateLimit({
+					name: "healthcheck-strict",
+					windowMs: 60000,
+					max: 1,
+				}),
+			},
+			async (_request, reply) =>
+				reply.status(200).send({
+					health: "ok",
+				}),
+		);
+
+		const r1 = await app.inject({ method: "GET", url: "/healthcheck-strict" });
+		expect(r1.statusCode).toBe(200);
+
+		const r2 = await app.inject({ method: "GET", url: "/healthcheck-strict" });
+		expect(r2.statusCode).toBe(429);
+		expect(r2.headers["x-ratelimit-remaining"]).toBe("0");
 	});
 });

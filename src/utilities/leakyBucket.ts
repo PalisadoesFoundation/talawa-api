@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import type { AppLogger } from "./logging/logger";
 
@@ -58,7 +59,9 @@ export async function leakyBucket(
 		}
 
 		// allow and record
-		await redis.zadd(key, now, `${now}-${Math.random()}`);
+		// Use crypto.randomBytes for better collision resistance than Math.random()
+		const uniqueId = randomBytes(8).toString("hex");
+		await redis.zadd(key, now, `${now}-${uniqueId}`);
 		await redis.expire(key, Math.ceil(windowMs / 1000));
 		const remaining = Math.max(0, max - (count + 1));
 		const earliest = await redis.zrange(key, 0, 0, "WITHSCORES");
@@ -137,8 +140,3 @@ export async function complexityLeakyBucket(
 
 	return true; // Request allowed
 }
-
-// Default export can point to one of them, or neither.
-// Since existing code used default export for the complexity bucket,
-// but we want to encourage the new one, I will export complexityLeakyBucket as default ONLY if I don't change imports.
-// But I plan to change imports. So I will not export default to force explicit usage and avoid confusion.

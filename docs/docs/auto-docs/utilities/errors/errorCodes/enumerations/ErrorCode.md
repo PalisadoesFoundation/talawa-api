@@ -4,7 +4,7 @@
 
 # Enumeration: ErrorCode
 
-Defined in: src/utilities/errors/errorCodes.ts:1
+Defined in: [src/utilities/errors/errorCodes.ts:1](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L1)
 
 ## Enumeration Members
 
@@ -12,7 +12,7 @@ Defined in: src/utilities/errors/errorCodes.ts:1
 
 > **BAD\_REQUEST**: `"bad_request"`
 
-Defined in: src/utilities/errors/errorCodes.ts:7
+Defined in: [src/utilities/errors/errorCodes.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L7)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/utilities/errors/errorCodes.ts:7
 
 > **FORBIDDEN**: `"forbidden"`
 
-Defined in: src/utilities/errors/errorCodes.ts:5
+Defined in: [src/utilities/errors/errorCodes.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L5)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/utilities/errors/errorCodes.ts:5
 
 > **INTERNAL\_SERVER\_ERROR**: `"internal_server_error"`
 
-Defined in: src/utilities/errors/errorCodes.ts:3
+Defined in: [src/utilities/errors/errorCodes.ts:3](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L3)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: src/utilities/errors/errorCodes.ts:3
 
 > **NOT\_FOUND**: `"not_found"`
 
-Defined in: src/utilities/errors/errorCodes.ts:6
+Defined in: [src/utilities/errors/errorCodes.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L6)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: src/utilities/errors/errorCodes.ts:6
 
 > **RATE\_LIMIT\_EXCEEDED**: `"rate_limit_exceeded"`
 
-Defined in: src/utilities/errors/errorCodes.ts:2
+Defined in: [src/utilities/errors/errorCodes.ts:2](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L2)
 
 ***
 
@@ -52,4 +52,4 @@ Defined in: src/utilities/errors/errorCodes.ts:2
 
 > **UNAUTHORIZED**: `"unauthorized"`
 
-Defined in: src/utilities/errors/errorCodes.ts:4
+Defined in: [src/utilities/errors/errorCodes.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L4)

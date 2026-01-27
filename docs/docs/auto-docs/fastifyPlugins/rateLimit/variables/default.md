@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: src/fastifyPlugins/rateLimit.ts:42
+Defined in: [src/fastifyPlugins/rateLimit.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/rateLimit.ts#L44)
 
 ## Parameters
 
