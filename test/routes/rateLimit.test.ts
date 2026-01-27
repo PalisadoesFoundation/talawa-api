@@ -132,8 +132,86 @@ describe("REST rate limiting", () => {
 		expect(Number(r2.headers["x-ratelimit-remaining"])).toBe(0);
 		expect(r3.json().error.code).toBe("rate_limit_exceeded");
 
+		// Verify headers on the rejected response (r3)
+		expect(r3.headers["x-ratelimit-limit"]).toBe("2");
+		expect(Number(r3.headers["x-ratelimit-remaining"])).toBe(0);
+		expect(Number(r3.headers["x-ratelimit-reset"])).toBeGreaterThan(
+			Date.now() / 1000,
+		);
+
+		// Verify resetAt in error payload
+		const errorBody = r3.json();
+		expect(errorBody.error.details.resetAt).toBeDefined();
+		expect(errorBody.error.details.resetAt).toBeGreaterThan(Date.now());
+
 		const resetHeader = Number(r2.headers["x-ratelimit-reset"]);
 		expect(resetHeader).toBeGreaterThan(Date.now() / 1000);
+	});
+
+	it("should scope limits by identity (user vs ip)", async () => {
+		const app = Fastify();
+		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
+		await app.register(errorHandlerPlugin);
+		await app.register(rateLimitPlugin);
+
+		// Middleware to simulate authentication based on a header
+		app.addHook("onRequest", async (req) => {
+			const userId = req.headers["x-mock-user-id"];
+			if (userId) {
+				req.currentUser = { id: userId as string };
+			}
+		});
+
+		app.get(
+			"/identity-scoped",
+			{ preHandler: app.rateLimit({ name: "test", windowMs: 60000, max: 2 }) },
+			async () => ({ ok: true }),
+		);
+
+		// 1. Unauthenticated requests (IP-based)
+		// Assume default IP is 127.0.0.1
+		await app.inject({ method: "GET", url: "/identity-scoped" });
+		await app.inject({ method: "GET", url: "/identity-scoped" });
+		const rIpExceeded = await app.inject({
+			method: "GET",
+			url: "/identity-scoped",
+		});
+		expect(rIpExceeded.statusCode).toBe(429);
+
+		// 2. Authenticated request (User A) - should be fresh
+		const rUserA = await app.inject({
+			method: "GET",
+			url: "/identity-scoped",
+			headers: { "x-mock-user-id": "user-a" },
+		});
+		expect(rUserA.statusCode).toBe(200);
+		expect(rUserA.headers["x-ratelimit-remaining"]).toBe("1");
+
+		// 3. Authenticated request (User B) - should be fresh and independent of User A
+		const rUserB = await app.inject({
+			method: "GET",
+			url: "/identity-scoped",
+			headers: { "x-mock-user-id": "user-b" },
+		});
+		expect(rUserB.statusCode).toBe(200);
+		expect(rUserB.headers["x-ratelimit-remaining"]).toBe("1");
+
+		// 4. User A again - should consume their quota
+		const rUserA2 = await app.inject({
+			method: "GET",
+			url: "/identity-scoped",
+			headers: { "x-mock-user-id": "user-a" },
+		});
+		expect(rUserA2.statusCode).toBe(200);
+		expect(rUserA2.headers["x-ratelimit-remaining"]).toBe("0");
+
+		// 5. User A exceeded
+		const rUserA3 = await app.inject({
+			method: "GET",
+			url: "/identity-scoped",
+			headers: { "x-mock-user-id": "user-a" },
+		});
+		expect(rUserA3.statusCode).toBe(429);
 	});
 
 	it("should scope limits by route and method", async () => {
