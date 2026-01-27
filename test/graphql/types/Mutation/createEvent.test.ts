@@ -1681,7 +1681,7 @@ suite("Mutation field createEvent", () => {
 		test("successfully creates event with notification service enabled", async () => {
 			const organizationId = await createTestOrganization();
 
-			// This tests when ctx.notification is falsy (null/undefined) and the optional chaining prevents errors
+			// Baseline test: verify event creation succeeds with notification service enabled
 			const result = await createEvent({
 				input: baseEventInput(organizationId),
 			});
