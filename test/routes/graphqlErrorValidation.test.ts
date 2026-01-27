@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance } from "fastify";
 import {
 	type ExecutionResult,
 	type GraphQLError,
@@ -6,6 +6,7 @@ import {
 	GraphQLSchema,
 	GraphQLString,
 } from "graphql";
+import { createMercuriusTestClient } from "mercurius-integration-testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import schemaManager from "~/src/graphql/schemaManager";
 import { graphql } from "~/src/routes/graphql";
@@ -1224,6 +1225,60 @@ describe("GraphQL Error Validation Logic", () => {
 			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(401);
 		});
 
+		it("should return 401 for TOKEN_EXPIRED error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.TOKEN_EXPIRED,
+				message: "Token expired",
+				statusCode: 401,
+			});
+
+			const error = {
+				message: "Token expired error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(401);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.TOKEN_EXPIRED,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(401);
+		});
+
+		it("should return 401 for TOKEN_INVALID error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.TOKEN_INVALID,
+				message: "Token invalid",
+				statusCode: 401,
+			});
+
+			const error = {
+				message: "Token invalid error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(401);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.TOKEN_INVALID,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(401);
+		});
+
 		it("should return 403 for UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error code", () => {
 			vi.mocked(normalizeError).mockReturnValue({
 				code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
@@ -1247,6 +1302,114 @@ describe("GraphQL Error Validation Logic", () => {
 			expect(result.statusCode).toBe(403);
 			expect(result.response.errors?.[0]?.extensions?.code).toBe(
 				ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(403);
+		});
+
+		it("should return 403 for UNAUTHORIZED error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.UNAUTHORIZED,
+				message: "Unauthorized",
+				statusCode: 403,
+			});
+
+			const error = {
+				message: "Unauthorized error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(403);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.UNAUTHORIZED,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(403);
+		});
+
+		it("should return 403 for INSUFFICIENT_PERMISSIONS error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.INSUFFICIENT_PERMISSIONS,
+				message: "Insufficient permissions",
+				statusCode: 403,
+			});
+
+			const error = {
+				message: "Insufficient permissions error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(403);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INSUFFICIENT_PERMISSIONS,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(403);
+		});
+
+		it("should return 403 for FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				message: "Forbidden action on args",
+				statusCode: 403,
+			});
+
+			const error = {
+				message: "Forbidden action error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(403);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(403);
+		});
+
+		it("should return 403 for FORBIDDEN_ACTION error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.FORBIDDEN_ACTION,
+				message: "Forbidden action",
+				statusCode: 403,
+			});
+
+			const error = {
+				message: "Forbidden action error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(403);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.FORBIDDEN_ACTION,
 			);
 			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(403);
 		});
@@ -1278,6 +1441,60 @@ describe("GraphQL Error Validation Logic", () => {
 			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(404);
 		});
 
+		it("should return 404 for ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+				message: "Arguments not found",
+				statusCode: 404,
+			});
+
+			const error = {
+				message: "Arguments not found error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(404);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(404);
+		});
+
+		it("should return 400 for INVALID_INPUT error code", () => {
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.INVALID_INPUT,
+				message: "Invalid input",
+				statusCode: 400,
+			});
+
+			const error = {
+				message: "Invalid input error",
+				locations: [],
+				path: [],
+			};
+
+			const executionResult: ExecutionResult = {
+				data: null,
+				errors: [error as unknown as GraphQLError],
+			};
+
+			const result = errorFormatter(executionResult, context);
+
+			expect(result.statusCode).toBe(400);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_INPUT,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(400);
+		});
+
 		it("should return 429 for RATE_LIMIT_EXCEEDED error code", () => {
 			vi.mocked(normalizeError).mockReturnValue({
 				code: ErrorCode.RATE_LIMIT_EXCEEDED,
@@ -1303,6 +1520,68 @@ describe("GraphQL Error Validation Logic", () => {
 				ErrorCode.RATE_LIMIT_EXCEEDED,
 			);
 			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(429);
+		});
+	});
+
+	describe("Mercurius Integration", () => {
+		it("should format errors correctly using the actual plugin", async () => {
+			const testSchema = `
+				type Query {
+					throwError: String!
+				}
+			`;
+
+			// Setup mocks for this test
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				testSchema as unknown as GraphQLSchema,
+			);
+			vi.mocked(normalizeError).mockReturnValue({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Cannot return null for non-nullable field Query.throwError.",
+				statusCode: 500,
+				details: null,
+			});
+
+			const app = Fastify();
+
+			// Decorate app with necessary dependencies
+			app.decorate("envConfig", {
+				API_IS_GRAPHIQL: true,
+				API_GRAPHQL_MUTATION_BASE_COST: 1,
+				API_RATE_LIMIT_BUCKET_CAPACITY: 10,
+				API_RATE_LIMIT_REFILL_RATE: 1,
+			} as unknown as FastifyInstance["envConfig"]);
+			app.decorate(
+				"drizzleClient",
+				{} as unknown as FastifyInstance["drizzleClient"],
+			);
+			app.decorate("cache", {
+				get: vi.fn(),
+				set: vi.fn(),
+				del: vi.fn(),
+			} as unknown as FastifyInstance["cache"]);
+			app.decorate("minio", {} as unknown as FastifyInstance["minio"]);
+			app.decorate("jwt", {
+				sign: vi.fn(),
+				verify: vi.fn(),
+			} as unknown as FastifyInstance["jwt"]);
+
+			await app.register(graphql);
+
+			const client = createMercuriusTestClient(app);
+
+			const response = await client.query("query { throwError }");
+
+			expect(response.errors).toBeDefined();
+			expect(response.errors).toHaveLength(1);
+
+			const firstError = response.errors?.[0];
+			if (!firstError) {
+				throw new Error("Expected at least one error");
+			}
+
+			expect(firstError.message).toContain("Cannot return null");
+			expect(firstError.extensions?.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
 		});
 	});
 

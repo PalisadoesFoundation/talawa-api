@@ -472,12 +472,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 
 					// For valid ErrorCode, preserve meaningful messages but use normalizeError for details
 					const normalized = normalizeError(error);
-					const message = String(
-						error.extensions?.message ??
-							error.message ??
-							normalized.message ??
-							"An error occurred",
-					);
+					const message: string =
+						[error.extensions?.message, error.message, normalized.message].find(
+							(msg): msg is string =>
+								typeof msg === "string" && msg.trim().length > 0,
+						) ?? "An error occurred";
 
 					return {
 						message,
@@ -599,17 +598,52 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// 4. NOT_FOUND: Resource lookup; logically happens after input validation.
 				// 5. RATE_LIMIT_EXCEEDED: Operational safeguard; checked independently but grouped here.
 				// Fallback: Defaults to the first error's httpStatus or 500 if no known code is matched.
-				if (errorCodes.includes(ErrorCode.UNAUTHENTICATED)) {
+
+				const codeIncludesAny = (
+					targetCodes: ErrorCode[],
+					actualCodes: string[],
+				) => targetCodes.some((code) => actualCodes.includes(code));
+
+				if (
+					codeIncludesAny(
+						[
+							ErrorCode.UNAUTHENTICATED,
+							ErrorCode.TOKEN_EXPIRED,
+							ErrorCode.TOKEN_INVALID,
+						],
+						errorCodes,
+					)
+				) {
 					statusCode = 401;
 				} else if (
-					errorCodes.includes(
-						ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+					codeIncludesAny(
+						[
+							ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+							ErrorCode.UNAUTHORIZED,
+							ErrorCode.INSUFFICIENT_PERMISSIONS,
+							ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+							ErrorCode.FORBIDDEN_ACTION,
+						],
+						errorCodes,
 					)
 				) {
 					statusCode = 403;
-				} else if (errorCodes.includes(ErrorCode.INVALID_ARGUMENTS)) {
+				} else if (
+					codeIncludesAny(
+						[ErrorCode.INVALID_ARGUMENTS, ErrorCode.INVALID_INPUT],
+						errorCodes,
+					)
+				) {
 					statusCode = 400;
-				} else if (errorCodes.includes(ErrorCode.NOT_FOUND)) {
+				} else if (
+					codeIncludesAny(
+						[
+							ErrorCode.NOT_FOUND,
+							ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+						],
+						errorCodes,
+					)
+				) {
 					statusCode = 404;
 				} else if (errorCodes.includes(ErrorCode.RATE_LIMIT_EXCEEDED)) {
 					statusCode = 429;
