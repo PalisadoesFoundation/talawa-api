@@ -859,7 +859,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
       - name: Install Devcontainer CLI
-        run: npm install -g @devcontainers/cli
+        run: |
+          npm install -g @devcontainers/cli || exit 1
+          devcontainer --version
       - name: Copy devcontainer environment file
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer

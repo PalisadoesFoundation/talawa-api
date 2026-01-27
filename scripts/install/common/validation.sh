@@ -102,6 +102,23 @@ validate_internet_connectivity() {
 }
 
 ##############################################################################
+# Validate jq installation (New Function)
+##############################################################################
+validate_jq() {
+  if command -v jq >/dev/null 2>&1; then
+    success "jq is installed"
+    return 0
+  fi
+
+  error "jq is not installed"
+  info "jq is required to parse configuration files."
+  info "Please install jq using your package manager."
+  info "  • Ubuntu/Debian: sudo apt-get install jq"
+  info "  • macOS: brew install jq"
+  return 1
+}
+
+##############################################################################
 # Validate all prerequisites
 ##############################################################################
 validate_prerequisites() {
@@ -110,6 +127,7 @@ validate_prerequisites() {
   validate_repository_root || rc=1
   validate_disk_space 2000 || rc=1
   validate_internet_connectivity || rc=1
+  validate_jq || rc=1
 
   if (( rc == 0 )); then
     success "All prerequisite checks passed"
@@ -190,6 +208,7 @@ parse_package_json() {
   local field="$3"
   local required="$4"
 
+  # Fallback check (in case validate_jq wasn't run)
   if ! command -v jq >/dev/null 2>&1; then
     echo "jq is required to parse package.json" >&2
     return 1

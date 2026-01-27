@@ -17,9 +17,12 @@ done
 # Node.js setup via fnm (non-interactive)
 # --------------------------------------------------------------------
 # fnm env outputs shell code; eval is required
-eval "$(fnm env)"
-fnm install
-fnm use
+eval "$(fnm env --shell bash)"
+# Extract exact node version from package.json
+NODE_VERSION=$(node -p "require('./package.json').engines.node" 2>/dev/null || echo "lts/*")
+echo "[devcontainer] Installing Node version: $NODE_VERSION"
+fnm install "$NODE_VERSION"
+fnm use "$NODE_VERSION"
 
 # --------------------------------------------------------------------
 # Corepack + pnpm (STRICTLY NON-INTERACTIVE)
