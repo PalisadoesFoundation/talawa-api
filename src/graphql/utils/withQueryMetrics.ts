@@ -108,6 +108,11 @@ export async function executeWithMetrics<
 	operationName: string,
 	resolver: () => Promise<TResult>,
 ): Promise<TResult> {
+	// Validate operation name is not empty or whitespace (always, regardless of perf availability)
+	if (!operationName || !operationName.trim()) {
+		throw new Error("Operation name cannot be empty or whitespace");
+	}
+
 	if (context.perf) {
 		return await context.perf.time(operationName, resolver);
 	}

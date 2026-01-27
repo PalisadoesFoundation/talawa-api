@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { withQueryMetrics } from "~/src/graphql/utils/withQueryMetrics";
+import {
+	executeWithMetrics,
+	withQueryMetrics,
+} from "~/src/graphql/utils/withQueryMetrics";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
@@ -378,6 +381,138 @@ describe("withQueryMetrics", () => {
 
 			expect(op).toBeDefined();
 			expect(op?.count).toBe(1);
+		});
+	});
+});
+
+describe("executeWithMetrics", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	describe("when performance tracker is available", () => {
+		it("should track execution time", async () => {
+			const perf = createPerformanceTracker();
+			const resolver = vi.fn(
+				() =>
+					new Promise((resolve) => {
+						setTimeout(() => resolve("test-result"), 10);
+					}),
+			);
+
+			const context = { perf } as { perf?: PerformanceTracker };
+
+			const resultPromise = executeWithMetrics(context, "query:test", resolver);
+			await vi.advanceTimersByTimeAsync(10);
+			const result = await resultPromise;
+
+			expect(result).toBe("test-result");
+			expect(resolver).toHaveBeenCalledTimes(1);
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:test"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(Math.ceil(op?.ms ?? 0)).toBeGreaterThanOrEqual(10);
+		});
+
+		it("should track time even when resolver throws", async () => {
+			const perf = createPerformanceTracker();
+			const error = new Error("Test error");
+			const resolver = vi.fn(
+				() =>
+					new Promise((_, reject) => {
+						setTimeout(() => reject(error), 5);
+					}),
+			);
+
+			const context = { perf } as { perf?: PerformanceTracker };
+
+			const resultPromise = executeWithMetrics(context, "query:test", resolver);
+			await Promise.all([
+				vi.advanceTimersByTimeAsync(5),
+				expect(resultPromise).rejects.toThrow("Test error"),
+			]);
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:test"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+	});
+
+	describe("when performance tracker is unavailable", () => {
+		it("should execute resolver directly", async () => {
+			const resolver = vi.fn().mockResolvedValue("test-result");
+			const context = {} as { perf?: PerformanceTracker };
+
+			const result = await executeWithMetrics(context, "query:test", resolver);
+
+			expect(result).toBe("test-result");
+			expect(resolver).toHaveBeenCalledTimes(1);
+		});
+
+		it("should propagate resolver errors", async () => {
+			const resolver = vi.fn().mockRejectedValue(new Error("Test error"));
+			const context = {} as { perf?: PerformanceTracker };
+
+			await expect(
+				executeWithMetrics(context, "query:test", resolver),
+			).rejects.toThrow("Test error");
+		});
+	});
+
+	describe("operation name validation", () => {
+		it("should reject empty operation name when perf is available", async () => {
+			const perf = createPerformanceTracker();
+			const resolver = vi.fn().mockResolvedValue("result");
+			const context = { perf } as { perf?: PerformanceTracker };
+
+			await expect(executeWithMetrics(context, "", resolver)).rejects.toThrow(
+				"Operation name cannot be empty or whitespace",
+			);
+
+			expect(resolver).not.toHaveBeenCalled();
+		});
+
+		it("should reject whitespace-only operation name when perf is available", async () => {
+			const perf = createPerformanceTracker();
+			const resolver = vi.fn().mockResolvedValue("result");
+			const context = { perf } as { perf?: PerformanceTracker };
+
+			await expect(
+				executeWithMetrics(context, "   ", resolver),
+			).rejects.toThrow("Operation name cannot be empty or whitespace");
+
+			expect(resolver).not.toHaveBeenCalled();
+		});
+
+		it("should reject empty operation name when perf is unavailable", async () => {
+			const resolver = vi.fn().mockResolvedValue("result");
+			const context = {} as { perf?: PerformanceTracker };
+
+			await expect(executeWithMetrics(context, "", resolver)).rejects.toThrow(
+				"Operation name cannot be empty or whitespace",
+			);
+
+			expect(resolver).not.toHaveBeenCalled();
+		});
+
+		it("should reject whitespace-only operation name when perf is unavailable", async () => {
+			const resolver = vi.fn().mockResolvedValue("result");
+			const context = {} as { perf?: PerformanceTracker };
+
+			await expect(
+				executeWithMetrics(context, "   ", resolver),
+			).rejects.toThrow("Operation name cannot be empty or whitespace");
+
+			expect(resolver).not.toHaveBeenCalled();
 		});
 	});
 });
