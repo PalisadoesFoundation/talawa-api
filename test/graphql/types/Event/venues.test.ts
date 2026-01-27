@@ -7,6 +7,9 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Mutation_createVenue,
+	Mutation_createVenueBooking,
+	Query_eventVenues,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -34,53 +37,6 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-const EventVenuesQuery = `
-  query EventVenues($input: QueryEventInput!, $first: Int, $after: String, $last: Int, $before: String) {
-    event(input: $input) {
-      id
-      venues(first: $first, after: $after, last: $last, before: $before) {
-        edges {
-          node {
-            id
-            name
-            description
-            capacity
-            organization {
-              id
-            }
-          }
-          cursor
-        }
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
-        }
-      }
-    }
-  }
-`;
-
-const Mutation_createVenue = `
-  mutation CreateVenue($input: MutationCreateVenueInput!) {
-    createVenue(input: $input) {
-      id
-      name
-      description
-      capacity
-    }
-  }
-`;
-
-const Mutation_createVenueBooking = `
-  mutation CreateVenueBooking($input: MutationCreateVenueBookingInput!) {
-    createVenueBooking(input: $input) {
-      id
-    }
-  }
-`;
-
 async function createOrganizationWithMembership(): Promise<string> {
 	const createOrgResult = await mercuriusClient.mutate(
 		Mutation_createOrganization,
@@ -94,19 +50,25 @@ async function createOrganizationWithMembership(): Promise<string> {
 			},
 		},
 	);
-	const orgId = createOrgResult.data?.createOrganization?.id;
-	assertToBeNonNullish(orgId);
+	expect(createOrgResult.errors).toBeUndefined();
+	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
+	const orgId = createOrgResult.data.createOrganization.id;
 
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `Bearer ${authToken}` },
-		variables: {
-			input: {
-				memberId: adminUserId,
-				organizationId: orgId,
-				role: "administrator",
+	const membershipResult = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: {
+					memberId: adminUserId,
+					organizationId: orgId,
+					role: "administrator",
+				},
 			},
 		},
-	});
+	);
+	expect(membershipResult.errors).toBeUndefined();
+	assertToBeNonNullish(membershipResult.data?.createOrganizationMembership?.id);
 
 	return orgId;
 }
@@ -136,7 +98,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(eventId);
 
 		// Query event venues
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 10 },
 		});
@@ -209,7 +171,7 @@ suite("Event venues Field", () => {
 		expect(bookingResult.errors).toBeUndefined();
 
 		// Query event venues
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 10 },
 		});
@@ -275,7 +237,7 @@ suite("Event venues Field", () => {
 		}
 
 		// Query with first: 2
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 2 },
 		});
@@ -338,7 +300,7 @@ suite("Event venues Field", () => {
 		}
 
 		// Query with last: 2
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, last: 2 },
 		});
@@ -374,7 +336,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(eventId);
 
 		// Query with both first and last (invalid)
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 10, last: 5 },
 		});
@@ -407,7 +369,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(eventId);
 
 		// Query without first or last (invalid)
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId } },
 		});
@@ -447,7 +409,7 @@ suite("Event venues Field", () => {
 			}),
 		).toString("base64url");
 
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 10, before: someCursor },
 		});
@@ -487,7 +449,7 @@ suite("Event venues Field", () => {
 			}),
 		).toString("base64url");
 
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, last: 10, after: someCursor },
 		});
@@ -547,7 +509,7 @@ suite("Event venues Field", () => {
 		}
 
 		// Query first page
-		const firstPage = await mercuriusClient.query(EventVenuesQuery, {
+		const firstPage = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 2 },
 		});
@@ -558,7 +520,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(cursor);
 
 		// Query second page using cursor
-		const secondPage = await mercuriusClient.query(EventVenuesQuery, {
+		const secondPage = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, first: 2, after: cursor },
 		});
@@ -595,7 +557,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(eventId);
 
 		// Query with maximum allowed limit (32)
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: { id: eventId },
@@ -632,7 +594,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(eventId);
 
 		// Query with invalid cursor
-		const result = await mercuriusClient.query(EventVenuesQuery, {
+		const result = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: { id: eventId },
@@ -696,7 +658,7 @@ suite("Event venues Field", () => {
 		}
 
 		// Query last page
-		const lastPage = await mercuriusClient.query(EventVenuesQuery, {
+		const lastPage = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, last: 2 },
 		});
@@ -707,7 +669,7 @@ suite("Event venues Field", () => {
 		assertToBeNonNullish(cursor);
 
 		// Query previous page using cursor
-		const prevPage = await mercuriusClient.query(EventVenuesQuery, {
+		const prevPage = await mercuriusClient.query(Query_eventVenues, {
 			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: eventId }, last: 2, before: cursor },
 		});
