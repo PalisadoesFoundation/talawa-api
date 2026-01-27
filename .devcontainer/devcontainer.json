@@ -78,5 +78,5 @@
 	"service": "api",
 	"shutdownAction": "stopCompose",
 	"workspaceFolder": "/home/talawa/api",
-	"runServices": ["api"]
+	"runServices": ["api", "minio", "postgres", "redis"]
 }
