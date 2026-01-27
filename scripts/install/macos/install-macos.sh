@@ -19,51 +19,42 @@
 
 set -euo pipefail
 
+# Export OS_TYPE for shared libs
+export OS_TYPE="macos"
+
 # Arguments
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Source shared libraries
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_DIR="${SCRIPT_DIR%/macos}/common"
 
-# Retry configuration
-readonly MAX_RETRY_ATTEMPTS=3
+source "${COMMON_DIR}/logging.sh"
+source "${COMMON_DIR}/os-detection.sh"
+source "${COMMON_DIR}/validation.sh"
+source "${COMMON_DIR}/package-manager.sh"
+source "${COMMON_DIR}/docker-detection.sh"
+source "${COMMON_DIR}/error-handling.sh"
 
-# Print functions
-info() { echo -e "${BLUE}ℹ${NC} $1"; }
-success() { echo -e "${GREEN}✓${NC} $1"; }
-warn() { echo -e "${YELLOW}⚠${NC} $1"; }
-error() { echo -e "${RED}✗${NC} $1"; }
-step() { echo -e "${CYAN}[$1/$2]${NC} $3"; }
-print_usage() {
-    error "Usage: $0 [INSTALL_MODE] [SKIP_PREREQS]"
-    error "  INSTALL_MODE : docker (default) | local"
-    error "  SKIP_PREREQS : true | false (default)"
-}
+setup_error_handling
+
+print_banner "Talawa API - macOS Install"
 
 # Validate INSTALL_MODE
 if [[ "$INSTALL_MODE" != "docker" ]] && [[ "$INSTALL_MODE" != "local" ]]; then
     error "Invalid INSTALL_MODE: '$INSTALL_MODE'. Must be 'docker' or 'local'."
-    print_usage
     exit 1
 fi
 
 # Validate SKIP_PREREQS
 if [[ "$SKIP_PREREQS" != "true" ]] && [[ "$SKIP_PREREQS" != "false" ]]; then
     error "Invalid SKIP_PREREQS: '$SKIP_PREREQS'. Must be 'true' or 'false'."
-    print_usage
     exit 1
 fi
 
-# Check if command exists
-command_exists() {
-    command -v "$1" &> /dev/null
-}
+# Retry configuration
+readonly MAX_RETRY_ATTEMPTS=3
 
 # Get the repository root directory
 get_repo_root() {
@@ -80,34 +71,27 @@ REPO_ROOT=$(get_repo_root)
 # Ensure we're in the repository root
 cd "$REPO_ROOT"
 
+# Local implementation of prerequisites validation (using helpers where possible)
+validate_prerequisites() {
 if [ ! -f "package.json" ]; then
     error "package.json not found. Please run this script from the talawa-api repository root."
     exit 1
 fi
+}
+# Call validate_prerequisites
+validate_prerequisites
 
 # Total steps for progress tracking
 TOTAL_STEPS=8
 CURRENT_STEP=0
 
 ##############################################################################
-# Source common validation functions
-##############################################################################
-COMMON_VALIDATION_LIB="$(dirname "${BASH_SOURCE[0]}")/../common/validation.sh"
-if [ ! -f "$COMMON_VALIDATION_LIB" ]; then
-    error "Common validation library not found: $COMMON_VALIDATION_LIB"
-    error "Please ensure the installation directory structure is intact."
-    exit 1
-fi
-# shellcheck source=../common/validation.sh
-source "$COMMON_VALIDATION_LIB"
-
-##############################################################################
 # Step 1: Install Homebrew
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Checking Homebrew installation..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Checking Homebrew installation..."
 
-if command_exists brew; then
+if command -v brew >/dev/null 2>&1; then
     success "Homebrew is already installed"
 else
     if [ "$SKIP_PREREQS" = "true" ]; then
@@ -116,15 +100,11 @@ else
     fi
     
     info "Installing Homebrew..."
-    # Security Note: This uses Homebrew's official installer over HTTPS.
-    # Users can review the script first at: https://brew.sh or
-    # https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
     /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    # Add Homebrew to PATH for Apple Silicon Macs
+    # Add Homebrew to PATH
     if [ -f /opt/homebrew/bin/brew ]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
-    # Add Homebrew to PATH for Intel Macs
     elif [ -f /usr/local/bin/brew ]; then
         eval "$(/usr/local/bin/brew shellenv)"
     fi
@@ -136,16 +116,17 @@ fi
 # Step 2: Install system dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
 
 if [ "$SKIP_PREREQS" = "true" ]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
 else
-    info "Installing git, jq, curl..."
-    if brew install git jq curl; then
-        success "System dependencies installed"
+    update_package_index
+    for p in git curl jq unzip; do
+        if is_package_installed "$p"; then
+            success "$p is already installed"
     else
-        warn "Some packages may have failed to install. Continuing anyway..."
+            install_package "$p"
     fi
 fi
 
