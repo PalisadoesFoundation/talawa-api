@@ -241,6 +241,7 @@ describe("REST rate limiting", () => {
 				zrange: () => {},
 				expire: () => {},
 				exec: async () => [[new Error("Redis failure"), null]],
+				// biome-ignore lint/suspicious/noExplicitAny: mocking redis pipeline for testing
 			} as unknown as any;
 		};
 
