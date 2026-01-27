@@ -382,3 +382,45 @@ export function validateAllAnswers(answers: SetupAnswers): void {
 	validatePortNumbers(answers);
 	console.log("✅ All validations passed");
 }
+
+/**
+ * Validates that the JWT secret is at least 128 characters long.
+ * @param input - The secret string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validateJwtSecretLength(input: string): true | string {
+	const trimmed = input.trim();
+	if (trimmed.length < 128) {
+		return "JWT secret must be at least 128 characters long.";
+	}
+	return true;
+}
+
+/**
+ * Validates that the token expiration is a valid number >= 60 seconds.
+ * @param input - The expiration string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validateTokenExpiration(input: string): true | string {
+	if (!/^\d+$/.test(input)) {
+		return "Expiration must be a valid number of seconds.";
+	}
+	const seconds = Number.parseInt(input, 10);
+	if (Number.isNaN(seconds) || seconds < 60) {
+		return "Expiration must be at least 60 seconds.";
+	}
+	return true;
+}
+
+/**
+ * Validates that the HMAC secret is at least 32 characters long.
+ * @param input - The secret string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validateHmacSecretLength(input: string): true | string {
+	const trimmed = input.trim();
+	if (trimmed.length < 32) {
+		return "HMAC secret must be at least 32 characters long.";
+	}
+	return true;
+}

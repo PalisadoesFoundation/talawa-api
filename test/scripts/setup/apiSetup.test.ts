@@ -237,6 +237,82 @@ describe("Setup -> apiSetup", () => {
 			"⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.",
 		);
 	});
+
+	it("should retry prompting for API_POSTGRES_PASSWORD until it matches POSTGRES_PASSWORD", async () => {
+		// Set a known password
+		process.env.POSTGRES_PASSWORD = "correct-pg-password";
+
+		const consoleWarnSpy = vi
+			.spyOn(console, "warn")
+			.mockImplementation(() => {});
+
+		// Use mockImplementation to handle the retry loop logic dynamically
+		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer implementation
+		vi.spyOn(inquirer, "prompt").mockImplementation((async (args: any) => {
+			const question = Array.isArray(args) ? args[0] : args;
+			// Handle the Postgres password prompt specifically
+			if (question.name === "API_POSTGRES_PASSWORD") {
+				// If we haven't warned yet, return wrong password to trigger retry
+				if (consoleWarnSpy.mock.calls.length === 0) {
+					return { API_POSTGRES_PASSWORD: "wrong-pg-password" };
+				}
+				// Otherwise return correct password to exit loop
+				return { API_POSTGRES_PASSWORD: "correct-pg-password" };
+			}
+
+			// For all other prompts...
+			const returnVal =
+				question.default !== undefined
+					? question.default
+					: question.type === "list"
+						? question.choices[0]
+						: "mocked-value";
+
+			return { [question.name]: returnVal };
+		}) as any); // biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer type
+
+		await apiSetup({});
+
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.",
+		);
+	});
+
+	it("should propagate gathered API passwords to MINIO/POSTGRES env vars if not already set", async () => {
+		// Ensure environment is clean
+		delete process.env.MINIO_ROOT_PASSWORD;
+		delete process.env.POSTGRES_PASSWORD;
+
+		// Use mockImplementation to handle the retry loop logic dynamically
+		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer implementation
+		vi.spyOn(inquirer, "prompt").mockImplementation((async (args: any) => {
+			const question = Array.isArray(args) ? args[0] : args;
+			if (question.name === "API_MINIO_SECRET_KEY")
+				return { API_MINIO_SECRET_KEY: "generated-minio-secret" };
+			if (question.name === "API_POSTGRES_PASSWORD")
+				return { API_POSTGRES_PASSWORD: "generated-postgres-password" };
+
+			// For all other prompts...
+			const returnVal =
+				question.default !== undefined
+					? question.default
+					: question.type === "list"
+						? question.choices[0]
+						: "mocked-value";
+
+			return { [question.name]: returnVal };
+		}) as any); // biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer type
+
+		const answers: any = {};
+		await apiSetup(answers);
+
+		// Check if propagated to process.env and answers
+		expect(answers.MINIO_ROOT_PASSWORD).toBe("generated-minio-secret");
+		expect(process.env.MINIO_ROOT_PASSWORD).toBe("generated-minio-secret");
+
+		expect(answers.POSTGRES_PASSWORD).toBe("generated-postgres-password");
+		expect(process.env.POSTGRES_PASSWORD).toBe("generated-postgres-password");
+	});
 });
 describe("validateURL", () => {
 	it("should validate standard URLs", () => {

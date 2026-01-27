@@ -2,8 +2,11 @@ import { promptInput, promptList } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
 import {
 	generateJwtSecret,
+	validateHmacSecretLength,
+	validateJwtSecretLength,
 	validatePort,
 	validateSamplingRatio,
+	validateTokenExpiration,
 	validateURL,
 } from "../validators.js";
 
@@ -49,29 +52,14 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		"API_JWT_SECRET",
 		"JWT secret:",
 		jwtSecret,
-		(input: string) => {
-			const trimmed = input.trim();
-			if (trimmed.length < 128) {
-				return "JWT secret must be at least 128 characters long.";
-			}
-			return true;
-		},
+		validateJwtSecretLength,
 	);
 
 	answers.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS = await promptInput(
 		"API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS",
 		"Email verification token expiration (seconds):",
 		"86400",
-		(input: string) => {
-			if (!/^\d+$/.test(input)) {
-				return "Expiration must be a valid number of seconds.";
-			}
-			const seconds = Number.parseInt(input, 10);
-			if (Number.isNaN(seconds) || seconds < 60) {
-				return "Expiration must be at least 60 seconds.";
-			}
-			return true;
-		},
+		validateTokenExpiration,
 	);
 
 	const emailVerificationSecret = generateJwtSecret();
@@ -79,13 +67,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		"API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET",
 		"Email verification HMAC secret:",
 		emailVerificationSecret,
-		(input: string) => {
-			const trimmed = input.trim();
-			if (trimmed.length < 32) {
-				return "HMAC secret must be at least 32 characters long.";
-			}
-			return true;
-		},
+		validateHmacSecretLength,
 	);
 
 	answers.API_LOG_LEVEL = await promptList(
