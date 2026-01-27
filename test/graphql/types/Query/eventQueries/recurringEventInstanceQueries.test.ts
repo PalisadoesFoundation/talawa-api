@@ -2,7 +2,6 @@ import { inspect } from "node:util";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { eventsTable } from "~/src/drizzle/tables/events";
-
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type {
 	ResolvedRecurringEventInstance,
@@ -17,6 +16,10 @@ import {
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import {
+	RECURRING_EVENT_DEFAULTS,
+	RECURRING_EVENT_TEST_DATA,
+} from "../../../../fixtures/recurringEventFixtures";
 
 // Mock the service dependencies
 vi.mock("~/src/services/eventGeneration/instanceResolver", () => ({
@@ -64,11 +67,11 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect & {
 	attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 } = {
 	id: "base-event-1",
-	name: "Base Recurring Event",
-	description: "A base template for recurring events",
+	name: RECURRING_EVENT_TEST_DATA.NAME,
+	description: RECURRING_EVENT_TEST_DATA.DESCRIPTION,
 	startAt: new Date("2025-01-15T10:00:00.000Z"),
 	endAt: new Date("2025-01-15T11:00:00.000Z"),
-	location: "Main Hall",
+	location: RECURRING_EVENT_TEST_DATA.LOCATION,
 	allDay: false,
 	isPublic: true,
 	isRegisterable: true,
@@ -932,7 +935,7 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 		).toHaveBeenCalledWith(
 			expect.objectContaining({
-				limit: 1000,
+				limit: RECURRING_EVENT_DEFAULTS.LIMIT,
 			}),
 		);
 	});
@@ -1162,6 +1165,24 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		).toHaveBeenCalledWith(
 			expect.objectContaining({
 				offset: 0,
+			}),
+		);
+	});
+
+	it("should correctly apply offset when greater than 0", async () => {
+		const offset = 5;
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ offset },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				offset,
 			}),
 		);
 	});

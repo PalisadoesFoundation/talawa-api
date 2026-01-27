@@ -7,6 +7,10 @@ import {
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import {
+	RECURRING_EVENT_DEFAULTS,
+	RECURRING_EVENT_TEST_DATA,
+} from "../../../../../fixtures/recurringEventFixtures";
 
 // Mock dependencies
 const mockDrizzleClient = {
@@ -60,7 +64,7 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		const mockTemplates = [
 			{
 				id: "base-1",
-				name: "Base Event",
+				name: RECURRING_EVENT_TEST_DATA.NAME,
 			},
 		];
 
@@ -145,6 +149,52 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		).toHaveBeenCalledWith(
 			expect.objectContaining({
 				limit: 5,
+			}),
+		);
+	});
+
+	it("should use default limit when not provided", async () => {
+		const baseIds = ["base-1"];
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValueOnce([]);
+
+		await getRecurringEventInstancesByBaseIds(
+			baseIds,
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: RECURRING_EVENT_DEFAULTS.LIMIT,
+			}),
+		);
+	});
+
+	it("should respect the offset parameter", async () => {
+		const baseIds = ["base-1"];
+		const offset = 5;
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValueOnce([]);
+
+		await getRecurringEventInstancesByBaseIds(
+			baseIds,
+			mockDrizzleClient,
+			mockLogger,
+			{ offset },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				offset,
 			}),
 		);
 	});
