@@ -754,5 +754,70 @@ describe("Query event - Performance Tracking", () => {
 			expect(op).toBeDefined();
 			expect(op?.count).toBe(1);
 		});
+
+		it("should allow attendee of invite-only generated event to view it", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const organizationId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Invite-Only Recurring Instance",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: false,
+				isRegisterable: true,
+				isInviteOnly: true, // Invite-only event
+				organizationId,
+				creatorId: "other-user", // Not the current user
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "generated" as const, // Generated = recurring instance
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+			// Regular user (not system admin)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+			});
+			// Member but not org admin
+			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				{
+					role: "member",
+				},
+			);
+			// User is attendee of the recurring instance (via recurringEventInstanceId)
+			mocks.drizzleClient.query.eventAttendeesTable.findFirst.mockResolvedValue(
+				{
+					userId: "user-123",
+					recurringEventInstanceId: eventId,
+					isInvited: true,
+					isRegistered: false,
+				},
+			);
+
+			const result = await eventQueryResolver(
+				null,
+				{ input: { id: eventId } },
+				context,
+			);
+
+			expect(result).toEqual(mockEvent);
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
 	});
 });
