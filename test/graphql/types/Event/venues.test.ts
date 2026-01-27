@@ -133,6 +133,7 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
 
@@ -152,6 +153,7 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
 
