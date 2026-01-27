@@ -25,6 +25,8 @@ type RedisZ = {
 		withScores?: "WITHSCORES",
 	): Promise<string[]>;
 	expire(key: string, seconds: number): Promise<number>;
+	// biome-ignore lint/suspicious/noExplicitAny: Pipeline type is complex to mock fully
+	pipeline(): any;
 };
 
 /**
@@ -48,25 +50,49 @@ export async function leakyBucket(
 	const cutoff = now - windowMs;
 
 	try {
-		await redis.zremrangebyscore(key, "-inf", cutoff);
-		const count = await redis.zcard(key);
+		// Use a simple pipeline/transaction to ensure atomicity
+		// biome-ignore lint/suspicious/noExplicitAny: Pipeline type is complex to mock fully
+		const pipeline = redis.pipeline() as any;
+		pipeline.zremrangebyscore(key, "-inf", cutoff);
+		pipeline.zcard(key);
+		pipeline.zrange(key, 0, 0, "WITHSCORES");
+		const results = await pipeline.exec();
+
+		if (!results) {
+			throw new Error("Redis pipeline failed");
+		}
+
+		// results[0] -> zremrangebyscore (error, count)
+		// results[1] -> zcard (error, count)
+		// results[2] -> zrange (error, [member, score])
+
+		const count = results[1][1] as number;
 
 		if (count >= max) {
-			const oldest = await redis.zrange(key, 0, 0, "WITHSCORES");
-			const firstScore = oldest.length >= 2 ? Number(oldest[1]) : now;
+			const oldest = results[2][1] as string[];
+			const firstScore = oldest && oldest.length >= 2 ? Number(oldest[1]) : now;
 			const resetAt = firstScore + windowMs;
 			return { allowed: false, remaining: 0, resetAt };
 		}
 
 		// allow and record
-		// Use crypto.randomBytes for better collision resistance than Math.random()
 		const uniqueId = randomBytes(8).toString("hex");
-		await redis.zadd(key, now, `${now}-${uniqueId}`);
-		await redis.expire(key, Math.ceil(windowMs / 1000));
-		const remaining = Math.max(0, max - (count + 1));
-		const earliest = await redis.zrange(key, 0, 0, "WITHSCORES");
-		const firstScore = earliest.length >= 2 ? Number(earliest[1]) : now;
+		// biome-ignore lint/suspicious/noExplicitAny: Pipeline type is complex to mock fully
+		const pipeline2 = redis.pipeline() as any;
+		pipeline2.zadd(key, now, `${now}-${uniqueId}`);
+		pipeline2.expire(key, Math.ceil(windowMs / 1000));
+		pipeline2.zrange(key, 0, 0, "WITHSCORES");
+		const results2 = await pipeline2.exec();
+
+		if (!results2) {
+			throw new Error("Redis pipeline failed");
+		}
+
+		const earliest = results2[2][1] as string[];
+		const firstScore =
+			earliest && earliest.length >= 2 ? Number(earliest[1]) : now;
 		const resetAt = firstScore + windowMs;
+		const remaining = Math.max(0, max - (count + 1));
 
 		return { allowed: true, remaining, resetAt };
 	} catch (err) {

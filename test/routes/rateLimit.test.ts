@@ -7,6 +7,57 @@ import healthcheck from "~/src/routes/healthcheck";
 
 class FakeRedisZ {
 	private z = new Map<string, Array<{ s: number; m: string }>>();
+
+	pipeline() {
+		const self = this;
+		// biome-ignore lint/suspicious/noExplicitAny: mocking redis pipeline for testing
+		const commands: (() => Promise<any>)[] = [];
+
+		return {
+			zremrangebyscore(
+				key: string,
+				min: number | string,
+				max: number | string,
+			) {
+				commands.push(() => self.zremrangebyscore(key, min, max));
+				return this;
+			},
+			zcard(key: string) {
+				commands.push(() => self.zcard(key));
+				return this;
+			},
+			zadd(key: string, score: number, member: string) {
+				commands.push(() => self.zadd(key, score, member));
+				return this;
+			},
+			zrange(
+				key: string,
+				start: number,
+				stop: number,
+				withScores?: "WITHSCORES",
+			) {
+				commands.push(() => self.zrange(key, start, stop, withScores));
+				return this;
+			},
+			expire(key: string, sec: number) {
+				commands.push(() => self.expire(key, sec));
+				return this;
+			},
+			async exec() {
+				const results = [];
+				for (const cmd of commands) {
+					try {
+						const res = await cmd();
+						results.push([null, res]);
+					} catch (err) {
+						results.push([err, null]);
+					}
+				}
+				return results;
+			},
+		};
+	}
+
 	async zremrangebyscore(
 		key: string,
 		min: number | string,

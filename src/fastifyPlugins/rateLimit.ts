@@ -72,6 +72,7 @@ export default fp(async function rateLimitPlugin(app: FastifyInstance) {
 				// make route-scoped key: tier + identity + method + path
 				const who = identityFromRequest(req);
 				const routePath = (
+					req.routeOptions.url ||
 					(req as unknown as { routerPath: string }).routerPath ||
 					req.url ||
 					""

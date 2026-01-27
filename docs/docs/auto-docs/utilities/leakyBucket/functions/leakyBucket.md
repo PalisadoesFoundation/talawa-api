@@ -6,7 +6,7 @@
 
 > **leakyBucket**(`redis`, `key`, `max`, `windowMs`, `logger?`): `Promise`\<[`LeakyBucketResult`](../type-aliases/LeakyBucketResult.md)\>
 
-Defined in: [src/utilities/leakyBucket.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/leakyBucket.ts#L40)
+Defined in: [src/utilities/leakyBucket.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/leakyBucket.ts#L42)
 
 Implements a leaky bucket rate limiter using Redis ZSETs (sliding window).
 
