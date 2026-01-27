@@ -135,9 +135,13 @@ describe("Query event - Performance Tracking", () => {
 
 			// Validation error happens synchronously during parsing
 			// The perf tracker still measures the time, even if it's very short
-			await expect(
-				eventQueryResolver(null, { input: { id: "invalid-id" } }, context),
-			).rejects.toThrow();
+			// Still need to advance timers since we're using fake timers globally
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(
+					eventQueryResolver(null, { input: { id: "invalid-id" } }, context),
+				).rejects.toThrow(),
+			]);
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["query:event"];

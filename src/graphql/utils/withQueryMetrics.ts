@@ -2,18 +2,8 @@ import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTrac
 
 /**
  * Options for wrapping a GraphQL query resolver with performance tracking.
- *
- * @typeParam TParent - The parent/root type passed to the resolver.
- * @typeParam TArgs - The arguments type for the resolver.
- * @typeParam TContext - The GraphQL context type (must include optional `perf`).
- * @typeParam TResult - The return type of the resolver.
  */
-export interface WithQueryMetricsOptions<
-	_TParent,
-	_TArgs,
-	_TContext extends { perf?: PerformanceTracker },
-	_TResult,
-> {
+export interface WithQueryMetricsOptions {
 	/**
 	 * Name of the query operation for performance tracking.
 	 * Should follow the pattern: `query:{queryName}` (e.g., `query:user`, `query:organizations`).
@@ -60,7 +50,7 @@ export function withQueryMetrics<
 	TContext extends { perf?: PerformanceTracker },
 	TResult,
 >(
-	options: WithQueryMetricsOptions<TParent, TArgs, TContext, TResult>,
+	options: WithQueryMetricsOptions,
 	resolver: (
 		parent: TParent,
 		args: TArgs,
@@ -89,4 +79,37 @@ export function withQueryMetrics<
 		// Graceful degradation: execute resolver directly if perf tracker is unavailable
 		return await resolver(parent, args, context);
 	};
+}
+
+/**
+ * Executes a resolver function with performance tracking (inline utility).
+ *
+ * This utility provides inline performance tracking by:
+ * 1. Executing the resolver with `ctx.perf.time()` if performance tracker is available
+ * 2. Gracefully degrading to direct resolver execution if performance tracker is unavailable
+ *
+ * Unlike `withQueryMetrics` (a higher-order function), this executes immediately.
+ *
+ * @param context - The GraphQL context with optional perf tracker.
+ * @param operationName - Name of the operation for metrics (e.g., "query:event").
+ * @param resolver - The resolver function to execute.
+ * @returns The result of the resolver execution.
+ *
+ * @example
+ * ```typescript
+ * return await executeWithMetrics(ctx, "query:event", resolver);
+ * ```
+ */
+export async function executeWithMetrics<
+	TContext extends { perf?: PerformanceTracker },
+	TResult,
+>(
+	context: TContext,
+	operationName: string,
+	resolver: () => Promise<TResult>,
+): Promise<TResult> {
+	if (context.perf) {
+		return await context.perf.time(operationName, resolver);
+	}
+	return await resolver();
 }

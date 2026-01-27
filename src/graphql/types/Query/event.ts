@@ -8,6 +8,7 @@ import {
 } from "~/src/graphql/inputs/QueryEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries";
+import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -187,11 +188,7 @@ builder.queryField("event", (t) =>
 				return event;
 			};
 
-			if (ctx.perf) {
-				return await ctx.perf.time("query:event", resolver);
-			}
-
-			return await resolver();
+			return await executeWithMetrics(ctx, "query:event", resolver);
 		},
 		type: Event,
 	}),

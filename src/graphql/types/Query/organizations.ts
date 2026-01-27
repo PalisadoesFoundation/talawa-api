@@ -4,6 +4,7 @@ import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -109,11 +110,7 @@ export const resolveOrganizations = async (
 		}
 	};
 
-	if (ctx.perf) {
-		return await ctx.perf.time("query:organizations", resolver);
-	}
-
-	return await resolver();
+	return await executeWithMetrics(ctx, "query:organizations", resolver);
 };
 
 builder.queryField("organizations", (t) =>
