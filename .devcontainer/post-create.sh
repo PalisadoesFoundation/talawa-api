@@ -50,8 +50,8 @@ corepack prepare "pnpm@${PNPM_VERSION}" --activate
 # --------------------------------------------------------------------
 # Verify pnpm is usable WITHOUT triggering a prompt
 # --------------------------------------------------------------------
-pnpm --version >/dev/null
-echo "[devcontainer] pnpm is ready"
+PNPM_ACTUAL_VERSION="$(pnpm --version)"
+echo "[devcontainer] pnpm is ready (v${PNPM_ACTUAL_VERSION})"
 
 # --------------------------------------------------------------------
 # Workspace directories
