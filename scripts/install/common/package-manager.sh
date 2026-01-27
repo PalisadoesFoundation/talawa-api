@@ -9,8 +9,6 @@ update_package_index() {
         info "Updating Homebrew..."
         brew update
     else
-        # Placeholder for Linux or other OSs if needed later
-        # For now, we assume this is primarily used by macOS script as per this refactor
         return 0
     fi
 }
