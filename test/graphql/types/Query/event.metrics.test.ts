@@ -470,5 +470,289 @@ describe("Query event - Performance Tracking", () => {
 				context.log,
 			);
 		});
+
+		it("should track metrics when currentUser is not found after event fetch", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Test Event",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				organizationId: ulid(),
+				creatorId: "other-user",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "standalone" as const,
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+			// User is not found in DB after event is fetched
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(
+					eventQueryResolver(null, { input: { id: eventId } }, context),
+				).rejects.toThrow(),
+			]);
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+
+		it("should track metrics on unauthorized action when not member or attendee", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Test Event",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				organizationId: ulid(),
+				creatorId: "other-user",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "standalone" as const,
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+			// Regular user (not admin)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+			});
+			// Not a member
+			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+			// Not an attendee
+			mocks.drizzleClient.query.eventAttendeesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(
+					eventQueryResolver(null, { input: { id: eventId } }, context),
+				).rejects.toThrow(),
+			]);
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+
+		it("should allow admin to view invite-only event", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const organizationId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Invite-Only Event",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: false,
+				isRegisterable: true,
+				isInviteOnly: true,
+				organizationId,
+				creatorId: "other-user",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "standalone" as const,
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+			// User is system administrator
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			// Member of organization
+			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				{ role: "member" },
+			);
+			// Not an attendee
+			mocks.drizzleClient.query.eventAttendeesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			const result = await eventQueryResolver(
+				null,
+				{ input: { id: eventId } },
+				context,
+			);
+
+			expect(result).toEqual(mockEvent);
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+
+		it("should deny access to invite-only event when not creator, admin, or attendee", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const organizationId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Invite-Only Event",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: false,
+				isRegisterable: true,
+				isInviteOnly: true,
+				organizationId,
+				creatorId: "other-user",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "standalone" as const,
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+			// Regular user (not admin)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+			});
+			// Member but not admin in org
+			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				{ role: "member" },
+			);
+			// Not an attendee - returns undefined on both calls (authz check + invite-only check)
+			mocks.drizzleClient.query.eventAttendeesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			const result = await eventQueryResolver(
+				null,
+				{ input: { id: eventId } },
+				context,
+			);
+
+			// Should return null for invite-only event user cannot access
+			expect(result).toBeNull();
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+
+		it("should handle recurring event instance attendee check", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const organizationId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Recurring Event Instance",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				organizationId,
+				creatorId: "other-user",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "generated" as const, // Recurring event instance uses 'generated' type
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+			});
+			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+			// Attendee of recurring instance
+			mocks.drizzleClient.query.eventAttendeesTable.findFirst.mockResolvedValue(
+				{
+					userId: "user-123",
+					recurringEventInstanceId: eventId,
+					isInvited: true,
+					isRegistered: false,
+				},
+			);
+
+			const result = await eventQueryResolver(
+				null,
+				{ input: { id: eventId } },
+				context,
+			);
+
+			expect(result).toEqual(mockEvent);
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
 	});
 });
