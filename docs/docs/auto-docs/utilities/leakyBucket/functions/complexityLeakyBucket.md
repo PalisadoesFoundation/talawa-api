@@ -2,13 +2,13 @@
 
 ***
 
-# Function: default()
+# Function: complexityLeakyBucket()
 
-> **default**(`fastify`, `key`, `capacity`, `refillRate`, `cost`, `logger`): `Promise`\<`boolean`\>
+> **complexityLeakyBucket**(`fastify`, `key`, `capacity`, `refillRate`, `cost`, `logger`): `Promise`\<`boolean`\>
 
-Defined in: [src/utilities/leakyBucket.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/leakyBucket.ts#L15)
+Defined in: [src/utilities/leakyBucket.ts:89](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/leakyBucket.ts#L89)
 
-Implements a leaky bucket rate limiter.
+Implements a leaky bucket rate limiter (Token Bucket algorithm).
 
 ## Parameters
 
