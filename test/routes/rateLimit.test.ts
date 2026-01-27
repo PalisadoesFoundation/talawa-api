@@ -234,7 +234,17 @@ describe("REST rate limiting", () => {
 		const fakeRedis = new FakeRedisZ();
 		// Mock pipeline to return an error
 		fakeRedis.pipeline = () => {
-			const mockPipeline = {
+			// Define a type that matches the recursive structure needed
+			type MockPipeline = {
+				zremrangebyscore: () => MockPipeline;
+				zcard: () => MockPipeline;
+				zadd: () => MockPipeline;
+				zrange: () => MockPipeline;
+				expire: () => MockPipeline;
+				exec: () => Promise<Array<[Error | null, unknown]>>;
+			};
+
+			const mockPipeline: MockPipeline = {
 				zremrangebyscore: () => mockPipeline,
 				zcard: () => mockPipeline,
 				zadd: () => mockPipeline,
@@ -242,8 +252,7 @@ describe("REST rate limiting", () => {
 				expire: () => mockPipeline,
 				exec: async () => [[new Error("Redis failure"), null]],
 			};
-			// biome-ignore lint/suspicious/noExplicitAny: mocking redis pipeline type is complex
-			return mockPipeline as unknown as any;
+			return mockPipeline as unknown as ReturnType<FakeRedisZ["pipeline"]>;
 		};
 
 		app.decorate("redis", fakeRedis as unknown as FastifyRedis);

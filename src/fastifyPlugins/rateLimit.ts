@@ -62,7 +62,12 @@ export default fp(async function rateLimitPlugin(app: FastifyInstance) {
 			if (!Number.isFinite(tier.max)) {
 				// open tier: no limiting
 				return async (_req, reply) => {
-					setHeaders(reply, tier, 0, Date.now() + tier.windowMs);
+					setHeaders(
+						reply,
+						tier,
+						Number.POSITIVE_INFINITY,
+						Date.now() + tier.windowMs,
+					);
 				};
 			}
 
