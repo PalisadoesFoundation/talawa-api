@@ -63,6 +63,9 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		"Email verification token expiration (seconds):",
 		"86400",
 		(input: string) => {
+			if (!/^\d+$/.test(input)) {
+				return "Expiration must be a valid number of seconds.";
+			}
 			const seconds = Number.parseInt(input, 10);
 			if (Number.isNaN(seconds) || seconds < 60) {
 				return "Expiration must be at least 60 seconds.";

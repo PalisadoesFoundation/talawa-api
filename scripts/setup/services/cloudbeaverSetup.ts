@@ -7,6 +7,12 @@ import {
 	validatePort,
 } from "../validators.js";
 
+/**
+ * Prompt for CloudBeaver configuration.
+ *
+ * @param answers - Accumulated setup answers.
+ * @returns Updated answers with CloudBeaver settings.
+ */
 export async function cloudbeaverSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {

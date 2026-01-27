@@ -195,6 +195,48 @@ describe("Setup -> apiSetup", () => {
 		// Verify the number of prompts
 		expect(promptMock).toHaveBeenCalledTimes(24);
 	});
+
+	it("should retry prompting for API_MINIO_SECRET_KEY until it matches MINIO_ROOT_PASSWORD", async () => {
+		// Set a known password
+		process.env.MINIO_ROOT_PASSWORD = "correct-password";
+
+		const consoleWarnSpy = vi
+			.spyOn(console, "warn")
+			.mockImplementation(() => {});
+
+		// Use mockImplementation to handle the retry loop logic dynamically
+		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer implementation
+		vi.spyOn(inquirer, "prompt").mockImplementation((async (args: any) => {
+			const question = Array.isArray(args) ? args[0] : args;
+			// Handle the secret key prompt specifically
+			if (question.name === "API_MINIO_SECRET_KEY") {
+				// If we haven't warned yet, return wrong password to trigger retry
+				if (consoleWarnSpy.mock.calls.length === 0) {
+					return { API_MINIO_SECRET_KEY: "wrong-password" };
+				}
+				// Otherwise return correct password to exit loop
+				return { API_MINIO_SECRET_KEY: "correct-password" };
+			}
+
+			// For all other prompts, return the default value or a placeholder
+			// This avoids needing to mock 20+ sequential calls
+			const returnVal =
+				question.default !== undefined
+					? question.default
+					: question.type === "list"
+						? question.choices[0]
+						: "mocked-value";
+
+			return { [question.name]: returnVal };
+			// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer type
+		}) as any);
+
+		await apiSetup({});
+
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.",
+		);
+	});
 });
 describe("validateURL", () => {
 	it("should validate standard URLs", () => {

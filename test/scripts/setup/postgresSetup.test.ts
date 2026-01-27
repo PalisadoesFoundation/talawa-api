@@ -94,6 +94,46 @@ describe("Setup -> postgresSetup", () => {
 		}
 	});
 
+	it("should sync API_POSTGRES_PASSWORD when POSTGRES_PASSWORD is changed", async () => {
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ POSTGRES_DB: "talawa" })
+			// POSTGRES_PASSWORD changed to "new-password"
+			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "new-password" })
+			.mockResolvedValueOnce({ POSTGRES_USER: "talawa" });
+
+		// Initial answers with mismatched API_POSTGRES_PASSWORD
+		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
+		const answers: any = {
+			CI: "true",
+			API_POSTGRES_PASSWORD: "old-password",
+		};
+
+		await postgresSetup(answers);
+
+		expect(answers.POSTGRES_PASSWORD).toBe("new-password");
+		// API password should be updated to match
+		expect(answers.API_POSTGRES_PASSWORD).toBe("new-password");
+	});
+
+	it("should not change API_POSTGRES_PASSWORD if POSTGRES_PASSWORD matches", async () => {
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ POSTGRES_DB: "talawa" })
+			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "password" })
+			.mockResolvedValueOnce({ POSTGRES_USER: "talawa" });
+
+		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
+		const answers: any = {
+			CI: "true",
+			API_POSTGRES_PASSWORD: "password",
+		};
+
+		await postgresSetup(answers);
+
+		expect(answers.API_POSTGRES_PASSWORD).toBe("password");
+	});
+
 	it("should handle prompt errors correctly", async () => {
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);

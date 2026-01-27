@@ -2,6 +2,12 @@ import { promptInput } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
 import { validatePort } from "../validators.js";
 
+/**
+ * Prompt for Postgres configuration.
+ *
+ * @param answers - Accumulated setup answers.
+ * @returns Updated answers with Postgres settings.
+ */
 export async function postgresSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {

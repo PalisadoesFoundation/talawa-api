@@ -40,8 +40,11 @@ import type { SetupAnswers } from "scripts/setup/types";
 describe("Setup", () => {
 	let setup: () => Promise<SetupAnswers>;
 	let SetupModule: typeof import("scripts/setup/setup");
+	let envExistedBefore: boolean;
 
 	beforeAll(async () => {
+		envExistedBefore = fs.existsSync(".env");
+
 		process.env.API_GRAPHQL_SCALAR_FIELD_COST = "1";
 		process.env.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST = "1";
 		process.env.API_GRAPHQL_OBJECT_FIELD_COST = "1";
@@ -90,7 +93,8 @@ describe("Setup", () => {
 		});
 
 		try {
-			if (originalExistsSync(".env")) {
+			// Only delete .env if it didn't exist before and currently exists
+			if (!envExistedBefore && originalExistsSync(".env")) {
 				fs.unlinkSync(".env");
 			}
 		} catch {}

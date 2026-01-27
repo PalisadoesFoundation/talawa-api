@@ -132,6 +132,46 @@ describe("Setup -> minioSetup", () => {
 		// Verify inquirer was called the correct number of times (including the extra prompt)
 		expect(promptMock).toHaveBeenCalledTimes(8);
 	});
+
+	it("should sync API_MINIO_SECRET_KEY when MINIO_ROOT_PASSWORD is changed", async () => {
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ MINIO_BROWSER: "off" })
+			// MINIO_ROOT_PASSWORD changed to "new-password"
+			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "new-password" })
+			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
+
+		// Initial answers with mismatched API_MINIO_SECRET_KEY
+		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
+		const answers: any = {
+			CI: "true",
+			API_MINIO_SECRET_KEY: "old-password",
+		};
+
+		await minioSetup(answers);
+
+		expect(answers.MINIO_ROOT_PASSWORD).toBe("new-password");
+		// Secret key should be updated to match
+		expect(answers.API_MINIO_SECRET_KEY).toBe("new-password");
+	});
+
+	it("should not change API_MINIO_SECRET_KEY if MINIO_ROOT_PASSWORD matches", async () => {
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ MINIO_BROWSER: "off" })
+			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" })
+			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
+
+		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
+		const answers: any = {
+			CI: "true",
+			API_MINIO_SECRET_KEY: "password",
+		};
+
+		await minioSetup(answers);
+
+		expect(answers.API_MINIO_SECRET_KEY).toBe("password");
+	});
 	it("should handle prompt errors correctly", async () => {
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
