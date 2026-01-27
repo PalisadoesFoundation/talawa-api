@@ -51,6 +51,10 @@ if with_timer 2>/dev/null; then
   error "Expected with_timer to fail with no arguments"
   exit 1
 fi
+if with_timer "" sleep 1 2>/dev/null; then
+  error "Expected with_timer to fail with empty label"
+  exit 1
+fi
 success "Input validation passed"
 
 # Test 2: with_spinner
@@ -79,6 +83,10 @@ if with_spinner "Message only, no command" 2>/dev/null; then
 fi
 if with_spinner 2>/dev/null; then
   error "Expected with_spinner to fail with no arguments"
+  exit 1
+fi
+if with_spinner "" sleep 1 2>/dev/null; then
+  error "Expected with_spinner to fail with empty message"
   exit 1
 fi
 success "Input validation passed"

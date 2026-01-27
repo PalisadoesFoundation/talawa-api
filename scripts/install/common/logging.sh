@@ -61,6 +61,7 @@ print_log_location() {
 }
 
 # Timing tracking (compatible with bash 3.2+)
+# Timing tracking (compatible with bash 3.2+)
 declare -a __TIMING_LABELS
 declare -a __TIMING_VALUES
 declare -a __TIMING_STATUS
@@ -83,7 +84,7 @@ reset_timing() {
 # Returns: Exit code of the executed command
 # Side effects: Updates timing tracking arrays
 with_timer() {
-  if [ $# -lt 2 ]; then
+  if [ $# -lt 2 ] || [ -z "$1" ]; then
     error "with_timer requires at least 2 arguments: label and command"
     return 1
   fi
@@ -125,7 +126,7 @@ with_timer() {
 #   $1 - Message to display (required)
 #   $@ - Command and arguments to execute (required)
 with_spinner() {
-  if [ $# -lt 2 ]; then
+  if [ $# -lt 2 ] || [ -z "$1" ]; then
     error "with_spinner requires at least 2 arguments: message and command"
     return 1
   fi
@@ -140,31 +141,46 @@ with_spinner() {
   # We use a trap to ensure we don't leave the background process running if user hits Ctrl+C
   local interrupted=0
   local saved_traps
-  saved_traps=$(trap -p INT TERM)
-  trap 'kill $pid 2>/dev/null || true; interrupted=1' INT TERM
+  saved_traps=$(trap -p INT TERM EXIT)
+  
+  # Trap handler to kill the specific background PID and set flag
+  trap 'kill $pid 2>/dev/null || true; interrupted=1' INT TERM EXIT
   
   local spin='|/-\'
   local i=0
   
   # Show spinner while process is running
+  # Use wait with a small timeout if possible, but standard wait waits for termination.
+  # Instead, we loop checking kill -0.
   while kill -0 "$pid" 2>/dev/null; do
     local index=$((i % 4))
     printf "\r[INFO] %s %c" "$msg" "${spin:index:1}"
     i=$((i + 1))
+    
+    # Sleep in small increments to be responsive
     sleep 0.2
-    [ "$interrupted" -eq 1 ] && break
+    
+    # Check interruption flag
+    if [ "$interrupted" -eq 1 ]; then
+      break
+    fi
   done
   
   # Clear spinner line completely
-  # Use a sufficiently large width (80 chars) to clear the line
-  printf "\r%-80s\r" ""
+  local width=80
+  if command -v tput >/dev/null 2>&1; then
+    width=$(tput cols)
+  fi
+  printf "\r%-*s\r" "$width" ""
   
   # Wait for process and capture exit code
-  local exit_code errexit
-  errexit=$-
+  local exit_code
+  local errexit=$-
   set +e
+  
   wait "$pid"
   exit_code=$?
+  
   # Restore errexit if it was set
   case "$errexit" in *e*) set -e ;; esac
 
@@ -172,10 +188,10 @@ with_spinner() {
   if [ -n "$saved_traps" ]; then
     eval "$saved_traps"
   else
-    trap - INT TERM
+    trap - INT TERM EXIT
   fi
 
-  # If interrupted, return appropriate exit code
+  # If interrupted, return appropriate exit code (130 for SIGINT standard)
   if [ "$interrupted" -eq 1 ]; then
     error "$msg interrupted"
     return 130
