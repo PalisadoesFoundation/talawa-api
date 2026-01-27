@@ -228,11 +228,35 @@ describe("Setup -> Validators", () => {
 			spy.mockRestore();
 		});
 
-		it("should throw if validation fails", () => {
+		it("should throw if required fields are missing", () => {
 			const answers: Partial<SetupAnswers> = {
-				CI: "invalid",
+				CI: "true",
+				// Missing API_ADMINISTRATOR_USER_EMAIL_ADDRESS
 			};
-			expect(() => validateAllAnswers(answers)).toThrow();
+			expect(() => validateAllAnswers(answers)).toThrow(
+				"Missing required configuration fields:",
+			);
+		});
+
+		it("should throw if boolean fields are invalid", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "invalid", // Invalid boolean
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@example.com",
+			};
+			expect(() => validateAllAnswers(answers)).toThrow(
+				'Boolean fields must be "true" or "false":',
+			);
+		});
+
+		it("should throw if port numbers are invalid", () => {
+			const answers: Partial<SetupAnswers> = {
+				CI: "true",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@example.com",
+				API_PORT: "99999", // Invalid port
+			};
+			expect(() => validateAllAnswers(answers)).toThrow(
+				"Port numbers must be between 1 and 65535:",
+			);
 		});
 	});
 });

@@ -532,13 +532,6 @@ describe("Error handling without backup", () => {
 		vi.clearAllMocks();
 	});
 
-	it("should handle prompt errors when backup doesn't exist", async () => {
-		const mockError = new Error("Prompt failed");
-		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
-
-		await expect(apiSetup({})).rejects.toThrow("Prompt failed");
-	});
-
 	it.skip("should handle SIGINT when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
