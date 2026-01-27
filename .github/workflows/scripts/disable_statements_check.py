@@ -190,6 +190,10 @@ class DisableStatementsChecker:
         Returns:
             violations: List of violation messages.
         """
+        # FIX: Skip missing files (fixes CI crash on deleted/generated files)
+        if not os.path.exists(file_path):
+            return []
+
         # Skip checking this script itself and Python test files
         basename = os.path.basename(file_path)
         if basename == "disable_statements_check.py" or file_path.endswith(
@@ -206,6 +210,7 @@ class DisableStatementsChecker:
             with open(file_path, encoding="utf-8") as f:
                 content = f.read()
         except (OSError, UnicodeDecodeError) as e:
+            # Genuine read errors only (permissions, encoding issues)
             return [f"{file_path}: Error reading file - {e}"]
 
         violations = []

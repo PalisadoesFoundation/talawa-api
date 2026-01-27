@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu -o pipefall
+set -eu -o pipefail
 
 echo "[devcontainer] Starting post-create setup..."
 
