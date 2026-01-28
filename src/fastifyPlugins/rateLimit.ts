@@ -41,9 +41,10 @@ function setHeaders(
 	reply.header("X-RateLimit-Reset", Math.ceil(resetAt / 1000)); // seconds epoch
 }
 
-export default fp(async function rateLimitPlugin(app: FastifyInstance) {
-	const redis = app.redis; // assume you registered Redis elsewhere
-	if (!redis) {
+export default fp(
+	async function rateLimitPlugin(app: FastifyInstance) {
+		const redis = app.redis; // assume you registered Redis elsewhere
+		if (!redis) {
 		app.log.warn(
 			"No Redis client found; rate limiting will degrade to allow-all.",
 		);
@@ -102,7 +103,7 @@ export default fp(async function rateLimitPlugin(app: FastifyInstance) {
 					throw new TalawaRestError({
 						code: ErrorCode.RATE_LIMIT_EXCEEDED,
 						message: "Too many requests. Please try again later.",
-						details: { resetAt },
+						details: { resetAt: Math.ceil(resetAt / 1000) }, // Convert to seconds for consistency with X-RateLimit-Reset header
 						statusCodeOverride: 429,
 					});
 				}
@@ -112,5 +113,10 @@ export default fp(async function rateLimitPlugin(app: FastifyInstance) {
 		},
 	);
 
-	app.log.info({ msg: "RateLimit plugin registered" });
-});
+		app.log.info({ msg: "RateLimit plugin registered" });
+	},
+	{
+		name: "rateLimit",
+		dependencies: ["@fastify/redis"],
+	},
+);

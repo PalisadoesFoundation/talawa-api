@@ -17,6 +17,6 @@ export class TalawaRestError extends Error {
 		this.name = "TalawaRestError";
 		this.code = options.code;
 		this.details = options.details;
-		this.statusCode = options.statusCodeOverride || 500;
+		this.statusCode = options.statusCodeOverride ?? 500;
 	}
 }
