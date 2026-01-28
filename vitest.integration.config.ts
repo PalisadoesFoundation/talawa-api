@@ -70,6 +70,8 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "lcov", "html", "json"],
+			// Restrict integration coverage to integration-owned source paths
+			include: ["src/drizzle/**", "src/graphql/**", "src/install/**"],
 			// Only include files that are actually touched by tests
 			all: false,
 			exclude: [
