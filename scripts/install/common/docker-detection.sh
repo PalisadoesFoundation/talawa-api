@@ -3,6 +3,14 @@
 # scripts/install/common/docker-detection.sh
 # Shared Docker detection functions
 
+# Check external dependencies
+# Required commands:
+# - docker: For container management
+# - grep: For text processing (if used)
+# - awk: For text processing (if used)
+
+set -euo pipefail
+
 # Check Docker requirements
 # Arguments:
 #   $1: mode (optional, default: "docker")

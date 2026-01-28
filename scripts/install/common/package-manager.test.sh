@@ -11,7 +11,8 @@
 # Requirements: bash 4.0+
 ##############################################################################
 
-set -e
+# set -e removed to allow explicit error handling
+set +e
 
 # Colors for output
 RED='\033[0;31m'
@@ -142,6 +143,14 @@ if is_package_installed "ls"; then
     test_pass
 else
     test_fail "Expected 'ls' to be detected by command -v"
+fi
+
+test_start "is_package_installed returns false for missing package on Linux"
+OS_TYPE="linux"
+if ! is_package_installed "missing-package-12345"; then
+    test_pass
+else
+    test_fail "Expected missing package to be detected as missing on Linux"
 fi
 
 ##############################################################################

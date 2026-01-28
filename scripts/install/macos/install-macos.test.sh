@@ -75,6 +75,10 @@ create_mock() {
     local cmd_name="$1"
     local behavior="$2"
     
+    # Remove existing mock, directory mask, or hidden marker
+    rm -rf "$MOCK_BIN/$cmd_name"
+    rm -f "$MOCK_BIN/$cmd_name.hidden"
+    
     cat > "$MOCK_BIN/$cmd_name" <<EOF
 #!/bin/bash
 $behavior
@@ -111,10 +115,11 @@ run_test_script() {
     # This prevents fnm from being auto-loaded and interfering with mocks
     env -i \
         PATH="$MOCK_BIN:/usr/bin:/bin" \
+        MOCK_BIN="$MOCK_BIN" \
         HOME="$HOME" \
         USER="$USER" \
         TERM="dumb" \
-        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; cd '$TEST_DIR' && '$TEST_DIR/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
+        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; cd '$TEST_DIR' && '$TEST_DIR/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
 }
 
 # To effectively test, we need to replicate the repo structure in TEST_DIR
@@ -133,6 +138,22 @@ setup_test_repo() {
     cp scripts/install/macos/install-macos.sh "$TEST_DIR/scripts/install/macos/"
     chmod +x "$TEST_DIR/scripts/install/macos/install-macos.sh"
     cp scripts/install/common/*.sh "$TEST_DIR/scripts/install/common/"
+    
+    # Inject command_exists override into os-detection.sh
+    cat >> "$TEST_DIR/scripts/install/common/os-detection.sh" <<'EOF'
+
+command_exists() {
+    if [ -n "${1:-}" ] && [ -f "${MOCK_BIN:-}/$1.hidden" ]; then
+        return 1
+    fi
+    command -v "$1" >/dev/null 2>&1
+}
+EOF
+
+    # Patch install-macos.sh to use command_exists for brew check
+    # Original: if command -v brew >/dev/null 2>&1; then
+    # Patch install-macos.sh to use command_exists for brew check
+    # Original: if command -v brew >/dev/null 2>&1; then
 }
 
 setup_test_repo
@@ -145,7 +166,11 @@ setup_clean_system() {
     # brew exists and works
     create_mock "brew" '
         if [ "$1" = "list" ]; then exit 1; fi # packages not installed
-        if [ "$1" = "install" ]; then echo "Mock brew installed $2"; exit 0; fi
+        if [ "$1" = "install" ]; then
+            echo "Mock brew installed ${*:2}"
+            rm -f "$MOCK_BIN/$2.hidden"
+            exit 0
+        fi
         if [ "$1" = "--version" ]; then echo "Homebrew 4.0.0"; exit 0; fi
     '
     
@@ -154,8 +179,7 @@ setup_clean_system() {
     # Our mocked brew list returns 1, so script will think they are missing and try to install them.
     
     # We need mocks for them because the script might call them after installation
-    # The script calls 'git --version' (actually os-detection might use it? no),
-    # but validation uses 'jq'.
+    # The script calls 'git --version' and validation uses 'jq'.
     
     # Use the standalone jq mock
     create_jq_mock
@@ -163,19 +187,25 @@ setup_clean_system() {
     # docker - not installed
     # In MOCK_BIN, we don"t create docker. 'command -v docker' will fail.
     # Create a directory named docker to ensure command -v fails
-    mkdir -p "$MOCK_BIN/docker"
+    rm -rf "$MOCK_BIN/docker"
+    touch "$MOCK_BIN/docker.hidden"
     
     # fnm - not installed
-    rm -f "$MOCK_BIN/fnm"
+    # Mask any system fnm by creating a hidden marker
+    rm -rf "$MOCK_BIN/fnm"
+    touch "$MOCK_BIN/fnm.hidden"
     
     # node - not installed
-    rm -f "$MOCK_BIN/node"
+    rm -rf "$MOCK_BIN/node"
+    touch "$MOCK_BIN/node.hidden"
     
     # npm - not installed
-    rm -f "$MOCK_BIN/npm"
+    rm -rf "$MOCK_BIN/npm"
+    touch "$MOCK_BIN/npm.hidden"
     
     # pnpm - not installed
-    rm -f "$MOCK_BIN/pnpm"
+    rm -rf "$MOCK_BIN/pnpm"
+    touch "$MOCK_BIN/pnpm.hidden"
 }
 
 ##############################################################################
@@ -193,22 +223,20 @@ create_mock "fnm" '
     if [ "$1" = "default" ]; then exit 0; fi
     if [ "$1" = "current" ]; then echo "v20.10.0"; exit 0; fi
 '
+# Hide fnm so usage of command_exists fnm returns false, triggering install
+touch "$MOCK_BIN/fnm.hidden"
 
 # Mock node and npm becoming available after fnm install
 # We can't dynamically add them easily in the middle of script run unless we trap.
 # But since the script just expects 'command -v node' to work after 'fnm env', 
 # we can just have them available but ensure 'fnm' is installed first.
-# Wait, the script installs fnm via brew.
-# We mocked brew install.
-# Then script runs 'eval $(fnm env)'.
-# Then checks for node.
 create_mock "node" 'echo "v20.10.0"'
 create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'echo "8.14.0"'
 
 # Run script
 set +e
-OUTPUT=$(TEST_DIR="$TEST_DIR" "$TEST_DIR/scripts/install/macos/install-macos.sh" docker false 2>&1)
+OUTPUT=$(run_test_script docker false 2>&1)
 EXIT_CODE=$?
 set -e
 
@@ -236,7 +264,7 @@ create_mock "pnpm" 'echo "8.14.0"'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=\$PATH"; exit 0; fi' 
 
 set +e
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1)
+OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
@@ -249,21 +277,11 @@ fi
 
 test_start "Skip Prerequisites - Warnings"
 setup_clean_system
-# Mock things as if they are missing. Script should fail or warn?
-# Script says: if skip_prereqs=true, warn "Skipping prerequisite installation".
-# Then for Homebrew: "Homebrew is required but --skip-prereqs was specified" -> EXIT 1
-# Wait, looking at lines 97-100: 
-#   if [ "$SKIP_PREREQS" = "true" ]; then error "Homebrew is required..."; exit 1; fi
-# So if brew is missing and we skip prereqs, it FAILS.
+create_mock "brew" 'exit 1'
+rm -rf "$MOCK_BIN/brew"
+touch "$MOCK_BIN/brew.hidden"
 
-# Let's verify that failure.
-create_mock "brew" 'exit 1' # brew not found (Simulate command -v fail by making it fail execution? No command -v check path.
-# Actually to simulate command -v failing, we remove it.
-# Create a directory named brew. command -v ignores directories, so it looks like missing command.
-# Make brew non-executable so command -v ignores it
-chmod -x "$MOCK_BIN/brew"
-
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" docker true 2>&1 || true)
+OUTPUT=$(run_test_script docker true 2>&1 || true)
 if echo "$OUTPUT" | grep -q "Homebrew is required but --skip-prereqs"; then
     test_pass
 else
@@ -288,7 +306,7 @@ create_mock "git" 'echo "git"'
 create_mock "curl" 'exit 0'
 create_mock "unzip" 'exit 0'
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 if echo "$OUTPUT" | grep -q "Invalid"; then
     test_pass
 else
@@ -348,7 +366,7 @@ create_mock "shasum" '
 # Create node_modules to simulate prior state
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify that pnpm install was called and hash was cached
 if echo "$OUTPUT" | grep -q "Installing dependencies..." && \
@@ -409,7 +427,7 @@ create_mock "shasum" '
 
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify that pnpm install was NOT called (skipped due to matching hash)
 if echo "$OUTPUT" | grep -q "Dependencies already up-to-date" && \
@@ -470,7 +488,7 @@ create_mock "shasum" '
 
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify that pnpm install WAS called (due to hash mismatch)
 if echo "$OUTPUT" | grep -q "Installing updated dependencies..." && \
@@ -534,7 +552,7 @@ create_mock "shasum" '
 
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify that retry attempts were made and proper error was shown
 if echo "$OUTPUT" | grep -q "Failed to install dependencies after .* attempts"; then
@@ -580,7 +598,7 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify that version was correctly parsed and installed
 if echo "$OUTPUT" | grep -qE "Installing Node (v?18|18\.0\.0)"; then
@@ -626,7 +644,7 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify version was parsed correctly
 if echo "$OUTPUT" | grep -qE "Installing Node (v?20|20\.0\.0)"; then
@@ -672,7 +690,7 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify LTS was installed
 if echo "$OUTPUT" | grep -q "Installing latest LTS version"; then
@@ -721,7 +739,7 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$("$TEST_DIR/scripts/install/macos/install-macos.sh" local false 2>&1 || true)
+OUTPUT=$(run_test_script local false 2>&1 || true)
 
 # Verify pnpm version 9 was targeted
 if echo "$OUTPUT" | grep -q "Target pnpm version: 9"; then
@@ -730,8 +748,171 @@ else
     test_fail "Expected pnpm version 9 to be extracted.\nLogs:\n$OUTPUT"
 fi
 
+
+##############################################################################
+# Test: Missing Branches Coverage
+##############################################################################
+
+test_start "Homebrew Not Present -> Install Success"
+setup_clean_system
+# Simulate missing Homebrew by removing it from mock bin
+rm -rf "$MOCK_BIN/brew"
+touch "$MOCK_BIN/brew.hidden"
+
+# Mock curl to simulate Homebrew installation script download and execution
+create_mock "curl" '
+    if [[ "$2" == *"Homebrew/install"* ]]; then
+        # Output a script that "installs" brew (creates the mock)
+        echo "echo \"Installing Homebrew...\"; cat > \"$MOCK_BIN/brew\" <<EOF
+#!/bin/bash
+if [ \"\$1\" = \"install\" ]; then echo \"Mock brew installed \$2\"; exit 0; fi
+if [ \"\$1\" = \"--version\" ]; then echo \"Homebrew 4.0.0\"; exit 0; fi
+EOF
+chmod +x \"$MOCK_BIN/brew\""
+        exit 0
+    fi
+    exit 0
+'
+
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
+create_mock "git" 'exit 0'
+create_mock "unzip" 'exit 0'
+
+OUTPUT=$(run_test_script local false 2>&1 || true)
+
+if echo "$OUTPUT" | grep -q "Installing Homebrew..."; then
+    test_pass
+else
+    test_fail "Expected Homebrew installation flow.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "Docker Present but Daemon Down"
+setup_clean_system
+# Remove the directory created by setup_clean_system so we can create a file mock
+rm -rf "$MOCK_BIN/docker"
+# Create docker command but make info fail
+create_mock "docker" '
+    if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+    if [ "$1" = "info" ]; then exit 1; fi # Daemon down
+'
+
+OUTPUT=$(run_test_script docker false 2>&1 || true)
+
+# The script should fail because check_docker_requirements returns 1
+if echo "$OUTPUT" | grep -q "Docker is installed but not running"; then
+    test_pass
+else
+    test_fail "Expected daemon failure warning.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "Node 'latest' Branch"
+setup_clean_system
+cat > "$TEST_DIR/package.json" <<EOF
+{
+  "engines": {
+    "node": "latest"
+  },
+  "packageManager": "pnpm@8.14.0"
+}
+EOF
+
+create_mock "brew" 'exit 0'
+create_mock "git" 'exit 0'
+create_mock "curl" 'exit 0'
+create_jq_mock
+create_mock "unzip" 'exit 0'
+create_mock "fnm" '
+    if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi
+    if [ "$1" = "install" ] && [ "$2" = "--latest" ]; then
+        echo "Installing Node --latest"
+        exit 0
+    fi
+    if [ "$1" = "use" ]; then exit 0; fi
+    if [ "$1" = "current" ]; then echo "v21.0.0"; exit 0; fi
+'
+create_mock "node" 'echo "v21.0.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
+
+OUTPUT=$(run_test_script local false 2>&1 || true)
+
+if echo "$OUTPUT" | grep -q "Installing Node --latest"; then
+    test_pass
+else
+    test_fail "Expected 'install --latest' call.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "pnpm Already Installed (Version Match)"
+setup_clean_system
+# Set up package.json
+cat > "$TEST_DIR/package.json" <<EOF
+{
+  "engines": {
+    "node": "20.10.0"
+  },
+  "packageManager": "pnpm@8.14.0"
+}
+EOF
+
+create_mock "brew" 'exit 0'
+create_mock "git" 'exit 0'
+create_mock "curl" 'exit 0'
+create_jq_mock
+create_mock "unzip" 'exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+
+# Mock pnpm to return matching version
+create_mock "pnpm" '
+    if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi
+    if [ "$1" = "install" ]; then echo "SHOULD_NOT_RUN"; exit 1; fi
+'
+
+OUTPUT=$(run_test_script local false 2>&1 || true)
+
+if echo "$OUTPUT" | grep -q "pnpm is already installed: v8.14.0"; then
+    test_pass
+else
+    test_fail "Expected 'already installed' message.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "No Lockfile (Fresh Install)"
+setup_clean_system
+rm -f "$TEST_DIR/pnpm-lock.yaml"
+rm -f "$TEST_DIR/.talawa-pnpm-lock-hash"
+
+create_mock "brew" 'exit 0'
+create_mock "git" 'exit 0'
+create_mock "curl" 'exit 0'
+create_jq_mock
+create_mock "unzip" 'exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" '
+    if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi
+    if [ "$1" = "install" ]; then echo "Running pnpm install fresh..."; exit 0; fi
+'
+
+OUTPUT=$(run_test_script local false 2>&1 || true)
+
+if echo "$OUTPUT" | grep -q "Running pnpm install fresh..."; then
+    test_pass
+else
+    test_fail "Expected pnpm install execution for missing lockfile.\nLogs:\n$OUTPUT"
+fi
+
 ##############################################################################
 # Cleanup
+
 ##############################################################################
 rm -rf "$TEST_DIR"
 

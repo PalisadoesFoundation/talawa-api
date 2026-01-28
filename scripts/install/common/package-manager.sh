@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Check external dependencies
+# Required commands:
+# - brew: Homebrew package manager (on macOS)
+# - curl: For downloading files
+# - command: Shell builtin
+# Environment Variables:
+# - OS_TYPE: 'macos' or 'linux' (from os-detection.sh)
+
+set -euo pipefail
+
 # scripts/install/common/package-manager.sh
 # Shared package management functions
 
@@ -19,7 +29,7 @@ update_package_index() {
 is_package_installed() {
     local package="$1"
     if [[ "$OS_TYPE" == "macos" ]]; then
-        if brew list --versions "$package" >/dev/null; then
+        if brew list --versions "$package" >/dev/null 2>&1; then
             return 0
         else
             return 1

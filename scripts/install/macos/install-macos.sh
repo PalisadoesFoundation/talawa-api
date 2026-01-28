@@ -93,7 +93,7 @@ CURRENT_STEP=0
 : $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Checking Homebrew installation..."
 
-if command -v brew >/dev/null 2>&1; then
+if command_exists brew; then
     success "Homebrew is already installed"
 else
     if [ "$SKIP_PREREQS" = "true" ]; then

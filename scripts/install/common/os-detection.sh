@@ -9,6 +9,7 @@ set -euo pipefail
 #   detect_distro_family  -> debian|redhat|arch|macos|unknown
 #   is_wsl                -> returns 0 if WSL detected (use as conditional)
 #   get_os_version        -> version string or "unknown"
+#   command_exists        -> check if command exists (silently)
 
 _lower() { printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'; }
 
@@ -49,7 +50,7 @@ detect_distro() {
       ubuntu|debian|fedora|rhel|centos|arch|manjaro) echo "$id_lc"; return 0 ;;
     esac
 
-    # If ID not in list, check ID_LIKE for family-affiliated distributions
+    # If ID not in list, check ID_LIKE for family affiliated distributions
     # Map common derivatives to nearest canonical ID
     if printf '%s\n' "$id_like_lc" | grep -q 'debian'; then
       # Many derivatives (linuxmint, pop) are Debian/Ubuntu family
