@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # scripts/install/common/validation.sh
 
-set -euo pipefail
+# Fix 1: Guard strict mode so it only applies when executed directly, not when sourced
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  set -euo pipefail
+fi
 
 ##############################################################################
 # Talawa API - Common Validation Functions
@@ -15,8 +18,8 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
   # shellcheck source=scripts/install/common/logging.sh
   source "$SCRIPT_DIR/logging.sh"
 else
-  # Fallback definitions (Updated to match repo style: Plain text, no ANSI colors)
-  echo " WARN: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
+  # Fallback definitions
+  echo "⚠️  WARNING: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
   info()    { echo "INFO: $*"; }
   warn()    { echo "WARN: $*" >&2; }
   error()   { echo "✗ $*" >&2; }
@@ -66,25 +69,25 @@ parse_package_json() {
     
     if ! command -v jq &> /dev/null; then
         error "jq is required but not installed"
-        return 1 # Soft fail
+        return 1
     fi
     
     if [ ! -r "package.json" ]; then
         error "Cannot read package.json file"
-        return 1 # Soft fail
+        return 1
     fi
     
     local result
     if ! result=$(jq -r "($jq_query) // empty" package.json 2>&1); then
         error "Failed to parse $field_name from package.json"
         info "jq error: $result"
-        return 1 # Soft fail
+        return 1
     fi
     
     if [ -z "$result" ]; then
         if [ "$is_required" = "true" ]; then
             error "$field_name not found in package.json (required field)"
-            return 1 # Soft fail
+            return 1
         fi
         if [ -n "$default_value" ]; then
             echo "$default_value"
@@ -103,7 +106,7 @@ handle_version_validation_error() {
     error "Security validation failed for $field_name"
     info "Current value: '$current_value'"
     info "Ensure version follows semver format (e.g., 18.0.0, ^18.0.0)"
-    return 1 # Soft fail
+    return 1
 }
 
 retry_command() {
@@ -119,7 +122,6 @@ retry_command() {
             sleep "$delay"
         fi
         
-        # Wrapped to prevent 'set -e' from exiting script on failure
         if "$@"; then
             return 0
         else 
@@ -178,11 +180,15 @@ validate_internet_connectivity() {
 
   for host in "${hosts[@]}"; do
     local host_ok=0
+    
     if command -v curl >/dev/null 2>&1; then
       if curl -sSf --max-time 5 "https://$host" >/dev/null 2>&1; then host_ok=1; fi
     elif command -v ping >/dev/null 2>&1; then
       # CodeRabbit Note: some linux distros don't support -W, but we keep it for now
       if ping -c 1 -W 3 "$host" >/dev/null 2>&1; then host_ok=1; fi
+    else
+      # Fix 2: Explicit warning if tools are missing
+      warn "Neither curl nor ping is available; install curl to check connectivity to $host"
     fi
 
     if [ "$host_ok" -eq 1 ]; then

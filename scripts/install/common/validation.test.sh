@@ -79,31 +79,25 @@ if declare -F parse_package_json >/dev/null 2>&1; then test_pass; else test_fail
 ORIGINAL_DIR=$(pwd)
 
 test_start "validate_repository_root (Inside Subdir - Should Fail)"
-# Explicitly change directory to a non-root folder (the script's own dir)
-# This forces the check to fail, which is what we want to verify.
 cd "$SCRIPT_DIR"
 if validate_repository_root &>/dev/null; then
     test_fail "Expected failure (we are inside scripts/install/common)"
 else
     test_pass
 fi
-# Restore original directory immediately
 cd "$ORIGINAL_DIR"
 
 test_start "validate_repository_root (At Root - Should Pass)"
-# We are back at ORIGINAL_DIR (Repo Root), so this should pass.
 if validate_repository_root &>/dev/null; then
     test_pass
 else
     test_fail "Repository root detection failed at actual root"
 fi
-# NOTE: Removed faulty 'cd "$current_dir"' here
 
 test_start "validate_disk_space (1MB Check)"
 if validate_disk_space 1 &>/dev/null; then test_pass; else test_fail "Disk space check failed"; fi
 
 test_start "validate_disk_space (Impossible Size - Should Fail)"
-# Asking for 100 Petabytes
 if validate_disk_space 100000000000 &>/dev/null; then 
     test_fail "Expected failure for impossible disk space"
 else 
@@ -119,22 +113,37 @@ else
 fi
 
 test_start "validate_internet_connectivity (Failure Path)"
-# Mock curl/ping to always fail by modifying PATH temporarily
 tmpdir=$(mktemp -d)
-# Create a fake curl/ping that returns exit code 1
 echo '#!/bin/bash' > "$tmpdir/curl"
 echo 'exit 1' >> "$tmpdir/curl"
 echo '#!/bin/bash' > "$tmpdir/ping"
 echo 'exit 1' >> "$tmpdir/ping"
 chmod +x "$tmpdir/curl" "$tmpdir/ping"
 
-# Run check with modified PATH
 if (PATH="$tmpdir:$PATH" validate_internet_connectivity &>/dev/null); then
     test_fail "Expected failure when network tools fail"
 else
     test_pass
 fi
 rm -rf "$tmpdir"
+
+# --- ORCHESTRATOR TEST 
+
+test_start "validate_prerequisites (Orchestrator Mock)"
+# We temporarily mock the internal functions to always return 0 (Success)
+# This tests the logic of validate_prerequisites itself
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 0; }
+    
+    if validate_prerequisites &>/dev/null; then
+        exit 0
+    else
+        exit 1
+    fi
+)
+if [ $? -eq 0 ]; then test_pass; else test_fail "Orchestrator failed despite all checks passing"; fi
 
 # --- SUMMARY ---
 echo ""
