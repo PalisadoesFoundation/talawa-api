@@ -2241,7 +2241,7 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// With new behavior, upload failure during transaction causes the entire mutation to fail
 		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
 
 		// Verify no new event was created (transaction rolled back)
@@ -2329,7 +2329,7 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// With new behavior, upload failure during transaction causes the entire mutation to fail
 		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
 		expect(putObjectSpy).toHaveBeenCalledTimes(1);
 	});
@@ -2394,7 +2394,7 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// With new behavior, upload failure during transaction causes the entire mutation to fail
 		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
 	});
 
@@ -2457,7 +2457,7 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// With new behavior, upload failure during transaction causes the entire mutation to fail
 		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
 	});
 
@@ -2529,7 +2529,7 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// Mutation should fail
 		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("second upload failed");
+		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
 
 		// Cleanup was attempted for the first successfully uploaded file
@@ -2716,7 +2716,7 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// Mutation should fail due to upload error
 		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
 
 		// Cleanup was attempted for the first successfully uploaded file

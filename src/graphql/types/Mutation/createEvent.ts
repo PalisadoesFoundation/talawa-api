@@ -555,7 +555,7 @@ builder.mutationField("createEvent", (t) =>
 								extensions: {
 									code: "unexpected",
 								},
-								message: e instanceof Error ? e.message : "Upload failed",
+								message: "Upload failed",
 							});
 						}
 					}
