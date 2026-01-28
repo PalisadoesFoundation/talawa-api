@@ -139,8 +139,14 @@ with_spinner() {
   # Clean up background process on script termination
   # We use a trap to ensure we don't leave the background process running if user hits Ctrl+C
   local interrupted=0
-  local saved_traps
-  saved_traps=$(trap -p INT TERM EXIT)
+  local saved_trap_int
+  local saved_trap_term
+  local saved_trap_exit
+  
+  # Save specific traps to restore them individually later
+  saved_trap_int=$(trap -p INT)
+  saved_trap_term=$(trap -p TERM)
+  saved_trap_exit=$(trap -p EXIT)
   
   # Trap handler to kill the specific background PID and set flag
   trap 'kill $pid 2>/dev/null || true; interrupted=1' INT TERM EXIT
@@ -168,7 +174,8 @@ with_spinner() {
   # Clear spinner line completely
   local width=80
   if command -v tput >/dev/null 2>&1; then
-    width=$(tput cols)
+    # Protect against tput failure (e.g. if TERM is unset) which would exit under set -e
+    width=$(tput cols 2>/dev/null || echo 80)
   fi
   printf "\r%-*s\r" "$width" ""
   
@@ -184,11 +191,10 @@ with_spinner() {
   case "$errexit" in *e*) set -e ;; esac
 
   # Restore traps
-  if [ -n "$saved_traps" ]; then
-    eval "$saved_traps"
-  else
-    trap - INT TERM EXIT
-  fi
+  # Restore traps individually
+  if [ -n "$saved_trap_int" ]; then eval "$saved_trap_int"; else trap - INT; fi
+  if [ -n "$saved_trap_term" ]; then eval "$saved_trap_term"; else trap - TERM; fi
+  if [ -n "$saved_trap_exit" ]; then eval "$saved_trap_exit"; else trap - EXIT; fi
 
   # If interrupted, return appropriate exit code (130 for SIGINT standard)
   if [ "$interrupted" -eq 1 ]; then

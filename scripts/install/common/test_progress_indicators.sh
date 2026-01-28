@@ -23,6 +23,16 @@ if ! echo "$empty_output" | grep -q 'No timing data recorded.'; then
 fi
 success "Empty timing summary output verification passed"
 
+# Test 0b: Debug logging
+print_section "Test 0b: Debug logging"
+info "Verifying debug output..."
+debug_output=$(DEBUG=1 debug "This is a debug message" 2>&1)
+if ! echo "$debug_output" | grep -q '\[DEBUG\] This is a debug message'; then
+  error "Debug logging failed to output message"
+  exit 1
+fi
+success "Debug logging verification passed"
+
 # Test 1: with_timer
 reset_timing # Ensure clean state
 print_section "Test 1: with_timer"

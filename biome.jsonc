@@ -8,7 +8,7 @@
 	// https://biomejs.dev/reference/configuration/#files
 	"files": {
 		// https://biomejs.dev/reference/configuration/#filesignore
-		"include": [
+		"includes": [
 			"**",
 			"!drizzle_migrations",
 			"!node_modules",
@@ -38,7 +38,7 @@
 	},
 	"overrides": [
 		{
-			"include": [
+			"includes": [
 				"src/install/**",
 				"src/tracing.ts",
 				"src/observability/**",
@@ -60,10 +60,6 @@
 		}
 	],
 	// https://biomejs.dev/reference/configuration/#vcs
-	// https://biomejs.dev/reference/configuration/#vcs
-	"organizeImports": {
-		"enabled": true
-	},
 	// https://biomejs.dev/reference/configuration/#vcs
 	"vcs": {
 		// https://biomejs.dev/reference/configuration/#vcsclientkind
