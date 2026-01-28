@@ -4,6 +4,7 @@ import { S3Error } from "minio";
 import { testEnvConfig } from "test/envConfigSchema";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
+import { LightMyRequestResponse } from "fastify";
 
 describe("/objects/:name route", () => {
 	describe("rate limiting", () => {
@@ -61,12 +62,12 @@ describe("/objects/:name route", () => {
 			});
 
 			// Mock MinIO to return successful responses
-			const mockStream = new Readable({
-				read() {
-					this.push("test file content");
-					this.push(null);
-				},
-			});
+			// const mockStream = new Readable({
+			// 	read() {
+			// 		this.push("test file content");
+			// 		this.push(null);
+			// 	},
+			// });
 
 			const mockStat: BucketItemStat = {
 				size: 100,
@@ -87,7 +88,7 @@ describe("/objects/:name route", () => {
 			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
 
 			// Make requests until rate limit is hit
-			let lastResponse;
+			let lastResponse: LightMyRequestResponse | undefined;
 			const maxAttempts = 200; // Safety limit
 			let attempts = 0;
 
