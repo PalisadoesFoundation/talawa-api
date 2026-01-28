@@ -1,8 +1,8 @@
 import { promises as fs, type PathLike } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { SetupError, SetupErrorCode } from "scripts/setup/SetupError.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import * as AW from "../../../scripts/setup/AtomicEnvWriter.js";
 
 const {
@@ -15,8 +15,6 @@ const {
 	getErrCode,
 	readEnv,
 	restoreBackup,
-	SetupError,
-	SetupErrorCode,
 	writeTemp,
 } = AW;
 
