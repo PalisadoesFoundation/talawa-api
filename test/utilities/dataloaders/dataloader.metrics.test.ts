@@ -26,8 +26,8 @@ function createMockDb<T>(mockResults: T[]) {
 /**
  * Creates a mock DrizzleClient with sequential responses for testing DataLoaders.
  * Each call to where() will return the next result set in the array.
- * If where() is called more times than entries in mockResultsArray, it returns an empty array
- * to prevent undefined responses that could mask test bugs.
+ * If where() is called more times than entries in mockResultsArray, it throws an error
+ * to surface unexpected extra calls that could indicate test bugs.
  * Returns both the mock db and a spy for the where function.
  */
 function createSequentialMockDb<T>(mockResultsArray: T[][]) {
@@ -36,8 +36,12 @@ function createSequentialMockDb<T>(mockResultsArray: T[][]) {
 	for (const mockResults of mockResultsArray) {
 		whereSpy.mockResolvedValueOnce(mockResults);
 	}
-	// Add fallback for extra calls to prevent undefined responses
-	whereSpy.mockResolvedValue([]);
+	// Add fallback that throws for extra calls to surface unexpected behavior
+	whereSpy.mockRejectedValueOnce(
+		new Error(
+			`Unexpected extra where() call. Expected ${mockResultsArray.length} calls but received more.`,
+		),
+	);
 	const db = {
 		select: vi.fn().mockReturnThis(),
 		from: vi.fn().mockReturnThis(),
