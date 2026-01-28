@@ -270,40 +270,30 @@ describe("withQueryMetrics", () => {
 			expect(op?.count).toBe(1);
 		});
 
-		it("should reject empty operation name", async () => {
-			const perf = createPerformanceTracker();
+		it("should reject empty operation name", () => {
 			const resolver = vi.fn().mockResolvedValue("result");
 
-			const wrappedResolver = withQueryMetrics(
-				{
-					operationName: "",
-				},
-				resolver,
-			);
-
-			const context = { perf } as { perf?: PerformanceTracker };
-
-			await expect(wrappedResolver(null, {}, context)).rejects.toThrow(
-				"Operation name cannot be empty or whitespace",
-			);
+			expect(() =>
+				withQueryMetrics(
+					{
+						operationName: "",
+					},
+					resolver,
+				),
+			).toThrow("Operation name cannot be empty or whitespace");
 		});
 
-		it("should reject whitespace-only operation name", async () => {
-			const perf = createPerformanceTracker();
+		it("should reject whitespace-only operation name", () => {
 			const resolver = vi.fn().mockResolvedValue("result");
 
-			const wrappedResolver = withQueryMetrics(
-				{
-					operationName: "   ",
-				},
-				resolver,
-			);
-
-			const context = { perf } as { perf?: PerformanceTracker };
-
-			await expect(wrappedResolver(null, {}, context)).rejects.toThrow(
-				"Operation name cannot be empty or whitespace",
-			);
+			expect(() =>
+				withQueryMetrics(
+					{
+						operationName: "   ",
+					},
+					resolver,
+				),
+			).toThrow("Operation name cannot be empty or whitespace");
 		});
 	});
 
