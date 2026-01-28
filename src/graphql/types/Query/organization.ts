@@ -5,6 +5,7 @@ import {
 	queryOrganizationInputSchema,
 } from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -65,11 +66,7 @@ builder.queryField("organization", (t) =>
 				return organization;
 			};
 
-			if (ctx.perf) {
-				return await ctx.perf.time("query:organization", resolver);
-			}
-
-			return await resolver();
+			return await executeWithMetrics(ctx, "query:organization", resolver);
 		},
 		type: Organization,
 	}),
