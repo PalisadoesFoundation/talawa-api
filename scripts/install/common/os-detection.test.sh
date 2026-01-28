@@ -72,6 +72,93 @@ else
 fi
 
 ##############################################################################
+# Test: Smoke Tests for OS Detection
+##############################################################################
+
+# Setup for mocking
+setup_mock_files() {
+    TEST_TEMP_DIR="$(mktemp -d)"
+    export ETC_OS_RELEASE="$TEST_TEMP_DIR/os-release"
+    export ETC_LSB_RELEASE="$TEST_TEMP_DIR/lsb-release"
+    export PROC_VERSION="$TEST_TEMP_DIR/proc_version"
+    export PROC_OSRELEASE="$TEST_TEMP_DIR/proc_osrelease"
+}
+
+cleanup_mock_files() {
+    if [ -n "${TEST_TEMP_DIR:-}" ] && [ -d "$TEST_TEMP_DIR" ]; then
+        rm -rf "$TEST_TEMP_DIR"
+    fi
+    unset ETC_OS_RELEASE ETC_LSB_RELEASE PROC_VERSION PROC_OSRELEASE
+    unset -f uname sw_vers lsb_release cmd.exe 2>/dev/null || true
+}
+
+# Test detect_os
+test_start "detect_os - linux"
+setup_mock_files
+uname() { echo "Linux"; }
+if [ "$(detect_os)" = "linux" ]; then test_pass; else test_fail "Expected linux, got $(detect_os)"; fi
+cleanup_mock_files
+
+test_start "detect_os - macos"
+setup_mock_files
+uname() { echo "Darwin"; }
+if [ "$(detect_os)" = "macos" ]; then test_pass; else test_fail "Expected macos, got $(detect_os)"; fi
+cleanup_mock_files
+
+# Test detect_distro (Ubuntu via os-release)
+test_start "detect_distro - ubuntu"
+setup_mock_files
+uname() { echo "Linux"; }
+echo 'ID=ubuntu' > "$ETC_OS_RELEASE"
+if [ "$(detect_distro)" = "ubuntu" ]; then test_pass; else test_fail "Expected ubuntu, got $(detect_distro)"; fi
+cleanup_mock_files
+
+# Test detect_distro (Fedora via os-release)
+test_start "detect_distro - fedora"
+setup_mock_files
+uname() { echo "Linux"; }
+echo 'ID=fedora' > "$ETC_OS_RELEASE"
+if [ "$(detect_distro)" = "fedora" ]; then test_pass; else test_fail "Expected fedora, got $(detect_distro)"; fi
+cleanup_mock_files
+
+# Test detect_distro_family (Debian)
+test_start "detect_distro_family - debian"
+setup_mock_files
+uname() { echo "Linux"; }
+echo 'ID=ubuntu' > "$ETC_OS_RELEASE"
+if [ "$(detect_distro_family)" = "debian" ]; then test_pass; else test_fail "Expected debian, got $(detect_distro_family)"; fi
+cleanup_mock_files
+
+# Test detect_distro_family (RedHat)
+test_start "detect_distro_family - redhat"
+setup_mock_files
+uname() { echo "Linux"; }
+echo 'ID=rhel' > "$ETC_OS_RELEASE"
+if [ "$(detect_distro_family)" = "redhat" ]; then test_pass; else test_fail "Expected redhat, got $(detect_distro_family)"; fi
+cleanup_mock_files
+
+# Test is_wsl
+test_start "is_wsl - true"
+setup_mock_files
+echo "Linux version x.x.x-microsoft-standard-WSL2" > "$PROC_VERSION"
+if is_wsl; then test_pass; else test_fail "Expected WSL detection"; fi
+cleanup_mock_files
+
+test_start "is_wsl - false"
+setup_mock_files
+if ! is_wsl; then test_pass; else test_fail "Expected no WSL detection"; fi
+cleanup_mock_files
+
+# Test get_os_version
+test_start "get_os_version - linux"
+setup_mock_files
+uname() { echo "Linux"; }
+echo 'VERSION_ID="20.04"' > "$ETC_OS_RELEASE"
+if [ "$(get_os_version)" = "20.04" ]; then test_pass; else test_fail "Expected 20.04, got $(get_os_version)"; fi
+cleanup_mock_files
+
+
+##############################################################################
 # Test Summary
 ##############################################################################
 

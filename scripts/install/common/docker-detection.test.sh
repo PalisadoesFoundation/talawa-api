@@ -92,7 +92,7 @@ command() {
         fi
     fi
     # Default behavior for other commands or flags if needed
-    return 1
+    builtin command "$@"
 }
 
 # Mock docker

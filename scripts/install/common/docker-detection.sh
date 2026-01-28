@@ -11,6 +11,11 @@
 
 set -euo pipefail
 
+
+# Source dependencies
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/os-detection.sh"
+
 # Check Docker requirements
 # Arguments:
 #   $1: mode (optional, default: "docker")
@@ -22,7 +27,7 @@ check_docker_requirements() {
         return 0
     fi
 
-    if command -v docker >/dev/null 2>&1; then
+    if command_exists docker; then
         success "Docker is already installed: $(docker --version)"
         
         # Verify Docker is running

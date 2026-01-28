@@ -21,8 +21,7 @@ set -euo pipefail
 
 # Export OS_TYPE for shared libs
 export OS_TYPE="macos"
-GREEN='\033[0;32m'
-NC='\033[0m'
+
 
 # Arguments
 INSTALL_MODE="${1:-docker}"
@@ -152,11 +151,9 @@ if [ "$INSTALL_MODE" = "docker" ]; then
     elif [ "$SKIP_PREREQS" = "true" ]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
-        info "Installing Docker Desktop..."
-        brew install --cask docker
-        
-        warn "Docker Desktop installed. Please launch it from Applications and complete the setup."
-        warn "You may need to restart this script after Docker is running."
+        warn "Docker is required for docker mode but is not installed."
+        info "Please install Docker Desktop and re-run this script."
+        exit 1
     fi
 else
     info "Local installation mode - skipping Docker setup"
@@ -531,9 +528,9 @@ fi
 # Complete
 ##############################################################################
 echo ""
-echo -e "${GREEN}════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  Installation completed successfully!${NC}"
-echo -e "${GREEN}════════════════════════════════════════════════════════${NC}"
+echo "========================================"
+echo "✓ Installation completed successfully!"
+echo "========================================"
 echo ""
 info "Installed versions:"
 echo "  Node.js: $(node --version)"

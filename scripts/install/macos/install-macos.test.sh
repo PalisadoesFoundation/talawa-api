@@ -288,6 +288,24 @@ else
     test_fail "Expected failure when brew is missing and prereqs skipped.\nLogs:\n$OUTPUT"
 fi
 
+test_start "Validation - Invalid INSTALL_MODE"
+setup_clean_system
+OUTPUT=$(run_test_script bogus false 2>&1 || true)
+if echo "$OUTPUT" | grep -q "Invalid INSTALL_MODE"; then
+    test_pass
+else
+    test_fail "Expected validation error for invalid INSTALL_MODE.\nLogs:\n$OUTPUT"
+fi
+
+test_start "Validation - Invalid SKIP_PREREQS"
+setup_clean_system
+OUTPUT=$(run_test_script docker maybe 2>&1 || true)
+if echo "$OUTPUT" | grep -q "Invalid SKIP_PREREQS"; then
+    test_pass
+else
+    test_fail "Expected validation error for invalid SKIP_PREREQS.\nLogs:\n$OUTPUT"
+fi
+
 test_start "Validation - Detects Malicious Package.json"
 cat > "$TEST_DIR/package.json" <<EOF
 {

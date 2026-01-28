@@ -38,9 +38,10 @@ detect_distro() {
   fi
 
   # Prefer /etc/os-release if present
-  if [ -r /etc/os-release ]; then
+  local os_release="${ETC_OS_RELEASE:-/etc/os-release}"
+  if [ -r "$os_release" ]; then
     # shellcheck disable=SC1091
-    . /etc/os-release || true
+    . "$os_release" || true
     local id_lc id_like_lc candidate
     id_lc="$(_lower "${ID:-}")"
     id_like_lc="$(_lower "${ID_LIKE:-}")"
@@ -99,7 +100,7 @@ detect_distro() {
   fi
 
   # Fallbacks: lsb_release, /etc/*-release files
-  if command -v lsb_release >/dev/null 2>&1; then
+  if command_exists lsb_release; then
     local lbl
     lbl="$(_lower "$(lsb_release -si 2>/dev/null || echo "")")"
     case "$lbl" in
@@ -108,9 +109,10 @@ detect_distro() {
   fi
 
   # As last resort, try to parse /etc/*release-like files
-  if [ -r /etc/lsb-release ]; then
+  local lsb_release_file="${ETC_LSB_RELEASE:-/etc/lsb-release}"
+  if [ -r "$lsb_release_file" ]; then
     # shellcheck disable=SC1091
-    . /etc/lsb-release 2>/dev/null || true
+    . "$lsb_release_file" 2>/dev/null || true
     local distro_from_lsb
     distro_from_lsb="$(_lower "${DISTRIB_ID:-}")"
     case "$distro_from_lsb" in
@@ -142,13 +144,15 @@ detect_distro_family() {
 
 # Return 0 (success) if running under Windows Subsystem for Linux.
 is_wsl() {
+  local proc_version="${PROC_VERSION:-/proc/version}"
   # /proc/version contains "Microsoft" on many WSL kernels
-  if [ -r /proc/version ] && grep -qi 'microsoft' /proc/version 2>/dev/null; then
+  if [ -r "$proc_version" ] && grep -qi 'microsoft' "$proc_version" 2>/dev/null; then
     return 0
   fi
 
+  local proc_osrelease="${PROC_OSRELEASE:-/proc/sys/kernel/osrelease}"
   # Newer kernels may have "microsoft-standard" in osrelease or uname -r
-  if [ -r /proc/sys/kernel/osrelease ] && grep -qi 'microsoft' /proc/sys/kernel/osrelease 2>/dev/null; then
+  if [ -r "$proc_osrelease" ] && grep -qi 'microsoft' "$proc_osrelease" 2>/dev/null; then
     return 0
   fi
 
@@ -172,9 +176,10 @@ get_os_version() {
       sw_vers -productVersion 2>/dev/null || echo "unknown"
       ;;
     linux)
-      if [ -r /etc/os-release ]; then
+      local os_release="${ETC_OS_RELEASE:-/etc/os-release}"
+      if [ -r "$os_release" ]; then
         # shellcheck disable=SC1091
-        . /etc/os-release 2>/dev/null || true
+        . "$os_release" 2>/dev/null || true
         if [ -n "${VERSION_ID:-}" ]; then
           echo "${VERSION_ID}"
           return 0
@@ -185,7 +190,7 @@ get_os_version() {
       ;;
     windows)
         # Running under MSYS/MINGW — try to query cmd.exe ver and sanitize output
-      if command -v cmd.exe >/dev/null 2>&1; then
+      if command_exists cmd.exe; then
         # cmd.exe outputs something like: "Microsoft Windows [Version 10.0.19041.1165]"
         local win_ver
         win_ver="$(cmd.exe /c ver 2>/dev/null | tr -d '\r' | sed -n '1p')" || true
