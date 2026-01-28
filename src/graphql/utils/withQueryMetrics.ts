@@ -59,16 +59,16 @@ export function withQueryMetrics<
 ): (parent: TParent, args: TArgs, context: TContext) => Promise<TResult> {
 	const { operationName } = options;
 
+	// Validate operation name at wrapper creation time (once) instead of runtime (every call)
+	if (!operationName || !operationName.trim()) {
+		throw new Error("Operation name cannot be empty or whitespace");
+	}
+
 	return async (
 		parent: TParent,
 		args: TArgs,
 		context: TContext,
 	): Promise<TResult> => {
-		// Validate operation name is not empty or whitespace
-		if (!operationName || !operationName.trim()) {
-			throw new Error("Operation name cannot be empty or whitespace");
-		}
-
 		// If performance tracker is available, use it to track execution time
 		if (context.perf) {
 			return await context.perf.time(operationName, async () => {
