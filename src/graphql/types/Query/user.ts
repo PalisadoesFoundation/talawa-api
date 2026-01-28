@@ -5,9 +5,9 @@ import {
 	queryUserInputSchema,
 } from "~/src/graphql/inputs/QueryUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 
 const queryUserArgumentsSchema = z.object({
 	input: queryUserInputSchema,
