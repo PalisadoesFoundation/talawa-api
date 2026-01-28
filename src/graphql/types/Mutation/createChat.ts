@@ -91,18 +91,6 @@ builder.mutationField("createChat", (t) =>
 			if (parsedArgs.input.name === "__codecov_probe__") {
 				ctx.log.info("Codecov probe reached");
 			}
-			// TEMP: add extra uncovered lines so the integration flag % visibly moves
-			if (parsedArgs.input.name === "__codecov_probe_extra__") {
-				const probe = {
-					stage: "a",
-					path: parsedArgs.input.organizationId,
-					meta: {
-						reason: "coverage-visibility",
-						hint: "remove after verification",
-					},
-				};
-				ctx.log.info(probe);
-			}
 
 			const [currentUser, existingOrganization] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
