@@ -161,4 +161,4 @@ echo "Total tests run:    $TESTS_RUN"
 echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
 echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
 
-if [ $TESTS_FAILED -eq 0 ]; then exit 0; else exit 1; fi
+[ "$TESTS_FAILED" -eq 0 ]
