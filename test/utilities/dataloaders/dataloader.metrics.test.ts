@@ -48,17 +48,39 @@ function createSequentialMockDb<T>(mockResultsArray: T[][]) {
 
 /**
  * Creates a mock CacheService for testing cache integration.
+ * Optionally tracks cache hits/misses in a performance tracker.
  */
-function createMockCache(cachedValues: Map<string, unknown> = new Map()) {
+function createMockCache(
+	cachedValues: Map<string, unknown> = new Map(),
+	perf?: ReturnType<typeof createPerformanceTracker>,
+) {
 	return {
 		get: vi.fn().mockImplementation((key: string) => {
-			return Promise.resolve(cachedValues.get(key) ?? null);
+			const value = cachedValues.get(key) ?? null;
+			if (perf) {
+				if (value !== null) {
+					perf.trackCacheHit();
+				} else {
+					perf.trackCacheMiss();
+				}
+			}
+			return Promise.resolve(value);
 		}),
 		set: vi.fn().mockResolvedValue(undefined),
 		del: vi.fn().mockResolvedValue(undefined),
 		clearByPattern: vi.fn().mockResolvedValue(undefined),
 		mget: vi.fn().mockImplementation((keys: string[]) => {
-			return Promise.resolve(keys.map((k) => cachedValues.get(k) ?? null));
+			const results = keys.map((k) => cachedValues.get(k) ?? null);
+			if (perf) {
+				results.forEach((value) => {
+					if (value !== null) {
+						perf.trackCacheHit();
+					} else {
+						perf.trackCacheMiss();
+					}
+				});
+			}
+			return Promise.resolve(results);
 		}),
 		mset: vi.fn().mockResolvedValue(undefined),
 	} as unknown as CacheService;
@@ -389,7 +411,7 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			const perf = createPerformanceTracker();
 			const cachedUser = { id: "u1", name: "Cached User" };
 			const cachedValues = new Map([[entityKey("user", "u1"), cachedUser]]);
-			const mockCache = createMockCache(cachedValues);
+			const mockCache = createMockCache(cachedValues, perf);
 			const { db, whereSpy } = createMockDb([]);
 
 			const loader = createUserLoader(db, mockCache, perf);
@@ -401,13 +423,15 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			const snapshot = perf.snapshot();
 			expect(snapshot.ops["db:users.byId"]).toBeDefined();
 			expect(snapshot.ops["db:users.byId"]?.count).toBe(1);
+			expect(snapshot.cacheHits).toBe(1);
+			expect(snapshot.cacheMisses).toBe(0);
 		});
 
 		it("cache hits are recorded separately from DB metrics", async () => {
 			const perf = createPerformanceTracker();
 			const cachedUser = { id: "u1", name: "Cached User" };
 			const cachedValues = new Map([[entityKey("user", "u1"), cachedUser]]);
-			const mockCache = createMockCache(cachedValues);
+			const mockCache = createMockCache(cachedValues, perf);
 			const { db, whereSpy } = createMockDb([]);
 
 			const loader = createUserLoader(db, mockCache, perf);
@@ -418,11 +442,13 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			expect(snapshot.ops["db:users.byId"]).toBeDefined();
 			expect(snapshot.ops["db:users.byId"]?.count).toBe(1);
 			expect(whereSpy).not.toHaveBeenCalled();
+			expect(snapshot.cacheHits).toBe(1);
+			expect(snapshot.cacheMisses).toBe(0);
 		});
 
 		it("cache misses trigger DB calls with metrics", async () => {
 			const perf = createPerformanceTracker();
-			const mockCache = createMockCache();
+			const mockCache = createMockCache(new Map(), perf);
 			const dbUser = { id: "u1", name: "DB User" };
 			const { db, whereSpy } = createMockDb([dbUser]);
 
@@ -435,13 +461,15 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			const snapshot = perf.snapshot();
 			expect(snapshot.ops["db:users.byId"]).toBeDefined();
 			expect(snapshot.ops["db:users.byId"]?.count).toBe(1);
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(1);
 		});
 
 		it("both cache and DB metrics are tracked correctly", async () => {
 			const perf = createPerformanceTracker();
 			const cachedUser = { id: "u1", name: "Cached User" };
 			const cachedValues = new Map([[entityKey("user", "u1"), cachedUser]]);
-			const mockCache = createMockCache(cachedValues);
+			const mockCache = createMockCache(cachedValues, perf);
 			const dbUser = { id: "u2", name: "DB User" };
 			const { db, whereSpy } = createMockDb([dbUser]);
 
@@ -459,6 +487,8 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			const snapshot = perf.snapshot();
 			expect(snapshot.ops["db:users.byId"]).toBeDefined();
 			expect(snapshot.ops["db:users.byId"]?.count).toBe(2);
+			expect(snapshot.cacheHits).toBe(1);
+			expect(snapshot.cacheMisses).toBe(1);
 		});
 	});
 
