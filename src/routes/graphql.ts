@@ -442,11 +442,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						(error.message === "Graphql validation error" ||
 							error.message.startsWith("Syntax Error:") ||
 							error.message.startsWith("Cannot query field") ||
-							error.message.includes("Unknown query") ||
-							error.message.includes("Unknown field") ||
-							error.message.includes("Must provide query string.") ||
-							error.message?.startsWith("Unknown argument") ||
-							error.message?.startsWith('Variable "$')));
+							/^Unknown (query|field)\b/.test(error.message) ||
+							error.message === "Must provide query string." ||
+							error.message.startsWith("Unknown argument") ||
+							error.message.startsWith('Variable "$')));
 
 				if (isGraphQLValidationError) {
 					return {

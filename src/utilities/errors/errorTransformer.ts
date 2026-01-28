@@ -1,5 +1,5 @@
 import type { FastifyError } from "fastify";
-import { treeifyError, ZodError } from "zod";
+import * as z from "zod";
 import { rootLogger } from "../logging/logger";
 import { ErrorCode } from "./errorCodes";
 import { TalawaRestError } from "./TalawaRestError";
@@ -86,12 +86,12 @@ export function normalizeError(err: unknown): NormalizedError {
 	}
 
 	// Zod validation error - occurs when data doesn't match Zod schema
-	if (err instanceof ZodError) {
+	if (err instanceof z.ZodError) {
 		return {
 			code: ErrorCode.INVALID_ARGUMENTS,
 			message: "Invalid input",
 			statusCode: 400,
-			details: treeifyError(err),
+			details: z.treeifyError(err),
 		};
 	}
 

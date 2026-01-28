@@ -124,7 +124,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
 
-	it("should return 403 with UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES for authorization failures", async () => {
+	it("should return 401 with UNAUTHENTICATED when authorization header is missing", async () => {
 		const response = await server.inject({
 			method: "POST",
 			url: "/graphql",
@@ -277,7 +277,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
 
-	it("should demonstrate UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error pattern", async () => {
+	it("should return 401 UNAUTHENTICATED when accessing protected resource without authentication", async () => {
 		const response = await server.inject({
 			method: "POST",
 			url: "/graphql",

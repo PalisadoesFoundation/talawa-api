@@ -199,7 +199,7 @@ describe("GraphQL Error Validation Logic", () => {
 
 	it("should handle error message containing 'Unknown query'", () => {
 		const error = {
-			message: 'Query "Unknown query" not found', // contrived, just needs to contain string
+			message: 'Unknown query "foo" not found',
 			locations: [],
 			path: [],
 		};
@@ -1582,6 +1582,8 @@ describe("GraphQL Error Validation Logic", () => {
 
 			expect(firstError.message).toContain("Cannot return null");
 			expect(firstError.extensions?.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(firstError.extensions?.httpStatus).toBe(500);
+			expect(firstError.extensions?.correlationId).toBeDefined();
 		});
 	});
 

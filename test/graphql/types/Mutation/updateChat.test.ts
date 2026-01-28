@@ -138,7 +138,17 @@ suite("updateChat mutation", () => {
 
 		expect(result.data?.updateChat ?? null).toBeNull();
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toMatch(/Graphql validation error/i);
+
+		const firstError = result.errors?.[0];
+		expect(firstError).toBeDefined();
+		expect(firstError?.message).toBe("Graphql validation error");
+		expect(firstError?.extensions).toEqual(
+			expect.objectContaining({
+				code: "invalid_arguments",
+				httpStatus: 400,
+				correlationId: expect.any(String),
+			}),
+		);
 	});
 
 	test("successfully uploads and updates chat avatar with valid image", async () => {
@@ -503,7 +513,15 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toBe("Internal Server Error");
+		const firstError = result.errors?.[0];
+		expect(firstError).toBeDefined();
+		expect(firstError?.extensions).toEqual(
+			expect.objectContaining({
+				code: "internal_server_error",
+				httpStatus: 500,
+				correlationId: expect.any(String),
+			}),
+		);
 
 		vi.restoreAllMocks();
 	});
