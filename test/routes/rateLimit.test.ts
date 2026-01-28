@@ -106,6 +106,16 @@ class FakeRedisZ {
 	async expire(_key: string, _sec: number) {
 		/* noop */
 	}
+
+	// Helper for testing
+	populate(key: string, count: number) {
+		const arr = this.z.get(key) ?? [];
+		const now = Date.now();
+		for (let i = 0; i < count; i++) {
+			arr.push({ s: now, m: `mock-${i}` });
+		}
+		this.z.set(key, arr);
+	}
 }
 
 describe("REST rate limiting", () => {
@@ -259,7 +269,8 @@ describe("REST rate limiting", () => {
 
 	it("should allow healthcheck requests and limit when exceeded", async () => {
 		const app = Fastify();
-		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
+		const fakeRedis = new FakeRedisZ();
+		app.decorate("redis", fakeRedis as unknown as FastifyRedis);
 		await app.register(errorHandlerPlugin);
 		await app.register(rateLimitPlugin);
 		await app.register(healthcheck);
@@ -271,36 +282,11 @@ describe("REST rate limiting", () => {
 		expect(r1.headers["x-ratelimit-limit"]).toBe("600");
 
 		// Simulate exhausting the limit
-		// We'll create a new app instance with a limit of 1 for healthcheck to test 429
-		// since making 601 requests is slow/expensive in test
-	});
+		const key = "talawa:v1:rl:healthcheck:ip:127.0.0.1:/healthcheck:GET";
+		fakeRedis.populate(key, 600);
 
-	it("should return 429 when healthcheck limit is exceeded", async () => {
-		const app = Fastify();
-		app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
-		await app.register(errorHandlerPlugin);
-		await app.register(rateLimitPlugin);
-
-		// Override healthcheck route with custom strict limit for testing
-		app.get(
-			"/healthcheck-strict",
-			{
-				preHandler: app.rateLimit({
-					name: "healthcheck-strict",
-					windowMs: 60000,
-					max: 1,
-				}),
-			},
-			async (_request, reply) =>
-				reply.status(200).send({
-					health: "ok",
-				}),
-		);
-
-		const r1 = await app.inject({ method: "GET", url: "/healthcheck-strict" });
-		expect(r1.statusCode).toBe(200);
-
-		const r2 = await app.inject({ method: "GET", url: "/healthcheck-strict" });
+		// Next request should fail
+		const r2 = await app.inject({ method: "GET", url: "/healthcheck" });
 		expect(r2.statusCode).toBe(429);
 		expect(r2.headers["x-ratelimit-remaining"]).toBe("0");
 	});

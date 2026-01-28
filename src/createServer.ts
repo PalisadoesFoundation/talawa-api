@@ -79,7 +79,6 @@ export const createServer = async (options?: {
 
 	fastify.decorate("envConfig", envConfig);
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
-	// fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
 	fastify.register(fastifyCors, {

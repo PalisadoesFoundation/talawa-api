@@ -1,3 +1,6 @@
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+
 export type RateLimitTier = {
 	name: string;
 	windowMs: number;
@@ -21,5 +24,13 @@ export const rateLimitTiers = {
 };
 
 export function getTier(name: keyof typeof rateLimitTiers): RateLimitTier {
-	return rateLimitTiers[name];
+	const tier = rateLimitTiers[name];
+	if (!tier) {
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: `Rate limit tier '${name}' not found in configuration`,
+			statusCodeOverride: 500,
+		});
+	}
+	return tier;
 }
