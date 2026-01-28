@@ -1,216 +1,208 @@
-import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
-import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
-import { mercuriusClient } from "../client";
-import {
-	Mutation_createUser,
-	Mutation_deleteUser,
-	Query_signIn,
-	Query_user,
-} from "../documentNodes";
+import type { GraphQLObjectType } from "graphql";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import { ulid } from "ulidx";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { schema } from "~/src/graphql/schema";
+import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data?.signIn?.authenticationToken;
-assertToBeNonNullish(authToken);
+describe("Query user - Performance Tracking", () => {
+	let userQueryResolver: (
+		_parent: unknown,
+		args: { input: { id: string } },
+		ctx: ReturnType<typeof createMockGraphQLContext>["context"],
+	) => Promise<unknown>;
 
-suite("Query field user - Functional Testing", () => {
-	suite("when input validation fails", () => {
-		test("should handle invalid input gracefully", async () => {
-			const result = await mercuriusClient.query(Query_user, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: "", // empty string validation failure
-					},
-				},
-			});
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.clearAllMocks();
+		const queryType = schema.getType("Query") as GraphQLObjectType;
+		const userField = queryType.getFields().user;
+		if (!userField) {
+			throw new Error("User query field not found");
+		}
+		userQueryResolver = userField.resolve as typeof userQueryResolver;
+		if (!userQueryResolver) {
+			throw new Error("User query resolver not found");
+		}
+	});
 
-			assertToBeNonNullish(result.errors);
-			expect(result.errors).toHaveLength(1);
-			expect(result.errors).toContainEqual(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: expect.any(Array),
+	afterEach(() => {
+		vi.useRealTimers();
+		vi.clearAllMocks();
+	});
+
+	describe("when performance tracker is available", () => {
+		it("should track query execution time on successful query", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const userId = ulid();
+			const mockUser = {
+				id: userId,
+				name: "Test User",
+				emailAddress: "test@example.com",
+				role: "regular" as const,
+				isEmailAddressVerified: true,
+				avatarMimeType: null,
+				avatarName: null,
+				creatorId: null,
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				passwordHash: "hashedpassword",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						setTimeout(() => resolve(mockUser), 10);
 					}),
-				}),
 			);
+
+			const resultPromise = userQueryResolver(
+				null,
+				{ input: { id: userId } },
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toEqual(mockUser);
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:user"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(Math.ceil(op?.ms ?? 0)).toBeGreaterThanOrEqual(10);
 		});
 
-		test("should return error for non-existent user ID", async () => {
-			const result = await mercuriusClient.query(Query_user, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: faker.string.uuid(),
-					},
-				},
-			});
+		it("should track query execution time on validation error", async () => {
+			const perf = createPerformanceTracker();
+			const { context } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
 
-			assertToBeNonNullish(result.errors);
-			expect(result.errors).toHaveLength(1);
-			expect(result.errors).toContainEqual(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input", "id"],
-							}),
-						]),
+			// Empty ID triggers validation error
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(
+					userQueryResolver(null, { input: { id: "" } }, context),
+				).rejects.toThrow(),
+			]);
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:user"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track query execution time on not-found error", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						setTimeout(() => resolve(undefined), 5);
 					}),
-				}),
 			);
+
+			const resultPromise = userQueryResolver(
+				null,
+				{ input: { id: ulid() } },
+				context,
+			);
+
+			await expect(async () => {
+				await vi.runAllTimersAsync();
+				await resultPromise;
+			}).rejects.toThrow();
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:user"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(Math.ceil(op?.ms ?? 0)).toBeGreaterThanOrEqual(5);
 		});
 	});
 
-	suite("when user exists", () => {
-		test("should successfully return user data", async () => {
-			// Create a user first
-			const createUserResult = await mercuriusClient.mutate(
-				Mutation_createUser,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Test User ${faker.string.ulid()}`,
-							emailAddress: faker.internet.email().toLowerCase(),
-							password: faker.internet.password({ length: 20 }),
-							role: "regular" as const,
-							isEmailAddressVerified: true,
-						},
-					},
-				},
+	describe("when performance tracker is not available", () => {
+		it("should execute query successfully without perf tracker", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = undefined;
+
+			const userId = ulid();
+			const mockUser = {
+				id: userId,
+				name: "Test User No Perf",
+				emailAddress: "test@example.com",
+				role: "regular" as const,
+				isEmailAddressVerified: true,
+				avatarMimeType: null,
+				avatarName: null,
+				creatorId: null,
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				passwordHash: "hashedpassword",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						setTimeout(() => resolve(mockUser), 5);
+					}),
 			);
 
-			const userId = createUserResult.data?.createUser?.user?.id;
-			expect(createUserResult.errors).toBeUndefined();
-			assertToBeNonNullish(userId);
-
-			// Query the user
-			const result = await mercuriusClient.query(Query_user, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: userId,
-					},
-				},
-			});
-
-			// Verify the query was successful
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.user).toBeDefined();
-			expect(result.data?.user?.id).toBe(userId);
-			expect(result.data?.user?.name).toBe(
-				createUserResult.data?.createUser?.user?.name,
+			const resultPromise = userQueryResolver(
+				null,
+				{ input: { id: userId } },
+				context,
 			);
-			expect(result.data?.user?.emailAddress).toBe(
-				createUserResult.data?.createUser?.user?.emailAddress,
-			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
 
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: userId,
-					},
-				},
-			});
+			expect(result).toEqual(mockUser);
 		});
 
-		test("should handle multiple queries for different users", async () => {
-			// Create two users
-			const createUser1Result = await mercuriusClient.mutate(
-				Mutation_createUser,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `User One ${faker.string.ulid()}`,
-							emailAddress: faker.internet.email().toLowerCase(),
-							password: faker.internet.password({ length: 20 }),
-							role: "regular" as const,
-							isEmailAddressVerified: true,
-						},
-					},
-				},
+		it("should handle validation error without perf tracker", async () => {
+			const { context } = createMockGraphQLContext(true, "user-123");
+			context.perf = undefined;
+
+			await Promise.all([
+				vi.runAllTimersAsync(),
+				expect(
+					userQueryResolver(null, { input: { id: "" } }, context),
+				).rejects.toThrow(),
+			]);
+		});
+
+		it("should handle not-found error without perf tracker", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = undefined;
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						setTimeout(() => resolve(undefined), 5);
+					}),
 			);
 
-			const createUser2Result = await mercuriusClient.mutate(
-				Mutation_createUser,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `User Two ${faker.string.ulid()}`,
-							emailAddress: faker.internet.email().toLowerCase(),
-							password: faker.internet.password({ length: 20 }),
-							role: "regular" as const,
-							isEmailAddressVerified: true,
-						},
-					},
-				},
+			const resultPromise = userQueryResolver(
+				null,
+				{ input: { id: ulid() } },
+				context,
 			);
 
-			const user1Id = createUser1Result.data?.createUser?.user?.id;
-			const user2Id = createUser2Result.data?.createUser?.user?.id;
-			assertToBeNonNullish(user1Id);
-			assertToBeNonNullish(user2Id);
-
-			// Query both users
-			const result1 = await mercuriusClient.query(Query_user, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: user1Id,
-					},
-				},
-			});
-
-			const result2 = await mercuriusClient.query(Query_user, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: user2Id,
-					},
-				},
-			});
-
-			// Verify both queries succeeded
-			expect(result1.errors).toBeUndefined();
-			expect(result2.errors).toBeUndefined();
-			expect(result1.data?.user?.id).toBe(user1Id);
-			expect(result2.data?.user?.id).toBe(user2Id);
-			expect(result1.data?.user?.name).toContain("User One");
-			expect(result2.data?.user?.name).toContain("User Two");
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: user1Id,
-					},
-				},
-			});
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: user2Id,
-					},
-				},
-			});
+			await expect(async () => {
+				await vi.runAllTimersAsync();
+				await resultPromise;
+			}).rejects.toThrow();
 		});
 	});
 });
