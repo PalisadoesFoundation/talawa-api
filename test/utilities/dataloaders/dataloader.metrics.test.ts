@@ -628,20 +628,7 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 	});
 
 	describe("Integration Tests", () => {
-		it("works with real performance tracker (not mocks)", async () => {
-			const perf = createPerformanceTracker();
-			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
-
-			const loader = createUserLoader(db, null, perf);
-			await loader.load("u1");
-
-			const snapshot = perf.snapshot();
-			expect(snapshot.ops["db:users.byId"]).toBeDefined();
-			expect(snapshot.ops["db:users.byId"]?.count).toBe(1);
-			expect(whereSpy).toHaveBeenCalledTimes(1);
-		});
-
-		it("works with mock database (existing pattern: createMockDb)", async () => {
+		it("works with real performance tracker and mock database", async () => {
 			const perf = createPerformanceTracker();
 			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
 
@@ -653,13 +640,14 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 
 			const snapshot = perf.snapshot();
 			expect(snapshot.ops["db:users.byId"]).toBeDefined();
+			expect(snapshot.ops["db:users.byId"]?.count).toBe(1);
 		});
 
 		it("works with mock cache (existing pattern: createMockCache)", async () => {
 			const perf = createPerformanceTracker();
 			const cachedUser = { id: "u1", name: "Cached User" };
 			const cachedValues = new Map([[entityKey("user", "u1"), cachedUser]]);
-			const mockCache = createMockCache(cachedValues);
+			const mockCache = createMockCache(cachedValues, perf);
 			const { db, whereSpy } = createMockDb([]);
 
 			const loader = createUserLoader(db, mockCache, perf);
@@ -670,6 +658,8 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 
 			const snapshot = perf.snapshot();
 			expect(snapshot.ops["db:users.byId"]).toBeDefined();
+			expect(snapshot.cacheHits).toBe(1);
+			expect(snapshot.cacheMisses).toBe(0);
 		});
 
 		it("end-to-end: create loaders → load data → verify metrics", async () => {
