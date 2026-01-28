@@ -7,6 +7,7 @@ import {
 import { User } from "~/src/graphql/types/User/User";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 
 const queryUserArgumentsSchema = z.object({
 	input: queryUserInputSchema,
@@ -64,11 +65,7 @@ builder.queryField("user", (t) =>
 				return user;
 			};
 
-			if (ctx.perf) {
-				return await ctx.perf.time("query:user", resolver);
-			}
-
-			return await resolver();
+			return await executeWithMetrics(ctx, "query:user", resolver);
 		},
 		type: User,
 	}),

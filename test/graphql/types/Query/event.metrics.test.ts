@@ -694,6 +694,68 @@ describe("Query event - Performance Tracking", () => {
 			expect(op?.count).toBe(1);
 		});
 
+		it("should allow org admin to access invite-only event", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const eventId = ulid();
+			const organizationId = ulid();
+			const mockEvent = {
+				id: eventId,
+				name: "Invite-Only Event",
+				description: null,
+				startAt: new Date(),
+				endAt: new Date(),
+				location: null,
+				allDay: false,
+				isPublic: false,
+				isRegisterable: true,
+				isInviteOnly: true,
+				organizationId,
+				creatorId: "other-user",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+				isRecurringEventTemplate: false,
+				attachments: [],
+				eventType: "standalone" as const,
+			};
+
+			vi.mocked(eventQueries.getEventsByIds).mockImplementation(async () => {
+				await vi.advanceTimersByTimeAsync(0);
+				return [mockEvent];
+			});
+
+			// Regular user (not system admin)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+			});
+
+			// Organization admin (this grants access)
+			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				{ role: "administrator" },
+			);
+
+			// Not an attendee (but org admin access overrides invite-only)
+			mocks.drizzleClient.query.eventAttendeesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			const result = await eventQueryResolver(
+				null,
+				{ input: { id: eventId } },
+				context,
+			);
+
+			// Should return event because user is org admin
+			expect(result).toEqual(mockEvent);
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["query:event"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+
 		it("should handle recurring event instance attendee check", async () => {
 			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
