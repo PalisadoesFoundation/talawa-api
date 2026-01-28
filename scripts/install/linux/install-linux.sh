@@ -257,28 +257,6 @@ validate_repository() {
     fi
 }
 
-validate_disk_space() {
-    # Verify available disk space (minimum 2GB)
-    AVAILABLE_SPACE_KB=$(df -k "$REPO_ROOT" | awk 'NR==2 {print $4}')
-    if [ -z "$AVAILABLE_SPACE_KB" ]; then
-        warn "Could not determine available disk space. Proceeding with installation."
-        info "Manually verify at least 2GB is available: df -h $REPO_ROOT"
-        return 0
-    fi
-
-    if [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]; then
-        AVAILABLE_SPACE_MB=$((AVAILABLE_SPACE_KB / 1024))
-        REQUIRED_SPACE_MB=$((MIN_DISK_SPACE_KB / 1024))
-        error "Insufficient disk space. Available: ${AVAILABLE_SPACE_MB}MB, Required: ${REQUIRED_SPACE_MB}MB (2GB)"
-        echo ""
-        info "Remediation steps:"
-        echo "  1. Free up disk space by removing unnecessary files"
-        echo "  2. Check disk usage: df -h"
-        echo "  3. Find large files: du -sh * | sort -rh | head -10"
-        exit 1
-    fi
-}
-
 check_git_repo() {
     # Verify git repository exists
     if [ ! -d ".git" ]; then
@@ -309,7 +287,7 @@ check_git_repo() {
 }
 
 validate_repository
-validate_disk_space
+validate_disk_space 2000 || exit 1
 check_git_repo
 
 success "Repository validation passed: talawa-api"
