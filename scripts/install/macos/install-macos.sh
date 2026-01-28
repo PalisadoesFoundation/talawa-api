@@ -74,10 +74,10 @@ cd "$REPO_ROOT"
 
 # Local implementation of prerequisites validation (using helpers where possible)
 validate_prerequisites() {
-if [ ! -f "package.json" ]; then
-    error "package.json not found. Please run this script from the talawa-api repository root."
-    exit 1
-fi
+    if [ ! -f "package.json" ]; then
+        error "package.json not found. Please run this script from the talawa-api repository root."
+        exit 1
+    fi
 }
 # Call validate_prerequisites
 validate_prerequisites
