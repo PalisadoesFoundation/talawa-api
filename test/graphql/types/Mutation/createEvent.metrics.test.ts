@@ -9,6 +9,7 @@ import {
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("Mutation createEvent - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -212,8 +213,8 @@ describe("Mutation createEvent - Performance Tracking", () => {
 						name: "Test Event",
 						description: "Test Description",
 						organizationId,
-						startAt: startAt.toISOString(),
-						endAt: endAt.toISOString(),
+						startAt,
+						endAt,
 						allDay: false,
 						isPublic: false,
 						isRegisterable: false,
@@ -259,17 +260,23 @@ describe("Mutation createEvent - Performance Tracking", () => {
 						name: "Test Event",
 						description: "Test Description",
 						organizationId: faker.string.uuid(),
-						startAt: pastDate.toISOString(),
-						endAt: new Date(pastDate.getTime() + 3600000).toISOString(),
+						startAt: pastDate,
+						endAt: new Date(pastDate.getTime() + 3600000),
 					},
 				},
 				context,
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(
-				/Start date must be in the future/,
-			);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createEvent"];
@@ -390,8 +397,8 @@ describe("Mutation createEvent - Performance Tracking", () => {
 						name: "Test Event",
 						description: "Test Description",
 						organizationId,
-						startAt: startAt.toISOString(),
-						endAt: endAt.toISOString(),
+						startAt,
+						endAt,
 					},
 				},
 				context,
@@ -517,8 +524,8 @@ describe("Mutation createEvent - Performance Tracking", () => {
 						name: "Test Event",
 						description: "Test Description",
 						organizationId,
-						startAt: startAt.toISOString(),
-						endAt: endAt.toISOString(),
+						startAt,
+						endAt,
 					},
 				},
 				context,

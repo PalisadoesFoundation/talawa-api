@@ -4,6 +4,7 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("Mutation createOrganization - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -159,9 +160,15 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(
-				/invalid_arguments|validation/i,
-			);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createOrganization"];
@@ -188,7 +195,56 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/unauthenticated/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time on authorization error", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+			context.perf = perf;
+
+			// Mock non-admin user
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+				id: "regular-user",
+				role: "regular" as const,
+			});
+
+			const resultPromise = createOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						name: `Test Org ${faker.string.ulid()}`,
+						description: "Test Description",
+					},
+				},
+				context,
+			);
+
+			await vi.runAllTimersAsync();
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthorized_action",
+				);
+			}
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createOrganization"];
@@ -267,9 +323,15 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(
-				/invalid_arguments|validation/i,
-			);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
 		});
 
 		it("should handle authentication error without perf tracker", async () => {
@@ -288,7 +350,15 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/unauthenticated/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
 		});
 	});
 });

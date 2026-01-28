@@ -69,7 +69,7 @@ export function withMutationMetrics<
 		context: TContext,
 	): Promise<TResult> => {
 		// If performance tracker is available, use it to track execution time
-		if (context.perf) {
+		if (context?.perf) {
 			return await context.perf.time(operationName, async () => {
 				return await resolver(parent, args, context);
 			});

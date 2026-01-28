@@ -2,8 +2,11 @@ import { faker } from "@faker-js/faker";
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { refreshTokensTable } from "~/src/drizzle/tables/refreshTokens";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("Mutation createUser - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -49,6 +52,11 @@ describe("Mutation createUser - Performance Tracking", () => {
 			.mockResolvedValueOnce(mockAdminUser) // Current user check
 			.mockResolvedValueOnce(undefined); // Existing user check
 
+		// Mock refresh token record
+		const mockRefreshToken = {
+			id: faker.string.uuid(),
+		};
+
 		// Mock transaction
 		(
 			mocks.drizzleClient as unknown as {
@@ -59,10 +67,28 @@ describe("Mutation createUser - Performance Tracking", () => {
 			.mockImplementation(
 				async (callback: (tx: unknown) => Promise<unknown>) => {
 					const mockTx = {
-						insert: vi.fn().mockReturnValue({
-							values: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([mockCreatedUser]),
-							}),
+						insert: vi.fn().mockImplementation((table: unknown) => {
+							// Return different mock chains based on the table being inserted
+							if (table === usersTable) {
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([mockCreatedUser]),
+									}),
+								};
+							}
+							if (table === refreshTokensTable) {
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([mockRefreshToken]),
+									}),
+								};
+							}
+							// Fallback for any other table
+							return {
+								values: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([]),
+								}),
+							};
 						}),
 					};
 					return callback(mockTx as never);
@@ -118,7 +144,24 @@ describe("Mutation createUser - Performance Tracking", () => {
 			await vi.runAllTimersAsync();
 			const result = await resultPromise;
 
+			// Verify the mutation returned the expected structure
 			expect(result).toBeDefined();
+			expect(result).toHaveProperty("user");
+			expect(result).toHaveProperty("authenticationToken");
+			expect(result).toHaveProperty("refreshToken");
+			expect((result as { user: unknown }).user).toMatchObject({
+				name: "Test User",
+				emailAddress,
+				role: "regular",
+				isEmailAddressVerified: false,
+			});
+			expect((result as { user: { id: string } }).user).toHaveProperty("id");
+			expect(
+				(result as { authenticationToken: string }).authenticationToken,
+			).toBeTypeOf("string");
+			expect((result as { refreshToken: string }).refreshToken).toBeTypeOf(
+				"string",
+			);
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createUser"];
@@ -148,7 +191,15 @@ describe("Mutation createUser - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/invalid_arguments/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createUser"];
@@ -177,7 +228,15 @@ describe("Mutation createUser - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/unauthenticated/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createUser"];
@@ -212,7 +271,15 @@ describe("Mutation createUser - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/unauthorized_action/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthorized_action",
+				);
+			}
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createUser"];
@@ -271,7 +338,15 @@ describe("Mutation createUser - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/invalid_arguments/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
 		});
 
 		it("should handle authentication error without perf tracker", async () => {
@@ -292,7 +367,15 @@ describe("Mutation createUser - Performance Tracking", () => {
 			);
 
 			await vi.runAllTimersAsync();
-			await expect(resultPromise).rejects.toThrow(/unauthenticated/i);
+			try {
+				await resultPromise;
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
 		});
 	});
 });
