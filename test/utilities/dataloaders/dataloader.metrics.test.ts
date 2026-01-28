@@ -321,7 +321,8 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 		it("DataLoaders work without perf tracker (null)", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
 
-			const loader = createUserLoader(db, null, undefined);
+			// @ts-expect-error - Testing runtime null behavior, TypeScript expects undefined
+			const loader = createUserLoader(db, null, null);
 			const result = await loader.load("u1");
 
 			expect(result).toEqual({ id: "u1", name: "User 1" });
@@ -341,7 +342,8 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 		it("createDataloaders(db, cache, null) doesn't crash", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
 
-			const loaders = createDataloaders(db, null, undefined);
+			// @ts-expect-error - Testing runtime null behavior, TypeScript expects undefined
+			const loaders = createDataloaders(db, null, null);
 			const result = await loaders.user.load("u1");
 
 			expect(result).toEqual({ id: "u1", name: "User 1" });
@@ -356,10 +358,14 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 				[{ id: "ai1", organizationId: "org1" }],
 			]);
 
-			const userLoader = createUserLoader(db, null, undefined);
-			const orgLoader = createOrganizationLoader(db, null, undefined);
-			const eventLoader = createEventLoader(db, null, undefined);
-			const actionItemLoader = createActionItemLoader(db, null, undefined);
+			// @ts-expect-error - Testing runtime null behavior, TypeScript expects undefined
+			const userLoader = createUserLoader(db, null, null);
+			// @ts-expect-error - Testing runtime null behavior, TypeScript expects undefined
+			const orgLoader = createOrganizationLoader(db, null, null);
+			// @ts-expect-error - Testing runtime null behavior, TypeScript expects undefined
+			const eventLoader = createEventLoader(db, null, null);
+			// @ts-expect-error - Testing runtime null behavior, TypeScript expects undefined
+			const actionItemLoader = createActionItemLoader(db, null, null);
 
 			const results = await Promise.all([
 				userLoader.load("u1"),
@@ -498,6 +504,30 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			const op = snapshot.ops["db:users.byId"];
 			expect(op).toBeDefined();
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("wrapBatchWithMetrics throws for empty operation name", async () => {
+			const perf = createPerformanceTracker();
+			const batchFn = vi.fn().mockResolvedValue([]);
+
+			const wrapped = wrapBatchWithMetrics("", perf, batchFn);
+
+			await expect(wrapped(["id1"])).rejects.toThrow(
+				"Operation name cannot be empty or whitespace",
+			);
+			expect(batchFn).not.toHaveBeenCalled();
+		});
+
+		it("wrapBatchWithMetrics throws for whitespace-only operation name", async () => {
+			const perf = createPerformanceTracker();
+			const batchFn = vi.fn().mockResolvedValue([]);
+
+			const wrapped = wrapBatchWithMetrics("   ", perf, batchFn);
+
+			await expect(wrapped(["id1"])).rejects.toThrow(
+				"Operation name cannot be empty or whitespace",
+			);
+			expect(batchFn).not.toHaveBeenCalled();
 		});
 	});
 
