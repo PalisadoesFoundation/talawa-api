@@ -439,7 +439,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						error.originalError.code === "MER_ERR_GQL_VALIDATION") ||
 					// Check for specific error messages
 					(error.message &&
-						(error.message === "Graphql validation error" ||
+						(error.message.toLowerCase() === "graphql validation error" ||
 							error.message.startsWith("Syntax Error:") ||
 							error.message.startsWith("Cannot query field") ||
 							/^Unknown (query|field)\b/.test(error.message) ||

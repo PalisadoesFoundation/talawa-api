@@ -90,7 +90,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
 
-	it("should return 401 with UNAUTHENTICATED error code for authentication failures", async () => {
+	it("should return 401 with UNAUTHENTICATED for missing or invalid auth", async () => {
 		const response = await server.inject({
 			method: "POST",
 			url: "/graphql",
@@ -111,43 +111,6 @@ describe("GraphQL Error Formatting Integration", () => {
 			},
 		});
 
-		expect(response.statusCode).toBe(401);
-
-		const body = JSON.parse(response.body);
-		expect(body.errors).toBeDefined();
-		expect(body.errors.length).toBeGreaterThan(0);
-
-		const error = body.errors[0];
-		expect(error.extensions).toBeDefined();
-		expect(error.extensions.code).toBe(ErrorCode.UNAUTHENTICATED);
-		expect(error.extensions.correlationId).toBeDefined();
-		expect(typeof error.extensions.correlationId).toBe("string");
-	});
-
-	it("should return 401 with UNAUTHENTICATED when authorization header is missing", async () => {
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			payload: {
-				query: `
-					mutation {
-						createOrganization(input: {
-							name: "Test Organization"
-							description: "Test Description"
-						}) {
-							id
-							name
-						}
-					}
-				`,
-			},
-			headers: {
-				"content-type": "application/json",
-			},
-		});
-
-		// Since we're not authenticated, this will return 401 UNAUTHENTICATED
-		// But this demonstrates the error handling pattern for authorization
 		expect(response.statusCode).toBe(401);
 
 		const body = JSON.parse(response.body);

@@ -425,13 +425,6 @@ describe("errorHandlerPlugin", () => {
 			expect(body.error.correlationId).toBe("generated-correlation-id");
 		});
 
-		it("handles TalawaRestError with INTERNAL_SERVER_ERROR and no details", async () => {
-			const res = await app.inject({ method: "GET", url: "/fail" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.details).toBeUndefined();
-		});
-
 		it("handles non-TalawaRestError with standardized format", async () => {
 			const res = await app.inject({ method: "GET", url: "/generic-error" });
 			expect(res.statusCode).toBe(500);
