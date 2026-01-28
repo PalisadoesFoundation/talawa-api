@@ -177,22 +177,20 @@ describe("Mutation createUser - Performance Tracking", () => {
 			context.perf = perf;
 
 			// Invalid input triggers validation error
-			const resultPromise = createUserMutationResolver(
-				null,
-				{
-					input: {
-						emailAddress: "", // Invalid empty email
-						name: "Test User",
-						password: "password123",
-						role: "regular",
-					},
-				},
-				context,
-			);
-
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: "", // Invalid empty email
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -214,21 +212,20 @@ describe("Mutation createUser - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = perf;
 
-			const resultPromise = createUserMutationResolver(
-				null,
-				{
-					input: {
-						emailAddress: `test${faker.string.ulid()}@example.com`,
-						name: "Test User",
-						password: "password123",
-						role: "regular",
-					},
-				},
-				context,
-			);
-
-			await vi.runAllTimersAsync();
 			try {
+				const resultPromise = createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: `test${faker.string.ulid()}@example.com`,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+						},
+					},
+					context,
+				);
+				await vi.runAllTimersAsync();
 				await resultPromise;
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
@@ -251,28 +248,29 @@ describe("Mutation createUser - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "regular-user");
 			context.perf = perf;
 
-			// Mock non-admin user
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-				id: "regular-user",
-				role: "regular" as const,
-			});
-
-			const resultPromise = createUserMutationResolver(
-				null,
-				{
-					input: {
-						emailAddress: `test${faker.string.ulid()}@example.com`,
-						name: "Test User",
-						password: "password123",
-						role: "regular",
-					},
-				},
-				context,
-			);
+			// Mock non-admin user (needs to be mocked twice - once for current user check, once for email check)
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({
+					id: "regular-user",
+					role: "regular" as const,
+				})
+				.mockResolvedValueOnce(undefined); // No existing user with this email
 
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: `test${faker.string.ulid()}@example.com`,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -324,22 +322,20 @@ describe("Mutation createUser - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(true, "admin-user");
 			context.perf = undefined;
 
-			const resultPromise = createUserMutationResolver(
-				null,
-				{
-					input: {
-						emailAddress: "", // Invalid empty email
-						name: "Test User",
-						password: "password123",
-						role: "regular",
-					},
-				},
-				context,
-			);
-
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: "", // Invalid empty email
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -353,21 +349,20 @@ describe("Mutation createUser - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = undefined;
 
-			const resultPromise = createUserMutationResolver(
-				null,
-				{
-					input: {
-						emailAddress: `test${faker.string.ulid()}@example.com`,
-						name: "Test User",
-						password: "password123",
-						role: "regular",
-					},
-				},
-				context,
-			);
-
-			await vi.runAllTimersAsync();
 			try {
+				const resultPromise = createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: `test${faker.string.ulid()}@example.com`,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+						},
+					},
+					context,
+				);
+				await vi.runAllTimersAsync();
 				await resultPromise;
 				expect.fail("Expected error to be thrown");
 			} catch (error) {

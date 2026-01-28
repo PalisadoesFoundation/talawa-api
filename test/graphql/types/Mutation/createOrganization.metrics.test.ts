@@ -148,20 +148,18 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			context.perf = perf;
 
 			// Invalid input triggers validation error
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: "", // Invalid empty name
-						description: "Test Description",
-					},
-				},
-				context,
-			);
-
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: "", // Invalid empty name
+							description: "Test Description",
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -183,19 +181,18 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = perf;
 
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: `Test Org ${faker.string.ulid()}`,
-						description: "Test Description",
-					},
-				},
-				context,
-			);
-
-			await vi.runAllTimersAsync();
 			try {
+				const resultPromise = createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: `Test Org ${faker.string.ulid()}`,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
+				await vi.runAllTimersAsync();
 				await resultPromise;
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
@@ -224,20 +221,18 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				role: "regular" as const,
 			});
 
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: `Test Org ${faker.string.ulid()}`,
-						description: "Test Description",
-					},
-				},
-				context,
-			);
-
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: `Test Org ${faker.string.ulid()}`,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -311,20 +306,18 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(true, "admin-user");
 			context.perf = undefined;
 
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: "", // Invalid empty name
-						description: "Test Description",
-					},
-				},
-				context,
-			);
-
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: "", // Invalid empty name
+							description: "Test Description",
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -338,19 +331,18 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = undefined;
 
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: `Test Org ${faker.string.ulid()}`,
-						description: "Test Description",
-					},
-				},
-				context,
-			);
-
-			await vi.runAllTimersAsync();
 			try {
+				const resultPromise = createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: `Test Org ${faker.string.ulid()}`,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
+				await vi.runAllTimersAsync();
 				await resultPromise;
 				expect.fail("Expected error to be thrown");
 			} catch (error) {

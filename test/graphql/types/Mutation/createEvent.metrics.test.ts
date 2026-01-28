@@ -251,25 +251,24 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			context.perf = perf;
 
 			// Invalid input (start date in past) triggers validation error
-			const pastDate = new Date(Date.now() - 86400000); // Yesterday
-
-			const resultPromise = createEventMutationResolver(
-				null,
-				{
-					input: {
-						name: "Test Event",
-						description: "Test Description",
-						organizationId: faker.string.uuid(),
-						startAt: pastDate,
-						endAt: new Date(pastDate.getTime() + 3600000),
-					},
-				},
-				context,
-			);
+			// Use a date more than 2 seconds in the past (grace period is 2000ms)
+			const pastDate = new Date(Date.now() - 5000); // 5 seconds ago
 
 			await vi.runAllTimersAsync();
 			try {
-				await resultPromise;
+				await createEventMutationResolver(
+					null,
+					{
+						input: {
+							name: "Test Event",
+							description: "Test Description",
+							organizationId: faker.string.uuid(),
+							startAt: pastDate,
+							endAt: new Date(pastDate.getTime() + 3600000),
+						},
+					},
+					context,
+				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);

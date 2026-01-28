@@ -583,12 +583,11 @@ builder.mutationField("createEvent", (t) =>
 							};
 
 							if (ctx.perf) {
-								await ctx.perf.time(
+								const stopTiming = ctx.perf.start(
 									"mutation:createEvent:notification:enqueue",
-									async () => {
-										ctx.notification?.enqueueEventCreated(notificationPayload);
-									},
 								);
+								ctx.notification?.enqueueEventCreated(notificationPayload);
+								stopTiming();
 							} else {
 								ctx.notification?.enqueueEventCreated(notificationPayload);
 							}
