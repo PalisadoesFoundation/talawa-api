@@ -127,23 +127,33 @@ else
 fi
 rm -rf "$tmpdir"
 
-# --- ORCHESTRATOR TEST 
+# --- ORCHESTRATOR TESTS ---
 
-test_start "validate_prerequisites (Orchestrator Mock)"
-# We temporarily mock the internal functions to always return 0 (Success)
-# This tests the logic of validate_prerequisites itself
-(
+test_start "validate_prerequisites (Orchestrator Success)"
+# Mock success for all
+if (
     validate_repository_root() { return 0; }
     validate_disk_space() { return 0; }
     validate_internet_connectivity() { return 0; }
-    
-    if validate_prerequisites &>/dev/null; then
-        exit 0
-    else
-        exit 1
-    fi
-)
-if [ $? -eq 0 ]; then test_pass; else test_fail "Orchestrator failed despite all checks passing"; fi
+    validate_prerequisites &>/dev/null
+); then
+    test_pass
+else
+    test_fail "Orchestrator failed despite all checks passing"
+fi
+
+test_start "validate_prerequisites (Orchestrator Failure)"
+# Mock failure for one check (Disk Space)
+if (
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 1; }
+    validate_internet_connectivity() { return 0; }
+    validate_prerequisites &>/dev/null
+); then
+    test_fail "Orchestrator should fail when internal check fails"
+else
+    test_pass
+fi
 
 # --- SUMMARY ---
 echo ""

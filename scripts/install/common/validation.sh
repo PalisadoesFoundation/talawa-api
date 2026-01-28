@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/install/common/validation.sh
 
-# Fix 1: Guard strict mode so it only applies when executed directly, not when sourced
+# Guard strict mode: Only enable if executed directly, not sourced
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   set -euo pipefail
 fi
@@ -19,7 +19,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
   source "$SCRIPT_DIR/logging.sh"
 else
   # Fallback definitions
-  echo "⚠️  WARNING: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
+  echo "WARN: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
   info()    { echo "INFO: $*"; }
   warn()    { echo "WARN: $*" >&2; }
   error()   { echo "✗ $*" >&2; }
@@ -184,10 +184,8 @@ validate_internet_connectivity() {
     if command -v curl >/dev/null 2>&1; then
       if curl -sSf --max-time 5 "https://$host" >/dev/null 2>&1; then host_ok=1; fi
     elif command -v ping >/dev/null 2>&1; then
-      # CodeRabbit Note: some linux distros don't support -W, but we keep it for now
       if ping -c 1 -W 3 "$host" >/dev/null 2>&1; then host_ok=1; fi
     else
-      # Fix 2: Explicit warning if tools are missing
       warn "Neither curl nor ping is available; install curl to check connectivity to $host"
     fi
 
