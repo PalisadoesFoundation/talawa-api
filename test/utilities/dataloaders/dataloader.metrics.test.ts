@@ -51,7 +51,9 @@ function createSequentialMockDb<T>(mockResultsArray: T[][]) {
  */
 function createMockCache(cachedValues: Map<string, unknown> = new Map()) {
 	return {
-		get: vi.fn().mockResolvedValue(null),
+		get: vi.fn().mockImplementation((key: string) => {
+			return Promise.resolve(cachedValues.get(key) ?? null);
+		}),
 		set: vi.fn().mockResolvedValue(undefined),
 		del: vi.fn().mockResolvedValue(undefined),
 		clearByPattern: vi.fn().mockResolvedValue(undefined),
