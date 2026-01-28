@@ -1,15 +1,28 @@
 import { Readable } from "node:stream";
-import type { LightMyRequestResponse } from "fastify";
+import type { FastifyInstance, LightMyRequestResponse } from "fastify";
 import type { BucketItemStat } from "minio";
 import { S3Error } from "minio";
 import { testEnvConfig } from "test/envConfigSchema";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getTier } from "~/src/config/rateLimits";
 import { createServer } from "~/src/createServer";
 
 describe("/objects/:name route", () => {
+	let app: FastifyInstance;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	afterEach(async () => {
+		if (app) {
+			await app.close();
+		}
+	});
+
 	describe("rate limiting", () => {
 		it("should apply normal tier rate limiting", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -46,13 +59,14 @@ describe("/objects/:name route", () => {
 			expect(res.headers["x-ratelimit-remaining"]).toBeDefined();
 			expect(res.headers["x-ratelimit-reset"]).toBeDefined();
 
-			// Verify the limit is for "normal" tier (adjust this value based on your actual config)
+			// Verify the limit is for "normal" tier
 			const limit = Number(res.headers["x-ratelimit-limit"]);
-			expect(limit).toBeGreaterThan(0);
+			const normalTier = getTier("normal");
+			expect(limit).toBe(normalTier.max);
 		});
 
 		it("should return 429 when rate limit is exceeded", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -81,8 +95,9 @@ describe("/objects/:name route", () => {
 			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
 
 			// Make requests until rate limit is hit
+			const normalTier = getTier("normal");
+			const maxAttempts = normalTier.max + 20; // Ensure we exceed it
 			let lastResponse: LightMyRequestResponse | undefined;
-			const maxAttempts = 200; // Safety limit
 			let attempts = 0;
 
 			for (attempts = 0; attempts < maxAttempts; attempts++) {
@@ -111,13 +126,14 @@ describe("/objects/:name route", () => {
 				const resetAt = body.error.details.resetAt;
 				// resetAt should be a reasonable epoch timestamp in seconds
 				const now = Math.floor(Date.now() / 1000);
+				const windowSeconds = Math.ceil(normalTier.windowMs / 1000);
 				expect(resetAt).toBeGreaterThan(now);
-				expect(resetAt).toBeLessThan(now + 3600); // Within an hour
+				expect(resetAt).toBeLessThanOrEqual(now + windowSeconds + 10); // Within window + buffer
 			}
 		});
 
 		it("should include X-RateLimit-Reset header in seconds (epoch)", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -151,20 +167,18 @@ describe("/objects/:name route", () => {
 
 			const resetAt = Number(res.headers["x-ratelimit-reset"]);
 			const now = Math.floor(Date.now() / 1000);
+			const normalTier = getTier("normal");
+			const windowSeconds = Math.ceil(normalTier.windowMs / 1000);
 
 			// Verify resetAt is a reasonable epoch timestamp in seconds
 			expect(resetAt).toBeGreaterThan(now);
-			expect(resetAt).toBeLessThan(now + 3600); // Within an hour
+			expect(resetAt).toBeLessThanOrEqual(now + windowSeconds + 10);
 		});
 	});
 
 	describe("object retrieval", () => {
-		beforeEach(() => {
-			vi.clearAllMocks();
-		});
-
 		it("should successfully fetch an object", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -204,7 +218,7 @@ describe("/objects/:name route", () => {
 		});
 
 		it("should return 404 when object does not exist", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -231,7 +245,7 @@ describe("/objects/:name route", () => {
 		});
 
 		it("should return 500 on internal MinIO errors", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -257,7 +271,7 @@ describe("/objects/:name route", () => {
 		});
 
 		it("should use default content-type when not provided", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
@@ -294,7 +308,7 @@ describe("/objects/:name route", () => {
 		});
 
 		it("should validate object name length", async () => {
-			const app = await createServer({
+			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
