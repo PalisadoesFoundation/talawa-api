@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -79,6 +79,24 @@ suite("Query field organization - Functional Testing", () => {
 	});
 
 	suite("when organization exists", () => {
+		const createdOrgIds: string[] = [];
+
+		afterEach(async () => {
+			for (const orgId of createdOrgIds) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: { id: orgId },
+						},
+					});
+				} catch {
+					// Ignore cleanup errors
+				}
+			}
+			createdOrgIds.length = 0;
+		});
+
 		test("should successfully return organization data", async () => {
 			// Create an organization first
 			const createOrgResult = await mercuriusClient.mutate(
@@ -103,6 +121,7 @@ suite("Query field organization - Functional Testing", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			expect(createOrgResult.errors).toBeUndefined();
 			assertToBeNonNullish(orgId);
+			createdOrgIds.push(orgId);
 
 			// Add admin as organization member
 			const membershipResult = await mercuriusClient.mutate(
@@ -138,16 +157,6 @@ suite("Query field organization - Functional Testing", () => {
 			expect(result.data?.organization?.name).toBe(
 				createOrgResult.data?.createOrganization?.name,
 			);
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: orgId,
-					},
-				},
-			});
 		});
 
 		test("should return organization with members field", async () => {
@@ -174,6 +183,7 @@ suite("Query field organization - Functional Testing", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			expect(createOrgResult.errors).toBeUndefined();
 			assertToBeNonNullish(orgId);
+			createdOrgIds.push(orgId);
 
 			// Add admin as organization member with administrator role
 			const membershipResult = await mercuriusClient.mutate(
@@ -218,16 +228,6 @@ suite("Query field organization - Functional Testing", () => {
 			);
 			expect(adminMember).toBeDefined();
 			expect(adminMember?.node?.role).toBe("administrator");
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: orgId,
-					},
-				},
-			});
 		});
 	});
 });
