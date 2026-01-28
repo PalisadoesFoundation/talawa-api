@@ -19,7 +19,7 @@
 
 // Match t.string with resolve function, flag if no escapeHTML call inside
 `t.string({ $props })` where {
-	$props <: contains `resolve: $resolver`,
-	not $resolver <: contains `escapeHTML($arg)`,
-	register_diagnostic(span=$props, message="String resolver may need escapeHTML() for XSS prevention. Import from '~/src/utilities/sanitizer'.", severity="warn")
+    $props <: contains `resolve: $resolver`,
+    not $resolver <: contains `escapeHTML($arg)`,
+    register_diagnostic(span=$props, message="String resolver may need escapeHTML() for XSS prevention. Import from '~/src/utilities/sanitizer'.", severity="warn")
 }
