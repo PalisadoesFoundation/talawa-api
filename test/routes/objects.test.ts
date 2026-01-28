@@ -1,10 +1,10 @@
 import { Readable } from "node:stream";
+import type { LightMyRequestResponse } from "fastify";
 import type { BucketItemStat } from "minio";
 import { S3Error } from "minio";
 import { testEnvConfig } from "test/envConfigSchema";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
-import { LightMyRequestResponse } from "fastify";
 
 describe("/objects/:name route", () => {
 	describe("rate limiting", () => {
@@ -62,13 +62,6 @@ describe("/objects/:name route", () => {
 			});
 
 			// Mock MinIO to return successful responses
-			// const mockStream = new Readable({
-			// 	read() {
-			// 		this.push("test file content");
-			// 		this.push(null);
-			// 	},
-			// });
-
 			const mockStat: BucketItemStat = {
 				size: 100,
 				etag: "test-etag",
