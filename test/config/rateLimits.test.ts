@@ -9,6 +9,8 @@ describe("rateLimits config", () => {
 			expect(getTier("normal")).toEqual(rateLimitTiers.normal);
 			expect(getTier("open")).toEqual(rateLimitTiers.open);
 			expect(getTier("auth")).toEqual(rateLimitTiers.auth);
+			expect(getTier("burst")).toEqual(rateLimitTiers.burst);
+			expect(getTier("healthcheck")).toEqual(rateLimitTiers.healthcheck);
 		});
 
 		it("should throw TalawaRestError for invalid tier names", () => {
