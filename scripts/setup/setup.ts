@@ -136,7 +136,12 @@ async function gracefulCleanup(signal?: string): Promise<void> {
 
 	try {
 		// Clean up temporary file
-		await Atomic.cleanupTemp(envTempFile);
+		try {
+			await Atomic.cleanupTemp(envTempFile);
+		} catch (tempErr) {
+			console.warn("⚠️  Failed to clean temp file:", tempErr);
+			// Continue to restore backup
+		}
 
 		// Restore backup if one was created
 		if (backupCreated) {
