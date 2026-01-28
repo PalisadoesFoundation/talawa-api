@@ -15,12 +15,12 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
   # shellcheck source=scripts/install/common/logging.sh
   source "$SCRIPT_DIR/logging.sh"
 else
-  # Fallback definitions
+  # Fallback definitions (Updated to match repo style: Plain text, no ANSI colors)
   echo "⚠️  WARNING: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
-  info()    { echo "[INFO] $*"; }
-  warn()    { echo "[WARN] $*" >&2; }
-  error()   { echo "[ERROR] $*" >&2; }
-  success() { echo "[OK] $*"; }
+  info()    { echo "INFO: $*"; }
+  warn()    { echo "WARN: $*" >&2; }
+  error()   { echo "✗ $*" >&2; }
+  success() { echo "✓ $*"; }
   debug()   { :; }
 fi
 
@@ -66,25 +66,25 @@ parse_package_json() {
     
     if ! command -v jq &> /dev/null; then
         error "jq is required but not installed"
-        exit 1
+        return 1 # Soft fail
     fi
     
     if [ ! -r "package.json" ]; then
         error "Cannot read package.json file"
-        exit 1
+        return 1 # Soft fail
     fi
     
     local result
     if ! result=$(jq -r "($jq_query) // empty" package.json 2>&1); then
         error "Failed to parse $field_name from package.json"
         info "jq error: $result"
-        exit 1
+        return 1 # Soft fail
     fi
     
     if [ -z "$result" ]; then
         if [ "$is_required" = "true" ]; then
             error "$field_name not found in package.json (required field)"
-            exit 1
+            return 1 # Soft fail
         fi
         if [ -n "$default_value" ]; then
             echo "$default_value"
@@ -99,12 +99,11 @@ parse_package_json() {
 handle_version_validation_error() {
     local field_name="$1"
     local current_value="$2"
-    # Removed unused jq_path to satisfy CodeRabbit/ShellCheck
     
     error "Security validation failed for $field_name"
     info "Current value: '$current_value'"
     info "Ensure version follows semver format (e.g., 18.0.0, ^18.0.0)"
-    exit 1
+    return 1 # Soft fail
 }
 
 retry_command() {
@@ -119,9 +118,13 @@ retry_command() {
             warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
             sleep "$delay"
         fi
-        "$@"
+        
+        # Wrapped in 'if' to prevent 'set -e' from exiting script on failure
+        if "$@"; then
+            return 0
+        fi
         exit_code=$?
-        if [ "$exit_code" -eq 0 ]; then return 0; fi
+        
         attempt=$((attempt + 1))
     done
     
@@ -135,7 +138,7 @@ retry_command() {
 
 validate_repository_root() {
   debug "Validating repository root..."
-  # FIX: Check if .git exists (can be file OR dir for worktrees)
+  # Check if .git exists (can be file OR dir for worktrees)
   if [ -e ".git" ] && [ -f "package.json" ]; then
     success "Repository root validated"
     return 0

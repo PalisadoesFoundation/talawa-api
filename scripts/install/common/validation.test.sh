@@ -74,7 +74,7 @@ test_invalid_version "-18.0.0" "dash prefix"
 test_start "parse_package_json helper exists"
 if declare -F parse_package_json >/dev/null 2>&1; then test_pass; else test_fail "Function missing"; fi
 
-# --- NEW TESTS (Updated for CodeRabbit) ---
+# --- NEW TESTS (Deterministic & Coverage) ---
 
 ORIGINAL_DIR=$(pwd)
 
@@ -97,7 +97,7 @@ if validate_repository_root &>/dev/null; then
 else
     test_fail "Repository root detection failed at actual root"
 fi
-cd "$current_dir"
+# NOTE: Removed faulty 'cd "$current_dir"' here
 
 test_start "validate_disk_space (1MB Check)"
 if validate_disk_space 1 &>/dev/null; then test_pass; else test_fail "Disk space check failed"; fi
@@ -119,15 +119,18 @@ else
 fi
 
 test_start "validate_internet_connectivity (Failure Path)"
-# Mock curl to always fail by modifying PATH temporarily
+# Mock curl/ping to always fail by modifying PATH temporarily
 tmpdir=$(mktemp -d)
-# Create a fake curl that returns exit code 1
+# Create a fake curl/ping that returns exit code 1
 echo '#!/bin/bash' > "$tmpdir/curl"
 echo 'exit 1' >> "$tmpdir/curl"
-chmod +x "$tmpdir/curl"
+echo '#!/bin/bash' > "$tmpdir/ping"
+echo 'exit 1' >> "$tmpdir/ping"
+chmod +x "$tmpdir/curl" "$tmpdir/ping"
+
 # Run check with modified PATH
 if (PATH="$tmpdir:$PATH" validate_internet_connectivity &>/dev/null); then
-    test_fail "Expected failure when curl fails"
+    test_fail "Expected failure when network tools fail"
 else
     test_pass
 fi
