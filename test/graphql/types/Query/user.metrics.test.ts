@@ -1,6 +1,6 @@
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { ulid } from "ulidx";
+import { uuidv7 } from "uuidv7";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -36,7 +36,7 @@ describe("Query user - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const userId = ulid();
+			const userId = uuidv7();
 			const mockUser = {
 				id: userId,
 				name: "Test User",
@@ -93,7 +93,7 @@ describe("Query user - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const userId = ulid();
+			const userId = uuidv7();
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
 				() =>
@@ -126,8 +126,8 @@ describe("Query user - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const userId1 = ulid();
-			const userId2 = ulid();
+			const userId1 = uuidv7();
+			const userId2 = uuidv7();
 			const mockUser1 = { id: userId1, name: "User 1" };
 			const mockUser2 = { id: userId2, name: "User 2" };
 
@@ -173,7 +173,7 @@ describe("Query user - Performance Tracking", () => {
 			// Explicitly ensure perf is undefined
 			context.perf = undefined;
 
-			const userId = ulid();
+			const userId = uuidv7();
 			const mockUser = {
 				id: userId,
 				name: "Test User",
@@ -206,7 +206,7 @@ describe("Query user - Performance Tracking", () => {
 			// Test null edge case (runtime could have null even if TypeScript says it can't)
 			context.perf = null as unknown as typeof context.perf;
 
-			const userId = ulid();
+			const userId = uuidv7();
 			const mockUser = {
 				id: userId,
 				name: "Test User",
@@ -238,7 +238,7 @@ describe("Query user - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
-			const userId = ulid();
+			const userId = uuidv7();
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				undefined,
@@ -256,7 +256,7 @@ describe("Query user - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const userId = ulid();
+			const userId = uuidv7();
 			const mockUser = {
 				id: userId,
 				name: "Test User",
@@ -290,7 +290,7 @@ describe("Query user - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
-			const userId = ulid();
+			const userId = uuidv7();
 			const mockUser = {
 				id: userId,
 				name: "Test User",
