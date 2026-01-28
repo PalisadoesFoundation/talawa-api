@@ -87,10 +87,6 @@ builder.mutationField("createChat", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
-			// TEMP: coverage probe to validate Codecov flag splitting
-			if (parsedArgs.input.name === "__codecov_probe__") {
-				ctx.log.info("Codecov probe reached");
-			}
 
 			const [currentUser, existingOrganization] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
