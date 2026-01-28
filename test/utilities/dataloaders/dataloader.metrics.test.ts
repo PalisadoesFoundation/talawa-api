@@ -618,7 +618,7 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 			// First batch
 			await loader.load("u1");
 			// Second batch (different tick)
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await new Promise((resolve) => process.nextTick(resolve));
 			await loader.load("u2");
 
 			const snapshot = perf.snapshot();
