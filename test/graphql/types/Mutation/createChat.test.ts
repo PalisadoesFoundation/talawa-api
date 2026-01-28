@@ -376,6 +376,7 @@ suite("Mutation field createChat", () => {
 		}
 	});
 
+	/* TEMP: commented out to verify Codecov flag split
 	test("organization member can successfully create a chat", async () => {
 		const chatName = `Member Test Chat ${faker.string.uuid()}`;
 		const result = await mercuriusClient.mutate(Mutation_createChat, {
@@ -400,6 +401,7 @@ suite("Mutation field createChat", () => {
 			createdChatIds.push(result.data.createChat.id);
 		}
 	});
+	*/
 
 	test("can create a chat with minimal required fields", async () => {
 		const chatName = `Minimal Chat ${faker.string.uuid()}`;
