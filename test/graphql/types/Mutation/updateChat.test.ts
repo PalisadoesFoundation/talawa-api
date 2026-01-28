@@ -1,22 +1,34 @@
 import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-
+import { initGraphQLTada } from "gql.tada";
 import { beforeAll, expect, suite, test, vi } from "vitest";
-
 import { chatMembershipsTable } from "~/src/drizzle/schema";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
-
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import {
-	Mutation_createOrganization,
-	Mutation_updateChat,
-	Query_signIn,
-} from "../documentNodes";
+import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+export const Mutation_updateChat = gql(`
+  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
+    updateChat(input: $input) {
+      id
+      name
+      description
+      avatarURL
+    }
+  }
+`);
 
 async function createTestOrganization(): Promise<string> {
 	const signIn = await mercuriusClient.query(Query_signIn, {

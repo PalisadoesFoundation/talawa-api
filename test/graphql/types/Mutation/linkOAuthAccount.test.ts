@@ -1,14 +1,36 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Mutation_linkOAuthAccount,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_linkOAuthAccount =
+	gql(`mutation Mutation_linkOAuthAccount($input: OAuthLoginInput!) {
+    linkOAuthAccount(input: $input) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
+    }
+}`);
 
 suite("Mutation linkOAuthAccount", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
