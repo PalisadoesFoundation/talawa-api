@@ -477,9 +477,7 @@ describe("DataLoader Metrics Integration (PR 3)", () => {
 
 		it("DataLoader failures don't break metrics tracking", async () => {
 			const perf = createPerformanceTracker();
-			const { db, whereSpy } = createSequentialMockDb([
-				[{ id: "u1", name: "User 1" }],
-			]);
+			const { db, whereSpy } = createMockDb([]);
 			whereSpy.mockRejectedValueOnce(new Error("DB error"));
 
 			const loader = createUserLoader(db, null, perf);
