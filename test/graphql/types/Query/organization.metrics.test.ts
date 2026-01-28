@@ -1,6 +1,6 @@
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { uuidv7 } from "uuidv7";
+import { ulid } from "ulidx";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -37,7 +37,7 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 			const mockOrganization = {
 				id: orgId,
 				name: "Test Organization",
@@ -95,7 +95,7 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 
 			mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
 				async () => {
@@ -121,8 +121,8 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const orgId1 = uuidv7();
-			const orgId2 = uuidv7();
+			const orgId1 = ulid();
+			const orgId2 = ulid();
 			const mockOrg1 = { id: orgId1, name: "Org 1" };
 			const mockOrg2 = { id: orgId2, name: "Org 2" };
 
@@ -152,7 +152,7 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 			const mockOrganization = {
 				id: orgId,
 				name: "Test Organization",
@@ -179,7 +179,7 @@ describe("Query organization - Performance Tracking", () => {
 			// Test null edge case (runtime could have null even if TypeScript says it can't)
 			context.perf = null as unknown as typeof context.perf;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 			const mockOrganization = {
 				id: orgId,
 				name: "Test Organization",
@@ -205,7 +205,7 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 
 			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
 				undefined,
@@ -223,7 +223,7 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 			const mockOrganization = {
 				id: orgId,
 				name: "Test Organization",
@@ -251,7 +251,7 @@ describe("Query organization - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
-			const orgId = uuidv7();
+			const orgId = ulid();
 			const mockOrganization = {
 				id: orgId,
 				name: "Test Organization",
