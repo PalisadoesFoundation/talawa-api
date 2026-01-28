@@ -142,7 +142,8 @@ describe("REST rate limiting", () => {
 		// Verify resetAt in error payload
 		const errorBody = r3.json();
 		expect(errorBody.error.details.resetAt).toBeDefined();
-		expect(errorBody.error.details.resetAt).toBeGreaterThan(Date.now());
+		// resetAt in payload is in seconds
+		expect(errorBody.error.details.resetAt).toBeGreaterThan(Date.now() / 1000);
 
 		const resetHeader = Number(r2.headers["x-ratelimit-reset"]);
 		expect(resetHeader).toBeGreaterThan(Date.now() / 1000);

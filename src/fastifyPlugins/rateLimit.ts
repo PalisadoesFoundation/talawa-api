@@ -117,6 +117,6 @@ export default fp(
 	},
 	{
 		name: "rateLimit",
-		dependencies: ["@fastify/redis"],
+		// dependencies: ["@fastify/redis"],
 	},
 );
