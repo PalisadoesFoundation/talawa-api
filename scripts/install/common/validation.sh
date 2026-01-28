@@ -16,7 +16,7 @@ if [ -f "$SCRIPT_DIR/logging.sh" ]; then
   source "$SCRIPT_DIR/logging.sh"
 else
   # Fallback definitions (Updated to match repo style: Plain text, no ANSI colors)
-  echo "⚠️  WARNING: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
+  echo " WARN: logging.sh not found in $SCRIPT_DIR. Using fallbacks." >&2
   info()    { echo "INFO: $*"; }
   warn()    { echo "WARN: $*" >&2; }
   error()   { echo "✗ $*" >&2; }
@@ -119,11 +119,12 @@ retry_command() {
             sleep "$delay"
         fi
         
-        # Wrapped in 'if' to prevent 'set -e' from exiting script on failure
+        # Wrapped to prevent 'set -e' from exiting script on failure
         if "$@"; then
             return 0
+        else 
+            exit_code=$?
         fi
-        exit_code=$?
         
         attempt=$((attempt + 1))
     done
