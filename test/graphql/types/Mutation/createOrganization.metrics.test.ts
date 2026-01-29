@@ -879,7 +879,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				role: "regular" as const,
 			});
 
-			await vi.runAllTimersAsync();
+			// Resolver throws immediately for unauthorized; no timer advancement needed
 			try {
 				await createOrganizationMutationResolver(
 					null,

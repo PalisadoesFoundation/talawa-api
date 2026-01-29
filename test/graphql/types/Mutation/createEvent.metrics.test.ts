@@ -1402,7 +1402,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				mockOrganization,
 			);
 
-			await vi.runAllTimersAsync();
+			// Resolver throws immediately for unauthorized; no timer advancement needed
 			try {
 				await createEventMutationResolver(
 					null,

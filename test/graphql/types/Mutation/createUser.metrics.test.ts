@@ -7,6 +7,13 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createUser,
+	Mutation_deleteUser,
+	Query_signIn,
+} from "../documentNodes";
 
 describe("Mutation createUser - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -995,6 +1002,77 @@ describe("Mutation createUser - Performance Tracking", () => {
 					"unauthorized_action",
 				);
 			}
+		});
+	});
+
+	describe("mercuriusClient smoke test for schema wiring", () => {
+		beforeEach(() => {
+			vi.useRealTimers();
+		});
+		afterEach(() => {
+			vi.useFakeTimers();
+		});
+
+		it("should execute createUser mutation through mercuriusClient with schema wiring", async () => {
+			// Sign in as admin to get authentication token
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(signInResult.errors).toBeUndefined();
+			expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
+			const authToken = signInResult.data?.signIn?.authenticationToken;
+
+			// Execute createUser mutation through mercuriusClient
+			const uniqueEmail = `smoketest-${faker.string.ulid()}@example.com`;
+			const result = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						name: "Smoke Test User",
+						emailAddress: uniqueEmail,
+						password: "SmokeTestPassword123!",
+						role: "regular",
+						isEmailAddressVerified: false,
+					},
+				},
+			});
+
+			// Verify schema wiring works (mutation executes successfully)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createUser).toBeDefined();
+			expect(result.data?.createUser?.user?.emailAddress).toBe(uniqueEmail);
+
+			// Verify withMutationMetrics is exercised via performance entries
+			// The metrics are tracked server-side; we verify the mutation completed
+			// successfully which means the full middleware pipeline (including
+			// withMutationMetrics) executed without errors.
+
+			// Cleanup: Delete the created user
+			const userId = result.data?.createUser?.user?.id;
+			if (userId) {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: userId,
+						},
+					},
+				});
+			}
+
+			// Note: Performance tracking verification is done in the direct resolver tests above
+			// This smoke test only verifies that the schema wiring is correct and the mutation
+			// can be executed through the full GraphQL execution pipeline.
 		});
 	});
 });
