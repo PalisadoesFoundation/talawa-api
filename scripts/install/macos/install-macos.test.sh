@@ -152,8 +152,7 @@ EOF
 
     # Patch install-macos.sh to use command_exists for brew check
     # Original: if command -v brew >/dev/null 2>&1; then
-    # Patch install-macos.sh to use command_exists for brew check
-    # Original: if command -v brew >/dev/null 2>&1; then
+
 }
 
 setup_test_repo
@@ -962,7 +961,6 @@ fi
 
 ##############################################################################
 # Cleanup
-
 ##############################################################################
 rm -rf "$TEST_DIR"
 
