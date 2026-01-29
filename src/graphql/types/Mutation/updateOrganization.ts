@@ -171,8 +171,8 @@ builder.mutationField("updateOrganization", (t) =>
 					}
 				}
 
-				let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-				let avatarName: string;
+				let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | null = null;
+				let avatarName: string | null = null;
 
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					avatarName =
@@ -182,69 +182,73 @@ builder.mutationField("updateOrganization", (t) =>
 					avatarMimeType = parsedArgs.input.avatar.mimetype;
 				}
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
-					const [updatedOrganization] = await tx
-						.update(organizationsTable)
-						.set({
-							addressLine1: parsedArgs.input.addressLine1,
-							addressLine2: parsedArgs.input.addressLine2,
-							...(parsedArgs.input.avatar !== undefined && {
-								avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-									? avatarMimeType
-									: null,
-								avatarName: isNotNullish(parsedArgs.input.avatar)
-									? avatarName
-									: null,
-							}),
-							city: parsedArgs.input.city,
-							countryCode: parsedArgs.input.countryCode,
-							description: parsedArgs.input.description,
-							name: parsedArgs.input.name,
-							postalCode: parsedArgs.input.postalCode,
-							state: parsedArgs.input.state,
-							updaterId: currentUserId,
-							userRegistrationRequired:
-								parsedArgs.input.isUserRegistrationRequired,
-						})
-						.where(eq(organizationsTable.id, parsedArgs.input.id))
-						.returning();
+				const updatedOrganization = await ctx.drizzleClient.transaction(
+					async (tx) => {
+						const [updated] = await tx
+							.update(organizationsTable)
+							.set({
+								addressLine1: parsedArgs.input.addressLine1,
+								addressLine2: parsedArgs.input.addressLine2,
+								...(parsedArgs.input.avatar !== undefined && {
+									avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+										? avatarMimeType
+										: null,
+									avatarName: isNotNullish(parsedArgs.input.avatar)
+										? avatarName
+										: null,
+								}),
+								city: parsedArgs.input.city,
+								countryCode: parsedArgs.input.countryCode,
+								description: parsedArgs.input.description,
+								name: parsedArgs.input.name,
+								postalCode: parsedArgs.input.postalCode,
+								state: parsedArgs.input.state,
+								updaterId: currentUserId,
+								userRegistrationRequired:
+									parsedArgs.input.isUserRegistrationRequired,
+							})
+							.where(eq(organizationsTable.id, parsedArgs.input.id))
+							.returning();
 
-					// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
-					if (updatedOrganization === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "arguments_associated_resources_not_found",
-								issues: [
-									{
-										argumentPath: ["input", "id"],
-									},
-								],
-							},
-						});
-					}
+						// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
+						if (updated === undefined) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "arguments_associated_resources_not_found",
+									issues: [
+										{
+											argumentPath: ["input", "id"],
+										},
+									],
+								},
+							});
+						}
 
-					if (isNotNullish(parsedArgs.input.avatar)) {
-						await ctx.minio.client.putObject(
-							ctx.minio.bucketName,
-							avatarName,
-							parsedArgs.input.avatar.createReadStream(),
-							undefined,
-							{
-								"content-type": parsedArgs.input.avatar.mimetype,
-							},
-						);
-					} else if (
-						parsedArgs.input.avatar !== undefined &&
-						existingOrganization.avatarName !== null
-					) {
-						await ctx.minio.client.removeObject(
-							ctx.minio.bucketName,
-							existingOrganization.avatarName,
-						);
-					}
+						return updated;
+					},
+				);
 
-					return updatedOrganization;
-				});
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== null) {
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						avatarName,
+						parsedArgs.input.avatar.createReadStream(),
+						undefined,
+						{
+							"content-type": parsedArgs.input.avatar.mimetype,
+						},
+					);
+				} else if (
+					parsedArgs.input.avatar !== undefined &&
+					existingOrganization.avatarName !== null
+				) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						existingOrganization.avatarName,
+					);
+				}
+
+				return updatedOrganization;
 			},
 		),
 		type: Organization,

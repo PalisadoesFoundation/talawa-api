@@ -190,8 +190,8 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			expect(result).toBeDefined();
 			expect(result).toHaveProperty("id", orgId);
 
-			// Verify MinIO removeObjects was called (even with empty array)
-			expect(removeObjectsSpy).toHaveBeenCalled();
+			// Verify MinIO removeObjects was not called when there are no objects to remove
+			expect(removeObjectsSpy).not.toHaveBeenCalled();
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:deleteOrganization"];
@@ -690,11 +690,8 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			expect(result).toBeDefined();
 			expect(result).toHaveProperty("id", orgId);
 
-			// Verify MinIO removeObjects was called with empty array
-			expect(removeObjectsSpy).toHaveBeenCalledWith(
-				mocks.minioClient.bucketName,
-				[],
-			);
+			// Verify MinIO removeObjects was not called when there are no objects to remove
+			expect(removeObjectsSpy).not.toHaveBeenCalled();
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:deleteOrganization"];
@@ -759,7 +756,8 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 
 			expect(result).toBeDefined();
 			expect(result).toHaveProperty("id", orgId);
-			expect(removeObjectsSpy).toHaveBeenCalled();
+			// No objects to remove when organization has no avatar/attachments
+			expect(removeObjectsSpy).not.toHaveBeenCalled();
 		});
 
 		it("should handle validation error without perf tracker", async () => {
