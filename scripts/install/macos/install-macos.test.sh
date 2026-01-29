@@ -166,6 +166,7 @@ setup_clean_system() {
     # brew exists and works
     create_mock "brew" '
         if [ "$1" = "list" ]; then exit 1; fi # packages not installed
+        if [ "$1" = "update" ]; then exit 0; fi
         if [ "$1" = "install" ]; then
             echo "Mock brew installed ${*:2}"
             rm -f "$MOCK_BIN/$2.hidden"
@@ -304,6 +305,16 @@ if echo "$OUTPUT" | grep -q "Invalid SKIP_PREREQS"; then
     test_pass
 else
     test_fail "Expected validation error for invalid SKIP_PREREQS.\nLogs:\n$OUTPUT"
+fi
+
+test_start "Validation - Missing package.json"
+setup_clean_system
+rm -f "$TEST_DIR/package.json"
+OUTPUT=$(run_test_script local false 2>&1 || true)
+if echo "$OUTPUT" | grep -q "package.json not found"; then
+    test_pass
+else
+    test_fail "Expected missing package.json error.\nLogs:\n$OUTPUT"
 fi
 
 test_start "Validation - Detects Malicious Package.json"
@@ -779,16 +790,19 @@ touch "$MOCK_BIN/brew.hidden"
 
 # Mock curl to simulate Homebrew installation script download and execution
 create_mock "curl" '
-    if [[ "$2" == *"Homebrew/install"* ]]; then
-        # Output a script that "installs" brew (creates the mock)
-        echo "echo \"Installing Homebrew...\"; cat > \"$MOCK_BIN/brew\" <<EOF
+    for arg in "$@"; do
+        if [[ "$arg" == *"Homebrew/install"* ]]; then
+            # Output a script that "installs" brew (creates the mock)
+            echo "echo \"Installing Homebrew...\"; cat > \"$MOCK_BIN/brew\" <<EOF
 #!/bin/bash
+if [ \"\$1\" = \"update\" ]; then exit 0; fi
 if [ \"\$1\" = \"install\" ]; then echo \"Mock brew installed \$2\"; exit 0; fi
 if [ \"\$1\" = \"--version\" ]; then echo \"Homebrew 4.0.0\"; exit 0; fi
 EOF
 chmod +x \"$MOCK_BIN/brew\""
-        exit 0
-    fi
+            exit 0
+        fi
+    done
     exit 0
 '
 
@@ -825,6 +839,20 @@ if echo "$OUTPUT" | grep -q "Docker is installed but not running"; then
     test_pass
 else
     test_fail "Expected daemon failure warning.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "Docker Present and Running"
+setup_clean_system
+create_mock "docker" '
+    if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+    if [ "$1" = "info" ]; then exit 0; fi
+'
+OUTPUT=$(run_test_script docker false 2>&1 || true)
+if echo "$OUTPUT" | grep -q "Docker is running"; then
+    test_pass
+else
+    test_fail "Expected running message.\nLogs:\n$OUTPUT"
 fi
 
 
