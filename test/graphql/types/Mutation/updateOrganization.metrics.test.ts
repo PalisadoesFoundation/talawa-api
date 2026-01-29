@@ -1,4 +1,6 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import type { FastifyInstance } from "fastify";
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import {
@@ -10,8 +12,10 @@ import {
 	it,
 	vi,
 } from "vitest";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -217,6 +221,97 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			expect(deleteResult.data?.deleteOrganization).toBeDefined();
 			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 		});
+
+		it('should return invalid_arguments with issue on ["input","name"] when another org has the same name', async () => {
+			const duplicateName = `Dup Name ${faker.string.ulid()}`;
+			const org1Id = await createTestOrganization(authToken);
+			const org2Id = await createTestOrganization(authToken);
+
+			await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { id: org1Id, name: duplicateName },
+				},
+			});
+
+			// Update org2 to org1's name (duplicate)
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { id: org2Id, name: duplicateName },
+				},
+			});
+
+			expect(result.data?.updateOrganization).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						message: "Organization name already exists",
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "name"],
+									message: "Organization name already exists",
+								}),
+							]),
+						}),
+						path: ["updateOrganization"],
+					}),
+				]),
+			);
+
+			// Cleanup
+			for (const id of [org1Id, org2Id]) {
+				const del = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id } },
+				});
+				expect(del.errors).toBeUndefined();
+				expect(del.data?.deleteOrganization?.id).toBe(id);
+			}
+		});
+
+		it("should remove avatar (MinIO and DB) when avatar is set to null and org had avatar", async () => {
+			const orgId = await createTestOrganization(authToken);
+
+			await (server as FastifyInstance).drizzleClient
+				.update(organizationsTable)
+				.set({
+					avatarName: "test-avatar-remove.png",
+					avatarMimeType: "image/png",
+				})
+				.where(eq(organizationsTable.id, orgId));
+
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { id: orgId, avatar: null },
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
+
+			const updatedOrg = await (
+				server as FastifyInstance
+			).drizzleClient.query.organizationsTable.findFirst({
+				where: eq(organizationsTable.id, orgId),
+				columns: { avatarName: true, avatarMimeType: true },
+			});
+			expect(updatedOrg?.avatarName).toBeNull();
+			expect(updatedOrg?.avatarMimeType).toBeNull();
+
+			const deleteResult = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				},
+			);
+			expect(deleteResult.errors).toBeUndefined();
+			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
+		});
 	});
 
 	describe("perf (unit) – direct resolver for timing assertions", () => {
@@ -416,6 +511,163 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 					issues: [{ argumentPath: ["input", "id"] }],
 				},
 			});
+		});
+
+		it('should throw invalid_arguments with issue ["input","name"] when another org has the same name (duplicate name branch)', async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+
+			const orgId = faker.string.uuid();
+			const otherOrgId = faker.string.uuid();
+			const duplicateName = `Duplicate Name ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockExistingOrganization = createMockExistingOrganization(orgId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				{ id: otherOrgId },
+			);
+
+			const resultPromise = updateOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						id: orgId,
+						name: duplicateName,
+					},
+				},
+				context,
+			);
+
+			await expect(resultPromise).rejects.toThrow(TalawaGraphQLError);
+			await expect(resultPromise).rejects.toMatchObject({
+				message: "Organization name already exists",
+				extensions: {
+					code: "invalid_arguments",
+					issues: [
+						{
+							argumentPath: ["input", "name"],
+							message: "Organization name already exists",
+						},
+					],
+				},
+			});
+		});
+
+		it("should call MinIO removeObject when avatar is null and org had avatar (avatar remove branch)", async () => {
+			vi.useRealTimers();
+			try {
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				const orgId = faker.string.uuid();
+				const existingAvatarName = "existing-avatar.png";
+				const mockAdminUser = createMockAdminUser();
+				const mockExistingOrganization = createMockExistingOrganization(
+					orgId,
+					existingAvatarName,
+				);
+				const mockUpdatedOrganization = createMockUpdatedOrganization(
+					orgId,
+					"Org",
+				);
+
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockUpdatedOrganization));
+
+				await updateOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							id: orgId,
+							avatar: null,
+						},
+					},
+					context,
+				);
+
+				expect(mocks.minioClient.client.removeObject).toHaveBeenCalledWith(
+					mocks.minioClient.bucketName,
+					existingAvatarName,
+				);
+			} finally {
+				vi.useFakeTimers();
+			}
+		});
+
+		it("should call MinIO putObject when avatar is provided (avatar add branch)", async () => {
+			vi.useRealTimers();
+			try {
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				const orgId = faker.string.uuid();
+				const mockAdminUser = createMockAdminUser();
+				const mockExistingOrganization = createMockExistingOrganization(
+					orgId,
+					null,
+				);
+				const mockUpdatedOrganization = createMockUpdatedOrganization(
+					orgId,
+					"Org",
+				);
+
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockUpdatedOrganization));
+
+				const createMockReadStream = () => ({
+					pipe: vi.fn().mockReturnThis(),
+					on: vi.fn().mockReturnThis(),
+				});
+				const mockAvatar = Promise.resolve({
+					mimetype: "image/png" as const,
+					createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				});
+
+				await updateOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							id: orgId,
+							name: "Org With Avatar",
+							avatar: mockAvatar,
+						},
+					},
+					context,
+				);
+
+				expect(mocks.minioClient.client.putObject).toHaveBeenCalledWith(
+					mocks.minioClient.bucketName,
+					expect.any(String),
+					expect.anything(),
+					undefined,
+					expect.objectContaining({ "content-type": "image/png" }),
+				);
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 
 		it("should execute mutation successfully without recording perf when context.perf is undefined", async () => {
