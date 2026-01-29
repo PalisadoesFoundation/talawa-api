@@ -113,7 +113,7 @@ Notes:
 - **Legacy** flags can remain visible on the dashboard even if they are not being uploaded anymore. If you see “No report uploaded,” it’s a stale flag.
 - Admins can delete stale flags from the Codecov UI if needed.
 
-![Codecov flags overview](/img/markdown/docs/codecov-flags-overview.svg)
+![Codecov flags overview](/img/markdown/docs/codecov-flags-overview.png)
 
 ## Linting & Static Analysis
 
