@@ -795,6 +795,15 @@ The metrics cache service is automatically initialized when the performance plug
 
 You can extend the built-in performance tracking by adding custom operations and manual timing to monitor application-specific code paths.
 
+### Resolver-level instrumentation (withMutationMetrics / withQueryMetrics)
+
+The codebase provides helpers that wrap GraphQL resolvers for consistent operation naming and timing:
+
+- **`withMutationMetrics`** (from `~/src/graphql/utils/withMutationMetrics`) — wraps mutation resolvers with `ctx.perf?.time(operationName, ...)` so each mutation is recorded under a name like `mutation:createUser`. Options: `{ operationName: string }`.
+- **`withQueryMetrics`** — analogous for query resolvers.
+
+These utilities only add **resolver-level** timing. They do not implement request-scoped wiring, Server-Timing header integration, aggregation workers, the `/metrics/perf` endpoint, or DataLoader/cache instrumentation; those are part of the broader performance foundation and are documented elsewhere in this guide. When linking PRs to issues that cover the full foundation, consider either (a) limiting the issue link to the resolver-level change and adding a checklist of remaining tasks, or (b) implementing the remaining pieces before marking the issue resolved.
+
 ### Custom Operations
 
 Track custom operations in your code to measure specific functionality:
