@@ -856,7 +856,13 @@ rm -f \"$MOCK_BIN/brew.hidden\""
     exit 0
 '
 
-create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+create_mock "fnm" '
+    if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi
+    if [ "$1" = "install" ]; then exit 0; fi
+    if [ "$1" = "use" ]; then exit 0; fi
+    if [ "$1" = "default" ]; then exit 0; fi
+    if [ "$1" = "current" ]; then echo "v20.10.0"; exit 0; fi
+'
 create_mock "node" 'echo "v20.10.0"'
 create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
@@ -966,6 +972,7 @@ create_mock "fnm" '
         exit 0
     fi
     if [ "$1" = "use" ]; then exit 0; fi
+    if [ "$1" = "default" ]; then exit 0; fi
     if [ "$1" = "current" ]; then echo "v21.0.0"; exit 0; fi
 '
 create_mock "node" 'echo "v21.0.0"'
