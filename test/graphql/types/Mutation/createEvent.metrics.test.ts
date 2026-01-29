@@ -844,6 +844,12 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				.spyOn(eventGenerationModule, "initializeGenerationWindow")
 				.mockResolvedValue(mockWindowConfig);
 
+			// Mock generateInstancesForRecurringEvent (called after recurrence rule creation)
+			vi.spyOn(
+				eventGenerationModule,
+				"generateInstancesForRecurringEvent",
+			).mockResolvedValue(0);
+
 			// Mock notification service
 			const mockNotification = {
 				enqueueEventCreated: vi.fn(),
