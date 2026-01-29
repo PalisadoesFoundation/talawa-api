@@ -286,6 +286,483 @@ describe("Mutation createUser - Performance Tracking", () => {
 			expect(op?.count).toBe(1);
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
+
+		it("should track mutation execution time on duplicate email address error", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const emailAddress = `test${faker.string.ulid()}@example.com`;
+			const mockAdminUser = createMockAdminUser();
+
+			// Mock existing user with the same email
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockAdminUser) // Current user check
+				.mockResolvedValueOnce({
+					id: faker.string.uuid(),
+					emailAddress,
+					role: "regular" as const,
+				}); // Existing user with same email
+
+			await vi.runAllTimersAsync();
+			try {
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"forbidden_action_on_arguments_associated_resources",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time when currentUser is not found after query", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			// Mock query to return undefined for current user (first call)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await vi.runAllTimersAsync();
+			try {
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: `test${faker.string.ulid()}@example.com`,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time when createdUser is not returned", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const emailAddress = `test${faker.string.ulid()}@example.com`;
+			const mockAdminUser = createMockAdminUser();
+
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockAdminUser) // Current user check
+				.mockResolvedValueOnce(undefined); // No existing user with this email
+
+			// Mock transaction to return empty array for user insert (simulating edge case)
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn().mockImplementation((table: unknown) => {
+								if (table === usersTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([]), // Empty array
+										}),
+									};
+								}
+								if (table === refreshTokensTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi
+												.fn()
+												.mockResolvedValue([{ id: faker.string.uuid() }]),
+										}),
+									};
+								}
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([]),
+									}),
+								};
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
+
+			await vi.runAllTimersAsync();
+			try {
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unexpected",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time on avatar validation error", async () => {
+			const perf = createPerformanceTracker();
+			const { context } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			// Create mock avatar with invalid mime type
+			const invalidAvatar = Promise.resolve({
+				filename: "avatar.txt",
+				mimetype: "text/plain", // Invalid mime type
+				createReadStream: vi.fn(),
+			});
+
+			await vi.runAllTimersAsync();
+			try {
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: `test${faker.string.ulid()}@example.com`,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+							avatar: invalidAvatar,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time on successful mutation with avatar upload", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const emailAddress = `test${faker.string.ulid()}@example.com`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedUser = {
+				...createMockCreatedUser(emailAddress),
+				avatarMimeType: "image/png" as const,
+				avatarName: faker.string.uuid(),
+			};
+
+			// Create mock avatar with valid mime type
+			const validAvatar = Promise.resolve({
+				filename: "avatar.png",
+				mimetype: "image/png",
+				createReadStream: vi.fn().mockReturnValue({
+					pipe: vi.fn(),
+					on: vi.fn(),
+				}),
+			});
+
+			// Mock database queries
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockAdminUser) // Current user check
+				.mockResolvedValueOnce(undefined); // Existing user check
+
+			// Mock refresh token record
+			const mockRefreshToken = {
+				id: faker.string.uuid(),
+			};
+
+			// Mock transaction with avatar fields
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn().mockImplementation((table: unknown) => {
+								if (table === usersTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockCreatedUser]),
+										}),
+									};
+								}
+								if (table === refreshTokensTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockRefreshToken]),
+										}),
+									};
+								}
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([]),
+									}),
+								};
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
+
+			// Mock MinIO client (putObject is already mocked, but we can verify it's called)
+			const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+			putObjectSpy.mockResolvedValue({
+				etag: "mock-etag",
+				versionId: null,
+			});
+
+			const resultPromise = createUserMutationResolver(
+				null,
+				{
+					input: {
+						emailAddress,
+						name: "Test User",
+						password: "password123",
+						role: "regular",
+						isEmailAddressVerified: false,
+						avatar: validAvatar,
+					},
+				},
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toBeDefined();
+			expect(result).toHaveProperty("user");
+			expect((result as { user: unknown }).user).toMatchObject({
+				name: "Test User",
+				emailAddress,
+			});
+
+			// Verify MinIO putObject was called for avatar upload
+			expect(putObjectSpy).toHaveBeenCalled();
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time when avatar is explicitly set to null", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const emailAddress = `test${faker.string.ulid()}@example.com`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedUser = createMockCreatedUser(emailAddress);
+
+			setupSuccessMocks(mocks, mockAdminUser, mockCreatedUser);
+
+			const resultPromise = createUserMutationResolver(
+				null,
+				{
+					input: {
+						emailAddress,
+						name: "Test User",
+						password: "password123",
+						role: "regular",
+						isEmailAddressVerified: false,
+						avatar: null, // Explicitly set to null
+					},
+				},
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toBeDefined();
+			expect(result).toHaveProperty("user");
+			expect((result as { user: unknown }).user).toMatchObject({
+				name: "Test User",
+				emailAddress,
+			});
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time with different valid avatar mime types", async () => {
+			const validMimeTypes = [
+				"image/jpeg",
+				"image/webp",
+				"image/avif",
+			] as const;
+
+			for (const mimeType of validMimeTypes) {
+				const perf = createPerformanceTracker();
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = perf;
+
+				const emailAddress = `test${faker.string.ulid()}@example.com`;
+				const mockAdminUser = createMockAdminUser();
+				const mockCreatedUser = {
+					...createMockCreatedUser(emailAddress),
+					avatarMimeType: mimeType,
+					avatarName: faker.string.uuid(),
+				};
+
+				const validAvatar = Promise.resolve({
+					filename: `avatar.${mimeType.split("/")[1]}`,
+					mimetype: mimeType,
+					createReadStream: vi.fn().mockReturnValue({
+						pipe: vi.fn(),
+						on: vi.fn(),
+					}),
+				});
+
+				mocks.drizzleClient.query.usersTable.findFirst
+					.mockResolvedValueOnce(mockAdminUser)
+					.mockResolvedValueOnce(undefined);
+
+				const mockRefreshToken = {
+					id: faker.string.uuid(),
+				};
+
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(
+						async (callback: (tx: unknown) => Promise<unknown>) => {
+							const mockTx = {
+								insert: vi.fn().mockImplementation((table: unknown) => {
+									if (table === usersTable) {
+										return {
+											values: vi.fn().mockReturnValue({
+												returning: vi.fn().mockResolvedValue([mockCreatedUser]),
+											}),
+										};
+									}
+									if (table === refreshTokensTable) {
+										return {
+											values: vi.fn().mockReturnValue({
+												returning: vi
+													.fn()
+													.mockResolvedValue([mockRefreshToken]),
+											}),
+										};
+									}
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([]),
+										}),
+									};
+								}),
+							};
+							return callback(mockTx as never);
+						},
+					);
+
+				const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+				putObjectSpy.mockResolvedValue({
+					etag: "mock-etag",
+					versionId: null,
+				});
+
+				const resultPromise = createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+							avatar: validAvatar,
+						},
+					},
+					context,
+				);
+				await vi.runAllTimersAsync();
+				const result = await resultPromise;
+
+				expect(result).toBeDefined();
+				expect(putObjectSpy).toHaveBeenCalled();
+
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:createUser"];
+
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
+				expect(op?.ms).toBeGreaterThanOrEqual(0);
+			}
+		});
 	});
 
 	describe("when performance tracker is not available", () => {
@@ -369,6 +846,42 @@ describe("Mutation createUser - Performance Tracking", () => {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions?.code).toBe(
 					"unauthenticated",
+				);
+			}
+		});
+
+		it("should handle authorization error without perf tracker", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+			context.perf = undefined;
+
+			// Mock non-admin user (needs to be mocked twice - once for current user check, once for email check)
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({
+					id: "regular-user",
+					role: "regular" as const,
+				})
+				.mockResolvedValueOnce(undefined); // No existing user with this email
+
+			await vi.runAllTimersAsync();
+			try {
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress: `test${faker.string.ulid()}@example.com`,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthorized_action",
 				);
 			}
 		});

@@ -248,6 +248,427 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			expect(op?.count).toBe(1);
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
+
+		it("should track mutation execution time on duplicate organization name error", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgName = `Test Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+
+			// Mock existing organization with the same name
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				{
+					id: faker.string.uuid(),
+					name: orgName,
+				},
+			);
+
+			await vi.runAllTimersAsync();
+			try {
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: orgName,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"forbidden_action_on_arguments_associated_resources",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time when currentUser is not found after query", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			// Mock query to return undefined (user not found)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await vi.runAllTimersAsync();
+			try {
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: `Test Org ${faker.string.ulid()}`,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time when createdOrganization is not returned", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgName = `Test Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			// Mock transaction to return empty array (simulating edge case)
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn().mockReturnValue({
+								values: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([]), // Empty array
+								}),
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
+
+			await vi.runAllTimersAsync();
+			try {
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: orgName,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unexpected",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time on avatar validation error", async () => {
+			const perf = createPerformanceTracker();
+			const { context } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			// Create mock avatar with invalid mime type
+			const invalidAvatar = Promise.resolve({
+				filename: "avatar.txt",
+				mimetype: "text/plain", // Invalid mime type
+				createReadStream: vi.fn(),
+			});
+
+			await vi.runAllTimersAsync();
+			try {
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: `Test Org ${faker.string.ulid()}`,
+							description: "Test Description",
+							avatar: invalidAvatar,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time on successful mutation with avatar upload", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgName = `Test Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedOrganization = {
+				...createMockCreatedOrganization(orgName),
+				avatarMimeType: "image/png" as const,
+				avatarName: faker.string.uuid(),
+			};
+
+			// Create mock avatar with valid mime type
+			const validAvatar = Promise.resolve({
+				filename: "avatar.png",
+				mimetype: "image/png",
+				createReadStream: vi.fn().mockReturnValue({
+					pipe: vi.fn(),
+					on: vi.fn(),
+				}),
+			});
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			// Mock transaction with avatar fields
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn().mockReturnValue({
+								values: vi.fn().mockReturnValue({
+									returning: vi
+										.fn()
+										.mockResolvedValue([mockCreatedOrganization]),
+								}),
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
+
+			// Mock MinIO client (putObject is already mocked, but we can verify it's called)
+			const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+			putObjectSpy.mockResolvedValue({
+				etag: "mock-etag",
+				versionId: null,
+			});
+
+			const resultPromise = createOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						name: orgName,
+						description: "Test Description",
+						avatar: validAvatar,
+					},
+				},
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toBeDefined();
+			expect(result).toMatchObject({
+				name: orgName,
+				description: "Test Description",
+			});
+
+			// Verify MinIO putObject was called for avatar upload
+			expect(putObjectSpy).toHaveBeenCalled();
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time when avatar is explicitly set to null", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgName = `Test Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedOrganization = createMockCreatedOrganization(orgName);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			// Mock transaction
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(createMockTransaction(mockCreatedOrganization));
+
+			const resultPromise = createOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						name: orgName,
+						description: "Test Description",
+						avatar: null, // Explicitly set to null
+					},
+				},
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toBeDefined();
+			expect(result).toMatchObject({
+				name: orgName,
+				description: "Test Description",
+			});
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time with different valid avatar mime types", async () => {
+			const validMimeTypes = [
+				"image/jpeg",
+				"image/webp",
+				"image/avif",
+			] as const;
+
+			for (const mimeType of validMimeTypes) {
+				const perf = createPerformanceTracker();
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = perf;
+
+				const orgName = `Test Org ${faker.string.ulid()}`;
+				const mockAdminUser = createMockAdminUser();
+				const mockCreatedOrganization = {
+					...createMockCreatedOrganization(orgName),
+					avatarMimeType: mimeType,
+					avatarName: faker.string.uuid(),
+				};
+
+				const validAvatar = Promise.resolve({
+					filename: `avatar.${mimeType.split("/")[1]}`,
+					mimetype: mimeType,
+					createReadStream: vi.fn().mockReturnValue({
+						pipe: vi.fn(),
+						on: vi.fn(),
+					}),
+				});
+
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					undefined,
+				);
+
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(
+						async (callback: (tx: unknown) => Promise<unknown>) => {
+							const mockTx = {
+								insert: vi.fn().mockReturnValue({
+									values: vi.fn().mockReturnValue({
+										returning: vi
+											.fn()
+											.mockResolvedValue([mockCreatedOrganization]),
+									}),
+								}),
+							};
+							return callback(mockTx as never);
+						},
+					);
+
+				const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+				putObjectSpy.mockResolvedValue({
+					etag: "mock-etag",
+					versionId: null,
+				});
+
+				const resultPromise = createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: orgName,
+							description: "Test Description",
+							avatar: validAvatar,
+						},
+					},
+					context,
+				);
+				await vi.runAllTimersAsync();
+				const result = await resultPromise;
+
+				expect(result).toBeDefined();
+				expect(putObjectSpy).toHaveBeenCalled();
+
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:createOrganization"];
+
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
+				expect(op?.ms).toBeGreaterThanOrEqual(0);
+			}
+		});
 	});
 
 	describe("when performance tracker is not available", () => {
@@ -349,6 +770,37 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions?.code).toBe(
 					"unauthenticated",
+				);
+			}
+		});
+
+		it("should handle authorization error without perf tracker", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+			context.perf = undefined;
+
+			// Mock non-admin user
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+				id: "regular-user",
+				role: "regular" as const,
+			});
+
+			await vi.runAllTimersAsync();
+			try {
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: `Test Org ${faker.string.ulid()}`,
+							description: "Test Description",
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthorized_action",
 				);
 			}
 		});

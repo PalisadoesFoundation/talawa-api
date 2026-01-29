@@ -424,7 +424,7 @@ builder.mutationField("createEvent", (t) =>
 								windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
 
 								// If end date is within the default window, use the window end instead
-								const defaultWindowEnd = new Date();
+								const defaultWindowEnd = new Date(windowStartDate);
 								defaultWindowEnd.setMonth(
 									defaultWindowEnd.getMonth() +
 										windowConfig.hotWindowMonthsAhead,
@@ -435,7 +435,7 @@ builder.mutationField("createEvent", (t) =>
 								}
 							} else if (parsedArgs.input.recurrence.count) {
 								// For count-based recurrence, estimate end date and use window
-								const defaultWindowEnd = new Date();
+								const defaultWindowEnd = new Date(windowStartDate);
 								defaultWindowEnd.setMonth(
 									defaultWindowEnd.getMonth() +
 										windowConfig.hotWindowMonthsAhead,
@@ -443,7 +443,7 @@ builder.mutationField("createEvent", (t) =>
 								windowEndDate = defaultWindowEnd;
 							} else {
 								// For never-ending events, use the materialization window
-								const defaultWindowEnd = new Date();
+								const defaultWindowEnd = new Date(windowStartDate);
 								defaultWindowEnd.setMonth(
 									defaultWindowEnd.getMonth() +
 										windowConfig.hotWindowMonthsAhead,
@@ -589,8 +589,13 @@ builder.mutationField("createEvent", (t) =>
 								const stopTiming = ctx.perf.start(
 									"mutation:createEvent:notification:enqueue",
 								);
-								ctx.notification?.enqueueEventCreated(notificationPayload);
-								stopTiming();
+								try {
+									ctx.notification?.enqueueEventCreated(notificationPayload);
+								} finally {
+									if (stopTiming) {
+										stopTiming();
+									}
+								}
 							} else {
 								ctx.notification?.enqueueEventCreated(notificationPayload);
 							}
