@@ -835,13 +835,16 @@ create_mock "docker" '
     if [ "$1" = "info" ]; then exit 1; fi # Daemon down
 '
 
-OUTPUT=$(run_test_script docker false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script docker false 2>&1)
+EXIT_CODE=$?
+set -e
 
 # The script should fail because check_docker_requirements returns 1
-if echo "$OUTPUT" | grep -q "Docker is installed but not running"; then
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker is installed but not running"; then
     test_pass
 else
-    test_fail "Expected daemon failure warning.\nLogs:\n$OUTPUT"
+    test_fail "Expected non-zero exit and daemon failure warning.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
