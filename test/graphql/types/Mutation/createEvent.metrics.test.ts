@@ -1207,110 +1207,123 @@ describe("Mutation createEvent - Performance Tracking", () => {
 
 	describe("when performance tracker is not available", () => {
 		it("should execute mutation successfully without perf tracker", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-			context.perf = undefined;
+			// Use real timers for this test to avoid infinite loop from runAllTimersAsync
+			// (mocks/context can schedule recurring timers)
+			vi.useRealTimers();
+			try {
+				const { context, mocks } = createMockGraphQLContext(true, "user-123");
+				context.perf = undefined;
 
-			const organizationId = faker.string.uuid();
-			const startAt = new Date(Date.now() + 86400000);
-			const endAt = new Date(startAt.getTime() + 3600000);
+				const organizationId = faker.string.uuid();
+				const startAt = new Date(Date.now() + 86400000);
+				const endAt = new Date(startAt.getTime() + 3600000);
 
-			// Mock current user
-			const mockCurrentUser = createMockUser("user-123");
+				// Mock current user
+				const mockCurrentUser = createMockUser("user-123");
 
-			// Mock organization
-			const mockOrganization = createMockOrganization(organizationId);
+				// Mock organization
+				const mockOrganization = createMockOrganization(organizationId);
 
-			// Mock created event
-			const mockCreatedEvent = createMockEvent(organizationId, startAt, endAt);
-
-			// Mock database queries
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockCurrentUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization,
-			);
-
-			// Mock agenda folder and category
-			const mockAgendaFolder = createMockAgendaFolder(
-				mockCreatedEvent.id,
-				organizationId,
-			);
-			const mockAgendaCategory = createMockAgendaCategory(
-				mockCreatedEvent.id,
-				organizationId,
-			);
-
-			// Mock transaction with table-specific returns
-			(
-				mocks.drizzleClient as unknown as {
-					transaction?: ReturnType<typeof vi.fn>;
-				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(
-					async (callback: (tx: unknown) => Promise<unknown>) => {
-						const mockTx = {
-							insert: vi.fn((table: unknown) => {
-								if (table === eventsTable) {
-									return {
-										values: vi.fn().mockReturnValue({
-											returning: vi.fn().mockResolvedValue([mockCreatedEvent]),
-										}),
-									};
-								}
-								if (table === agendaFoldersTable) {
-									return {
-										values: vi.fn().mockReturnValue({
-											returning: vi.fn().mockResolvedValue([mockAgendaFolder]),
-										}),
-									};
-								}
-								if (table === agendaCategoriesTable) {
-									return {
-										values: vi.fn().mockReturnValue({
-											returning: vi
-												.fn()
-												.mockResolvedValue([mockAgendaCategory]),
-										}),
-									};
-								}
-								return {
-									values: vi.fn().mockReturnValue({
-										returning: vi.fn().mockResolvedValue([]),
-									}),
-								};
-							}),
-						};
-						return callback(mockTx as never);
-					},
+				// Mock created event
+				const mockCreatedEvent = createMockEvent(
+					organizationId,
+					startAt,
+					endAt,
 				);
 
-			// Mock notification service
-			const mockNotification = {
-				enqueueEventCreated: vi.fn(),
-				enqueueSendEventInvite: vi.fn(),
-				flush: vi.fn().mockResolvedValue(undefined),
-			};
-			context.notification = mockNotification;
+				// Mock database queries
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockCurrentUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockOrganization,
+				);
 
-			const resultPromise = createEventMutationResolver(
-				null,
-				{
-					input: {
-						name: "Test Event",
-						description: "Test Description",
-						organizationId,
-						startAt,
-						endAt,
+				// Mock agenda folder and category
+				const mockAgendaFolder = createMockAgendaFolder(
+					mockCreatedEvent.id,
+					organizationId,
+				);
+				const mockAgendaCategory = createMockAgendaCategory(
+					mockCreatedEvent.id,
+					organizationId,
+				);
+
+				// Mock transaction with table-specific returns
+				(
+					mocks.drizzleClient as unknown as {
+						transaction?: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(
+						async (callback: (tx: unknown) => Promise<unknown>) => {
+							const mockTx = {
+								insert: vi.fn((table: unknown) => {
+									if (table === eventsTable) {
+										return {
+											values: vi.fn().mockReturnValue({
+												returning: vi
+													.fn()
+													.mockResolvedValue([mockCreatedEvent]),
+											}),
+										};
+									}
+									if (table === agendaFoldersTable) {
+										return {
+											values: vi.fn().mockReturnValue({
+												returning: vi
+													.fn()
+													.mockResolvedValue([mockAgendaFolder]),
+											}),
+										};
+									}
+									if (table === agendaCategoriesTable) {
+										return {
+											values: vi.fn().mockReturnValue({
+												returning: vi
+													.fn()
+													.mockResolvedValue([mockAgendaCategory]),
+											}),
+										};
+									}
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([]),
+										}),
+									};
+								}),
+							};
+							return callback(mockTx as never);
+						},
+					);
+
+				// Mock notification service
+				const mockNotification = {
+					enqueueEventCreated: vi.fn(),
+					enqueueSendEventInvite: vi.fn(),
+					flush: vi.fn().mockResolvedValue(undefined),
+				};
+				context.notification = mockNotification;
+
+				const result = await createEventMutationResolver(
+					null,
+					{
+						input: {
+							name: "Test Event",
+							description: "Test Description",
+							organizationId,
+							startAt,
+							endAt,
+						},
 					},
-				},
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
+					context,
+				);
 
-			expect(result).toBeDefined();
+				expect(result).toBeDefined();
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 
 		it("should handle validation error without perf tracker", async () => {
