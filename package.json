@@ -10,7 +10,6 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/jwt": "^10.0.0",
     "@fastify/otel": "^0.16.0",
-    "@fastify/rate-limit": "^10.3.0",
     "@fastify/redis": "^7.0.2",
     "@fastify/type-provider-typebox": "^6.1.0",
     "@node-rs/argon2": "^2.0.2",
@@ -109,7 +108,6 @@
     "typecheck": "tsc",
     "disable_git_hooks": "lefthook uninstall",
     "drop_drizzle_migrations": "drizzle-kit drop",
-    
     "enable_git_hooks": "lefthook install",
     "format:fix": "biome check --error-on-warnings --write",
     "lint:sanitization": "tsx scripts/check_sanitization.ts",
