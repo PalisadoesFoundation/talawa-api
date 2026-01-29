@@ -17,11 +17,6 @@ TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
 
-# Colors
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
 test_start() {
     local test_name="$1"
     TESTS_RUN=$((TESTS_RUN + 1))
@@ -30,14 +25,14 @@ test_start() {
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo -e "${GREEN}✓ PASS${NC}"
+    echo "✓ PASS"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo -e "${RED}✗ FAIL${NC}"
-    echo -e "  ${RED}Reason: $message${NC}"
+    echo "✗ FAIL"
+    echo "  Reason: $message"
 }
 
 # Create a temporary directory for mocks and test state
@@ -1072,11 +1067,13 @@ echo "========================================================================"
 echo "Test Summary"
 echo "========================================================================"
 echo "Total tests run:    $TESTS_RUN"
-echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
-echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
+echo "Tests passed:       $TESTS_PASSED"
+echo "Tests failed:       $TESTS_FAILED"
 
 if [ $TESTS_FAILED -eq 0 ]; then
+    echo "✓ All tests passed!"
     exit 0
 else
+    echo "✗ Some tests failed"
     exit 1
 fi
