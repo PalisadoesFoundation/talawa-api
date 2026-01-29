@@ -40,9 +40,6 @@ test_fail() {
     echo -e "  ${RED}Reason: $message${NC}"
 }
 
-# The target script to test
-TARGET_SCRIPT="./install-macos.sh"
-
 # Create a temporary directory for mocks and test state
 TEST_DIR=$(mktemp -d)
 MOCK_BIN="$TEST_DIR/bin"
@@ -294,20 +291,28 @@ fi
 
 test_start "Validation - Invalid INSTALL_MODE"
 setup_clean_system
-OUTPUT=$(run_test_script bogus false 2>&1 || true)
-if echo "$OUTPUT" | grep -q "Invalid INSTALL_MODE"; then
+
+set +e
+OUTPUT=$(run_test_script bogus false 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Invalid INSTALL_MODE"; then
     test_pass
 else
-    test_fail "Expected validation error for invalid INSTALL_MODE.\nLogs:\n$OUTPUT"
+    test_fail "Expected non-zero exit and validation error.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 test_start "Validation - Invalid SKIP_PREREQS"
 setup_clean_system
-OUTPUT=$(run_test_script docker maybe 2>&1 || true)
-if echo "$OUTPUT" | grep -q "Invalid SKIP_PREREQS"; then
+
+set +e
+OUTPUT=$(run_test_script docker maybe 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Invalid SKIP_PREREQS"; then
     test_pass
 else
-    test_fail "Expected validation error for invalid SKIP_PREREQS.\nLogs:\n$OUTPUT"
+    test_fail "Expected non-zero exit and validation error.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 test_start "Validation - Missing package.json"
@@ -459,14 +464,18 @@ create_mock "shasum" '
 
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-# Verify that pnpm install was NOT called (skipped due to matching hash)
-if echo "$OUTPUT" | grep -q "Dependencies already up-to-date" && \
+# Verify EXIT_CODE is 0 and that OUTPUT contains "Dependencies already up-to-date" and does not contain "SHOULD_NOT_RUN"
+if [ $EXIT_CODE -eq 0 ] && \
+   echo "$OUTPUT" | grep -q "Dependencies already up-to-date" && \
    ! echo "$OUTPUT" | grep -q "SHOULD_NOT_RUN"; then
     test_pass
 else
-    test_fail "Expected pnpm install to be skipped.\nLogs:\n$OUTPUT"
+    test_fail "Expected exit code 0 and skip message, but check failed.\nExit Code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
