@@ -69,6 +69,7 @@ mkdir -p .pnpm-store node_modules
 if [ ! -w ".pnpm-store" ] || [ ! -w "node_modules" ]; then
   if ! sudo -n chown -R "$(id -u):$(id -g)" .pnpm-store node_modules; then
     echo "[ERROR] Failed to fix pnpm directory permissions." >&2
+    echo "Directories are not writable and sudo failed to change ownership to $(id -u):$(id -g)." >&2
     exit 1
   fi
 fi
