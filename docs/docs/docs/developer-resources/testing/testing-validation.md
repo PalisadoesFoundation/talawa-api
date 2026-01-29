@@ -97,6 +97,24 @@ The `integration` flag tracks coverage for:
 
 These flags allow us to monitor coverage separately on the Codecov dashboard, helping identify gaps in either unit or integration test coverage.
 
+### Codecov Flag Meanings (Dashboard)
+
+The Codecov dashboard may show **four** flags. Only two are actively produced by our current CI workflows. The other two are legacy flags that may still appear if they were uploaded in the past.
+
+| Flag | What it represents | Status in this repo |
+| --- | --- | --- |
+| `unit` | Coverage uploaded from `vitest.unit.config.ts` (unit test suite). | **Active** |
+| `integration` | Coverage uploaded from `vitest.integration.config.ts` (integration test suite). | **Active** |
+| `vitest` | A combined Vitest coverage report from older workflows (pre-split) or ad-hoc uploads. | **Legacy** (not currently uploaded) |
+| `unittests` | An older/renamed flag that no longer receives uploads. | **Legacy** (no report uploaded) |
+
+Notes:
+- The **active** flags are `unit` and `integration`. These are the only flags uploaded by CI today.
+- **Legacy** flags can remain visible on the dashboard even if they are not being uploaded anymore. If you see “No report uploaded,” it’s a stale flag.
+- Admins can delete stale flags from the Codecov UI if needed.
+
+![Codecov flags overview](/img/markdown/docs/codecov-flags-overview.svg)
+
 ## Linting & Static Analysis
 
 We use [Biome](https://biomejs.dev/) for linting and formatting. In addition to standard rules, we have custom plugins enabled to enforce security best practices.
