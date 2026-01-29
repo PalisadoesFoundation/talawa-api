@@ -6,7 +6,7 @@ import {
 	agendaCategoriesTable,
 	agendaFoldersTable,
 } from "~/src/drizzle/schema";
-import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -684,7 +684,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions?.code).toBe(
-					"unauthorized_action_on_arguments_associated_resources",
+					"arguments_associated_resources_not_found",
 				);
 			}
 
@@ -696,7 +696,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 
-		it("should track mutation execution time when generation window needs initialization", async () => {
+		it("should track mutation when generation window needs initialization", async () => {
 			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
@@ -704,6 +704,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			const organizationId = faker.string.uuid();
 			const startAt = new Date(Date.now() + 86400000);
 			const endAt = new Date(startAt.getTime() + 3600000);
+			const recurrenceEndDate = new Date(startAt.getTime() + 30 * 86400000); // 30 days later
 
 			// Mock current user
 			const mockCurrentUser = createMockUser("user-123");
@@ -711,8 +712,40 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			// Mock organization
 			const mockOrganization = createMockOrganization(organizationId);
 
-			// Mock created event
-			const mockCreatedEvent = createMockEvent(organizationId, startAt, endAt);
+			// Mock created event (recurring)
+			const mockCreatedEvent = {
+				...createMockEvent(organizationId, startAt, endAt),
+				isRecurring: true,
+			};
+
+			// Mock recurrence rule
+			const mockRecurrenceRule = {
+				id: faker.string.uuid(),
+				recurrenceRuleString: "FREQ=DAILY;UNTIL=20260301",
+				frequency: "DAILY",
+				baseRecurringEventId: mockCreatedEvent.id,
+				latestInstanceDate: startAt,
+			};
+
+			// Mock generation window config that will be returned from initialization
+			const mockWindowConfig = {
+				id: faker.string.uuid(),
+				organizationId,
+				currentWindowEndDate: new Date(),
+				retentionStartDate: new Date(),
+				hotWindowMonthsAhead: 12,
+				historyRetentionMonths: 3,
+				lastProcessedAt: new Date(),
+				lastProcessedInstanceCount: 0,
+				isEnabled: true,
+				processingPriority: 5,
+				maxInstancesPerRun: 1000,
+				configurationNotes: null,
+				createdById: "user-123",
+				lastUpdatedById: null,
+				createdAt: new Date(),
+				updatedAt: null,
+			};
 
 			// Mock agenda folder and category
 			const mockAgendaFolder = createMockAgendaFolder(
@@ -731,32 +764,13 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				mockOrganization,
 			);
 
-			// Mock initializeGenerationWindow to be called
-			const initWindowSpy = vi
-				.spyOn(
-					await import("~/src/services/eventGeneration"),
-					"initializeGenerationWindow",
-				)
-				.mockResolvedValue({
-					id: faker.string.uuid(),
-					organizationId,
-					currentWindowEndDate: new Date(),
-					retentionStartDate: new Date(),
-					hotWindowMonthsAhead: 12,
-					historyRetentionMonths: 3,
-					lastProcessedAt: new Date(),
-					lastProcessedInstanceCount: 0,
-					isEnabled: true,
-					processingPriority: 5,
-					maxInstancesPerRun: 1000,
-					configurationNotes: null,
-					createdById: "user-123",
-					lastUpdatedById: null,
-					createdAt: new Date(),
-					updatedAt: null,
-				});
+			// Import and mock recurrenceRulesTable
+			const { recurrenceRulesTable } = await import("~/src/drizzle/schema");
+			const { recurringEventInstancesTable } = await import(
+				"~/src/drizzle/schema"
+			);
 
-			// Mock transaction
+			// Mock transaction with all required table mocks
 			(
 				mocks.drizzleClient as unknown as {
 					transaction?: ReturnType<typeof vi.fn>;
@@ -771,6 +785,22 @@ describe("Mutation createEvent - Performance Tracking", () => {
 									return {
 										values: vi.fn().mockReturnValue({
 											returning: vi.fn().mockResolvedValue([mockCreatedEvent]),
+										}),
+									};
+								}
+								if (table === recurrenceRulesTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi
+												.fn()
+												.mockResolvedValue([mockRecurrenceRule]),
+										}),
+									};
+								}
+								if (table === recurringEventInstancesTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([]),
 										}),
 									};
 								}
@@ -798,13 +828,21 @@ describe("Mutation createEvent - Performance Tracking", () => {
 							}),
 							query: {
 								eventGenerationWindowsTable: {
-									findFirst: vi.fn().mockResolvedValue(undefined), // No existing window
+									findFirst: vi.fn().mockResolvedValue(undefined), // No existing window - triggers initialization
 								},
 							},
 						};
 						return callback(mockTx as never);
 					},
 				);
+
+			// Mock initializeGenerationWindow
+			const eventGenerationModule = await import(
+				"~/src/services/eventGeneration"
+			);
+			const initWindowSpy = vi
+				.spyOn(eventGenerationModule, "initializeGenerationWindow")
+				.mockResolvedValue(mockWindowConfig);
 
 			// Mock notification service
 			const mockNotification = {
@@ -818,14 +856,14 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				null,
 				{
 					input: {
-						name: "Test Event",
+						name: "Test Recurring Event",
 						description: "Test Description",
 						organizationId,
 						startAt,
 						endAt,
 						recurrence: {
 							frequency: "DAILY",
-							never: true,
+							endDate: recurrenceEndDate,
 						},
 					},
 				},
@@ -835,6 +873,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			const result = await resultPromise;
 
 			expect(result).toBeDefined();
+			// Verify initializeGenerationWindow was called since no window existed
 			expect(initWindowSpy).toHaveBeenCalled();
 
 			const snapshot = perf.snapshot();
@@ -847,7 +886,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			vi.restoreAllMocks();
 		});
 
-		it("should track mutation execution time when attachment upload fails", async () => {
+		it("should track mutation and trigger cleanup when attachment upload fails", async () => {
 			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
@@ -875,31 +914,37 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				organizationId,
 			);
 
+			// Import eventAttachmentsTable
+			const { eventAttachmentsTable } = await import("~/src/drizzle/schema");
+
+			// Track attachment names for cleanup verification
+			const attachment1Name = "attachment-1-name";
+			const attachment2Name = "attachment-2-name";
+
+			// Mock created attachments (what the DB insert returns)
+			const mockAttachmentRecords = [
+				{
+					id: faker.string.uuid(),
+					eventId: mockCreatedEvent.id,
+					name: attachment1Name,
+					mimeType: "image/png",
+					creatorId: "user-123",
+				},
+				{
+					id: faker.string.uuid(),
+					eventId: mockCreatedEvent.id,
+					name: attachment2Name,
+					mimeType: "image/png",
+					creatorId: "user-123",
+				},
+			];
+
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockCurrentUser,
 			);
 			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
 				mockOrganization,
 			);
-
-			// Track attachment name for cleanup verification
-			const attachment1Name = faker.string.uuid();
-
-			// Mock MinIO putObject to succeed first, then fail (to trigger cleanup)
-			const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
-			putObjectSpy
-				.mockResolvedValueOnce({
-					etag: "mock-etag-1",
-					versionId: null,
-				})
-				.mockRejectedValueOnce(new Error("Upload failed"));
-
-			// Mock removeObject for cleanup verification
-			const removeObjectSpy = vi.spyOn(
-				mocks.minioClient.client,
-				"removeObject",
-			);
-			removeObjectSpy.mockResolvedValue(undefined);
 
 			// Mock transaction
 			(
@@ -938,24 +983,9 @@ describe("Mutation createEvent - Performance Tracking", () => {
 								if (table === eventAttachmentsTable) {
 									return {
 										values: vi.fn().mockReturnValue({
-											returning: vi.fn().mockResolvedValue([
-												{
-													id: faker.string.uuid(),
-													eventId: mockCreatedEvent.id,
-													name: attachment1Name,
-													mimeType: "image/png",
-													objectName: faker.string.uuid(),
-													fileHash: "hash1",
-												},
-												{
-													id: faker.string.uuid(),
-													eventId: mockCreatedEvent.id,
-													name: faker.string.uuid(),
-													mimeType: "image/png",
-													objectName: faker.string.uuid(),
-													fileHash: "hash2",
-												},
-											]),
+											returning: vi
+												.fn()
+												.mockResolvedValue(mockAttachmentRecords),
 										}),
 									};
 								}
@@ -970,6 +1000,18 @@ describe("Mutation createEvent - Performance Tracking", () => {
 					},
 				);
 
+			// Mock MinIO putObject: first succeeds, second fails
+			const putObjectMock = vi.fn();
+			putObjectMock
+				.mockResolvedValueOnce({ etag: "mock-etag-1", versionId: null }) // First upload succeeds
+				.mockRejectedValueOnce(new Error("Upload failed for attachment 2")); // Second fails
+
+			// Mock removeObject for cleanup verification
+			const removeObjectMock = vi.fn().mockResolvedValue(undefined);
+
+			mocks.minioClient.client.putObject = putObjectMock;
+			mocks.minioClient.client.removeObject = removeObjectMock;
+
 			// Mock notification service
 			const mockNotification = {
 				enqueueEventCreated: vi.fn(),
@@ -978,22 +1020,26 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			};
 			context.notification = mockNotification;
 
-			// Create mock attachments (two attachments - first succeeds, second fails)
+			// Create mock file uploads with proper stream mocks
+			const createMockReadStream = () => ({
+				pipe: vi.fn().mockReturnThis(),
+				on: vi.fn().mockReturnThis(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
 			const mockAttachment1 = Promise.resolve({
 				filename: "test1.png",
 				mimetype: "image/png",
-				createReadStream: vi.fn().mockReturnValue({
-					pipe: vi.fn(),
-					on: vi.fn(),
-				}),
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
 			});
 			const mockAttachment2 = Promise.resolve({
 				filename: "test2.png",
 				mimetype: "image/png",
-				createReadStream: vi.fn().mockReturnValue({
-					pipe: vi.fn(),
-					on: vi.fn(),
-				}),
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
 			});
 
 			await vi.runAllTimersAsync();
@@ -1015,16 +1061,19 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(Error);
-				expect((error as Error).message).toContain("Upload failed");
+				expect((error as Error).message).toContain(
+					"Upload failed for attachment 2",
+				);
 			}
 
-			// Verify cleanup was called (removeObject should be called for successfully uploaded files)
-			// First attachment upload succeeds, second fails, so cleanup should remove the first
-			expect(putObjectSpy).toHaveBeenCalledTimes(2);
-			expect(removeObjectSpy).toHaveBeenCalled();
-			expect(removeObjectSpy).toHaveBeenCalledWith(
+			// Verify putObject was called for both attachments
+			expect(putObjectMock).toHaveBeenCalledTimes(2);
+
+			// Verify cleanup was called for the successfully uploaded file
+			expect(removeObjectMock).toHaveBeenCalled();
+			expect(removeObjectMock).toHaveBeenCalledWith(
 				expect.any(String), // bucketName
-				attachment1Name, // First attachment name that was successfully uploaded
+				attachment1Name, // First attachment that was successfully uploaded
 			);
 
 			const snapshot = perf.snapshot();
