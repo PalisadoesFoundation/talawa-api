@@ -62,6 +62,12 @@ export function withMutationMetrics<
 	if (!operationName || !operationName.trim()) {
 		throw new Error("Operation name cannot be empty or whitespace");
 	}
+	const OPERATION_NAME_PATTERN = /^mutation:[A-Za-z0-9_]+$/;
+	if (!OPERATION_NAME_PATTERN.test(operationName)) {
+		throw new Error(
+			`Operation name must match the format "mutation:{mutationName}" (e.g. mutation:createUser). Got: "${operationName}"`,
+		);
+	}
 
 	return async (
 		parent: TParent,
