@@ -402,52 +402,57 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 		});
 
 		it("should execute mutation successfully without recording perf when context.perf is undefined", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-			context.perf = undefined;
+			// Use real timers for this test to avoid infinite loop from runAllTimersAsync
+			// (mocks/context can schedule recurring timers)
+			vi.useRealTimers();
+			try {
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = undefined;
 
-			const orgId = faker.string.uuid();
-			const orgName = `Updated Org ${faker.string.ulid()}`;
-			const mockAdminUser = createMockAdminUser();
-			const mockExistingOrganization = createMockExistingOrganization(orgId);
-			const mockUpdatedOrganization = createMockUpdatedOrganization(
-				orgId,
-				orgName,
-			);
+				const orgId = faker.string.uuid();
+				const orgName = `Updated Org ${faker.string.ulid()}`;
+				const mockAdminUser = createMockAdminUser();
+				const mockExistingOrganization = createMockExistingOrganization(orgId);
+				const mockUpdatedOrganization = createMockUpdatedOrganization(
+					orgId,
+					orgName,
+				);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockAdminUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockExistingOrganization,
-			);
-			(
-				mocks.drizzleClient as unknown as {
-					transaction: ReturnType<typeof vi.fn>;
-				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(createMockTransaction(mockUpdatedOrganization));
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockUpdatedOrganization));
 
-			const resultPromise = updateOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						id: orgId,
-						name: orgName,
-						description: "Updated Description",
+				const result = await updateOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							id: orgId,
+							name: orgName,
+							description: "Updated Description",
+						},
 					},
-				},
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
+					context,
+				);
 
-			expect(result).toBeDefined();
-			expect(result).toMatchObject({
-				id: orgId,
-				name: orgName,
-				description: "Updated Description",
-			});
+				expect(result).toBeDefined();
+				expect(result).toMatchObject({
+					id: orgId,
+					name: orgName,
+					description: "Updated Description",
+				});
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 	});
 });
