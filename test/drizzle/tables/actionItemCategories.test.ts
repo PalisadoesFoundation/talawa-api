@@ -83,7 +83,6 @@ describe("actionItemCategoriesTable", () => {
 		});
 	});
 
-
 	describe("Indexes", () => {
 		const tableConfig = getTableConfig(actionItemCategoriesTable);
 		const getColumnName = (
