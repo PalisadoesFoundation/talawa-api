@@ -172,15 +172,13 @@ setup_clean_system() {
         if [ "$1" = "--version" ]; then echo "Homebrew 4.0.0"; exit 0; fi
     '
     
-    # git, curl, jq, unzip - initially missing (simulated by not creating them in MOCK_BIN, but OS might have them)
-    # The script uses 'is_package_installed' which calls 'brew list' on macos.
-    # Our mocked brew list returns 1, so script will think they are missing and try to install them.
-    
-    # We need mocks for them because the script might call them after installation
-    # The script calls 'git --version' and validation uses 'jq'.
-    
     # Use the standalone jq mock
     create_jq_mock
+    
+    # Minimal mocks for tools the script may call post-install
+    create_mock "git" 'if [ "$1" = "--version" ]; then echo "git version 2.0.0"; exit 0; fi'
+    create_mock "curl" 'if [ "$1" = "--version" ]; then echo "curl 8.0.0"; exit 0; fi'
+    create_mock "unzip" 'if [ "$1" = "-v" ] || [ "$1" = "--version" ]; then echo "UnZip 6.0"; exit 0; fi'
     
     # docker - not installed
     # In MOCK_BIN, we don"t create docker. 'command -v docker' will fail.
@@ -874,6 +872,22 @@ if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing Homebrew..."; th
     test_pass
 else
     test_fail "Expected Homebrew installation flow with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "Docker Missing (Docker Mode)"
+setup_clean_system
+# docker is already masked by setup_clean_system (docker.hidden present)
+
+set +e
+OUTPUT=$(run_test_script docker false 2>&1)
+EXIT_CODE=$?
+set -e
+
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker is required"; then
+    test_pass
+else
+    test_fail "Expected non-zero exit and missing Docker warning.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
