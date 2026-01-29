@@ -136,6 +136,12 @@ export const actionItemsTableRelations = relations(
 			references: [eventsTable.id],
 			relationName: "actionitems.event_id:events.id",
 		}),
+		recurringEventInstance: one(recurringEventInstancesTable, {
+			fields: [actionItemsTable.recurringEventInstanceId],
+			references: [recurringEventInstancesTable.id],
+			relationName:
+				"actionitems.recurring_event_instance_id:recurring_event_instances.id",
+		}),
 		organization: one(organizationsTable, {
 			fields: [actionItemsTable.organizationId],
 			references: [organizationsTable.id],

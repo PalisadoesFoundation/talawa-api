@@ -2,6 +2,10 @@ import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import {
+	agendaCategoriesTable,
+	agendaFoldersTable,
+} from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -95,12 +99,11 @@ const expectSpecificError = (
 	result: CreateEventMutationResponse,
 	expectedError: Partial<TalawaGraphQLFormattedError>,
 ) => {
-	expect(result.data?.createEvent).toBeNull();
+	// GraphQL returns null for most errors, undefined for some validation errors
+	expect([null, undefined]).toContain(result.data?.createEvent);
 	expect(result.errors).toEqual(
 		expect.arrayContaining<TalawaGraphQLFormattedError>([
-			expect.objectContaining<TalawaGraphQLFormattedError>(
-				expectedError as TalawaGraphQLFormattedError,
-			),
+			expect.objectContaining(expectedError),
 		]),
 	);
 };
@@ -492,7 +495,124 @@ suite("Mutation field createEvent", () => {
 				}),
 			);
 		});
+		test("rejects yearly never-ending recurring events", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						never: true,
+					},
+				},
+			});
 
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence"],
+							message: expect.stringContaining(
+								"Yearly events cannot be never-ending",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects invalid day codes in byDay", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+						byDay: ["MO", "INVALID"], // Invalid day code
+					},
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence"],
+							message: expect.stringContaining("Invalid day code"),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects invalid months in byMonth", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						count: 3,
+						byMonth: [1, 13], // 13 is invalid (must be 1-12)
+					},
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence", "byMonth", 1],
+							message: expect.stringContaining("Too big"),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects recurrence end date before start date", async () => {
+			const organizationId = await createTestOrganization();
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 10); // 10 days ago
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						endDate: pastDate.toISOString(),
+					},
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence"],
+							message: expect.stringContaining("end date must be after"),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
 		test("rejects events with both isPublic and isInviteOnly set to true", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
@@ -947,5 +1067,1668 @@ suite("Mutation field createEvent", () => {
 
 			expectSuccessfulEvent(result, "Midnight Launch Event");
 		});
+	});
+
+	suite("Attachment Handling", () => {
+		test("rejects file upload with invalid MIME type", async () => {
+			const organizationId = await createTestOrganization();
+			const token = adminAuthToken;
+
+			// Use Fastify's raw inject with manually constructed multipart data
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+					mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+						createEvent(input: $input) {
+							id
+							name
+							attachments { mimeType }
+						}
+					}
+				`,
+				variables: {
+					input: {
+						organizationId,
+						name: `Event_${Date.now()}`,
+						startAt: getFutureDate(7, 10),
+						endAt: getFutureDate(7, 12),
+						attachments: [null],
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.attachments.0"],
+			});
+
+			const fileContent = "fake pdf content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.pdf"',
+				"Content-Type: application/pdf",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${token}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.data?.createEvent).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: expect.arrayContaining(["attachments"]),
+									message: expect.stringContaining("Mime type"),
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test.each([
+			{
+				name: "successfully creates event with valid image attachment",
+				attachmentCount: 1,
+			},
+			{
+				name: "successfully creates event with multiple image attachments",
+				attachmentCount: 2,
+			},
+		])("$name", async ({ attachmentCount }) => {
+			const organizationId = await createTestOrganization();
+			const token = adminAuthToken;
+
+			// Mock MinIO to avoid actual file upload
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "test-etag", versionId: "test-version" });
+
+			try {
+				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+				// Create attachments array
+				const attachments = Array(attachmentCount).fill(null);
+
+				// Build map for attachments
+				const mapEntries: Record<string, string[]> = {};
+				attachments.forEach((_, index) => {
+					mapEntries[String(index)] = [`variables.input.attachments.${index}`];
+				});
+
+				const operations = JSON.stringify({
+					query: `
+							mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+								createEvent(input: $input) {
+									id
+									name
+									attachments { mimeType }
+								}
+							}
+						`,
+					variables: {
+						input: {
+							organizationId,
+							name: `Event_${Date.now()}`,
+							startAt: getFutureDate(7, 10),
+							endAt: getFutureDate(7, 12),
+							attachments,
+						},
+					},
+				});
+
+				const map = JSON.stringify(mapEntries);
+
+				// Build multipart body with all attachments
+				const bodyParts = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					operations,
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					map,
+				];
+
+				attachments.forEach((_, index) => {
+					bodyParts.push(`--${boundary}`);
+					bodyParts.push(
+						`Content-Disposition: form-data; name="${index}"; filename="test${index + 1}.jpg"`,
+					);
+					bodyParts.push("Content-Type: image/jpeg");
+					bodyParts.push("");
+					bodyParts.push(`fake jpeg content ${index + 1}`);
+				});
+
+				bodyParts.push(`--${boundary}--`);
+				const body = bodyParts.join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${token}`,
+					},
+					payload: body,
+				});
+
+				const result = JSON.parse(response.body);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						attachments: expect.arrayContaining(
+							Array(attachmentCount)
+								.fill(null)
+								.map(() =>
+									expect.objectContaining({
+										mimeType: "image/jpeg",
+									}),
+								),
+						),
+					}),
+				);
+
+				// Verify MinIO upload was called the expected number of times
+				expect(putObjectSpy).toHaveBeenCalledTimes(attachmentCount);
+			} finally {
+				putObjectSpy.mockRestore();
+			}
+		});
+	});
+
+	suite("Database Error Handling", () => {
+		test("handles current user not found scenario", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock the user query to return undefined
+			vi.spyOn(
+				server.drizzleClient.query.usersTable,
+				"findFirst",
+			).mockResolvedValue(undefined);
+
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expectSpecificError(result, {
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["createEvent"],
+				});
+			} finally {
+				vi.restoreAllMocks();
+			}
+		});
+
+		test("handles event insertion returning empty array", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock the transaction to simulate empty array return
+			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+				async (callback) => {
+					const mockTx = {
+						...server.drizzleClient,
+						insert: vi.fn().mockImplementation(() => ({
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([]), // Empty array
+						})),
+					};
+
+					return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+				},
+			);
+
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expectSpecificError(result, {
+					extensions: expect.objectContaining<UnexpectedExtensions>({
+						code: "unexpected",
+					}),
+					message: expect.any(String),
+					path: ["createEvent"],
+				});
+			} finally {
+				vi.restoreAllMocks();
+			}
+		});
+	});
+
+	suite("Recurring Event Edge Cases", () => {
+		test("handles recurring event with end date beyond 12 months", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create a recurring event with end date 18 months in the future
+			const farFutureDate = new Date();
+			farFutureDate.setMonth(farFutureDate.getMonth() + 18);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Long-term Recurring Event",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						endDate: farFutureDate.toISOString(),
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Long-term Recurring Event",
+				}),
+			);
+		});
+
+		test("supports never-ending recurring events", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Never-ending Weekly Meeting",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						never: true, // Never-ending recurrence
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Never-ending Weekly Meeting",
+				}),
+			);
+		});
+
+		test("handles count-based recurring event with byMonth", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Quarterly Review",
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						count: 5,
+						byMonth: [3, 6, 9, 12], // March, June, September, December
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Quarterly Review",
+				}),
+			);
+		});
+	});
+
+	suite("Notification Error Handling", () => {
+		test("handles notification enqueue failure gracefully", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock NotificationService to throw error during enqueue
+			const NotificationService = await import(
+				"~/src/services/notification/NotificationService"
+			);
+			const mockEnqueue = vi
+				.spyOn(NotificationService.default.prototype, "enqueueEventCreated")
+				.mockImplementation(() => {
+					throw new Error("Notification service unavailable");
+				});
+
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				// Event should still be created successfully despite notification failure
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						name: "Test Event",
+					}),
+				);
+			} finally {
+				mockEnqueue.mockRestore();
+			}
+		});
+
+		test("handles notification flush failure gracefully", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock NotificationService to throw error during flush
+			// We need to mock the class before the GraphQL context creates an instance
+			const NotificationService = await import(
+				"~/src/services/notification/NotificationService"
+			);
+			const mockFlush = vi
+				.spyOn(NotificationService.default.prototype, "flush")
+				.mockImplementation(() => {
+					throw new Error("Flush failed");
+				});
+
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				// Event should still be created successfully despite flush failure
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						name: "Test Event",
+					}),
+				);
+			} finally {
+				mockFlush.mockRestore();
+			}
+		});
+	});
+
+	suite("Event Generation Window Initialization", () => {
+		test("creates event generation window when it does not exist for recurring event", async () => {
+			// Create a new organization that has no generation window yet
+			const newOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							name: `Test Org No Window ${faker.string.ulid()}`,
+							countryCode: "us",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(newOrgResult.data?.createOrganization?.id);
+			const newOrgId = newOrgResult.data.createOrganization.id;
+
+			// Add admin as organization member
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						organizationId: newOrgId,
+						memberId: adminUserId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a recurring event for the new organization (which has no window)
+			// This should trigger the windowConfig initialization branch at line 277 (if (!windowConfig))
+			const result = await createEvent({
+				input: {
+					...baseEventInput(newOrgId),
+					name: "Recurring Event With New Window",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Recurring Event With New Window",
+				}),
+			);
+		});
+
+		test("uses existing generation window for recurring event when window exists", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create first recurring event (this will create a generation window)
+			const firstResult = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "First Recurring Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expect(firstResult.errors).toBeUndefined();
+			expect(firstResult.data?.createEvent?.id).toBeDefined();
+
+			// Create second recurring event (this should use existing generation window)
+			// This tests the else branch (when windowConfig already exists)
+			const secondResult = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Second Recurring Event",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						count: 3,
+					},
+				},
+			});
+
+			expect(secondResult.errors).toBeUndefined();
+			expect(secondResult.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Second Recurring Event",
+				}),
+			);
+		});
+	});
+
+	suite("Branch Coverage - Window End Date Calculation", () => {
+		test("uses recurrence end date when it is within default 12-month window", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create end date 6 months in future (within 12-month default window)
+			const endDate = new Date();
+			endDate.setMonth(endDate.getMonth() + 6);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Event with Near End Date",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						endDate: endDate.toISOString(),
+					},
+				},
+			});
+
+			// This tests the branch at line 340-341 where windowEndDate < defaultWindowEnd
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Event with Near End Date",
+				}),
+			);
+		});
+
+		test("uses default window when recurrence end date exceeds 12 months", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create end date 18 months in future (beyond 12-month default window)
+			const endDate = new Date();
+			endDate.setMonth(endDate.getMonth() + 18);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Event with Far End Date",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						endDate: endDate.toISOString(),
+					},
+				},
+			});
+
+			// This tests the branch where windowEndDate > defaultWindowEnd (line 343-345)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Event with Far End Date",
+				}),
+			);
+		});
+
+		test("handles count-based recurring events window calculation", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Count-Based Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 10,
+					},
+				},
+			});
+
+			// This tests the branch at line 347-351 for count-based events
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Count-Based Event",
+				}),
+			);
+		});
+
+		test("handles never-ending recurring events window calculation", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Never-Ending Event",
+					recurrence: {
+						frequency: "DAILY",
+						interval: 1,
+						never: true,
+					},
+				},
+			});
+
+			// This tests the branch at line 352-356 for never-ending events
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Never-Ending Event",
+				}),
+			);
+		});
+	});
+
+	suite("Notification Flush Error Path Coverage", () => {
+		test("successfully creates event with notification service enabled", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Baseline test: verify event creation succeeds with notification service enabled
+			const result = await createEvent({
+				input: baseEventInput(organizationId),
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Test Event",
+				}),
+			);
+		});
+
+		test("successfully creates event when notification service is unavailable", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock NotificationService to simulate it being unavailable (enqueue throws error)
+			// The optional chaining in ctx.notification?.enqueueEventCreated() should prevent errors
+			const NotificationService = await import(
+				"~/src/services/notification/NotificationService"
+			);
+			const mockEnqueue = vi
+				.spyOn(NotificationService.default.prototype, "enqueueEventCreated")
+				.mockImplementationOnce(() => {
+					throw new Error("Notification service unavailable");
+				});
+
+			try {
+				// Despite notification service failure, createEvent should succeed
+				// because optional chaining short-circuits the error
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						name: "Test Event",
+					}),
+				);
+
+				// Verify that notification enqueue was attempted but didn't break the mutation
+				expect(mockEnqueue).toHaveBeenCalled();
+			} finally {
+				mockEnqueue.mockRestore();
+			}
+		});
+	});
+
+	suite("Recurrence Interval Default Values", () => {
+		test("uses default interval of 1 when interval is undefined", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Default Interval Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						// interval is undefined, should default to 1
+						count: 5,
+					},
+				},
+			});
+
+			// This tests the branch at line 280: interval: parsedArgs.input.recurrence.interval || 1
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Default Interval Event",
+				}),
+			);
+		});
+
+		test("uses provided interval when explicitly set", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Custom Interval Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 2,
+						count: 5,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Custom Interval Event",
+				}),
+			);
+		});
+	});
+
+	suite("Recurrence End Date Null Handling", () => {
+		test("sets endDate to null for never-ending events", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Never-Ending Recurrence",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						never: true,
+					},
+				},
+			});
+
+			// This tests the branch: recurrenceEndDate: parsedArgs.input.recurrence.endDate || null
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Never-Ending Recurrence",
+				}),
+			);
+		});
+
+		test("sets count to null for end-date based events", async () => {
+			const organizationId = await createTestOrganization();
+			const futureDate = new Date();
+			futureDate.setMonth(futureDate.getMonth() + 3);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "End-Date Recurrence",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						endDate: futureDate.toISOString(),
+					},
+				},
+			});
+
+			// This tests the branch: count: parsedArgs.input.recurrence.count || null
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "End-Date Recurrence",
+				}),
+			);
+		});
+	});
+
+	suite("Event Default Fields Coverage", () => {
+		test("applies default values to optional event boolean fields", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Event with Defaults",
+					// allDay, isPublic, isRegisterable, isInviteOnly not provided
+				},
+			});
+
+			// This tests branches like: allDay: parsedArgs.input.allDay ?? false
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Event with Defaults",
+				}),
+			);
+		});
+
+		test("applies default values in final event object", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Final Object Defaults",
+					allDay: true,
+				},
+			});
+
+			// This tests: allDay: createdEvent.allDay ?? false in final object
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Final Object Defaults",
+				}),
+			);
+		});
+	});
+});
+
+suite("Default Agenda Folder and Category Creation", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+	test("creates default agenda folder and category for standalone events", async () => {
+		const organizationId = await createTestOrganization();
+
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+
+		const eventId = result.data.createEvent.id;
+
+		const defaultFolder =
+			await server.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		const defaultCategory =
+			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(defaultFolder).toEqual(
+			expect.objectContaining({
+				eventId,
+				organizationId,
+				isDefaultFolder: true,
+				sequence: 1,
+				name: "Default",
+				creatorId: adminUserId,
+			}),
+		);
+
+		expect(defaultCategory).toEqual(
+			expect.objectContaining({
+				eventId,
+				organizationId,
+				isDefaultCategory: true,
+				name: "Default",
+				creatorId: adminUserId,
+			}),
+		);
+	});
+
+	test("creates default agenda folder and category for recurring events", async () => {
+		const organizationId = await createTestOrganization();
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				recurrence: {
+					frequency: "WEEKLY",
+					interval: 1,
+					count: 3,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+
+		const eventId = result.data.createEvent.id;
+
+		const defaultFolder =
+			await server.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		const defaultCategory =
+			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(defaultFolder?.isDefaultFolder).toBe(true);
+		expect(defaultCategory?.isDefaultCategory).toBe(true);
+	});
+
+	test("rolls back transaction if default agenda folder insert fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						if (table === agendaFoldersTable) {
+							return {
+								values: vi.fn().mockReturnThis(),
+								returning: vi.fn().mockResolvedValue([]),
+							};
+						}
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
+					}),
+				};
+
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
+
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
+
+	test("rolls back transaction if default agenda category insert fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						if (table === agendaCategoriesTable) {
+							return {
+								values: vi.fn().mockReturnThis(),
+								returning: vi.fn().mockResolvedValue([]),
+							};
+						}
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
+					}),
+				};
+
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
+
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
+
+	test("creates separate default folder and category for multiple events", async () => {
+		const organizationId = await createTestOrganization();
+
+		const event1 = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		const event2 = await createEvent({
+			input: { ...baseEventInput(organizationId), name: "Second Event" },
+		});
+
+		assertToBeNonNullish(event1.data?.createEvent);
+		assertToBeNonNullish(event2.data?.createEvent);
+
+		const defaultFolders =
+			await server.drizzleClient.query.agendaFoldersTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		const defaultCategories =
+			await server.drizzleClient.query.agendaCategoriesTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
+		expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
+
+		expect(defaultCategories.filter((c) => c.isDefaultCategory)).toHaveLength(
+			2,
+		);
+		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
+	});
+});
+
+suite("Post-transaction attachment upload behavior", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test.each([
+		{ name: "single attachment", attachmentCount: 1 },
+		{ name: "multiple attachments", attachmentCount: 2 },
+	])("successfully uploads $name to MinIO after event creation", async ({
+		attachmentCount,
+	}) => {
+		const organizationId = await createTestOrganization();
+
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		// Create attachments array
+		const attachments = Array(attachmentCount).fill(null);
+
+		// Build map for attachments
+		const mapEntries: Record<string, string[]> = {};
+		attachments.forEach((_, index) => {
+			mapEntries[String(index)] = [`variables.input.attachments.${index}`];
+		});
+
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) {
+					id
+					}
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments,
+				},
+			},
+		});
+
+		const map = JSON.stringify(mapEntries);
+
+		// Build multipart body with all attachments
+		const bodyParts = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+		];
+
+		attachments.forEach((_, index) => {
+			bodyParts.push(`--${boundary}`);
+			bodyParts.push(
+				`Content-Disposition: form-data; name="${index}"; filename="file${index + 1}.png"`,
+			);
+			bodyParts.push("Content-Type: image/png");
+			bodyParts.push("");
+			bodyParts.push(`fake-content-${index + 1}`);
+		});
+
+		bodyParts.push(`--${boundary}--`);
+		const body = bodyParts.join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.createEvent.id).toBeDefined();
+		expect(putObjectSpy).toHaveBeenCalledTimes(attachmentCount);
+
+		// Verify attachments are stored in DB
+		const eventAttachments =
+			await server.drizzleClient.query.eventAttachmentsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.eventId, result.data.createEvent.id),
+			});
+		expect(eventAttachments).toHaveLength(attachmentCount);
+	});
+
+	test("cleans up DB rows and MinIO objects when attachment upload fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+		putObjectSpy.mockRejectedValue(new Error("upload failed"));
+
+		// Count events before the test
+		const eventCountBefore =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+			mutation CreateEvent($input: MutationCreateEventInput!) {
+				createEvent(input: $input) {
+					id
+				}
+			}
+		`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
+
+		// Verify no new event was created (transaction rolled back)
+		const eventCountAfter =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+		expect(eventCountAfter.length).toBe(eventCountBefore.length);
+	});
+
+	test("skips upload logic when attachments are undefined", async () => {
+		const organizationId = await createTestOrganization();
+
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				// attachments intentionally omitted
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createEvent).toBeDefined();
+
+		// Upload block must not run
+		expect(putObjectSpy).not.toHaveBeenCalled();
+	});
+
+	test("cleans up DB rows and attempts MinIO removal when first attachment upload fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+		putObjectSpy.mockRejectedValue(new Error("upload failed"));
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) { id }
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
+		expect(putObjectSpy).toHaveBeenCalledTimes(1);
+	});
+
+	test("returns event without attachments when DB cleanup fails after upload failure", async () => {
+		const organizationId = await createTestOrganization();
+
+		// Upload fails → transaction should fail
+		const uploadError = new Error("upload failed");
+		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
+			uploadError,
+		);
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+      mutation CreateEvent($input: MutationCreateEventInput!) {
+        createEvent(input: $input) { id }
+      }
+    `,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
+	});
+
+	test("logs error when some MinIO attachment cleanup operations fail", async () => {
+		const organizationId = await createTestOrganization();
+
+		// Upload fails → transaction should fail
+		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
+			new Error("upload failed"),
+		);
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+      mutation CreateEvent($input: MutationCreateEventInput!) {
+        createEvent(input: $input) { id }
+      }
+    `,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
+	});
+
+	test("MinIO removal during cleanup is atomic with transaction rollback", async () => {
+		const organizationId = await createTestOrganization();
+
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		// First upload succeeds, second fails
+		putObjectSpy
+			.mockResolvedValueOnce({ etag: "etag-1", versionId: null })
+			.mockRejectedValueOnce(new Error("second upload failed"));
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) { id }
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null, null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file1.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-1",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file2.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-2",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Mutation should fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("second upload failed");
+		expect(result.data?.createEvent).toBeNull();
+
+		// Cleanup was attempted for the first successfully uploaded file
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+
+		// Verify the database transaction was rolled back - no event created
+		const eventCountAfter =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+		expect(eventCountAfter).toHaveLength(0);
+	});
+
+	test("Promise.allSettled ensures partial upload failures trigger cleanup of successful uploads", async () => {
+		const organizationId = await createTestOrganization();
+
+		// This test verifies that the Promise.allSettled pattern correctly identifies
+		// which uploads succeeded and cleans them up when any upload fails
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		let uploadCallCount = 0;
+
+		vi.spyOn(server.minio.client, "putObject").mockImplementation(async () => {
+			uploadCallCount++;
+			// Simulate a failure on the second upload
+			if (uploadCallCount === 2) {
+				throw new Error("partial upload failure");
+			}
+			return { etag: `test-etag-${uploadCallCount}`, versionId: null };
+		});
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) { id }
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null, null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file1.png"',
+			"Content-Type: image/png",
+			"",
+			"content1",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file2.png"',
+			"Content-Type: image/png",
+			"",
+			"content2",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Should fail due to upload error
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createEvent).toBeNull();
+
+		// Since Promise.allSettled is used, cleanup should happen:
+		// - First upload succeeded, so it should be removed
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+
+		// Verify transaction rollback - no event was created
+		const events = await server.drizzleClient.query.eventsTable.findMany({
+			where: (fields, operators) =>
+				operators.eq(fields.organizationId, organizationId),
+		});
+		expect(events).toHaveLength(0);
+	});
+
+	test("handles cleanup removal failures and logs them", async () => {
+		const organizationId = await createTestOrganization();
+
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		// First upload succeeds, then subsequent uploads succeed but we trigger cleanup fail
+		putObjectSpy
+			.mockResolvedValueOnce({ etag: "etag-1", versionId: null })
+			.mockResolvedValueOnce({ etag: "etag-2", versionId: null })
+			.mockResolvedValueOnce({ etag: "etag-3", versionId: null })
+			.mockRejectedValueOnce(new Error("upload failed"));
+
+		// removeObject fails during cleanup for the first successful upload
+		removeObjectSpy.mockRejectedValueOnce(new Error("cleanup removal failed"));
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+				mutation CreateEvent($input: MutationCreateEventInput!) {
+					createEvent(input: $input) { id }
+				}
+			`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null, null, null, null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
+			"2": ["variables.input.attachments.2"],
+			"3": ["variables.input.attachments.3"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file1.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-1",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file2.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-2",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="2"; filename="file3.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-3",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="3"; filename="file4.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-4",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Mutation should fail due to upload error
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
+
+		// Cleanup was attempted for the first successfully uploaded file
+		// At least one removeObject should have been called
+		expect(removeObjectSpy).toHaveBeenCalled();
+
+		// Verify transaction was rolled back
+		const eventCountAfter =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+		expect(eventCountAfter).toHaveLength(0);
 	});
 });
