@@ -254,6 +254,22 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			};
 		};
 
+		/** Transaction mock where update matches zero rows (returning []), covering the "updated === undefined" branch. */
+		const createMockTransactionReturningNoRow = () => {
+			return async (callback: (tx: unknown) => Promise<unknown>) => {
+				const mockTx = {
+					update: vi.fn().mockReturnValue({
+						set: vi.fn().mockReturnValue({
+							where: vi.fn().mockReturnValue({
+								returning: vi.fn().mockResolvedValue([]),
+							}),
+						}),
+					}),
+				};
+				return callback(mockTx as never);
+			};
+		};
+
 		beforeEach(() => {
 			vi.useFakeTimers();
 			vi.clearAllMocks();
@@ -329,6 +345,48 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			expect(op).toBeDefined();
 			expect(op?.count).toBe(1);
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should throw arguments_associated_resources_not_found when update returns no row (e.g. row deleted in race)", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+
+			const orgId = faker.string.uuid();
+			const orgName = `Updated Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockExistingOrganization = createMockExistingOrganization(orgId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(createMockTransactionReturningNoRow());
+
+			const resultPromise = updateOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						id: orgId,
+						name: orgName,
+						description: "Updated Description",
+					},
+				},
+				context,
+			);
+
+			await expect(resultPromise).rejects.toMatchObject({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["input", "id"] }],
+				},
+			});
 		});
 	});
 });
