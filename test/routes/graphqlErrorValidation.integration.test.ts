@@ -227,7 +227,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
 
-	it("should return 400 with INVALID_ARGUMENTS for malformed queries", async () => {
+	it("should return 400 with INVALID_ARGUMENTS for query validation errors", async () => {
 		const response = await server.inject({
 			method: "POST",
 			url: "/graphql",

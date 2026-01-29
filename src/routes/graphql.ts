@@ -43,7 +43,7 @@ const SPECIFIC_ERROR_ALLOWLIST = [
 	"database_error",
 ] as const;
 
-function getPublicErrorMessage(
+export function getPublicErrorMessage(
 	error: { message?: string },
 	defaultMessage: string,
 ): string {
@@ -280,7 +280,7 @@ export const FILE_UPLOAD_CONFIG = {
  * Helper to extract meaningful messages from Zod error details.
  * Encapsulates logic for parsing JSON/treeified details and handling specific validation messages like UUID errors.
  */
-function extractZodMessage(
+export function extractZodMessage(
 	normalizedDetails: unknown,
 	error: unknown,
 	fallbackMessage: string,

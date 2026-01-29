@@ -15,6 +15,66 @@ describe("/objects/:name route", () => {
 		vi.clearAllMocks();
 	});
 
+	// Mock other external dependencies to avoid connection errors and speed up tests
+	vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/seedInitialData", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/performance", () => ({
+		default: async () => {},
+	}));
+
+	// Mock Redis to avoid connection errors
+	vi.mock("@fastify/redis", async () => {
+		const fp = await import("fastify-plugin");
+		return {
+			default: fp.default(
+				async (fastify: {
+					decorate: (key: string, value: unknown) => void;
+				}) => {
+					fastify.decorate("redis", {
+						status: "ready",
+						quit: async () => "OK",
+						pipeline: () => ({ exec: async () => [] }),
+					});
+				},
+				{ name: "@fastify/redis" },
+			),
+		};
+	});
+
+	// Mock leakyBucket to control rate limiting behavior
+	vi.mock("~/src/utilities/leakyBucket", () => ({
+		leakyBucket: vi
+			.fn()
+			.mockImplementation(
+				async (_redis, key: string, max: number, _windowMs) => {
+					const globalWithMock = global as unknown as {
+						__mockBucketState: Record<string, number>;
+					};
+					const bucketState = globalWithMock.__mockBucketState || {};
+					globalWithMock.__mockBucketState = bucketState;
+
+					const count = (bucketState[key] || 0) + 1;
+					bucketState[key] = count;
+
+					const allowed = count <= max;
+					const remaining = Math.max(0, max - count);
+					const resetAt = Date.now() + 10000; // future
+
+					return { allowed, remaining, resetAt };
+				},
+			),
+	}));
+
 	afterEach(async () => {
 		if (app) {
 			await app.close();
@@ -306,6 +366,35 @@ describe("/objects/:name route", () => {
 			const res = await app.inject({
 				method: "GET",
 				url: "/objects/unknown.bin",
+			});
+
+			expect(res.statusCode).toBe(200);
+			expect(res.headers["content-type"]).toBe("application/octet-stream");
+		});
+
+		it("should default content-type when metaData content-type is non-string", async () => {
+			await setupServer();
+
+			const mockStream = new Readable({
+				read() {
+					this.push("binary data");
+					this.push(null);
+				},
+			});
+
+			const mockStat: BucketItemStat = {
+				size: 100,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: { "content-type": 123 as unknown as string },
+			};
+
+			vi.spyOn(app.minio.client, "getObject").mockResolvedValue(mockStream);
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/non-string.bin",
 			});
 
 			expect(res.statusCode).toBe(200);
