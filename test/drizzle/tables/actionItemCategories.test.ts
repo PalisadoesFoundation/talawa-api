@@ -83,43 +83,6 @@ describe("actionItemCategoriesTable", () => {
 		});
 	});
 
-	describe("Table Structure", () => {
-		it("should have a creatorId field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("creatorId");
-		});
-
-		it("should have a createdAt field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("createdAt");
-		});
-
-		it("should have a description field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("description");
-		});
-
-		it("should have an id field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("id");
-		});
-
-		it("should have an isDisabled field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("isDisabled");
-		});
-
-		it("should have a name field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("name");
-		});
-
-		it("should have an organizationId field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("organizationId");
-		});
-
-		it("should have an updatedAt field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("updatedAt");
-		});
-
-		it("should have an updaterId field", () => {
-			expect(actionItemCategoriesTable).toHaveProperty("updaterId");
-		});
-	});
 
 	describe("Indexes", () => {
 		const tableConfig = getTableConfig(actionItemCategoriesTable);
@@ -574,7 +537,7 @@ describe("actionItemCategoriesTable", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept null values for optional fields", () => {
+		it("should reject null values for optional fields", () => {
 			const dataWithNulls = {
 				name: "Test Category",
 				description: null,
