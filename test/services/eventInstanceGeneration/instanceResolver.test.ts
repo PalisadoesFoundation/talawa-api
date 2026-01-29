@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type {
@@ -66,7 +67,10 @@ suite("instanceResolver", () => {
 		updaterId: faker.string.uuid(),
 		createdAt: new Date(),
 		updatedAt: new Date(),
-	} as typeof eventsTable.$inferSelect;
+		attachments: [],
+	} as unknown as typeof eventsTable.$inferSelect & {
+		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+	};
 
 	suite("resolveInstanceWithInheritance", () => {
 		test("resolves instance with base template properties", () => {
@@ -361,12 +365,16 @@ suite("instanceResolver", () => {
 				{
 					id: faker.string.uuid(),
 					name: "Template 1",
+					attachments: [],
 				},
 				{
 					id: faker.string.uuid(),
 					name: "Template 2",
+					attachments: [],
 				},
-			] as (typeof eventsTable.$inferSelect)[];
+			] as unknown as (typeof eventsTable.$inferSelect & {
+				attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+			})[];
 
 			const map = createTemplateLookupMap(templates);
 
