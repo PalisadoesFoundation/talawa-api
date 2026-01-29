@@ -205,10 +205,17 @@ builder.mutationField("deleteOrganization", (t) =>
 					});
 
 				if (objectNames.length > 0) {
-					await ctx.minio.client.removeObjects(
-						ctx.minio.bucketName,
-						objectNames,
-					);
+					try {
+						await ctx.minio.client.removeObjects(
+							ctx.minio.bucketName,
+							objectNames,
+						);
+					} catch (error) {
+						ctx.log?.error(
+							{ err: error, objectNames },
+							"Failed to remove MinIO objects after organization deletion (best-effort cleanup); mutation succeeded.",
+						);
+					}
 				}
 
 				return deletedOrganization;
