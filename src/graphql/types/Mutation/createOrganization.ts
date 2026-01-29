@@ -138,13 +138,12 @@ builder.mutationField("createOrganization", (t) =>
 					});
 				}
 
-				let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-				let avatarName: string;
-
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					avatarName = ulid();
-					avatarMimeType = parsedArgs.input.avatar.mimetype;
-				}
+				const avatarMeta = isNotNullish(parsedArgs.input.avatar)
+					? {
+							avatarName: ulid(),
+							avatarMimeType: parsedArgs.input.avatar.mimetype,
+						}
+					: {};
 
 				return await ctx.drizzleClient.transaction(async (tx) => {
 					const [createdOrganization] = await tx
@@ -152,8 +151,6 @@ builder.mutationField("createOrganization", (t) =>
 						.values({
 							addressLine1: parsedArgs.input.addressLine1,
 							addressLine2: parsedArgs.input.addressLine2,
-							avatarMimeType,
-							avatarName,
 							city: parsedArgs.input.city,
 							countryCode: parsedArgs.input.countryCode,
 							description: parsedArgs.input.description,
@@ -163,6 +160,7 @@ builder.mutationField("createOrganization", (t) =>
 							state: parsedArgs.input.state,
 							userRegistrationRequired:
 								parsedArgs.input.isUserRegistrationRequired,
+							...avatarMeta,
 						})
 						.returning();
 
@@ -179,10 +177,10 @@ builder.mutationField("createOrganization", (t) =>
 						});
 					}
 
-					if (isNotNullish(parsedArgs.input.avatar)) {
+					if (isNotNullish(parsedArgs.input.avatar) && createdOrganization.avatarName) {
 						await ctx.minio.client.putObject(
 							ctx.minio.bucketName,
-							avatarName,
+							createdOrganization.avatarName,
 							parsedArgs.input.avatar.createReadStream(),
 							undefined,
 							{
