@@ -774,111 +774,120 @@ describe("Mutation createUser - Performance Tracking", () => {
 		});
 
 		it("should track mutation execution time with different valid avatar mime types", async () => {
-			const validMimeTypes = [
-				"image/jpeg",
-				"image/webp",
-				"image/avif",
-			] as const;
+			// Use real timers for this test to avoid timer accumulation across loop iterations
+			vi.useRealTimers();
+			try {
+				const validMimeTypes = [
+					"image/jpeg",
+					"image/webp",
+					"image/avif",
+				] as const;
 
-			for (const mimeType of validMimeTypes) {
-				const perf = createPerformanceTracker();
-				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-				context.perf = perf;
+				for (const mimeType of validMimeTypes) {
+					const perf = createPerformanceTracker();
+					const { context, mocks } = createMockGraphQLContext(
+						true,
+						"admin-user",
+					);
+					context.perf = perf;
 
-				const emailAddress = `test${faker.string.ulid()}@example.com`;
-				const mockAdminUser = createMockAdminUser();
-				const mockCreatedUser = {
-					...createMockCreatedUser(emailAddress),
-					avatarMimeType: mimeType,
-					avatarName: faker.string.uuid(),
-				};
+					const emailAddress = `test${faker.string.ulid()}@example.com`;
+					const mockAdminUser = createMockAdminUser();
+					const mockCreatedUser = {
+						...createMockCreatedUser(emailAddress),
+						avatarMimeType: mimeType,
+						avatarName: faker.string.uuid(),
+					};
 
-				const validAvatar = Promise.resolve({
-					filename: `avatar.${mimeType.split("/")[1]}`,
-					mimetype: mimeType,
-					createReadStream: vi.fn().mockReturnValue({
-						pipe: vi.fn(),
-						on: vi.fn(),
-					}),
-				});
+					const validAvatar = Promise.resolve({
+						filename: `avatar.${mimeType.split("/")[1]}`,
+						mimetype: mimeType,
+						createReadStream: vi.fn().mockReturnValue({
+							pipe: vi.fn(),
+							on: vi.fn(),
+						}),
+					});
 
-				mocks.drizzleClient.query.usersTable.findFirst
-					.mockResolvedValueOnce(mockAdminUser)
-					.mockResolvedValueOnce(undefined);
+					mocks.drizzleClient.query.usersTable.findFirst
+						.mockResolvedValueOnce(mockAdminUser)
+						.mockResolvedValueOnce(undefined);
 
-				const mockRefreshToken = {
-					id: faker.string.uuid(),
-				};
+					const mockRefreshToken = {
+						id: faker.string.uuid(),
+					};
 
-				(
-					mocks.drizzleClient as unknown as {
-						transaction: ReturnType<typeof vi.fn>;
-					}
-				).transaction = vi
-					.fn()
-					.mockImplementation(
-						async (callback: (tx: unknown) => Promise<unknown>) => {
-							const mockTx = {
-								insert: vi.fn().mockImplementation((table: unknown) => {
-									if (table === usersTable) {
+					(
+						mocks.drizzleClient as unknown as {
+							transaction: ReturnType<typeof vi.fn>;
+						}
+					).transaction = vi
+						.fn()
+						.mockImplementation(
+							async (callback: (tx: unknown) => Promise<unknown>) => {
+								const mockTx = {
+									insert: vi.fn().mockImplementation((table: unknown) => {
+										if (table === usersTable) {
+											return {
+												values: vi.fn().mockReturnValue({
+													returning: vi
+														.fn()
+														.mockResolvedValue([mockCreatedUser]),
+												}),
+											};
+										}
+										if (table === refreshTokensTable) {
+											return {
+												values: vi.fn().mockReturnValue({
+													returning: vi
+														.fn()
+														.mockResolvedValue([mockRefreshToken]),
+												}),
+											};
+										}
 										return {
 											values: vi.fn().mockReturnValue({
-												returning: vi.fn().mockResolvedValue([mockCreatedUser]),
+												returning: vi.fn().mockResolvedValue([]),
 											}),
 										};
-									}
-									if (table === refreshTokensTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockRefreshToken]),
-											}),
-										};
-									}
-									return {
-										values: vi.fn().mockReturnValue({
-											returning: vi.fn().mockResolvedValue([]),
-										}),
-									};
-								}),
-							};
-							return callback(mockTx as never);
+									}),
+								};
+								return callback(mockTx as never);
+							},
+						);
+
+					const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+					putObjectSpy.mockResolvedValue({
+						etag: "mock-etag",
+						versionId: null,
+					});
+
+					const result = await createUserMutationResolver(
+						null,
+						{
+							input: {
+								emailAddress,
+								name: "Test User",
+								password: "password123",
+								role: "regular",
+								isEmailAddressVerified: false,
+								avatar: validAvatar,
+							},
 						},
+						context,
 					);
 
-				const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
-				putObjectSpy.mockResolvedValue({
-					etag: "mock-etag",
-					versionId: null,
-				});
+					expect(result).toBeDefined();
+					expect(putObjectSpy).toHaveBeenCalled();
 
-				const resultPromise = createUserMutationResolver(
-					null,
-					{
-						input: {
-							emailAddress,
-							name: "Test User",
-							password: "password123",
-							role: "regular",
-							isEmailAddressVerified: false,
-							avatar: validAvatar,
-						},
-					},
-					context,
-				);
-				await vi.runAllTimersAsync();
-				const result = await resultPromise;
+					const snapshot = perf.snapshot();
+					const op = snapshot.ops["mutation:createUser"];
 
-				expect(result).toBeDefined();
-				expect(putObjectSpy).toHaveBeenCalled();
-
-				const snapshot = perf.snapshot();
-				const op = snapshot.ops["mutation:createUser"];
-
-				expect(op).toBeDefined();
-				expect(op?.count).toBe(1);
-				expect(op?.ms).toBeGreaterThanOrEqual(0);
+					expect(op).toBeDefined();
+					expect(op?.count).toBe(1);
+					expect(op?.ms).toBeGreaterThanOrEqual(0);
+				}
+			} finally {
+				vi.useFakeTimers();
 			}
 		});
 	});
