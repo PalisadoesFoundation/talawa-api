@@ -38,11 +38,23 @@ export default fp(async function errorHandlerPlugin(app: FastifyInstance) {
 
 			request.log.error({ error, correlationId: cid });
 
+			const responseError: Record<string, unknown> = {
+				message: statusCode >= 500 ? "Internal Server Error" : error.message,
+				correlationId: cid,
+			};
+
+			// Handle custom error properties (code, details) if present
+			if (statusCode < 500) {
+				if ("code" in error) {
+					responseError.code = (error as { code: unknown }).code;
+				}
+				if ("details" in error) {
+					responseError.details = (error as { details: unknown }).details;
+				}
+			}
+
 			reply.status(statusCode).send({
-				error: {
-					message: statusCode >= 500 ? "Internal Server Error" : error.message,
-					correlationId: cid,
-				},
+				error: responseError,
 			});
 		},
 	);

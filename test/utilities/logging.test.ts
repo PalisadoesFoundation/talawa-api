@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { describe, expect, it, vi } from "vitest";
-import leakyBucket from "../../src/utilities/leakyBucket";
+import { complexityLeakyBucket } from "../../src/utilities/leakyBucket";
 import { createMockLogger } from "./mockLogger";
 
 describe("structured logging", () => {
@@ -17,7 +17,7 @@ describe("structured logging", () => {
 		const fastify = { redis } as unknown as FastifyInstance;
 		const logger = createMockLogger();
 
-		await leakyBucket(
+		await complexityLeakyBucket(
 			fastify,
 			"rate:ip:127.0.0.1",
 			5, // capacity
