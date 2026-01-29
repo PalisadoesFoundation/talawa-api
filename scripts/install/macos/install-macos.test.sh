@@ -910,7 +910,7 @@ create_mock "fnm" '
 touch "$MOCK_BIN/fnm.hidden"
 create_mock "node" 'echo "v20.10.0"'
 create_mock "npm" 'echo "10.0.0"'
-create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
+create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
 set +e
 OUTPUT=$(run_test_script docker false 2>&1)
 EXIT_CODE=$?
