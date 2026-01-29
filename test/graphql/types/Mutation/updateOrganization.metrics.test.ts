@@ -82,10 +82,16 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			expect(result.data?.updateOrganization?.description).toBe(newDescription);
 
 			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { input: { id: orgId } },
-			});
+			const deleteResult = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				},
+			);
+			expect(deleteResult.errors).toBeUndefined();
+			expect(deleteResult.data?.deleteOrganization).toBeDefined();
+			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 		});
 
 		it("should return unauthenticated error when no auth token provided", async () => {
@@ -187,10 +193,16 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			);
 
 			// Cleanup: delete org as admin
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { input: { id: orgId } },
-			});
+			const deleteResult = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				},
+			);
+			expect(deleteResult.errors).toBeUndefined();
+			expect(deleteResult.data?.deleteOrganization).toBeDefined();
+			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 		});
 	});
 
@@ -387,6 +399,60 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 					issues: [{ argumentPath: ["input", "id"] }],
 				},
 			});
+		});
+
+		it("should execute mutation successfully without recording perf when context.perf is undefined", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = undefined;
+
+			const orgId = faker.string.uuid();
+			const orgName = `Updated Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockExistingOrganization = createMockExistingOrganization(orgId);
+			const mockUpdatedOrganization = createMockUpdatedOrganization(
+				orgId,
+				orgName,
+			);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(createMockTransaction(mockUpdatedOrganization));
+
+			const resultPromise = updateOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						id: orgId,
+						name: orgName,
+						description: "Updated Description",
+					},
+				},
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toBeDefined();
+			expect(result).toMatchObject({
+				id: orgId,
+				name: orgName,
+				description: "Updated Description",
+			});
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:updateOrganization"];
+			expect(op === undefined || op.count === 0).toBe(true);
 		});
 	});
 });
