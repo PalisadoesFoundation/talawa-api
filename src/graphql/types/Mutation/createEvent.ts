@@ -578,6 +578,8 @@ builder.mutationField("createEvent", (t) =>
 					},
 				);
 
+				// Notification enqueue runs AFTER the transaction commits (fire-and-forget).
+				// If enqueue fails, DB changes are NOT rolled back. Document/ADR if this is a concern.
 				// Track notification enqueue operation (after transaction commits)
 				try {
 					const notificationPayload = {

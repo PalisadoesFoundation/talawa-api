@@ -81,6 +81,33 @@ describe("withMutationMetrics", () => {
 			expect(Math.ceil(op?.ms ?? 0)).toBeGreaterThanOrEqual(5);
 		});
 
+		it("should preserve error stack trace when resolver throws", async () => {
+			const perf = createPerformanceTracker();
+			const error = new Error("Resolver failure");
+			error.stack =
+				"Error: Resolver failure\n    at myResolver (createUser.ts:220:11)";
+			const resolver = vi.fn().mockRejectedValue(error);
+
+			const wrappedResolver = withMutationMetrics(
+				{
+					operationName: "mutation:test",
+				},
+				resolver,
+			);
+
+			const context = { perf } as { perf?: PerformanceTracker };
+
+			let thrown: unknown;
+			try {
+				await wrappedResolver(null, {}, context);
+			} catch (e) {
+				thrown = e;
+			}
+			expect(thrown).toBe(error);
+			expect((thrown as Error).stack).toBeDefined();
+			expect((thrown as Error).stack).toContain("createUser.ts");
+		});
+
 		it("should track multiple mutation executions separately", async () => {
 			const perf = createPerformanceTracker();
 			const resolver = vi.fn().mockResolvedValue("result");
