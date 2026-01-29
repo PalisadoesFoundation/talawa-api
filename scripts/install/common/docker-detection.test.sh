@@ -12,7 +12,6 @@
 ##############################################################################
 
 # Remove set -e to handle test failures explicitly
-# Remove set -e to handle test failures explicitly
 set +e
 
 # Test statistics
