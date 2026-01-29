@@ -794,34 +794,36 @@ describe("Mutation createUser - Performance Tracking", () => {
 				mocks.drizzleClient as unknown as {
 					transaction: ReturnType<typeof vi.fn>;
 				}
-			).transaction = vi.fn().mockImplementation(
-				async (callback: (tx: unknown) => Promise<unknown>) => {
-					const mockTx = {
-						insert: vi.fn().mockImplementation((table: unknown) => {
-							if (table === usersTable) {
-								return {
-									values: vi.fn().mockReturnValue({
-										returning: vi.fn().mockResolvedValue([mockCreatedUser]),
-									}),
-								};
-							}
-							if (table === refreshTokensTable) {
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn().mockImplementation((table: unknown) => {
+								if (table === usersTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockCreatedUser]),
+										}),
+									};
+								}
+								if (table === refreshTokensTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([]),
+										}),
+									};
+								}
 								return {
 									values: vi.fn().mockReturnValue({
 										returning: vi.fn().mockResolvedValue([]),
 									}),
 								};
-							}
-							return {
-								values: vi.fn().mockReturnValue({
-									returning: vi.fn().mockResolvedValue([]),
-								}),
-							};
-						}),
-					};
-					return callback(mockTx as never);
-				},
-			);
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
 
 			await vi.runAllTimersAsync();
 			try {
