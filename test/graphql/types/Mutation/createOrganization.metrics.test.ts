@@ -5,6 +5,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createOrganization,
+	Mutation_deleteOrganization,
+	Query_signIn,
+} from "../documentNodes";
 
 describe("Mutation createOrganization - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -581,6 +588,90 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 
+		it("should track mutation execution time when avatar upload fails", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgName = `Test Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedOrganization = {
+				...createMockCreatedOrganization(orgName),
+				avatarMimeType: "image/png" as const,
+				avatarName: faker.string.uuid(),
+			};
+
+			// Create mock avatar with valid mime type
+			const validAvatar = Promise.resolve({
+				filename: "avatar.png",
+				mimetype: "image/png",
+				createReadStream: vi.fn().mockReturnValue({
+					pipe: vi.fn(),
+					on: vi.fn(),
+				}),
+			});
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			// Mock transaction with avatar fields
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn().mockReturnValue({
+								values: vi.fn().mockReturnValue({
+									returning: vi
+										.fn()
+										.mockResolvedValue([mockCreatedOrganization]),
+								}),
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
+
+			// Mock MinIO putObject to fail
+			const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+			putObjectSpy.mockRejectedValue(new Error("Avatar upload failed"));
+
+			await vi.runAllTimersAsync();
+			try {
+				await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: orgName,
+							description: "Test Description",
+							avatar: validAvatar,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(Error);
+				expect((error as Error).message).toContain("Avatar upload failed");
+			}
+
+			// Verify performance tracker recorded the failure path
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createOrganization"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
 		it("should track mutation execution time with different valid avatar mime types", async () => {
 			const validMimeTypes = [
 				"image/jpeg",
@@ -803,6 +894,62 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 					"unauthorized_action",
 				);
 			}
+		});
+	});
+
+	describe("mercuriusClient smoke test for schema wiring", () => {
+		it("should execute createOrganization mutation through mercuriusClient with schema wiring", async () => {
+			// Sign in as admin to get authentication token
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(signInResult.errors).toBeUndefined();
+			expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
+			const authToken = signInResult.data?.signIn?.authenticationToken;
+
+			// Execute createOrganization mutation through mercuriusClient
+			const orgName = `Smoke Test Org ${faker.string.ulid()}`;
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						name: orgName,
+						description: "Smoke test description",
+					},
+				},
+			});
+
+			// Verify schema wiring works (mutation executes successfully)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createOrganization).toBeDefined();
+			expect(result.data?.createOrganization?.name).toBe(orgName);
+
+			// Cleanup: Delete the created organization
+			const orgId = result.data?.createOrganization?.id;
+			if (orgId) {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: orgId,
+						},
+					},
+				});
+			}
+
+			// Note: Performance tracking verification is done in the direct resolver tests above
+			// This smoke test only verifies that the schema wiring is correct and the mutation
+			// can be executed through the full GraphQL execution pipeline.
 		});
 	});
 });

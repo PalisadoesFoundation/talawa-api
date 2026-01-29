@@ -11,6 +11,16 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createEvent,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_deleteOrganization,
+	Mutation_deleteStandaloneEvent,
+	Query_signIn,
+} from "../documentNodes";
 
 describe("Mutation createEvent - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -1414,6 +1424,123 @@ describe("Mutation createEvent - Performance Tracking", () => {
 					"unauthorized_action_on_arguments_associated_resources",
 				);
 			}
+		});
+	});
+
+	describe("mercuriusClient smoke test for schema wiring", () => {
+		it("should execute createEvent mutation through mercuriusClient with schema wiring", async () => {
+			// Sign in as admin to get authentication token
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(signInResult.errors).toBeUndefined();
+			expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
+			expect(signInResult.data?.signIn?.user?.id).toBeDefined();
+			const authToken = signInResult.data?.signIn?.authenticationToken;
+			const adminUserId = signInResult.data?.signIn?.user?.id;
+			if (!authToken || !adminUserId) {
+				throw new Error("Auth token or user ID is undefined");
+			}
+
+			// Create an organization for the event
+			const orgName = `Smoke Test Org ${faker.string.ulid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							name: orgName,
+							description: "Smoke test organization",
+						},
+					},
+				},
+			);
+
+			expect(createOrgResult.errors).toBeUndefined();
+			expect(createOrgResult.data?.createOrganization?.id).toBeDefined();
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			if (!orgId) {
+				throw new Error("Organization ID is undefined");
+			}
+
+			// Create organization membership to ensure user can create events
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: adminUserId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Execute createEvent mutation through mercuriusClient
+			const eventName = `Smoke Test Event ${faker.string.ulid()}`;
+			const startAt = new Date(Date.now() + 86400000); // Tomorrow
+			const endAt = new Date(startAt.getTime() + 3600000); // 1 hour later
+
+			const result = await mercuriusClient.mutate(Mutation_createEvent, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						name: eventName,
+						description: "Smoke test event description",
+						organizationId: orgId,
+						startAt: startAt.toISOString(),
+						endAt: endAt.toISOString(),
+					},
+				},
+			});
+
+			// Verify schema wiring works (mutation executes successfully)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toBeDefined();
+			expect(result.data?.createEvent?.name).toBe(eventName);
+
+			// Cleanup: Delete the created event and organization
+			const eventId = result.data?.createEvent?.id;
+			if (!eventId) {
+				throw new Error("Event ID is undefined");
+			}
+			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: eventId,
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: orgId,
+					},
+				},
+			});
+
+			// Note: Performance tracking verification is done in the direct resolver tests above
+			// This smoke test only verifies that the schema wiring is correct and the mutation
+			// can be executed through the full GraphQL execution pipeline.
 		});
 	});
 });

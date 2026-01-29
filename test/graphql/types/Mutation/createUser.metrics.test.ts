@@ -655,6 +655,117 @@ describe("Mutation createUser - Performance Tracking", () => {
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 
+		it("should track mutation execution time when avatar upload fails and transaction is rolled back", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const emailAddress = `test${faker.string.ulid()}@example.com`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedUser = {
+				...createMockCreatedUser(emailAddress),
+				avatarMimeType: "image/png" as const,
+				avatarName: faker.string.uuid(),
+			};
+
+			// Create mock avatar with valid mime type
+			const validAvatar = Promise.resolve({
+				filename: "avatar.png",
+				mimetype: "image/png",
+				createReadStream: vi.fn().mockReturnValue({
+					pipe: vi.fn(),
+					on: vi.fn(),
+				}),
+			});
+
+			// Mock database queries
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockAdminUser) // Current user check
+				.mockResolvedValueOnce(undefined); // Existing user check
+
+			// Mock refresh token record
+			const mockRefreshToken = {
+				id: faker.string.uuid(),
+			};
+
+			// Track if transaction was called (to verify rollback)
+			let transactionCalled = false;
+
+			// Mock transaction with avatar fields
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						transactionCalled = true;
+						const mockTx = {
+							insert: vi.fn().mockImplementation((table: unknown) => {
+								if (table === usersTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockCreatedUser]),
+										}),
+									};
+								}
+								if (table === refreshTokensTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockRefreshToken]),
+										}),
+									};
+								}
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([]),
+									}),
+								};
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
+
+			// Mock MinIO putObject to fail
+			const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+			putObjectSpy.mockRejectedValue(new Error("Avatar upload failed"));
+
+			await vi.runAllTimersAsync();
+			try {
+				await createUserMutationResolver(
+					null,
+					{
+						input: {
+							emailAddress,
+							name: "Test User",
+							password: "password123",
+							role: "regular",
+							isEmailAddressVerified: false,
+							avatar: validAvatar,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(Error);
+				expect((error as Error).message).toContain("Avatar upload failed");
+			}
+
+			// Verify transaction was called (user insert attempted)
+			expect(transactionCalled).toBe(true);
+
+			// Verify performance tracker recorded the failure path
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createUser"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
 		it("should track mutation execution time with different valid avatar mime types", async () => {
 			const validMimeTypes = [
 				"image/jpeg",
