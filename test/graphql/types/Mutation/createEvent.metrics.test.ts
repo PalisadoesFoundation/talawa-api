@@ -1352,7 +1352,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			const startAt = new Date(Date.now() + 86400000);
 			const endAt = new Date(startAt.getTime() + 3600000);
 
-			await vi.runAllTimersAsync();
+			// Resolver throws immediately for unauthenticated; no timer advancement needed
 			try {
 				await createEventMutationResolver(
 					null,
@@ -1428,6 +1428,13 @@ describe("Mutation createEvent - Performance Tracking", () => {
 	});
 
 	describe("mercuriusClient smoke test for schema wiring", () => {
+		beforeEach(() => {
+			vi.useRealTimers();
+		});
+		afterEach(() => {
+			vi.useFakeTimers();
+		});
+
 		it("should execute createEvent mutation through mercuriusClient with schema wiring", async () => {
 			// Sign in as admin to get authentication token
 			const signInResult = await mercuriusClient.query(Query_signIn, {

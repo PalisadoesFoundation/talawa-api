@@ -764,54 +764,59 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 
 	describe("when performance tracker is not available", () => {
 		it("should execute mutation successfully without perf tracker", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-			context.perf = undefined;
+			// Use real timers for this test to avoid infinite loop from runAllTimersAsync
+			// (mocks/context can schedule recurring timers)
+			vi.useRealTimers();
+			try {
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = undefined;
 
-			const orgName = `Test Org ${faker.string.ulid()}`;
+				const orgName = `Test Org ${faker.string.ulid()}`;
 
-			// Mock administrator user
-			const mockAdminUser = createMockAdminUser();
+				// Mock administrator user
+				const mockAdminUser = createMockAdminUser();
 
-			// Mock organization creation
-			const mockCreatedOrganization = createMockCreatedOrganization(orgName);
+				// Mock organization creation
+				const mockCreatedOrganization = createMockCreatedOrganization(orgName);
 
-			// Mock database queries
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockAdminUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
+				// Mock database queries
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					undefined,
+				);
 
-			// Mock transaction
-			(
-				mocks.drizzleClient as unknown as {
-					transaction: ReturnType<typeof vi.fn>;
-				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(createMockTransaction(mockCreatedOrganization));
+				// Mock transaction
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockCreatedOrganization));
 
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: orgName,
-						description: "Test Description",
-						isUserRegistrationRequired: false,
+				const result = await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: orgName,
+							description: "Test Description",
+							isUserRegistrationRequired: false,
+						},
 					},
-				},
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
+					context,
+				);
 
-			expect(result).toBeDefined();
-			expect(result).toMatchObject({
-				name: orgName,
-				description: "Test Description",
-				userRegistrationRequired: false,
-			});
+				expect(result).toBeDefined();
+				expect(result).toMatchObject({
+					name: orgName,
+					description: "Test Description",
+					userRegistrationRequired: false,
+				});
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 
 		it("should handle validation error without perf tracker", async () => {
@@ -898,6 +903,13 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 	});
 
 	describe("mercuriusClient smoke test for schema wiring", () => {
+		beforeEach(() => {
+			vi.useRealTimers();
+		});
+		afterEach(() => {
+			vi.useFakeTimers();
+		});
+
 		it("should execute createOrganization mutation through mercuriusClient with schema wiring", async () => {
 			// Sign in as admin to get authentication token
 			const signInResult = await mercuriusClient.query(Query_signIn, {
