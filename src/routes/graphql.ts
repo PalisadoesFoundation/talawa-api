@@ -1,3 +1,4 @@
+import { type Span, trace } from "@opentelemetry/api";
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
@@ -10,6 +11,7 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import { observabilityConfig } from "../config/observability";
 import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import {
 	COOKIE_NAMES,
@@ -19,7 +21,7 @@ import {
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
-import leakyBucket from "../utilities/leakyBucket";
+import { complexityLeakyBucket } from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
 import {
 	isPerformanceTracker,
@@ -377,6 +379,52 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			);
 		}
 	});
+
+	// GraphQL operation tracing - create spans for each operation
+	if (observabilityConfig.enabled) {
+		const tracer = trace.getTracer("talawa-api");
+
+		fastify.graphql.addHook(
+			"preExecution",
+			async (_schema, document, context) => {
+				// Extract operation name from the document - avoid logging PII
+				const operationDefinition = document.definitions.find(
+					(def) => def.kind === "OperationDefinition",
+				);
+				const operationName =
+					(operationDefinition &&
+						"name" in operationDefinition &&
+						operationDefinition.name?.value) ||
+					"anonymous";
+				const operationType =
+					(operationDefinition &&
+						"operation" in operationDefinition &&
+						operationDefinition.operation) ||
+					"unknown";
+
+				// Start a span for the GraphQL operation
+				const span = tracer.startSpan(`graphql:${operationName}`);
+				span.setAttribute("graphql.operation.name", operationName);
+				span.setAttribute("graphql.operation.type", operationType);
+
+				// Store span on context for later cleanup
+				(context as { _tracingSpan?: Span })._tracingSpan = span;
+			},
+		);
+
+		fastify.graphql.addHook("onResolution", async (execution, context) => {
+			// End the span created in preExecution
+			const span = (context as { _tracingSpan?: Span })._tracingSpan;
+			if (span) {
+				// Record if there were errors (without logging error details/PII)
+				if (execution.errors && execution.errors.length > 0) {
+					span.setAttribute("graphql.errors.count", execution.errors.length);
+				}
+				span.end();
+			}
+		});
+	}
+
 	fastify.graphql.addHook(
 		"preExecution",
 		async (schema, context, document, variables) => {
@@ -445,7 +493,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// For unauthenticated users, use only IP address
 				key = `rate-limit:ip:${ip}`;
 			}
-			const isRequestAllowed = await leakyBucket(
+			const isRequestAllowed = await complexityLeakyBucket(
 				fastify,
 				key,
 				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,

@@ -3,7 +3,6 @@ import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
-import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyRedis from "@fastify/redis";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import envSchema from "env-schema";
@@ -38,14 +37,13 @@ export const createServer = async (options?: {
 	envConfig?: Partial<EnvConfig>;
 }) => {
 	// Configuration environment variables used by talawa api.
+	// The `data` option has highest precedence, allowing tests to override required env vars.
 	const envConfig = envSchema<EnvConfig>({
 		ajv: envSchemaAjv,
+		data: options?.envConfig,
 		dotenv: true,
 		schema: envConfigSchema,
 	});
-
-	// Merge or override default configuration environment variables with custom configuration environment variables passed by this function's caller.
-	Object.assign(envConfig, options?.envConfig);
 
 	/**
 	 * The root fastify instance or we could say the talawa api server itself. It could be considered as the root node of a directed acyclic graph(DAG) of fastify plugins.
@@ -81,7 +79,6 @@ export const createServer = async (options?: {
 
 	fastify.decorate("envConfig", envConfig);
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
-	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
 	fastify.register(fastifyCors, {

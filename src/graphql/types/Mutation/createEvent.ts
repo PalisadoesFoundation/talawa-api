@@ -3,6 +3,8 @@ import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
+import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
@@ -22,6 +24,17 @@ import {
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+const DEFAULT_AGENDA_FOLDER_CONFIG = {
+	name: "Default",
+	description: "Default agenda folder",
+	sequence: 1,
+} as const;
+
+const DEFAULT_AGENDA_CATEGORY_CONFIG = {
+	name: "Default",
+	description: "Default agenda category",
+} as const;
 
 export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
@@ -258,6 +271,55 @@ builder.mutationField("createEvent", (t) =>
 						});
 					}
 
+					// Creates default agenda folder
+					const [createdAgendaFolder] = await tx
+						.insert(agendaFoldersTable)
+						.values({
+							name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+							description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultFolder: true,
+							sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdAgendaFolder === undefined) {
+						ctx.log.error(
+							"Postgres insert operation for agenda folder unexpectedly returned an empty array.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					// Creates default agenda category
+					const [createdAgendaCategory] = await tx
+						.insert(agendaCategoriesTable)
+						.values({
+							name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+							description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultCategory: true,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdAgendaCategory === undefined) {
+						ctx.log.error(
+							"Postgres insert operation for agenda category unexpectedly returned an empty array.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
 					// Handle recurring event: Create recurrence rule AND immediately generate instances
 					if (parsedArgs.input.recurrence) {
 						// Build RRULE string
@@ -426,22 +488,71 @@ builder.mutationField("createEvent", (t) =>
 							)
 							.returning();
 
-						await Promise.all(
-							createdEventAttachments.map((attachment, index) => {
-								if (attachments[index] !== undefined) {
-									return ctx.minio.client.putObject(
+						const pairs = createdEventAttachments.map((attachment, index) => ({
+							attachment,
+							fileUpload: attachments[index],
+						}));
+
+						// RETURNING guarantees createdEventAttachments.length === attachments.length,
+						// so pairs[i].fileUpload is always defined
+
+						try {
+							const uploadResults = await Promise.allSettled(
+								pairs.map(({ attachment, fileUpload }) =>
+									ctx.minio.client.putObject(
 										ctx.minio.bucketName,
 										attachment.name,
-										attachments[index].createReadStream(),
+										(
+											fileUpload as NonNullable<typeof fileUpload>
+										).createReadStream(),
 										undefined,
 										{
 											"content-type": attachment.mimeType,
 										},
+									),
+								),
+							);
+
+							// Collect all successfully uploaded object names
+							const uploadedNames: string[] = [];
+							let firstError: Error | undefined;
+
+							for (let i = 0; i < uploadResults.length; i++) {
+								const result = uploadResults[i];
+								const pair = pairs[i];
+
+								if (result?.status === "fulfilled" && pair) {
+									uploadedNames.push(pair.attachment.name);
+								} else if (result?.status === "rejected" && !firstError) {
+									firstError = result.reason;
+								}
+							}
+
+							// If any uploads failed, clean up all successfully uploaded files
+							if (firstError) {
+								const cleanupResults = await Promise.allSettled(
+									uploadedNames.map((name) =>
+										ctx.minio.client.removeObject(ctx.minio.bucketName, name),
+									),
+								);
+								const cleanupFailures = cleanupResults.filter(
+									(r) => r.status === "rejected",
+								);
+								if (cleanupFailures.length) {
+									ctx.log.error(
+										{ cleanupFailures },
+										"Failed to cleanup some uploaded attachments",
 									);
 								}
-								return undefined;
-							}),
-						);
+								throw firstError;
+							}
+						} catch (e) {
+							ctx.log.error(
+								{ error: e },
+								"Error uploading event attachments to MinIO",
+							);
+							throw e;
+						}
 					}
 
 					const finalEvent = Object.assign(createdEvent, {

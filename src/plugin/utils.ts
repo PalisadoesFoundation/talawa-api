@@ -4,7 +4,8 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { IPluginManifest } from "./types";
+import { rootLogger } from "~/src/utilities/logging/logger";
+import type { ILogger, IPluginManifest } from "./types";
 
 /**
  * Validates a plugin manifest structure
@@ -122,7 +123,7 @@ export async function safeRequire<T = unknown>(
 		const module = await import(modulePath);
 		return module as T;
 	} catch (error) {
-		console.error(`Failed to require module: ${modulePath}`, error);
+		rootLogger.error({ err: error }, `Failed to require module: ${modulePath}`);
 		return null;
 	}
 }
@@ -272,6 +273,22 @@ function drizzleTypeToPostgresType(column: unknown): string {
 }
 
 /**
+ * Warns about automatic table name prefixing
+ */
+function warnAboutTablePrefixing(
+	originalTableName: string,
+	tableName: string,
+	pluginId: string,
+): void {
+	rootLogger.warn(
+		`Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
+	);
+	rootLogger.warn(
+		"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
+	);
+}
+
+/**
  * Generates CREATE TABLE SQL from a Drizzle table definition
  */
 export function generateCreateTableSQL(
@@ -298,12 +315,7 @@ export function generateCreateTableSQL(
 		!originalTableName.startsWith(`${pluginId}_`) &&
 		tableName !== originalTableName
 	) {
-		console.warn(
-			`⚠️  Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
-		);
-		console.warn(
-			"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
-		);
+		warnAboutTablePrefixing(originalTableName, tableName, pluginId);
 	}
 
 	const columns =
@@ -412,12 +424,7 @@ export function generateCreateIndexSQL(
 		!originalTableName.startsWith(`${pluginId}_`) &&
 		tableName !== originalTableName
 	) {
-		console.warn(
-			`⚠️  Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
-		);
-		console.warn(
-			"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
-		);
+		warnAboutTablePrefixing(originalTableName, tableName, pluginId);
 	}
 
 	const indexes =
@@ -456,7 +463,7 @@ export async function createPluginTables(
 	db: { execute: (sql: string) => Promise<unknown> },
 	pluginId: string,
 	tableDefinitions: Record<string, Record<string, unknown>>,
-	logger?: { info?: (message: string) => void },
+	logger?: ILogger,
 ): Promise<void> {
 	// Import the plugin logger
 
@@ -490,15 +497,32 @@ export async function createPluginTables(
 					`Successfully created table and indexes for: ${tableName}`,
 				);
 			} catch (error) {
-				console.error(`Table creation failed for ${tableName}:`, error);
+				if (logger?.error) {
+					logger.error({
+						msg: `Table creation failed for ${tableName}`,
+						err: error,
+					});
+				} else {
+					rootLogger.error({
+						msg: `Table creation failed for ${tableName}`,
+						err: error,
+					});
+				}
 				throw error;
 			}
 		}
 	} catch (error) {
-		console.error(
-			`Table creation process failed for plugin ${pluginId}:`,
-			error,
-		);
+		if (logger?.error) {
+			logger.error({
+				msg: `Table creation process failed for plugin ${pluginId}`,
+				err: error,
+			});
+		} else {
+			rootLogger.error({
+				msg: `Table creation process failed for plugin ${pluginId}`,
+				err: error,
+			});
+		}
 		throw error;
 	}
 }
@@ -510,7 +534,7 @@ export async function dropPluginTables(
 	db: { execute: (sql: string) => Promise<unknown> },
 	pluginId: string,
 	tableDefinitions: Record<string, Record<string, unknown>>,
-	logger?: { info?: (message: string) => void },
+	logger?: ILogger,
 ): Promise<void> {
 	try {
 		logger?.info?.(`Dropping database tables for plugin: ${pluginId}`);
@@ -537,7 +561,7 @@ export async function dropPluginTables(
 				await db.execute(dropSQL);
 				logger?.info?.(`Successfully dropped table: ${prefixedTableName}`);
 			} catch (error) {
-				logger?.info?.(
+				logger?.error?.(
 					`Error dropping table ${tableName}: ${
 						error instanceof Error ? error.message : String(error)
 					}`,
@@ -548,7 +572,7 @@ export async function dropPluginTables(
 
 		logger?.info?.(`Completed dropping tables for plugin: ${pluginId}`);
 	} catch (error) {
-		logger?.info?.(
+		logger?.error?.(
 			`Error in dropPluginTables for plugin ${pluginId}: ${
 				error instanceof Error ? error.message : String(error)
 			}`,
@@ -583,7 +607,10 @@ export async function removePluginDirectory(pluginId: string): Promise<void> {
 		// Remove the directory and all its contents
 		await fs.rm(pluginPath, { recursive: true, force: true });
 	} catch (error) {
-		console.error(`Failed to remove plugin directory ${pluginId}:`, error);
+		rootLogger.error(
+			{ err: error },
+			`Failed to remove plugin directory ${pluginId}`,
+		);
 		throw error;
 	}
 }
@@ -604,13 +631,14 @@ export function clearPluginModuleCache(
 		// The garbage collector will handle cleanup of unused modules automatically
 
 		// Log that cache clearing is not available in ES modules
-		console.log(
-			`Module cache clearing not available in ES modules for plugin: ${pluginPath}`,
-		);
+		rootLogger.info({
+			msg: "Module cache clearing not available in ES modules",
+			pluginPath,
+		});
 
 		// Non-critical operation, continue with cleanup
 	} catch (error) {
-		console.warn("Failed to clear module cache:", error);
+		rootLogger.warn({ msg: "Failed to clear module cache", err: error });
 		// Non-critical error, continue with cleanup
 	}
 }

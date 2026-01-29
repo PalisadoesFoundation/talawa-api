@@ -90,9 +90,9 @@ with_timer() {
   local label="$1"
   shift
   local t0 t1 elapsed exit_code errexit
-  
+
   t0=$(date +%s)
-  
+
   # Temporarily disable errexit to capture exit code
   errexit=$-
   set +e
@@ -100,14 +100,14 @@ with_timer() {
   exit_code=$?
   # Restore errexit if it was set
   case "$errexit" in *e*) set -e ;; esac
-  
+
   t1=$(date +%s)
   elapsed=$((t1 - t0))
-  
+
   # Store timing data
   __TIMING_LABELS+=("$label")
   __TIMING_VALUES+=("$elapsed")
-  
+
   if [ $exit_code -eq 0 ]; then
     __TIMING_STATUS+=("OK")
     success "$label completed in ${elapsed}s"
@@ -115,7 +115,7 @@ with_timer() {
     __TIMING_STATUS+=("FAIL")
     error "$label failed after ${elapsed}s"
   fi
-  
+
   return $exit_code
 }
 
@@ -131,7 +131,7 @@ with_spinner() {
   fi
   local msg="$1"
   shift
-  
+
   # Run command in background
   ( "$@" ) &
   local pid=$!
@@ -142,18 +142,18 @@ with_spinner() {
   local saved_trap_int
   local saved_trap_term
   local saved_trap_exit
-  
+
   # Save specific traps to restore them individually later
   saved_trap_int=$(trap -p INT)
   saved_trap_term=$(trap -p TERM)
   saved_trap_exit=$(trap -p EXIT)
-  
+
   # Trap handler to kill the specific background PID and set flag
   trap 'kill $pid 2>/dev/null || true; interrupted=1' INT TERM EXIT
-  
+
   local spin='|/-\'
   local i=0
-  
+
   # Show spinner while process is running
   # Use wait with a small timeout if possible, but standard wait waits for termination.
   # Instead, we loop checking kill -0.
@@ -161,16 +161,16 @@ with_spinner() {
     local index=$((i % 4))
     printf "\r[INFO] %s %c" "$msg" "${spin:index:1}"
     i=$((i + 1))
-    
+
     # Sleep in small increments to be responsive
     sleep 0.2
-    
+
     # Check interruption flag
     if [ "$interrupted" -eq 1 ]; then
       break
     fi
   done
-  
+
   # Clear spinner line completely
   local width=80
   if command -v tput >/dev/null 2>&1; then
@@ -178,15 +178,15 @@ with_spinner() {
     width=$(tput cols 2>/dev/null || echo 80)
   fi
   printf "\r%-*s\r" "$width" ""
-  
+
   # Wait for process and capture exit code
   local exit_code
   local errexit=$-
   set +e
-  
+
   wait "$pid"
   exit_code=$?
-  
+
   # Restore errexit if it was set
   case "$errexit" in *e*) set -e ;; esac
 
@@ -201,13 +201,13 @@ with_spinner() {
     error "$msg interrupted"
     return 130
   fi
-  
+
   if [ $exit_code -eq 0 ]; then
     success "$msg"
   else
     error "$msg failed"
   fi
-  
+
   return $exit_code
 }
 
@@ -217,7 +217,7 @@ print_timing_summary() {
   printf "%s\n" "========================================"
   printf "%s\n" "Timing Summary"
   printf "%s\n" "========================================"
-  
+
   if [ ${#__TIMING_LABELS[@]} -eq 0 ]; then
     printf "%s\n" "No timing data recorded."
   else
@@ -231,7 +231,7 @@ print_timing_summary() {
     printf "%s\n" "----------------------------------------"
     printf "Total time: %ss\n" "$total"
   fi
-  
+
   printf "%s\n" "========================================"
   printf "\n"
 }
@@ -244,14 +244,14 @@ print_installation_summary() {
   printf "%s\n" "========================================"
   printf "%s\n" "Installation Summary"
   printf "%s\n" "========================================"
-  
+
   if [ "$exit_code" -eq 0 ]; then
     printf "%s\n" "[OK] Core dependencies verified"
     printf "%s\n" "[OK] Installation completed successfully"
   else
     printf "%s\n" "[x] Installation failed (exit code: $exit_code)"
   fi
-  
+
   printf "See log: %s\n" "${LOG_FILE}"
   printf "%s\n" "========================================"
   printf "\n"

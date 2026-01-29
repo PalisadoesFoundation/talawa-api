@@ -1,32 +1,38 @@
-import Fastify from "fastify";
+import type { FastifyInstance } from "fastify";
 import perfPlugin from "src/fastifyPlugins/performance";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createTestApp } from "../helpers/performanceTestUtils";
 
 describe("perfPlugin – slow request logging", () => {
 	let warn: ReturnType<typeof vi.spyOn>;
-	let app: ReturnType<typeof Fastify>;
-
-	beforeEach(() => {
-		app = Fastify({ logger: true });
-
-		vi.spyOn(app.log, "child").mockReturnValue(app.log);
-		warn = vi.spyOn(app.log, "warn");
-	});
+	let app: FastifyInstance;
 
 	afterEach(async () => {
-		await app.close();
-		delete process.env.API_SLOW_REQUEST_MS;
+		if (app) {
+			await app.close();
+		}
 	});
 
 	it("logs a warning when request duration exceeds slow threshold", async () => {
-		process.env.API_SLOW_REQUEST_MS = "10";
+		// Pass config via envConfig to avoid warning log about unprotected endpoint
+		app = createTestApp({
+			loggerEnabled: true,
+			envConfig: {
+				API_METRICS_SLOW_REQUEST_MS: 10,
+				API_METRICS_API_KEY: "test-api-key-for-slow-request-tests",
+			},
+		});
 
-		await app.register(perfPlugin);
+		vi.spyOn(app.log, "child").mockReturnValue(app.log);
+		warn = vi.spyOn(app.log, "warn");
 
 		app.get("/slow", async () => {
 			await new Promise((r) => setTimeout(r, 20));
 			return { ok: true };
 		});
+
+		await app.register(perfPlugin);
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/slow" });
 
@@ -42,14 +48,24 @@ describe("perfPlugin – slow request logging", () => {
 	});
 
 	it("does not log a warning for fast requests", async () => {
-		process.env.API_SLOW_REQUEST_MS = "50";
+		app = createTestApp({
+			loggerEnabled: true,
+			envConfig: {
+				API_METRICS_SLOW_REQUEST_MS: 50,
+				API_METRICS_API_KEY: "test-api-key-for-slow-request-tests",
+			},
+		});
 
-		await app.register(perfPlugin);
+		vi.spyOn(app.log, "child").mockReturnValue(app.log);
+		warn = vi.spyOn(app.log, "warn");
 
 		app.get("/fast", async () => {
 			await new Promise((r) => setTimeout(r, 5));
 			return { ok: true };
 		});
+
+		await app.register(perfPlugin);
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/fast" });
 
@@ -57,12 +73,23 @@ describe("perfPlugin – slow request logging", () => {
 	});
 
 	it("uses default threshold (500ms) when env is not set", async () => {
-		await app.register(perfPlugin);
+		app = createTestApp({
+			loggerEnabled: true,
+			envConfig: {
+				API_METRICS_API_KEY: "test-api-key-for-slow-request-tests",
+			},
+		});
+
+		vi.spyOn(app.log, "child").mockReturnValue(app.log);
+		warn = vi.spyOn(app.log, "warn");
 
 		app.get("/default", async () => {
 			await new Promise((r) => setTimeout(r, 20));
 			return { ok: true };
 		});
+
+		await app.register(perfPlugin);
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/default" });
 
@@ -70,12 +97,23 @@ describe("perfPlugin – slow request logging", () => {
 	});
 
 	it("logs slow request when exceeding default 500ms threshold", async () => {
-		await app.register(perfPlugin);
+		app = createTestApp({
+			loggerEnabled: true,
+			envConfig: {
+				API_METRICS_API_KEY: "test-api-key-for-slow-request-tests",
+			},
+		});
+
+		vi.spyOn(app.log, "child").mockReturnValue(app.log);
+		warn = vi.spyOn(app.log, "warn");
 
 		app.get("/very-slow", async () => {
 			await new Promise((r) => setTimeout(r, 520));
 			return { ok: true };
 		});
+
+		await app.register(perfPlugin);
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/very-slow" });
 

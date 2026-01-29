@@ -5,6 +5,7 @@
  * and creating the plugin context required by the plugin manager.
  */
 
+import { rootLogger } from "~/src/utilities/logging/logger";
 import PluginManager from "./manager";
 import type { ILogger, IPluginContext } from "./types";
 
@@ -43,13 +44,7 @@ export async function initializePluginSystem(
 		context.logger?.info?.("Initializing plugin system...");
 
 		pluginManagerInstance = new PluginManager(context, pluginsDirectory);
-
-		// Wait for initialization to complete
-		await new Promise<void>((resolve) => {
-			pluginManagerInstance?.once("plugins:ready", () => {
-				resolve();
-			});
-		});
+		await pluginManagerInstance.initialize();
 
 		context.logger?.info?.("Plugin system initialized successfully");
 		return pluginManagerInstance;
@@ -88,7 +83,7 @@ export async function destroyPluginSystem(): Promise<void> {
 
 		pluginManagerInstance = null;
 	} catch (error) {
-		console.error("Error destroying plugin system:", error);
+		rootLogger.error({ err: error }, "Error destroying plugin system");
 		throw error;
 	}
 }

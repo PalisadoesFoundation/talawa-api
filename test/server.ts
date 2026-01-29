@@ -20,7 +20,7 @@ export const server = await createServer({
 		/**
 		 * This makes the server test instance listen on a random port that is free at the time of initialization.
 		 */
-		API_PORT: undefined,
+		API_PORT: 0,
 		/**
 		 * This makes the server test instance connect to the minio test server.
 		 */

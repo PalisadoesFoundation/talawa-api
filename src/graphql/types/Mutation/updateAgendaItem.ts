@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachments";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateAgendaItemInput,
@@ -174,7 +175,6 @@ builder.mutationField("updateAgendaItem", (t) =>
 					await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 						columns: {
 							eventId: true,
-							isAgendaItemFolder: true,
 						},
 						where: (fields, operators) => operators.eq(fields.id, folderId),
 					});
@@ -203,21 +203,6 @@ builder.mutationField("updateAgendaItem", (t) =>
 									argumentPath: ["input", "folderId"],
 									message:
 										"This agenda folder does not belong to the event to the agenda item.",
-								},
-							],
-						},
-					});
-				}
-
-				if (!existingAgendaFolder.isAgendaItemFolder) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder cannot be a folder to agenda items.",
 								},
 							],
 						},
@@ -306,6 +291,25 @@ builder.mutationField("updateAgendaItem", (t) =>
 								mimeType: attachment.mimeType,
 								name: attachment.name,
 								objectName: attachment.objectName,
+							})),
+						);
+					}
+				}
+
+				// Handle urls if provided - replace all existing with new set
+				if (parsedArgs.input.url !== undefined) {
+					// Delete existing urls
+					await tx
+						.delete(agendaItemUrlTable)
+						.where(eq(agendaItemUrlTable.agendaItemId, parsedArgs.input.id));
+
+					if (parsedArgs.input.url.length > 0) {
+						await tx.insert(agendaItemUrlTable).values(
+							parsedArgs.input.url.map((u) => ({
+								agendaItemId: updatedAgendaItem.id,
+								url: u.url,
+								creatorId: currentUserId,
+								updaterId: currentUserId,
 							})),
 						);
 					}

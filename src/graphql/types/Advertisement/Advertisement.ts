@@ -1,3 +1,4 @@
+import { advertisementTypeEnum } from "~/src/drizzle/enums/advertisementType";
 import type { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
@@ -44,8 +45,10 @@ Advertisement.implement({
 			description: "Date time at the time the advertised event starts at.",
 			type: "DateTime",
 		}),
-		type: t.expose("type", {
+		type: t.field({
 			description: "Type of the advertisement.",
+			resolve: (advertisement) =>
+				advertisementTypeEnum.parse(advertisement.type),
 			type: AdvertisementType,
 		}),
 	}),

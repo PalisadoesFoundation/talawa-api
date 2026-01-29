@@ -1,23 +1,6 @@
 /** Atomic .env helper: backup, atomic commit, restore, cleanup */
 import { promises as fs } from "node:fs";
-
-export enum SetupErrorCode {
-	// File operation errors
-	FILE_OP_FAILED = "FILE_OP_FAILED",
-	BACKUP_FAILED = "BACKUP_FAILED",
-	COMMIT_FAILED = "COMMIT_FAILED",
-	RESTORE_FAILED = "RESTORE_FAILED",
-	CLEANUP_FAILED = "CLEANUP_FAILED",
-
-	// Generic errors
-	UNKNOWN_ERROR = "UNKNOWN_ERROR",
-}
-
-export interface SetupErrorContext {
-	operation?: string;
-	filePath?: string;
-	[key: string]: unknown;
-}
+import { SetupError, SetupErrorCode } from "./SetupError";
 
 export function getErrCode(err: unknown): string | undefined {
 	if (typeof err === "object" && err !== null && "code" in err) {
@@ -28,44 +11,6 @@ export function getErrCode(err: unknown): string | undefined {
 
 function errToError(err: unknown): Error {
 	return err instanceof Error ? err : new Error(String(err));
-}
-
-export class SetupError extends Error {
-	public readonly code: SetupErrorCode;
-	public readonly context: SetupErrorContext;
-	public override readonly cause?: Error;
-
-	constructor(
-		code: SetupErrorCode,
-		message: string,
-		context: SetupErrorContext = {},
-		cause?: Error,
-	) {
-		super(message, { cause });
-		this.name = "SetupError";
-		this.code = code;
-		this.context = context;
-		this.cause = cause;
-
-		if (Error.captureStackTrace) {
-			Error.captureStackTrace(this, SetupError);
-		}
-	}
-
-	getDetailedMessage(): string {
-		const contextStr = Object.entries(this.context)
-			.map(([key, value]) => `${key}: ${value}`)
-			.join(", ");
-
-		let message = `[${this.code}] ${this.message}`;
-		if (contextStr) {
-			message += ` (${contextStr})`;
-		}
-		if (this.cause) {
-			message += `\nCaused by: ${this.cause.message}`;
-		}
-		return message;
-	}
 }
 
 export interface AtomicWriteOptions {
