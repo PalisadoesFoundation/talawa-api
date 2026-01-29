@@ -186,9 +186,12 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			role: "administrator" as const,
 		});
 
-		const createMockExistingOrganization = (orgId: string) => ({
+		const createMockExistingOrganization = (
+			orgId: string,
+			options?: { avatarName?: string | null },
+		) => ({
 			id: orgId,
-			avatarName: null as string | null,
+			avatarName: (options?.avatarName ?? null) as string | null,
 			advertisementsWhereOrganization: [],
 			chatsWhereOrganization: [],
 			eventsWhereOrganization: [],
@@ -293,6 +296,57 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			expect(op).toBeDefined();
 			expect(op?.count).toBe(1);
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should succeed even when MinIO cleanup fails (best-effort)", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgId = faker.string.uuid();
+			const mockAdminUser = createMockAdminUser();
+			const mockExistingOrganization = createMockExistingOrganization(orgId, {
+				avatarName: "some-avatar.png",
+			});
+			const mockDeletedOrganization = createMockDeletedOrganization(orgId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(createMockTransaction(mockDeletedOrganization));
+
+			vi.spyOn(mocks.minioClient.client, "removeObjects").mockRejectedValue(
+				new Error("MinIO unavailable error"),
+			);
+
+			const log = context.log;
+			if (!log) {
+				throw new Error("context.log required for MinIO cleanup failure test");
+			}
+			const logSpy = vi.spyOn(log, "error");
+
+			const resultPromise = deleteOrganizationMutationResolver(
+				null,
+				{ input: { id: orgId } },
+				context,
+			);
+			await vi.runAllTimersAsync();
+			const result = await resultPromise;
+
+			expect(result).toHaveProperty("id", orgId);
+			expect(logSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				expect.stringContaining("Failed to remove MinIO objects"),
+			);
 		});
 	});
 });
