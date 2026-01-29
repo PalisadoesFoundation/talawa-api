@@ -840,6 +840,7 @@ create_mock "curl" '
             # Output a script that "installs" brew (creates the mock)
             echo "echo \"Installing Homebrew...\"; cat > \"$MOCK_BIN/brew\" <<EOF
 #!/bin/bash
+if [ \"\$1\" = \"list\" ]; then exit 1; fi
 if [ \"\$1\" = \"update\" ]; then exit 0; fi
 if [ \"\$1\" = \"install\" ]; then echo \"Mock brew installed \$2\"; exit 0; fi
 if [ \"\$1\" = \"--version\" ]; then echo \"Homebrew 4.0.0\"; exit 0; fi
