@@ -108,10 +108,22 @@ jobs:
           source venv/bin/activate
           pydocstyle --convention=google --add-ignore=D415,D205 .github
 
+      - name: Checkout centralized scripts
+        uses: actions/checkout@v4
+        with:
+          repository: PalisadoesFoundation/.github
+          path: .github-central
+          ref: main
+
       - name: Run docstring compliance check
         run: |
           source venv/bin/activate
-          python .github/workflows/scripts/check_docstrings.py --directories .github
+          python .github-central/.github/workflows/scripts/check_docstrings.py --directories .github
+
+      - name: Count number of lines
+        run: |
+          source venv/bin/activate
+          python .github-central/.github/workflows/scripts/countline.py --lines 600 --files .github/workflows/config/countline_excluded_file_list.txt
 
   Count-Changed-Files:
     uses: PalisadoesFoundation/.github/.github/workflows/count-changed-files.yml@main
