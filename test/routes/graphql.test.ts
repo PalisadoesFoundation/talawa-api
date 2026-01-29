@@ -18,9 +18,12 @@ vi.mock("~/src/graphql/schemaManager", () => ({
 	},
 }));
 
-vi.mock("~/src/utilities/leakyBucket", () => ({
-	default: vi.fn(),
-}));
+vi.mock("~/src/utilities/leakyBucket", () => {
+	return {
+		complexityLeakyBucket: vi.fn(),
+		leakyBucket: vi.fn(),
+	};
+});
 
 vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 	TalawaGraphQLError: vi.fn(),
@@ -30,7 +33,7 @@ vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import schemaManager from "~/src/graphql/schemaManager";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
-import leakyBucket from "~/src/utilities/leakyBucket";
+import { complexityLeakyBucket } from "~/src/utilities/leakyBucket";
 
 const iso8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 
@@ -851,7 +854,7 @@ describe("GraphQL Routes", () => {
 			};
 
 			mockDocument.reply.request.jwtVerify.mockResolvedValue(mockJwtPayload);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -868,7 +871,7 @@ describe("GraphQL Routes", () => {
 				},
 			);
 
-			expect(leakyBucket).toHaveBeenCalledWith(
+			expect(complexityLeakyBucket).toHaveBeenCalledWith(
 				mockFastifyInstance,
 				"rate-limit:user:user-123:192.168.1.1",
 				100,
@@ -890,7 +893,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -918,7 +921,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -931,7 +934,7 @@ describe("GraphQL Routes", () => {
 			expect(trackComplexitySpy).toHaveBeenCalledWith(15);
 
 			// Verify rate-limiting uses the same computed complexity to ensure consistency
-			expect(leakyBucket).toHaveBeenCalledWith(
+			expect(complexityLeakyBucket).toHaveBeenCalledWith(
 				mockFastifyInstance,
 				"rate-limit:ip:192.168.1.1",
 				100,
@@ -950,7 +953,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			// Should not throw when perf tracker is missing
 			await expect(
@@ -968,7 +971,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -977,7 +980,7 @@ describe("GraphQL Routes", () => {
 				mockVariables,
 			);
 
-			expect(leakyBucket).toHaveBeenCalledWith(
+			expect(complexityLeakyBucket).toHaveBeenCalledWith(
 				mockFastifyInstance,
 				"rate-limit:ip:192.168.1.1",
 				100,
@@ -994,7 +997,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("Invalid token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -1003,7 +1006,7 @@ describe("GraphQL Routes", () => {
 				mockVariables,
 			);
 
-			expect(leakyBucket).toHaveBeenCalledWith(
+			expect(complexityLeakyBucket).toHaveBeenCalledWith(
 				mockFastifyInstance,
 				"rate-limit:ip:192.168.1.1",
 				100,
@@ -1050,7 +1053,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(false);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(false);
 
 			vi.mocked(TalawaGraphQLError).mockImplementation(
 				(config: { message?: string; extensions?: unknown }) => {
@@ -1084,7 +1087,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -1094,7 +1097,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			// Should not add mutation base cost since operation type is undefined
-			expect(leakyBucket).toHaveBeenCalledWith(
+			expect(complexityLeakyBucket).toHaveBeenCalledWith(
 				mockFastifyInstance,
 				"rate-limit:ip:192.168.1.1",
 				100,
@@ -1114,7 +1117,7 @@ describe("GraphQL Routes", () => {
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
 
 			await preExecutionHook(
 				mockSchema,
@@ -1124,7 +1127,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			// Should not add mutation base cost for subscriptions
-			expect(leakyBucket).toHaveBeenCalledWith(
+			expect(complexityLeakyBucket).toHaveBeenCalledWith(
 				mockFastifyInstance,
 				"rate-limit:ip:192.168.1.1",
 				100,
