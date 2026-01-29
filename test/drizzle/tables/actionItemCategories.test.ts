@@ -536,7 +536,7 @@ describe("actionItemCategoriesTable", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("should reject null values for optional fields", () => {
+		it("should accept null values for nullable fields", () => {
 			const dataWithNulls = {
 				name: "Test Category",
 				description: null,
