@@ -191,6 +191,20 @@ else
     test_fail "Expected failure when Docker is not installed"
 fi
 
+# Test 7: OS_TYPE unset (Regression test for unbound variable crash)
+test_start "check_docker_requirements handles unset OS_TYPE"
+MOCK_DOCKER_INSTALLED="true"
+MOCK_DOCKER_RUNNING="false"
+unset OS_TYPE
+if ! check_docker_requirements "docker"; then
+    if assert_log_contains "Docker is installed but not running" && \
+       assert_log_contains "Please start the Docker daemon"; then
+        test_pass
+    fi
+else
+    test_fail "Expected failure when Docker is not running (unset OS_TYPE)"
+fi
+
 ##############################################################################
 # Test Summary
 ##############################################################################

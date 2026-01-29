@@ -33,6 +33,8 @@ success() { echo -e "${GREEN}✓${NC} $1"; }
 
 # Source the package manager functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# OS_TYPE must be set before sourcing package-manager.sh
+OS_TYPE="test_mode"
 source "$SCRIPT_DIR/package-manager.sh"
 
 ##############################################################################

@@ -13,6 +13,9 @@ set -euo pipefail
 # scripts/install/common/package-manager.sh
 # Shared package management functions
 
+# Validate OS_TYPE is set (fail-fast behavior)
+: "${OS_TYPE:?OS_TYPE must be set (e.g., macos/linux)}"
+
 # Update package index
 update_package_index() {
     if [[ "$OS_TYPE" == "macos" ]]; then

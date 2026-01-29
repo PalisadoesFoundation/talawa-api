@@ -130,6 +130,7 @@ run_test_script() {
 setup_test_repo() {
     mkdir -p "$TEST_DIR/scripts/install/macos"
     mkdir -p "$TEST_DIR/scripts/install/common"
+    mkdir -p "$TEST_DIR/.git"
     
     # Copy actual scripts to test dir
     cp scripts/install/macos/install-macos.sh "$TEST_DIR/scripts/install/macos/"
@@ -282,11 +283,14 @@ create_mock "brew" 'exit 1'
 rm -rf "$MOCK_BIN/brew"
 touch "$MOCK_BIN/brew.hidden"
 
-OUTPUT=$(run_test_script docker true 2>&1 || true)
-if echo "$OUTPUT" | grep -q "Homebrew is required but --skip-prereqs"; then
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Homebrew is required but --skip-prereqs"; then
     test_pass
 else
-    test_fail "Expected failure when brew is missing and prereqs skipped.\nLogs:\n$OUTPUT"
+    test_fail "Expected failure when brew is missing and prereqs skipped.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 test_start "Validation - Invalid INSTALL_MODE"
@@ -318,11 +322,14 @@ fi
 test_start "Validation - Missing package.json"
 setup_clean_system
 rm -f "$TEST_DIR/package.json"
-OUTPUT=$(run_test_script local false 2>&1 || true)
-if echo "$OUTPUT" | grep -q "package.json not found"; then
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "package.json not found"; then
     test_pass
 else
-    test_fail "Expected missing package.json error.\nLogs:\n$OUTPUT"
+    test_fail "Expected missing package.json error.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 test_start "Validation - Detects Malicious Package.json"
@@ -343,11 +350,14 @@ create_mock "git" 'echo "git"'
 create_mock "curl" 'exit 0'
 create_mock "unzip" 'exit 0'
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
-if echo "$OUTPUT" | grep -q "Invalid"; then
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Invalid"; then
     test_pass
 else
-    test_fail "Expected validation error for malicious version.\nLogs:\n$OUTPUT"
+    test_fail "Expected validation error for malicious version.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -372,7 +382,7 @@ lockfileVersion: '6.0'
 EOF
 
 # Remove any existing lockfile hash cache
-rm -f "$TEST_DIR/.talawa-pnpm-lock-hash"
+rm -f "$TEST_DIR/.git/.talawa-pnpm-lock-hash"
 
 # Mock all required commands
 create_mock "brew" 'exit 0'
@@ -403,14 +413,18 @@ create_mock "shasum" '
 # Create node_modules to simulate prior state
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-# Verify that pnpm install was called and hash was cached
-if echo "$OUTPUT" | grep -q "Installing dependencies..." && \
-   [ -f "$TEST_DIR/.talawa-pnpm-lock-hash" ]; then
+# Verify that pnpm install was called and hash was cached, and checking for exit code 0
+if [ $EXIT_CODE -eq 0 ] && \
+   echo "$OUTPUT" | grep -q "Installing dependencies..." && \
+   [ -f "$TEST_DIR/.git/.talawa-pnpm-lock-hash" ]; then
     test_pass
 else
-    test_fail "Expected pnpm install to run and cache hash.\nLogs:\n$OUTPUT"
+    test_fail "Expected pnpm install to run and cache hash with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -434,7 +448,7 @@ lockfileVersion: '6.0'
 EOF
 
 # Pre-populate the lockfile hash cache with matching hash
-echo "abc123def456" > "$TEST_DIR/.talawa-pnpm-lock-hash"
+echo "abc123def456" > "$TEST_DIR/.git/.talawa-pnpm-lock-hash"
 
 # Mock commands
 create_mock "brew" 'exit 0'
@@ -500,7 +514,7 @@ dependencies:
 EOF
 
 # Pre-populate with OLD hash (different from current)
-echo "old_hash_value_999" > "$TEST_DIR/.talawa-pnpm-lock-hash"
+echo "old_hash_value_999" > "$TEST_DIR/.git/.talawa-pnpm-lock-hash"
 
 create_mock "brew" 'exit 0'
 create_mock "git" 'exit 0'
@@ -529,19 +543,23 @@ create_mock "shasum" '
 
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-# Verify that pnpm install WAS called (due to hash mismatch)
-if echo "$OUTPUT" | grep -q "Installing updated dependencies..." && \
-   [ -f "$TEST_DIR/.talawa-pnpm-lock-hash" ]; then
-    CACHED_HASH=$(cat "$TEST_DIR/.talawa-pnpm-lock-hash")
+# Verify that pnpm install WAS called (due to hash mismatch) and exit code is 0
+if [ $EXIT_CODE -eq 0 ] && \
+   echo "$OUTPUT" | grep -q "Installing updated dependencies..." && \
+   [ -f "$TEST_DIR/.git/.talawa-pnpm-lock-hash" ]; then
+    CACHED_HASH=$(cat "$TEST_DIR/.git/.talawa-pnpm-lock-hash")
     if [ "$CACHED_HASH" = "new_hash_value_123" ]; then
         test_pass
     else
         test_fail "Hash was not updated correctly. Got: $CACHED_HASH"
     fi
 else
-    test_fail "Expected pnpm install to run with changed lockfile.\nLogs:\n$OUTPUT"
+    test_fail "Expected successful pnpm install with changed lockfile.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -563,7 +581,7 @@ cat > "$TEST_DIR/pnpm-lock.yaml" <<EOF
 lockfileVersion: '6.0'
 EOF
 
-rm -f "$TEST_DIR/.talawa-pnpm-lock-hash"
+rm -f "$TEST_DIR/.git/.talawa-pnpm-lock-hash"
 
 create_mock "brew" 'exit 0'
 create_mock "git" 'exit 0'
@@ -593,13 +611,16 @@ create_mock "shasum" '
 
 mkdir -p "$TEST_DIR/node_modules"
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-# Verify that retry attempts were made and proper error was shown
-if echo "$OUTPUT" | grep -q "Failed to install dependencies after .* attempts"; then
+# Verify that retry attempts were made and proper error was shown, and exits non-zero
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Failed to install dependencies after .* attempts"; then
     test_pass
 else
-    test_fail "Expected retry failure message.\nLogs:\n$OUTPUT"
+    test_fail "Expected retry failure message and non-zero exit.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -639,13 +660,16 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
 # Verify that version was correctly parsed and installed
-if echo "$OUTPUT" | grep -qE "Installing Node (v?18|18\.0\.0)"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qE "Installing Node (v?18|18\.0\.0)"; then
     test_pass
 else
-    test_fail "Expected Node.js 18.x.x to be installed.\nLogs:\n$OUTPUT"
+    test_fail "Expected Node.js 18.x.x to be installed with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -685,13 +709,16 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
 # Verify version was parsed correctly
-if echo "$OUTPUT" | grep -qE "Installing Node (v?20|20\.0\.0)"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qE "Installing Node (v?20|20\.0\.0)"; then
     test_pass
 else
-    test_fail "Expected Node.js 20.x.x to be installed.\nLogs:\n$OUTPUT"
+    test_fail "Expected Node.js 20.x.x to be installed with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -731,13 +758,16 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
 # Verify LTS was installed
-if echo "$OUTPUT" | grep -q "Installing latest LTS version"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing latest LTS version"; then
     test_pass
 else
-    test_fail "Expected LTS version to be installed.\nLogs:\n$OUTPUT"
+    test_fail "Expected LTS version to be installed with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
@@ -780,13 +810,16 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then exit 0; fi
 '
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
 # Verify pnpm version 9 was targeted
-if echo "$OUTPUT" | grep -q "Target pnpm version: 9"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Target pnpm version: 9"; then
     test_pass
 else
-    test_fail "Expected pnpm version 9 to be extracted.\nLogs:\n$OUTPUT"
+    test_fail "Expected pnpm version 9 to be extracted with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
@@ -825,12 +858,15 @@ create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
 create_mock "git" 'exit 0'
 create_mock "unzip" 'exit 0'
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-if echo "$OUTPUT" | grep -q "Installing Homebrew..."; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing Homebrew..."; then
     test_pass
 else
-    test_fail "Expected Homebrew installation flow.\nLogs:\n$OUTPUT"
+    test_fail "Expected Homebrew installation flow with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
@@ -863,11 +899,26 @@ create_mock "docker" '
     if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
     if [ "$1" = "info" ]; then exit 0; fi
 '
-OUTPUT=$(run_test_script docker false 2>&1 || true)
-if echo "$OUTPUT" | grep -q "Docker is running"; then
+# Mock rest of dependencies for successful run
+create_mock "fnm" '
+    if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi
+    if [ "$1" = "install" ]; then exit 0; fi
+    if [ "$1" = "use" ]; then exit 0; fi
+    if [ "$1" = "default" ]; then exit 0; fi
+    if [ "$1" = "current" ]; then echo "v20.10.0"; exit 0; fi
+'
+touch "$MOCK_BIN/fnm.hidden"
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
+set +e
+OUTPUT=$(run_test_script docker false 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Docker is running"; then
     test_pass
 else
-    test_fail "Expected running message.\nLogs:\n$OUTPUT"
+    test_fail "Expected running message with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
@@ -900,12 +951,15 @@ create_mock "node" 'echo "v21.0.0"'
 create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'echo "8.14.0"; if [ "$1" = "install" ]; then exit 0; fi'
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-if echo "$OUTPUT" | grep -q "Installing Node --latest"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing Node --latest"; then
     test_pass
 else
-    test_fail "Expected 'install --latest' call.\nLogs:\n$OUTPUT"
+    test_fail "Expected 'install --latest' call with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
@@ -936,19 +990,22 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then echo "SHOULD_NOT_RUN"; exit 1; fi
 '
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-if echo "$OUTPUT" | grep -q "pnpm is already installed: v8.14.0"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "pnpm is already installed: v8.14.0"; then
     test_pass
 else
-    test_fail "Expected 'already installed' message.\nLogs:\n$OUTPUT"
+    test_fail "Expected 'already installed' message with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
 test_start "No Lockfile (Fresh Install)"
 setup_clean_system
 rm -f "$TEST_DIR/pnpm-lock.yaml"
-rm -f "$TEST_DIR/.talawa-pnpm-lock-hash"
+rm -f "$TEST_DIR/.git/.talawa-pnpm-lock-hash"
 
 create_mock "brew" 'exit 0'
 create_mock "git" 'exit 0'
@@ -963,12 +1020,15 @@ create_mock "pnpm" '
     if [ "$1" = "install" ]; then echo "Running pnpm install fresh..."; exit 0; fi
 '
 
-OUTPUT=$(run_test_script local false 2>&1 || true)
+set +e
+OUTPUT=$(run_test_script local false 2>&1)
+EXIT_CODE=$?
+set -e
 
-if echo "$OUTPUT" | grep -q "Running pnpm install fresh..."; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Running pnpm install fresh..."; then
     test_pass
 else
-    test_fail "Expected pnpm install execution for missing lockfile.\nLogs:\n$OUTPUT"
+    test_fail "Expected pnpm install execution for missing lockfile with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
