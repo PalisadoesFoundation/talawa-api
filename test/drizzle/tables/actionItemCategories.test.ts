@@ -585,7 +585,7 @@ describe("actionItemCategoriesTable", () => {
 			};
 			const result =
 				actionItemCategoriesTableInsertSchema.safeParse(dataWithNulls);
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 
 		it("should invalidate a description exceeding 2048 characters", () => {

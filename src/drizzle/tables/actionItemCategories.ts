@@ -85,7 +85,7 @@ export const actionItemCategoriesTableRelations = relations(
 export const actionItemCategoriesTableInsertSchema = createInsertSchema(
 	actionItemCategoriesTable,
 	{
-		description: (schema) => schema.min(1).max(2048).nullable().optional(),
+		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),
 	},
 );
