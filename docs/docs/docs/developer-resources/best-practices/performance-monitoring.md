@@ -795,6 +795,15 @@ The metrics cache service is automatically initialized when the performance plug
 
 You can extend the built-in performance tracking by adding custom operations and manual timing to monitor application-specific code paths.
 
+### Resolver-level instrumentation (withMutationMetrics / withQueryMetrics)
+
+The codebase provides helpers that wrap GraphQL resolvers for consistent operation naming and timing:
+
+- **`withMutationMetrics`** (from `~/src/graphql/utils/withMutationMetrics`) — wraps mutation resolvers with `ctx.perf?.time(operationName, ...)` so each mutation is recorded under a name like `mutation:createUser`. Options: `{ operationName: string }`.
+- **`withQueryMetrics`** — analogous for query resolvers.
+
+These utilities only add **resolver-level** timing. They do not implement request-scoped wiring, Server-Timing header integration, aggregation workers, the `/metrics/perf` endpoint, or DataLoader/cache instrumentation; those are part of the broader performance foundation and are documented elsewhere in this guide. When linking PRs to issues that cover the full foundation, consider either (a) limiting the issue link to the resolver-level change and adding a checklist of remaining tasks, or (b) implementing the remaining pieces before marking the issue resolved.
+
 ### Custom Operations
 
 Track custom operations in your code to measure specific functionality:
@@ -848,6 +857,16 @@ The performance tracking system is designed to have minimal overhead on your app
 - **Endpoint Returns**: Maximum 50 most recent snapshots
 - **No Persistence**: Metrics reset on server restart
 - **No PII**: Metrics contain only timing data, no user information
+
+### Critical validations (mutation instrumentation)
+
+When adding or changing resolver-level mutation instrumentation (e.g. `withMutationMetrics`, `createEvent` notification tracking), complete these validations before merge:
+
+| Validation | Required actions | Addressed in repo |
+|------------|------------------|-------------------|
+| **1. Transaction boundary (`createEvent`)** | Notification enqueue runs **outside** the database transaction (after commit). If enqueue fails, DB changes are **not** rolled back (fire-and-forget). Accept and document. | Design documented in `createEvent.ts` (comment above notification enqueue block). |
+| **2. Performance overhead** | Run load tests measuring per-mutation overhead (target: **&lt;1–2 ms**). Verify no memory leaks; confirm `perf.snapshot()` does not delay responses. | Automated test `test/graphql/utils/withMutationMetrics.overhead.test.ts` asserts average overhead **&lt;2 ms** per mutation. Leak/snapshot checks: run under load if needed. |
+| **3. Error stack trace preservation** | Verify `perf.time()` wrapper does not swallow error stack traces; full error context preserved for debugging. | Automated test in `withMutationMetrics.test.ts`: `"should preserve error stack trace when resolver throws"` (same error reference, non-empty `stack`). |
 
 ## Troubleshooting
 
