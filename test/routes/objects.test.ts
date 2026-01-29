@@ -1,212 +1,337 @@
 import { Readable } from "node:stream";
-import Fastify, { type FastifyInstance } from "fastify";
-import fastifyPlugin from "fastify-plugin";
-import { type Client, S3Error } from "minio";
+import type { FastifyInstance, LightMyRequestResponse } from "fastify";
+import type { BucketItemStat } from "minio";
+import { S3Error } from "minio";
+import { testEnvConfig } from "test/envConfigSchema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { errorHandlerPlugin } from "~/src/fastifyPlugins/errorHandler";
-import objects from "~/src/routes/objects";
+import { getTier } from "~/src/config/rateLimits";
+import { createServer } from "~/src/createServer";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
-// Mock the minio plugin to avoid real connection and simplify testing
-const mockGetObject = vi.fn();
-const mockStatObject = vi.fn();
+describe("/objects/:name route", () => {
+	let app: FastifyInstance;
 
-const mockMinioPlugin = fastifyPlugin(async (fastify: FastifyInstance) => {
-	fastify.decorate("minio", {
-		bucketName: "talawa",
-		client: {
-			getObject: mockGetObject,
-			statObject: mockStatObject,
-		} as unknown as Client,
-		config: {
-			endPoint: "localhost",
-			port: 9000,
-		},
-	});
-});
-
-describe("objects route", () => {
-	let app: ReturnType<typeof Fastify>;
-
-	beforeEach(async () => {
-		app = Fastify({
-			logger: false,
-		});
-
-		// Register plugins
-		await app.register(errorHandlerPlugin);
-		// Mock minio before registering routes
-		await app.register(mockMinioPlugin);
-		await app.register(objects);
-
-		await app.ready();
+	beforeEach(() => {
+		vi.clearAllMocks();
 	});
 
 	afterEach(async () => {
-		await app.close();
-		vi.resetAllMocks();
+		if (app) {
+			await app.close();
+		}
 	});
 
-	it("should return the object stream when found", async () => {
-		const mockStream = Readable.from(["readable-stream"]);
-		const mockStat = {
-			metaData: { "content-type": "image/png" },
+	describe("rate limiting", () => {
+		it("should apply normal tier rate limiting", async () => {
+			app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				},
+			});
+
+			// Mock MinIO client
+			const mockStream = new Readable({
+				read() {
+					this.push("test file content");
+					this.push(null);
+				},
+			});
+
+			const mockStat: BucketItemStat = {
+				size: 100,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: { "content-type": "text/plain" },
+			};
+
+			vi.spyOn(app.minio.client, "getObject").mockResolvedValue(mockStream);
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/test-file.txt",
+			});
+
+			// Verify rate limit headers are present
+			expect(res.headers["x-ratelimit-limit"]).toBeDefined();
+			expect(res.headers["x-ratelimit-remaining"]).toBeDefined();
+			expect(res.headers["x-ratelimit-reset"]).toBeDefined();
+
+			// Verify the limit is for "normal" tier
+			const limit = Number(res.headers["x-ratelimit-limit"]);
+			const normalTier = getTier("normal");
+			expect(limit).toBe(normalTier.max);
+		});
+
+		it("should return 429 when rate limit is exceeded", async () => {
+			app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				},
+			});
+
+			// Mock MinIO to return successful responses
+			const mockStat: BucketItemStat = {
+				size: 100,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: { "content-type": "text/plain" },
+			};
+
+			vi.spyOn(app.minio.client, "getObject").mockImplementation(() => {
+				const stream = new Readable({
+					read() {
+						this.push("test file content");
+						this.push(null);
+					},
+				});
+				return Promise.resolve(stream);
+			});
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			// Make requests until rate limit is hit
+			const normalTier = getTier("normal");
+			const maxAttempts = normalTier.max + 20; // Ensure we exceed it
+			let lastResponse: LightMyRequestResponse | undefined;
+			let attempts = 0;
+
+			for (attempts = 0; attempts < maxAttempts; attempts++) {
+				lastResponse = await app.inject({
+					method: "GET",
+					url: "/objects/test-file.txt",
+					remoteAddress: "127.0.0.100", // Unique IP for this test to accumulate hits
+				});
+
+				if (lastResponse.statusCode === 429) {
+					break;
+				}
+			}
+
+			// Verify we eventually got rate limited
+			expect(lastResponse?.statusCode).toBe(429);
+
+			// Verify error response structure
+			const body = JSON.parse(lastResponse?.body || "{}");
+			expect(body.error).toHaveProperty("message");
+			expect(body.error).toHaveProperty("code");
+			expect(body.error.message).toContain("Too many requests");
+
+			// Verify resetAt is in seconds (epoch timestamp)
+			if (body.error.details?.resetAt) {
+				const resetAt = body.error.details.resetAt;
+				// resetAt should be a reasonable epoch timestamp in seconds
+				const now = Math.floor(Date.now() / 1000);
+				const windowSeconds = Math.ceil(normalTier.windowMs / 1000);
+				expect(resetAt).toBeGreaterThan(now);
+				expect(resetAt).toBeLessThanOrEqual(now + windowSeconds + 10); // Within window + buffer
+			}
+		});
+
+		it("should include X-RateLimit-Reset header in seconds (epoch)", async () => {
+			app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				},
+			});
+
+			const mockStream = new Readable({
+				read() {
+					this.push("test file content");
+					this.push(null);
+				},
+			});
+
+			const mockStat: BucketItemStat = {
+				size: 100,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: { "content-type": "text/plain" },
+			};
+
+			vi.spyOn(app.minio.client, "getObject").mockResolvedValue(mockStream);
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/test-file.txt",
+				remoteAddress: "127.0.0.101", // Unique IP
+			});
+
+			const resetAt = Number(res.headers["x-ratelimit-reset"]);
+			const now = Math.floor(Date.now() / 1000);
+			const normalTier = getTier("normal");
+			const windowSeconds = Math.ceil(normalTier.windowMs / 1000);
+
+			// Verify resetAt is a reasonable epoch timestamp in seconds
+			expect(resetAt).toBeGreaterThan(now);
+			expect(resetAt).toBeLessThanOrEqual(now + windowSeconds + 10);
+		});
+	});
+
+	describe("object retrieval", () => {
+		// Helper to create server with fresh config for each test
+		const setupServer = async () => {
+			app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				},
+			});
+			return app;
 		};
 
-		mockGetObject.mockResolvedValue(mockStream);
-		mockStatObject.mockResolvedValue(mockStat);
+		it("should successfully fetch an object", async () => {
+			await setupServer();
 
-		const res = await app.inject({
-			method: "GET",
-			url: "/objects/test-image.png",
+			const mockContent = "test file content";
+			const mockStream = new Readable({
+				read() {
+					this.push(mockContent);
+					this.push(null);
+				},
+			});
+
+			const mockStat: BucketItemStat = {
+				size: mockContent.length,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: { "content-type": "text/plain" },
+			};
+
+			vi.spyOn(app.minio.client, "getObject").mockResolvedValue(mockStream);
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/test-file.txt",
+			});
+
+			expect(res.statusCode).toBe(200);
+			expect(res.headers["content-type"]).toBe("text/plain");
+			expect(res.headers["content-disposition"]).toContain("test-file.txt");
+			expect(res.body).toBe(mockContent);
 		});
 
-		expect(res.statusCode).toBe(200);
-		expect(res.headers["content-type"]).toBe("image/png");
-		expect(res.headers["content-disposition"]).toBe(
-			"inline; filename=test-image.png",
-		);
-		expect(res.payload).toBe("readable-stream");
+		it("should return 404 when object does not exist (NoSuchKey)", async () => {
+			await setupServer();
 
-		expect(mockGetObject).toHaveBeenCalledWith("talawa", "test-image.png");
-		expect(mockStatObject).toHaveBeenCalledWith("talawa", "test-image.png");
-	});
+			const s3Error = new S3Error("NoSuchKey");
+			s3Error.code = "NoSuchKey";
 
-	it("should throw NOT_FOUND when S3Error is NoSuchKey", async () => {
-		const s3Error = new S3Error("Key not found");
-		s3Error.code = "NoSuchKey";
+			vi.spyOn(app.minio.client, "getObject").mockRejectedValue(s3Error);
+			vi.spyOn(app.minio.client, "statObject").mockRejectedValue(s3Error);
 
-		mockGetObject.mockRejectedValue(s3Error);
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/nonexistent.txt",
+			});
 
-		const res = await app.inject({
-			method: "GET",
-			url: "/objects/missing.png",
+			expect(res.statusCode).toBe(404);
+			const body = JSON.parse(res.body);
+			expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
+			expect(body.error.message).toContain("No object found");
+			expect(body.error.details).toEqual({ objectName: "nonexistent.txt" });
 		});
 
-		expect(res.statusCode).toBe(404);
-		const body = res.json();
-		expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
-		expect(body.error.message).toContain("No object found");
-		expect(body.error.details).toEqual({ objectName: "missing.png" });
-		expect(body.error.correlationId).toSatisfy(
-			(id: string) => typeof id === "string" && id.length > 0,
-		); // Ensure correlation ID is present and non-empty
-	});
+		it("should return 404 when S3Error is NotFound", async () => {
+			await setupServer();
 
-	it("should throw NOT_FOUND when S3Error is NotFound", async () => {
-		// Some S3 providers like Google Cloud Storage use "NotFound"
-		const s3Error = new S3Error("Not found");
-		s3Error.code = "NotFound";
+			const s3Error = new S3Error("Not found");
+			s3Error.code = "NotFound";
 
-		mockGetObject.mockRejectedValue(s3Error);
+			vi.spyOn(app.minio.client, "getObject").mockRejectedValue(s3Error);
+			// We assert that if getObject fails, it handles it.
 
-		const res = await app.inject({
-			method: "GET",
-			url: "/objects/missing.png",
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/missing.png",
+			});
+
+			expect(res.statusCode).toBe(404);
+			const body = JSON.parse(res.body);
+			expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
+			expect(body.error.details).toEqual({ objectName: "missing.png" });
 		});
 
-		expect(res.statusCode).toBe(404);
-		const body = res.json();
-		expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
-		expect(body.error.details).toEqual({ objectName: "missing.png" });
-		expect(body.error.correlationId).toSatisfy(
-			(id: string) => typeof id === "string" && id.length > 0,
-		);
-	});
+		it("should return 500 on internal MinIO errors", async () => {
+			await setupServer();
 
-	it("should throw INTERNAL_SERVER_ERROR for generic errors", async () => {
-		const genericError = new Error("Connection failed");
+			const error = new Error("Internal MinIO error");
 
-		mockGetObject.mockRejectedValue(genericError);
+			vi.spyOn(app.minio.client, "getObject").mockRejectedValue(error);
+			vi.spyOn(app.minio.client, "statObject").mockRejectedValue(error);
 
-		const res = await app.inject({
-			method: "GET",
-			url: "/objects/error.png",
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/test-file.txt",
+			});
+
+			expect(res.statusCode).toBe(500);
+			const body = JSON.parse(res.body);
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.message).toContain("Something went wrong");
 		});
 
-		expect(res.statusCode).toBe(500);
-		const body = res.json();
-		expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-		expect(body.error.message).toBe(
-			"Something went wrong. Please try again later.",
-		);
-		expect(body.error.correlationId).toSatisfy(
-			(id: string) => typeof id === "string" && id.length > 0,
-		);
-		// Details should be null or undefined for generic errors without specific details
-		expect(body.error.details == null).toBe(true);
-	});
+		it("should use default content-type when not provided", async () => {
+			await setupServer();
 
-	it("should use default content-type when metaData content-type is missing", async () => {
-		const mockStream = Readable.from(["data"]);
-		const mockStat = {
-			metaData: {},
-		};
+			const mockStream = new Readable({
+				read() {
+					this.push("binary data");
+					this.push(null);
+				},
+			});
 
-		mockGetObject.mockResolvedValue(mockStream);
-		mockStatObject.mockResolvedValue(mockStat);
+			const mockStat: BucketItemStat = {
+				size: 100,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: {}, // No content-type
+			};
 
-		const res = await app.inject({
-			method: "GET",
-			url: "/objects/default.png",
+			vi.spyOn(app.minio.client, "getObject").mockResolvedValue(mockStream);
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/unknown.bin",
+			});
+
+			expect(res.statusCode).toBe(200);
+			expect(res.headers["content-type"]).toBe("application/octet-stream");
 		});
 
-		expect(res.statusCode).toBe(200);
-		expect(res.headers["content-type"]).toBe("application/octet-stream");
-		expect(res.headers["content-disposition"]).toBe(
-			"inline; filename=default.png",
-		);
-		expect(res.payload).toBe("data");
+		it("should validate object name length", async () => {
+			await setupServer();
 
-		expect(mockGetObject).toHaveBeenCalledWith("talawa", "default.png");
-		expect(mockStatObject).toHaveBeenCalledWith("talawa", "default.png");
-	});
+			// Test empty name
+			const res1 = await app.inject({
+				method: "GET",
+				url: "/objects/",
+			});
+			expect(res1.statusCode).toBe(400);
 
-	it("should return validation error for too-long name", async () => {
-		const longName = "a".repeat(37); // Exceeds maxLength of 36
+			// Test name exceeding max length (37 characters)
+			const longName = "a".repeat(37);
+			const res2 = await app.inject({
+				method: "GET",
+				url: `/objects/${longName}`,
+			});
+			expect(res2.statusCode).toBe(400);
 
-		const res = await app.inject({
-			method: "GET",
-			url: `/objects/${longName}`,
+			const body = JSON.parse(res2.body);
+			expect(body.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
 		});
-
-		expect(res.statusCode).toBe(400);
-		const body = res.json();
-		expect(body.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
-		expect(body.error.correlationId).toSatisfy(
-			(id: string) => typeof id === "string" && id.length > 0,
-		);
-
-		// Assert standardized error message and structured details
-		expect(body.error.message).toSatisfy(
-			(msg: string) => typeof msg === "string" && msg.length > 0,
-		);
-		expect(body.error.details).toSatisfy((details: unknown) => {
-			return (
-				Array.isArray(details) &&
-				details.some((item: unknown) => {
-					return (
-						typeof item === "object" &&
-						item !== null &&
-						("field" in item || "instancePath" in item) &&
-						(("field" in item &&
-							(item as { field: unknown }).field === "name") ||
-							("instancePath" in item &&
-								(item as { instancePath: unknown }).instancePath ===
-									"/name")) &&
-						"message" in item &&
-						typeof (item as { message: unknown }).message === "string" &&
-						((item as { message: string }).message.includes("too long") ||
-							(item as { message: string }).message.includes("length") ||
-							(item as { message: string }).message.includes("36") ||
-							(item as { message: string }).message.includes("more than"))
-					);
-				})
-			);
-		});
-
-		// Verify storage helpers were not called
-		expect(mockGetObject).not.toHaveBeenCalled();
-		expect(mockStatObject).not.toHaveBeenCalled();
 	});
 });

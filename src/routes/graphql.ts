@@ -26,7 +26,7 @@ import {
 	ErrorCode,
 } from "../utilities/errors/errorCodes";
 import { normalizeError } from "../utilities/errors/errorTransformer";
-import leakyBucket from "../utilities/leakyBucket";
+import { complexityLeakyBucket } from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
 import {
 	isPerformanceTracker,
@@ -882,7 +882,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// For unauthenticated users, use only IP address
 				key = `rate-limit:ip:${ip}`;
 			}
-			const isRequestAllowed = await leakyBucket(
+			const isRequestAllowed = await complexityLeakyBucket(
 				fastify,
 				key,
 				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,

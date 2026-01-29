@@ -90,12 +90,10 @@ describe("GraphQL Error Formatting Integration", () => {
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
 
-	it("should return 401 with UNAUTHENTICATED for missing or invalid auth", async () => {
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			payload: {
-				query: `
+	it.each([
+		{
+			type: "mutation",
+			query: `
 					mutation {
 						createOrganization(input: {
 							name: "Test Org"
@@ -105,6 +103,26 @@ describe("GraphQL Error Formatting Integration", () => {
 						}
 					}
 				`,
+		},
+		{
+			type: "query",
+			query: `
+					query {
+						fund(input: { id: "test-fund-id" }) {
+							id
+							name
+						}
+					}
+				`,
+		},
+	])("should return 401 UNAUTHENTICATED for unauthenticated $type", async ({
+		query,
+	}) => {
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query,
 			},
 			headers: {
 				"content-type": "application/json",
@@ -236,37 +254,6 @@ describe("GraphQL Error Formatting Integration", () => {
 		const error = body.errors[0];
 		expect(error.extensions).toBeDefined();
 		expect(error.extensions.code).toBe(ErrorCode.INVALID_ARGUMENTS);
-		expect(error.extensions.correlationId).toBeDefined();
-		expect(typeof error.extensions.correlationId).toBe("string");
-	});
-
-	it("should return 401 UNAUTHENTICATED when accessing protected resource without authentication", async () => {
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			payload: {
-				query: `
-					query {
-						fund(input: { id: "test-fund-id" }) {
-							id
-							name
-						}
-					}
-				`,
-			},
-			headers: {
-				"content-type": "application/json",
-			},
-		});
-		expect(response.statusCode).toBe(401);
-
-		const body = JSON.parse(response.body);
-		expect(body.errors).toBeDefined();
-		expect(body.errors.length).toBeGreaterThan(0);
-
-		const error = body.errors[0];
-		expect(error.extensions).toBeDefined();
-		expect(error.extensions.code).toBe(ErrorCode.UNAUTHENTICATED);
 		expect(error.extensions.correlationId).toBeDefined();
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
