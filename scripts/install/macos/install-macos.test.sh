@@ -270,10 +270,14 @@ EXIT_CODE=$?
 set -e
 
 
-if echo "$OUTPUT" | grep -q "Local installation mode - skipping Docker setup"; then
-    test_pass
+if [ $EXIT_CODE -eq 0 ]; then
+    if echo "$OUTPUT" | grep -q "Local installation mode - skipping Docker setup"; then
+        test_pass
+    else
+        test_fail "Did not find skip message in logs.\nLogs:\n$OUTPUT"
+    fi
 else
-    test_fail "Did not find skip message in logs.\nLogs:\n$OUTPUT"
+    test_fail "Script exited with code $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 test_start "Skip Prerequisites - Warnings"
