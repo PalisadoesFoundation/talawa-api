@@ -64,6 +64,8 @@ mkdir -p .pnpm-store node_modules
 # --------------------------------------------------------------------
 # Permissions (fail fast, non-interactive sudo)
 # --------------------------------------------------------------------
+# Fix permissions
+# We check writability first to avoid unnecessary sudo usage.
 if [ ! -w ".pnpm-store" ] || [ ! -w "node_modules" ]; then
   if ! sudo -n chown -R "$(id -u):$(id -g)" .pnpm-store node_modules; then
     echo "[ERROR] Failed to fix pnpm directory permissions." >&2
