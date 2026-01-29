@@ -148,8 +148,8 @@ command_exists() {
 }
 EOF
 
-    # Patch install-macos.sh to use command_exists for brew check
-    # Original: if command -v brew >/dev/null 2>&1; then
+    # Note: No direct patching needed - install-macos.sh sources os-detection.sh
+    # which now contains our command_exists override
 
 }
 
