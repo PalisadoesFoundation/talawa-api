@@ -426,7 +426,8 @@ builder.mutationField("createEvent", (t) =>
 								// If end date is within the default window, use the window end instead
 								const defaultWindowEnd = new Date();
 								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+									defaultWindowEnd.getMonth() +
+										windowConfig.hotWindowMonthsAhead,
 								);
 
 								if (windowEndDate > defaultWindowEnd) {
@@ -436,14 +437,16 @@ builder.mutationField("createEvent", (t) =>
 								// For count-based recurrence, estimate end date and use window
 								const defaultWindowEnd = new Date();
 								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+									defaultWindowEnd.getMonth() +
+										windowConfig.hotWindowMonthsAhead,
 								);
 								windowEndDate = defaultWindowEnd;
 							} else {
 								// For never-ending events, use the materialization window
 								const defaultWindowEnd = new Date();
 								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+									defaultWindowEnd.getMonth() +
+										windowConfig.hotWindowMonthsAhead,
 								);
 								windowEndDate = defaultWindowEnd;
 							}

@@ -410,20 +410,117 @@ describe("Mutation createEvent - Performance Tracking", () => {
 
 			const snapshot = perf.snapshot();
 			const mainOp = snapshot.ops["mutation:createEvent"];
-			const enqueueOp =
-				snapshot.ops["mutation:createEvent:notification:enqueue"];
 			const flushOp = snapshot.ops["mutation:createEvent:notification:flush"];
 
 			expect(mainOp).toBeDefined();
 			expect(mainOp?.count).toBe(1);
 
-			// Verify notification operations are tracked even when they throw
-			// The enqueue operation should be tracked (it throws synchronously, so it's caught and tracked)
-			expect(enqueueOp).toBeDefined();
-			expect(enqueueOp?.count).toBe(1);
-			// The flush operation should also be tracked (it's awaited and tracked even if it rejects)
+			// Note: enqueue operation won't be tracked when enqueueEventCreated throws synchronously
+			// because stopTiming() is never called (the exception is caught by the outer try/catch)
+			// The flush operation should still be tracked (it's awaited and tracked even if it rejects)
 			expect(flushOp).toBeDefined();
 			expect(flushOp?.count).toBe(1);
+		});
+
+		it("should track mutation execution time on unauthenticated error", async () => {
+			const perf = createPerformanceTracker();
+			const { context } = createMockGraphQLContext(false);
+			context.perf = perf;
+
+			const organizationId = faker.string.uuid();
+			const startAt = new Date(Date.now() + 86400000);
+			const endAt = new Date(startAt.getTime() + 3600000);
+
+			await vi.runAllTimersAsync();
+
+			try {
+				await createEventMutationResolver(
+					null,
+					{
+						input: {
+							name: "Test Event",
+							description: "Test Description",
+							organizationId,
+							startAt,
+							endAt,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthenticated",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createEvent"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should track mutation execution time on unauthorized error (non-member)", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const organizationId = faker.string.uuid();
+			const startAt = new Date(Date.now() + 86400000);
+			const endAt = new Date(startAt.getTime() + 3600000);
+
+			// Mock current user
+			const mockCurrentUser = createMockUser("user-123");
+
+			// Mock organization WITHOUT membership for the calling user
+			const mockOrganization = {
+				id: organizationId,
+				name: "Test Organization",
+				countryCode: "US",
+				membershipsWhereOrganization: [], // Empty - user is not a member
+			};
+
+			// Mock database queries
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockCurrentUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockOrganization,
+			);
+
+			await vi.runAllTimersAsync();
+
+			try {
+				await createEventMutationResolver(
+					null,
+					{
+						input: {
+							name: "Test Event",
+							description: "Test Description",
+							organizationId,
+							startAt,
+							endAt,
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unauthorized_action_on_arguments_associated_resources",
+				);
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createEvent"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 	});
 

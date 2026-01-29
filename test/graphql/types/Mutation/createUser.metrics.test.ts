@@ -212,8 +212,10 @@ describe("Mutation createUser - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = perf;
 
+			await vi.runAllTimersAsync();
+
 			try {
-				const resultPromise = createUserMutationResolver(
+				await createUserMutationResolver(
 					null,
 					{
 						input: {
@@ -225,8 +227,6 @@ describe("Mutation createUser - Performance Tracking", () => {
 					},
 					context,
 				);
-				await vi.runAllTimersAsync();
-				await resultPromise;
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
@@ -349,8 +349,10 @@ describe("Mutation createUser - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = undefined;
 
+			await vi.runAllTimersAsync();
+
 			try {
-				const resultPromise = createUserMutationResolver(
+				await createUserMutationResolver(
 					null,
 					{
 						input: {
@@ -362,8 +364,6 @@ describe("Mutation createUser - Performance Tracking", () => {
 					},
 					context,
 				);
-				await vi.runAllTimersAsync();
-				await resultPromise;
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
