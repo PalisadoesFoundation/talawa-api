@@ -424,7 +424,7 @@ builder.mutationField("createEvent", (t) =>
 								windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
 
 								// If end date is within the default window, use the window end instead
-								const defaultWindowEnd = new Date(windowStartDate);
+								const defaultWindowEnd = new Date();
 								defaultWindowEnd.setMonth(
 									defaultWindowEnd.getMonth() +
 										windowConfig.hotWindowMonthsAhead,
@@ -435,7 +435,7 @@ builder.mutationField("createEvent", (t) =>
 								}
 							} else if (parsedArgs.input.recurrence.count) {
 								// For count-based recurrence, estimate end date and use window
-								const defaultWindowEnd = new Date(windowStartDate);
+								const defaultWindowEnd = new Date();
 								defaultWindowEnd.setMonth(
 									defaultWindowEnd.getMonth() +
 										windowConfig.hotWindowMonthsAhead,
@@ -443,7 +443,7 @@ builder.mutationField("createEvent", (t) =>
 								windowEndDate = defaultWindowEnd;
 							} else {
 								// For never-ending events, use the materialization window
-								const defaultWindowEnd = new Date(windowStartDate);
+								const defaultWindowEnd = new Date();
 								defaultWindowEnd.setMonth(
 									defaultWindowEnd.getMonth() +
 										windowConfig.hotWindowMonthsAhead,
@@ -574,38 +574,39 @@ builder.mutationField("createEvent", (t) =>
 							isRegisterable: createdEvent.isRegisterable ?? false,
 						});
 
-						// Track notification enqueue operation
-						try {
-							const notificationPayload = {
-								eventId: finalEvent.id,
-								eventName: finalEvent.name,
-								organizationId: finalEvent.organizationId,
-								organizationName: existingOrganization.name,
-								startDate: finalEvent.startAt.toISOString(),
-								creatorName: currentUser.name,
-							};
-
-							if (ctx.perf) {
-								const stopTiming = ctx.perf.start(
-									"mutation:createEvent:notification:enqueue",
-								);
-								try {
-									ctx.notification?.enqueueEventCreated(notificationPayload);
-								} finally {
-									if (stopTiming) {
-										stopTiming();
-									}
-								}
-							} else {
-								ctx.notification?.enqueueEventCreated(notificationPayload);
-							}
-						} catch (error) {
-							ctx.log.error({ error }, "Failed to enqueue event notification");
-						}
-
 						return finalEvent;
 					},
 				);
+
+				// Track notification enqueue operation (after transaction commits)
+				try {
+					const notificationPayload = {
+						eventId: createdEventResult.id,
+						eventName: createdEventResult.name,
+						organizationId: createdEventResult.organizationId,
+						organizationName: existingOrganization.name,
+						startDate: createdEventResult.startAt.toISOString(),
+						creatorName: currentUser.name,
+					};
+
+					if (ctx.perf) {
+						const stopTiming = ctx.perf.start(
+							"mutation:createEvent:notification:enqueue",
+						);
+						try {
+							ctx.notification?.enqueueEventCreated(notificationPayload);
+						} finally {
+							if (stopTiming) {
+								stopTiming();
+							}
+						}
+					} else {
+						ctx.notification?.enqueueEventCreated(notificationPayload);
+					}
+				} catch (error) {
+					ctx.log.error({ error }, "Failed to enqueue event notification");
+				}
+
 				// Track notification flush operation
 				try {
 					if (ctx.perf) {

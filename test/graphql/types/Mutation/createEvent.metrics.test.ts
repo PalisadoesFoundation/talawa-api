@@ -416,9 +416,14 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			expect(mainOp).toBeDefined();
 			expect(mainOp?.count).toBe(1);
 
-			// Note: enqueue operation won't be tracked when enqueueEventCreated throws synchronously
-			// because stopTiming() is never called (the exception is caught by the outer try/catch)
-			// The flush operation should still be tracked (it's awaited and tracked even if it rejects)
+			// Enqueue timing IS recorded because stopTiming() is in a finally block,
+			// so even when enqueueEventCreated throws synchronously, the timing is captured.
+			const enqueueOp =
+				snapshot.ops["mutation:createEvent:notification:enqueue"];
+			expect(enqueueOp).toBeDefined();
+			expect(enqueueOp?.count).toBe(1);
+
+			// The flush operation is also tracked (awaited and tracked even if it rejects)
 			expect(flushOp).toBeDefined();
 			expect(flushOp?.count).toBe(1);
 		});
@@ -764,6 +769,16 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				mockOrganization,
 			);
 
+			// Mock eventGenerationWindowsTable.findFirst to return undefined (no existing window)
+			// This is on ctx.drizzleClient, not the transaction
+			(
+				mocks.drizzleClient.query as {
+					eventGenerationWindowsTable?: { findFirst: ReturnType<typeof vi.fn> };
+				}
+			).eventGenerationWindowsTable = {
+				findFirst: vi.fn().mockResolvedValueOnce(undefined),
+			};
+
 			// Import and mock recurrenceRulesTable
 			const { recurrenceRulesTable } = await import("~/src/drizzle/schema");
 			const { recurringEventInstancesTable } = await import(
@@ -826,11 +841,6 @@ describe("Mutation createEvent - Performance Tracking", () => {
 									}),
 								};
 							}),
-							query: {
-								eventGenerationWindowsTable: {
-									findFirst: vi.fn().mockResolvedValue(undefined), // No existing window - triggers initialization
-								},
-							},
 						};
 						return callback(mockTx as never);
 					},
@@ -1088,6 +1098,100 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			expect(op).toBeDefined();
 			expect(op?.count).toBe(1);
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should reject invalid MIME type for attachments with indexed error path", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const organizationId = faker.string.uuid();
+			const startAt = new Date(Date.now() + 86400000);
+			const endAt = new Date(startAt.getTime() + 3600000);
+
+			// Mock current user
+			const mockCurrentUser = createMockUser("user-123");
+
+			// Mock organization
+			const mockOrganization = createMockOrganization(organizationId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockCurrentUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockOrganization,
+			);
+
+			// Create mock file uploads with valid and invalid MIME types
+			const createMockReadStream = () => ({
+				pipe: vi.fn().mockReturnThis(),
+				on: vi.fn().mockReturnThis(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			// First attachment: valid image MIME type
+			const mockValidAttachment = Promise.resolve({
+				filename: "valid.png",
+				mimetype: "image/png", // Valid
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
+			});
+
+			// Second attachment: invalid text/plain MIME type
+			const mockInvalidAttachment = Promise.resolve({
+				filename: "invalid.txt",
+				mimetype: "text/plain", // Invalid - not in eventAttachmentMimeTypeEnum
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
+			});
+
+			await vi.runAllTimersAsync();
+			try {
+				await createEventMutationResolver(
+					null,
+					{
+						input: {
+							name: "Test Event",
+							description: "Test Description",
+							organizationId,
+							startAt,
+							endAt,
+							attachments: [mockValidAttachment, mockInvalidAttachment],
+						},
+					},
+					context,
+				);
+				expect.fail("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"invalid_arguments",
+				);
+
+				// Verify the error includes indexed path to the invalid attachment
+				const issues = (error as TalawaGraphQLError).extensions
+					?.issues as Array<{ argumentPath: unknown[] }>;
+				expect(issues).toBeDefined();
+				expect(Array.isArray(issues)).toBe(true);
+
+				// Should have an issue pointing to attachments[1] (the invalid one)
+				const attachmentIssue = issues?.find(
+					(issue) =>
+						Array.isArray(issue.argumentPath) &&
+						issue.argumentPath[0] === "input" &&
+						issue.argumentPath[1] === "attachments" &&
+						issue.argumentPath[2] === 1,
+				);
+				expect(attachmentIssue).toBeDefined();
+			}
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:createEvent"];
+
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
 		});
 	});
 
