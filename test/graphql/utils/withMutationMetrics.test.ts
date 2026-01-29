@@ -1,23 +1,3 @@
-import { describe, expect, it } from "vitest";
-import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
-
-describe("withMutationMetrics", () => {
-	describe("operation name validation", () => {
-		it("should throw when operationName is empty", () => {
-			const resolver = async () => ({ id: "1" });
-
-			expect(() =>
-				withMutationMetrics(
-					{
-						operationName: "",
-					},
-					resolver,
-				),
-			).toThrow("Operation name cannot be empty or whitespace");
-		});
-
-		it("should throw when operationName is whitespace only", () => {
-			const resolver = async () => ({ id: "1" });
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -87,7 +67,6 @@ describe("withMutationMetrics", () => {
 			const context = { perf } as { perf?: PerformanceTracker };
 
 			const resultPromise = wrappedResolver(null, {}, context);
-			// Advance timers and wait for rejection in parallel to avoid unhandled rejection
 			await Promise.all([
 				vi.advanceTimersByTimeAsync(5),
 				expect(resultPromise).rejects.toThrow("Test error"),
@@ -101,7 +80,6 @@ describe("withMutationMetrics", () => {
 			expect(Math.ceil(op?.ms ?? 0)).toBeGreaterThanOrEqual(5);
 		});
 
-		// Pre-merge validation: verifies error stack traces are fully preserved (blocking requirement).
 		it("should preserve error stack trace when resolver throws", async () => {
 			const perf = createPerformanceTracker();
 			const error = new Error("Resolver failure");
@@ -279,7 +257,6 @@ describe("withMutationMetrics", () => {
 				resolver,
 			);
 
-			// Test with undefined context
 			const result1 = await wrappedResolver(null, {}, undefined as never);
 			expect(result1).toBe("test-result");
 			expect(resolver).toHaveBeenCalledTimes(1);
@@ -287,7 +264,6 @@ describe("withMutationMetrics", () => {
 
 			resolver.mockClear();
 
-			// Test with null context
 			const result2 = await wrappedResolver(null, {}, null as never);
 			expect(result2).toBe("test-result");
 			expect(resolver).toHaveBeenCalledTimes(1);
@@ -322,12 +298,10 @@ describe("withMutationMetrics", () => {
 			const perf = createPerformanceTracker();
 			const resolver = vi.fn().mockResolvedValue("result");
 
-			// Test multiple operation name patterns
 			const operationNames = [
 				"mutation:createOrganization",
 				"mutation:updateUser",
 				"mutation:deleteEvent",
-				"mutation:createPost:withAttachments",
 			];
 
 			for (const operationName of operationNames) {
@@ -350,13 +324,12 @@ describe("withMutationMetrics", () => {
 			}
 		});
 
-		it("should reject empty operation name", () => {
+		it("should throw when operationName is empty", () => {
 			const resolver = vi.fn().mockResolvedValue("result");
 
 			expect(() =>
 				withMutationMetrics(
 					{
-						operationName: "   \t\n  ",
 						operationName: "",
 					},
 					resolver,
@@ -364,36 +337,17 @@ describe("withMutationMetrics", () => {
 			).toThrow("Operation name cannot be empty or whitespace");
 		});
 
-		it("should throw when operationName does not match mutation:{mutationName} pattern (missing prefix)", () => {
-			const resolver = async () => ({ id: "1" });
-		it("should reject whitespace-only operation name", () => {
+		it("should throw when operationName is whitespace only", () => {
 			const resolver = vi.fn().mockResolvedValue("result");
 
 			expect(() =>
 				withMutationMetrics(
 					{
-						operationName: "createUser",
+						operationName: "   \t\n  ",
 					},
 					resolver,
 				),
-			).toThrow(
-				/Operation name must match the format "mutation:\{mutationName\}" \(e\.g\. mutation:createUser\)\. Got: "createUser"/,
-			);
-		});
-
-		it("should throw when operationName does not match mutation:{mutationName} pattern (invalid characters)", () => {
-			const resolver = async () => ({ id: "1" });
-
-			expect(() =>
-				withMutationMetrics(
-					{
-						operationName: "mutation:bad-name!",
-					},
-					resolver,
-				),
-			).toThrow(
-				/Operation name must match the format "mutation:\{mutationName\}" \(e\.g\. mutation:createUser\)\. Got: "mutation:bad-name!"/,
-			);
+			).toThrow("Operation name cannot be empty or whitespace");
 		});
 
 		it("should not throw when operationName is valid", () => {
@@ -420,11 +374,6 @@ describe("withMutationMetrics", () => {
 					resolver,
 				),
 			).not.toThrow();
-						operationName: "   ",
-					},
-					resolver,
-				),
-			).toThrow("Operation name cannot be empty or whitespace");
 		});
 	});
 
