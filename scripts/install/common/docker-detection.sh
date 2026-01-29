@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# scripts/install/common/docker-detection.sh
+# Shared Docker detection functions
+
+# Check external dependencies
+# Required commands:
+# - docker: For container management
+# - grep: For text processing (if used)
+# - awk: For text processing (if used)
+
+set -euo pipefail
+
+
+# Source dependencies
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/os-detection.sh"
+
+# Check Docker requirements
+# Arguments:
+#   $1: mode (optional, default: "docker")
+check_docker_requirements() {
+    local mode="${1:-docker}"
+    local os_type="${OS_TYPE:-}"
+
+    if [ "$mode" != "docker" ]; then
+        info "Local installation mode - skipping Docker setup"
+        return 0
+    fi
+
+    if command_exists docker; then
+        success "Docker is already installed: $(docker --version)"
+        
+        # Verify Docker is running
+        if ! docker info >/dev/null 2>&1; then
+            warn "Docker is installed but not running."
+            if [[ "$os_type" == "macos" ]]; then
+                info "Please launch Docker Desktop from Applications and wait for it to start."
+            else
+                info "Please start the Docker daemon."
+            fi
+            return 1
+        else
+            success "Docker is running"
+            return 0
+        fi
+    else
+        error "Docker is not installed."
+        if [[ "$os_type" == "macos" ]]; then
+             warn "Docker Desktop is required but not installed."
+             warn "Please install Docker Desktop from https://www.docker.com/products/docker-desktop"
+             return 1
+        else
+             warn "Please install Docker for your platform."
+             return 1
+        fi
+    fi
+}

@@ -19,6 +19,11 @@ export interface WithMutationMetricsOptions {
  * 2. Gracefully degrading to direct resolver execution if performance tracker is unavailable
  * 3. Ensuring metrics are collected even on mutation errors (via try/finally pattern in perf.time)
  *
+ * Scope: This utility only adds resolver-level mutation timing. It does not implement
+ * request-scoped wiring, Server-Timing headers, aggregation workers, metrics endpoint,
+ * or DataLoader/cache instrumentation; those are documented in the performance-monitoring
+ * docs and may be tracked separately.
+ *
  * @typeParam TParent - The parent/root type passed to the resolver.
  * @typeParam TArgs - The arguments type for the resolver.
  * @typeParam TContext - The GraphQL context type (must include optional `perf`).
@@ -61,12 +66,6 @@ export function withMutationMetrics<
 	// Validate operation name at wrapper creation time (once) instead of runtime (every call)
 	if (!operationName || !operationName.trim()) {
 		throw new Error("Operation name cannot be empty or whitespace");
-	}
-	const OPERATION_NAME_PATTERN = /^mutation:[A-Za-z0-9_]+$/;
-	if (!OPERATION_NAME_PATTERN.test(operationName)) {
-		throw new Error(
-			`Operation name must match the format "mutation:{mutationName}" (e.g. mutation:createUser). Got: "${operationName}"`,
-		);
 	}
 
 	return async (
