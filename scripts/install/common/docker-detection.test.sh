@@ -98,6 +98,9 @@ command() {
 # Mock docker
 docker() {
     if [ "$1" = "--version" ]; then
+        if [ "${MOCK_DOCKER_INSTALLED:-false}" != "true" ]; then
+            return 1
+        fi
         echo "Docker version 20.10.x, build xxxxx"
         return 0
     elif [ "$1" = "info" ]; then

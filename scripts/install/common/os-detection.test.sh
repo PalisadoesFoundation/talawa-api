@@ -10,7 +10,8 @@
 # Requirements: bash 4.0+
 ##############################################################################
 
-set -e
+# Remove set -e to handle test failures explicitly
+set +e
 
 # Colors for output
 RED='\033[0;31m'
@@ -155,6 +156,14 @@ setup_mock_files
 uname() { echo "Linux"; }
 echo 'VERSION_ID="20.04"' > "$ETC_OS_RELEASE"
 if [ "$(get_os_version)" = "20.04" ]; then test_pass; else test_fail "Expected 20.04, got $(get_os_version)"; fi
+cleanup_mock_files
+
+# Test get_os_version (macOS)
+test_start "get_os_version - macos"
+setup_mock_files
+uname() { echo "Darwin"; }
+sw_vers() { echo "14.2.1"; }
+if [ "$(get_os_version)" = "14.2.1" ]; then test_pass; else test_fail "Expected 14.2.1, got $(get_os_version)"; fi
 cleanup_mock_files
 
 
