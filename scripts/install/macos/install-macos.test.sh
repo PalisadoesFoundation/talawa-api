@@ -268,10 +268,14 @@ set -e
 
 
 if [ $EXIT_CODE -eq 0 ]; then
-    if echo "$OUTPUT" | grep -q "Local installation mode - skipping Docker setup"; then
+    if echo "$OUTPUT" | grep -q "Local installation mode - skipping Docker setup" && \
+       echo "$OUTPUT" | grep -q "Mock brew installed .*git" && \
+       echo "$OUTPUT" | grep -q "Mock brew installed .*curl" && \
+       echo "$OUTPUT" | grep -q "Mock brew installed .*jq" && \
+       echo "$OUTPUT" | grep -q "Mock brew installed .*unzip"; then
         test_pass
     else
-        test_fail "Did not find skip message in logs.\nLogs:\n$OUTPUT"
+        test_fail "Missing expected dependency install logs.\nLogs:\n$OUTPUT"
     fi
 else
     test_fail "Script exited with code $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -333,6 +337,7 @@ else
 fi
 
 test_start "Validation - Detects Malicious Package.json"
+setup_clean_system
 cat > "$TEST_DIR/package.json" <<EOF
 {
   "engines": {
@@ -845,7 +850,8 @@ if [ \"\$1\" = \"update\" ]; then exit 0; fi
 if [ \"\$1\" = \"install\" ]; then echo \"Mock brew installed \$2\"; exit 0; fi
 if [ \"\$1\" = \"--version\" ]; then echo \"Homebrew 4.0.0\"; exit 0; fi
 EOF
-chmod +x \"$MOCK_BIN/brew\""
+chmod +x \"$MOCK_BIN/brew\"
+rm -f \"$MOCK_BIN/brew.hidden\""
             exit 0
         fi
     done
