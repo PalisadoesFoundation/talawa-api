@@ -1320,7 +1320,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			// Invalid input (start date in past) triggers validation error
 			const pastDate = new Date(Date.now() - 5000);
 
-			await vi.runAllTimersAsync();
+			// Validation error happens synchronously - no timer advancement needed
 			try {
 				await createEventMutationResolver(
 					null,

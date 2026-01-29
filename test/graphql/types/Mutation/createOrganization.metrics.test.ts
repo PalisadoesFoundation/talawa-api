@@ -823,7 +823,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(true, "admin-user");
 			context.perf = undefined;
 
-			await vi.runAllTimersAsync();
+			// Validation error happens synchronously - no timer advancement needed
 			try {
 				await createOrganizationMutationResolver(
 					null,
@@ -848,8 +848,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(false); // Unauthenticated
 			context.perf = undefined;
 
-			await vi.runAllTimersAsync();
-
+			// Authentication error happens synchronously - no timer advancement needed
 			try {
 				await createOrganizationMutationResolver(
 					null,
