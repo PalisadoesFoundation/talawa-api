@@ -858,6 +858,22 @@ The performance tracking system is designed to have minimal overhead on your app
 - **No Persistence**: Metrics reset on server restart
 - **No PII**: Metrics contain only timing data, no user information
 
+### Critical validations (mutation instrumentation)
+
+When adding or changing resolver-level mutation instrumentation (e.g. `withMutationMetrics`, `createEvent` notification tracking), complete these validations before merge:
+
+| Validation | Required actions | Addressed in repo |
+|------------|------------------|-------------------|
+| **1. Transaction boundary (`createEvent`)** | Notification enqueue runs **outside** the database transaction (after commit). If enqueue fails, DB changes are **not** rolled back (fire-and-forget). Accept and document. | Design documented in `createEvent.ts`. Before merge: check the box in [createEvent: notification after commit](./createEvent-notification-after-commit.md). |
+| **2. Performance overhead** | Run load tests measuring per-mutation overhead (target: **&lt;1–2 ms**). Verify no memory leaks; confirm `perf.snapshot()` does not delay responses. | **Overhead:** automated test `test/graphql/utils/withMutationMetrics.overhead.test.ts` asserts average overhead **&lt;2 ms** per mutation. Run test suite to confirm. Leak/snapshot checks: run under load and inspect if needed. |
+| **3. Error stack trace preservation** | Verify `perf.time()` wrapper does not swallow error stack traces; full error context preserved for debugging. | **Verified** by automated test in `withMutationMetrics.test.ts`: `"should preserve error stack trace when resolver throws"` (same error reference, non-empty `stack`). |
+
+**Pre-merge checklist (blocking):**
+
+1. **Accept fire-and-forget** in `createEvent` → check the box in [createEvent-notification-after-commit.md](./createEvent-notification-after-commit.md).
+2. **Run overhead validation** → `pnpm run check_tests` (includes `withMutationMetrics.overhead.test.ts`); optional: run load tests for leak/snapshot.
+3. **Error stack traces** → Covered by existing test in `withMutationMetrics.test.ts`.
+
 ## Troubleshooting
 
 Use the following diagnostic commands and solutions to resolve common performance monitoring issues.

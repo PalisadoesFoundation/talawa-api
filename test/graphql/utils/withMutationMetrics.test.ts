@@ -81,6 +81,7 @@ describe("withMutationMetrics", () => {
 			expect(Math.ceil(op?.ms ?? 0)).toBeGreaterThanOrEqual(5);
 		});
 
+		// Pre-merge validation: verifies error stack traces are fully preserved (blocking requirement).
 		it("should preserve error stack trace when resolver throws", async () => {
 			const perf = createPerformanceTracker();
 			const error = new Error("Resolver failure");
