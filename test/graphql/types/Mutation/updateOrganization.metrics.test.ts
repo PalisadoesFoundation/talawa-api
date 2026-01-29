@@ -402,7 +402,6 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 		});
 
 		it("should execute mutation successfully without recording perf when context.perf is undefined", async () => {
-			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
 			context.perf = undefined;
 
@@ -449,10 +448,6 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 				name: orgName,
 				description: "Updated Description",
 			});
-
-			const snapshot = perf.snapshot();
-			const op = snapshot.ops["mutation:updateOrganization"];
-			expect(op === undefined || op.count === 0).toBe(true);
 		});
 	});
 });
