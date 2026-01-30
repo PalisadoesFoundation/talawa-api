@@ -214,6 +214,35 @@ describe("generateRecurringInstances", () => {
 		expect(first.actualStartTime).toMatch(/2026-02-15T14:00:00/);
 	});
 
+	test("monthly recurrence with byDay uses nth weekday of month", () => {
+		// 2026-02-09 is the second Monday of February 2026
+		const events = [
+			syntheticTemplate({
+				startAt: "2026-02-09T14:00:00.000Z", // A Monday
+				endAt: "2026-02-09T16:00:00.000Z",
+			}),
+		];
+		const rules = [
+			syntheticRule({
+				frequency: "MONTHLY",
+				interval: 1,
+				recurrenceStartDate: "2026-02-09T14:00:00.000Z",
+				byDay: ["2MO"], // Second Monday of each month
+			}),
+		];
+		const instances = generateInstances(events, rules, {
+			monthsAhead: 3,
+			generatedAt: "2026-01-01T00:00:00.000Z",
+		}) as { actualStartTime: string }[];
+		// Verify each instance falls on a Monday (2nd weekday of month = date 8–14)
+		for (const inst of instances) {
+			const d = new Date(inst.actualStartTime);
+			expect(d.getUTCDay()).toBe(1); // Monday
+			expect(d.getUTCDate()).toBeGreaterThanOrEqual(8);
+			expect(d.getUTCDate()).toBeLessThanOrEqual(14);
+		}
+	});
+
 	test("sequence numbers are strictly increasing per rule", () => {
 		const events = [
 			syntheticTemplate(),

@@ -431,7 +431,16 @@ suite("Query field getRecurringEvents", () => {
 					variables: { input: { name: faker.company.name() } },
 				},
 			);
-			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
+			expect(
+				organizationCreateResult.errors,
+				organizationCreateResult.errors
+					? `createOrganization failed: ${JSON.stringify(organizationCreateResult.errors)}`
+					: undefined,
+			).toBeUndefined();
+			assertToBeNonNullish(
+				organizationCreateResult.data?.createOrganization,
+				"createOrganization should return data when mutation succeeds",
+			);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 

@@ -16,6 +16,10 @@ import {
 } from "src/envConfigSchema";
 import { uuidv7 } from "uuidv7";
 
+// Shared recurrence helpers (CJS); types in recurrenceCommon.cjs.d.ts
+// @ts-expect-error No declaration file for CJS module; recurrenceCommon.cjs.d.ts provides types
+import { BYDAY_TO_DOW, parseDate } from "./recurrenceCommon.cjs";
+
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
 	dotenv: true,
@@ -770,13 +774,9 @@ export async function insertCollections(
 
 /**
  * Parses a date string and returns a Date object. Returns null if the date is invalid.
- * @param date - The date string to parse
- * @returns The parsed Date object or null
+ * Re-exported from recurrenceCommon.cjs for single source of truth.
  */
-export function parseDate(date: string | number | Date): Date | null {
-	const parsedDate = new Date(date);
-	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
-}
+export { parseDate, BYDAY_TO_DOW };
 
 /**
  * Checks record counts in specified tables after data insertion.

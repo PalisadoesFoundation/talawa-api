@@ -8,6 +8,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const { BYDAY_TO_DOW, parseDate } = require("./recurrenceCommon.cjs");
+
 const SAMPLE_DIR = path.join(__dirname, "sample_data");
 const EVENTS_PATH = path.join(SAMPLE_DIR, "events.json");
 const RULES_PATH = path.join(SAMPLE_DIR, "recurrence_rules.json");
@@ -16,13 +18,6 @@ const OUT_PATH = path.join(SAMPLE_DIR, "recurring_event_instances.json");
 const DEFAULT_MONTHS_AHEAD = 12;
 const WEEKS_PER_YEAR = 52;
 const DEFAULT_GENERATED_AT = "2026-01-30T16:40:06.045Z";
-
-const BYDAY_TO_DOW = { MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6, SU: 0 };
-
-function parseDate(s) {
-	const d = new Date(s);
-	return Number.isNaN(d.getTime()) ? null : d;
-}
 
 function toISOString(d) {
 	return d.toISOString();
