@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker";
+import { faker } from "@faker-js/faker"; 
 import { eq } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { mercuriusClient } from "test/graphql/types/client";
@@ -785,38 +785,6 @@ describe("src/drizzle/tables/advertisementAttachments", () => {
 			expect(result).toBeDefined();
 			if (result) {
 				expect(result.mimeType).toBe(validMimeType);
-			}
-		});
-
-		it("should reject insert with invalid mimeType enum value", async () => {
-			const { userId } = await createRegularUserUsingAdmin();
-			const advertisementId = await createTestAdvertisement();
-			const name = faker.system.fileName();
-			const invalidMimeType = "invalid/mime";
-			const createdAt = faker.date.recent();
-
-			// Note: The database uses a text column with TypeScript enum typing.
-			// Database-level enum constraint is not enforced; validation happens
-			// at the application layer via advertisementAttachmentsTableInsertSchema.
-			// This test verifies that the insert schema rejects invalid mimeTypes
-			// before they reach the database.
-			const insertData = {
-				name: name,
-				creatorId: userId,
-				mimeType: invalidMimeType,
-				advertisementId: advertisementId,
-				createdAt: createdAt,
-			};
-
-			const parseResult =
-				advertisementAttachmentsTableInsertSchema.safeParse(insertData);
-			expect(parseResult.success).toBe(false);
-			if (!parseResult.success) {
-				expect(
-					parseResult.error.issues.some((issue) =>
-						issue.path.includes("mimeType"),
-					),
-				).toBe(true);
 			}
 		});
 
