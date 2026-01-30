@@ -1,3 +1,16 @@
+/**
+ * Test suite for createEvent mutation performance tracking and metrics.
+ *
+ * Verifies that the createEvent resolver integrates correctly with the performance
+ * tracker (ctx.perf), records mutation timing, and degrades gracefully when the
+ * tracker is unavailable. Uses direct resolver invocation for precise control over
+ * context.perf and attachment/MIME validation behavior.
+ *
+ * CI fix (included in validation-security-hardening PR): Two tests use vi.useRealTimers()
+ * and no runAllTimersAsync to avoid Vitest's "10000 timers" infinite loop in CI; without
+ * this, the suite would fail on shard 5. The change is test-only and does not alter
+ * resolver behavior.
+ */
 import { faker } from "@faker-js/faker";
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
@@ -22,17 +35,26 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+/**
+ * Performance-tracking tests for the createEvent mutation resolver.
+ *
+ * Intentional exception: we invoke the createEvent resolver directly (not via
+ * mercuriusClient) so we can inject and control ctx.perf per test and assert on
+ * exact operation names and timing. mercuriusClient integration tests do not
+ * allow per-request context.perf injection in the same way.
+ *
+ * Performance branches covered for 100% coverage of withMutationMetrics/createEvent:
+ * - "when performance tracker is available": ctx.perf set → perf.time() wraps resolver, we assert snapshot.ops["mutation:createEvent"].
+ * - "when performance tracker is not available": ctx.perf undefined → resolver runs without timing; no perf assertions.
+ */
 describe("Mutation createEvent - Performance Tracking", () => {
-	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
-	// to have precise control over context.perf for performance timing measurements.
-	// This allows us to verify exact performance tracker behavior and operation names.
 	let createEventMutationResolver: (
 		_parent: unknown,
 		args: { input: Record<string, unknown> },
 		ctx: ReturnType<typeof createMockGraphQLContext>["context"],
 	) => Promise<unknown>;
 
-	// Helper factories to reduce duplication
+	/** Builds a mock user for auth/context. */
 	const createMockUser = (
 		userId: string,
 		role: "regular" | "administrator" = "regular",
@@ -42,6 +64,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		name: "Test User",
 	});
 
+	/** Builds a mock organization with admin membership. */
 	const createMockOrganization = (organizationId: string) => ({
 		id: organizationId,
 		name: "Test Organization",
@@ -53,6 +76,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		],
 	});
 
+	/** Builds a mock event record for insert/return. */
 	const createMockEvent = (
 		organizationId: string,
 		startAt: Date,
@@ -76,6 +100,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		updatedAt: null,
 	});
 
+	/** Builds a mock agenda folder for the event. */
 	const createMockAgendaFolder = (
 		eventId: string,
 		organizationId: string,
@@ -91,6 +116,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		creatorId: userId,
 	});
 
+	/** Builds a mock agenda category for the event. */
 	const createMockAgendaCategory = (
 		eventId: string,
 		organizationId: string,
@@ -125,6 +151,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		vi.clearAllMocks();
 	});
 
+	/** Tests with ctx.perf set; verifies timing and operation names. */
 	describe("when performance tracker is available", () => {
 		it("should track mutation execution time on successful mutation", async () => {
 			const perf = createPerformanceTracker();
@@ -1111,6 +1138,10 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 
 		it("should reject invalid MIME type for attachments with indexed error path", async () => {
+			// Use real timers so resolver and zod validation run without fake-timer interference.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
+			vi.useRealTimers();
+
 			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
@@ -1157,56 +1188,63 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				fieldName: "attachments",
 			});
 
-			await vi.runAllTimersAsync();
 			try {
-				await createEventMutationResolver(
-					null,
-					{
-						input: {
-							name: "Test Event",
-							description: "Test Description",
-							organizationId,
-							startAt,
-							endAt,
-							attachments: [mockValidAttachment, mockInvalidAttachment],
+				try {
+					await createEventMutationResolver(
+						null,
+						{
+							input: {
+								name: "Test Event",
+								description: "Test Description",
+								organizationId,
+								startAt,
+								endAt,
+								attachments: [mockValidAttachment, mockInvalidAttachment],
+							},
 						},
-					},
-					context,
-				);
-				expect.fail("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				expect((error as TalawaGraphQLError).extensions?.code).toBe(
-					"invalid_arguments",
-				);
+						context,
+					);
+					expect.fail("Expected error to be thrown");
+				} catch (error) {
+					expect(error).toBeInstanceOf(TalawaGraphQLError);
+					expect((error as TalawaGraphQLError).extensions?.code).toBe(
+						"invalid_arguments",
+					);
 
-				// Verify the error includes indexed path to the invalid attachment
-				const issues = (error as TalawaGraphQLError).extensions
-					?.issues as Array<{ argumentPath: unknown[] }>;
-				expect(issues).toBeDefined();
-				expect(Array.isArray(issues)).toBe(true);
+					// Verify the error includes indexed path to the invalid attachment
+					const issues = (error as TalawaGraphQLError).extensions
+						?.issues as Array<{ argumentPath: unknown[] }>;
+					expect(issues).toBeDefined();
+					expect(Array.isArray(issues)).toBe(true);
 
-				// Should have an issue pointing to attachments[1] (the invalid one)
-				const attachmentIssue = issues?.find(
-					(issue) =>
-						Array.isArray(issue.argumentPath) &&
-						issue.argumentPath[0] === "input" &&
-						issue.argumentPath[1] === "attachments" &&
-						issue.argumentPath[2] === 1,
-				);
-				expect(attachmentIssue).toBeDefined();
+					// Should have an issue pointing to attachments[1] (the invalid one)
+					const attachmentIssue = issues?.find(
+						(issue) =>
+							Array.isArray(issue.argumentPath) &&
+							issue.argumentPath[0] === "input" &&
+							issue.argumentPath[1] === "attachments" &&
+							issue.argumentPath[2] === 1,
+					);
+					expect(attachmentIssue).toBeDefined();
+				}
+
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:createEvent"];
+
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
+			} finally {
+				vi.useFakeTimers();
 			}
-
-			const snapshot = perf.snapshot();
-			const op = snapshot.ops["mutation:createEvent"];
-
-			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
 		});
 	});
 
+	/** Tests with ctx.perf undefined; verifies graceful degradation. */
 	describe("when performance tracker is not available", () => {
 		it("should execute mutation successfully without perf tracker", async () => {
+			// Use real timers so resolver runs without fake-timer interference and cleanup behaves correctly.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
+			vi.useRealTimers();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
@@ -1294,23 +1332,25 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			};
 			context.notification = mockNotification;
 
-			const resultPromise = createEventMutationResolver(
-				null,
-				{
-					input: {
-						name: "Test Event",
-						description: "Test Description",
-						organizationId,
-						startAt,
-						endAt,
+			try {
+				const result = await createEventMutationResolver(
+					null,
+					{
+						input: {
+							name: "Test Event",
+							description: "Test Description",
+							organizationId,
+							startAt,
+							endAt,
+						},
 					},
-				},
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
+					context,
+				);
 
-			expect(result).toBeDefined();
+				expect(result).toBeDefined();
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 
 		it("should handle validation error without perf tracker", async () => {

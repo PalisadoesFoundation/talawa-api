@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ##############################################################################
-# Talawa API - Validation Functions Test Suite
+# validation.test.sh - Talawa API Validation Functions Test Suite
 #
-# This test suite validates the security-critical validation functions
-# to prevent command injection and ensure proper version string handling.
+# Validates the security-critical validation functions to prevent command
+# injection and ensure proper version string, path, and run_cmd behavior.
 #
 # Usage: ./validation.test.sh
-#
+# Returns: 0 if all tests pass, 1 if any test fails
 # Requirements: bash 4.0+
 ##############################################################################
 
@@ -29,6 +29,7 @@ TESTS_FAILED=0
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
+success() { echo -e "${GREEN}✓${NC} $1"; }
 
 # Source the validation functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,6 +37,15 @@ source "$SCRIPT_DIR/validation.sh"
 
 ##############################################################################
 # Test framework functions
+#
+# test_start - Start a test and print its name; increments TESTS_RUN.
+# Usage: test_start "test name"
+#
+# test_pass - Record a passing test; increments TESTS_PASSED.
+# Usage: test_pass
+#
+# test_fail - Record a failing test with reason; increments TESTS_FAILED.
+# Usage: test_fail "reason message"
 ##############################################################################
 
 test_start() {
@@ -55,6 +65,27 @@ test_fail() {
     echo -e "${RED}✗ FAIL${NC}"
     echo -e "  ${RED}Reason: $message${NC}"
 }
+
+##############################################################################
+# Test: Guard fails when success() is missing
+##############################################################################
+
+test_start "Guard fails when success() is omitted (subshell exits non-zero, stderr contains guard message)"
+set +e
+guard_stderr=$( (
+    info() { :; }
+    warn() { :; }
+    error() { :; }
+    unset -f success 2>/dev/null || true
+    source "$SCRIPT_DIR/validation.sh"
+) 2>&1 )
+guard_exitcode=$?
+set -e
+if [ "$guard_exitcode" -ne 0 ] && echo "$guard_stderr" | grep -q "requires info(), warn(), error(), and success() functions to be defined"; then
+    test_pass
+else
+    test_fail "Expected subshell to exit non-zero with guard message; exitcode=$guard_exitcode"
+fi
 
 ##############################################################################
 # Test: validate_version_string() - Valid versions should PASS
@@ -170,6 +201,176 @@ if declare -F retry_command >/dev/null 2>&1; then
     test_pass
 else
     test_fail "retry_command function not found"
+fi
+
+test_start "validate_version_string_secure helper exists and is callable"
+if declare -F validate_version_string_secure >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "validate_version_string_secure function not found"
+fi
+
+test_start "validate_path helper exists and is callable"
+if declare -F validate_path >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "validate_path function not found"
+fi
+
+test_start "run_cmd helper exists and is callable"
+if declare -F run_cmd >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "run_cmd function not found"
+fi
+
+##############################################################################
+# Test: validate_version_string_secure() - Valid versions
+##############################################################################
+
+test_valid_version_secure() {
+    local version="$1"
+    local description="$2"
+
+    test_start "Valid version (secure): $description ($version)"
+
+    if validate_version_string_secure "$version" &>/dev/null; then
+        test_pass
+    else
+        test_fail "Expected version '$version' to be valid"
+    fi
+}
+
+test_valid_version_secure "1.0" "x.y"
+test_valid_version_secure "2.3" "x.y"
+test_valid_version_secure "1.2.3" "x.y.z"
+
+##############################################################################
+# Test: validate_version_string_secure() - Invalid versions
+##############################################################################
+
+test_invalid_version_secure() {
+    local version="$1"
+    local description="$2"
+
+    test_start "Invalid version (secure, should reject): $description"
+
+    if validate_version_string_secure "$version" &>/dev/null; then
+        test_fail "Expected version '$version' to be rejected"
+    else
+        test_pass
+    fi
+}
+
+test_invalid_version_secure "" "empty string"
+test_invalid_version_secure "1" "single number"
+test_invalid_version_secure "1.2.3.4" "four segments"
+test_invalid_version_secure "1.2.3-beta" "prerelease"
+test_invalid_version_secure "^1.0" "caret"
+test_invalid_version_secure "1.0; rm -rf /" "command injection"
+test_invalid_version_secure "1.0 2.0" "spaces"
+
+##############################################################################
+# Test: validate_path() - Valid paths
+##############################################################################
+
+test_valid_path() {
+    local path="$1"
+    local description="$2"
+
+    test_start "Valid path: $description ($path)"
+
+    if validate_path "$path" &>/dev/null; then
+        test_pass
+    else
+        test_fail "Expected path '$path' to be valid"
+    fi
+}
+
+test_valid_path "/tmp" "tmp"
+test_valid_path "/home/user/app" "absolute path"
+test_valid_path "/tmp/file..bak" "consecutive dots in filename (legitimate)"
+
+##############################################################################
+# Test: validate_path() - Invalid paths
+##############################################################################
+
+test_invalid_path() {
+    local path="$1"
+    local description="$2"
+
+    test_start "Invalid path (should reject): $description"
+
+    if validate_path "$path" &>/dev/null; then
+        test_fail "Expected path '$path' to be rejected"
+    else
+        test_pass
+    fi
+}
+
+test_invalid_path "/" "root (operations on root are risky)"
+test_invalid_path "./foo" "relative with dot"
+test_invalid_path "foo" "relative"
+test_invalid_path "/tmp/../etc" "path traversal"
+test_invalid_path "" "empty string"
+
+# Reject paths containing shell metacharacters and unsafe characters
+test_invalid_path '/tmp/foo;rm -rf /' "contains semicolon"
+test_invalid_path '/tmp/foo|ls' "pipe"
+test_invalid_path '/tmp/$(rm -rf /)' "command substitution"
+test_invalid_path '/tmp/foo&' "background ampersand"
+test_invalid_path '/tmp/foo>out' "redirection"
+test_invalid_path '/tmp/foo<in' "input redirection"
+test_invalid_path '/tmp/foo*' "glob asterisk"
+test_invalid_path '/tmp/foo?' "glob question mark"
+test_invalid_path $'/tmp/foo\'out' "single quote"
+test_invalid_path '/tmp/foo"out' "double quote"
+test_invalid_path '/tmp/foo\out' "backslash"
+test_invalid_path '/tmp/foo out' "space"
+
+##############################################################################
+# Test: run_cmd() and DRY_RUN
+##############################################################################
+
+test_start "run_cmd with DRY_RUN=1 prints command and does not execute"
+# Use a temp file to verify run_cmd does NOT actually execute when DRY_RUN=1
+TMPFILE=$(mktemp -u)
+output=$(DRY_RUN=1 run_cmd touch "$TMPFILE" 2>&1)
+if ! echo "$output" | grep -q "dry-run" || ! echo "$output" | grep -q "touch"; then
+    test_fail "Expected dry-run message and command in output, got: $output"
+elif [ -e "$TMPFILE" ]; then
+    test_fail "DRY_RUN=1 must not execute: file was created: $TMPFILE"
+else
+    test_pass
+fi
+
+test_start "run_cmd with DRY_RUN=0 executes command"
+if DRY_RUN=0 run_cmd true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected run_cmd to execute command and return 0"
+fi
+
+test_start "run_cmd propagates exit code on command failure"
+if DRY_RUN=0 run_cmd false &>/dev/null; then
+    test_fail "Expected run_cmd to return non-zero when command fails"
+else
+    test_pass
+fi
+
+# Default DRY_RUN fallback (${DRY_RUN:-0}): unset DRY_RUN and assert run_cmd executes and propagates exit codes
+test_start "run_cmd with DRY_RUN unset executes command (default like DRY_RUN=0)"
+if unset DRY_RUN; run_cmd true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected run_cmd to execute command when DRY_RUN is unset"
+fi
+
+test_start "run_cmd with DRY_RUN unset propagates exit code on failure"
+if unset DRY_RUN; run_cmd false &>/dev/null; then
+    test_fail "Expected run_cmd to return non-zero when DRY_RUN unset and command fails"
+else
+    test_pass
 fi
 
 ##############################################################################
