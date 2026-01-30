@@ -808,7 +808,7 @@ suite("Query field getRecurringEvents", () => {
 					},
 				},
 			);
-			if (organizationCreateResult.errors) {
+			if (organizationCreateResult.errors?.length) {
 				throw new Error(
 					`createOrganization failed: ${JSON.stringify(organizationCreateResult.errors)}`,
 				);
@@ -842,7 +842,7 @@ suite("Query field getRecurringEvents", () => {
 				},
 			});
 
-			if (result.errors) {
+			if (result.errors?.length) {
 				throw new Error(
 					`getRecurringEvents failed (admin should have access): ${JSON.stringify(result.errors)}`,
 				);
