@@ -36,6 +36,33 @@ The following thresholds help you quickly identify whether your system performan
 | `ops.db.max` | < 100ms | 100-200ms | > 200ms |
 | `slow` array | Empty | 1-5 entries | > 5 entries |
 
+### Acceptable ranges: rationale
+
+The thresholds above are based on typical API and user-experience goals:
+
+| Parameter | Acceptable range | Why |
+|-----------|------------------|-----|
+| `totalMs` | < 500ms (good), 500–1000ms (warning), > 1000ms (critical) | Response time strongly affects perceived performance; under 500ms feels responsive, over 1s risks timeouts and poor UX. |
+| `hitRate` | > 0.7 (good), 0.5–0.7 (warning), < 0.5 (critical) | High hit rate reduces database load and latency; below 50% means the cache is not effectively offloading the DB. |
+| `totalOps` | < 20 (good), 20–50 (warning), > 50 (critical) | Fewer operations mean less overhead and fewer round-trips; > 50 often indicates N+1 patterns and unnecessary work. |
+| `ops.db.max` (or per-op `max`) | < 100ms (good), 100–200ms (warning), > 200ms (critical) | Single operations over 200ms are treated as "slow" and usually indicate missing indexes, heavy queries, or external latency. |
+| `slow` array length | 0 (good), 1–5 (warning), > 5 (critical) | Each entry is an operation over the slow threshold; many entries mean multiple bottlenecks to fix. |
+| `complexityScore` | < 100 (simple), 100–500 (moderate), > 1000 (very complex) | Higher complexity increases CPU and risk of abuse; very high values may need query depth/limit controls. |
+
+### Remediation steps to bring parameters to acceptable ranges
+
+When a parameter is outside the acceptable range, use these steps to bring it back:
+
+| Parameter out of range | Remediation steps |
+|------------------------|-------------------|
+| **`totalMs`** too high | 1. Identify the main cost: check `ops` and `slow` to see which operation types dominate. 2. If DB: add indexes, use DataLoaders, or optimize queries (see `ops.db.max` and N+1). 3. If cache: improve hit rate (see `hitRate`). 4. If external APIs: add caching, timeouts, or async processing. 5. Re-run the request and compare `totalMs` and `ops` until within target. |
+| **`hitRate`** too low | 1. Confirm cache is enabled and keys are stable (no random or per-request-only keys). 2. Review TTL: increase for read-heavy, rarely changing data. 3. Add cache warming for critical paths after deploy or cold start. 4. Avoid over-invalidation: invalidate only when data actually changes. 5. Re-check `cacheHits`, `cacheMisses`, and `hitRate` after changes. |
+| **`totalOps`** too high (e.g. N+1) | 1. Use DataLoaders for batched lookups by ID (users, organizations, events, etc.). 2. Replace N single-query resolvers with one batched loader call per entity type. 3. Consider JOINs or denormalization where batching is not enough. 4. Add field-level caching for hot, read-heavy fields. 5. Verify with metrics: `totalOps` and `ops.db.count` should drop. |
+| **`ops[name].max`** or **`slow`** entries too high | 1. For DB: run `EXPLAIN ANALYZE` on the slow queries, add indexes on filter/sort columns, and simplify or split very heavy queries. 2. For external APIs: add timeouts, response caching, and circuit breakers. 3. Move non-critical work to background jobs where possible. 4. Re-check `slow` and per-operation `max` after changes. |
+| **`complexityScore`** too high | 1. Enforce query depth and breadth limits in the GraphQL schema or middleware. 2. Add pagination (e.g. cursor-based) for list fields. 3. Consider cost/complexity analysis and reject or throttle very expensive queries. 4. Re-test with representative queries and confirm score stays within target. |
+
+After applying remediation, re-check the same request or workload via `/metrics/perf` or Server-Timing to confirm parameters are within the acceptable ranges above.
+
 ## Overview
 
 The Performance Metrics Foundation provides:
