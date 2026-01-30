@@ -5,6 +5,11 @@
  * tracker (ctx.perf), records mutation timing, and degrades gracefully when the
  * tracker is unavailable. Uses direct resolver invocation for precise control over
  * context.perf and attachment/MIME validation behavior.
+ *
+ * CI fix (included in validation-security-hardening PR): Two tests use vi.useRealTimers()
+ * and no runAllTimersAsync to avoid Vitest's "10000 timers" infinite loop in CI; without
+ * this, the suite would fail on shard 5. The change is test-only and does not alter
+ * resolver behavior.
  */
 import { faker } from "@faker-js/faker";
 import type { GraphQLObjectType } from "graphql";
