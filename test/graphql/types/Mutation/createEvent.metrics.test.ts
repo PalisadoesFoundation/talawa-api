@@ -37,7 +37,15 @@ import {
 
 /**
  * Performance-tracking tests for the createEvent mutation resolver.
- * Uses direct resolver invocation to control context.perf and verify timing/metrics.
+ *
+ * Intentional exception: we invoke the createEvent resolver directly (not via
+ * mercuriusClient) so we can inject and control ctx.perf per test and assert on
+ * exact operation names and timing. mercuriusClient integration tests do not
+ * allow per-request context.perf injection in the same way.
+ *
+ * Performance branches covered for 100% coverage of withMutationMetrics/createEvent:
+ * - "when performance tracker is available": ctx.perf set → perf.time() wraps resolver, we assert snapshot.ops["mutation:createEvent"].
+ * - "when performance tracker is not available": ctx.perf undefined → resolver runs without timing; no perf assertions.
  */
 describe("Mutation createEvent - Performance Tracking", () => {
 	let createEventMutationResolver: (
