@@ -4,6 +4,7 @@ import {
 	afterAll,
 	afterEach,
 	beforeAll,
+	beforeEach,
 	expect,
 	suite,
 	test,
@@ -128,6 +129,10 @@ async function createOrganizationMembership(
 suite("Mutation field createChat", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+	});
+
+	beforeEach(() => {
+		vi.clearAllMocks();
 	});
 
 	let adminAuthToken: string;
