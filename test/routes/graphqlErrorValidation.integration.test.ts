@@ -259,12 +259,15 @@ describe("GraphQL Error Formatting Integration", () => {
 				}
 			`;
 
-			await rateLimitServer.inject({
+			const initialResponse = await rateLimitServer.inject({
 				method: "POST",
 				url: "/graphql",
 				payload: { query },
 				headers: { "content-type": "application/json" },
 			});
+
+			expect(initialResponse.statusCode).toBe(200);
+			expect(JSON.parse(initialResponse.body).errors).toBeUndefined();
 
 			const response = await rateLimitServer.inject({
 				method: "POST",
