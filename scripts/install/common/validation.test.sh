@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ##############################################################################
-# Talawa API - Validation Functions Test Suite
+# validation.test.sh - Talawa API Validation Functions Test Suite
 #
-# This test suite validates the security-critical validation functions
-# to prevent command injection and ensure proper version string handling.
+# Validates the security-critical validation functions to prevent command
+# injection and ensure proper version string, path, and run_cmd behavior.
 #
 # Usage: ./validation.test.sh
-#
+# Returns: 0 if all tests pass, 1 if any test fails
 # Requirements: bash 4.0+
 ##############################################################################
 
@@ -37,6 +37,15 @@ source "$SCRIPT_DIR/validation.sh"
 
 ##############################################################################
 # Test framework functions
+#
+# test_start - Start a test and print its name; increments TESTS_RUN.
+# Usage: test_start "test name"
+#
+# test_pass - Record a passing test; increments TESTS_PASSED.
+# Usage: test_pass
+#
+# test_fail - Record a failing test with reason; increments TESTS_FAILED.
+# Usage: test_fail "reason message"
 ##############################################################################
 
 test_start() {

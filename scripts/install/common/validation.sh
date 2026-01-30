@@ -43,9 +43,9 @@ if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! 
 fi
 
 ##############################################################################
-# Validate version strings to prevent command injection
-# 
-# This function validates version strings from package.json to prevent:
+# validate_version_string - Validate version strings to prevent command injection
+#
+# Validates version strings from package.json to prevent:
 # - Command injection via malicious version strings (e.g., "18.0.0; rm -rf /")
 # - Word splitting from spaces in version strings
 # - Glob expansion from special characters
@@ -119,13 +119,14 @@ validate_version_string() {
 }
 
 ##############################################################################
-# Safe jq parsing helper function
-# 
-# This function provides robust jq parsing with:
-# - Verification that jq is installed
-# - Error handling for malformed JSON
-# - Null/empty result handling with defaults
-# - Clear error messages for debugging
+# parse_package_json - Safe jq parsing helper
+#
+# Provides robust jq parsing with: verification that jq is installed,
+# error handling for malformed JSON, null/empty result handling with defaults,
+# and clear error messages for debugging.
+#
+# Usage: parse_package_json "jq_query" "default_value" "field_name" [is_required]
+# Returns: 0 and prints result to stdout; exits 1 on missing jq, unreadable file, or required field missing.
 ##############################################################################
 parse_package_json() {
     local jq_query="$1"
@@ -225,16 +226,17 @@ parse_package_json() {
 }
 
 ##############################################################################
-# Validation error handler for version strings
-# 
-# This function provides standardized error output when version validation fails.
-# Used to avoid code duplication across Linux and macOS installation scripts.
+# handle_version_validation_error - Validation error handler for version strings
+#
+# Provides standardized error output when version validation fails. Used to
+# avoid code duplication across Linux and macOS installation scripts.
 #
 # Usage: handle_version_validation_error "field_name" "current_value" ["jq_path"]
 # Arguments:
 #   field_name:    Descriptive name shown to user (e.g., "Node.js version (engines.node)")
 #   current_value: The invalid value that failed validation
 #   jq_path:       (Optional) Valid jq path for the field (e.g., ".engines.node")
+# Returns: does not return (exits 1 after printing error and troubleshooting steps)
 ##############################################################################
 handle_version_validation_error() {
     local field_name="$1"
@@ -270,10 +272,10 @@ handle_version_validation_error() {
 }
 
 ##############################################################################
-# Retry command with exponential backoff
-# 
-# This function retries a command multiple times with exponential backoff
-# to handle transient network failures gracefully.
+# retry_command - Retry command with exponential backoff
+#
+# Retries a command multiple times with exponential backoff to handle
+# transient network failures gracefully.
 #
 # Usage: retry_command max_attempts command [args...]
 # Returns: 0 on success, last exit code on failure after all attempts
@@ -383,11 +385,14 @@ validate_path() {
 }
 
 ##############################################################################
-# DRY_RUN and run_cmd - Safe command execution with dry-run support
+# run_cmd - Safe command execution with dry-run support
 #
-# run_cmd expects first argument as the command and the rest as its arguments.
-# Uses "$@" (not eval) to avoid command injection; callers must pass trusted
-# input only when using run_cmd.
+# Executes command with arguments; when DRY_RUN=1 only prints the command.
+# First argument is the command, rest are its arguments. Uses "$@" (not eval)
+# to avoid command injection. Callers must pass trusted input only.
+#
+# Usage: run_cmd command [args...]
+# Returns: 0 when DRY_RUN=1 or command succeeds; otherwise command exit code.
 ##############################################################################
 DRY_RUN="${DRY_RUN:-0}"
 
