@@ -11,37 +11,41 @@
 #
 # REQUIREMENTS:
 #   The sourcing script MUST define these functions before sourcing this file:
-#   - info()  : For informational messages (blue output)
-#   - warn()  : For warning messages (yellow output)
-#   - error() : For error messages (red output)
+#   - info()   : For informational messages (blue output)
+#   - warn()   : For warning messages (yellow output)
+#   - error()  : For error messages (red output)
+#   - success(): For success messages (green output); used by Secure validators below
 #
 #   Example definitions:
 #     info() { echo -e "${BLUE}ℹ${NC} $1"; }
 #     warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 #     error() { echo -e "${RED}✗${NC} $1"; }
+#     success() { echo -e "${GREEN}✓${NC} $1"; }
 ##############################################################################
 
 ##############################################################################
 # Guard: Verify required functions are defined
 # 
-# This library depends on info(), warn(), and error() functions being defined
-# by the calling script. Fail early with a clear message if they are missing.
+# This library depends on info(), warn(), error(), and success() functions
+# being defined by the calling script. Fail early with a clear message if
+# they are missing. The Secure validators section (below) also uses success().
 ##############################################################################
-if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1; then
-    echo "ERROR: validation.sh requires info(), warn(), and error() functions to be defined." >&2
+if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1 || ! declare -F success >/dev/null 2>&1; then
+    echo "ERROR: validation.sh requires info(), warn(), error(), and success() functions to be defined." >&2
     echo "" >&2
     echo "Please ensure your script defines these functions before sourcing validation.sh:" >&2
     echo "  info() { echo -e \"\${BLUE}ℹ\${NC} \$1\"; }" >&2
     echo "  warn() { echo -e \"\${YELLOW}⚠\${NC} \$1\"; }" >&2
     echo "  error() { echo -e \"\${RED}✗\${NC} \$1\"; }" >&2
+    echo "  success() { echo -e \"\${GREEN}✓\${NC} \$1\"; }" >&2
     echo "" >&2
     exit 1
 fi
 
 ##############################################################################
-# Validate version strings to prevent command injection
-# 
-# This function validates version strings from package.json to prevent:
+# validate_version_string - Validate version strings to prevent command injection
+#
+# Validates version strings from package.json to prevent:
 # - Command injection via malicious version strings (e.g., "18.0.0; rm -rf /")
 # - Word splitting from spaces in version strings
 # - Glob expansion from special characters
@@ -115,13 +119,14 @@ validate_version_string() {
 }
 
 ##############################################################################
-# Safe jq parsing helper function
-# 
-# This function provides robust jq parsing with:
-# - Verification that jq is installed
-# - Error handling for malformed JSON
-# - Null/empty result handling with defaults
-# - Clear error messages for debugging
+# parse_package_json - Safe jq parsing helper
+#
+# Provides robust jq parsing with: verification that jq is installed,
+# error handling for malformed JSON, null/empty result handling with defaults,
+# and clear error messages for debugging.
+#
+# Usage: parse_package_json "jq_query" "default_value" "field_name" [is_required]
+# Returns: 0 and prints result to stdout; exits 1 on missing jq, unreadable file, or required field missing.
 ##############################################################################
 parse_package_json() {
     local jq_query="$1"
@@ -221,16 +226,17 @@ parse_package_json() {
 }
 
 ##############################################################################
-# Validation error handler for version strings
-# 
-# This function provides standardized error output when version validation fails.
-# Used to avoid code duplication across Linux and macOS installation scripts.
+# handle_version_validation_error - Validation error handler for version strings
+#
+# Provides standardized error output when version validation fails. Used to
+# avoid code duplication across Linux and macOS installation scripts.
 #
 # Usage: handle_version_validation_error "field_name" "current_value" ["jq_path"]
 # Arguments:
 #   field_name:    Descriptive name shown to user (e.g., "Node.js version (engines.node)")
 #   current_value: The invalid value that failed validation
 #   jq_path:       (Optional) Valid jq path for the field (e.g., ".engines.node")
+# Returns: does not return (exits 1 after printing error and troubleshooting steps)
 ##############################################################################
 handle_version_validation_error() {
     local field_name="$1"
@@ -266,10 +272,10 @@ handle_version_validation_error() {
 }
 
 ##############################################################################
-# Retry command with exponential backoff
-# 
-# This function retries a command multiple times with exponential backoff
-# to handle transient network failures gracefully.
+# retry_command - Retry command with exponential backoff
+#
+# Retries a command multiple times with exponential backoff to handle
+# transient network failures gracefully.
 #
 # Usage: retry_command max_attempts command [args...]
 # Returns: 0 on success, last exit code on failure after all attempts
@@ -300,4 +306,100 @@ retry_command() {
     
     error "Command failed after $max_attempts attempts: $*"
     return "$exit_code"
+}
+
+##############################################################################
+# Secure validators
+#
+# Stricter validators for version strings (x.y or x.y.z only) and paths
+# (absolute, no traversal). Use validate_version_string_secure when you need
+# a narrow whitelist; use validate_path before using user-provided paths.
+##############################################################################
+
+##############################################################################
+# validate_version_string_secure - Strict version string (x.y or x.y.z only)
+#
+# Whitelist-only validation to prevent command injection. Rejects semver
+# operators, prerelease tags, and any non-numeric/dot characters.
+#
+# Usage: validate_version_string_secure "version"
+# Returns: 0 if valid (x.y or x.y.z), 1 if invalid
+##############################################################################
+validate_version_string_secure() {
+    local v="${1:-}"
+
+    local pattern='^[0-9]+(\.[0-9]+){1,2}$'
+    if [[ "$v" =~ $pattern ]]; then
+        success "Version OK: $v"
+        return 0
+    fi
+
+    error "Invalid version: $v (expected x.y or x.y.z)"
+    return 1
+}
+
+##############################################################################
+# validate_path - Absolute path with no traversal or unsafe characters
+#
+# Ensures path is absolute, has at least one path component (root "/" is
+# rejected—operations on root are risky), does not contain ".." as a path
+# component, and does not contain shell metacharacters or control characters.
+# Use before using user-provided paths in file operations.
+#
+# Usage: validate_path "path"
+# Returns: 0 if valid, 1 if invalid
+##############################################################################
+validate_path() {
+    local p="${1:-}"
+
+    case "$p" in
+        /*) ;;
+        *)
+            error "Path must be absolute: $p"
+            return 1
+            ;;
+    esac
+
+    # Reject root "/" — operations on root are risky; require at least one path component
+    if [[ "$p" = "/" ]]; then
+        error "Root path not allowed: $p"
+        return 1
+    fi
+
+    # Only reject ".." as a path component (e.g. /tmp/../etc), not consecutive dots in filenames (e.g. file..bak)
+    local traversal_pattern='(^|/)\.\.($|/)'
+    if [[ "$p" =~ $traversal_pattern ]]; then
+        error "Path traversal not allowed: $p"
+        return 1
+    fi
+
+    # Require at least one path component; reject shell metacharacters (allow only / . - _ alphanumeric)
+    local safe_path_pattern='^/[a-zA-Z0-9/._-]+$'
+    if [[ ! "$p" =~ $safe_path_pattern ]]; then
+        error "Path contains unsafe characters: $p"
+        return 1
+    fi
+
+    success "Path OK: $p"
+    return 0
+}
+
+##############################################################################
+# run_cmd - Safe command execution with dry-run support
+#
+# Executes command with arguments; when DRY_RUN=1 only prints the command.
+# First argument is the command, rest are its arguments. Uses "$@" (not eval)
+# to avoid command injection. Callers must pass trusted input only.
+#
+# Usage: run_cmd command [args...]
+# Returns: 0 when DRY_RUN=1 or command succeeds; otherwise command exit code.
+##############################################################################
+DRY_RUN="${DRY_RUN:-0}"
+
+run_cmd() {
+    if [ "$DRY_RUN" = "1" ]; then
+        printf "[INFO] (dry-run) %s\n" "$*"
+        return 0
+    fi
+    "$@"
 }
