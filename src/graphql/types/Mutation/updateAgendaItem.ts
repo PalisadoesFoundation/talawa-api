@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachments";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateAgendaItemInput,
@@ -290,6 +291,25 @@ builder.mutationField("updateAgendaItem", (t) =>
 								mimeType: attachment.mimeType,
 								name: attachment.name,
 								objectName: attachment.objectName,
+							})),
+						);
+					}
+				}
+
+				// Handle urls if provided - replace all existing with new set
+				if (parsedArgs.input.url !== undefined) {
+					// Delete existing urls
+					await tx
+						.delete(agendaItemUrlTable)
+						.where(eq(agendaItemUrlTable.agendaItemId, parsedArgs.input.id));
+
+					if (parsedArgs.input.url.length > 0) {
+						await tx.insert(agendaItemUrlTable).values(
+							parsedArgs.input.url.map((u) => ({
+								agendaItemId: updatedAgendaItem.id,
+								url: u.url,
+								creatorId: currentUserId,
+								updaterId: currentUserId,
 							})),
 						);
 					}

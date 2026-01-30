@@ -10,6 +10,7 @@ export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 	fastify.get(
 		"/objects/:name",
 		{
+			preHandler: fastify.rateLimit("normal"),
 			schema: {
 				params: Type.Object({
 					name: Type.String({
