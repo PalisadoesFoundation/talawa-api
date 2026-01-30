@@ -796,14 +796,23 @@ suite("Query field getRecurringEvents", () => {
 		});
 
 		test("should allow global administrator to access even if not a member", async () => {
-			// Create organization as admin
+			// Create organization as admin (unique name to avoid duplicate-name failures)
 			const organizationCreateResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
 					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { name: faker.company.name() } },
+					variables: {
+						input: {
+							name: `Admin access org ${faker.string.ulid()}`,
+						},
+					},
 				},
 			);
+			if (organizationCreateResult.errors) {
+				throw new Error(
+					`createOrganization failed: ${JSON.stringify(organizationCreateResult.errors)}`,
+				);
+			}
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
@@ -825,7 +834,7 @@ suite("Query field getRecurringEvents", () => {
 					),
 				);
 
-			// Query as admin
+			// Query as admin (admin should have access even after being removed from org membership)
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -833,7 +842,11 @@ suite("Query field getRecurringEvents", () => {
 				},
 			});
 
-			expect(result.errors).toBeUndefined();
+			if (result.errors) {
+				throw new Error(
+					`getRecurringEvents failed (admin should have access): ${JSON.stringify(result.errors)}`,
+				);
+			}
 			const instances = result.data?.getRecurringEvents;
 			assertToBeNonNullish(instances);
 			expect(instances).toHaveLength(3);
