@@ -37,7 +37,7 @@ async function createTestOrganization(token: string): Promise<string> {
 			},
 		},
 	});
-	if (result.errors) {
+	if (result.errors?.length) {
 		throw new Error(
 			`Failed to create test organization: ${JSON.stringify(result.errors)}`,
 		);
@@ -59,7 +59,7 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 				},
 			},
 		});
-		if (signInResult.errors) {
+		if (signInResult.errors?.length) {
 			throw new Error(
 				`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
 			);
