@@ -835,7 +835,7 @@ success "pnpm installed: v$(pnpm --version)"
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
 # Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
-LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
+LOCKFILE_HASH_CACHE=".git/.talawa-pnpm-lock-hash"
 NEEDS_INSTALL=true
 
 if [ -f "pnpm-lock.yaml" ]; then
