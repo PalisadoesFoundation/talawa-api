@@ -242,6 +242,20 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			};
 		};
 
+		/** Transaction mock where delete matches zero rows (returning []), covering the "deleted === undefined" branch. */
+		const createMockTransactionReturningNoRow = () => {
+			return async (callback: (tx: unknown) => Promise<unknown>) => {
+				const mockTx = {
+					delete: vi.fn().mockReturnValue({
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]),
+						}),
+					}),
+				};
+				return callback(mockTx as never);
+			};
+		};
+
 		beforeEach(() => {
 			vi.useFakeTimers();
 			vi.clearAllMocks();
@@ -356,6 +370,72 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 				expect.objectContaining({ err: expect.any(Error) }),
 				expect.stringContaining("Failed to remove MinIO objects"),
 			);
+		});
+
+		it("should throw unauthenticated when usersTable.findFirst returns undefined (currentUser missing) and perf snapshot records the attempt", async () => {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgId = faker.string.uuid();
+			const mockExistingOrganization = createMockExistingOrganization(orgId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+
+			const resultPromise = deleteOrganizationMutationResolver(
+				null,
+				{ input: { id: orgId } },
+				context,
+			);
+
+			await expect(resultPromise).rejects.toMatchObject({
+				extensions: { code: "unauthenticated" },
+			});
+
+			const snapshot = perf.snapshot();
+			const op = snapshot.ops["mutation:deleteOrganization"];
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
+		});
+
+		it("should throw arguments_associated_resources_not_found when delete returns no row (delete-race)", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+
+			const orgId = faker.string.uuid();
+			const mockAdminUser = createMockAdminUser();
+			const mockExistingOrganization = createMockExistingOrganization(orgId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+			(
+				mocks.drizzleClient as unknown as {
+					transaction: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(createMockTransactionReturningNoRow());
+
+			const resultPromise = deleteOrganizationMutationResolver(
+				null,
+				{ input: { id: orgId } },
+				context,
+			);
+
+			await expect(resultPromise).rejects.toMatchObject({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["input", "id"] }],
+				},
+			});
 		});
 	});
 });

@@ -144,16 +144,13 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			});
 
 			expect(result.data?.updateOrganization).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-						path: ["updateOrganization"],
-					}),
-				]),
-			);
+			expect(
+				result.errors?.some(
+					(e) =>
+						e.path?.[0] === "updateOrganization" &&
+						e.extensions?.code === "invalid_arguments",
+				),
+			).toBe(true);
 		});
 
 		it("should return arguments_associated_resources_not_found when organization does not exist", async () => {
@@ -510,6 +507,35 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 					code: "arguments_associated_resources_not_found",
 					issues: [{ argumentPath: ["input", "id"] }],
 				},
+			});
+		});
+
+		it("should throw unauthenticated when usersTable.findFirst returns undefined (currentUser === undefined branch)", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			const orgId = faker.string.uuid();
+			const mockExistingOrganization = createMockExistingOrganization(orgId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockExistingOrganization,
+			);
+
+			const resultPromise = updateOrganizationMutationResolver(
+				null,
+				{
+					input: {
+						id: orgId,
+						name: "Updated Name",
+					},
+				},
+				context,
+			);
+
+			await expect(resultPromise).rejects.toThrow(TalawaGraphQLError);
+			await expect(resultPromise).rejects.toMatchObject({
+				extensions: { code: "unauthenticated" },
 			});
 		});
 
