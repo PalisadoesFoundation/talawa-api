@@ -142,7 +142,7 @@ jobs:
         with:
           repository: PalisadoesFoundation/.github
           path: .github-central
-          ref: main
+          ref: 4a4e5af43b8cffee5a6d74a9312e3d7dc473912b
 
       - name: Get changed files
         id: changed-files
