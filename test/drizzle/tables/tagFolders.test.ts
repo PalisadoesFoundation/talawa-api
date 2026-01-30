@@ -88,7 +88,7 @@ describe("tagFoldersTable", () => {
 			});
 			expect(result.success).toBe(false);
 		});
-		it("should invalidate if organisationId is not a valid uuid", () => {
+		it("should invalidate if organizationId is not a valid uuid", () => {
 			const result = tagFoldersTableInsertSchema.safeParse({
 				name: "Valid Name",
 				organizationId: "invalid-uuid",
@@ -228,7 +228,7 @@ describe("tagFoldersTable", () => {
 		});
 
 		describe("creator relation", () => {
-			it("should have a relation defination", () => {
+			it("should have a relation definition", () => {
 				expect(capturedRelations.creator).toBeDefined();
 			});
 			it("should relate to usersTable", () => {
@@ -256,7 +256,7 @@ describe("tagFoldersTable", () => {
 			});
 		});
 		describe("organization relation", () => {
-			it("should have a relation defination", () => {
+			it("should have a relation definition", () => {
 				expect(capturedRelations.organization).toBeDefined();
 			});
 			it("should relate to organizationsTable", () => {
@@ -286,7 +286,7 @@ describe("tagFoldersTable", () => {
 			});
 		});
 		describe("Parent Folder relation", () => {
-			it("should have a relation defination", () => {
+			it("should have a relation definition", () => {
 				expect(capturedRelations.parentFolder).toBeDefined();
 			});
 			it("should relate to tagFoldersTable", () => {
@@ -316,7 +316,7 @@ describe("tagFoldersTable", () => {
 			});
 		});
 		describe("tagsWhereFolder relation", () => {
-			it("should have a relation defination", () => {
+			it("should have a relation definition", () => {
 				expect(capturedRelations.tagsWhereFolder).toBeDefined();
 			});
 			it("should relate to tagsTable", () => {
@@ -338,7 +338,7 @@ describe("tagFoldersTable", () => {
 			});
 		});
 		describe("tagFoldersWhereParentFolder relation", () => {
-			it("should have a relation defination", () => {
+			it("should have a relation definition", () => {
 				expect(capturedRelations.tagFoldersWhereParentFolder).toBeDefined();
 			});
 			it("should relate to tagFoldersTable", () => {
@@ -363,7 +363,7 @@ describe("tagFoldersTable", () => {
 			});
 		});
 		describe("updater relation", () => {
-			it("should have a relation defination", () => {
+			it("should have a relation definition", () => {
 				expect(capturedRelations.updater).toBeDefined();
 			});
 			it("should relate to usersTable", () => {
