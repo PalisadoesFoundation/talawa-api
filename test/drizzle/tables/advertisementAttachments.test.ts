@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import {
@@ -650,6 +651,41 @@ describe("src/drizzle/tables/advertisementAttachments", () => {
 	});
 
 	describe("Index Configuration", () => {
+		it("should have three indexes defined", () => {
+			const tableConfig = getTableConfig(advertisementAttachmentsTable);
+			expect(tableConfig.indexes).toHaveLength(3);
+		});
+
+		it("should have an index on advertisementId column", () => {
+			const tableConfig = getTableConfig(advertisementAttachmentsTable);
+			const idx = tableConfig.indexes.find((i) =>
+				i.config.columns.some(
+					(col) => "name" in col && col.name === "advertisement_id",
+				),
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have an index on creatorId column", () => {
+			const tableConfig = getTableConfig(advertisementAttachmentsTable);
+			const idx = tableConfig.indexes.find((i) =>
+				i.config.columns.some(
+					(col) => "name" in col && col.name === "creator_id",
+				),
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have an index on createdAt column", () => {
+			const tableConfig = getTableConfig(advertisementAttachmentsTable);
+			const idx = tableConfig.indexes.find((i) =>
+				i.config.columns.some(
+					(col) => "name" in col && col.name === "created_at",
+				),
+			);
+			expect(idx).toBeDefined();
+		});
+
 		it("should efficiently query using indexed creatorId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const advertisementId = await createTestAdvertisement();
@@ -749,6 +785,55 @@ describe("src/drizzle/tables/advertisementAttachments", () => {
 			expect(result).toBeDefined();
 			if (result) {
 				expect(result.mimeType).toBe(validMimeType);
+			}
+		});
+
+		it("should reject insert with invalid mimeType enum value", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const advertisementId = await createTestAdvertisement();
+			const name = faker.system.fileName();
+			const invalidMimeType = "invalid/mime";
+			const createdAt = faker.date.recent();
+
+			// Note: The database uses a text column with TypeScript enum typing.
+			// Database-level enum constraint is not enforced; validation happens
+			// at the application layer via advertisementAttachmentsTableInsertSchema.
+			// This test verifies that the insert schema rejects invalid mimeTypes
+			// before they reach the database.
+			const insertData = {
+				name: name,
+				creatorId: userId,
+				mimeType: invalidMimeType,
+				advertisementId: advertisementId,
+				createdAt: createdAt,
+			};
+
+			const parseResult =
+				advertisementAttachmentsTableInsertSchema.safeParse(insertData);
+			expect(parseResult.success).toBe(false);
+			if (!parseResult.success) {
+				expect(
+					parseResult.error.issues.some((issue) =>
+						issue.path.includes("mimeType"),
+					),
+				).toBe(true);
+			}
+		});
+
+		it("should reject invalid mimeType via insert schema validation", () => {
+			const invalidData = {
+				name: faker.system.fileName(),
+				mimeType: "invalid/mime",
+				advertisementId: crypto.randomUUID(),
+				creatorId: crypto.randomUUID(),
+			};
+			const result =
+				advertisementAttachmentsTableInsertSchema.safeParse(invalidData);
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(
+					result.error.issues.some((issue) => issue.path.includes("mimeType")),
+				).toBe(true);
 			}
 		});
 	});
