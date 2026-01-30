@@ -15,7 +15,7 @@ const OUT_PATH = path.join(SAMPLE_DIR, "recurring_event_instances.json");
 
 const MONTHS_AHEAD = 12;
 const WEEKS_PER_YEAR = 52;
-const MAX_WEEKS = WEEKS_PER_YEAR * MONTHS_AHEAD;
+const MAX_WEEKS = Math.ceil((MONTHS_AHEAD * WEEKS_PER_YEAR) / 12);
 const GENERATED_AT = "2026-01-30T16:40:06.045Z";
 
 const BYDAY_TO_DOW = { MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6, SU: 0 };
@@ -26,7 +26,7 @@ function parseDate(s) {
 }
 
 function toISOString(d) {
-	return d.toISOString().replace(/\.000Z$/, ".000Z");
+	return d.toISOString();
 }
 
 function pad12Hex(n) {
@@ -131,7 +131,15 @@ function main() {
 				);
 			}
 		} else {
+			const minOffset = Math.min(
+				...wantDOW.map((dow) => (dow - startDOW + 7) % 7),
+			);
 			for (let w = 0; w < MAX_WEEKS; w++) {
+				const earliestInstanceStart = new Date(start);
+				earliestInstanceStart.setUTCDate(
+					earliestInstanceStart.getUTCDate() + w * 7 + minOffset,
+				);
+				if (earliestInstanceStart > endDate) break;
 				for (const dow of wantDOW) {
 					const offset = (dow - startDOW + 7) % 7;
 					const instanceStart = new Date(start);
