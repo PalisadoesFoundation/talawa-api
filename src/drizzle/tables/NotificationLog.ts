@@ -27,7 +27,7 @@ export const notificationLogsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the template used.
 		 */
-		
+
 		templateId: uuid("template_id")
 			.references(() => notificationTemplatesTable.id, {
 				onDelete: "cascade",

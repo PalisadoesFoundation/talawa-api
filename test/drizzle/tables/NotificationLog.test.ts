@@ -64,7 +64,6 @@ describe("src/drizzle/tables/NotificationLog.ts - Table Definition Tests", () =>
 			expect(result.success).toBe(true);
 		});
 
-    
 		it("should fail on invalid data", () => {
 			const result = notificationLogsTableInsertSchema.safeParse({});
 			expect(result.success).toBe(false);
