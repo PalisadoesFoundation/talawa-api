@@ -2143,5 +2143,39 @@
 		"allDay": true,
 		"updatedAt": null,
 		"updaterId": null
+	},
+	{
+		"id": "01960b97-00c1-7001-a001-000000000001",
+		"createdAt": "2026-02-01T09:00:00.000Z",
+		"creatorId": "67378abd-8500-4f17-9cf2-990d00000005",
+		"description": "Weekly community standup (recurring)",
+		"endAt": "2026-02-01T11:00:00.000Z",
+		"name": "Weekly Standup",
+		"organizationId": "01960b81-bfed-7369-ae96-689dbd4281ba",
+		"startAt": "2026-02-01T09:00:00.000Z",
+		"allDay": false,
+		"isRecurringEventTemplate": true,
+		"isPublic": true,
+		"isRegisterable": true,
+		"isInviteOnly": false,
+		"updatedAt": null,
+		"updaterId": null
+	},
+	{
+		"id": "01960b97-00c1-7002-a002-000000000002",
+		"createdAt": "2026-02-15T14:00:00.000Z",
+		"creatorId": "67378abd-8500-4f17-9cf2-990d00000005",
+		"description": "Monthly all-hands (recurring)",
+		"endAt": "2026-02-15T16:00:00.000Z",
+		"name": "Monthly All-Hands",
+		"organizationId": "01960b81-bfed-7369-ae96-689dbd4281ba",
+		"startAt": "2026-02-15T14:00:00.000Z",
+		"allDay": false,
+		"isRecurringEventTemplate": true,
+		"isPublic": true,
+		"isRegisterable": true,
+		"isInviteOnly": false,
+		"updatedAt": null,
+		"updaterId": null
 	}
 ]

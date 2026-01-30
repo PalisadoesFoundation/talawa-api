@@ -466,9 +466,21 @@ export async function insertCollections(
 								updatedAt: string | number | Date;
 								startAt: string | number | Date;
 								endAt: string | number | Date;
+								isRecurringEventTemplate?: boolean;
 							},
 							index: number,
 						) => {
+							if (event.isRecurringEventTemplate === true) {
+								return {
+									...event,
+									createdAt: parseDate(event.createdAt) ?? new Date(),
+									startAt: parseDate(event.startAt) ?? new Date(),
+									endAt: parseDate(event.endAt) ?? new Date(),
+									updatedAt: event.updatedAt
+										? parseDate(event.updatedAt)
+										: null,
+								};
+							}
 							const start = new Date(
 								now.getFullYear(),
 								now.getMonth(),
@@ -499,6 +511,76 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurrence_rules": {
+					const recurrenceRules = JSON.parse(fileContent).map(
+						(rule: {
+							recurrenceStartDate: string | number | Date;
+							recurrenceEndDate: string | number | Date | null;
+							latestInstanceDate: string | number | Date;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date | null;
+						}) => ({
+							...rule,
+							recurrenceStartDate:
+								parseDate(rule.recurrenceStartDate) ?? new Date(),
+							recurrenceEndDate: rule.recurrenceEndDate
+								? parseDate(rule.recurrenceEndDate)
+								: null,
+							latestInstanceDate:
+								parseDate(rule.latestInstanceDate) ?? new Date(),
+							createdAt: parseDate(rule.createdAt) ?? new Date(),
+							updatedAt: rule.updatedAt ? parseDate(rule.updatedAt) : null,
+						}),
+					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.recurrenceRulesTable,
+						recurrenceRules,
+						schema.recurrenceRulesTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurrence rules table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurring_event_instances": {
+					const recurringEventInstances = JSON.parse(fileContent).map(
+						(instance: {
+							originalInstanceStartTime: string | number | Date;
+							actualStartTime: string | number | Date;
+							actualEndTime: string | number | Date;
+							generatedAt: string | number | Date;
+							lastUpdatedAt: string | number | Date | null;
+						}) => ({
+							...instance,
+							originalInstanceStartTime:
+								parseDate(instance.originalInstanceStartTime) ?? new Date(),
+							actualStartTime:
+								parseDate(instance.actualStartTime) ?? new Date(),
+							actualEndTime: parseDate(instance.actualEndTime) ?? new Date(),
+							generatedAt: parseDate(instance.generatedAt) ?? new Date(),
+							lastUpdatedAt: instance.lastUpdatedAt
+								? parseDate(instance.lastUpdatedAt)
+								: null,
+						}),
+					) as (typeof schema.recurringEventInstancesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.recurringEventInstancesTable,
+						recurringEventInstances,
+						schema.recurringEventInstancesTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurring event instances table data (skipping duplicates)\x1b[0m",
 					);
 					break;
 				}
@@ -717,6 +799,11 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
+			{
+				name: "recurring_event_instances",
+				table: schema.recurringEventInstancesTable,
+			},
 			{ name: "event_volunteers", table: schema.eventVolunteersTable },
 			{
 				name: "event_volunteer_memberships",
