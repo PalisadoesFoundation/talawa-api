@@ -278,7 +278,6 @@ test_valid_path() {
     fi
 }
 
-test_valid_path "/" "root"
 test_valid_path "/tmp" "tmp"
 test_valid_path "/home/user/app" "absolute path"
 test_valid_path "/tmp/file..bak" "consecutive dots in filename (legitimate)"
@@ -300,6 +299,7 @@ test_invalid_path() {
     fi
 }
 
+test_invalid_path "/" "root (operations on root are risky)"
 test_invalid_path "./foo" "relative with dot"
 test_invalid_path "foo" "relative"
 test_invalid_path "/tmp/../etc" "path traversal"

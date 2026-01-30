@@ -1,3 +1,11 @@
+/**
+ * Test suite for createEvent mutation performance tracking and metrics.
+ *
+ * Verifies that the createEvent resolver integrates correctly with the performance
+ * tracker (ctx.perf), records mutation timing, and degrades gracefully when the
+ * tracker is unavailable. Uses direct resolver invocation for precise control over
+ * context.perf and attachment/MIME validation behavior.
+ */
 import { faker } from "@faker-js/faker";
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
@@ -22,17 +30,18 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+/**
+ * Performance-tracking tests for the createEvent mutation resolver.
+ * Uses direct resolver invocation to control context.perf and verify timing/metrics.
+ */
 describe("Mutation createEvent - Performance Tracking", () => {
-	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
-	// to have precise control over context.perf for performance timing measurements.
-	// This allows us to verify exact performance tracker behavior and operation names.
 	let createEventMutationResolver: (
 		_parent: unknown,
 		args: { input: Record<string, unknown> },
 		ctx: ReturnType<typeof createMockGraphQLContext>["context"],
 	) => Promise<unknown>;
 
-	// Helper factories to reduce duplication
+	/** Builds a mock user for auth/context. */
 	const createMockUser = (
 		userId: string,
 		role: "regular" | "administrator" = "regular",
@@ -42,6 +51,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		name: "Test User",
 	});
 
+	/** Builds a mock organization with admin membership. */
 	const createMockOrganization = (organizationId: string) => ({
 		id: organizationId,
 		name: "Test Organization",
@@ -53,6 +63,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		],
 	});
 
+	/** Builds a mock event record for insert/return. */
 	const createMockEvent = (
 		organizationId: string,
 		startAt: Date,
@@ -76,6 +87,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		updatedAt: null,
 	});
 
+	/** Builds a mock agenda folder for the event. */
 	const createMockAgendaFolder = (
 		eventId: string,
 		organizationId: string,
@@ -91,6 +103,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		creatorId: userId,
 	});
 
+	/** Builds a mock agenda category for the event. */
 	const createMockAgendaCategory = (
 		eventId: string,
 		organizationId: string,
@@ -125,6 +138,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		vi.clearAllMocks();
 	});
 
+	/** Tests with ctx.perf set; verifies timing and operation names. */
 	describe("when performance tracker is available", () => {
 		it("should track mutation execution time on successful mutation", async () => {
 			const perf = createPerformanceTracker();
@@ -1208,8 +1222,11 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 	});
 
+	/** Tests with ctx.perf undefined; verifies graceful degradation. */
 	describe("when performance tracker is not available", () => {
 		it("should execute mutation successfully without perf tracker", async () => {
+			// Use real timers so resolver runs without fake-timer interference and cleanup behaves correctly.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
 			vi.useRealTimers();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;

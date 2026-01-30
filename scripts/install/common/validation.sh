@@ -339,9 +339,10 @@ validate_version_string_secure() {
 ##############################################################################
 # validate_path - Absolute path with no traversal or unsafe characters
 #
-# Ensures path is absolute, does not contain ".." as a path component, and
-# does not contain shell metacharacters or control characters. Use before
-# using user-provided paths in file operations.
+# Ensures path is absolute, has at least one path component (root "/" is
+# rejected—operations on root are risky), does not contain ".." as a path
+# component, and does not contain shell metacharacters or control characters.
+# Use before using user-provided paths in file operations.
 #
 # Usage: validate_path "path"
 # Returns: 0 if valid, 1 if invalid
@@ -357,6 +358,12 @@ validate_path() {
             ;;
     esac
 
+    # Reject root "/" — operations on root are risky; require at least one path component
+    if [[ "$p" = "/" ]]; then
+        error "Root path not allowed: $p"
+        return 1
+    fi
+
     # Only reject ".." as a path component (e.g. /tmp/../etc), not consecutive dots in filenames (e.g. file..bak)
     local traversal_pattern='(^|/)\.\.($|/)'
     if [[ "$p" =~ $traversal_pattern ]]; then
@@ -364,8 +371,8 @@ validate_path() {
         return 1
     fi
 
-    # Reject shell metacharacters, control characters, and whitespace (allow only / . - _ alphanumeric)
-    local safe_path_pattern='^/[a-zA-Z0-9/._-]*$'
+    # Require at least one path component; reject shell metacharacters (allow only / . - _ alphanumeric)
+    local safe_path_pattern='^/[a-zA-Z0-9/._-]+$'
     if [[ ! "$p" =~ $safe_path_pattern ]]; then
         error "Path contains unsafe characters: $p"
         return 1
