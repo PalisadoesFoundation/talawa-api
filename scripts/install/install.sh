@@ -19,21 +19,14 @@ if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
     return 1 2>/dev/null || exit 1
 fi
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
 # Fixed: All messaging functions now write to stderr
-info() { printf "%b%s\n" "${BLUE}ℹ${NC} " "$1" >&2; }
-success() { printf "%b%s\n" "${GREEN}✓${NC} " "$1" >&2; }
-warn() { printf "%b%s\n" "${YELLOW}⚠${NC} " "$1" >&2; }
-error() { printf "%b%s\n" "${RED}✗${NC} " "$1" >&2; }
+# Plain text output (no ANSI colors) as requested
+info() { printf "%s\n" "[INFO] $1" >&2; }
+success() { printf "%s\n" "✓ $1" >&2; }
+warn() { printf "%s\n" "WARNING: $1" >&2; }
+error() { printf "%s\n" "✗ ERROR: $1" >&2; }
 
 print_banner() {
-    printf "%b\n" "${CYAN}" >&2
     printf "╔════════════════════════════════════════════════════════╗\n" >&2
     printf "║                                                        ║\n" >&2
     printf "║   ████████╗ █████╗ ██╗      █████╗ ██╗    ██╗ █████╗   ║\n" >&2
@@ -45,7 +38,6 @@ print_banner() {
     printf "║                                                        ║\n" >&2
     printf "║              One-Click Installation Script             ║\n" >&2
     printf "╚════════════════════════════════════════════════════════╝\n" >&2
-    printf "%b\n" "${NC}" >&2
 }
 
 execute_installation_script() {
@@ -194,7 +186,7 @@ detect_os() {
                 return 0
                 ;;
             msys*|cygwin*)
-                printf "%b%s\n" "${YELLOW}⚠${NC} " "MSYS/Cygwin detected - use install.ps1 for native Windows installation" >&2
+                printf "%s\n" "WARNING: MSYS/Cygwin detected - use install.ps1 for native Windows installation" >&2
                 printf "unknown"
                 return 0
                 ;;
@@ -212,7 +204,7 @@ detect_os() {
             printf "macos"
             ;;
         MSYS*|MINGW*|CYGWIN*)
-            printf "%b%s\n" "${YELLOW}⚠${NC} " "Windows environment detected - consider using install.ps1" >&2
+            printf "%s\n" "WARNING: Windows environment detected - consider using install.ps1" >&2
             printf "unknown"
             ;;
         *)

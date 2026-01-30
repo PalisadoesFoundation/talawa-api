@@ -30,8 +30,8 @@ _log_write() {
 
 info()    { _log_write "[INFO] $*"; }
 warn()    { _log_write "WARNING: $*" "stderr"; }
-error()   { _log_write "[x] ERROR: $*" "stderr"; }
-success() { _log_write "[OK] $*"; }
+error()   { _log_write "✗ ERROR: $*" "stderr"; }
+success() { _log_write "✓ $*"; }
 debug()   { [ "$DEBUG" = "1" ] && _log_write "[DEBUG] $*" || true; }
 
 print_banner() {
@@ -109,10 +109,10 @@ with_timer() {
   __TIMING_VALUES+=("$elapsed")
 
   if [ $exit_code -eq 0 ]; then
-    __TIMING_STATUS+=("OK")
+    __TIMING_STATUS+=("✓")
     success "$label completed in ${elapsed}s"
   else
-    __TIMING_STATUS+=("FAIL")
+    __TIMING_STATUS+=("✗")
     error "$label failed after ${elapsed}s"
   fi
 
@@ -246,10 +246,10 @@ print_installation_summary() {
   printf "%s\n" "========================================"
 
   if [ "$exit_code" -eq 0 ]; then
-    printf "%s\n" "[OK] Core dependencies verified"
-    printf "%s\n" "[OK] Installation completed successfully"
+    printf "%s\n" "✓ Core dependencies verified"
+    printf "%s\n" "✓ Installation completed successfully"
   else
-    printf "%s\n" "[x] Installation failed (exit code: $exit_code)"
+    printf "%s\n" "✗ Installation failed (exit code: $exit_code)"
   fi
 
   printf "See log: %s\n" "${LOG_FILE}"

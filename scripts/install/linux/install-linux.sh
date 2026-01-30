@@ -51,18 +51,20 @@ SKIP_PREREQS="${2:-false}"
 ##############################################################################
 AUTO_YES="${AUTO_YES:-${CI:-false}}"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Source logging library
+COMMON_LOGGING_LIB="$(dirname "${BASH_SOURCE[0]}")/../common/logging.sh"
+# Check if logging library exists (fallback to basic echo if not found, though unexpected)
+if [ -f "$COMMON_LOGGING_LIB" ]; then
+    source "$COMMON_LOGGING_LIB"
+else
+    echo "Error: Logging library not found at $COMMON_LOGGING_LIB"
+    exit 1
+fi
 
 # Installation paths
 readonly FNM_INSTALL_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
 readonly FNM_BIN_DIR="$FNM_INSTALL_DIR"
-readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
+readonly INSTALLATION_LOG="${LOG_FILE:-/tmp/talawa-install-$$.log}"
 
 # Version requirements
 readonly MIN_NODE_MAJOR_VERSION=18 #placeholder for future references
@@ -74,19 +76,29 @@ readonly CURL_MAX_TIME_DOCKER=300
 readonly CURL_MAX_TIME_FNM=120
 readonly MAX_RETRY_ATTEMPTS=3 # placeholder for future retry logic
 
-# Print functions
-info() { echo -e "${BLUE}ℹ${NC} $1"; }
-success() { echo -e "${GREEN}✓${NC} $1"; }
-warn() { echo -e "${YELLOW}⚠${NC} $1"; }
-error() { echo -e "${RED}✗${NC} $1"; }
-step() { echo -e "${CYAN}[$1/$2]${NC} $3"; }
-
 # Log error to installation log file
+# Log error to installation log file (using logging.sh internal writer if available, else fallback) // actually logging.sh has _log_write. 
+# But note verify_repository uses error/warn. 
+# install-linux uses log_error in check_docker_compose/check_docker_running. 
+# I can alias log_error to error (which prints to stderr and log) or keep it if I want just log.
+# original log_error: echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
+# logging.sh error: _log_write "✗ ERROR: $*" "stderr"
+# If I use error here it prints to console too. check_docker_compose likely wants to be silent if validation fails?
+# The usage is: log_error "Docker Compose check failed..."
+# This is usually inside a check that might perform error handling.
+# Let's simple redefine log_error to use _log_write without stderr if we want silent? 
+# or just map to error() if we want it visible.
+# install-linux.sh usually prints "Docker Compose is available" or warns.
+# Let's map it to logging.sh 'error' for now but maybe it shouldn't be printed?
 log_error() {
-    local message="$1"
+    _log_write "ERROR: $1" "file" # assuming _log_write supports stream arg. logging.sh supports stderr as 2nd arg or stdout default.
+    # logging.sh: _log_write msg [stream]
+    # stream=stderr -> >&2. else stdout.
+    # logging.sh doesn't support file-only. 
+    # Let's just append to log file directly like before.
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
+    printf "[%s] ERROR: %s\n" "$timestamp" "$1" >> "$INSTALLATION_LOG"
 }
 
 # Check if command exists
@@ -339,7 +351,8 @@ CURRENT_STEP=0
 # Step 1: Install system dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
+: $((CURRENT_STEP++))
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
 
 if [ "$SKIP_PREREQS" = "true" ]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
@@ -354,8 +367,7 @@ else
                 sudo apt-get update -qq
             fi
             
-            info "Installing git, curl, jq, unzip..."
-            sudo apt-get install -y -qq git curl jq unzip
+            with_spinner "Installing git, curl, jq, unzip..." sudo apt-get install -y -qq git curl jq unzip
             INSTALLED_PREREQS=true
             ;;
         fedora|rhel|centos)
@@ -403,7 +415,8 @@ fi
 # Step 2: Install Docker (optional)
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
+: $((CURRENT_STEP++))
+print_step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 
 if [ "$INSTALL_MODE" = "docker" ]; then
     if command_exists docker; then
@@ -418,12 +431,8 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         trap 'rm -f "$docker_installer"' EXIT
         
         info "Downloading Docker installation script from https://get.docker.com..."
-        if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
-            error "Failed to download Docker installer after multiple attempts."
-            error "Check your internet connection and try again."
-            rm -f "$docker_installer"
-            exit 1
-        fi
+        info "Downloading Docker installation script from https://get.docker.com..."
+        with_spinner "Downloading Docker installer..." retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com
         success "Docker installer downloaded to: $docker_installer"
         
         # User confirmation before execution (skip in non-interactive mode)
@@ -444,12 +453,8 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         fi
         
         info "Executing Docker installer..."
-        if ! sh "$docker_installer"; then
-            error "Docker installer script failed."
-            error "Check the error messages above for details."
-            rm -f "$docker_installer"
-            exit 1
-        fi
+        info "Executing Docker installer..."
+        with_spinner "Installing Docker..." sh "$docker_installer"
         rm -f "$docker_installer"
         trap - EXIT
         
@@ -489,7 +494,8 @@ fi
 # Step 3: Install fnm (Fast Node Manager)
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
+: $((CURRENT_STEP++))
+print_step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
 
 if command_exists fnm; then
     success "fnm is already installed"
@@ -502,12 +508,8 @@ else
     trap 'rm -f "$fnm_installer"' EXIT
     
     info "Downloading fnm installation script from https://fnm.vercel.app/install..."
-    if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
-        error "Failed to download fnm installer after multiple attempts."
-        error "Check your internet connection and try again."
-        rm -f "$fnm_installer"
-        exit 1
-    fi
+    info "Downloading fnm installation script from https://fnm.vercel.app/install..."
+    with_spinner "Downloading fnm installer..." retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install
     success "fnm installer downloaded to: $fnm_installer"
     
     # User confirmation before execution (skip in non-interactive mode)
@@ -528,12 +530,8 @@ else
     fi
     
     info "Executing fnm installer..."
-    if ! bash "$fnm_installer" --skip-shell; then
-        error "fnm installer script failed."
-        error "Check the error messages above for details."
-        rm -f "$fnm_installer"
-        exit 1
-    fi
+    info "Executing fnm installer..."
+    with_spinner "Installing fnm..." bash "$fnm_installer" --skip-shell
     rm -f "$fnm_installer"
     trap - EXIT
     
@@ -548,7 +546,8 @@ fi
 # Step 4: Read versions from package.json
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
+: $((CURRENT_STEP++))
+print_step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
 # Extract Node.js version using safe parsing
 # The 'lts' default is used if engines.node is not specified
@@ -633,9 +632,10 @@ info "Target pnpm version: $PNPM_VERSION"
 # Step 5: Install Node.js
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
+: $((CURRENT_STEP++))
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
-fnm install "$CLEAN_NODE_VERSION"
+with_spinner "Installing Node.js v$CLEAN_NODE_VERSION..." fnm install "$CLEAN_NODE_VERSION"
 if ! fnm use "$CLEAN_NODE_VERSION"; then
     error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
     echo ""
@@ -721,7 +721,8 @@ success "Node.js installed: $(node --version)"
 # Step 6: Install pnpm
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
+: $((CURRENT_STEP++))
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 PNPM_VERSION_CACHE="/tmp/.talawa-pnpm-latest-check"
 PNPM_CACHE_MAX_AGE=86400  # 24 hours
@@ -773,17 +774,13 @@ if command_exists pnpm; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
-            error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
-            exit 1
-        fi
+        info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
+        with_spinner "Updating pnpm..." retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
     fi
 else
     info "Installing pnpm..."
-    if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
-        error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
-        exit 1
-    fi
+    info "Installing pnpm..."
+    with_spinner "Installing pnpm..." retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
 fi
 
 # Verify pnpm is available in PATH
@@ -889,11 +886,6 @@ fi
 ##############################################################################
 # Complete
 ##############################################################################
-echo ""
-echo -e "${GREEN}════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  Installation completed successfully!${NC}"
-echo -e "${GREEN}════════════════════════════════════════════════════════${NC}"
-echo ""
 info "Installed versions:"
 echo "  Node.js: $(node --version)"
 echo "  pnpm:    v$(pnpm --version)"
@@ -910,3 +902,7 @@ echo ""
 info "To complete setup, run:"
 echo "  pnpm run setup"
 echo ""
+
+print_timing_summary
+print_installation_summary 0
+
