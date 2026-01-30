@@ -190,6 +190,27 @@ fi
 
 
 ##############################################################################
+# Test: Unset OS_TYPE (Soft-fail behavior)
+##############################################################################
+
+test_start "Public functions fail gracefully when OS_TYPE is unset"
+# Save current OS_TYPE
+OLD_OS_TYPE="${OS_TYPE:-}"
+# Unset OS_TYPE for this test
+unset OS_TYPE
+
+# Suppress error output
+if ! update_package_index >/dev/null 2>&1; then
+    # It should return 1, not exit
+    test_pass
+    # Restore OS_TYPE for other tests if needed
+    OS_TYPE="${OLD_OS_TYPE}"
+else
+    test_fail "Expected update_package_index to return 1 when OS_TYPE is unset"
+    OS_TYPE="${OLD_OS_TYPE}"
+fi
+
+##############################################################################
 # Test Summary
 ##############################################################################
 
