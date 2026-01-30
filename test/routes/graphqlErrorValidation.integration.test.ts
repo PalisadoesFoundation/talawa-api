@@ -1,3 +1,5 @@
+import { faker } from "@faker-js/faker";
+import { uuidv7 } from "uuidv7";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock external dependencies similar to graphql.integration.test.ts
@@ -49,6 +51,105 @@ describe("GraphQL Error Formatting Integration", () => {
 		if (server) {
 			await server.close();
 		}
+	});
+
+	it("should return 400 with INVALID_ARGUMENTS for malformed query string (parse error)", async () => {
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query: `
+					query {
+						__typename
+						# Missing closing brace
+				`,
+			},
+			headers: {
+				"content-type": "application/json",
+			},
+		});
+
+		expect(response.statusCode).toBe(400);
+
+		const body = JSON.parse(response.body);
+		expect(body.errors).toBeDefined();
+		expect(body.errors.length).toBeGreaterThan(0);
+
+		const error = body.errors[0];
+		expect(error.message).toBeDefined();
+		expect(error.extensions).toBeDefined();
+		expect(error.extensions.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+		expect(error.extensions.httpStatus).toBe(400);
+		expect(error.extensions.correlationId).toBeDefined();
+		expect(typeof error.extensions.correlationId).toBe("string");
+	});
+
+	it("should return 403 with UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES when attempting to delete a chat without sufficient permissions", async () => {
+		const userId = uuidv7();
+		const chatId = uuidv7();
+		const userPayload = {
+			user: {
+				id: userId,
+			},
+		};
+		const token = server.jwt.sign(userPayload);
+
+		const mockDrizzle = {
+			query: {
+				usersTable: {
+					findFirst: vi.fn().mockResolvedValue({
+						id: userId,
+						role: "regular",
+						name: faker.person.fullName(),
+					}),
+				},
+				chatsTable: {
+					findFirst: vi.fn().mockResolvedValue({
+						avatarName: null,
+						chatMembershipsWhereChat: [{ role: "regular" }],
+						organization: {
+							membershipsWhereOrganization: [{ role: "regular" }],
+						},
+					}),
+				},
+			},
+		};
+
+		// Monkey-patch the drizzleClient on the server instance
+		Object.assign(server, { drizzleClient: mockDrizzle });
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query: `
+					mutation {
+						deleteChat(input: { id: "${chatId}" }) {
+							id
+						}
+					}
+				`,
+			},
+			headers: {
+				"content-type": "application/json",
+				authorization: `Bearer ${token}`,
+			},
+		});
+
+		expect(response.statusCode).toBe(403);
+
+		const body = JSON.parse(response.body);
+		expect(body.errors).toBeDefined();
+		expect(body.errors.length).toBeGreaterThan(0);
+
+		const error = body.errors[0];
+		expect(error.extensions).toBeDefined();
+		expect(error.extensions.code).toBe(
+			ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+		);
+		expect(error.extensions.httpStatus).toBe(403);
+		expect(error.extensions.correlationId).toBeDefined();
+		expect(typeof error.extensions.correlationId).toBe("string");
 	});
 
 	it("should return formatted validation error with correct structure and status code", async () => {

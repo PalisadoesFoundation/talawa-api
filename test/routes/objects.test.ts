@@ -8,11 +8,26 @@ import { getTier } from "~/src/config/rateLimits";
 import { createServer } from "~/src/createServer";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
+const expectValidErrorResponse = (
+	body: { error: Record<string, unknown> },
+	expectedCode: string,
+) => {
+	expect(body.error.code).toBe(expectedCode);
+	expect(body.error.correlationId).toBeDefined();
+	expect(typeof body.error.correlationId).toBe("string");
+	expect((body.error.correlationId as string).length).toBeGreaterThan(0);
+};
+
 describe("/objects/:name route", () => {
 	let app: FastifyInstance;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Reset shared mock bucket state
+		const globalWithMock = global as unknown as {
+			__mockBucketState: Record<string, number>;
+		};
+		globalWithMock.__mockBucketState = {};
 	});
 
 	// Mock other external dependencies to avoid connection errors and speed up tests
@@ -181,6 +196,8 @@ describe("/objects/:name route", () => {
 			expect(body.error).toHaveProperty("message");
 			expect(body.error).toHaveProperty("code");
 			expect(body.error.message).toContain("Too many requests");
+			expect(body.error.correlationId).toBeDefined();
+			expect(typeof body.error.correlationId).toBe("string");
 
 			// Verify resetAt is in seconds (epoch timestamp)
 			if (body.error.details?.resetAt) {
@@ -299,7 +316,7 @@ describe("/objects/:name route", () => {
 
 			expect(res.statusCode).toBe(404);
 			const body = JSON.parse(res.body);
-			expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
+			expectValidErrorResponse(body, ErrorCode.NOT_FOUND);
 			expect(body.error.message).toContain("No object found");
 			expect(body.error.details).toEqual({ objectName: "nonexistent.txt" });
 		});
@@ -320,7 +337,7 @@ describe("/objects/:name route", () => {
 
 			expect(res.statusCode).toBe(404);
 			const body = JSON.parse(res.body);
-			expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
+			expectValidErrorResponse(body, ErrorCode.NOT_FOUND);
 			expect(body.error.details).toEqual({ objectName: "missing.png" });
 		});
 
@@ -339,7 +356,7 @@ describe("/objects/:name route", () => {
 
 			expect(res.statusCode).toBe(500);
 			const body = JSON.parse(res.body);
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expectValidErrorResponse(body, ErrorCode.INTERNAL_SERVER_ERROR);
 			expect(body.error.message).toContain("Something went wrong");
 		});
 
@@ -420,7 +437,7 @@ describe("/objects/:name route", () => {
 			expect(res2.statusCode).toBe(400);
 
 			const body = JSON.parse(res2.body);
-			expect(body.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+			expectValidErrorResponse(body, ErrorCode.INVALID_ARGUMENTS);
 		});
 	});
 });

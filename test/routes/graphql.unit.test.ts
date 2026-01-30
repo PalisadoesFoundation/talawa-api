@@ -57,6 +57,17 @@ describe("src/routes/graphql.ts unit tests", () => {
 	describe("extractZodMessage", () => {
 		const FALLBACK = "Fallback message";
 
+		it("should fallback when treeified details don't contain UUID error", () => {
+			const details = {
+				properties: {
+					id: {
+						errors: ["Some other validation error"],
+					},
+				},
+			};
+			expect(extractZodMessage(details, {}, FALLBACK)).toBe(FALLBACK);
+		});
+
 		it("should handle treeified details with Invalid UUID", () => {
 			const details = {
 				properties: {

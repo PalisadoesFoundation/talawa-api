@@ -563,19 +563,13 @@ builder.mutationField("createEvent", (t) =>
 									{ error: e },
 									"Error uploading event attachments to MinIO",
 								);
-								throw e;
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "unexpected",
+									},
+									message: "Upload failed",
+								});
 							}
-						} catch (e) {
-							ctx.log.error(
-								{ error: e },
-								"Error uploading event attachments to MinIO",
-							);
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "unexpected",
-								},
-								message: "Upload failed",
-							});
 						}
 
 						const finalEvent = Object.assign(createdEvent, {
