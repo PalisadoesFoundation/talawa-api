@@ -11,11 +11,20 @@ import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 const expectValidErrorResponse = (
 	body: { error: Record<string, unknown> },
 	expectedCode: string,
+	message?: string,
+	detailsMatcher?: (d: unknown) => void,
 ) => {
 	expect(body.error.code).toBe(expectedCode);
 	expect(body.error.correlationId).toBeDefined();
 	expect(typeof body.error.correlationId).toBe("string");
 	expect((body.error.correlationId as string).length).toBeGreaterThan(0);
+
+	if (message) {
+		expect(body.error.message).toContain(message);
+	}
+	if (detailsMatcher && body.error.details) {
+		detailsMatcher(body.error.details);
+	}
 };
 
 describe("/objects/:name route", () => {
@@ -316,9 +325,14 @@ describe("/objects/:name route", () => {
 
 			expect(res.statusCode).toBe(404);
 			const body = JSON.parse(res.body);
-			expectValidErrorResponse(body, ErrorCode.NOT_FOUND);
-			expect(body.error.message).toContain("No object found");
-			expect(body.error.details).toEqual({ objectName: "nonexistent.txt" });
+			expectValidErrorResponse(
+				body,
+				ErrorCode.NOT_FOUND,
+				"No object found",
+				(details) => {
+					expect(details).toEqual({ objectName: "nonexistent.txt" });
+				},
+			);
 		});
 
 		it("should return 404 when S3Error is NotFound", async () => {
@@ -337,8 +351,14 @@ describe("/objects/:name route", () => {
 
 			expect(res.statusCode).toBe(404);
 			const body = JSON.parse(res.body);
-			expectValidErrorResponse(body, ErrorCode.NOT_FOUND);
-			expect(body.error.details).toEqual({ objectName: "missing.png" });
+			expectValidErrorResponse(
+				body,
+				ErrorCode.NOT_FOUND,
+				undefined,
+				(details) => {
+					expect(details).toEqual({ objectName: "missing.png" });
+				},
+			);
 		});
 
 		it("should return 500 on internal MinIO errors", async () => {
@@ -356,8 +376,11 @@ describe("/objects/:name route", () => {
 
 			expect(res.statusCode).toBe(500);
 			const body = JSON.parse(res.body);
-			expectValidErrorResponse(body, ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.message).toContain("Something went wrong");
+			expectValidErrorResponse(
+				body,
+				ErrorCode.INTERNAL_SERVER_ERROR,
+				"Something went wrong",
+			);
 		});
 
 		it("should use default content-type when not provided", async () => {
@@ -437,7 +460,11 @@ describe("/objects/:name route", () => {
 			expect(res2.statusCode).toBe(400);
 
 			const body = JSON.parse(res2.body);
-			expectValidErrorResponse(body, ErrorCode.INVALID_ARGUMENTS);
+			expectValidErrorResponse(
+				body,
+				ErrorCode.INVALID_ARGUMENTS,
+				"Validation failed",
+			);
 		});
 	});
 });

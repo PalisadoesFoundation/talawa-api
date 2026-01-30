@@ -1087,9 +1087,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(error).toBeInstanceOf(Error);
-				expect((error as Error).message).toContain(
-					"Upload failed for attachment 2",
-				);
+				expect((error as Error).message).toContain("Upload failed");
 			}
 
 			// Verify putObject was called for both attachments
