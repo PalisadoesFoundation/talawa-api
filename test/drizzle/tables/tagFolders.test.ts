@@ -103,28 +103,28 @@ describe("tagFoldersTable", () => {
 		});
 	});
 	describe("tagFoldersTable Structure", () => {
-		it("it should have createdAt field", () => {
+		it("should have createdAt field", () => {
 			expect(tagFoldersTable.createdAt).toBeDefined();
 		});
-		it("it should have creatorId field", () => {
+		it("should have creatorId field", () => {
 			expect(tagFoldersTable.creatorId).toBeDefined();
 		});
-		it("it should have id field", () => {
+		it("should have id field", () => {
 			expect(tagFoldersTable.id).toBeDefined();
 		});
-		it("it should have name field", () => {
+		it("should have name field", () => {
 			expect(tagFoldersTable.name).toBeDefined();
 		});
-		it("it should have organizationId field", () => {
+		it("should have organizationId field", () => {
 			expect(tagFoldersTable.organizationId).toBeDefined();
 		});
-		it("it should have parentFolderId field", () => {
+		it("should have parentFolderId field", () => {
 			expect(tagFoldersTable.parentFolderId).toBeDefined();
 		});
-		it("it should have updaterId field", () => {
+		it("should have updaterId field", () => {
 			expect(tagFoldersTable.updaterId).toBeDefined();
 		});
-		it("it should have updatedAt field", () => {
+		it("should have updatedAt field", () => {
 			expect(tagFoldersTable.updatedAt).toBeDefined();
 		});
 	});
