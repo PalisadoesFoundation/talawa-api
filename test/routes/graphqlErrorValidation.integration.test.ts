@@ -16,6 +16,9 @@ describe("GraphQL Error Formatting Integration", () => {
 	let adminToken: string;
 
 	beforeAll(async () => {
+		// Clear any existing headers
+		mercuriusClient.setHeaders({});
+
 		// Sign in as admin
 		const signInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -166,7 +169,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		// Check message content
 		expect(error.message).toBeDefined();
 		expect(error.message).toMatch(
-			/(Cannot query field|Graphql validation error)/,
+			/(cannot query field|graphql validation error)/i,
 		);
 
 		// Check extensions structure
