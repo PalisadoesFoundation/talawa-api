@@ -58,6 +58,27 @@ test_fail() {
 }
 
 ##############################################################################
+# Test: Guard fails when success() is missing
+##############################################################################
+
+test_start "Guard fails when success() is omitted (subshell exits non-zero, stderr contains guard message)"
+set +e
+guard_stderr=$( (
+    info() { :; }
+    warn() { :; }
+    error() { :; }
+    unset -f success 2>/dev/null || true
+    source "$SCRIPT_DIR/validation.sh"
+) 2>&1 )
+guard_exitcode=$?
+set -e
+if [ "$guard_exitcode" -ne 0 ] && echo "$guard_stderr" | grep -q "requires info(), warn(), error(), and success() functions to be defined"; then
+    test_pass
+else
+    test_fail "Expected subshell to exit non-zero with guard message; exitcode=$guard_exitcode"
+fi
+
+##############################################################################
 # Test: validate_version_string() - Valid versions should PASS
 ##############################################################################
 
@@ -283,6 +304,20 @@ test_invalid_path "./foo" "relative with dot"
 test_invalid_path "foo" "relative"
 test_invalid_path "/tmp/../etc" "path traversal"
 test_invalid_path "" "empty string"
+
+# Reject paths containing shell metacharacters and unsafe characters
+test_invalid_path '/tmp/foo;rm -rf /' "contains semicolon"
+test_invalid_path '/tmp/foo|ls' "pipe"
+test_invalid_path '/tmp/$(rm -rf /)' "command substitution"
+test_invalid_path '/tmp/foo&' "background ampersand"
+test_invalid_path '/tmp/foo>out' "redirection"
+test_invalid_path '/tmp/foo<in' "input redirection"
+test_invalid_path '/tmp/foo*' "glob asterisk"
+test_invalid_path '/tmp/foo?' "glob question mark"
+test_invalid_path '/tmp/foo\''out' "single quote"
+test_invalid_path '/tmp/foo"out' "double quote"
+test_invalid_path '/tmp/foo\out' "backslash"
+test_invalid_path '/tmp/foo out' "space"
 
 ##############################################################################
 # Test: run_cmd() and DRY_RUN
