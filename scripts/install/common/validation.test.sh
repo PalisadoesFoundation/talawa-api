@@ -29,6 +29,7 @@ TESTS_FAILED=0
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
+success() { echo -e "${GREEN}✓${NC} $1"; }
 
 # Source the validation functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -170,6 +171,135 @@ if declare -F retry_command >/dev/null 2>&1; then
     test_pass
 else
     test_fail "retry_command function not found"
+fi
+
+test_start "validate_version_string_secure helper exists and is callable"
+if declare -F validate_version_string_secure >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "validate_version_string_secure function not found"
+fi
+
+test_start "validate_path helper exists and is callable"
+if declare -F validate_path >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "validate_path function not found"
+fi
+
+test_start "run_cmd helper exists and is callable"
+if declare -F run_cmd >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "run_cmd function not found"
+fi
+
+##############################################################################
+# Test: validate_version_string_secure() - Valid versions
+##############################################################################
+
+test_valid_version_secure() {
+    local version="$1"
+    local description="$2"
+
+    test_start "Valid version (secure): $description ($version)"
+
+    if validate_version_string_secure "$version" &>/dev/null; then
+        test_pass
+    else
+        test_fail "Expected version '$version' to be valid"
+    fi
+}
+
+test_valid_version_secure "1.0" "x.y"
+test_valid_version_secure "2.3" "x.y"
+test_valid_version_secure "1.2.3" "x.y.z"
+
+##############################################################################
+# Test: validate_version_string_secure() - Invalid versions
+##############################################################################
+
+test_invalid_version_secure() {
+    local version="$1"
+    local description="$2"
+
+    test_start "Invalid version (secure, should reject): $description"
+
+    if validate_version_string_secure "$version" &>/dev/null; then
+        test_fail "Expected version '$version' to be rejected"
+    else
+        test_pass
+    fi
+}
+
+test_invalid_version_secure "" "empty string"
+test_invalid_version_secure "1" "single number"
+test_invalid_version_secure "1.2.3.4" "four segments"
+test_invalid_version_secure "1.2.3-beta" "prerelease"
+test_invalid_version_secure "^1.0" "caret"
+test_invalid_version_secure "1.0; rm -rf /" "command injection"
+test_invalid_version_secure "1.0 2.0" "spaces"
+
+##############################################################################
+# Test: validate_path() - Valid paths
+##############################################################################
+
+test_valid_path() {
+    local path="$1"
+    local description="$2"
+
+    test_start "Valid path: $description ($path)"
+
+    if validate_path "$path" &>/dev/null; then
+        test_pass
+    else
+        test_fail "Expected path '$path' to be valid"
+    fi
+}
+
+test_valid_path "/" "root"
+test_valid_path "/tmp" "tmp"
+test_valid_path "/home/user/app" "absolute path"
+
+##############################################################################
+# Test: validate_path() - Invalid paths
+##############################################################################
+
+test_invalid_path() {
+    local path="$1"
+    local description="$2"
+
+    test_start "Invalid path (should reject): $description"
+
+    if validate_path "$path" &>/dev/null; then
+        test_fail "Expected path '$path' to be rejected"
+    else
+        test_pass
+    fi
+}
+
+test_invalid_path "./foo" "relative with dot"
+test_invalid_path "foo" "relative"
+test_invalid_path "/tmp/../etc" "path traversal"
+test_invalid_path "" "empty string"
+
+##############################################################################
+# Test: run_cmd() and DRY_RUN
+##############################################################################
+
+test_start "run_cmd with DRY_RUN=1 prints command and does not execute"
+output=$(DRY_RUN=1 run_cmd echo hello 2>&1)
+if echo "$output" | grep -q "dry-run" && echo "$output" | grep -q "echo hello"; then
+    test_pass
+else
+    test_fail "Expected dry-run message and command in output, got: $output"
+fi
+
+test_start "run_cmd with DRY_RUN=0 executes command"
+if DRY_RUN=0 run_cmd true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected run_cmd to execute command and return 0"
 fi
 
 ##############################################################################

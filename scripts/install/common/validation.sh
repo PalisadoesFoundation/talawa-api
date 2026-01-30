@@ -11,29 +11,33 @@
 #
 # REQUIREMENTS:
 #   The sourcing script MUST define these functions before sourcing this file:
-#   - info()  : For informational messages (blue output)
-#   - warn()  : For warning messages (yellow output)
-#   - error() : For error messages (red output)
+#   - info()   : For informational messages (blue output)
+#   - warn()   : For warning messages (yellow output)
+#   - error()  : For error messages (red output)
+#   - success(): For success messages (green output); used by Secure validators below
 #
 #   Example definitions:
 #     info() { echo -e "${BLUE}ℹ${NC} $1"; }
 #     warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 #     error() { echo -e "${RED}✗${NC} $1"; }
+#     success() { echo -e "${GREEN}✓${NC} $1"; }
 ##############################################################################
 
 ##############################################################################
 # Guard: Verify required functions are defined
 # 
-# This library depends on info(), warn(), and error() functions being defined
-# by the calling script. Fail early with a clear message if they are missing.
+# This library depends on info(), warn(), error(), and success() functions
+# being defined by the calling script. Fail early with a clear message if
+# they are missing. The Secure validators section (below) also uses success().
 ##############################################################################
-if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1; then
-    echo "ERROR: validation.sh requires info(), warn(), and error() functions to be defined." >&2
+if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1 || ! declare -F success >/dev/null 2>&1; then
+    echo "ERROR: validation.sh requires info(), warn(), error(), and success() functions to be defined." >&2
     echo "" >&2
     echo "Please ensure your script defines these functions before sourcing validation.sh:" >&2
     echo "  info() { echo -e \"\${BLUE}ℹ\${NC} \$1\"; }" >&2
     echo "  warn() { echo -e \"\${YELLOW}⚠\${NC} \$1\"; }" >&2
     echo "  error() { echo -e \"\${RED}✗\${NC} \$1\"; }" >&2
+    echo "  success() { echo -e \"\${GREEN}✓\${NC} \$1\"; }" >&2
     echo "" >&2
     exit 1
 fi
@@ -300,4 +304,80 @@ retry_command() {
     
     error "Command failed after $max_attempts attempts: $*"
     return "$exit_code"
+}
+
+##############################################################################
+# Secure validators
+#
+# Stricter validators for version strings (x.y or x.y.z only) and paths
+# (absolute, no traversal). Use validate_version_string_secure when you need
+# a narrow whitelist; use validate_path before using user-provided paths.
+##############################################################################
+
+##############################################################################
+# validate_version_string_secure - Strict version string (x.y or x.y.z only)
+#
+# Whitelist-only validation to prevent command injection. Rejects semver
+# operators, prerelease tags, and any non-numeric/dot characters.
+#
+# Usage: validate_version_string_secure "version"
+# Returns: 0 if valid (x.y or x.y.z), 1 if invalid
+##############################################################################
+validate_version_string_secure() {
+    local v="${1:-}"
+
+    local pattern='^[0-9]+(\.[0-9]+){1,2}$'
+    if [[ "$v" =~ $pattern ]]; then
+        success "Version OK: $v"
+        return 0
+    fi
+
+    error "Invalid version: $v (expected x.y or x.y.z)"
+    return 1
+}
+
+##############################################################################
+# validate_path - Absolute path with no traversal
+#
+# Ensures path is absolute and does not contain ".." to prevent path
+# traversal. Use before using user-provided paths in file operations.
+#
+# Usage: validate_path "path"
+# Returns: 0 if valid, 1 if invalid
+##############################################################################
+validate_path() {
+    local p="${1:-}"
+
+    case "$p" in
+        /*) ;;
+        *)
+            error "Path must be absolute: $p"
+            return 1
+            ;;
+    esac
+
+    if [[ "$p" == *".."* ]]; then
+        error "Path traversal not allowed: $p"
+        return 1
+    fi
+
+    success "Path OK: $p"
+    return 0
+}
+
+##############################################################################
+# DRY_RUN and run_cmd - Safe command execution with dry-run support
+#
+# run_cmd expects first argument as the command and the rest as its arguments.
+# Uses "$@" (not eval) to avoid command injection; callers must pass trusted
+# input only when using run_cmd.
+##############################################################################
+DRY_RUN="${DRY_RUN:-0}"
+
+run_cmd() {
+    if [ "$DRY_RUN" = "1" ]; then
+        printf "[INFO] (dry-run) %s\n" "$*"
+        return 0
+    fi
+    "$@"
 }
