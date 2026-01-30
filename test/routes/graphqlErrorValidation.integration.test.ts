@@ -1,3 +1,11 @@
+/**
+ * Integration tests for GraphQL error validation and formatting.
+ *
+ * This suite verifies that the GraphQL API returns correctly formatted errors
+ * with appropriate status codes, codes, and extensions for various scenarios
+ * including rate limiting, authentication, authorization, and validation failures.
+ * It ensures the unified error contract is maintained across the application.
+ */
 import { uuidv7 } from "uuidv7";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
