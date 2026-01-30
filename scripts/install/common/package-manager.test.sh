@@ -203,27 +203,39 @@ ALL_CHECKS_PASSED=true
 
 # Suppress error output
 # Test update_package_index
-if ! update_package_index >/dev/null 2>&1; then
-    : # Expected failure
-else
+if update_package_index >/dev/null 2>&1; then
     ALL_CHECKS_PASSED=false
-    echo "  update_package_index did not fail when OS_TYPE is unset"
+    echo "  update_package_index succeeded (expected failure with 1)"
+else
+    EXIT_CODE=$?
+    if [ "$EXIT_CODE" -ne 1 ]; then
+        ALL_CHECKS_PASSED=false
+        echo "  update_package_index exited with $EXIT_CODE (expected 1)"
+    fi
 fi
 
 # Test is_package_installed
-if ! is_package_installed "some-package" >/dev/null 2>&1; then
-    : # Expected failure
-else
+if is_package_installed "some-package" >/dev/null 2>&1; then
     ALL_CHECKS_PASSED=false
-    echo "  is_package_installed did not fail when OS_TYPE is unset"
+    echo "  is_package_installed succeeded (expected failure with 1)"
+else
+    EXIT_CODE=$?
+    if [ "$EXIT_CODE" -ne 1 ]; then
+        ALL_CHECKS_PASSED=false
+        echo "  is_package_installed exited with $EXIT_CODE (expected 1)"
+    fi
 fi
 
 # Test install_package
-if ! install_package "some-package" >/dev/null 2>&1; then
-    : # Expected failure
-else
+if install_package "some-package" >/dev/null 2>&1; then
     ALL_CHECKS_PASSED=false
-    echo "  install_package did not fail when OS_TYPE is unset"
+    echo "  install_package succeeded (expected failure with 1)"
+else
+    EXIT_CODE=$?
+    if [ "$EXIT_CODE" -ne 1 ]; then
+        ALL_CHECKS_PASSED=false
+        echo "  install_package exited with $EXIT_CODE (expected 1)"
+    fi
 fi
 
 if [ "$ALL_CHECKS_PASSED" = "true" ]; then
