@@ -2,8 +2,13 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
+import { getRecurringEventInstancesByIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+vi.mock("~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries", () => ({
+	getRecurringEventInstancesByIds: vi.fn(),
+}));
 
 describe("EventAttendee Event Resolver Tests", () => {
 	let ctx: GraphQLContext;
@@ -100,39 +105,145 @@ describe("EventAttendee Event Resolver Tests", () => {
 	});
 
 	describe("Recurring Event Instance Resolution", () => {
-		it("should return null for recurring event instances (TODO implementation)", async () => {
-			const recurringAttendee = {
-				...mockEventAttendee,
-				eventId: null,
-				recurringEventInstanceId: "instance-789",
-			} as EventAttendeeType;
+		const mockResolvedInstance = {
+			id: "instance-789",
+			name: "Recurring Instance Event",
+			description: "Instance description",
+			location: "Instance location",
+			actualStartTime: new Date("2024-03-15T09:00:00Z"),
+			actualEndTime: new Date("2024-03-15T12:00:00Z"),
+			organizationId: "org-123",
+			baseRecurringEventId: "template-456",
+			recurrenceRuleId: "rule-789",
+			originalSeriesId: "series-123",
+			originalInstanceStartTime: new Date("2024-03-15T09:00:00Z"),
+			isCancelled: false,
+			generatedAt: new Date("2024-03-01T00:00:00Z"),
+			lastUpdatedAt: null,
+			version: "1",
+			sequenceNumber: 1,
+			totalCount: 10,
+			allDay: false,
+			isPublic: true,
+			isRegisterable: true,
+			isInviteOnly: false,
+			creatorId: "creator-123",
+			updaterId: null,
+			createdAt: new Date("2024-03-01T00:00:00Z"),
+			updatedAt: null,
+			hasExceptions: false,
+			appliedExceptionData: null,
+			exceptionCreatedBy: null,
+			exceptionCreatedAt: null,
+			attachments: [],
+		};
 
-			const result = await eventAttendeeEventResolver(
-				recurringAttendee,
-				{},
-				ctx,
-			);
-			expect(result).toBeNull();
+		beforeEach(() => {
+			vi.mocked(getRecurringEventInstancesByIds).mockReset();
+			ctx.dataloaders.event.load = vi.fn();
 		});
 
-		it("should handle future recurring instance implementation", async () => {
+		it("should resolve recurring event instance and return resolved instance", async () => {
 			const recurringAttendee = {
 				...mockEventAttendee,
 				eventId: null,
 				recurringEventInstanceId: "instance-789",
 			} as EventAttendeeType;
 
-			ctx.dataloaders.event.load = vi.fn();
+			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
+				mockResolvedInstance,
+			]);
 
 			const result = await eventAttendeeEventResolver(
 				recurringAttendee,
 				{},
 				ctx,
 			);
-			expect(result).toBeNull();
 
-			// No DataLoader calls should be made for recurring instances yet
+			expect(result).toEqual({
+				...mockResolvedInstance,
+				attachments: [],
+			});
+			expect(getRecurringEventInstancesByIds).toHaveBeenCalledWith(
+				["instance-789"],
+				ctx.drizzleClient,
+				ctx.log,
+			);
 			expect(ctx.dataloaders.event.load).not.toHaveBeenCalled();
+		});
+
+		it("should include attachments when resolved instance has attachments", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			const instanceWithAttachments = {
+				...mockResolvedInstance,
+				attachments: [
+					{
+						id: "att-1",
+						eventId: "template-456",
+						recurringEventInstanceId: "instance-789",
+						url: "https://example.com/doc.pdf",
+						createdAt: new Date(),
+						updatedAt: null,
+					},
+				],
+			};
+
+			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
+				instanceWithAttachments,
+			]);
+
+			const result = await eventAttendeeEventResolver(
+				recurringAttendee,
+				{},
+				ctx,
+			);
+
+			expect(result?.attachments).toEqual(instanceWithAttachments.attachments);
+		});
+
+		it("should throw unexpected error when recurring instance is not found", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([]);
+
+			await expect(
+				eventAttendeeEventResolver(recurringAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+
+			expect(ctx.log.warn).toHaveBeenCalledWith(
+				{
+					eventAttendeeId: "attendee-123",
+					recurringEventInstanceId: "instance-789",
+				},
+				"Failed to find recurring event instance for event attendee.",
+			);
+		});
+
+		it("should propagate errors from getRecurringEventInstancesByIds", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			vi.mocked(getRecurringEventInstancesByIds).mockRejectedValue(
+				new Error("Database connection failed"),
+			);
+
+			await expect(
+				eventAttendeeEventResolver(recurringAttendee, {}, ctx),
+			).rejects.toThrow("Database connection failed");
 		});
 	});
 
