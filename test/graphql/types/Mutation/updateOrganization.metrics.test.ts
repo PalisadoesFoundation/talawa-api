@@ -219,95 +219,108 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 		});
 
-		it('should return invalid_arguments with issue on ["input","name"] when another org has the same name', async () => {
-			const duplicateName = `Dup Name ${faker.string.ulid()}`;
-			const org1Id = await createTestOrganization(authToken);
-			const org2Id = await createTestOrganization(authToken);
+		describe("Edge-case: Duplicate name validation (updateOrganization 145-172)", () => {
+			it('should return invalid_arguments with issue on ["input","name"] when another org has the same name', async () => {
+				const duplicateName = `Dup Name ${faker.string.ulid()}`;
+				const org1Id = await createTestOrganization(authToken);
+				const org2Id = await createTestOrganization(authToken);
 
-			await mercuriusClient.mutate(Mutation_updateOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: { id: org1Id, name: duplicateName },
-				},
-			});
-
-			// Update org2 to org1's name (duplicate)
-			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: { id: org2Id, name: duplicateName },
-				},
-			});
-
-			expect(result.data?.updateOrganization).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						message: "Organization name already exists",
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "name"],
-									message: "Organization name already exists",
-								}),
-							]),
-						}),
-						path: ["updateOrganization"],
-					}),
-				]),
-			);
-
-			// Cleanup
-			for (const id of [org1Id, org2Id]) {
-				const del = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				await mercuriusClient.mutate(Mutation_updateOrganization, {
 					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id } },
+					variables: {
+						input: { id: org1Id, name: duplicateName },
+					},
 				});
-				expect(del.errors).toBeUndefined();
-				expect(del.data?.deleteOrganization?.id).toBe(id);
-			}
+
+				// Update org2 to org1's name (duplicate)
+				const result = await mercuriusClient.mutate(
+					Mutation_updateOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: { id: org2Id, name: duplicateName },
+						},
+					},
+				);
+
+				expect(result.data?.updateOrganization).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							message: "Organization name already exists",
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "name"],
+										message: "Organization name already exists",
+									}),
+								]),
+							}),
+							path: ["updateOrganization"],
+						}),
+					]),
+				);
+
+				// Cleanup
+				for (const id of [org1Id, org2Id]) {
+					const del = await mercuriusClient.mutate(
+						Mutation_deleteOrganization,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: { input: { id } },
+						},
+					);
+					expect(del.errors).toBeUndefined();
+					expect(del.data?.deleteOrganization?.id).toBe(id);
+				}
+			});
 		});
 
-		it("should remove avatar (MinIO and DB) when avatar is set to null and org had avatar", async () => {
-			const orgId = await createTestOrganization(authToken);
+		describe("Edge-case: Avatar upload/update/removal scenarios (updateOrganization 231-249)", () => {
+			it("should remove avatar (MinIO and DB) when avatar is set to null and org had avatar", async () => {
+				const orgId = await createTestOrganization(authToken);
 
-			await (server as FastifyInstance).drizzleClient
-				.update(organizationsTable)
-				.set({
-					avatarName: "test-avatar-remove.png",
-					avatarMimeType: "image/png",
-				})
-				.where(eq(organizationsTable.id, orgId));
+				await (server as FastifyInstance).drizzleClient
+					.update(organizationsTable)
+					.set({
+						avatarName: "test-avatar-remove.png",
+						avatarMimeType: "image/png",
+					})
+					.where(eq(organizationsTable.id, orgId));
 
-			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: { id: orgId, avatar: null },
-				},
+				const result = await mercuriusClient.mutate(
+					Mutation_updateOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: { id: orgId, avatar: null },
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
+
+				const updatedOrg = await (
+					server as FastifyInstance
+				).drizzleClient.query.organizationsTable.findFirst({
+					where: eq(organizationsTable.id, orgId),
+					columns: { avatarName: true, avatarMimeType: true },
+				});
+				expect(updatedOrg?.avatarName).toBeNull();
+				expect(updatedOrg?.avatarMimeType).toBeNull();
+
+				const deleteResult = await mercuriusClient.mutate(
+					Mutation_deleteOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: { input: { id: orgId } },
+					},
+				);
+				expect(deleteResult.errors).toBeUndefined();
+				expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
-
-			const updatedOrg = await (
-				server as FastifyInstance
-			).drizzleClient.query.organizationsTable.findFirst({
-				where: eq(organizationsTable.id, orgId),
-				columns: { avatarName: true, avatarMimeType: true },
-			});
-			expect(updatedOrg?.avatarName).toBeNull();
-			expect(updatedOrg?.avatarMimeType).toBeNull();
-
-			const deleteResult = await mercuriusClient.mutate(
-				Mutation_deleteOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: orgId } },
-				},
-			);
-			expect(deleteResult.errors).toBeUndefined();
-			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 		});
 	});
 

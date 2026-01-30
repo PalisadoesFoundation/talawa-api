@@ -382,69 +382,73 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			}
 		});
 
-		it("should throw unauthenticated when usersTable.findFirst returns undefined (currentUser missing) and perf snapshot records the attempt", async () => {
-			const perf = createPerformanceTracker();
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-			context.perf = perf;
+		describe("Edge-case: currentUser === undefined path (deleteOrganization 118-124)", () => {
+			it("should throw unauthenticated when usersTable.findFirst returns undefined (currentUser missing) and perf snapshot records the attempt", async () => {
+				const perf = createPerformanceTracker();
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = perf;
 
-			const orgId = faker.string.uuid();
-			const mockExistingOrganization = createMockExistingOrganization(orgId);
+				const orgId = faker.string.uuid();
+				const mockExistingOrganization = createMockExistingOrganization(orgId);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockExistingOrganization,
-			);
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					undefined,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
 
-			const resultPromise = deleteOrganizationMutationResolver(
-				null,
-				{ input: { id: orgId } },
-				context,
-			);
+				const resultPromise = deleteOrganizationMutationResolver(
+					null,
+					{ input: { id: orgId } },
+					context,
+				);
 
-			await expect(resultPromise).rejects.toMatchObject({
-				extensions: { code: "unauthenticated" },
+				await expect(resultPromise).rejects.toMatchObject({
+					extensions: { code: "unauthenticated" },
+				});
+
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:deleteOrganization"];
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
 			});
-
-			const snapshot = perf.snapshot();
-			const op = snapshot.ops["mutation:deleteOrganization"];
-			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
 		});
 
-		it("should throw arguments_associated_resources_not_found when delete returns no row (delete-race)", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+		describe("Edge-case: Delete race condition deleted === undefined (deleteOrganization 154-166)", () => {
+			it("should throw arguments_associated_resources_not_found when delete returns no row (delete-race)", async () => {
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
 
-			const orgId = faker.string.uuid();
-			const mockAdminUser = createMockAdminUser();
-			const mockExistingOrganization = createMockExistingOrganization(orgId);
+				const orgId = faker.string.uuid();
+				const mockAdminUser = createMockAdminUser();
+				const mockExistingOrganization = createMockExistingOrganization(orgId);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockAdminUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockExistingOrganization,
-			);
-			(
-				mocks.drizzleClient as unknown as {
-					transaction: ReturnType<typeof vi.fn>;
-				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(createMockTransactionReturningNoRow());
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransactionReturningNoRow());
 
-			const resultPromise = deleteOrganizationMutationResolver(
-				null,
-				{ input: { id: orgId } },
-				context,
-			);
+				const resultPromise = deleteOrganizationMutationResolver(
+					null,
+					{ input: { id: orgId } },
+					context,
+				);
 
-			await expect(resultPromise).rejects.toMatchObject({
-				extensions: {
-					code: "arguments_associated_resources_not_found",
-					issues: [{ argumentPath: ["input", "id"] }],
-				},
+				await expect(resultPromise).rejects.toMatchObject({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "id"] }],
+					},
+				});
 			});
 		});
 	});
