@@ -1,99 +1,40 @@
-import { hash } from "@node-rs/argon2";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import { uuidv7 } from "uuidv7";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { usersTable } from "~/src/drizzle/tables/users";
-
-vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/minioClient", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/performance", () => ({
-	default: async () => {},
-}));
-
-import type { FastifyInstance } from "fastify";
+import { beforeAll, describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { testEnvConfig } from "../envConfigSchema";
+import { mercuriusClient } from "../graphql/types/client";
+import { createRegularUserUsingAdmin } from "../graphql/types/createRegularUserUsingAdmin";
+import {
+	Mutation_createChat,
+	Mutation_createOrganization,
+	Query_signIn,
+} from "../graphql/types/documentNodes";
+import { server } from "../server";
 
 describe("GraphQL Error Formatting Integration", () => {
-	let server: FastifyInstance;
 	let adminToken: string;
 
-	beforeEach(async () => {
-		server = await createServer({
-			envConfig: {
-				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
-				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-				API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
-				API_RATE_LIMIT_REFILL_RATE: 10000,
-				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				API_PORT: 0,
+	beforeAll(async () => {
+		// Sign in as admin
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
 			},
 		});
-		await server.ready();
 
-		// Ensure Administrator user exists and has the correct password
-		// This handles cases where the DB persists state between tests but with different/unknown passwords
-		const adminEmail = server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-		const adminPassword = server.envConfig.API_ADMINISTRATOR_USER_PASSWORD;
-		const adminPasswordHash = await hash(adminPassword);
-
-		// Directly connect to DB to bypass server.drizzleClient unavailability in tests
-		const connectionString = `postgres://${server.envConfig.API_POSTGRES_USER}:${server.envConfig.API_POSTGRES_PASSWORD}@${server.envConfig.API_POSTGRES_HOST}:${server.envConfig.API_POSTGRES_PORT}/${server.envConfig.API_POSTGRES_DATABASE}`;
-		const sql = postgres(connectionString);
-		const db = drizzle(sql);
-
-		try {
-			const existingUser = await db
-				.select()
-				.from(usersTable)
-				.where(eq(usersTable.emailAddress, adminEmail));
-			let adminUserId = "";
-
-			const user = existingUser[0];
-
-			if (user) {
-				adminUserId = user.id;
-				await db
-					.update(usersTable)
-					.set({ passwordHash: adminPasswordHash })
-					.where(eq(usersTable.emailAddress, adminEmail));
-			} else {
-				console.error(
-					"DEBUG: Admin user NOT FOUND in DB for email:",
-					adminEmail,
-				);
-				// Should not happen if seedInitialData runs, but if it does, we can't generate token properly
-				throw new Error("Admin user not found in DB");
-			}
-
-			// Generate Admin Token manually
-			adminToken = server.jwt.sign({
-				user: {
-					id: adminUserId,
-				},
-			});
-		} finally {
-			await sql.end();
+		if (signInResult.errors) {
+			throw new Error(
+				`Failed to sign in as admin: ${JSON.stringify(signInResult.errors)}`,
+			);
 		}
-	});
 
-	afterEach(async () => {
-		if (server) {
-			await server.close();
+		adminToken = signInResult.data?.signIn?.authenticationToken as string;
+		if (!adminToken) {
+			throw new Error("Admin token not found in response");
 		}
 	});
 
@@ -130,70 +71,37 @@ describe("GraphQL Error Formatting Integration", () => {
 
 	it("should return 403 with UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES when attempting to delete a chat without sufficient permissions", async () => {
 		// Create Organization (Admin)
-		const orgResponse = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: { authorization: `Bearer ${adminToken}` },
-			payload: {
-				query: `
-					mutation { 
-						createOrganization(input: { 
-							name: "Test Org ${uuidv7()}"
-							description: "Desc" 
-						}) { 
-							id 
-						} 
-					}
-				`,
+		const orgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${uuidv7()}`,
+						description: "Desc",
+					},
+				},
 			},
-		});
-		const orgId = JSON.parse(orgResponse.body).data?.createOrganization?.id;
-		if (!orgId) throw new Error(`Failed to create org: ${orgResponse.body}`);
+		);
+		const orgId = orgResult.data?.createOrganization?.id;
+		if (!orgId) throw new Error("Failed to create org");
 
 		// Create Chat (Admin)
-		const chatResponse = await server.inject({
-			method: "POST",
-			url: "/graphql",
+		const chatResult = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `Bearer ${adminToken}` },
-			payload: {
-				query: `
-					mutation { 
-						createChat(input: { 
-							organizationId: "${orgId}"
-							name: "Test Chat" 
-						}) { 
-							id 
-						} 
-					}
-				`,
+			variables: {
+				input: {
+					organizationId: orgId,
+					name: "Test Chat",
+				},
 			},
 		});
-		const chatId = JSON.parse(chatResponse.body).data?.createChat?.id;
-		if (!chatId) throw new Error(`Failed to create chat: ${chatResponse.body}`);
 
-		// Create Regular User (Sign Up) to act as the unauthorized user
-		const signUpResponse = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			payload: {
-				query: `
-					mutation {
-						signUp(input: {
-							name: "Regular User"
-							emailAddress: "regular-${uuidv7()}@example.com"
-							password: "password123"
-							selectedOrganization: "${orgId}"
-						}) {
-							authenticationToken
-						}
-					}
-				`,
-			},
-		});
-		const regularUserToken = JSON.parse(signUpResponse.body).data?.signUp
-			?.authenticationToken;
-		if (!regularUserToken)
-			throw new Error(`Failed to sign up regular user: ${signUpResponse.body}`);
+		const chatId = chatResult.data?.createChat?.id;
+		if (!chatId) throw new Error("Failed to create chat");
+
+		// Create Regular User (using helper)
+		const { authToken: regularUserToken } = await createRegularUserUsingAdmin();
 
 		// Attempt Delete Chat (Regular User)
 		const response = await server.inject({
@@ -317,6 +225,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		const error = body.errors[0];
 		expect(error.extensions).toBeDefined();
 		expect(error.extensions.code).toBe(ErrorCode.UNAUTHENTICATED);
+		expect(error.extensions.httpStatus).toBe(401);
 		expect(error.extensions.correlationId).toBeDefined();
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
@@ -370,6 +279,7 @@ describe("GraphQL Error Formatting Integration", () => {
 			const error = body.errors[0];
 			expect(error.extensions).toBeDefined();
 			expect(error.extensions.code).toBe(ErrorCode.RATE_LIMIT_EXCEEDED);
+			expect(error.extensions.httpStatus).toBe(429);
 			expect(error.extensions.correlationId).toBeDefined();
 			expect(typeof error.extensions.correlationId).toBe("string");
 		} finally {
@@ -378,8 +288,6 @@ describe("GraphQL Error Formatting Integration", () => {
 	});
 
 	it("should propagate custom TalawaGraphQLError extensions.code", async () => {
-		// Use manually generated adminToken
-
 		const response = await server.inject({
 			method: "POST",
 			url: "/graphql",
@@ -411,6 +319,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		expect(error.extensions.code).toBe(
 			ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 		);
+		expect(error.extensions.httpStatus).toBe(404);
 		expect(error.extensions.correlationId).toBeDefined();
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});
@@ -442,6 +351,7 @@ describe("GraphQL Error Formatting Integration", () => {
 		const error = body.errors[0];
 		expect(error.extensions).toBeDefined();
 		expect(error.extensions.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+		expect(error.extensions.httpStatus).toBe(400);
 		expect(error.extensions.correlationId).toBeDefined();
 		expect(typeof error.extensions.correlationId).toBe("string");
 	});

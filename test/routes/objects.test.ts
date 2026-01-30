@@ -22,7 +22,8 @@ const expectValidErrorResponse = (
 	if (message) {
 		expect(body.error.message).toContain(message);
 	}
-	if (detailsMatcher && body.error.details) {
+	if (detailsMatcher) {
+		expect(body.error.details).toBeDefined();
 		detailsMatcher(body.error.details);
 	}
 };
