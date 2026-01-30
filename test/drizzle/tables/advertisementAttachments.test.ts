@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker"; 
+import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { mercuriusClient } from "test/graphql/types/client";
