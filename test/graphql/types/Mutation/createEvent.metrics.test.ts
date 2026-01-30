@@ -1163,60 +1163,32 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				mockOrganization,
 			);
 
-				const organizationId = faker.string.uuid();
-				const startAt = new Date(Date.now() + 86400000);
-				const endAt = new Date(startAt.getTime() + 3600000);
+			// Create mock file uploads with valid and invalid MIME types
+			const createMockReadStream = () => ({
+				pipe: vi.fn().mockReturnThis(),
+				on: vi.fn().mockReturnThis(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
 
-				// Mock current user
-				const mockCurrentUser = createMockUser("user-123");
+			// First attachment: valid image MIME type
+			const mockValidAttachment = Promise.resolve({
+				filename: "valid.png",
+				mimetype: "image/png", // Valid
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
+			});
 
-				// Mock organization
-				const mockOrganization = createMockOrganization(organizationId);
+			// Second attachment: invalid text/plain MIME type
+			const mockInvalidAttachment = Promise.resolve({
+				filename: "invalid.txt",
+				mimetype: "text/plain", // Invalid - not in eventAttachmentMimeTypeEnum
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
+			});
 
 			try {
-				await createEventMutationResolver(
-					null,
-					{
-						input: {
-							name: "Test Event",
-							description: "Test Description",
-							organizationId,
-							startAt,
-							endAt,
-							attachments: [mockValidAttachment, mockInvalidAttachment],
-						},
-					},
-					context,
-				);
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					mockOrganization,
-				);
-
-				// Create mock file uploads with valid and invalid MIME types
-				const createMockReadStream = () => ({
-					pipe: vi.fn().mockReturnThis(),
-					on: vi.fn().mockReturnThis(),
-					[Symbol.asyncIterator]: vi.fn(),
-				});
-
-				// First attachment: valid image MIME type
-				const mockValidAttachment = Promise.resolve({
-					filename: "valid.png",
-					mimetype: "image/png", // Valid
-					createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-					encoding: "7bit",
-					fieldName: "attachments",
-				});
-
-				// Second attachment: invalid text/plain MIME type
-				const mockInvalidAttachment = Promise.resolve({
-					filename: "invalid.txt",
-					mimetype: "text/plain", // Invalid - not in eventAttachmentMimeTypeEnum
-					createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-					encoding: "7bit",
-					fieldName: "attachments",
-				});
-
 				try {
 					await createEventMutationResolver(
 						null,
@@ -1276,98 +1248,91 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
-				const organizationId = faker.string.uuid();
-				const startAt = new Date(Date.now() + 86400000);
-				const endAt = new Date(startAt.getTime() + 3600000);
+			const organizationId = faker.string.uuid();
+			const startAt = new Date(Date.now() + 86400000);
+			const endAt = new Date(startAt.getTime() + 3600000);
 
-				// Mock current user
-				const mockCurrentUser = createMockUser("user-123");
+			// Mock current user
+			const mockCurrentUser = createMockUser("user-123");
 
-				// Mock organization
-				const mockOrganization = createMockOrganization(organizationId);
+			// Mock organization
+			const mockOrganization = createMockOrganization(organizationId);
 
-				// Mock created event
-				const mockCreatedEvent = createMockEvent(
-					organizationId,
-					startAt,
-					endAt,
-				);
+			// Mock created event
+			const mockCreatedEvent = createMockEvent(organizationId, startAt, endAt);
 
-				// Mock database queries
-				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					mockCurrentUser,
-				);
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					mockOrganization,
-				);
+			// Mock database queries
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockCurrentUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockOrganization,
+			);
 
-				// Mock agenda folder and category
-				const mockAgendaFolder = createMockAgendaFolder(
-					mockCreatedEvent.id,
-					organizationId,
-				);
-				const mockAgendaCategory = createMockAgendaCategory(
-					mockCreatedEvent.id,
-					organizationId,
-				);
+			// Mock agenda folder and category
+			const mockAgendaFolder = createMockAgendaFolder(
+				mockCreatedEvent.id,
+				organizationId,
+			);
+			const mockAgendaCategory = createMockAgendaCategory(
+				mockCreatedEvent.id,
+				organizationId,
+			);
 
-				// Mock transaction with table-specific returns
-				(
-					mocks.drizzleClient as unknown as {
-						transaction?: ReturnType<typeof vi.fn>;
-					}
-				).transaction = vi
-					.fn()
-					.mockImplementation(
-						async (callback: (tx: unknown) => Promise<unknown>) => {
-							const mockTx = {
-								insert: vi.fn((table: unknown) => {
-									if (table === eventsTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockCreatedEvent]),
-											}),
-										};
-									}
-									if (table === agendaFoldersTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockAgendaFolder]),
-											}),
-										};
-									}
-									if (table === agendaCategoriesTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockAgendaCategory]),
-											}),
-										};
-									}
+			// Mock transaction with table-specific returns
+			(
+				mocks.drizzleClient as unknown as {
+					transaction?: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn((table: unknown) => {
+								if (table === eventsTable) {
 									return {
 										values: vi.fn().mockReturnValue({
-											returning: vi.fn().mockResolvedValue([]),
+											returning: vi.fn().mockResolvedValue([mockCreatedEvent]),
 										}),
 									};
-								}),
-							};
-							return callback(mockTx as never);
-						},
-					);
+								}
+								if (table === agendaFoldersTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockAgendaFolder]),
+										}),
+									};
+								}
+								if (table === agendaCategoriesTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi
+												.fn()
+												.mockResolvedValue([mockAgendaCategory]),
+										}),
+									};
+								}
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([]),
+									}),
+								};
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
 
-				// Mock notification service
-				const mockNotification = {
-					enqueueEventCreated: vi.fn(),
-					enqueueSendEventInvite: vi.fn(),
-					flush: vi.fn().mockResolvedValue(undefined),
-				};
-				context.notification = mockNotification;
+			// Mock notification service
+			const mockNotification = {
+				enqueueEventCreated: vi.fn(),
+				enqueueSendEventInvite: vi.fn(),
+				flush: vi.fn().mockResolvedValue(undefined),
+			};
+			context.notification = mockNotification;
 
+			try {
 				const result = await createEventMutationResolver(
 					null,
 					{
@@ -1379,10 +1344,8 @@ describe("Mutation createEvent - Performance Tracking", () => {
 							endAt,
 						},
 					},
-				},
-				context,
-			);
-			const result = await resultPromise;
+					context,
+				);
 
 				expect(result).toBeDefined();
 			} finally {
