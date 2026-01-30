@@ -278,98 +278,108 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 		});
 
 		it("should record mutation:deleteOrganization in perf snapshot when resolver is invoked directly", async () => {
-			const perf = createPerformanceTracker();
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-			context.perf = perf;
+			vi.useRealTimers();
+			try {
+				const perf = createPerformanceTracker();
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = perf;
 
-			const orgId = faker.string.uuid();
-			const mockAdminUser = createMockAdminUser();
-			const mockExistingOrganization = createMockExistingOrganization(orgId);
-			const mockDeletedOrganization = createMockDeletedOrganization(orgId);
+				const orgId = faker.string.uuid();
+				const mockAdminUser = createMockAdminUser();
+				const mockExistingOrganization = createMockExistingOrganization(orgId);
+				const mockDeletedOrganization = createMockDeletedOrganization(orgId);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockAdminUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockExistingOrganization,
-			);
-			(
-				mocks.drizzleClient as unknown as {
-					transaction: ReturnType<typeof vi.fn>;
-				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(createMockTransaction(mockDeletedOrganization));
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockDeletedOrganization));
 
-			vi.spyOn(mocks.minioClient.client, "removeObjects").mockResolvedValue([]);
+				vi.spyOn(mocks.minioClient.client, "removeObjects").mockResolvedValue(
+					[],
+				);
 
-			const resultPromise = deleteOrganizationMutationResolver(
-				null,
-				{ input: { id: orgId } },
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
+				const result = await deleteOrganizationMutationResolver(
+					null,
+					{ input: { id: orgId } },
+					context,
+				);
 
-			expect(result).toBeDefined();
-			expect(result).toHaveProperty("id", orgId);
+				expect(result).toBeDefined();
+				expect(result).toHaveProperty("id", orgId);
 
-			const snapshot = perf.snapshot();
-			const op = snapshot.ops["mutation:deleteOrganization"];
-			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
-			expect(op?.ms).toBeGreaterThanOrEqual(0);
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:deleteOrganization"];
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
+				expect(op?.ms).toBeGreaterThanOrEqual(0);
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 
 		it("should succeed even when MinIO cleanup fails (best-effort)", async () => {
-			const perf = createPerformanceTracker();
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-			context.perf = perf;
+			vi.useRealTimers();
+			try {
+				const perf = createPerformanceTracker();
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = perf;
 
-			const orgId = faker.string.uuid();
-			const mockAdminUser = createMockAdminUser();
-			const mockExistingOrganization = createMockExistingOrganization(orgId, {
-				avatarName: "some-avatar.png",
-			});
-			const mockDeletedOrganization = createMockDeletedOrganization(orgId);
+				const orgId = faker.string.uuid();
+				const mockAdminUser = createMockAdminUser();
+				const mockExistingOrganization = createMockExistingOrganization(orgId, {
+					avatarName: "some-avatar.png",
+				});
+				const mockDeletedOrganization = createMockDeletedOrganization(orgId);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockAdminUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockExistingOrganization,
-			);
-			(
-				mocks.drizzleClient as unknown as {
-					transaction: ReturnType<typeof vi.fn>;
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					mockExistingOrganization,
+				);
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockDeletedOrganization));
+
+				vi.spyOn(mocks.minioClient.client, "removeObjects").mockRejectedValue(
+					new Error("MinIO unavailable error"),
+				);
+
+				const log = context.log;
+				if (!log) {
+					throw new Error(
+						"context.log required for MinIO cleanup failure test",
+					);
 				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(createMockTransaction(mockDeletedOrganization));
+				const logSpy = vi.spyOn(log, "error");
 
-			vi.spyOn(mocks.minioClient.client, "removeObjects").mockRejectedValue(
-				new Error("MinIO unavailable error"),
-			);
+				const result = await deleteOrganizationMutationResolver(
+					null,
+					{ input: { id: orgId } },
+					context,
+				);
 
-			const log = context.log;
-			if (!log) {
-				throw new Error("context.log required for MinIO cleanup failure test");
+				expect(result).toHaveProperty("id", orgId);
+				expect(logSpy).toHaveBeenCalledWith(
+					expect.objectContaining({ err: expect.any(Error) }),
+					expect.stringContaining("Failed to remove MinIO objects"),
+				);
+			} finally {
+				vi.useFakeTimers();
 			}
-			const logSpy = vi.spyOn(log, "error");
-
-			const resultPromise = deleteOrganizationMutationResolver(
-				null,
-				{ input: { id: orgId } },
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
-
-			expect(result).toHaveProperty("id", orgId);
-			expect(logSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				expect.stringContaining("Failed to remove MinIO objects"),
-			);
 		});
 
 		it("should throw unauthenticated when usersTable.findFirst returns undefined (currentUser missing) and perf snapshot records the attempt", async () => {
