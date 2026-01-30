@@ -199,26 +199,37 @@ OLD_OS_TYPE="${OS_TYPE:-}"
 # Unset OS_TYPE for this test
 unset OS_TYPE
 
+ALL_CHECKS_PASSED=true
+
 # Suppress error output
 # Test update_package_index
 if ! update_package_index >/dev/null 2>&1; then
     : # Expected failure
 else
-    test_fail "Expected update_package_index to return 1 when OS_TYPE is unset"
+    ALL_CHECKS_PASSED=false
+    echo "  update_package_index did not fail when OS_TYPE is unset"
 fi
 
 # Test is_package_installed
 if ! is_package_installed "some-package" >/dev/null 2>&1; then
     : # Expected failure
 else
-    test_fail "Expected is_package_installed to return 1 when OS_TYPE is unset"
+    ALL_CHECKS_PASSED=false
+    echo "  is_package_installed did not fail when OS_TYPE is unset"
 fi
 
 # Test install_package
 if ! install_package "some-package" >/dev/null 2>&1; then
+    : # Expected failure
+else
+    ALL_CHECKS_PASSED=false
+    echo "  install_package did not fail when OS_TYPE is unset"
+fi
+
+if [ "$ALL_CHECKS_PASSED" = "true" ]; then
     test_pass
 else
-    test_fail "Expected install_package to return 1 when OS_TYPE is unset"
+    test_fail "One or more public functions did not fail gracefully when OS_TYPE is unset"
 fi
 
 # Restore OS_TYPE for subsequent tests
