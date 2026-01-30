@@ -176,10 +176,16 @@ describe("Mutation deleteOrganization - Performance Tracking", () => {
 			);
 
 			// Cleanup: delete org as admin
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { input: { id: orgId } },
-			});
+			const deleteResult = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				},
+			);
+			expect(deleteResult.errors).toBeUndefined();
+			expect(deleteResult.data?.deleteOrganization).toBeDefined();
+			expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
 		});
 	});
 

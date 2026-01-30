@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
@@ -311,6 +312,57 @@ describe("Mutation updateOrganization - Performance Tracking", () => {
 				expect(updatedOrg?.avatarName).toBeNull();
 				expect(updatedOrg?.avatarMimeType).toBeNull();
 
+				const deleteResult = await mercuriusClient.mutate(
+					Mutation_deleteOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: { input: { id: orgId } },
+					},
+				);
+				expect(deleteResult.errors).toBeUndefined();
+				expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
+			});
+
+			it('should return invalid_arguments with issue on ["input","avatar"] when avatar mimetype is not allowed (e.g. text/plain)', async () => {
+				const orgId = await createTestOrganization(authToken);
+				const invalidAvatarUpload = Promise.resolve({
+					filename: "avatar.txt",
+					mimetype: "text/plain",
+					createReadStream: () => Readable.from("dummy"),
+				});
+
+				const result = await mercuriusClient.mutate(
+					Mutation_updateOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								id: orgId,
+								avatar: invalidAvatarUpload,
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateOrganization ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "avatar"],
+										message: expect.stringMatching(/mime type.*not allowed/i),
+									}),
+								]),
+							}),
+							path: ["updateOrganization"],
+						}),
+					]),
+				);
+
+				// Cleanup: delete org so DB/MinIO state remains consistent
 				const deleteResult = await mercuriusClient.mutate(
 					Mutation_deleteOrganization,
 					{
