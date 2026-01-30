@@ -1210,6 +1210,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 
 	describe("when performance tracker is not available", () => {
 		it("should execute mutation successfully without perf tracker", async () => {
+			vi.useRealTimers();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = undefined;
 
