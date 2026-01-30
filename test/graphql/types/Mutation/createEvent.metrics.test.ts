@@ -1111,6 +1111,10 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 
 		it("should reject invalid MIME type for attachments with indexed error path", async () => {
+			// Use real timers so resolver and zod validation run without fake-timer interference.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
+			vi.useRealTimers();
+
 			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
@@ -1157,7 +1161,6 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				fieldName: "attachments",
 			});
 
-			await vi.runAllTimersAsync();
 			try {
 				await createEventMutationResolver(
 					null,
