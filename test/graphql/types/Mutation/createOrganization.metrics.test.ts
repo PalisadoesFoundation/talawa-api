@@ -678,91 +678,98 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 		});
 
 		it("should track mutation execution time with different valid avatar mime types", async () => {
-			const validMimeTypes = [
-				"image/jpeg",
-				"image/webp",
-				"image/avif",
-			] as const;
+			// Use real timers to avoid infinite loop from runAllTimersAsync (mocks/context can schedule recurring timers)
+			vi.useRealTimers();
+			try {
+				const validMimeTypes = [
+					"image/jpeg",
+					"image/webp",
+					"image/avif",
+				] as const;
 
-			for (const mimeType of validMimeTypes) {
-				const perf = createPerformanceTracker();
-				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-				context.perf = perf;
+				for (const mimeType of validMimeTypes) {
+					const perf = createPerformanceTracker();
+					const { context, mocks } = createMockGraphQLContext(
+						true,
+						"admin-user",
+					);
+					context.perf = perf;
 
-				const orgName = `Test Org ${faker.string.ulid()}`;
-				const mockAdminUser = createMockAdminUser();
-				const mockCreatedOrganization = {
-					...createMockCreatedOrganization(orgName),
-					avatarMimeType: mimeType,
-					avatarName: faker.string.uuid(),
-				};
+					const orgName = `Test Org ${faker.string.ulid()}`;
+					const mockAdminUser = createMockAdminUser();
+					const mockCreatedOrganization = {
+						...createMockCreatedOrganization(orgName),
+						avatarMimeType: mimeType,
+						avatarName: faker.string.uuid(),
+					};
 
-				const validAvatar = Promise.resolve({
-					filename: `avatar.${mimeType.split("/")[1]}`,
-					mimetype: mimeType,
-					createReadStream: vi.fn().mockReturnValue({
-						pipe: vi.fn(),
-						on: vi.fn(),
-					}),
-				});
+					const validAvatar = Promise.resolve({
+						filename: `avatar.${mimeType.split("/")[1]}`,
+						mimetype: mimeType,
+						createReadStream: vi.fn().mockReturnValue({
+							pipe: vi.fn(),
+							on: vi.fn(),
+						}),
+					});
 
-				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					mockAdminUser,
-				);
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					undefined,
-				);
-
-				(
-					mocks.drizzleClient as unknown as {
-						transaction: ReturnType<typeof vi.fn>;
-					}
-				).transaction = vi
-					.fn()
-					.mockImplementation(
-						async (callback: (tx: unknown) => Promise<unknown>) => {
-							const mockTx = {
-								insert: vi.fn().mockReturnValue({
-									values: vi.fn().mockReturnValue({
-										returning: vi
-											.fn()
-											.mockResolvedValue([mockCreatedOrganization]),
-									}),
-								}),
-							};
-							return callback(mockTx as never);
-						},
+					mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+						mockAdminUser,
+					);
+					mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+						undefined,
 					);
 
-				const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
-				putObjectSpy.mockResolvedValue({
-					etag: "mock-etag",
-					versionId: null,
-				});
+					(
+						mocks.drizzleClient as unknown as {
+							transaction: ReturnType<typeof vi.fn>;
+						}
+					).transaction = vi
+						.fn()
+						.mockImplementation(
+							async (callback: (tx: unknown) => Promise<unknown>) => {
+								const mockTx = {
+									insert: vi.fn().mockReturnValue({
+										values: vi.fn().mockReturnValue({
+											returning: vi
+												.fn()
+												.mockResolvedValue([mockCreatedOrganization]),
+										}),
+									}),
+								};
+								return callback(mockTx as never);
+							},
+						);
 
-				const resultPromise = createOrganizationMutationResolver(
-					null,
-					{
-						input: {
-							name: orgName,
-							description: "Test Description",
-							avatar: validAvatar,
+					const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
+					putObjectSpy.mockResolvedValue({
+						etag: "mock-etag",
+						versionId: null,
+					});
+
+					const result = await createOrganizationMutationResolver(
+						null,
+						{
+							input: {
+								name: orgName,
+								description: "Test Description",
+								avatar: validAvatar,
+							},
 						},
-					},
-					context,
-				);
-				await vi.runAllTimersAsync();
-				const result = await resultPromise;
+						context,
+					);
 
-				expect(result).toBeDefined();
-				expect(putObjectSpy).toHaveBeenCalled();
+					expect(result).toBeDefined();
+					expect(putObjectSpy).toHaveBeenCalled();
 
-				const snapshot = perf.snapshot();
-				const op = snapshot.ops["mutation:createOrganization"];
+					const snapshot = perf.snapshot();
+					const op = snapshot.ops["mutation:createOrganization"];
 
-				expect(op).toBeDefined();
-				expect(op?.count).toBe(1);
-				expect(op?.ms).toBeGreaterThanOrEqual(0);
+					expect(op).toBeDefined();
+					expect(op?.count).toBe(1);
+					expect(op?.ms).toBeGreaterThanOrEqual(0);
+				}
+			} finally {
+				vi.useFakeTimers();
 			}
 		});
 	});
