@@ -523,6 +523,15 @@ describe("actionItemCategoriesTable", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should validate a name with exactly 1 character", () => {
+			const result = actionItemCategoriesTableInsertSchema.safeParse({
+				name: "a",
+				isDisabled: false,
+				organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it("should accept valid data with all optional fields", () => {
 			const fullData = {
 				name: "Test Category",
@@ -588,6 +597,26 @@ describe("actionItemCategoriesTable", () => {
 				name: "Valid Name",
 				isDisabled: false,
 				organizationId: invalidUUID,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should invalidate a creatorId with incorrect UUID format", () => {
+			const result = actionItemCategoriesTableInsertSchema.safeParse({
+				name: "Valid Name",
+				isDisabled: false,
+				organizationId: faker.string.uuid(),
+				creatorId: "invalid-uuid",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should invalidate an updaterId with incorrect UUID format", () => {
+			const result = actionItemCategoriesTableInsertSchema.safeParse({
+				name: "Valid Name",
+				isDisabled: false,
+				organizationId: faker.string.uuid(),
+				updaterId: "invalid-uuid",
 			});
 			expect(result.success).toBe(false);
 		});
