@@ -345,6 +345,21 @@ else
     test_pass
 fi
 
+# Default DRY_RUN fallback (${DRY_RUN:-0}): unset DRY_RUN and assert run_cmd executes and propagates exit codes
+test_start "run_cmd with DRY_RUN unset executes command (default like DRY_RUN=0)"
+if unset DRY_RUN; run_cmd true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected run_cmd to execute command when DRY_RUN is unset"
+fi
+
+test_start "run_cmd with DRY_RUN unset propagates exit code on failure"
+if unset DRY_RUN; run_cmd false &>/dev/null; then
+    test_fail "Expected run_cmd to return non-zero when DRY_RUN unset and command fails"
+else
+    test_pass
+fi
+
 ##############################################################################
 # Test: parse_package_json() - Functional tests
 ##############################################################################
