@@ -200,15 +200,29 @@ OLD_OS_TYPE="${OS_TYPE:-}"
 unset OS_TYPE
 
 # Suppress error output
+# Test update_package_index
 if ! update_package_index >/dev/null 2>&1; then
-    # It should return 1, not exit
-    test_pass
-    # Restore OS_TYPE for other tests if needed
-    OS_TYPE="${OLD_OS_TYPE}"
+    : # Expected failure
 else
     test_fail "Expected update_package_index to return 1 when OS_TYPE is unset"
-    OS_TYPE="${OLD_OS_TYPE}"
 fi
+
+# Test is_package_installed
+if ! is_package_installed "some-package" >/dev/null 2>&1; then
+    : # Expected failure
+else
+    test_fail "Expected is_package_installed to return 1 when OS_TYPE is unset"
+fi
+
+# Test install_package
+if ! install_package "some-package" >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "Expected install_package to return 1 when OS_TYPE is unset"
+fi
+
+# Restore OS_TYPE for subsequent tests
+OS_TYPE="${OLD_OS_TYPE}"
 
 ##############################################################################
 # Test Summary
