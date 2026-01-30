@@ -333,11 +333,15 @@ test_invalid_path '/tmp/foo out' "space"
 ##############################################################################
 
 test_start "run_cmd with DRY_RUN=1 prints command and does not execute"
-output=$(DRY_RUN=1 run_cmd echo hello 2>&1)
-if echo "$output" | grep -q "dry-run" && echo "$output" | grep -q "echo hello"; then
-    test_pass
-else
+# Use a temp file to verify run_cmd does NOT actually execute when DRY_RUN=1
+TMPFILE=$(mktemp -u)
+output=$(DRY_RUN=1 run_cmd touch "$TMPFILE" 2>&1)
+if ! echo "$output" | grep -q "dry-run" || ! echo "$output" | grep -q "touch"; then
     test_fail "Expected dry-run message and command in output, got: $output"
+elif [ -e "$TMPFILE" ]; then
+    test_fail "DRY_RUN=1 must not execute: file was created: $TMPFILE"
+else
+    test_pass
 fi
 
 test_start "run_cmd with DRY_RUN=0 executes command"
