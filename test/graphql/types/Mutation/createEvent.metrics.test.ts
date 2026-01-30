@@ -1311,7 +1311,6 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				},
 				context,
 			);
-			await vi.runAllTimersAsync();
 			const result = await resultPromise;
 
 			expect(result).toBeDefined();
