@@ -552,13 +552,9 @@ echo "  pnpm:    v$(pnpm --version)"
 if command_exists docker; then
     echo "  Docker:  $(docker --version | cut -d ' ' -f 3 | tr -d ',')"
 fi
+echo ""
 print_timing_summary
 print_installation_summary 0
-echo "  Node.js: $(node --version)"
-echo "  pnpm:    v$(pnpm --version)"
-if command_exists docker; then
-    echo "  Docker:  $(docker --version | cut -d ' ' -f 3 | tr -d ',')"
-fi
 echo ""
 info "To complete setup, run:"
 echo "  pnpm run setup"

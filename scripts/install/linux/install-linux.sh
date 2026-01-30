@@ -76,26 +76,8 @@ readonly CURL_MAX_TIME_DOCKER=300
 readonly CURL_MAX_TIME_FNM=120
 readonly MAX_RETRY_ATTEMPTS=3 # placeholder for future retry logic
 
-# Log error to installation log file
-# Log error to installation log file (using logging.sh internal writer if available, else fallback) // actually logging.sh has _log_write. 
-# But note verify_repository uses error/warn. 
-# install-linux uses log_error in check_docker_compose/check_docker_running. 
-# I can alias log_error to error (which prints to stderr and log) or keep it if I want just log.
-# original log_error: echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
-# logging.sh error: _log_write "✗ ERROR: $*" "stderr"
-# If I use error here it prints to console too. check_docker_compose likely wants to be silent if validation fails?
-# The usage is: log_error "Docker Compose check failed..."
-# This is usually inside a check that might perform error handling.
-# Let's simple redefine log_error to use _log_write without stderr if we want silent? 
-# or just map to error() if we want it visible.
-# install-linux.sh usually prints "Docker Compose is available" or warns.
-# Let's map it to logging.sh 'error' for now but maybe it shouldn't be printed?
+# Log error to installation log file only (no console output)
 log_error() {
-    _log_write "ERROR: $1" "file" # assuming _log_write supports stream arg. logging.sh supports stderr as 2nd arg or stdout default.
-    # logging.sh: _log_write msg [stream]
-    # stream=stderr -> >&2. else stdout.
-    # logging.sh doesn't support file-only. 
-    # Let's just append to log file directly like before.
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     printf "[%s] ERROR: %s\n" "$timestamp" "$1" >> "$INSTALLATION_LOG"
@@ -351,7 +333,6 @@ CURRENT_STEP=0
 # Step 1: Install system dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-: $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
 
 if [ "$SKIP_PREREQS" = "true" ]; then
@@ -414,7 +395,6 @@ fi
 ##############################################################################
 # Step 2: Install Docker (optional)
 ##############################################################################
-: $((CURRENT_STEP++))
 : $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 
@@ -494,7 +474,6 @@ fi
 # Step 3: Install fnm (Fast Node Manager)
 ##############################################################################
 : $((CURRENT_STEP++))
-: $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
 
 if command_exists fnm; then
@@ -545,7 +524,6 @@ fi
 ##############################################################################
 # Step 4: Read versions from package.json
 ##############################################################################
-: $((CURRENT_STEP++))
 : $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
@@ -632,10 +610,9 @@ info "Target pnpm version: $PNPM_VERSION"
 # Step 5: Install Node.js
 ##############################################################################
 : $((CURRENT_STEP++))
-: $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
-with_spinner "Installing Node.js v$CLEAN_NODE_VERSION..." fnm install "$CLEAN_NODE_VERSION"
+with_timer "Install Node.js v$CLEAN_NODE_VERSION" fnm install "$CLEAN_NODE_VERSION"
 if ! fnm use "$CLEAN_NODE_VERSION"; then
     error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
     echo ""
@@ -721,7 +698,6 @@ success "Node.js installed: $(node --version)"
 # Step 6: Install pnpm
 ##############################################################################
 : $((CURRENT_STEP++))
-: $((CURRENT_STEP++))
 print_step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 PNPM_VERSION_CACHE="/tmp/.talawa-pnpm-latest-check"
@@ -774,13 +750,11 @@ if command_exists pnpm; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        with_spinner "Updating pnpm..." retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
+        with_timer "Update pnpm to v$PNPM_VERSION" retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
     fi
 else
     info "Installing pnpm..."
-    info "Installing pnpm..."
-    with_spinner "Installing pnpm..." retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
+    with_timer "Install pnpm v$PNPM_VERSION" retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
 fi
 
 # Verify pnpm is available in PATH
@@ -829,7 +803,7 @@ success "pnpm installed: v$(pnpm --version)"
 # Step 7: Install project dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
 # Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
 LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
@@ -852,7 +826,7 @@ if [ -f "pnpm-lock.yaml" ]; then
     
     if [ "$NEEDS_INSTALL" = true ]; then
         info "Installing dependencies..."
-        if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+        if ! with_timer "Install project dependencies" retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
              error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
              info "Possible causes:"
              info "  - Network connectivity issues"
@@ -869,7 +843,7 @@ if [ -f "pnpm-lock.yaml" ]; then
 else
     # No lockfile exists, run install to generate it
     info "No pnpm-lock.yaml found, running fresh install..."
-    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+    if ! with_timer "Install project dependencies" retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
          error "Failed to install dependencies."
          exit 1
     fi

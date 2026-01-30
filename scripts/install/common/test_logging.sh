@@ -105,12 +105,13 @@ echo "Pass: with_spinner failure"
 
 # Test 6: with_spinner interruption (SIGINT)
 echo "--- Test 6: with_spinner interruption ---"
-# Start a spinner that runs a long sleep in background
+# Start a spinner that runs a long sleep in background and capture output
+INTERRUPT_OUT="/tmp/test_interrupt_$"
 (
   # Trap INT to prevent the subshell from just dying immediately without verifying
   trap 'exit 130' INT
   with_spinner "Interrupted spinner..." sleep 10
-) &
+) > "$INTERRUPT_OUT" 2>&1 &
 PID=$!
 sleep 1
 kill -INT $PID
@@ -120,9 +121,13 @@ EXIT_CODE=$?
 set -e
 # Note: implementation returns 130 on interruption
 if [ $EXIT_CODE -ne 130 ]; then echo "FAIL: Interruption exit code $EXIT_CODE != 130"; exit 1; fi
-
-# We can't easily capture output of background process in this simple test script structure without pipes,
-# but verify logic is sound.
+# Verify interruption message was printed
+if ! grep -q "Interrupted spinner... interrupted" "$INTERRUPT_OUT"; then 
+    echo "FAIL: Interruption message not found in output"
+    cat "$INTERRUPT_OUT"
+    exit 1
+fi
+rm -f "$INTERRUPT_OUT"
 echo "Pass: with_spinner interruption"
 
 # Test 7: Summaries
@@ -141,6 +146,32 @@ print_installation_summary 1 > "$OUT_FILE"
 if ! grep -q "✗ Installation failed" "$OUT_FILE"; then echo "FAIL: Install failure message missing"; exit 1; fi
 
 echo "Pass: Summaries"
+
+# Test 8: Argument validation
+echo "--- Test 8: Argument validation ---"
+set +e
+with_timer > "$OUT_FILE" 2>&1
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -eq 0 ]; then echo "FAIL: with_timer should fail with no arguments"; exit 1; fi
+if ! grep -q "with_timer requires at least 2 arguments" "$OUT_FILE"; then echo "FAIL: with_timer validation message missing"; exit 1; fi
+
+set +e
+with_spinner > "$OUT_FILE" 2>&1
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -eq 0 ]; then echo "FAIL: with_spinner should fail with no arguments"; exit 1; fi
+if ! grep -q "with_spinner requires at least 2 arguments" "$OUT_FILE"; then echo "FAIL: with_spinner validation message missing"; exit 1; fi
+
+echo "Pass: Argument validation"
+
+# Test 9: Empty timing summary
+echo "--- Test 9: Empty timing summary ---"
+reset_timing
+print_timing_summary > "$OUT_FILE"
+if ! grep -q "No timing data recorded" "$OUT_FILE"; then echo "FAIL: Empty timing summary message missing"; exit 1; fi
+
+echo "Pass: Empty timing summary"
 
 echo "=== All Tests Passed ==="
 rm "$LOG_FILE" "$OUT_FILE"
