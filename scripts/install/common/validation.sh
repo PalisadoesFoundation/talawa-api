@@ -356,7 +356,9 @@ validate_path() {
             ;;
     esac
 
-    if [[ "$p" == *".."* ]]; then
+    # Only reject ".." as a path component (e.g. /tmp/../etc), not consecutive dots in filenames (e.g. file..bak)
+    local traversal_pattern='(^|/)\.\.($|/)'
+    if [[ "$p" =~ $traversal_pattern ]]; then
         error "Path traversal not allowed: $p"
         return 1
     fi

@@ -260,6 +260,7 @@ test_valid_path() {
 test_valid_path "/" "root"
 test_valid_path "/tmp" "tmp"
 test_valid_path "/home/user/app" "absolute path"
+test_valid_path "/tmp/file..bak" "consecutive dots in filename (legitimate)"
 
 ##############################################################################
 # Test: validate_path() - Invalid paths
@@ -300,6 +301,13 @@ if DRY_RUN=0 run_cmd true &>/dev/null; then
     test_pass
 else
     test_fail "Expected run_cmd to execute command and return 0"
+fi
+
+test_start "run_cmd propagates exit code on command failure"
+if DRY_RUN=0 run_cmd false &>/dev/null; then
+    test_fail "Expected run_cmd to return non-zero when command fails"
+else
+    test_pass
 fi
 
 ##############################################################################
