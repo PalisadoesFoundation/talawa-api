@@ -60,6 +60,7 @@ export default defineConfig({
 			"test/fastifyPlugins/**/*.{test,spec}.ts",
 			"test/plugin/**/*.{test,spec}.ts",
 			"test/scripts/**/*.{test,spec}.ts",
+			"test/setup/**/*.{test,spec}.ts",
 			"test/unit_tests/**/*.{test,spec}.ts",
 			"test/helpers/**/*.{test,spec}.ts",
 			"test/*.{test,spec}.ts",
@@ -84,6 +85,21 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "lcov", "html", "json"],
+			// Restrict unit coverage to unit-owned source paths
+			include: [
+				"src/config/**",
+				"src/fastifyPlugins/**",
+				"src/observability/**",
+				"src/plugin/**",
+				"src/plugins/**",
+				"src/routes/**",
+				"src/services/**",
+				"src/setup/**",
+				"src/types/**",
+				"src/utilities/**",
+				"src/workers/**",
+				"src/*.ts",
+			],
 			// Only include files that are actually touched by tests
 			all: false,
 			exclude: [

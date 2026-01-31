@@ -91,7 +91,7 @@ describe("GraphQL Correlation ID Integration", () => {
 			},
 		});
 
-		expect(response.statusCode).toBe(200);
+		expect(response.statusCode).toBe(400);
 		expect(response.headers["x-correlation-id"]).toBeDefined();
 		expect(response.headers["x-correlation-id"]).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -150,7 +150,7 @@ describe("GraphQL Correlation ID Integration", () => {
 			},
 		});
 
-		expect(response.statusCode).toBe(200);
+		expect(response.statusCode).toBe(400);
 		expect(response.headers["x-correlation-id"]).toBe(clientCorrelationId);
 
 		const body = JSON.parse(response.body);
@@ -175,8 +175,8 @@ describe("GraphQL Correlation ID Integration", () => {
 			},
 		});
 
-		// GraphQL syntax errors still return 200 with errors in body
-		expect(response.statusCode).toBe(200);
+		// GraphQL syntax errors return 400 with errors in body
+		expect(response.statusCode).toBe(400);
 		expect(response.headers["x-correlation-id"]).toBeDefined();
 		expect(response.headers["x-correlation-id"]).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -204,7 +204,7 @@ describe("GraphQL Correlation ID Integration", () => {
 			},
 		});
 
-		expect(response.statusCode).toBe(200);
+		expect(response.statusCode).toBe(400);
 		const correlationId = response.headers["x-correlation-id"];
 		expect(correlationId).toBeDefined();
 		expect(correlationId).toMatch(
@@ -263,8 +263,8 @@ describe("GraphQL Correlation ID Integration", () => {
 			},
 		});
 
-		// GraphQL validation errors return 200 with errors in body
-		expect(response.statusCode).toBe(200);
+		// GraphQL validation errors return 400 with errors in body
+		expect(response.statusCode).toBe(400);
 		expect(response.headers["x-correlation-id"]).toBeDefined();
 
 		const body = JSON.parse(response.body);
@@ -287,8 +287,8 @@ describe("GraphQL Correlation ID Integration", () => {
 			},
 		});
 
-		// Malformed requests still return 200 in GraphQL spec
-		expect(response.statusCode).toBe(200);
+		// Malformed requests return 400 in GraphQL spec
+		expect(response.statusCode).toBe(400);
 		expect(response.headers["x-correlation-id"]).toBeDefined();
 		expect(response.headers["x-correlation-id"]).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
