@@ -107,8 +107,9 @@ jobs:
           kcov --version
       - name: Run install script tests with coverage
         run: |
-          mkdir -p ./coverage/install
-          kcov --include-path=scripts/install --exclude-path=tests ./coverage/install bash tests/install/run-all.sh
+          KCOV_OUT="$(pwd)/coverage/install"
+          mkdir -p "$KCOV_OUT"
+          kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
       - name: Upload install coverage to Codecov
         if: success() && hashFiles('coverage/install/**/cobertura.xml') != ''
         uses: codecov/codecov-action@v5

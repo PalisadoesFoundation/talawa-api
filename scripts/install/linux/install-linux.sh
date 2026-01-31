@@ -383,7 +383,51 @@ validate_package_json_fields() {
         info "Remediation steps:"
         info "  1. Ensure you have the latest version of the repository:"
         info "     git pull origin develop"
-        info "  2. If the issue persists, re-clone the repository"
+        info "  2. If the issue persists, re-clone the repository:"
+        info "     git clone https://github.com/PalisadoesFoundation/talawa-api.git"
+        exit 1
+    fi
+
+    # SECURITY: Validate engines.node format early (prevent command injection)
+    # Must run before any install steps so malicious version strings fail fast.
+    if [ -n "$NODE_ENGINE" ]; then
+        if ! validate_version_string "$NODE_ENGINE" "Node.js version (engines.node)"; then
+            handle_version_validation_error "Node.js version (engines.node)" "$NODE_ENGINE" ".engines.node"
+        fi
+    fi
+}
+
+validate_disk_space() {
+    # Verify available disk space (minimum 2GB)
+    AVAILABLE_SPACE_KB=$(df -k "$REPO_ROOT" | awk 'NR==2 {print $4}')
+    if [ -z "$AVAILABLE_SPACE_KB" ]; then
+        warn "Could not determine available disk space. Proceeding with installation."
+        info "Manually verify at least 2GB is available: df -h $REPO_ROOT"
+        return 0
+    fi
+
+    if [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]; then
+        AVAILABLE_SPACE_MB=$((AVAILABLE_SPACE_KB / 1024))
+        REQUIRED_SPACE_MB=$((MIN_DISK_SPACE_KB / 1024))
+        error "Insufficient disk space. Available: ${AVAILABLE_SPACE_MB}MB, Required: ${REQUIRED_SPACE_MB}MB (2GB)"
+        info ""
+        info "Remediation steps:"
+        info "  1. Free up disk space by removing unnecessary files"
+        info "  2. Check disk usage: df -h"
+        info "  3. Find large files: du -sh * | sort -rh | head -10"
+        exit 1
+    fi
+}
+
+check_git_repo() {
+    # Verify git repository exists
+    if [ ! -d ".git" ]; then
+        error "This directory is not a git repository."
+        info ""
+        info "Remediation steps:"
+        info "  1. Clone the repository properly:"
+        info "     git clone https://github.com/PalisadoesFoundation/talawa-api.git"
+        info "  2. Navigate to the cloned directory: cd talawa-api"
         exit 1
     fi
 
