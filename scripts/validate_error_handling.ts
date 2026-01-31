@@ -222,6 +222,7 @@ export class ErrorHandlingValidator {
 					});
 				} catch {
 					// Ignore fetch errors
+					console.warn("Git fetch failed, continuing without fetch...");
 				}
 
 				const diffArgs = ["diff", "--name-only", `origin/${baseRef}...HEAD`];
@@ -297,6 +298,8 @@ export class ErrorHandlingValidator {
 			});
 			return true;
 		} catch {
+			// Branch check failed, treating as non-existent
+			console.warn(`Branch verification failed for: ${branch}`);
 			return false;
 		}
 	}
@@ -354,6 +357,7 @@ export class ErrorHandlingValidator {
 			return regex.test(filePath);
 		} catch {
 			// Fallback to simple string matching if regex fails
+			console.warn(`Regex failed for pattern: ${pattern}, using fallback`);
 			const simplePattern = pattern.replace(/\*+/g, "");
 			return filePath.includes(simplePattern);
 		}
