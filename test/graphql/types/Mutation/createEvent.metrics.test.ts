@@ -1,3 +1,16 @@
+/**
+ * Test suite for createEvent mutation performance tracking and metrics.
+ *
+ * Verifies that the createEvent resolver integrates correctly with the performance
+ * tracker (ctx.perf), records mutation timing, and degrades gracefully when the
+ * tracker is unavailable. Uses direct resolver invocation for precise control over
+ * context.perf and attachment/MIME validation behavior.
+ *
+ * CI fix (included in validation-security-hardening PR): Two tests use vi.useRealTimers()
+ * and no runAllTimersAsync to avoid Vitest's "10000 timers" infinite loop in CI; without
+ * this, the suite would fail on shard 5. The change is test-only and does not alter
+ * resolver behavior.
+ */
 import { faker } from "@faker-js/faker";
 import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
@@ -22,17 +35,26 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+/**
+ * Performance-tracking tests for the createEvent mutation resolver.
+ *
+ * Intentional exception: we invoke the createEvent resolver directly (not via
+ * mercuriusClient) so we can inject and control ctx.perf per test and assert on
+ * exact operation names and timing. mercuriusClient integration tests do not
+ * allow per-request context.perf injection in the same way.
+ *
+ * Performance branches covered for 100% coverage of withMutationMetrics/createEvent:
+ * - "when performance tracker is available": ctx.perf set → perf.time() wraps resolver, we assert snapshot.ops["mutation:createEvent"].
+ * - "when performance tracker is not available": ctx.perf undefined → resolver runs without timing; no perf assertions.
+ */
 describe("Mutation createEvent - Performance Tracking", () => {
-	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
-	// to have precise control over context.perf for performance timing measurements.
-	// This allows us to verify exact performance tracker behavior and operation names.
 	let createEventMutationResolver: (
 		_parent: unknown,
 		args: { input: Record<string, unknown> },
 		ctx: ReturnType<typeof createMockGraphQLContext>["context"],
 	) => Promise<unknown>;
 
-	// Helper factories to reduce duplication
+	/** Builds a mock user for auth/context. */
 	const createMockUser = (
 		userId: string,
 		role: "regular" | "administrator" = "regular",
@@ -42,6 +64,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		name: "Test User",
 	});
 
+	/** Builds a mock organization with admin membership. */
 	const createMockOrganization = (organizationId: string) => ({
 		id: organizationId,
 		name: "Test Organization",
@@ -53,6 +76,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		],
 	});
 
+	/** Builds a mock event record for insert/return. */
 	const createMockEvent = (
 		organizationId: string,
 		startAt: Date,
@@ -76,6 +100,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		updatedAt: null,
 	});
 
+	/** Builds a mock agenda folder for the event. */
 	const createMockAgendaFolder = (
 		eventId: string,
 		organizationId: string,
@@ -91,6 +116,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		creatorId: userId,
 	});
 
+	/** Builds a mock agenda category for the event. */
 	const createMockAgendaCategory = (
 		eventId: string,
 		organizationId: string,
@@ -125,6 +151,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		vi.clearAllMocks();
 	});
 
+	/** Tests with ctx.perf set; verifies timing and operation names. */
 	describe("when performance tracker is available", () => {
 		it("should track mutation execution time on successful mutation", async () => {
 			const perf = createPerformanceTracker();
@@ -1086,9 +1113,12 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
-				expect(error).toBeInstanceOf(Error);
-				expect((error as Error).message).toContain(
-					"Upload failed for attachment 2",
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unexpected",
+				);
+				expect((error as TalawaGraphQLError).message).toContain(
+					"Upload failed",
 				);
 			}
 
@@ -1111,55 +1141,57 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 
 		it("should reject invalid MIME type for attachments with indexed error path", async () => {
-			// Use real timers to avoid infinite loop from runAllTimersAsync (mocks/context can schedule recurring timers)
+			// Use real timers so resolver and zod validation run without fake-timer interference.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
 			vi.useRealTimers();
+
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = perf;
+
+			const organizationId = faker.string.uuid();
+			const startAt = new Date(Date.now() + 86400000);
+			const endAt = new Date(startAt.getTime() + 3600000);
+
+			// Mock current user
+			const mockCurrentUser = createMockUser("user-123");
+
+			// Mock organization
+			const mockOrganization = createMockOrganization(organizationId);
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockCurrentUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockOrganization,
+			);
+
+			// Create mock file uploads with valid and invalid MIME types
+			const createMockReadStream = () => ({
+				pipe: vi.fn().mockReturnThis(),
+				on: vi.fn().mockReturnThis(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			// First attachment: valid image MIME type
+			const mockValidAttachment = Promise.resolve({
+				filename: "valid.png",
+				mimetype: "image/png", // Valid
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
+			});
+
+			// Second attachment: invalid text/plain MIME type
+			const mockInvalidAttachment = Promise.resolve({
+				filename: "invalid.txt",
+				mimetype: "text/plain", // Invalid - not in eventAttachmentMimeTypeEnum
+				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
+				encoding: "7bit",
+				fieldName: "attachments",
+			});
+
 			try {
-				const perf = createPerformanceTracker();
-				const { context, mocks } = createMockGraphQLContext(true, "user-123");
-				context.perf = perf;
-
-				const organizationId = faker.string.uuid();
-				const startAt = new Date(Date.now() + 86400000);
-				const endAt = new Date(startAt.getTime() + 3600000);
-
-				// Mock current user
-				const mockCurrentUser = createMockUser("user-123");
-
-				// Mock organization
-				const mockOrganization = createMockOrganization(organizationId);
-
-				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					mockCurrentUser,
-				);
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					mockOrganization,
-				);
-
-				// Create mock file uploads with valid and invalid MIME types
-				const createMockReadStream = () => ({
-					pipe: vi.fn().mockReturnThis(),
-					on: vi.fn().mockReturnThis(),
-					[Symbol.asyncIterator]: vi.fn(),
-				});
-
-				// First attachment: valid image MIME type
-				const mockValidAttachment = Promise.resolve({
-					filename: "valid.png",
-					mimetype: "image/png", // Valid
-					createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-					encoding: "7bit",
-					fieldName: "attachments",
-				});
-
-				// Second attachment: invalid text/plain MIME type
-				const mockInvalidAttachment = Promise.resolve({
-					filename: "invalid.txt",
-					mimetype: "text/plain", // Invalid - not in eventAttachmentMimeTypeEnum
-					createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-					encoding: "7bit",
-					fieldName: "attachments",
-				});
-
 				try {
 					await createEventMutationResolver(
 						null,
@@ -1210,107 +1242,100 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 	});
 
+	/** Tests with ctx.perf undefined; verifies graceful degradation. */
 	describe("when performance tracker is not available", () => {
 		it("should execute mutation successfully without perf tracker", async () => {
-			// Use real timers for this test to avoid infinite loop from runAllTimersAsync
-			// (mocks/context can schedule recurring timers)
+			// Use real timers so resolver runs without fake-timer interference and cleanup behaves correctly.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
 			vi.useRealTimers();
-			try {
-				const { context, mocks } = createMockGraphQLContext(true, "user-123");
-				context.perf = undefined;
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			context.perf = undefined;
 
-				const organizationId = faker.string.uuid();
-				const startAt = new Date(Date.now() + 86400000);
-				const endAt = new Date(startAt.getTime() + 3600000);
+			const organizationId = faker.string.uuid();
+			const startAt = new Date(Date.now() + 86400000);
+			const endAt = new Date(startAt.getTime() + 3600000);
 
-				// Mock current user
-				const mockCurrentUser = createMockUser("user-123");
+			// Mock current user
+			const mockCurrentUser = createMockUser("user-123");
 
-				// Mock organization
-				const mockOrganization = createMockOrganization(organizationId);
+			// Mock organization
+			const mockOrganization = createMockOrganization(organizationId);
 
-				// Mock created event
-				const mockCreatedEvent = createMockEvent(
-					organizationId,
-					startAt,
-					endAt,
-				);
+			// Mock created event
+			const mockCreatedEvent = createMockEvent(organizationId, startAt, endAt);
 
-				// Mock database queries
-				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					mockCurrentUser,
-				);
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					mockOrganization,
-				);
+			// Mock database queries
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockCurrentUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				mockOrganization,
+			);
 
-				// Mock agenda folder and category
-				const mockAgendaFolder = createMockAgendaFolder(
-					mockCreatedEvent.id,
-					organizationId,
-				);
-				const mockAgendaCategory = createMockAgendaCategory(
-					mockCreatedEvent.id,
-					organizationId,
-				);
+			// Mock agenda folder and category
+			const mockAgendaFolder = createMockAgendaFolder(
+				mockCreatedEvent.id,
+				organizationId,
+			);
+			const mockAgendaCategory = createMockAgendaCategory(
+				mockCreatedEvent.id,
+				organizationId,
+			);
 
-				// Mock transaction with table-specific returns
-				(
-					mocks.drizzleClient as unknown as {
-						transaction?: ReturnType<typeof vi.fn>;
-					}
-				).transaction = vi
-					.fn()
-					.mockImplementation(
-						async (callback: (tx: unknown) => Promise<unknown>) => {
-							const mockTx = {
-								insert: vi.fn((table: unknown) => {
-									if (table === eventsTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockCreatedEvent]),
-											}),
-										};
-									}
-									if (table === agendaFoldersTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockAgendaFolder]),
-											}),
-										};
-									}
-									if (table === agendaCategoriesTable) {
-										return {
-											values: vi.fn().mockReturnValue({
-												returning: vi
-													.fn()
-													.mockResolvedValue([mockAgendaCategory]),
-											}),
-										};
-									}
+			// Mock transaction with table-specific returns
+			(
+				mocks.drizzleClient as unknown as {
+					transaction?: ReturnType<typeof vi.fn>;
+				}
+			).transaction = vi
+				.fn()
+				.mockImplementation(
+					async (callback: (tx: unknown) => Promise<unknown>) => {
+						const mockTx = {
+							insert: vi.fn((table: unknown) => {
+								if (table === eventsTable) {
 									return {
 										values: vi.fn().mockReturnValue({
-											returning: vi.fn().mockResolvedValue([]),
+											returning: vi.fn().mockResolvedValue([mockCreatedEvent]),
 										}),
 									};
-								}),
-							};
-							return callback(mockTx as never);
-						},
-					);
+								}
+								if (table === agendaFoldersTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi.fn().mockResolvedValue([mockAgendaFolder]),
+										}),
+									};
+								}
+								if (table === agendaCategoriesTable) {
+									return {
+										values: vi.fn().mockReturnValue({
+											returning: vi
+												.fn()
+												.mockResolvedValue([mockAgendaCategory]),
+										}),
+									};
+								}
+								return {
+									values: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([]),
+									}),
+								};
+							}),
+						};
+						return callback(mockTx as never);
+					},
+				);
 
-				// Mock notification service
-				const mockNotification = {
-					enqueueEventCreated: vi.fn(),
-					enqueueSendEventInvite: vi.fn(),
-					flush: vi.fn().mockResolvedValue(undefined),
-				};
-				context.notification = mockNotification;
+			// Mock notification service
+			const mockNotification = {
+				enqueueEventCreated: vi.fn(),
+				enqueueSendEventInvite: vi.fn(),
+				flush: vi.fn().mockResolvedValue(undefined),
+			};
+			context.notification = mockNotification;
 
+			try {
 				const result = await createEventMutationResolver(
 					null,
 					{
