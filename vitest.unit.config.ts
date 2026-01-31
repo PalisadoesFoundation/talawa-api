@@ -80,6 +80,8 @@ export default defineConfig({
 			"test/drizzle/**",
 			"test/graphql/**",
 			"test/install/**",
+			"test/scripts/setup/**",
+			"test/scripts/setup/**/*.{test,spec}.ts",
 		],
 		coverage: {
 			provider: "v8",
