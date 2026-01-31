@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { getTableName, type Table } from "drizzle-orm";
+import { eq, getTableName, type Table } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { mercuriusClient } from "test/graphql/types/client";
 import {
@@ -679,6 +679,33 @@ describe("actionItemCategoriesTable", () => {
 
 			expect(createdAtColumn?.hasDefault).toBe(true);
 			expect(updatedAtColumn?.onUpdateFn).toBeDefined();
+		});
+
+		it("should populate updatedAt when record is updated", async () => {
+			const orgId = await createTestOrganization();
+			const [inserted] = await server.drizzleClient
+				.insert(actionItemCategoriesTable)
+				.values({
+					name: faker.lorem.word(),
+					isDisabled: false,
+					organizationId: orgId,
+				})
+				.returning();
+
+			assertToBeNonNullish(inserted, "Insert failed");
+			expect(inserted.updatedAt).toBeNull();
+
+			// Small delay to ensure timestamp difference
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			const [updated] = await server.drizzleClient
+				.update(actionItemCategoriesTable)
+				.set({ isDisabled: true })
+				.where(eq(actionItemCategoriesTable.id, inserted.id))
+				.returning();
+
+			assertToBeNonNullish(updated, "Update failed");
+			expect(updated.updatedAt).toBeInstanceOf(Date);
 		});
 	});
 
