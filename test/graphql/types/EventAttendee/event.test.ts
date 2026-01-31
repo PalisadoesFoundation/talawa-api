@@ -1,14 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
 import { getRecurringEventInstancesByIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-vi.mock("~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries", () => ({
-	getRecurringEventInstancesByIds: vi.fn(),
-}));
+vi.mock(
+	"~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries",
+	() => ({
+		getRecurringEventInstancesByIds: vi.fn(),
+	}),
+);
 
 describe("EventAttendee Event Resolver Tests", () => {
 	let ctx: GraphQLContext;
@@ -461,6 +464,63 @@ describe("EventAttendee Event Resolver Tests", () => {
 			await expect(
 				eventAttendeeEventResolver(mockEventAttendee, {}, ctx),
 			).rejects.toThrow("Transaction was rolled back");
+		});
+	});
+
+	describe("Attachments Nullish Coalescing", () => {
+		it("should return empty array when resolved instance has undefined attachments", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			const instanceWithUndefinedAttachments = {
+				id: "instance-789",
+				name: "Recurring Instance Event",
+				description: "Instance description",
+				location: "Instance location",
+				actualStartTime: new Date("2024-03-15T09:00:00Z"),
+				actualEndTime: new Date("2024-03-15T12:00:00Z"),
+				organizationId: "org-123",
+				baseRecurringEventId: "template-456",
+				recurrenceRuleId: "rule-789",
+				originalSeriesId: "series-123",
+				originalInstanceStartTime: new Date("2024-03-15T09:00:00Z"),
+				isCancelled: false,
+				generatedAt: new Date("2024-03-01T00:00:00Z"),
+				lastUpdatedAt: null,
+				version: "1",
+				sequenceNumber: 1,
+				totalCount: 10,
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				creatorId: "creator-123",
+				updaterId: null,
+				createdAt: new Date("2024-03-01T00:00:00Z"),
+				updatedAt: null,
+				hasExceptions: false,
+				appliedExceptionData: null,
+				exceptionCreatedBy: null,
+				exceptionCreatedAt: null,
+				attachments: undefined,
+			};
+
+			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
+				instanceWithUndefinedAttachments,
+			] as unknown as Awaited<
+				ReturnType<typeof getRecurringEventInstancesByIds>
+			>);
+
+			const result = await eventAttendeeEventResolver(
+				recurringAttendee,
+				{},
+				ctx,
+			);
+
+			expect(result?.attachments).toEqual([]);
 		});
 	});
 });
