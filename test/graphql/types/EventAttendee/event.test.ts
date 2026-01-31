@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
@@ -384,13 +384,12 @@ describe("EventAttendee Event Resolver Tests", () => {
 				userId: `user-${i}`,
 			})) as EventAttendeeType[];
 
-			
 			const results = await Promise.all(
 				attendees.map((attendee) =>
 					eventAttendeeEventResolver(attendee, {}, ctx),
 				),
 			);
-			
+
 			expect(results).toHaveLength(12);
 			for (const result of results) {
 				expect(result).toEqual({
@@ -398,8 +397,6 @@ describe("EventAttendee Event Resolver Tests", () => {
 					attachments: [],
 				});
 			}
-
-			
 		});
 
 		it("should handle large event data without performance degradation", async () => {
@@ -413,19 +410,16 @@ describe("EventAttendee Event Resolver Tests", () => {
 
 			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(largeEvent);
 
-			
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
 				{},
 				ctx,
 			);
-			
 
 			expect(result).toEqual({
 				...largeEvent,
 				attachments: [],
 			});
-			
 		});
 	});
 
