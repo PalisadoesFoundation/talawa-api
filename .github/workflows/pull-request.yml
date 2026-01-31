@@ -91,9 +91,26 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      # Bypass pnpm: run test runner directly so this job needs no Node/pnpm setup
-      - name: Run install script tests
-        run: bash tests/install/run-all.sh
+      - name: Install kcov
+        run: |
+          curl -sSL https://github.com/SimonKagstrom/kcov/releases/download/v44/kcov-v44-linux-x86_64.tar.gz -o kcov.tar.gz
+          tar xzf kcov.tar.gz
+          sudo mv kcov-v44-linux-x86_64/bin/kcov /usr/local/bin/kcov
+          kcov --version
+      - name: Run install script tests with coverage
+        run: |
+          mkdir -p ./coverage/install
+          kcov --include-path=scripts/install --exclude-path=tests ./coverage/install bash tests/install/run-all.sh
+      - name: Upload install coverage to Codecov
+        if: success() && hashFiles('coverage/install/**/cobertura.xml') != ''
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+          directory: ./coverage/install
+          flags: install
 
   Python-Compliance:
     name: Check Python Code Style

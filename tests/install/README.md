@@ -31,6 +31,10 @@ Or run the runner script directly:
 ./tests/install/macos/install-macos.test.sh
 ```
 
+# Coverage
+
+In CI, install script tests are run under [kcov](https://github.com/SimonKagstrom/kcov); coverage for `scripts/install/` is uploaded to Codecov with the `install` flag. The 95% patch coverage target for the install flag is configured in `codecov.yml`.
+
 # Requirements
 
 - **Bash 4.0+** for most tests (some use bash 3.2+).
