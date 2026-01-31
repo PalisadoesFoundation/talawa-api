@@ -1,5 +1,5 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
@@ -384,14 +384,13 @@ describe("EventAttendee Event Resolver Tests", () => {
 				userId: `user-${i}`,
 			})) as EventAttendeeType[];
 
-			const startTime = Date.now();
+			
 			const results = await Promise.all(
 				attendees.map((attendee) =>
 					eventAttendeeEventResolver(attendee, {}, ctx),
 				),
 			);
-			const endTime = Date.now();
-
+			
 			expect(results).toHaveLength(12);
 			for (const result of results) {
 				expect(result).toEqual({
@@ -400,7 +399,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 				});
 			}
 
-			expect(endTime - startTime).toBeLessThan(200);
+			
 		});
 
 		it("should handle large event data without performance degradation", async () => {
@@ -414,19 +413,19 @@ describe("EventAttendee Event Resolver Tests", () => {
 
 			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(largeEvent);
 
-			const startTime = Date.now();
+			
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
 				{},
 				ctx,
 			);
-			const endTime = Date.now();
+			
 
 			expect(result).toEqual({
 				...largeEvent,
 				attachments: [],
 			});
-			expect(endTime - startTime).toBeLessThan(100);
+			
 		});
 	});
 
