@@ -58,7 +58,6 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 	});
 
 	describe("Table Relations", () => {
-		// Interfaces to satisfy Linter (No 'any' allowed!)
 		interface CapturedRelation {
 			table: Table;
 			config?: {
@@ -79,7 +78,6 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 
 		beforeAll(() => {
 			capturedRelations = {};
-			// Type-safe mocking
 			(
 				tagAssignmentsTableRelations.config as unknown as (
 					helpers: MockRelationHelpers,
@@ -110,11 +108,19 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 			});
 			expect(result.success).toBe(true);
 		});
+
+		it("should reject invalid UUIDs", () => {
+			const result = tagAssignmentsTableInsertSchema.safeParse({
+				assigneeId: "not-a-uuid",
+				tagId: validUuid,
+				creatorId: validUuid,
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 
 	describe("Database Operations", () => {
 		it("should successfully insert and delete an assignment", async () => {
-			// 1. Create Organization (Required for Tag)
 			const [org] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
@@ -126,7 +132,6 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 				.returning();
 			if (!org) throw new Error("Failed to create test organization");
 
-			// 2. Create User (Required for Assignment)
 			const [user] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
@@ -139,7 +144,6 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 				.returning();
 			if (!user) throw new Error("Failed to create test user");
 
-			// 3. Create Tag (Required for Assignment)
 			const [tag] = await server.drizzleClient
 				.insert(tagsTable)
 				.values({
@@ -149,7 +153,6 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 				.returning();
 			if (!tag) throw new Error("Failed to create test tag");
 
-			// 4. Create the Assignment
 			const [assignment] = await server.drizzleClient
 				.insert(tagAssignmentsTable)
 				.values({
@@ -159,15 +162,81 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 				})
 				.returning();
 
-			// 5. Verify & Cleanup
 			expect(assignment).toBeDefined();
 			if (!assignment) throw new Error("Failed to create assignment");
-
+			
+			// Verify fields
 			expect(assignment.assigneeId).toBe(user.id);
+			// Verify createdAt was auto-populated
+			expect(assignment.createdAt).toBeInstanceOf(Date);
 
 			await server.drizzleClient
 				.delete(tagAssignmentsTable)
 				.where(eq(tagAssignmentsTable.assigneeId, user.id));
+		});
+
+		it("should enforce composite primary key constraint (reject duplicate assignment)", async () => {
+			const [org] = await server.drizzleClient
+				.insert(organizationsTable)
+				.values({
+					name: `Org-PK-${Date.now()}`,
+					description: "Test Org PK",
+					creatorId: null,
+					updaterId: null,
+				})
+				.returning();
+			if (!org) throw new Error("Failed to create org");
+
+			const [user] = await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					emailAddress: `user-pk-${Date.now()}@test.com`,
+					name: "Test User PK",
+					passwordHash: "hash",
+					role: "regular",
+					isEmailAddressVerified: true,
+				})
+				.returning();
+			if (!user) throw new Error("Failed to create user");
+
+			const [tag] = await server.drizzleClient
+				.insert(tagsTable)
+				.values({
+					name: `Tag-PK-${Date.now()}`,
+					organizationId: org.id,
+				})
+				.returning();
+			if (!tag) throw new Error("Failed to create tag");
+
+			await server.drizzleClient.insert(tagAssignmentsTable).values({
+				assigneeId: user.id,
+				tagId: tag.id,
+				creatorId: user.id,
+			});
+
+			await expect(
+				server.drizzleClient.insert(tagAssignmentsTable).values({
+					assigneeId: user.id,
+					tagId: tag.id,
+					creatorId: user.id,
+				}),
+			).rejects.toThrow();
+
+			await server.drizzleClient
+				.delete(tagAssignmentsTable)
+				.where(eq(tagAssignmentsTable.assigneeId, user.id));
+		});
+
+		it("should enforce foreign key constraints (reject non-existent IDs)", async () => {
+			const fakeUuid = "00000000-0000-0000-0000-000000000000";
+
+			await expect(
+				server.drizzleClient.insert(tagAssignmentsTable).values({
+					assigneeId: fakeUuid,
+					tagId: fakeUuid,
+					creatorId: fakeUuid,
+				}),
+			).rejects.toThrow();
 		});
 	});
 });
