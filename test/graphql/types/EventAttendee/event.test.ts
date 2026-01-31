@@ -1,9 +1,9 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
-import { getRecurringEventInstancesByIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
+import { getRecurringEventInstancesByIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 vi.mock("~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries", () => ({
@@ -183,11 +183,12 @@ describe("EventAttendee Event Resolver Tests", () => {
 				...mockResolvedInstance,
 				attachments: [
 					{
-						id: "att-1",
+						name: "doc.pdf",
+						creatorId: "creator-123",
+						updaterId: null,
+						mimeType: "image/png",
 						eventId: "template-456",
-						recurringEventInstanceId: "instance-789",
-						url: "https://example.com/doc.pdf",
-						createdAt: new Date(),
+						createdAt: new Date("2024-03-01T00:00:00Z"),
 						updatedAt: null,
 					},
 				],
