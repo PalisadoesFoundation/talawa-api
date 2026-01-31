@@ -95,20 +95,34 @@ EOF
     chmod +x "$MOCK_BIN/$cmd_name"
 }
 
-# Create a standalone jq mock
+# Create a standalone jq mock using node for robust JSON parsing
 create_jq_mock() {
     create_mock "jq" '
 if [ "$1" == "--version" ]; then echo "jq-1.6"; exit 0; fi
 if [ "$1" == "-r" ] && [ -f package.json ]; then
     query="$2"
-    if [[ "$query" == *".name"* ]]; then
-        sed -n "s/.*\"name\": *\"\(.*\)\".*/\1/p" package.json | head -n 1
-    elif [[ "$query" == *".version"* ]] && [[ "$query" != *"engines"* ]]; then
-        sed -n "s/.*\"version\": *\"\(.*\)\".*/\1/p" package.json | head -n 1
-    elif [[ "$query" == *".engines.node"* ]]; then
-        sed -n "s/.*\"node\": *\"\(.*\)\".*/\1/p" package.json | head -n 1
-    elif [[ "$query" == *".packageManager"* ]]; then
-        sed -n "s/.*\"packageManager\": *\"\(.*\)\".*/\1/p" package.json | head -n 1
+    # Use node for robust JSON parsing instead of fragile sed
+    if command -v node >/dev/null 2>&1; then
+        if [[ "$query" == *".name"* ]]; then
+            node -e "const p=require(\"./package.json\"); console.log(p.name || \"\");"
+        elif [[ "$query" == *".version"* ]] && [[ "$query" != *"engines"* ]]; then
+            node -e "const p=require(\"./package.json\"); console.log(p.version || \"\");"
+        elif [[ "$query" == *".engines.node"* ]]; then
+            node -e "const p=require(\"./package.json\"); console.log(p.engines?.node || \"\");"
+        elif [[ "$query" == *".packageManager"* ]]; then
+            node -e "const p=require(\"./package.json\"); console.log(p.packageManager || \"\");"
+        fi
+    else
+        # Fallback to python if node is not available
+        if [[ "$query" == *".name"* ]]; then
+            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"name\", \"\"))"
+        elif [[ "$query" == *".version"* ]] && [[ "$query" != *"engines"* ]]; then
+            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"version\", \"\"))"
+        elif [[ "$query" == *".engines.node"* ]]; then
+            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"engines\", {}).get(\"node\", \"\"))"
+        elif [[ "$query" == *".packageManager"* ]]; then
+            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"packageManager\", \"\"))"
+        fi
     fi
     exit 0
 fi
@@ -902,6 +916,79 @@ if echo "$OUTPUT" | grep -qE "(Docker|docker)"; then
 else
     test_fail "Expected Docker-related message.\nLogs:\n$OUTPUT"
 fi
+
+
+test_start "Docker Mode - Docker Installer Flow"
+setup_debian_system
+touch "$MOCK_BIN/docker.hidden"
+
+# Mock curl to return a fake Docker installer script
+create_mock "curl" '
+    for arg in "$@"; do
+        if [[ "$arg" == *"get.docker.com"* ]] || [[ "$arg" == *"https://get.docker.com"* ]]; then
+            # Return a fake installer that echoes a marker
+            echo "#!/bin/bash"
+            echo "echo DOCKER_INSTALLER_EXECUTED"
+            echo "# Remove the .hidden file to simulate docker being installed"
+            echo "rm -f \$MOCK_BIN/docker.hidden 2>/dev/null || true"
+            exit 0
+        fi
+    done
+    # For other curl calls, just succeed
+    exit 0
+'
+
+# Mock bash to track installer execution
+create_mock "bash" '
+    # If running the installer script, echo our marker
+    if [[ "$*" == *"/tmp/get-docker"* ]] || echo "$*" | grep -q "DOCKER_INSTALLER"; then
+        echo "DOCKER_INSTALLER_EXECUTED"
+        rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
+        # Create docker mock after "installation"
+        cat > "$MOCK_BIN/docker" <<DOCKERSCRIPT
+#!/bin/bash
+if [ "\$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+if [ "\$1" = "info" ]; then exit 0; fi
+if [ "\$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
+exit 0
+DOCKERSCRIPT
+        chmod +x "$MOCK_BIN/docker"
+        exit 0
+    fi
+    # Pass through to real bash for other commands
+    /bin/bash "$@"
+'
+
+# Mock sudo to just run the command
+create_mock "sudo" '"$@"'
+
+# Setup fnm/node/pnpm mocks for the rest of the script
+create_mock "fnm" '
+    if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi
+    exit 0
+'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" '
+    if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi
+    if [ "$1" = "install" ]; then exit 0; fi
+'
+
+set +e
+OUTPUT=$(run_test_script docker false 2>&1)
+EXIT_CODE=$?
+set -e
+
+# Check that the script attempted Docker installation flow
+# It should either show the installer execution or Docker installation messages
+if echo "$OUTPUT" | grep -qE "(Installing Docker|DOCKER_INSTALLER_EXECUTED|Docker.*installed)"; then
+    test_pass
+else
+    test_fail "Expected Docker installer flow execution.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+fi
+
+# Cleanup mocks specific to this test
+rm -f "$MOCK_BIN/bash" 2>/dev/null || true
 
 
 test_start "Docker Mode - Docker Daemon Not Running"
