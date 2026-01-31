@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venueBookingsTable } from "~/src/drizzle/tables/venueBookings";
+import { venuesTable } from "~/src/drizzle/tables/venues";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -1097,29 +1098,30 @@ suite("Event venues Field", () => {
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
 
-		// Create venues and bookings with sequential inserts to ensure distinct createdAt
+		// Create venues with deterministic createdAt timestamps
+		const baseTime = new Date("2026-01-01T00:00:00.000Z");
 		const venueIds: string[] = [];
 		for (let i = 0; i < 3; i++) {
-			const venueResult = await mercuriusClient.mutate(Mutation_createVenue, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Ordered Venue ${i} ${faker.string.uuid()}`,
-						description: `Test venue ${i}`,
-						capacity: 100 + i * 10,
-					},
-				},
-			});
-			const venueId = venueResult.data?.createVenue?.id;
-			assertToBeNonNullish(venueId);
-			venueIds.push(venueId);
+			const createdAt = new Date(baseTime.getTime() + i * 1000); // Add 1 second per venue
+			const [venue] = await server.drizzleClient
+				.insert(venuesTable)
+				.values({
+					organizationId: orgId,
+					name: `Ordered Venue ${i} ${faker.string.uuid()}`,
+					description: `Test venue ${i}`,
+					capacity: 100 + i * 10,
+					creatorId: adminUserId,
+					createdAt: createdAt,
+				})
+				.returning({ id: venuesTable.id });
+			assertToBeNonNullish(venue?.id);
+			venueIds.push(venue.id);
 
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
-						venueId: venueId,
+						venueId: venue.id,
 						eventId: eventId,
 					},
 				},
@@ -1165,29 +1167,30 @@ suite("Event venues Field", () => {
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
 
-		// Create venues and bookings with sequential inserts
+		// Create venues with deterministic createdAt timestamps
+		const baseTime = new Date("2026-01-01T00:00:00.000Z");
 		const venueIds: string[] = [];
 		for (let i = 0; i < 3; i++) {
-			const venueResult = await mercuriusClient.mutate(Mutation_createVenue, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Ordered Venue ${i} ${faker.string.uuid()}`,
-						description: `Test venue ${i}`,
-						capacity: 100 + i * 10,
-					},
-				},
-			});
-			const venueId = venueResult.data?.createVenue?.id;
-			assertToBeNonNullish(venueId);
-			venueIds.push(venueId);
+			const createdAt = new Date(baseTime.getTime() + i * 1000); // Add 1 second per venue
+			const [venue] = await server.drizzleClient
+				.insert(venuesTable)
+				.values({
+					organizationId: orgId,
+					name: `Ordered Venue ${i} ${faker.string.uuid()}`,
+					description: `Test venue ${i}`,
+					capacity: 100 + i * 10,
+					creatorId: adminUserId,
+					createdAt: createdAt,
+				})
+				.returning({ id: venuesTable.id });
+			assertToBeNonNullish(venue?.id);
+			venueIds.push(venue.id);
 
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
-						venueId: venueId,
+						venueId: venue.id,
 						eventId: eventId,
 					},
 				},
