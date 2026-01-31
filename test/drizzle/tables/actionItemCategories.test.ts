@@ -1,6 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { getTableName, type Table } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
+import { mercuriusClient } from "test/graphql/types/client";
+import {
+	Mutation_createOrganization,
+	Query_signIn,
+} from "test/graphql/types/documentNodes";
+import { assertToBeNonNullish } from "test/helpers";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	actionItemCategoriesTable,
@@ -10,6 +16,47 @@ import {
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { server } from "../../server";
+
+async function createTestOrganization(): Promise<string> {
+	mercuriusClient.setHeaders({});
+	const signIn = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	if (signIn.errors) {
+		throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
+	}
+	const token = signIn.data?.signIn?.authenticationToken;
+	assertToBeNonNullish(
+		token,
+		"Authentication token is missing from sign-in response",
+	);
+	const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				name: `Org-${Date.now()}-${faker.string.alphanumeric(8)}`,
+				countryCode: "us",
+				isUserRegistrationRequired: true,
+			},
+		},
+	});
+	if (org.errors) {
+		throw new Error(
+			`Create organization failed: ${JSON.stringify(org.errors)}`,
+		);
+	}
+	const orgId = org.data?.createOrganization?.id;
+	assertToBeNonNullish(
+		orgId,
+		"Organization ID is missing from creation response",
+	);
+	return orgId;
+}
 
 interface CapturedRelation {
 	table: Table;
@@ -172,24 +219,13 @@ describe("actionItemCategoriesTable", () => {
 
 		it("should reject insert with invalid creatorId foreign key", async () => {
 			const invalidCreatorId = faker.string.uuid();
-			const [org] = await server.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					name: faker.company.name(),
-					description: faker.lorem.sentence(),
-					creatorId: null,
-					updaterId: null,
-				})
-				.returning();
-			if (!org?.id) {
-				throw new Error("Failed to create test organization");
-			}
+			const orgId = await createTestOrganization();
 
 			await expect(
 				server.drizzleClient.insert(actionItemCategoriesTable).values({
 					name: faker.lorem.word(),
 					isDisabled: false,
-					organizationId: org.id,
+					organizationId: orgId,
 					creatorId: invalidCreatorId,
 				}),
 			).rejects.toMatchObject({
@@ -213,24 +249,13 @@ describe("actionItemCategoriesTable", () => {
 
 		it("should reject insert with invalid updaterId foreign key", async () => {
 			const invalidUpdaterId = faker.string.uuid();
-			const [org] = await server.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					name: faker.company.name(),
-					description: faker.lorem.sentence(),
-					creatorId: null,
-					updaterId: null,
-				})
-				.returning();
-			if (!org?.id) {
-				throw new Error("Failed to create test organization");
-			}
+			const orgId = await createTestOrganization();
 
 			await expect(
 				server.drizzleClient.insert(actionItemCategoriesTable).values({
 					name: faker.lorem.word(),
 					isDisabled: false,
-					organizationId: org.id,
+					organizationId: orgId,
 					updaterId: invalidUpdaterId,
 				}),
 			).rejects.toMatchObject({
@@ -658,24 +683,8 @@ describe("actionItemCategoriesTable", () => {
 	});
 
 	describe("Database Operations", () => {
-		async function createTestOrganization() {
-			const [org] = await server.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					name: faker.company.name(),
-					description: faker.lorem.sentence(),
-					creatorId: null,
-					updaterId: null,
-				})
-				.returning();
-			if (!org?.id) {
-				throw new Error("Failed to create test organization");
-			}
-			return org;
-		}
-
 		it("should successfully insert a record with required fields", async () => {
-			const org = await createTestOrganization();
+			const orgId = await createTestOrganization();
 			const name = faker.lorem.word();
 			const isDisabled = false;
 
@@ -684,7 +693,7 @@ describe("actionItemCategoriesTable", () => {
 				.values({
 					name,
 					isDisabled,
-					organizationId: org.id,
+					organizationId: orgId,
 				})
 				.returning();
 
@@ -695,7 +704,7 @@ describe("actionItemCategoriesTable", () => {
 			expect(result.id).toBeDefined();
 			expect(result.name).toBe(name);
 			expect(result.isDisabled).toBe(isDisabled);
-			expect(result.organizationId).toBe(org.id);
+			expect(result.organizationId).toBe(orgId);
 			expect(result.createdAt).toBeInstanceOf(Date);
 			expect(result.updatedAt).toBeNull();
 			expect(result.creatorId).toBeNull();
@@ -704,7 +713,7 @@ describe("actionItemCategoriesTable", () => {
 		});
 
 		it("should successfully insert a record with all optional fields", async () => {
-			const org = await createTestOrganization();
+			const orgId = await createTestOrganization();
 			const name = faker.lorem.word();
 			const description = faker.lorem.sentence();
 			const isDisabled = true;
@@ -715,7 +724,7 @@ describe("actionItemCategoriesTable", () => {
 					name,
 					description,
 					isDisabled,
-					organizationId: org.id,
+					organizationId: orgId,
 					creatorId: null,
 					updaterId: null,
 				})
@@ -728,17 +737,17 @@ describe("actionItemCategoriesTable", () => {
 			expect(result.name).toBe(name);
 			expect(result.description).toBe(description);
 			expect(result.isDisabled).toBe(isDisabled);
-			expect(result.organizationId).toBe(org.id);
+			expect(result.organizationId).toBe(orgId);
 		});
 
 		it("should successfully query records", async () => {
-			const org = await createTestOrganization();
+			const orgId = await createTestOrganization();
 			const categoryName = `Test Query Category ${faker.string.uuid()}`;
 
 			await server.drizzleClient.insert(actionItemCategoriesTable).values({
 				name: categoryName,
 				isDisabled: false,
-				organizationId: org.id,
+				organizationId: orgId,
 			});
 
 			const results = await server.drizzleClient
@@ -753,20 +762,20 @@ describe("actionItemCategoriesTable", () => {
 		});
 
 		it("should enforce unique constraint on name and organizationId", async () => {
-			const org = await createTestOrganization();
+			const orgId = await createTestOrganization();
 			const categoryName = faker.lorem.word();
 
 			await server.drizzleClient.insert(actionItemCategoriesTable).values({
 				name: categoryName,
 				isDisabled: false,
-				organizationId: org.id,
+				organizationId: orgId,
 			});
 
 			await expect(
 				server.drizzleClient.insert(actionItemCategoriesTable).values({
 					name: categoryName,
 					isDisabled: true,
-					organizationId: org.id,
+					organizationId: orgId,
 				}),
 			).rejects.toMatchObject({
 				cause: { code: "23505" },
@@ -774,8 +783,8 @@ describe("actionItemCategoriesTable", () => {
 		});
 
 		it("should allow same category name in different organizations", async () => {
-			const org1 = await createTestOrganization();
-			const org2 = await createTestOrganization();
+			const orgId1 = await createTestOrganization();
+			const orgId2 = await createTestOrganization();
 			const categoryName = faker.lorem.word();
 
 			const [result1] = await server.drizzleClient
@@ -783,7 +792,7 @@ describe("actionItemCategoriesTable", () => {
 				.values({
 					name: categoryName,
 					isDisabled: false,
-					organizationId: org1.id,
+					organizationId: orgId1,
 				})
 				.returning();
 
@@ -792,7 +801,7 @@ describe("actionItemCategoriesTable", () => {
 				.values({
 					name: categoryName,
 					isDisabled: false,
-					organizationId: org2.id,
+					organizationId: orgId2,
 				})
 				.returning();
 
