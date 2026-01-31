@@ -130,6 +130,23 @@ setup_test_repo() {
 PKG
 }
 
+# Safe parser for extra_env: splits on space, validates each token contains '=',
+# exports name=val. Pass assignments like "VAR=value" or "CI=true" (no eval).
+apply_extra_env() {
+    local extra_env="$1"
+    local token name val
+    for token in $extra_env; do
+        case "$token" in
+            *=*)
+                name="${token%%=*}"
+                val="${token#*=}"
+                export "$name=$val"
+                ;;
+            *) continue ;;
+        esac
+    done
+}
+
 run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-true}"
@@ -138,7 +155,8 @@ run_test_script() {
         cd "$TEST_DIR"
         export PATH="$MOCK_BIN:/usr/bin:/bin"
         export TERM=dumb
-        eval "$extra_env"
+        export MOCK_BIN="$MOCK_BIN"
+        apply_extra_env "$extra_env"
         "$TEST_DIR/scripts/install/linux/install-linux.sh" "$install_mode" "$skip_prereqs"
     )
 }
@@ -171,7 +189,7 @@ create_mock "npm" 'if [ "$1" = "view" ]; then echo "8.14.0"; exit 0; fi; exit 0'
 create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; exit 0'
 rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
 set +e
-OUTPUT=$(run_test_script docker true "export CI=true" 2>&1)
+OUTPUT=$(run_test_script docker true "CI=true" 2>&1)
 EXIT_CODE=$?
 set -e
 if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Installation completed successfully"; then
@@ -322,6 +340,176 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -qF "$EXPECTED_ERROR"; then
     test_pass
 else
     test_fail "Expected validation error. Expected in output: $EXPECTED_ERROR. Exit: $EXIT_CODE. Actual output: $OUTPUT"
+fi
+setup_test_repo
+fi
+
+##############################################################################
+# Test: validate_disk_space() fails when df reports < 2GB available
+##############################################################################
+test_start "validate_disk_space fails with insufficient disk space"
+if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
+    echo "SKIP (cannot create .git in test dir)"
+    test_pass
+else
+setup_clean_system
+# MIN_DISK_SPACE_KB=2097152 (2GB). Report ~100MB available (4th column in 1K-blocks).
+create_mock "df" 'echo "Filesystem 1K-blocks Used Available"; echo "dummy 100000 50000 100000 /"'
+create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'exit 0'
+create_mock "pnpm" 'echo "8.14.0"; exit 0'
+rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "Insufficient disk space"; then
+    test_pass
+else
+    test_fail "Expected disk-space error. Exit: $EXIT_CODE. Logs: $OUTPUT"
+fi
+setup_test_repo
+fi
+
+##############################################################################
+# Test: check_git_repo() fails when .git is missing
+##############################################################################
+test_start "check_git_repo fails when .git directory is missing"
+if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
+    echo "SKIP (cannot create .git in test dir)"
+    test_pass
+else
+setup_clean_system
+create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'exit 0'
+create_mock "pnpm" 'echo "8.14.0"; exit 0'
+rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
+rm -rf "$TEST_DIR/.git"
+set +e
+OUTPUT=$(run_test_script local true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "This directory is not a git repository"; then
+    test_pass
+else
+    test_fail "Expected git repo error. Exit: $EXIT_CODE. Logs: $OUTPUT"
+fi
+setup_test_repo
+fi
+
+##############################################################################
+# Test: check_git_repo() fails when git rev-parse returns non-zero
+##############################################################################
+test_start "check_git_repo fails when git rev-parse fails (invalid repo)"
+if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
+    echo "SKIP (cannot create .git in test dir)"
+    test_pass
+else
+setup_clean_system
+create_mock "git" 'if [ "$1" = "rev-parse" ]; then exit 1; fi; exit 0'
+create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'exit 0'
+create_mock "pnpm" 'echo "8.14.0"; exit 0'
+rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
+set +e
+OUTPUT=$(run_test_script local true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "Invalid git repository"; then
+    test_pass
+else
+    test_fail "Expected invalid git repo error. Exit: $EXIT_CODE. Logs: $OUTPUT"
+fi
+setup_test_repo
+fi
+
+##############################################################################
+# Test: detect_distro() path - script reports detected distribution
+##############################################################################
+test_start "detect_distro reports distribution in output"
+if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
+    echo "SKIP (cannot create .git in test dir)"
+    test_pass
+else
+setup_clean_system
+create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'exit 0'
+create_mock "pnpm" 'echo "8.14.0"; exit 0'
+rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Detected Linux distribution:"; then
+    test_pass
+else
+    test_fail "Expected distro in output. Exit: $EXIT_CODE. Logs: $OUTPUT"
+fi
+fi
+
+##############################################################################
+# Test: check_docker_running() failure - Docker installed but not running
+##############################################################################
+test_start "check_docker_running failure shows docker not running warning"
+if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
+    echo "SKIP (cannot create .git in test dir)"
+    test_pass
+else
+setup_clean_system
+create_mock "docker" 'if [ "$1" = "info" ]; then echo "Cannot connect to daemon"; exit 1; fi; if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0"; exit 0; fi; echo "Docker version 24.0.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'exit 0'
+create_mock "pnpm" 'echo "8.14.0"; exit 0'
+rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Docker is installed but not running"; then
+    test_pass
+else
+    test_fail "Expected docker-not-running warning. Exit: $EXIT_CODE. Logs: $OUTPUT"
+fi
+fi
+
+##############################################################################
+# Test: pnpm install path when pnpm initially absent (npm install -g pnpm)
+##############################################################################
+test_start "pnpm install path when pnpm absent (npm install -g pnpm)"
+if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
+    echo "SKIP (cannot create .git in test dir)"
+    test_pass
+else
+setup_clean_system
+create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'if [ "$1" = "install" ] && [ "$2" = "-g" ]; then
+  BIN_DIR="${MOCK_BIN:-$(dirname "$(command -v npm)")}"
+  echo "#!/bin/bash" > "$BIN_DIR/pnpm"
+  echo "if [ \"\$1\" = \"--version\" ]; then echo 8.14.0; fi; if [ \"\$1\" = \"install\" ]; then exit 0; fi; exit 0" >> "$BIN_DIR/pnpm"
+  chmod +x "$BIN_DIR/pnpm"
+  exit 0
+fi; exit 0'
+rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
+touch "$MOCK_BIN/pnpm.hidden"
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Installation completed successfully"; then
+    test_pass
+else
+    test_fail "Expected success with pnpm install path. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
 setup_test_repo
 fi
