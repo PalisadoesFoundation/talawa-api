@@ -1,16 +1,15 @@
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	type MockInstance,
-	vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
-const { accessMock, readdirMock, copyFileMock, renameMock, readFileMock, writeFileMock } = vi.hoisted(() => ({
+const {
+	accessMock,
+	readdirMock,
+	copyFileMock,
+	renameMock,
+	readFileMock,
+	writeFileMock,
+} = vi.hoisted(() => ({
 	accessMock: vi.fn(),
 	readdirMock: vi.fn(),
 	copyFileMock: vi.fn(),
@@ -36,7 +35,6 @@ vi.mock("node:fs", () => {
 	};
 });
 
-import { promises as fs } from "node:fs";
 import inquirer from "inquirer";
 import * as SetupModule from "scripts/setup/setup";
 import { administratorEmail, validateEmail } from "scripts/setup/setup";
@@ -91,7 +89,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		readdirMock.mockResolvedValue([
 			".env.1600000000",
 			".env.1700000000",
-		] as any);
+		] as string[]);
 		copyFileMock.mockResolvedValue(undefined);
 		renameMock.mockResolvedValue(undefined);
 
@@ -101,7 +99,6 @@ describe("Setup -> askForAdministratorEmail", () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		await administratorEmail({});
 

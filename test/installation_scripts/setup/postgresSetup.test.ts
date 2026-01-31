@@ -1,4 +1,11 @@
-const { accessMock, readdirMock, copyFileMock, renameMock, readFileMock, writeFileMock } = vi.hoisted(() => ({
+const {
+	accessMock,
+	readdirMock,
+	copyFileMock,
+	renameMock,
+	readFileMock,
+	writeFileMock,
+} = vi.hoisted(() => ({
 	accessMock: vi.fn(),
 	readdirMock: vi.fn(),
 	copyFileMock: vi.fn(),
@@ -26,11 +33,10 @@ vi.mock("node:fs", () => {
 	};
 });
 
-import { promises as fs } from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { postgresSetup, setup } from "scripts/setup/setup";
-import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("Setup -> postgresSetup", () => {
 	const originalEnv = { ...process.env };
@@ -89,16 +95,38 @@ describe("Setup -> postgresSetup", () => {
 		};
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-		promptMock.mockImplementation((async (questions: any) => {
-			const qs = Array.isArray(questions) ? questions : [questions];
-			const result: any = {};
-			for (const q of qs) {
-				if (q.name && q.name in allAnswers) {
-					result[q.name] = allAnswers[q.name as keyof typeof allAnswers];
+		// Mock inquirer.prompt: return answers plus a dummy `ui` to satisfy types
+		type PromptQuestion = { name?: string };
+		type PromptReturn = Record<string, string | unknown> & { ui: unknown };
+		type PromptSpy = {
+			mockImplementation: (
+				fn: (questions: unknown) => Promise<PromptReturn>,
+			) => void;
+		};
+
+		(promptMock as unknown as PromptSpy).mockImplementation(
+			async (questions: unknown) => {
+				const qs = Array.isArray(questions)
+					? (questions as unknown[])
+					: [questions as unknown];
+				const result: Record<string, string> = {};
+				for (const q of qs) {
+					if (
+						typeof q === "object" &&
+						q !== null &&
+						"name" in (q as PromptQuestion)
+					) {
+						const name = (q as PromptQuestion).name;
+						if (name && name in allAnswers) {
+							result[name] = String(
+								allAnswers[name as keyof typeof allAnswers],
+							);
+						}
+					}
 				}
-			}
-			return result;
-		}) as any);
+				return { ui: {} as unknown, ...(result as Record<string, string>) };
+			},
+		);
 
 		await setup();
 		dotenv.config({ path: ".env" });
@@ -123,7 +151,7 @@ describe("Setup -> postgresSetup", () => {
 		readdirMock.mockResolvedValue([
 			".env.1600000000",
 			".env.1700000000",
-		] as any);
+		] as string[]);
 		copyFileMock.mockResolvedValue(undefined);
 		renameMock.mockResolvedValue(undefined);
 
@@ -135,8 +163,6 @@ describe("Setup -> postgresSetup", () => {
 		await postgresSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-			".env.tmp",
-		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

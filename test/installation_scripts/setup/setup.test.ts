@@ -13,17 +13,7 @@ vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
 	envFileBackup: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("env-schema", () => ({
-	envSchema: () => ({
-		API_GRAPHQL_SCALAR_FIELD_COST: 1,
-		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-		API_GRAPHQL_LIST_FIELD_COST: 1,
-		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-		API_GRAPHQL_MUTATION_BASE_COST: 1,
-		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-	}),
-}));
+// env-schema mock is handled by setup-env.ts
 
 vi.mock("scripts/setup/emailSetup", () => ({
 	emailSetup: vi.fn().mockImplementation((answers) => Promise.resolve(answers)),

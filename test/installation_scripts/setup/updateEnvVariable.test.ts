@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { readFileMock, writeFileMock, accessMock, copyFileMock } = vi.hoisted(() => ({
-	readFileMock: vi.fn(),
-	writeFileMock: vi.fn(),
-	accessMock: vi.fn(),
-	copyFileMock: vi.fn(),
-}));
+const { readFileMock, writeFileMock, accessMock, copyFileMock } = vi.hoisted(
+	() => ({
+		readFileMock: vi.fn(),
+		writeFileMock: vi.fn(),
+		accessMock: vi.fn(),
+		copyFileMock: vi.fn(),
+	}),
+);
 
 vi.mock("node:fs", () => {
 	const promises = {
@@ -22,7 +24,6 @@ vi.mock("node:fs", () => {
 	};
 });
 
-import { promises as fs } from "node:fs";
 import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 
 describe("updateEnvVariable", () => {

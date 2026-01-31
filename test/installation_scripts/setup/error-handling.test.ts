@@ -56,7 +56,7 @@ describe("Setup Error Handling", () => {
 	it("should propagate errors from updateEnvVariable", async () => {
 		const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
 			throw new Error("process.exit called");
-		}) as any);
+		}) as never);
 
 		// Mock prompt success with minimal answers
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
