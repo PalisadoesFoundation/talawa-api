@@ -504,6 +504,8 @@ export async function insertCollections(
 				}
 
 				case "recurring_event_templates": {
+					// PR2: Insert template events only. recurrence_rules and
+					// recurring_event_instances are populated in a follow-up (PR3).
 					const now = new Date();
 					type TemplateRow = {
 						id: string;

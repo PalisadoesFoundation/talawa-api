@@ -13,7 +13,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-01T09:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000002",
@@ -29,7 +34,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-01T09:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000003",
@@ -45,7 +55,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-03-30T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000004",
@@ -61,7 +76,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-03-30T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000005",
@@ -77,7 +97,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-01T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000006",
@@ -93,7 +118,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-01T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000007",
@@ -109,7 +139,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TH;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-03T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000008",
@@ -125,7 +160,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TH;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-03T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000009",
@@ -141,7 +181,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=SA;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-05T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-00000000000a",
@@ -157,7 +202,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=SA;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-05T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-00000000000b",
@@ -173,7 +223,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-07T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-00000000000c",
@@ -189,7 +244,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-07T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-00000000000d",
@@ -205,7 +265,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=WE;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-09T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-00000000000e",
@@ -221,7 +286,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=WE;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-09T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-00000000000f",
@@ -237,7 +307,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-11T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000010",
@@ -253,7 +328,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-11T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000011",
@@ -269,7 +349,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-13T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000012",
@@ -285,7 +370,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-13T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000013",
@@ -301,7 +391,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-15T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000014",
@@ -317,7 +412,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-15T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000015",
@@ -333,7 +433,12 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": false
+		"isRegisterable": false,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TH;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-17T01:00:00.000Z"
 	},
 	{
 		"id": "01960b97-00c0-7e00-8000-000000000016",
@@ -349,6 +454,11 @@
 		"updaterId": null,
 		"isPublic": true,
 		"isRecurringEventTemplate": true,
-		"isRegisterable": true
+		"isRegisterable": true,
+		"recurrenceRule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=TH;UNTIL=20261231T235959Z",
+		"recurrenceEndDate": "2026-12-31T23:59:59.999Z",
+		"recurrenceCount": 52,
+		"timezone": "UTC",
+		"nextOccurrence": "2025-04-17T01:00:00.000Z"
 	}
 ]

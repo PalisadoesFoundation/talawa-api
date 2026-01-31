@@ -1,3 +1,4 @@
+import fs from "node:fs/promises";
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
@@ -351,6 +352,124 @@ suite.concurrent("insertCollections", () => {
 				oneWeekAgo,
 			);
 		}
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("recurring_event_templates uses fallback start and end when startAt and endAt are invalid (startRef/endRef null)", async () => {
+		const fallbackTemplate = {
+			id: "01960b97-00c0-7e00-8000-0000000000ff",
+			name: "Fallback Template",
+			organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+			creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+			description: "Template with invalid dates",
+			startAt: "invalid-date",
+			endAt: "not-a-date",
+			allDay: true,
+			createdAt: "2025-03-30T01:00:00.000Z",
+		};
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockResolvedValue(JSON.stringify([fallbackTemplate]));
+		const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+		await helpers.insertCollections(["recurring_event_templates"]);
+		const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+			(call) => call[0] === schema.eventsTable,
+		);
+		expect(eventsTableCalls.length).toBe(1);
+		const rows =
+			eventsTableCalls[0]?.[1] as (typeof schema.eventsTable.$inferInsert)[];
+		expect(rows).toBeDefined();
+		expect(rows.length).toBe(1);
+		const row = rows[0];
+		expect(row?.startAt).toBeInstanceOf(Date);
+		expect(row?.endAt).toBeInstanceOf(Date);
+		expect(
+			(row?.endAt as Date).getTime() - (row?.startAt as Date).getTime(),
+		).toBe(2 * 60 * 60 * 1000);
+		expect(row?.isPublic).toBe(true);
+		expect(row?.isRecurringEventTemplate).toBe(true);
+		expect(row?.updatedAt).toBeNull();
+		expect(row?.updaterId).toBeNull();
+		readFileSpy.mockRestore();
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("recurring_event_templates uses fallback end when endAt is invalid (endRef null)", async () => {
+		const templateValidStart = {
+			id: "01960b97-00c0-7e00-8000-0000000000fe",
+			name: "Fallback End Template",
+			organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+			creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+			description: "Template with invalid endAt",
+			startAt: "2025-04-01T09:00:00.000Z",
+			endAt: null,
+			allDay: true,
+			createdAt: "2025-03-30T01:00:00.000Z",
+		};
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockResolvedValue(JSON.stringify([templateValidStart]));
+		const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+		await helpers.insertCollections(["recurring_event_templates"]);
+		const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+			(call) => call[0] === schema.eventsTable,
+		);
+		expect(eventsTableCalls.length).toBe(1);
+		const rows =
+			eventsTableCalls[0]?.[1] as (typeof schema.eventsTable.$inferInsert)[];
+		expect(rows).toBeDefined();
+		expect(rows.length).toBe(1);
+		const row = rows[0];
+		expect(row?.startAt).toBeInstanceOf(Date);
+		expect(row?.endAt).toBeInstanceOf(Date);
+		expect(
+			(row?.endAt as Date).getTime() - (row?.startAt as Date).getTime(),
+		).toBe(2 * 60 * 60 * 1000);
+		expect(row?.isPublic).toBe(true);
+		expect(row?.isRecurringEventTemplate).toBe(true);
+		readFileSpy.mockRestore();
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("recurring_event_templates uses fallback start when startAt is invalid (startRef null)", async () => {
+		const templateValidEnd = {
+			id: "01960b97-00c0-7e00-8000-0000000000fd",
+			name: "Fallback Start Template",
+			organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+			creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+			description: "Template with invalid startAt",
+			startAt: null,
+			endAt: "2025-04-01T11:00:00.000Z",
+			allDay: true,
+			createdAt: "2025-03-30T01:00:00.000Z",
+		};
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockResolvedValue(JSON.stringify([templateValidEnd]));
+		const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+		const beforeCall = Date.now();
+		await helpers.insertCollections(["recurring_event_templates"]);
+		const afterCall = Date.now();
+		const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+			(call) => call[0] === schema.eventsTable,
+		);
+		expect(eventsTableCalls.length).toBe(1);
+		const rows =
+			eventsTableCalls[0]?.[1] as (typeof schema.eventsTable.$inferInsert)[];
+		expect(rows).toBeDefined();
+		expect(rows.length).toBe(1);
+		const row = rows[0];
+		expect(row?.startAt).toBeInstanceOf(Date);
+		expect((row?.startAt as Date).getTime()).toBeGreaterThanOrEqual(
+			beforeCall - 1000,
+		);
+		expect((row?.startAt as Date).getTime()).toBeLessThanOrEqual(
+			afterCall + 1000,
+		);
+		expect(row?.endAt).toBeInstanceOf(Date);
+		expect(row?.isPublic).toBe(true);
+		expect(row?.isRecurringEventTemplate).toBe(true);
+		readFileSpy.mockRestore();
 		checkAndInsertDataSpy.mockRestore();
 	});
 
