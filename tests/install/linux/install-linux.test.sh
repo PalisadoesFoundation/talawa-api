@@ -29,13 +29,13 @@ test_start() {
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo "PASS"
+    echo "✓ PASS"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo "FAIL"
+    echo "✗ FAIL"
     echo "  Reason: $message"
 }
 
@@ -312,14 +312,16 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
 else
 setup_clean_system
 echo '{"name":"talawa-api","version":"1.0.0","engines":{"node":"20.10.0; rm -rf /"},"packageManager":"pnpm@8.14.0"}' > "$TEST_DIR/package.json"
+# Exact message from validation.sh validate_version_string for invalid chars (e.g. semicolon)
+EXPECTED_ERROR="Invalid Node.js version (engines.node): '20.10.0; rm -rf /'"
 set +e
 OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
-if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "Invalid"; then
+if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -qF "$EXPECTED_ERROR"; then
     test_pass
 else
-    test_fail "Expected validation error for malicious version. Exit: $EXIT_CODE. Logs: $OUTPUT"
+    test_fail "Expected validation error. Expected in output: $EXPECTED_ERROR. Exit: $EXIT_CODE. Actual output: $OUTPUT"
 fi
 setup_test_repo
 fi
