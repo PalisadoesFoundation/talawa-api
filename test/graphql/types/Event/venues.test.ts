@@ -577,6 +577,82 @@ suite("Event venues Field", () => {
 		expect(result.data?.event?.venues).toBeDefined();
 	});
 
+	test("should return GraphQL error when first exceeds maximum limit", async () => {
+		// Create organization
+		const orgId = await createOrganizationWithMembership();
+
+		// Create event
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event for venues",
+						startAt: new Date(Date.now() + 86400000).toISOString(),
+						endAt: new Date(Date.now() + 90000000).toISOString(),
+					},
+				},
+			},
+		);
+		const eventId = createEventResult.data?.createEvent?.id;
+		assertToBeNonNullish(eventId);
+
+		// Query with limit exceeding maximum (33 > 32)
+		const result = await mercuriusClient.query(Query_eventVenues, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: { id: eventId },
+				first: 33,
+			},
+		});
+
+		// Should return validation error
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should return GraphQL error when last exceeds maximum limit", async () => {
+		// Create organization
+		const orgId = await createOrganizationWithMembership();
+
+		// Create event
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event for venues",
+						startAt: new Date(Date.now() + 86400000).toISOString(),
+						endAt: new Date(Date.now() + 90000000).toISOString(),
+					},
+				},
+			},
+		);
+		const eventId = createEventResult.data?.createEvent?.id;
+		assertToBeNonNullish(eventId);
+
+		// Query with limit exceeding maximum (33 > 32)
+		const result = await mercuriusClient.query(Query_eventVenues, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: { id: eventId },
+				last: 33,
+			},
+		});
+
+		// Should return validation error
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
+
 	test("should return GraphQL error for malformed cursor with forward pagination", async () => {
 		// Create organization
 		const orgId = await createOrganizationWithMembership();
@@ -973,6 +1049,84 @@ suite("Event venues Field", () => {
 		expect(
 			result.data?.event?.venues?.edges?.[0]?.node?.attachments?.[0]?.mimeType,
 		).toBe("image/png");
+	});
+
+	test("should return venue with no attachments as empty array", async () => {
+		// Create organization
+		const orgId = await createOrganizationWithMembership();
+
+		// Create venue
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue without attachments",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		expect(createVenueResult.errors).toBeUndefined();
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		// Do NOT insert any attachments - testing the empty case
+
+		// Create event
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event for venues",
+						startAt: new Date(Date.now() + 86400000).toISOString(),
+						endAt: new Date(Date.now() + 90000000).toISOString(),
+					},
+				},
+			},
+		);
+		expect(createEventResult.errors).toBeUndefined();
+		const eventId = createEventResult.data?.createEvent?.id;
+		assertToBeNonNullish(eventId);
+
+		// Create venue booking
+		await mercuriusClient.mutate(Mutation_createVenueBooking, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: {
+					venueId: venueId,
+					eventId: eventId,
+				},
+			},
+		});
+
+		// Query event venues with attachments
+		const result = await mercuriusClient.query(
+			Query_eventVenuesWithAttachments,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: eventId }, first: 10 },
+			},
+		);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.event?.venues?.edges).toHaveLength(1);
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments,
+		).toBeDefined();
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments,
+		).toHaveLength(0);
+		expect(result.data?.event?.venues?.edges?.[0]?.node?.attachments).toEqual(
+			[],
+		);
 	});
 
 	test("should return venue with multiple attachments", async () => {
