@@ -84,7 +84,7 @@ export const ALLOWED_PATTERNS = [
 	/scripts\//,
 ];
 
-const WARN_ONLY_MODE = false;
+const WARN_ONLY_MODE = process.env.WARN_ONLY_MODE === "true";
 export const SUPPRESSION_CHECK_LINES = 10;
 
 interface Violation {
@@ -220,9 +220,14 @@ export class ErrorHandlingValidator {
 						stdio: "ignore",
 						shell: false,
 					});
-				} catch {
-					// Ignore fetch errors
-					console.warn("Git fetch failed, continuing without fetch...");
+				} catch (error) {
+					// Ignore fetch errors but log for debugging context if needed, then rethrow to trigger fallback
+					const errorMessage =
+						error instanceof Error ? error.message : String(error);
+					console.warn(
+						`Git fetch failed for baseRef '${baseRef}' in '${rootDir}': ${errorMessage}`,
+					);
+					throw error;
 				}
 
 				const diffArgs = ["diff", "--name-only", `origin/${baseRef}...HEAD`];
@@ -297,9 +302,9 @@ export class ErrorHandlingValidator {
 				stdio: "ignore",
 			});
 			return true;
-		} catch {
+		} catch (error) {
 			// Branch check failed, treating as non-existent
-			console.warn(`Branch verification failed for: ${branch}`);
+			console.warn(`Git branch check failed for ${branch}`, error);
 			return false;
 		}
 	}
@@ -355,9 +360,11 @@ export class ErrorHandlingValidator {
 		try {
 			const regex = new RegExp(regexPattern);
 			return regex.test(filePath);
-		} catch {
-			// Fallback to simple string matching if regex fails
-			console.warn(`Regex failed for pattern: ${pattern}, using fallback`);
+		} catch (error) {
+			console.warn(
+				`Invalid glob pattern "${pattern}", using fallback match.`,
+				error,
+			);
 			const simplePattern = pattern.replace(/\*+/g, "");
 			return filePath.includes(simplePattern);
 		}
@@ -810,7 +817,9 @@ export class ErrorHandlingValidator {
 
 		if (
 			/throw\s+new\s+Error\s*\(/g.test(line) ||
-			/throw\s+Error\s*\(/g.test(line)
+			/throw\s+Error\s*\(/g.test(line) ||
+			// Also catch instantiation of generic Error without throw (e.g. return new Error(), const e = new Error())
+			/new\s+Error\s*\(/.test(line)
 		) {
 			this.addViolation(
 				filePath,
@@ -855,11 +864,10 @@ export class ErrorHandlingValidator {
 	}
 
 	public matchesPattern(filePath: string, patterns: string[]): boolean {
-		return patterns.some((p) => {
-			const prefix = p.replace("/**", "");
-			const prefixWithSlash = prefix.endsWith("/") ? prefix : `${prefix}/`;
-			return filePath.startsWith(prefixWithSlash);
-		});
+		const normalizedPath = filePath.replace(/\\/g, "/");
+		return patterns.some((pattern) =>
+			this.matchesGlobPattern(normalizedPath, pattern),
+		);
 	}
 
 	public isRouteOrResolverFile(filePath: string): boolean {
@@ -983,10 +991,14 @@ export class ErrorHandlingValidator {
 						"/",
 					);
 
-					if (!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)) {
+					// Explicitly check for directory traversal segments
+					if (
+						relativePath.includes("..") ||
+						!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)
+					) {
 						throw new TalawaRestError({
 							code: ErrorCode.INVALID_INPUT,
-							message: `Suspicious file path: ${filePath}`,
+							message: `Suspicious file path detected (contains '..' or invalid chars): ${filePath}`,
 						});
 					}
 
@@ -1046,9 +1058,15 @@ export async function main(): Promise<void> {
 	}
 }
 
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
-	main().catch((error) => {
+export async function run() {
+	try {
+		await main();
+	} catch (error) {
 		console.error("Unexpected error:", error);
 		process.exit(1);
-	});
+	}
+}
+
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+	run();
 }

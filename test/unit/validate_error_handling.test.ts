@@ -1,5 +1,6 @@
 import * as child_process from "node:child_process";
 import * as fs from "node:fs";
+import { resolve } from "node:path";
 import {
 	afterEach,
 	beforeEach,
@@ -12,8 +13,12 @@ import {
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import {
+	ALLOW_CONSOLE_USAGE,
 	ErrorHandlingValidator,
+	EXCLUDE_PATTERNS,
 	main,
+	run,
+	SCAN_PATTERNS,
 } from "../../scripts/validate_error_handling";
 
 // Mock dependencies
@@ -164,6 +169,12 @@ describe("ErrorHandlingValidator", () => {
 			});
 		});
 
+		it("should return false for empty or comment-only blocks in hasProperErrorHandling", () => {
+			expect(validator.hasProperErrorHandling("")).toBe(false);
+			expect(validator.hasProperErrorHandling("// just a comment")).toBe(false);
+			expect(validator.hasProperErrorHandling("   ")).toBe(false);
+		});
+
 		it("should recognize proper handling patterns", () => {
 			const properCases = [
 				`catch (e) { throw e; }`,
@@ -248,6 +259,20 @@ describe("ErrorHandlingValidator", () => {
 			validator.checkGenericError("src/utilities/helper.ts", 10, line);
 
 			expect(validator.addViolation).toHaveBeenCalled();
+		});
+
+		it("should report generic error instantiation without throw", () => {
+			const line = 'const error = new Error("Generic error");';
+			validator.addViolation = vi.fn();
+			validator.checkGenericError("src/utilities/helper.ts", 10, line);
+
+			expect(validator.addViolation).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.anything(),
+				"generic_error_usage",
+				line,
+				expect.anything(),
+			);
 		});
 
 		it("should respect ALLOWED_PATTERNS exemptions", () => {
@@ -421,15 +446,17 @@ describe("ErrorHandlingValidator", () => {
 			try {
 				process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
 
-				// Mock fetch to fail but diff to succeed
-				vi.mocked(child_process.execFileSync)
-					.mockImplementationOnce(() => {
-						throw new TalawaRestError({
-							code: ErrorCode.INTERNAL_SERVER_ERROR,
-							message: "Fetch failed",
-						});
-					})
-					.mockReturnValueOnce("src/routes/changed.ts\n");
+				// Mock fetch to fail - this should trigger fallback to full scan (glob)
+				vi.mocked(child_process.execFileSync).mockImplementationOnce(() => {
+					throw new TalawaRestError({
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: "Fetch failed",
+					});
+				});
+
+				// Mock glob to return files for the fallback path
+				const globMock = await import("glob");
+				vi.mocked(globMock.glob).mockResolvedValue(["src/routes/changed.ts"]);
 
 				// Mock shouldScanFile to return true for our test file
 				shouldScanFileSpy = vi
@@ -438,6 +465,14 @@ describe("ErrorHandlingValidator", () => {
 
 				const files = await validator.getFilesToScan();
 				expect(files).toContain("src/routes/changed.ts");
+
+				// Should have attempted fetch but NOT diff (because fetch failed and rethrew)
+				expect(child_process.execFileSync).toHaveBeenCalledTimes(1);
+				expect(child_process.execFileSync).toHaveBeenCalledWith(
+					"git",
+					expect.arrayContaining(["fetch"]),
+					expect.anything(),
+				);
 			} finally {
 				if (shouldScanFileSpy) {
 					shouldScanFileSpy.mockRestore();
@@ -540,6 +575,50 @@ describe("ErrorHandlingValidator", () => {
 				expect.anything(),
 			);
 		});
+
+		it("should reject potentially malicious file paths in applyFixes", () => {
+			validator.result.violations.push({
+				filePath: "../../../etc/passwd",
+				lineNumber: 1,
+				violationType: "test",
+				line: "",
+				suggestion: "",
+			});
+
+			// Should throw specific error for directory traversal
+			expect(() => validator.applyFixes()).toThrow(
+				/Suspicious file path detected/,
+			);
+		});
+
+		it("should handle errors during biome formatting in applyFixes", () => {
+			validator.result.violations.push({
+				filePath: "src/normal.ts",
+				lineNumber: 1,
+				violationType: "test",
+				line: "",
+				suggestion: "",
+			});
+
+			// Mock exit to prevent actual process exit
+			const exitSpy = vi
+				.spyOn(process, "exit")
+				.mockImplementation(() => undefined as never);
+			const consoleSpy = vi.spyOn(console, "error");
+
+			// Mock execFileSync to throw a generic error
+			vi.mocked(child_process.execFileSync).mockImplementation(() => {
+				throw new Error("Biome failed");
+			});
+
+			validator.applyFixes();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error applying Biome formatting:",
+				"Biome failed",
+			);
+			expect(exitSpy).toHaveBeenCalledWith(1);
+		});
 	});
 
 	describe("Glob Pattern Matching", () => {
@@ -573,6 +652,47 @@ describe("ErrorHandlingValidator", () => {
 			).toBe(false);
 		});
 
+		it("should use matchesPattern to check multiple patterns", () => {
+			const patterns = ["src/routes/*.ts", "src/controllers/*.ts"];
+			expect(validator.matchesPattern("src/routes/api.ts", patterns)).toBe(
+				true,
+			);
+			expect(
+				validator.matchesPattern("src/controllers/user.ts", patterns),
+			).toBe(true);
+			expect(validator.matchesPattern("src/utils/helper.ts", patterns)).toBe(
+				false,
+			);
+		});
+
+		it("should have valid EXCLUDE_PATTERNS", () => {
+			expect(EXCLUDE_PATTERNS).toBeDefined();
+			expect(EXCLUDE_PATTERNS.length).toBeGreaterThan(0);
+			// Access element at index causing potential coverage gap
+			expect(EXCLUDE_PATTERNS).toContain("**/*.yaml");
+		});
+
+		it("should have valid ALLOW_CONSOLE_USAGE and SCAN_PATTERNS", () => {
+			expect(ALLOW_CONSOLE_USAGE).toBeDefined();
+			expect(SCAN_PATTERNS).toBeDefined();
+			expect(ALLOW_CONSOLE_USAGE.length).toBeGreaterThan(0);
+			expect(SCAN_PATTERNS.length).toBeGreaterThan(0);
+		});
+
+		it("should identify route or resolver files correctly", () => {
+			expect(validator.isRouteOrResolverFile("src/routes/api.ts")).toBe(true);
+			expect(validator.isRouteOrResolverFile("src/graphql/types/User.ts")).toBe(
+				true,
+			);
+			expect(
+				validator.isRouteOrResolverFile("src/graphql/resolvers/User.ts"),
+			).toBe(true);
+			expect(validator.isRouteOrResolverFile("src/REST/User.ts")).toBe(true);
+			expect(validator.isRouteOrResolverFile("src/utils/helper.ts")).toBe(
+				false,
+			);
+		});
+
 		it("should handle exclusion patterns correctly", () => {
 			expect(
 				validator.matchesGlobPattern(
@@ -604,6 +724,31 @@ describe("ErrorHandlingValidator", () => {
 			expect(
 				validator.matchesGlobPattern("src/api.test.ts.backup", "**/*.test.ts"),
 			).toBe(false);
+		});
+		it("should use fallback when RegExp generation fails", () => {
+			const pattern = "some-*";
+			const OriginalRegExp = global.RegExp;
+			const regExpSpy = vi
+				.spyOn(global, "RegExp")
+				.mockImplementation((p: string | RegExp, f?: string) => {
+					if (p === "^some-[^/]*$") {
+						throw new Error("RegExp failed");
+					}
+					return new OriginalRegExp(p, f);
+				});
+
+			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+			const result = validator.matchesGlobPattern("some-file", pattern);
+
+			expect(result).toBe(true);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Invalid glob pattern"),
+				expect.anything(),
+			);
+
+			regExpSpy.mockRestore();
+			consoleSpy.mockRestore();
 		});
 	});
 
@@ -678,9 +823,24 @@ describe("ErrorHandlingValidator", () => {
 		});
 
 		describe("getLineContent", () => {
-			it("should return the line itself if it matches criteria", () => {
+			it("should return the line itself if it matches single line catch criteria", () => {
 				const lines = ["try {", "  doSomething();", "} catch (e) { }"];
 				expect(validator.getLineContent(lines, 3)).toBe("} catch (e) { }");
+			});
+
+			it("should return the line itself if it is a multiline catch start", () => {
+				const lines = ["} catch (e) {"];
+				expect(validator.getLineContent(lines, 1)).toBe("} catch (e) {");
+			});
+
+			it("should return the line itself if it is a catch start without preceding brace", () => {
+				const lines = ["catch (e) {"];
+				expect(validator.getLineContent(lines, 1)).toBe("catch (e) {");
+			});
+
+			it("should return the line itself if no catch found (fallback)", () => {
+				const lines = ["throw new Error();"];
+				expect(validator.getLineContent(lines, 1)).toBe("throw new Error();");
 			});
 
 			it("should search nearby lines for catch declaration", () => {
@@ -785,6 +945,86 @@ describe("ErrorHandlingValidator", () => {
 			process.env = originalEnv;
 		});
 
+		it("should handle fatal error in CI git diff gracefully", () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: "true",
+				GITHUB_BASE_REF: "develop",
+			};
+
+			vi.mocked(child_process.execFileSync).mockImplementation((cmd) => {
+				if (cmd === "git") {
+					throw new Error("Fatal git error");
+				}
+				return "";
+			});
+
+			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+			const files = validator.getModifiedFiles();
+
+			expect(files).toEqual([]);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("CI git diff failed"),
+			);
+
+			process.env = originalEnv;
+			consoleSpy.mockRestore();
+		});
+
+		it("should handle non-Error throw in CI git diff", () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: "true",
+				GITHUB_BASE_REF: "develop",
+			};
+
+			vi.mocked(child_process.execFileSync).mockImplementation((_cmd) => {
+				throw "String Error";
+			});
+
+			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+			const files = validator.getModifiedFiles();
+
+			expect(files).toEqual([]);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("CI git diff failed: String Error"),
+			);
+
+			process.env = originalEnv;
+			consoleSpy.mockRestore();
+		});
+
+		it("should handle object error throw in CI git diff", () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: "true",
+				GITHUB_BASE_REF: "develop",
+			};
+
+			vi.mocked(child_process.execFileSync).mockImplementation((_cmd) => {
+				throw { message: "Object Error" };
+			});
+
+			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+			const files = validator.getModifiedFiles();
+
+			expect(files).toEqual([]);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining(
+					'CI git diff failed: {"message":"Object Error"}',
+				),
+			);
+
+			process.env = originalEnv;
+			consoleSpy.mockRestore();
+		});
+
 		it("checkLineForViolations should delegate correctly", () => {
 			const spyGeneric = vi.spyOn(validator, "checkGenericError");
 			const spyConsole = vi.spyOn(validator, "checkConsoleUsage");
@@ -801,6 +1041,36 @@ describe("ErrorHandlingValidator", () => {
 			);
 			const exitCode = await validator.validate();
 			expect(exitCode).toBe(1);
+		});
+
+		it("validate should handle string errors gracefully", async () => {
+			vi.spyOn(validator, "getFilesToScan").mockRejectedValue("String Error");
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(1);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error during validation:",
+				"String Error",
+			);
+			consoleSpy.mockRestore();
+		});
+
+		it("validate should handle object errors gracefully", async () => {
+			vi.spyOn(validator, "getFilesToScan").mockRejectedValue({
+				message: "Object Error",
+			});
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(1);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error during validation:",
+				'{"message":"Object Error"}',
+			);
+			consoleSpy.mockRestore();
 		});
 
 		it("validate should return 0 if no files to scan", async () => {
@@ -825,6 +1095,90 @@ describe("ErrorHandlingValidator", () => {
 			expect(validator.result.violations[0]?.violationType).toBe(
 				"empty_catch_block",
 			);
+		});
+
+		it("should identify improper catch handling violations", () => {
+			const content = `
+                try {
+                    fail();
+                } catch (e) {
+                    return null; // Improper: returning null swallowing error
+                }
+            `;
+			const lines = content.split("\n");
+			validator.checkMultilineCatchBlocks("test.ts", content, lines);
+
+			expect(validator.result.violations).toHaveLength(1);
+			expect(validator.result.violations[0]?.violationType).toBe(
+				"improper_catch_handling",
+			);
+		});
+
+		it("should skip validation for scripts/setup/ paths", () => {
+			const content = "try {} catch(e) {}"; // Empty catch would be a violation
+			const lines = content.split("\n");
+
+			validator.checkMultilineCatchBlocks(
+				"scripts/setup/test.ts",
+				content,
+				lines,
+			);
+			expect(validator.result.violations).toHaveLength(0);
+		});
+
+		it("should handle error when reading file", () => {
+			const consoleSpy = vi.spyOn(console, "warn");
+			vi.mocked(fs.existsSync).mockReturnValue(true);
+			vi.mocked(fs.readFileSync).mockImplementation(() => {
+				throw new Error("Read failed");
+			});
+
+			validator.validateFile("test.ts");
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Could not read file test.ts: Read failed"),
+			);
+		});
+
+		it("should handle string error processing in validateFile", () => {
+			const consoleSpy = vi.spyOn(console, "warn");
+			vi.mocked(fs.existsSync).mockReturnValue(true);
+			vi.mocked(fs.readFileSync).mockImplementation(() => {
+				throw "String Error";
+			});
+			validator.validateFile("test.ts");
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Could not read file test.ts: String Error"),
+			);
+		});
+
+		it("should handle object error processing in validateFile", () => {
+			const consoleSpy = vi.spyOn(console, "warn");
+			vi.mocked(fs.existsSync).mockReturnValue(true);
+			vi.mocked(fs.readFileSync).mockImplementation(() => {
+				throw { custom: "Object Error" };
+			});
+			validator.validateFile("test.ts");
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining(
+					'Could not read file test.ts: {"custom":"Object Error"}',
+				),
+			);
+		});
+
+		it("should handle matchesGlobPattern complexity fallback", () => {
+			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			// Use enough stars to trigger length > 500 or star count > 10
+			const complexPattern = `a${"*".repeat(101)}b`;
+			expect(validator.matchesGlobPattern("ab", complexPattern)).toBe(true);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Pattern too complex"),
+			);
+			consoleSpy.mockRestore();
+		});
+
+		it("should return false for simple mismatch without wildcards", () => {
+			expect(validator.matchesGlobPattern("file.ts", "other.ts")).toBe(false);
 		});
 	});
 
@@ -928,6 +1282,33 @@ describe("ErrorHandlingValidator", () => {
 			spy.mockRestore();
 			process.env = originalEnv;
 		});
+
+		it("should skip validation locally if no modified files", async () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: undefined,
+				GITHUB_BASE_REF: undefined,
+				CHANGED_FILES: undefined,
+			};
+
+			// Mock getModifiedFiles to return empty array
+			vi.spyOn(validator, "getModifiedFiles").mockReturnValue([]);
+
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const files = await validator.getFilesToScan();
+
+			expect(files).toEqual([]);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining(
+					"No modified files detected. Skipping validation",
+				),
+			);
+
+			process.env = originalEnv;
+			consoleSpy.mockRestore();
+		});
 	});
 
 	describe("CLI Main Entry Point", () => {
@@ -975,6 +1356,169 @@ describe("ErrorHandlingValidator", () => {
 			validateSpy.mockResolvedValue(1);
 			await main();
 			expect(exitSpy).toHaveBeenCalledWith(1);
+		});
+	});
+
+	describe("Run Wrapper", () => {
+		let exitSpy: MockInstance;
+		let consoleSpy: MockInstance;
+
+		beforeEach(() => {
+			exitSpy = vi
+				.spyOn(process, "exit")
+				.mockImplementation(() => undefined as never);
+			consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		it("should exit with 1 on unexpected error", async () => {
+			vi.spyOn(ErrorHandlingValidator.prototype, "validate").mockRejectedValue(
+				new Error("Unexpected crash"),
+			);
+
+			await run();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Unexpected error:",
+				expect.objectContaining({ message: "Unexpected crash" }),
+			);
+			expect(exitSpy).toHaveBeenCalledWith(1);
+		});
+
+		it("should succeed if main succeeds", async () => {
+			vi.spyOn(ErrorHandlingValidator.prototype, "validate").mockResolvedValue(
+				0,
+			);
+			await run();
+			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+	});
+
+	describe("Coverage Gaps", () => {
+		it("should handle WARN_ONLY_MODE", async () => {
+			vi.resetModules();
+			process.env.WARN_ONLY_MODE = "true";
+			const { ErrorHandlingValidator } = await import(
+				"../../scripts/validate_error_handling"
+			);
+			const validator = new ErrorHandlingValidator();
+
+			// Add a violation
+			vi.spyOn(validator, "getFilesToScan").mockResolvedValue(["file1.ts"]);
+			vi.spyOn(validator, "validateFile").mockImplementation(async () => {
+				validator.result.violations.push({
+					filePath: "file1.ts",
+					lineNumber: 1,
+					violationType: "test",
+					line: "",
+					suggestion: "",
+				});
+			});
+
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(0); // Should be 0 in warn-only mode despite violations
+
+			delete process.env.WARN_ONLY_MODE;
+		});
+
+		it("should return empty list if all CHANGED_FILES are filtered out", async () => {
+			process.env.CHANGED_FILES = "ignored.txt node_modules/file.ts";
+			const spy = vi.spyOn(validator, "shouldScanFile").mockReturnValue(false);
+
+			const files = await validator.getFilesToScan();
+			expect(files).toEqual([]);
+
+			delete process.env.CHANGED_FILES;
+			spy.mockRestore();
+		});
+
+		it("should handle missing file in validateFile", async () => {
+			vi.mocked(fs.existsSync).mockReturnValue(false);
+			const consoleSpy = vi.spyOn(console, "warn");
+
+			await validator.validateFile("missing.ts");
+
+			// It should just return without error or adding violations
+			expect(validator.result.violations).toHaveLength(0);
+			expect(consoleSpy).not.toHaveBeenCalled(); // existsSync check prevents read
+		});
+
+		it("should skip comment lines in checkLineForViolations", () => {
+			validator.checkConsoleUsage = vi.fn();
+			validator.checkGenericError = vi.fn();
+
+			validator.checkLineForViolations("test.ts", 1, "// comment");
+			validator.checkLineForViolations("test.ts", 2, "* comment");
+			validator.checkLineForViolations("test.ts", 3, "/* comment");
+
+			expect(validator.checkConsoleUsage).not.toHaveBeenCalled();
+			expect(validator.checkGenericError).not.toHaveBeenCalled();
+		});
+
+		it("should do nothing in applyFixes if no violations", () => {
+			validator.result.violations = [];
+			const execSpy = vi.mocked(child_process.execFileSync);
+
+			validator.applyFixes();
+
+			expect(execSpy).not.toHaveBeenCalled();
+		});
+
+		it("should not call applyFixes if fix mode has no violations", async () => {
+			const originalArgv = process.argv;
+			process.argv = ["node", "script", "--fix"];
+
+			const validateSpy = vi
+				.spyOn(ErrorHandlingValidator.prototype, "validate")
+				.mockResolvedValue(0);
+			const applyFixesSpy = vi.spyOn(
+				ErrorHandlingValidator.prototype,
+				"applyFixes",
+			);
+
+			await main();
+
+			expect(validateSpy).toHaveBeenCalled();
+			expect(applyFixesSpy).not.toHaveBeenCalled();
+
+			process.argv = originalArgv;
+		});
+	});
+
+	describe("Module Execution Check", () => {
+		it("should execute run() when invoked directly", async () => {
+			vi.resetModules();
+			const originalArgv = process.argv;
+
+			const scriptPath = resolve(
+				process.cwd(),
+				"scripts/validate_error_handling.ts",
+			);
+			process.argv = ["node", scriptPath];
+
+			const exitSpy = vi
+				.spyOn(process, "exit")
+				.mockImplementation(() => undefined as never);
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const { glob } = await import("glob");
+			vi.mocked(glob).mockResolvedValue([]);
+
+			await import("../../scripts/validate_error_handling");
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(exitSpy).toHaveBeenCalledWith(0);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining("No relevant modified files"),
+			);
+
+			process.argv = originalArgv;
+			vi.resetModules();
+			vi.restoreAllMocks();
 		});
 	});
 });
