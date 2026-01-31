@@ -9,16 +9,115 @@
 # - Node.js (version from package.json)
 # - pnpm (version from package.json)
 #
-# Supports: Ubuntu, Debian, Linux Mint, Pop!_OS, Fedora, RHEL, CentOS, Arch,
-#           Manjaro, and WSL2 environments.
+##############################################################################
+# SUPPORTED DISTRIBUTIONS
+##############################################################################
+# This script supports the following Linux distributions:
 #
-# Usage:
+# Debian Family:
+#   - Ubuntu (18.04+)
+#   - Debian (10+)
+#   - Linux Mint (19+)
+#   - Pop!_OS (20.04+)
+#
+# Red Hat Family:
+#   - Fedora (33+)
+#   - RHEL (8+)
+#   - CentOS (8+)
+#
+# Arch Family:
+#   - Arch Linux
+#   - Manjaro
+#
+# WSL2 (Windows Subsystem for Linux):
+#   - All above distributions running under WSL2
+#   - See WSL2 section below for specific guidance
+#
+##############################################################################
+# USAGE
+##############################################################################
 #   ./scripts/install/linux/install-linux.sh [docker|local] [--skip-prereqs]
 #
-# Environment Variables:
-#   AUTO_YES=true     - Skip all confirmation prompts (non-interactive mode)
-#   CI=true           - Same as AUTO_YES=true (for CI/CD pipelines)
-#   DEBUG=1           - Enable debug logging
+# Arguments:
+#   docker        - Install with Docker support (default)
+#   local         - Install without Docker (local development mode)
+#   --skip-prereqs - Skip system package installation (use if already installed)
+#
+# Examples:
+#   ./scripts/install/linux/install-linux.sh              # Docker mode
+#   ./scripts/install/linux/install-linux.sh local        # Local mode
+#   ./scripts/install/linux/install-linux.sh docker --skip-prereqs
+#
+##############################################################################
+# ENVIRONMENT VARIABLES
+##############################################################################
+#   AUTO_YES=true   - Skip all confirmation prompts (non-interactive mode)
+#                     Useful for automated deployments and scripted installs.
+#                     When set, the script will not prompt before:
+#                       - Downloading and executing Docker installer
+#                       - Downloading and executing fnm installer
+#
+#   CI=true         - Same as AUTO_YES=true (for CI/CD pipelines)
+#                     Automatically detected in GitHub Actions, Jenkins, etc.
+#
+#   DEBUG=1         - Enable debug logging for troubleshooting
+#                     When set, the script will output additional diagnostic
+#                     information including:
+#                       - Detailed command execution logs
+#                       - Environment variable states
+#                       - Function entry/exit traces
+#                     All debug output is prefixed with [DEBUG] and written
+#                     to both console and the installation log file.
+#                     Example: DEBUG=1 ./scripts/install/linux/install-linux.sh
+#
+##############################################################################
+# WSL2 (Windows Subsystem for Linux) GUIDANCE
+##############################################################################
+# This script fully supports WSL2 environments. When WSL is detected, the
+# script provides additional guidance specific to the WSL2 workflow.
+#
+# Prerequisites for WSL2:
+#   1. Windows 10 version 2004+ or Windows 11
+#   2. WSL2 enabled (run as Administrator in PowerShell):
+#      wsl --install
+#   3. A Linux distribution installed from Microsoft Store
+#      (Ubuntu recommended)
+#
+# Recommended WSL2 Settings:
+#   - Memory: At least 4GB allocated to WSL2
+#   - Configure in %UserProfile%\.wslconfig:
+#       [wsl2]
+#       memory=8GB
+#       processors=4
+#
+# Docker in WSL2:
+#   For the best Docker experience in WSL2, we recommend using Docker Desktop
+#   for Windows with WSL2 backend enabled, rather than installing Docker
+#   directly inside WSL2. Benefits include:
+#     - Seamless integration between Windows and Linux containers
+#     - Shared Docker daemon across all WSL2 distros
+#     - Better resource management and performance
+#     - GUI tools via Docker Desktop dashboard
+#
+#   To enable Docker Desktop WSL2 integration:
+#     1. Install Docker Desktop for Windows
+#     2. Open Docker Desktop Settings
+#     3. Go to Resources > WSL Integration
+#     4. Enable integration with your WSL2 distro
+#     5. The 'docker' command will be available in your WSL2 terminal
+#
+# Differences from Native Linux:
+#   - File system performance: /mnt/c/ is slower than native Linux paths
+#     Store your projects in ~/projects or /home/user/ for best performance
+#   - Networking: WSL2 uses a virtual network; localhost access works seamlessly
+#   - Docker: Uses Docker Desktop daemon on Windows rather than Linux daemon
+#   - Memory: WSL2 manages memory dynamically; configure limits in .wslconfig
+#
+# Troubleshooting WSL2:
+#   - If Docker commands fail, ensure Docker Desktop is running on Windows
+#   - Restart WSL2 if needed: wsl --shutdown (from Windows PowerShell)
+#   - Check WSL version: wsl -l -v (should show VERSION 2)
+#
 ##############################################################################
 
 set -euo pipefail
@@ -391,7 +490,7 @@ else
             INSTALLED_PREREQS=true
             ;;
         *)
-            warn "Unknown distribution family: $DISTRO_FAMILY"
+            error "Unsupported distribution family: $DISTRO_FAMILY"
             info ""
             info "Supported distributions:"
             info "  • Debian family: Ubuntu, Debian, Linux Mint, Pop!_OS"
@@ -404,6 +503,8 @@ else
             info "  ./scripts/install/linux/install-linux.sh $INSTALL_MODE --skip-prereqs"
             info ""
             info "To report unsupported distros, include output of: cat /etc/os-release"
+            info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+            exit 1
             ;;
     esac
     
