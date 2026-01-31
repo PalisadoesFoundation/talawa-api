@@ -3,7 +3,13 @@ import path, { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
-import * as Atomic from "./AtomicEnvWriter";
+import {
+	restoreBackup as atomicRestoreBackup,
+	cleanupTemp,
+	commitTemp,
+	ensureBackup,
+	writeTemp,
+} from "./AtomicEnvWriter";
 import { emailSetup } from "./emailSetup";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
@@ -132,12 +138,16 @@ async function gracefulCleanup(signal?: string): Promise<void> {
 	}
 	cleaning = true;
 
-	console.log(`\n⚠️  ${signal ?? "Interruption"} received. Cleaning up...`);
+	console.log(
+		signal === undefined
+			? "\n\n⚠️  Setup interrupted by user (CTRL+C)"
+			: `\n\n⚠️  Setup interrupted by user (CTRL+C) - ${signal} received. Cleaning up...`,
+	);
 
 	try {
 		// Clean up temporary file
 		try {
-			await Atomic.cleanupTemp(envTempFile);
+			await cleanupTemp(envTempFile);
 		} catch (tempErr) {
 			console.warn("⚠️  Failed to clean temp file:", tempErr);
 			// Continue to restore backup
@@ -145,17 +155,17 @@ async function gracefulCleanup(signal?: string): Promise<void> {
 
 		// Restore backup if one was created
 		if (backupCreated) {
-			await Atomic.restoreBackup(envFileName, envBackupFile);
-			console.log("✓ Cleanup complete. Original .env restored.");
+			await atomicRestoreBackup(envFileName, envBackupFile);
+			console.log("✅ Original configuration restored successfully");
 		} else {
 			console.log("✓ Cleanup complete. No backup to restore.");
 		}
+
+		process.exit(0);
 	} catch (e) {
 		console.error("✗ Cleanup encountered errors:", e);
 		process.exit(1);
 	}
-
-	process.exit(1);
 }
 
 // Register signal handlers
@@ -520,10 +530,10 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 			.join("\n");
 
 		// Use AtomicEnvWriter for safe file operations
-		await Atomic.ensureBackup(envFileName, envBackupFile);
-		await Atomic.writeTemp(envTempFile, safeContent);
-		await Atomic.commitTemp(envFileName, envTempFile);
-		await Atomic.cleanupTemp(envTempFile);
+		await ensureBackup(envFileName, envBackupFile);
+		await writeTemp(envTempFile, safeContent);
+		await commitTemp(envFileName, envTempFile);
+		await cleanupTemp(envTempFile);
 
 		dotenv.config({ path: envFileName });
 		console.log(
@@ -531,7 +541,11 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 		);
 	} catch (error) {
 		// Clean up temp file on error
-		await Atomic.cleanupTemp(envTempFile);
+		try {
+			await cleanupTemp(envTempFile);
+		} catch (cleanupError) {
+			console.warn("⚠️  Failed to clean temp file:", cleanupError);
+		}
 		console.error(
 			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
 		);
@@ -1237,7 +1251,7 @@ export async function setup(): Promise<SetupAnswers> {
 		}
 		if (shouldBackup) {
 			try {
-				await Atomic.ensureBackup(envFileName, envBackupFile);
+				await ensureBackup(envFileName, envBackupFile);
 				backupCreated = true;
 			} catch (err) {
 				if (process.env.NODE_ENV === "production" || initialCI === "true") {
