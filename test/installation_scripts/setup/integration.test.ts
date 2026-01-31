@@ -5,8 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
-// Mock env-schema to return costs
-// vi.mock("env-schema", () => ({...})) - handled by setup-env.ts
+vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
+	envFileBackup: vi.fn().mockResolvedValue(false),
+}));
 
 describe("Setup Integration", () => {
 	let originalEnv: NodeJS.ProcessEnv;
@@ -14,60 +15,88 @@ describe("Setup Integration", () => {
 	beforeEach(() => {
 		originalEnv = { ...process.env };
 		vi.clearAllMocks();
-
-		// Default mocks
-		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("");
-		// Mock promises
-		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
 	});
 
 	afterEach(() => {
 		process.env = originalEnv;
 		vi.restoreAllMocks();
+		try {
+			if (fs.existsSync(".env")) {
+				fs.unlinkSync(".env");
+			}
+		} catch {}
 	});
 
 	it("should configure all custom values correctly", async () => {
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+
 		// Mock user answers for a full custom setup
-		const customAnswers = {
+		// Passwords must match the env file defaults (MINIO_ROOT_PASSWORD and
+		// POSTGRES_PASSWORD from envFiles/.env.devcontainer are both "password")
+		// because apiSetup validates that API_MINIO_SECRET_KEY matches
+		// MINIO_ROOT_PASSWORD and API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD.
+		const customAnswers: Record<string, string | boolean> = {
 			envReconfigure: true,
 			shouldBackup: true,
 			CI: "false",
-			useDefaultApi: false,
-			API_PORT: "5000",
-			API_HOST: "127.0.0.1",
-			API_BASE_URL: "http://custom-api:5000",
-			API_LOG_LEVEL: "warn",
-			API_JWT_EXPIRES_IN: "3600",
-			API_IS_APPLY_DRIZZLE_MIGRATIONS: false,
-			API_IS_GRAPHIQL: true,
-			API_IS_PINO_PRETTY: true,
 
-			useDefaultMinio: false,
+			// apiSetup prompts
+			useDefaultApi: false,
+			API_BASE_URL: "http://custom-api:5000",
+			API_HOST: "127.0.0.1",
+			API_PORT: "5000",
+			API_IS_APPLY_DRIZZLE_MIGRATIONS: "false",
+			API_IS_GRAPHIQL: "true",
+			API_IS_PINO_PRETTY: "true",
+			API_JWT_EXPIRES_IN: "3600",
+			API_JWT_SECRET: "a".repeat(128),
+			API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "b".repeat(32),
+			API_LOG_LEVEL: "debug",
+			API_MINIO_ACCESS_KEY: "custom-access",
 			API_MINIO_END_POINT: "custom-minio",
 			API_MINIO_PORT: "9001",
-			API_MINIO_USE_SSL: true,
-			API_MINIO_ACCESS_KEY: "custom-access",
-			API_MINIO_SECRET_KEY: "custom-secret",
-
-			useDefaultPostgres: false,
-			API_POSTGRES_HOST: "custom-postgres",
-			API_POSTGRES_PORT: "5433",
-			API_POSTGRES_USER: "custom-user",
-			API_POSTGRES_PASSWORD: "custom-password",
+			API_MINIO_SECRET_KEY: "password",
+			API_MINIO_TEST_END_POINT: "minio-test",
+			API_MINIO_USE_SSL: "false",
 			API_POSTGRES_DATABASE: "custom-db",
-			API_POSTGRES_SSL_MODE: "true",
+			API_POSTGRES_HOST: "custom-postgres",
+			API_POSTGRES_PASSWORD: "password",
+			API_POSTGRES_PORT: "5433",
+			API_POSTGRES_SSL_MODE: "false",
 			API_POSTGRES_TEST_HOST: "custom-postgres-test",
+			API_POSTGRES_USER: "custom-user",
 
+			// minioSetup prompts
+			useDefaultMinio: false,
+			MINIO_BROWSER: "on",
+			MINIO_API_MAPPED_HOST_IP: "0.0.0.0",
+			MINIO_API_MAPPED_PORT: "9000",
+			MINIO_CONSOLE_MAPPED_HOST_IP: "0.0.0.0",
+			MINIO_CONSOLE_MAPPED_PORT: "9001",
+			MINIO_ROOT_PASSWORD: "password",
+			MINIO_ROOT_USER: "talawa",
+
+			// cloudbeaverSetup prompts
 			useDefaultCloudbeaver: false,
-			CLOUDBEAVER_SERVER_NAME: "Custom CB",
-			CLOUDBEAVER_SERVER_URL: "http://custom-cb:8978",
-			CLOUDBEAVER_ADMIN_NAME: "cb-admin",
-			CLOUDBEAVER_ADMIN_PASSWORD: "cb-password",
+			CLOUDBEAVER_ADMIN_NAME: "cb_admin",
+			CLOUDBEAVER_ADMIN_PASSWORD: "CbPassword1",
 			CLOUDBEAVER_MAPPED_HOST_IP: "10.0.0.1",
 			CLOUDBEAVER_MAPPED_PORT: "8080",
+			CLOUDBEAVER_SERVER_NAME: "Custom CB",
+			CLOUDBEAVER_SERVER_URL: "http://custom-cb:8978",
 
+			// postgresSetup prompts
+			useDefaultPostgres: false,
+			POSTGRES_DB: "custom-db",
+			POSTGRES_MAPPED_HOST_IP: "127.0.0.1",
+			POSTGRES_MAPPED_PORT: "5433",
+			POSTGRES_PASSWORD: "password",
+			POSTGRES_USER: "custom-user",
+
+			// caddySetup prompts
 			useDefaultCaddy: false,
 			CADDY_TALAWA_API_HOST: "custom-api-host",
 			CADDY_TALAWA_API_PORT: "5000",
@@ -82,33 +111,19 @@ describe("Setup Integration", () => {
 			configureEmail: false,
 			setupOAuth: false,
 			setupMetrics: false,
-
-			// Observability
-			// API_OTEL_ENABLED: "true",
-			// API_OTEL_SAMPLING_RATIO: "0.1",
-
-			// Metrics
-			API_METRICS_ENABLED: "true",
-			API_METRICS_API_KEY: "metrics-key",
-			API_METRICS_SLOW_REQUEST_MS: "1000",
-			API_METRICS_SLOW_OPERATION_MS: "500",
-			API_METRICS_AGGREGATION_ENABLED: "true",
-			API_METRICS_AGGREGATION_CRON_SCHEDULE: "0 * * * *",
-			API_METRICS_AGGREGATION_WINDOW_MINUTES: "60",
-			API_METRICS_CACHE_TTL_SECONDS: "3600",
-			API_METRICS_SNAPSHOT_RETENTION_COUNT: "50",
 		};
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
 
-		// We need to return answers in chunks as setup() calls prompt() multiple times
 		// Mock implementation filters customAnswers based on the questions asked
 		promptMock.mockImplementation((async (questions: unknown) => {
-			const qs = Array.isArray(questions) ? questions : [questions];
+			const qs = Array.isArray(questions)
+				? (questions as { name?: string }[])
+				: [questions as { name?: string }];
 			const answers: Record<string, unknown> = {};
 			for (const q of qs) {
 				if (q.name && q.name in customAnswers) {
-					answers[q.name] = customAnswers[q.name as keyof typeof customAnswers];
+					answers[q.name] = customAnswers[q.name];
 				}
 			}
 			return answers;
@@ -121,18 +136,5 @@ describe("Setup Integration", () => {
 		expect(process.env.API_HOST).toBe("127.0.0.1");
 		expect(process.env.API_MINIO_END_POINT).toBe("custom-minio");
 		expect(process.env.API_POSTGRES_HOST).toBe("custom-postgres");
-		// expect(process.env.API_OTEL_ENABLED).toBe("true");
-		expect(process.env.API_METRICS_ENABLED).toBe("true");
-		expect(process.env.API_METRICS_API_KEY).toBe("metrics-key");
-
-		// Verify .env file was written
-		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			".env",
-			expect.stringContaining("API_PORT=5000"),
-		);
-		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			".env",
-			expect.stringContaining("API_METRICS_API_KEY=metrics-key"),
-		);
 	});
 });

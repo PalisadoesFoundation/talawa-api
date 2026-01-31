@@ -208,7 +208,7 @@ suite.concurrent("emptyMinioBucket", () => {
 	});
 });
 
-suite.concurrent("checkAndInsertData", () => {
+suite("checkAndInsertData", () => {
 	test.concurrent("should return false when given no rows", async () => {
 		const result = await helpers.checkAndInsertData(
 			schema.usersTable,
@@ -240,7 +240,7 @@ suite.concurrent("checkAndInsertData", () => {
 	});
 });
 
-suite.concurrent("insertCollections", () => {
+suite("insertCollections", () => {
 	test.concurrent("should insert collection data (for a valid collection) and return true", async () => {
 		const result = await helpers.insertCollections([
 			"users",

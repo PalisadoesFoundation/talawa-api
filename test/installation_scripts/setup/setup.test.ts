@@ -16,7 +16,7 @@ vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
 // env-schema mock is handled by setup-env.ts
 
 vi.mock("scripts/setup/emailSetup", () => ({
-	emailSetup: vi.fn().mockImplementation((answers) => Promise.resolve(answers)),
+	emailSetup: (answers: Record<string, unknown>) => Promise.resolve(answers),
 }));
 
 vi.mock("inquirer");
@@ -151,7 +151,6 @@ describe("Setup", () => {
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
 		process.env.CI = "true";
 		const mockResponses = [
-			{ envReconfigure: true },
 			{ CI: "true" },
 			{ useDefaultApi: true },
 			{ useDefaultMinio: true },
@@ -168,48 +167,9 @@ describe("Setup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		const fsAccessSpy = vi
-			.spyOn(fs.promises, "access")
-			.mockResolvedValue(undefined);
-		const fsReadFileSyncSpy = vi
-			.spyOn(fs, "readFileSync")
-			.mockReturnValue(
-				[
-					"API_BASE_URL=http://127.0.0.1:4000",
-					"API_HOST=0.0.0.0",
-					"API_PORT=4000",
-					"API_IS_APPLY_DRIZZLE_MIGRATIONS=true",
-					"API_IS_GRAPHIQL=false",
-					"API_IS_PINO_PRETTY=false",
-					"API_JWT_EXPIRES_IN=2592000000",
-					"API_LOG_LEVEL=info",
-					"API_MINIO_ACCESS_KEY=talawa",
-					"API_MINIO_END_POINT=minio",
-					"API_MINIO_PORT=9000",
-					"API_MINIO_SECRET_KEY=password",
-					"API_MINIO_TEST_END_POINT=minio-test",
-					"API_MINIO_USE_SSL=false",
-					"API_POSTGRES_DATABASE=talawa",
-					"API_POSTGRES_HOST=postgres",
-					"API_POSTGRES_PASSWORD=password",
-					"API_POSTGRES_PORT=5432",
-					"API_POSTGRES_SSL_MODE=false",
-					"API_POSTGRES_TEST_HOST=postgres-test",
-					"API_POSTGRES_USER=talawa",
-					"CI=true",
-					"MINIO_ROOT_PASSWORD=password",
-					"MINIO_ROOT_USER=talawa",
-					"CADDY_HTTP_MAPPED_PORT=80",
-					"CADDY_HTTPS_MAPPED_PORT=443",
-					"CADDY_HTTP3_MAPPED_PORT=443",
-					"CADDY_TALAWA_API_DOMAIN_NAME=localhost",
-					"CADDY_TALAWA_API_EMAIL=talawa@email.com",
-					"CADDY_TALAWA_API_HOST=api",
-					"CADDY_TALAWA_API_PORT=4000",
-					"API_ADMINISTRATOR_USER_EMAIL_ADDRESS=test@email.com",
-				].join("\n"),
-			);
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
 
 		await setup();
 
@@ -220,7 +180,7 @@ describe("Setup", () => {
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
 			API_IS_GRAPHIQL: "false",
 			API_IS_PINO_PRETTY: "false",
-			API_JWT_EXPIRES_IN: "2592000000",
+			API_JWT_EXPIRES_IN: "900000",
 			API_LOG_LEVEL: "info",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
@@ -251,10 +211,6 @@ describe("Setup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(process.env[key]).toBe(value);
 		}
-
-		fsExistsSyncSpy.mockRestore();
-		fsAccessSpy.mockRestore();
-		fsReadFileSyncSpy.mockRestore();
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {

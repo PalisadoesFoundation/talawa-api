@@ -1,8 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
+import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
-import { sql } from "drizzle-orm";
+import { type SQLWrapper, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
@@ -18,7 +19,7 @@ import { uuidv7 } from "uuidv7";
 
 // Lightweight types to describe runtime clients used in this module
 type TransactionLike = {
-	execute: (q: unknown) => Promise<unknown[]>;
+	execute: (q: string | SQLWrapper) => Promise<unknown[]>;
 	insert: (table: unknown) => {
 		values: (rows: unknown[]) => {
 			onConflictDoNothing: (opts?: unknown) => Promise<unknown>;
@@ -37,11 +38,12 @@ const envConfig = envSchema<EnvConfig>({
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 export const bucketName: string = envConfig.MINIO_ROOT_USER || "";
-// Create a new database client
-// biome-ignore lint/suspicious/noExplicitAny: runtime client type is complex to model here
-export const queryClient: any =
+// Create a new database client. Use the runtime return type of `postgres()`
+export const queryClient:
+	| ReturnType<typeof postgres>
+	| { end: () => Promise<void> } =
 	process.env.NODE_ENV === "test"
-		? {}
+		? { end: async () => {} }
 		: postgres({
 				host: envConfig.API_POSTGRES_HOST,
 				port: Number(envConfig.API_POSTGRES_PORT) || 5432,
@@ -51,9 +53,23 @@ export const queryClient: any =
 				ssl: envConfig.API_POSTGRES_SSL_MODE === "allow",
 			});
 
-//Create a bucket client
-// biome-ignore lint/suspicious/noExplicitAny: lightweight test stub and external client
-let _minioClient: any;
+// Create a bucket client. Accept either a real `MinioClient` or a lightweight stub used in tests.
+type MinioListStream = NodeJS.ReadableStream;
+type MinioStub = {
+	listObjects: (
+		bucket: string,
+		prefix: string,
+		recursive: boolean,
+	) => MinioListStream;
+	removeObjects: (bucket: string, objects: string[]) => Promise<void>;
+	putObject: (
+		bucket: string,
+		objectName: string,
+		stream: unknown,
+	) => Promise<{ etag: string; versionId: null }>;
+};
+// `MinioClient` is the concrete client from the `minio` package.
+let _minioClient: MinioClient | MinioStub;
 const shouldStubMinio =
 	process.env.NODE_ENV === "test" ||
 	!envConfig.API_MINIO_END_POINT ||
@@ -68,7 +84,6 @@ if (!shouldStubMinio) {
 	});
 } else {
 	// Provide a lightweight stub for tests/environments without Minio configured
-	const { Readable } = require("node:stream");
 	_minioClient = {
 		listObjects: (_bucket: string, _prefix: string, _recursive: boolean) => {
 			const stream = new Readable({
@@ -82,20 +97,34 @@ if (!shouldStubMinio) {
 		removeObjects: async (_bucket: string, _objects: string[]) => {
 			return;
 		},
-		// No-op implementations for other used methods can be added as needed
+		putObject: async (
+			_bucket: string,
+			_objectName: string,
+			_stream: unknown,
+		) => {
+			return { etag: "", versionId: null };
+		},
 	};
 }
 
 export const minioClient = _minioClient;
 
 // In test environment provide a lightweight stub to avoid real DB connections.
-// biome-ignore lint/suspicious/noExplicitAny: db client from drizzle/postgres has complex type
+// biome-ignore lint/suspicious/noExplicitAny: test stub uses any to model complex drizzle runtime types
 let _db: any;
 if (process.env.NODE_ENV === "test") {
 	_db = {
-		query: async () => {
-			return [];
-		},
+		execute: async () => [],
+		query: new Proxy(
+			{},
+			{
+				get: () => ({
+					findFirst: async () => ({
+						id: "00000000-0000-0000-0000-000000000000",
+					}),
+				}),
+			},
+		),
 		// Minimal select chain: db.select(...).from(table) => Promise<rows>
 		select: (_cols?: unknown) => {
 			return {
@@ -104,18 +133,27 @@ if (process.env.NODE_ENV === "test") {
 				},
 			};
 		},
-		transaction: async (cb: (tx: unknown) => Promise<unknown> | unknown) => {
+		insert: (_table: unknown) => ({
+			values: (_rows: unknown) => ({
+				onConflictDoNothing: async () => ({}),
+			}),
+		}),
+		transaction: async (
+			cb: (tx: TransactionLike) => Promise<unknown> | unknown,
+		) => {
 			const tx = {
 				execute: async () => [],
 				insert: (_table: unknown) => ({
-					onConflictDoNothing: async () => ({}),
+					values: (_rows: unknown[]) => ({
+						onConflictDoNothing: async () => ({}),
+					}),
 				}),
 			};
-			return cb(tx as unknown);
+			return cb(tx);
 		},
 	};
 } else {
-	_db = drizzle(queryClient, { schema });
+	_db = drizzle(queryClient as ReturnType<typeof postgres>, { schema });
 }
 
 export const db = _db;
@@ -339,7 +377,7 @@ export async function insertCollections(
 							operators: OperatorsLike,
 						) =>
 							operators.eq(
-								(fields as Record<string, unknown>).emailAddress,
+								fields.emailAddress,
 								API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 							),
 					});

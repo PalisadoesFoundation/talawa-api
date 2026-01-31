@@ -525,7 +525,7 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 			})
 			.join("\n");
 		await fs.writeFile(envFileName, safeContent, { encoding: "utf-8" });
-		dotenv.config({ path: envFileName });
+		dotenv.config({ path: envFileName, override: true });
 		console.log(
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
 		);

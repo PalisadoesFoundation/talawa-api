@@ -18,7 +18,12 @@ const {
 
 vi.mock("inquirer");
 
-vi.mock("node:fs", () => {
+vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
+	envFileBackup: vi.fn().mockResolvedValue(false),
+}));
+
+vi.mock("node:fs", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("node:fs")>();
 	const promises = {
 		access: accessMock,
 		readdir: readdirMock,
@@ -28,8 +33,10 @@ vi.mock("node:fs", () => {
 		writeFile: writeFileMock,
 	};
 	return {
+		...actual,
 		promises,
 		default: {
+			...actual,
 			promises,
 		},
 	};
@@ -54,6 +61,8 @@ describe("Setup -> cloudbeaverSetup", () => {
 
 	it("should prompt the user for CloudBeaver configuration and update process.env", async () => {
 		accessMock.mockResolvedValue(undefined);
+		readFileMock.mockResolvedValue("CI=false\nAPI_PORT=4000");
+		writeFileMock.mockResolvedValue(undefined);
 		const allAnswers = {
 			envReconfigure: true,
 			shouldBackup: true,

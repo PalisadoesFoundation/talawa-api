@@ -18,7 +18,12 @@ const {
 
 vi.mock("inquirer");
 
-vi.mock("node:fs", () => {
+vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
+	envFileBackup: vi.fn().mockResolvedValue(false),
+}));
+
+vi.mock("node:fs", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("node:fs")>();
 	const promises = {
 		access: accessMock,
 		readdir: readdirMock,
@@ -28,8 +33,10 @@ vi.mock("node:fs", () => {
 		writeFile: writeFileMock,
 	};
 	return {
+		...actual,
 		promises,
 		default: {
+			...actual,
 			promises,
 		},
 	};
@@ -75,6 +82,8 @@ describe("Setup -> minioSetup", () => {
 
 	it("should prompt extended Minio config fields when CI=false", async () => {
 		accessMock.mockResolvedValue(undefined);
+		readFileMock.mockResolvedValue("CI=false\nAPI_PORT=4000");
+		writeFileMock.mockResolvedValue(undefined);
 		const allAnswers = {
 			envReconfigure: true,
 			shouldBackup: true,
@@ -193,8 +202,13 @@ describe("Setup -> minioSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		// No filesystem operations are performed by minioSetup in this path,
-		// so filesystem mocks are unnecessary here.
+		accessMock.mockResolvedValue(undefined);
+		readdirMock.mockResolvedValue([
+			".env.1600000000",
+			".env.1700000000",
+		] as string[]);
+		copyFileMock.mockResolvedValue(undefined);
+		renameMock.mockResolvedValue(undefined);
 
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);

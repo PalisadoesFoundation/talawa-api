@@ -2,6 +2,7 @@ vi.mock("inquirer");
 
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import {
@@ -14,15 +15,7 @@ import {
 	validateURL,
 } from "scripts/setup/setup";
 import { validateSecurePassword } from "scripts/setup/validators";
-import {
-	afterEach,
-	beforeAll,
-	describe,
-	expect,
-	it,
-	type MockInstance,
-	vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
  * Helper function to wait for a condition to become true by polling
@@ -139,18 +132,14 @@ describe("Setup -> apiSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".backup") return true;
-			return false;
-		});
+		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
 		(
-			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
-				(path: fs.PathLike) => string[]
-			>
-		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+			vi.spyOn(fs.promises, "readdir") as ReturnType<typeof vi.fn>
+		).mockResolvedValue([".env.1600000000", ".env.1700000000"]);
+		const fsCopyFileSpy = vi
+			.spyOn(fs.promises, "copyFile")
+			.mockResolvedValue(undefined);
+		vi.spyOn(fs.promises, "rename").mockResolvedValue(undefined);
 
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
@@ -160,9 +149,9 @@ describe("Setup -> apiSetup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
-			".backup/.env.1700000000",
-			".env",
+		expect(fsCopyFileSpy).toHaveBeenCalledWith(
+			path.join(".backup", ".env.1700000000"),
+			".env.tmp",
 		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
@@ -386,10 +375,14 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockRejectedValue(
+				Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+			);
+		const fsCopyFileSpy = vi
+			.spyOn(fs.promises, "copyFile")
+			.mockResolvedValue(undefined);
 
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
@@ -399,8 +392,8 @@ describe("Error handling without backup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
+		expect(fsAccessSpy).toHaveBeenCalledWith(".backup");
+		expect(fsCopyFileSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();
@@ -412,25 +405,25 @@ describe("Error handling without backup", () => {
 			.mockImplementation(() => undefined as never);
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		// Mock file system to indicate no .env file exists (so no backup will be created)
-		vi.spyOn(fs, "existsSync").mockReturnValue(false);
+		// Mock file system - use async fs.promises methods that setup.ts actually calls
+		vi.spyOn(fs.promises, "access").mockRejectedValue(
+			Object.assign(new Error("ENOENT"), { code: "ENOENT" }),
+		);
 
 		// Mock prompts sequentially to match the order setup() calls them
-		// Order: CI -> useDefaultMinio -> useDefaultCloudbeaver (if CI=false) -> useDefaultPostgres -> useDefaultCaddy -> useDefaultApi -> API_ADMINISTRATOR_USER_EMAIL_ADDRESS
 		const promptMock = vi.spyOn(inquirer, "prompt");
 		promptMock
 			.mockResolvedValueOnce({ CI: "false" }) // From setCI()
-			.mockResolvedValueOnce({ useDefaultMinio: true }) // Line 913
-			.mockResolvedValueOnce({ useDefaultCloudbeaver: true }) // Line 922 (only if CI === "false")
-			.mockResolvedValueOnce({ useDefaultPostgres: true }) // Line 931
-			.mockResolvedValueOnce({ useDefaultCaddy: true }) // Line 939
-			.mockResolvedValueOnce({ useDefaultApi: true }) // Line 947
+			.mockResolvedValueOnce({ useDefaultApi: true })
+			.mockResolvedValueOnce({ useDefaultMinio: true })
+			.mockResolvedValueOnce({ useDefaultCloudbeaver: true })
+			.mockResolvedValueOnce({ useDefaultPostgres: true })
+			.mockResolvedValueOnce({ useDefaultCaddy: true })
 			.mockResolvedValueOnce({
 				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			}); // From administratorEmail()
+			});
 
 		// Start setup() which will register the SIGINT handler
-		// Don't await it - we'll interrupt it
 		// Attach catch handler immediately to prevent unhandled promise rejections
 		setup().catch(() => {
 			// Expected - setup will be interrupted by SIGINT
@@ -446,7 +439,6 @@ describe("Error handling without backup", () => {
 		process.emit("SIGINT");
 
 		// Wait for async handler to complete by polling for process.exit call
-		// The handler calls process.exit, so we wait for that to be called
 		await waitFor(() => processExitSpy.mock.calls.length > 0);
 
 		// Verify process.exit was called
