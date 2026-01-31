@@ -189,6 +189,14 @@ export function __test__setCleanupInProgress(value: boolean): void {
 }
 
 /**
+ * Test-only export to allow testing backupCreated state
+ * @internal
+ */
+export function __test__setBackupCreated(value: boolean): void {
+	backupCreated = value;
+}
+
+/**
  * Test-only export to allow testing restoreBackup function
  * @internal
  */

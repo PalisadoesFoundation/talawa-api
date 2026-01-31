@@ -49,6 +49,11 @@ Fixes #
 - [ ] I have implemented or provided justification for each non-critical suggestion
 - [ ] I have documented my reasoning in the PR comments where CodeRabbit AI suggestions were not implemented
 
+### Installation Scripts
+- [ ] If modifying `scripts/setup/` or `scripts/dbManagement/`, tests are added in `test/installation_scripts/`
+- [ ] Installation script coverage is ≥95%
+- [ ] Tests pass locally with `pnpm test:install`
+
 ### Test Coverage
 - [ ] I have written tests for all new changes/features
 - [ ] I have verified that test coverage meets or exceeds 95%

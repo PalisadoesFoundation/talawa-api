@@ -28,6 +28,13 @@ Testing and code quality documentation can be found at these locations:
 1. Online at https://docs-api.talawa.io/docs/developer-resources/testing-validation
 1. In the local repository at [testing-validation.md](docs/docs/docs/developer-resources/testing/testing-validation.md) which is the source file for the web page.
 
+### Installation Scripts
+When modifying installation scripts (`scripts/setup/` or `scripts/dbManagement/`):
+- Tests must be added/updated in `test/installation_scripts/`.
+- Coverage for installation scripts must remain ≥95%.
+- Run `pnpm test:install:coverage` locally to verify.
+- See [scripts/TESTING.md](scripts/TESTING.md) for detailed guidelines.
+
 ## Making Contributions   
 
 1. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).

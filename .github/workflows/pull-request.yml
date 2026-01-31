@@ -197,6 +197,37 @@ jobs:
       - name: Check mock isolation
         run: docker container run talawa_api pnpm check_mock_isolation
 
+  Test-Installation-Scripts:
+    name: Test Installation Scripts
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run installation tests
+        run: pnpm test:install:coverage
+      
+      - name: Upload installation coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/install/lcov.info
+          flags: installation-scripts
+          name: installation-scripts-coverage
+      
+      - name: Verify 95% coverage for installation scripts
+        uses: VeryGoodOpenSource/very_good_coverage@v2
+        with:
+          path: "./coverage/install/lcov.info"
+          min_coverage: 95.0
+
   Check_unused_code:
     name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
@@ -447,6 +478,7 @@ jobs:
         Check_unused_code,
         Generate-Schema-Docs,
         Python-Compliance,
+        Test-Installation-Scripts,
       ]
     steps:
       - name: This job intentionally does nothing

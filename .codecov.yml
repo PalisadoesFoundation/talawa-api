@@ -1,0 +1,12 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 57%
+    patch:
+      default:
+        target: 95%
+        paths:
+          - "scripts/setup/**"
+          - "scripts/dbManagement/**"
+          - "setup.ts"
