@@ -324,6 +324,48 @@ check_docker_running() {
     fi
 }
 
+# Validate package.json fields using jq
+# This function reads and validates required fields from package.json
+# It checks: package name matches "talawa-api", version, engines.node, packageManager
+# Returns 0 on success, exits with error on failure
+validate_package_json_fields() {
+    # Verify this is the talawa-api repository
+    local pkg_name
+    pkg_name=$(jq -r '.name // empty' package.json)
+    if [ "$pkg_name" != "talawa-api" ]; then
+        error "This script must be run from the talawa-api repository."
+        info "  Found package name: '$pkg_name'"
+        info "  Expected: 'talawa-api'"
+        info ""
+        info "Remediation: Ensure you are in the correct directory and try again."
+        exit 1
+    fi
+
+    # Validate required package.json fields
+    local missing_fields=""
+
+    PKG_VERSION=$(jq -r '.version // empty' package.json 2>/dev/null)
+    [ -z "$PKG_VERSION" ] && missing_fields="$missing_fields version"
+
+    NODE_ENGINE=$(jq -r '.engines.node // empty' package.json 2>/dev/null)
+    [ -z "$NODE_ENGINE" ] && missing_fields="$missing_fields engines.node"
+
+    PKG_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null)
+    [ -z "$PKG_MANAGER" ] && missing_fields="$missing_fields packageManager"
+
+    if [ -n "$missing_fields" ]; then
+        error "Required fields missing from package.json:$missing_fields"
+        info ""
+        info "Remediation steps:"
+        info "  1. Ensure you have the latest version of the repository:"
+        info "     git pull origin develop"
+        info "  2. If the issue persists, re-clone the repository"
+        exit 1
+    fi
+
+    return 0
+}
+
 ##############################################################################
 # Repository Validation
 ##############################################################################
@@ -371,38 +413,7 @@ fi
 # Perform jq-dependent validations only if jq is available
 # These will be re-run after prerequisites installation if deferred
 if [ "$JQ_AVAILABLE" = "true" ]; then
-    # Verify this is the talawa-api repository
-    PACKAGE_NAME=$(jq -r '.name // empty' package.json)
-    if [ "$PACKAGE_NAME" != "talawa-api" ]; then
-        error "This script must be run from the talawa-api repository."
-        info "  Found package name: '$PACKAGE_NAME'"
-        info "  Expected: 'talawa-api'"
-        info ""
-        info "Remediation: Ensure you are in the correct directory and try again."
-        exit 1
-    fi
-
-    # Validate required package.json fields
-    MISSING_FIELDS=""
-
-    PKG_VERSION=$(jq -r '.version // empty' package.json 2>/dev/null)
-    [ -z "$PKG_VERSION" ] && MISSING_FIELDS="$MISSING_FIELDS version"
-
-    NODE_ENGINE=$(jq -r '.engines.node // empty' package.json 2>/dev/null)
-    [ -z "$NODE_ENGINE" ] && MISSING_FIELDS="$MISSING_FIELDS engines.node"
-
-    PKG_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null)
-    [ -z "$PKG_MANAGER" ] && MISSING_FIELDS="$MISSING_FIELDS packageManager"
-
-    if [ -n "$MISSING_FIELDS" ]; then
-        error "Required fields missing from package.json:$MISSING_FIELDS"
-        info ""
-        info "Remediation steps:"
-        info "  1. Ensure you have the latest version of the repository:"
-        info "     git pull origin develop"
-        info "  2. If the issue persists, re-clone the repository"
-        exit 1
-    fi
+    validate_package_json_fields
 fi
 
 # Validate disk space
@@ -520,40 +531,7 @@ fi
 if [ "$JQ_AVAILABLE" = "false" ]; then
     if command_exists jq; then
         info "Running deferred package.json validation..."
-        
-        # Verify this is the talawa-api repository
-        PACKAGE_NAME=$(jq -r '.name // empty' package.json)
-        if [ "$PACKAGE_NAME" != "talawa-api" ]; then
-            error "This script must be run from the talawa-api repository."
-            info "  Found package name: '$PACKAGE_NAME'"
-            info "  Expected: 'talawa-api'"
-            info ""
-            info "Remediation: Ensure you are in the correct directory and try again."
-            exit 1
-        fi
-
-        # Validate required package.json fields
-        MISSING_FIELDS=""
-
-        PKG_VERSION=$(jq -r '.version // empty' package.json 2>/dev/null)
-        [ -z "$PKG_VERSION" ] && MISSING_FIELDS="$MISSING_FIELDS version"
-
-        NODE_ENGINE=$(jq -r '.engines.node // empty' package.json 2>/dev/null)
-        [ -z "$NODE_ENGINE" ] && MISSING_FIELDS="$MISSING_FIELDS engines.node"
-
-        PKG_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null)
-        [ -z "$PKG_MANAGER" ] && MISSING_FIELDS="$MISSING_FIELDS packageManager"
-
-        if [ -n "$MISSING_FIELDS" ]; then
-            error "Required fields missing from package.json:$MISSING_FIELDS"
-            info ""
-            info "Remediation steps:"
-            info "  1. Ensure you have the latest version of the repository:"
-            info "     git pull origin develop"
-            info "  2. If the issue persists, re-clone the repository"
-            exit 1
-        fi
-        
+        validate_package_json_fields
         success "Deferred package.json validation passed"
     else
         error "jq installation failed or jq is not in PATH."

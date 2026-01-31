@@ -176,6 +176,17 @@ run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-false}"
     
+    # Build the inner script as a multiline variable for readability
+    local inner_script
+    read -r -d '' inner_script <<INNER_SCRIPT || true
+export PATH='$MOCK_BIN:/usr/bin:/bin'
+export MOCK_BIN='$MOCK_BIN'
+export ETC_OS_RELEASE='$TEST_DIR/etc/os-release'
+export PROC_VERSION='$TEST_DIR/proc/version'
+cd '$TEST_DIR'
+'$TEST_DIR/scripts/install/linux/install-linux.sh' '$install_mode' '$skip_prereqs'
+INNER_SCRIPT
+
     env -i \
         PATH="$MOCK_BIN:/usr/bin:/bin" \
         MOCK_BIN="$MOCK_BIN" \
@@ -185,7 +196,7 @@ run_test_script() {
         AUTO_YES="true" \
         ETC_OS_RELEASE="$TEST_DIR/etc/os-release" \
         PROC_VERSION="$TEST_DIR/proc/version" \
-        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; export ETC_OS_RELEASE='$TEST_DIR/etc/os-release'; export PROC_VERSION='$TEST_DIR/proc/version'; cd '$TEST_DIR' && '$TEST_DIR/scripts/install/linux/install-linux.sh' '$install_mode' '$skip_prereqs'"
+        bash --noprofile --norc -c "$inner_script"
 }
 
 # Setup test repo structure
@@ -476,8 +487,11 @@ setup_debian_system
 mkdir -p "$TEST_DIR/var/lib/apt/lists"
 touch "$TEST_DIR/var/lib/apt/lists/testfile"
 
-# Override apt_cache_is_fresh to return true
-cat >> "$TEST_DIR/scripts/install/linux/install-linux.sh.tmp" <<'EOF'
+# Inject apt_cache_is_fresh override into the actual script under test
+# Append the override after the original function definition so it replaces it
+cat >> "$TEST_DIR/scripts/install/linux/install-linux.sh" <<'EOF'
+
+# Test override: Force apt_cache_is_fresh to return true
 apt_cache_is_fresh() { return 0; }
 EOF
 
