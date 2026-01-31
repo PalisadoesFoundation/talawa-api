@@ -122,9 +122,11 @@ describe("Setup -> minioSetup", () => {
 					) {
 						const name = (q as PromptQuestion).name;
 						if (name && name in allAnswers) {
-							result[name] = String(
-								allAnswers[name as keyof typeof allAnswers],
-							);
+							const val = allAnswers[name as keyof typeof allAnswers];
+							result[name] =
+								typeof val === "boolean"
+									? (val as unknown as string)
+									: String(val);
 						}
 					}
 				}
@@ -170,6 +172,9 @@ describe("Setup -> minioSetup", () => {
 			CI: "false",
 			useDefaultMinio: false,
 		};
+		// The setup function expects a Record<string, string> but in tests we pass
+		// boolean flags (e.g. useDefaultMinio). We cast via unknown to satisfy
+		// TypeScript for test setup only.
 		await minioSetup(answers as unknown as Record<string, string>);
 
 		// Verify port conflict was resolved
@@ -188,13 +193,8 @@ describe("Setup -> minioSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		accessMock.mockResolvedValue(undefined);
-		readdirMock.mockResolvedValue([
-			".env.1600000000",
-			".env.1700000000",
-		] as string[]);
-		copyFileMock.mockResolvedValue(undefined);
-		renameMock.mockResolvedValue(undefined);
+		// No filesystem operations are performed by minioSetup in this path,
+		// so filesystem mocks are unnecessary here.
 
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);

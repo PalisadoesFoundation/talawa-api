@@ -200,6 +200,14 @@ jobs:
   Test-Installation-Scripts:
     name: Test Installation Scripts
     runs-on: ubuntu-latest
+    env:
+      API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@example.com"
+      adminEmail: "admin@example.com"
+      MINIO_ENDPOINT: "localhost"
+      MINIO_PORT: "9000"
+      MINIO_ACCESS_KEY: "talawa"
+      MINIO_SECRET_KEY: "talawa"
+      CI: "true"
     needs: [Code-Quality-Checks]
     steps:
       - name: Checkout repository

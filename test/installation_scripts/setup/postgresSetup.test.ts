@@ -118,9 +118,11 @@ describe("Setup -> postgresSetup", () => {
 					) {
 						const name = (q as PromptQuestion).name;
 						if (name && name in allAnswers) {
-							result[name] = String(
-								allAnswers[name as keyof typeof allAnswers],
-							);
+							const val = allAnswers[name as keyof typeof allAnswers];
+							result[name] =
+								typeof val === "boolean"
+									? (val as unknown as string)
+									: String(val);
 						}
 					}
 				}

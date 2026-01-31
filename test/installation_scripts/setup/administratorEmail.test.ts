@@ -112,6 +112,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
+		// Suppress expected warnings during this failure path (no assertions required)
 		const consoleWarnSpy = vi
 			.spyOn(console, "warn")
 			.mockImplementation(() => {});

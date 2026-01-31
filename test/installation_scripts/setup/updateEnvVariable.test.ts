@@ -42,6 +42,31 @@ describe("updateEnvVariable", () => {
 		writeFileMock.mockResolvedValue(undefined);
 	});
 
+	it("should throw and log if backup creation fails with non-ENOENT error", async () => {
+		// Simulate successful access (file exists)
+		accessMock.mockResolvedValue(undefined);
+		// Simulate failure when creating backup (non-ENOENT)
+		const backupError = {
+			code: "EACCES",
+			message: "permission denied",
+		} as NodeJS.ErrnoException;
+		copyFileMock.mockRejectedValueOnce(backupError);
+
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		await expect(
+			updateEnvVariable({ EXISTING_VAR: "new_value" }),
+		).rejects.toEqual(backupError);
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"Error creating backup:",
+			backupError,
+		);
+		consoleErrorSpy.mockRestore();
+	});
+
 	it("should update an existing variable in .env", async () => {
 		await updateEnvVariable({ EXISTING_VAR: "new_value" });
 
