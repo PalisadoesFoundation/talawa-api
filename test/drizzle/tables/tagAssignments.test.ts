@@ -3,7 +3,7 @@ import { getTableName, getTableColumns, eq, and } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { faker } from '@faker-js/faker';
-import { tagAssignmentsTable, tagAssignmentsTableRelations, tagAssignmentsTableInsertSchema } from '../../../src/drizzle/tables/tagAssignments';
+import { tagAssignmentsTable, tagAssignmentsTableRelations, tagAssignmentsTableInsertSchema ,tagAssignmentsTableSelectSchema} from '../../../src/drizzle/tables/tagAssignments';
 import { usersTable } from '../../../src/drizzle/tables/users';
 import { tagsTable } from '../../../src/drizzle/tables/tags';
 import { organizationsTable } from '../../../src/drizzle/tables/organizations';
@@ -65,6 +65,12 @@ describe('src/drizzle/tables/tagAssignments.ts', () => {
       // Now if this throws, it is DEFINITELY because of the UUID format,
       // not because of a missing field.
       expect(() => tagAssignmentsTableInsertSchema.parse(invalidData)).toThrow();
+    });
+  });
+
+  describe('Select Schema Validation (Zod)', () => {
+  it('should be defined', () => {
+    expect(tagAssignmentsTableSelectSchema).toBeDefined();
     });
   });
 

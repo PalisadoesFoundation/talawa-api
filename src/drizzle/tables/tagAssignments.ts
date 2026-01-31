@@ -51,10 +51,13 @@ export const tagAssignmentsTableRelations = relations(
 );
 
 // FIX: Enforce UUID validation
+// ... (imports and table definition stay the same)
+
+// FIX: Removed unused 'schema' parameter to satisfy linter
 export const tagAssignmentsTableInsertSchema = createInsertSchema(tagAssignmentsTable, {
-  assigneeId: (schema) => z.string().uuid(),
-  tagId: (schema) => z.string().uuid(),
-  creatorId: (schema) => z.string().uuid(),
+  assigneeId: () => z.string().uuid(),
+  tagId: () => z.string().uuid(),
+  creatorId: () => z.string().uuid(),
 });
 
 export const tagAssignmentsTableSelectSchema = createSelectSchema(tagAssignmentsTable);
