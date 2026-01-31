@@ -56,6 +56,17 @@ TEST_DIR=$(mktemp -d)
 MOCK_BIN="$TEST_DIR/bin"
 mkdir -p "$MOCK_BIN"
 
+# Cleanup function to remove temp directory on exit/interrupt
+cleanup() {
+    # Only attempt cleanup if TEST_DIR is non-empty and exists
+    if [ -n "$TEST_DIR" ] && [ -d "$TEST_DIR" ]; then
+        rm -rf "$TEST_DIR"
+    fi
+}
+
+# Register cleanup for normal exit, error (set -e), and interrupts
+trap cleanup EXIT INT TERM
+
 # Create a mock package.json
 cat > "$TEST_DIR/package.json" <<EOF
 {
@@ -112,7 +123,7 @@ if [ "$1" == "-r" ] && [ -f package.json ]; then
         elif [[ "$query" == *".packageManager"* ]]; then
             node -e "const p=require(\"./package.json\"); console.log(p.packageManager || \"\");"
         fi
-    else
+    elif command -v python3 >/dev/null 2>&1; then
         # Fallback to python if node is not available
         if [[ "$query" == *".name"* ]]; then
             python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"name\", \"\"))"
@@ -123,6 +134,10 @@ if [ "$1" == "-r" ] && [ -f package.json ]; then
         elif [[ "$query" == *".packageManager"* ]]; then
             python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"packageManager\", \"\"))"
         fi
+    else
+        # Neither node nor python3 available - fail fast with clear error
+        echo "jq mock: no JSON parser available, please install node or python3" >&2
+        exit 1
     fi
     exit 0
 fi
