@@ -91,12 +91,19 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      # Use distro package (apt) for verifiable source; no tarball download or checksum needed
-      - name: Install kcov
+      # Build kcov from source (pinned tag) for verifiable install on Ubuntu 24.04 where apt package is unavailable
+      - name: Install kcov build dependencies
         run: |
-          sudo add-apt-repository -y universe
           sudo apt-get update -qq
-          sudo apt-get install -y kcov
+          sudo apt-get install -y binutils-dev build-essential cmake libssl-dev libcurl4-openssl-dev libelf-dev libstdc++-12-dev zlib1g-dev libdw-dev libiberty-dev
+      - name: Build and install kcov
+        run: |
+          git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git kcov-src
+          cd kcov-src
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
+          make -j"$(nproc)"
+          sudo make install
           kcov --version
       - name: Run install script tests with coverage
         run: |
