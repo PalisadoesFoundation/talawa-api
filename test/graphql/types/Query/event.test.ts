@@ -333,7 +333,7 @@ suite("Query field event", () => {
 				// Validate error structure safely
 				const error = result.errors?.[0];
 				expect(error).toBeDefined();
-				expect(error?.message).toContain("Failed query:");
+				expect(error?.message).toBe("Internal Server Error");
 				expect(error?.path).toEqual(["event"]);
 			});
 
@@ -356,7 +356,7 @@ suite("Query field event", () => {
 				// Validate error structure safely
 				const error = result.errors?.[0];
 				expect(error).toBeDefined();
-				expect(error?.message).toContain("Failed query:");
+				expect(error?.message).toBe("Internal Server Error");
 				expect(error?.path).toEqual(["event"]);
 			});
 
@@ -391,7 +391,7 @@ suite("Query field event", () => {
 				// Validate error structure safely
 				const error = eventResult.errors?.[0];
 				expect(error).toBeDefined();
-				expect(error?.message).toContain("Failed query:");
+				expect(error?.message).toBe("Internal Server Error");
 				expect(error?.path).toEqual(["event"]);
 			});
 		},

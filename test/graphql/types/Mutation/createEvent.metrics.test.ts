@@ -1113,9 +1113,12 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
-				expect(error).toBeInstanceOf(Error);
-				expect((error as Error).message).toContain(
-					"Upload failed for attachment 2",
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions?.code).toBe(
+					"unexpected",
+				);
+				expect((error as TalawaGraphQLError).message).toContain(
+					"Upload failed",
 				);
 			}
 
