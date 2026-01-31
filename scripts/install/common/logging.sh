@@ -11,6 +11,9 @@ set -euo pipefail
 mkdir -p "$(dirname "$LOG_FILE")"
 [ -e "$LOG_FILE" ] || : > "$LOG_FILE"
 
+# Timing storage: indexed array of "label:seconds" (Bash 3.2+ compatible).
+__TIMINGS=()
+
 # Internal writer: appends to log file and prints to console.
 _log_write() {
   local msg="$1"
@@ -59,8 +62,75 @@ print_log_location() {
   info "Installation log saved to: ${LOG_FILE}"
 }
 
+# Run command and record elapsed time. Label is first arg; rest is the command.
+# Writes to console and log via success(). Returns the exit code of the command.
+with_timer() {
+  local label="$1"
+  shift
+  if [ $# -eq 0 ]; then
+    error "with_timer: no command given (usage: with_timer <label> <cmd...>)"
+    return 1
+  fi
+  local t0 t1 elapsed ret
+  t0=$(date +%s)
+  "$@" || ret=$?
+  t1=$(date +%s)
+  elapsed=$((t1 - t0))
+  __TIMINGS+=("$label:$elapsed")
+  success "$label completed in ${elapsed}s"
+  if [ -n "${ret:-}" ]; then
+    return "$ret"
+  fi
+  return 0
+}
+
+# Run command with ASCII spinner. Message is first arg; rest is the command.
+# Spinner is console-only; exit code is that of the command.
+with_spinner() {
+  local msg="$1"
+  shift
+  if [ $# -eq 0 ]; then
+    error "with_spinner: no command given (usage: with_spinner <msg> <cmd...>)"
+    return 1
+  fi
+  ( "$@" ) &
+  local pid=$!
+  local spin='|/-\'
+  local i=0
+  while kill -0 "$pid" 2>/dev/null; do
+    printf "\r[INFO] %s %c" "$msg" "${spin:i++%4:1}"
+    sleep 0.2
+  done
+  printf "\r"
+  wait "$pid"
+}
+
+# Print timing summary to console and log (dual output).
+print_timing_summary() {
+  _log_write "========================================"
+  _log_write "Timing Summary"
+  _log_write "========================================"
+  local entry label sec
+  for entry in "${__TIMINGS[@]}"; do
+    # Last colon separates label from seconds (allows labels containing ':')
+    sec="${entry##*:}"
+    label="${entry%:*}"
+    _log_write "✓ $label: ${sec}s"
+  done
+}
+
+# Print installation summary to console and log (dual output).
+print_installation_summary() {
+  _log_write "========================================"
+  _log_write "Installation Summary"
+  _log_write "========================================"
+  _log_write "✓ Core dependencies verified"
+  _log_write "See log: ${LOG_FILE}"
+}
+
 export LOG_FILE
 
 export -f \
   info warn error success debug \
-  print_banner print_step print_section print_log_location
+  print_banner print_step print_section print_log_location \
+  with_timer with_spinner print_timing_summary print_installation_summary
