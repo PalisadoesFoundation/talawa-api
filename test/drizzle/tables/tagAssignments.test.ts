@@ -60,8 +60,10 @@ describe('src/drizzle/tables/tagAssignments.ts', () => {
       const invalidData = {
         assigneeId: "not-a-uuid",
         tagId: "not-a-uuid",
-        creatorId: faker.string.uuid(),
+        creatorId: faker.string.uuid(), // <--- Added this!
       };
+      // Now if this throws, it is DEFINITELY because of the UUID format,
+      // not because of a missing field.
       expect(() => tagAssignmentsTableInsertSchema.parse(invalidData)).toThrow();
     });
   });

@@ -2,7 +2,8 @@ import { pgTable, uuid, timestamp, primaryKey } from "drizzle-orm/pg-core";
 import { usersTable } from "./users";
 import { tagsTable } from "./tags";
 import { relations } from "drizzle-orm";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod"; // <--- Added this
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod"; // <--- Import Zod
 
 export const tagAssignmentsTable = pgTable(
   "tag_assignments",
@@ -15,8 +16,6 @@ export const tagAssignmentsTable = pgTable(
       .notNull()
       .references(() => tagsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
 
-    // Note: We use 'cascade' here because the column is notNull(). 
-    // This means if the creator is deleted, this record is also deleted.
     creatorId: uuid("creator_id")
       .notNull()
       .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -51,5 +50,11 @@ export const tagAssignmentsTableRelations = relations(
   })
 );
 
-export const tagAssignmentsTableInsertSchema = createInsertSchema(tagAssignmentsTable);
+// FIX: Enforce UUID validation
+export const tagAssignmentsTableInsertSchema = createInsertSchema(tagAssignmentsTable, {
+  assigneeId: (schema) => z.string().uuid(),
+  tagId: (schema) => z.string().uuid(),
+  creatorId: (schema) => z.string().uuid(),
+});
+
 export const tagAssignmentsTableSelectSchema = createSelectSchema(tagAssignmentsTable);
