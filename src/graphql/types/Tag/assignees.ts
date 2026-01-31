@@ -1,9 +1,7 @@
 import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
-import {
-	tagAssignmentsTable,
-	tagAssignmentsTableInsertSchema,
-} from "~/src/drizzle/tables/tagAssignments";
+// FIX 1: Remove 'tagAssignmentsTableInsertSchema' from this import
+import { tagAssignmentsTable } from "~/src/drizzle/tables/tagAssignments";
 import { User } from "~/src/graphql/types/User/User";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
@@ -13,6 +11,20 @@ import {
 } from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Tag } from "./Tag";
+
+// FIX 2: We define the cursor schema manually here to break the circular dependency.
+// Instead of importing the schema (which causes the crash), we just recreate the small part we need.
+const cursorSchema = z
+	.object({
+		assigneeId: z.string().uuid(),
+	})
+	.extend({
+		createdAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		assigneeId: arg.assigneeId,
+		createdAt: new Date(arg.createdAt),
+	}));
 
 const assigneesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
@@ -39,18 +51,6 @@ const assigneesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 			limit: arg.limit,
 		};
 	});
-
-const cursorSchema = tagAssignmentsTableInsertSchema
-	.pick({
-		assigneeId: true,
-	})
-	.extend({
-		createdAt: z.string().datetime(),
-	})
-	.transform((arg) => ({
-		assigneeId: arg.assigneeId,
-		createdAt: new Date(arg.createdAt),
-	}));
 
 Tag.implement({
 	fields: (t) => ({
