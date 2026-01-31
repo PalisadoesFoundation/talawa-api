@@ -1,6 +1,7 @@
 import * as child_process from "node:child_process";
 import * as fs from "node:fs";
 import {
+	afterEach,
 	beforeEach,
 	describe,
 	expect,
@@ -10,7 +11,10 @@ import {
 } from "vitest";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
-import { ErrorHandlingValidator } from "../../scripts/validate_error_handling";
+import {
+	ErrorHandlingValidator,
+	main,
+} from "../../scripts/validate_error_handling";
 
 // Mock dependencies
 vi.mock("node:child_process");
@@ -88,7 +92,7 @@ describe("ErrorHandlingValidator", () => {
 			expect(validator.shouldScanFile("src/routes_v2/api.ts")).toBe(true);
 		});
 
-		it("should include allowed files in shouldScanFile but exclude them in getFilesToScan", () => {
+		it("should include allowed files in shouldScanFile", () => {
 			const allowedFiles = [
 				"src/utilities/errors/errorHandler.ts",
 				"src/fastifyPlugins/errorHandler.ts",
@@ -194,6 +198,13 @@ describe("ErrorHandlingValidator", () => {
 
 		it("should handle single-line empty catch blocks", () => {
 			const content = `try { doSomething(); } catch (e) { }`;
+			const blocks = validator.findCatchBlocks(content);
+			expect(blocks).toHaveLength(1);
+			expect(blocks[0]?.isEmpty).toBe(true);
+		});
+
+		it("should handle optional catch binding", () => {
+			const content = `try { doSomething(); } catch { }`;
 			const blocks = validator.findCatchBlocks(content);
 			expect(blocks).toHaveLength(1);
 			expect(blocks[0]?.isEmpty).toBe(true);
@@ -329,7 +340,7 @@ describe("ErrorHandlingValidator", () => {
 	describe("Git Operations", () => {
 		it("should fall back to full scan if git fails", async () => {
 			// Mock git failure
-			vi.mocked(child_process.execSync).mockImplementation(() => {
+			vi.mocked(child_process.execFileSync).mockImplementation(() => {
 				throw new TalawaRestError({
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: "Git not found",
@@ -883,6 +894,87 @@ describe("ErrorHandlingValidator", () => {
 			expect(consoleSpy).toHaveBeenCalledWith("   suppressed2.ts (suppressed)");
 
 			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("Environment Variable Overrides", () => {
+		it("should use CHANGED_FILES when provided", async () => {
+			const originalEnv = process.env;
+			process.env = { ...originalEnv, CHANGED_FILES: "file1.ts file2.ts" };
+			const spy = vi.spyOn(validator, "shouldScanFile").mockReturnValue(true);
+			const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const files = await validator.getFilesToScan();
+			expect(files).toEqual(["file1.ts", "file2.ts"]);
+			expect(logSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Using changed files from environment"),
+			);
+
+			spy.mockRestore();
+			logSpy.mockRestore();
+			process.env = originalEnv;
+		});
+
+		it("should filter invalid files from CHANGED_FILES", async () => {
+			const originalEnv = process.env;
+			process.env = { ...originalEnv, CHANGED_FILES: "file1.ts ignored.txt" };
+			const spy = vi
+				.spyOn(validator, "shouldScanFile")
+				.mockImplementation((f) => f === "file1.ts");
+
+			const files = await validator.getFilesToScan();
+			expect(files).toEqual(["file1.ts"]);
+
+			spy.mockRestore();
+			process.env = originalEnv;
+		});
+	});
+
+	describe("CLI Main Entry Point", () => {
+		let originalArgv: string[];
+		let exitSpy: MockInstance;
+		let validateSpy: MockInstance;
+		let applyFixesSpy: MockInstance;
+
+		beforeEach(() => {
+			originalArgv = process.argv;
+			exitSpy = vi
+				.spyOn(process, "exit")
+				.mockImplementation(() => undefined as never);
+			validateSpy = vi
+				.spyOn(ErrorHandlingValidator.prototype, "validate")
+				.mockResolvedValue(0);
+			applyFixesSpy = vi
+				.spyOn(ErrorHandlingValidator.prototype, "applyFixes")
+				.mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			process.argv = originalArgv;
+			vi.restoreAllMocks();
+		});
+
+		it("should run validation without fix", async () => {
+			process.argv = ["node", "script"];
+			await main();
+			expect(validateSpy).toHaveBeenCalled();
+			expect(applyFixesSpy).not.toHaveBeenCalled();
+			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+
+		it("should run validation with fix", async () => {
+			process.argv = ["node", "script", "--fix"];
+			validateSpy.mockResolvedValue(1);
+			await main();
+			expect(validateSpy).toHaveBeenCalled();
+			expect(applyFixesSpy).toHaveBeenCalled();
+		});
+
+		it("should exit with error code on validation failure", async () => {
+			process.argv = ["node", "script"];
+			validateSpy.mockResolvedValue(1);
+			await main();
+			expect(exitSpy).toHaveBeenCalledWith(1);
 		});
 	});
 });

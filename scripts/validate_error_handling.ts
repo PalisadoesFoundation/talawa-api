@@ -203,7 +203,7 @@ export class ErrorHandlingValidator {
 		}
 
 		const uniqueFiles = [...new Set(allFiles)];
-		return uniqueFiles.filter((file) => !this.isAllowedFile(file));
+		return uniqueFiles;
 	}
 
 	public getModifiedFiles(): string[] {
@@ -625,7 +625,7 @@ export class ErrorHandlingValidator {
 		}> = [];
 
 		// Find catch statements using regex
-		const catchRegex = /catch\s*\([^)]*\)\s*\{/g;
+		const catchRegex = /catch\s*(?:\([^)]*\))?\s*\{/g;
 		let match = catchRegex.exec(content);
 		while (match !== null) {
 			const catchStart = match.index;
@@ -1018,7 +1018,7 @@ export class ErrorHandlingValidator {
 	}
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	const fixMode = args.includes("--fix");
 
