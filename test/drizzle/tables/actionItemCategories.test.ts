@@ -17,9 +17,22 @@ import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { server } from "../../server";
 
-async function createTestOrganization(): Promise<string> {
-	mercuriusClient.setHeaders({});
-	const signIn = await mercuriusClient.query(Query_signIn, {
+// Admin auth cached for the module
+let adminToken: string | null = null;
+let adminUserId: string | null = null;
+
+async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
+	if (adminToken && adminUserId)
+		return { token: adminToken, userId: adminUserId };
+
+	if (
+		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+	) {
+		throw new Error("Admin credentials missing in env config");
+	}
+
+	const res = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
 				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
@@ -27,14 +40,27 @@ async function createTestOrganization(): Promise<string> {
 			},
 		},
 	});
-	if (signIn.errors) {
-		throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
+
+	if (
+		res.errors ||
+		!res.data?.signIn?.authenticationToken ||
+		!res.data?.signIn?.user?.id
+	) {
+		throw new Error(
+			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
+		);
 	}
-	const token = signIn.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(
-		token,
-		"Authentication token is missing from sign-in response",
-	);
+
+	adminToken = res.data.signIn.authenticationToken;
+	adminUserId = res.data.signIn.user.id;
+	assertToBeNonNullish(adminToken);
+	assertToBeNonNullish(adminUserId);
+	return { token: adminToken, userId: adminUserId };
+}
+
+async function createTestOrganization(): Promise<string> {
+	const { token } = await ensureAdminAuth();
+
 	const org = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `bearer ${token}` },
 		variables: {
@@ -261,6 +287,26 @@ describe("actionItemCategoriesTable", () => {
 			).rejects.toMatchObject({
 				cause: { code: "23503" },
 			});
+		});
+
+		it("should successfully insert with valid creatorId and updaterId foreign keys", async () => {
+			const { userId } = await ensureAdminAuth();
+			const orgId = await createTestOrganization();
+
+			const [result] = await server.drizzleClient
+				.insert(actionItemCategoriesTable)
+				.values({
+					name: faker.lorem.word(),
+					isDisabled: false,
+					organizationId: orgId,
+					creatorId: userId,
+					updaterId: userId,
+				})
+				.returning();
+
+			expect(result).toBeDefined();
+			expect(result?.creatorId).toBe(userId);
+			expect(result?.updaterId).toBe(userId);
 		});
 	});
 
