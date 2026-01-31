@@ -95,6 +95,15 @@ jobs:
 
           echo "All test services are ready."
 
+      # Apply migrations to postgres-test so integration tests have schema
+      - name: Apply test database migrations
+        run: docker compose run --rm api pnpm apply_drizzle_test_migrations
+
+      # Create MinIO bucket used by helpers.emptyMinioBucket and other tests
+      - name: Create MinIO test bucket
+        run: |
+          docker compose exec -T minio-test mc mb local/talawa 2>/dev/null || true
+
       # Run tests with sharding
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
         env:

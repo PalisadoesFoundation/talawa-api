@@ -520,6 +520,11 @@ jobs:
           fi
 
           echo "All test services are ready."
+      - name: Apply test database migrations
+        run: docker compose run --rm api pnpm apply_drizzle_test_migrations
+      - name: Create MinIO test bucket
+        run: |
+          docker compose exec -T minio-test mc mb local/talawa 2>/dev/null || true
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
         env:
           SHARD_INDEX: ${{ matrix.shard }}
