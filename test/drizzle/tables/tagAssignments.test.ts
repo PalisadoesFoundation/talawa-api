@@ -37,6 +37,8 @@ describe('src/drizzle/tables/tagAssignments.ts', () => {
       const columns = getTableColumns(tagAssignmentsTable);
       expect(columns.assigneeId.notNull).toBe(true);
       expect(columns.tagId.notNull).toBe(true);
+      expect(columns.creatorId.notNull).toBe(true); 
+      expect(columns.createdAt.notNull).toBe(true); 
     });
   });
 
