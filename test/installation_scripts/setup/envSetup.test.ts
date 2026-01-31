@@ -1,8 +1,17 @@
-import fs from "node:fs";
-import inquirer from "inquirer";
-import * as SetupModule from "scripts/setup/setup";
-import { checkEnvFile, initializeEnvFile, setCI } from "scripts/setup/setup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const { accessMock, readFileMock, writeFileMock, readdirMock, configMock, parseMock } = vi.hoisted(() => ({
+	accessMock: vi.fn(),
+	readFileMock: vi.fn(),
+	writeFileMock: vi.fn(),
+	readdirMock: vi.fn().mockResolvedValue([]),
+	configMock: vi.fn(),
+	parseMock: vi.fn((content: string) => {
+		if (content.includes("KEY1")) return { KEY1: "VAL1", KEY2: "VAL2" };
+		if (content.includes("FOO")) return { FOO: "bar" };
+		return {};
+	}),
+}));
 
 vi.mock("env-schema", () => ({
 	envSchema: () => ({
@@ -20,14 +29,30 @@ vi.mock("dotenv", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
 		default: actual,
-		config: vi.fn(),
-		parse: vi.fn((content) => {
-			if (content.includes("KEY1")) return { KEY1: "VAL1", KEY2: "VAL2" };
-			if (content.includes("FOO")) return { FOO: "bar" };
-			return {};
-		}),
+		config: configMock,
+		parse: parseMock,
 	};
 });
+
+vi.mock("node:fs", () => {
+	const promises = {
+		access: accessMock,
+		readFile: readFileMock,
+		writeFile: writeFileMock,
+		readdir: readdirMock,
+	};
+	return {
+		promises,
+		default: {
+			promises,
+		},
+	};
+});
+
+import { promises as fs } from "node:fs";
+import inquirer from "inquirer";
+import * as SetupModule from "scripts/setup/setup";
+import { checkEnvFile, initializeEnvFile, setCI } from "scripts/setup/setup";
 
 const envFileName = ".env";
 
@@ -36,19 +61,19 @@ describe("checkEnvFile", () => {
 		vi.resetAllMocks();
 	});
 
-	it("should return true if .env file exists", () => {
-		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+	it("should return true if .env file exists", async () => {
+		accessMock.mockResolvedValue(undefined);
 
-		const result = checkEnvFile();
-		expect(fs.existsSync).toHaveBeenCalledWith(envFileName);
+		const result = await checkEnvFile();
+		expect(fs.access).toHaveBeenCalledWith(envFileName);
 		expect(result).toBe(true);
 	});
 
-	it("should return false if .env file does not exist", () => {
-		vi.spyOn(fs, "existsSync").mockReturnValue(false);
+	it("should return false if .env file does not exist", async () => {
+		accessMock.mockRejectedValue(new Error("ENOENT"));
 
-		const result = checkEnvFile();
-		expect(fs.existsSync).toHaveBeenCalledWith(envFileName);
+		const result = await checkEnvFile();
+		expect(fs.access).toHaveBeenCalledWith(envFileName);
 		expect(result).toBe(false);
 	});
 });
@@ -62,6 +87,9 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.spyOn(console, "warn").mockImplementation(() => {});
 		vi.spyOn(console, "error").mockImplementation(() => {});
+
+		readdirMock.mockResolvedValue([]);
+		accessMock.mockResolvedValue(undefined);
 	});
 
 	afterEach(() => {
@@ -70,30 +98,31 @@ describe("initializeEnvFile", () => {
 	it("should read from .env.devcontainer when answers.CI is 'false'", async () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "false" });
 		const answers = await setCI({});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("KEY1=VAL1\nKEY2=VAL2");
 
-		initializeEnvFile(answers);
+		accessMock.mockResolvedValue(undefined);
+		readFileMock.mockResolvedValue("KEY1=VAL1\nKEY2=VAL2");
+		writeFileMock.mockResolvedValue(undefined);
 
-		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.devcontainer");
+		await initializeEnvFile(answers);
+
+		expect(readFileMock).toHaveBeenCalledWith("envFiles/.env.devcontainer", {
+			encoding: "utf-8",
+		});
 	});
 
 	it("should throw an error if the environment file is missing", async () => {
-		vi.spyOn(fs, "existsSync").mockImplementation(() => false);
+		accessMock.mockRejectedValue(new Error("ENOENT"));
 
-		expect(() => initializeEnvFile({})).toThrow(
+		await expect(initializeEnvFile({})).rejects.toThrow(
 			"Configuration file 'envFiles/.env.devcontainer' is missing. Please create the file or use a different environment configuration.",
 		);
 	});
 
 	it("should catch errors if reading the env file fails", async () => {
-		vi.spyOn(fs, "existsSync").mockImplementation(
-			(path) => path === devEnvFile,
-		);
-		vi.spyOn(fs, "readFileSync").mockImplementation(() => {
-			throw new Error("File read error");
-		});
+		accessMock.mockResolvedValue(undefined);
+		vi.mocked(fs.readFile).mockRejectedValue(new Error("File read error"));
 
-		expect(() => initializeEnvFile({})).toThrow(
+		await expect(initializeEnvFile({})).rejects.toThrow(
 			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
 		);
 
@@ -106,11 +135,16 @@ describe("initializeEnvFile", () => {
 	it("should read from .env.ci when answers.CI is 'true'", async () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "true" });
 		const answers = await setCI({});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("FOO=bar");
 
-		initializeEnvFile(answers);
+		accessMock.mockResolvedValue(undefined);
+		readFileMock.mockResolvedValue("FOO=bar");
+		writeFileMock.mockResolvedValue(undefined);
 
-		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.ci");
+		await initializeEnvFile(answers);
+
+		expect(readFileMock).toHaveBeenCalledWith("envFiles/.env.ci", {
+			encoding: "utf-8",
+		});
 	});
 
 	it("should log error and exit with code 1 if inquirer fails", async () => {

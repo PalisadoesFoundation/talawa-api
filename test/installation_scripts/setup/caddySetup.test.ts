@@ -5,18 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
-vi.mock("env-schema", () => ({
-	envSchema: () => ({
-		API_GRAPHQL_SCALAR_FIELD_COST: 1,
-		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-		API_GRAPHQL_LIST_FIELD_COST: 1,
-		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-		API_GRAPHQL_MUTATION_BASE_COST: 1,
-		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-	}),
-}));
-
 describe("Setup -> caddySetup", () => {
 	const originalEnv = { ...process.env };
 

@@ -8,20 +8,26 @@ vi.mock("inquirer");
 vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
 	envFileBackup: vi.fn().mockResolvedValue(true),
 }));
-vi.mock("node:fs");
+vi.mock("node:fs", () => {
+	const promises = {
+		readFile: vi.fn(),
+		writeFile: vi.fn(),
+		access: vi.fn(),
+		copyFile: vi.fn(),
+		readdir: vi.fn().mockResolvedValue([]),
+	};
+	return {
+		promises: promises,
+		default: {
+			promises: promises,
+			existsSync: vi.fn(),
+			writeFileSync: vi.fn(),
+			readFileSync: vi.fn(),
+		},
+	};
+});
 vi.mock("scripts/setup/updateEnvVariable", () => ({
 	updateEnvVariable: vi.fn(),
-}));
-vi.mock("env-schema", () => ({
-	envSchema: () => ({
-		API_GRAPHQL_SCALAR_FIELD_COST: 1,
-		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-		API_GRAPHQL_LIST_FIELD_COST: 1,
-		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-		API_GRAPHQL_MUTATION_BASE_COST: 1,
-		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-	}),
 }));
 
 describe("Setup Error Handling", () => {
@@ -31,10 +37,15 @@ describe("Setup Error Handling", () => {
 		originalEnv = { ...process.env };
 		process.env.CI = "true"; // Skip interactive parts
 		vi.clearAllMocks();
-		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("");
-		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
+
+		// Default mocks
+		vi.mocked(fs.existsSync).mockReturnValue(false);
+		vi.mocked(fs.writeFileSync).mockImplementation(() => {});
+		vi.mocked(fs.readFileSync).mockReturnValue("");
+
+		vi.mocked(fs.promises.access).mockResolvedValue(undefined);
+		vi.mocked(fs.promises.readFile).mockResolvedValue("");
+		vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined);
 	});
 
 	afterEach(() => {
@@ -43,6 +54,10 @@ describe("Setup Error Handling", () => {
 	});
 
 	it("should propagate errors from updateEnvVariable", async () => {
+		const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
+			throw new Error("process.exit called");
+		}) as any);
+
 		// Mock prompt success with minimal answers
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			CI: "false",
@@ -57,6 +72,7 @@ describe("Setup Error Handling", () => {
 		// Mock updateEnvVariable failure
 		vi.mocked(updateEnvVariable).mockRejectedValue(new Error("Write Failed"));
 
-		await expect(setup()).rejects.toThrow("Write Failed");
+		await expect(setup()).rejects.toThrow("process.exit called");
+		expect(exitSpy).toHaveBeenCalledWith(1);
 	});
 });

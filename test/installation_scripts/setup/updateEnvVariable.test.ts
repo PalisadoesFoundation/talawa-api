@@ -1,8 +1,29 @@
-import fs from "node:fs";
-import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("node:fs");
+const { readFileMock, writeFileMock, accessMock, copyFileMock } = vi.hoisted(() => ({
+	readFileMock: vi.fn(),
+	writeFileMock: vi.fn(),
+	accessMock: vi.fn(),
+	copyFileMock: vi.fn(),
+}));
+
+vi.mock("node:fs", () => {
+	const promises = {
+		readFile: readFileMock,
+		writeFile: writeFileMock,
+		access: accessMock,
+		copyFile: copyFileMock,
+	};
+	return {
+		promises: promises,
+		default: {
+			promises: promises,
+		},
+	};
+});
+
+import { promises as fs } from "node:fs";
+import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 
 describe("updateEnvVariable", () => {
 	let envFileName: string;
@@ -12,16 +33,18 @@ describe("updateEnvVariable", () => {
 		envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 		backupFile = `${envFileName}.backup`;
 		vi.resetAllMocks();
-		vi.spyOn(fs, "existsSync").mockReturnValue(true); // Assume `.env` exists
+
+		// Default mock implementations
+		accessMock.mockResolvedValue(undefined);
+		copyFileMock.mockResolvedValue(undefined);
+		readFileMock.mockResolvedValue("EXISTING_VAR=old_value");
+		writeFileMock.mockResolvedValue(undefined);
 	});
 
-	it("should update an existing variable in .env", () => {
-		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+	it("should update an existing variable in .env", async () => {
+		await updateEnvVariable({ EXISTING_VAR: "new_value" });
 
-		updateEnvVariable({ EXISTING_VAR: "new_value" });
-
-		expect(writeSpy).toHaveBeenCalledWith(
+		expect(writeFileMock).toHaveBeenCalledWith(
 			envFileName,
 			expect.stringContaining("EXISTING_VAR=new_value"),
 			"utf8",
@@ -29,13 +52,10 @@ describe("updateEnvVariable", () => {
 		expect(process.env.EXISTING_VAR).toBe("new_value");
 	});
 
-	it("should add a new variable if it does not exist", () => {
-		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+	it("should add a new variable if it does not exist", async () => {
+		await updateEnvVariable({ NEW_VAR: "new_value" });
 
-		updateEnvVariable({ NEW_VAR: "new_value" });
-
-		expect(writeSpy).toHaveBeenCalledWith(
+		expect(writeFileMock).toHaveBeenCalledWith(
 			envFileName,
 			expect.stringContaining("NEW_VAR=new_value"),
 			"utf8",
@@ -43,36 +63,31 @@ describe("updateEnvVariable", () => {
 		expect(process.env.NEW_VAR).toBe("new_value");
 	});
 
-	it("should create a backup before updating .env", () => {
-		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
+	it("should create a backup before updating .env", async () => {
+		await updateEnvVariable({ EXISTING_VAR: "new_value" });
 
-		updateEnvVariable({ EXISTING_VAR: "new_value" });
-
-		expect(copySpy).toHaveBeenCalledWith(envFileName, backupFile);
+		expect(copyFileMock).toHaveBeenCalledWith(envFileName, backupFile);
 	});
 
-	it("should restore from backup if an error occurs", () => {
-		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {
-			throw new Error("Write failed");
-		});
+	it("should restore from backup if an error occurs", async () => {
+		writeFileMock.mockRejectedValueOnce(new Error("Write failed"));
 
-		expect(() => updateEnvVariable({ EXISTING_VAR: "new_value" })).toThrow(
-			"Write failed",
-		);
+		await expect(
+			updateEnvVariable({ EXISTING_VAR: "new_value" }),
+		).rejects.toThrow("Write failed");
 
-		expect(copySpy).toHaveBeenCalledWith(envFileName, backupFile);
+		// It tries to copy backupFile back to envFileName
+		expect(copyFileMock).toHaveBeenCalledWith(backupFile, envFileName);
 	});
 
-	it("should create .env if it does not exist", () => {
-		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+	it("should create .env if it does not exist", async () => {
+		// First access fails (no file), so backup is skipped
+		accessMock.mockRejectedValueOnce({ code: "ENOENT" });
+		readFileMock.mockResolvedValue("");
 
-		updateEnvVariable({ NEW_VAR: "new_value" });
+		await updateEnvVariable({ NEW_VAR: "new_value" });
 
-		expect(writeSpy).toHaveBeenCalledWith(
+		expect(writeFileMock).toHaveBeenCalledWith(
 			envFileName,
 			expect.stringContaining("NEW_VAR=new_value"),
 			"utf8",

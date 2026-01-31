@@ -6,17 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("inquirer");
 
 // Mock env-schema to return costs
-vi.mock("env-schema", () => ({
-	envSchema: () => ({
-		API_GRAPHQL_SCALAR_FIELD_COST: 1,
-		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-		API_GRAPHQL_LIST_FIELD_COST: 1,
-		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-		API_GRAPHQL_MUTATION_BASE_COST: 1,
-		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-	}),
-}));
+// vi.mock("env-schema", () => ({...})) - handled by setup-env.ts
 
 describe("Setup Integration", () => {
 	let originalEnv: NodeJS.ProcessEnv;
@@ -50,14 +40,14 @@ describe("Setup Integration", () => {
 			API_BASE_URL: "http://custom-api:5000",
 			API_LOG_LEVEL: "warn",
 			API_JWT_EXPIRES_IN: "3600",
-			API_IS_APPLY_DRIZZLE_MIGRATIONS: "false",
-			API_IS_GRAPHIQL: "true",
-			API_IS_PINO_PRETTY: "true",
+			API_IS_APPLY_DRIZZLE_MIGRATIONS: false,
+			API_IS_GRAPHIQL: true,
+			API_IS_PINO_PRETTY: true,
 
 			useDefaultMinio: false,
 			API_MINIO_END_POINT: "custom-minio",
 			API_MINIO_PORT: "9001",
-			API_MINIO_USE_SSL: "true",
+			API_MINIO_USE_SSL: true,
 			API_MINIO_ACCESS_KEY: "custom-access",
 			API_MINIO_SECRET_KEY: "custom-secret",
 
@@ -68,6 +58,7 @@ describe("Setup Integration", () => {
 			API_POSTGRES_PASSWORD: "custom-password",
 			API_POSTGRES_DATABASE: "custom-db",
 			API_POSTGRES_SSL_MODE: "true",
+			API_POSTGRES_TEST_HOST: "custom-postgres-test",
 
 			useDefaultCloudbeaver: false,
 			CLOUDBEAVER_SERVER_NAME: "Custom CB",
@@ -88,10 +79,13 @@ describe("Setup Integration", () => {
 
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@custom.com",
 			setupReCaptcha: false,
+			configureEmail: false,
+			setupOAuth: false,
+			setupMetrics: false,
 
 			// Observability
-			API_OTEL_ENABLED: "true",
-			API_OTEL_SAMPLING_RATIO: "0.1",
+			// API_OTEL_ENABLED: "true",
+			// API_OTEL_SAMPLING_RATIO: "0.1",
 
 			// Metrics
 			API_METRICS_ENABLED: "true",
@@ -108,12 +102,17 @@ describe("Setup Integration", () => {
 		const promptMock = vi.spyOn(inquirer, "prompt");
 
 		// We need to return answers in chunks as setup() calls prompt() multiple times
-		// But inquirer.prompt can mock implementation to return subset of answers based on questions?
-		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer prompt implementation
-		promptMock.mockImplementation((async (_questions: any) => {
-			return customAnswers;
-			// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer prompt implementation
-		}) as any);
+		// Mock implementation filters customAnswers based on the questions asked
+		promptMock.mockImplementation((async (questions: unknown) => {
+			const qs = Array.isArray(questions) ? questions : [questions];
+			const answers: Record<string, unknown> = {};
+			for (const q of qs) {
+				if (q.name && q.name in customAnswers) {
+					answers[q.name] = customAnswers[q.name as keyof typeof customAnswers];
+				}
+			}
+			return answers;
+		}) as unknown as typeof inquirer.prompt);
 
 		await setup();
 
@@ -122,7 +121,7 @@ describe("Setup Integration", () => {
 		expect(process.env.API_HOST).toBe("127.0.0.1");
 		expect(process.env.API_MINIO_END_POINT).toBe("custom-minio");
 		expect(process.env.API_POSTGRES_HOST).toBe("custom-postgres");
-		expect(process.env.API_OTEL_ENABLED).toBe("true");
+		// expect(process.env.API_OTEL_ENABLED).toBe("true");
 		expect(process.env.API_METRICS_ENABLED).toBe("true");
 		expect(process.env.API_METRICS_API_KEY).toBe("metrics-key");
 

@@ -422,15 +422,16 @@ suite("disconnect integration test", () => {
 	});
 });
 
-suite.concurrent("formatDatabase", () => {
-	test.concurrent("should clear all tables (except users self) and return true", async () => {
+suite("formatDatabase", () => {
+	test("should clear all tables (except users self) and return true", async () => {
 		// Mock db.transaction
 		const db = Reflect.get(helpers, "db");
 		const originalTransaction = db.transaction;
 
 		// Mock transaction execution
-		// biome-ignore lint/suspicious/noExplicitAny: Mocking Drizzle transaction types is complex and unnecessary for this test
-		db.transaction = (async (cb: any) => {
+		db.transaction = (async (
+			cb: (tx: { execute: unknown }) => Promise<void>,
+		) => {
 			const tx = {
 				execute: vi.fn().mockResolvedValue([
 					{ tablename: "table1" },
@@ -438,8 +439,7 @@ suite.concurrent("formatDatabase", () => {
 				]),
 			};
 			await cb(tx);
-			// biome-ignore lint/suspicious/noExplicitAny: Mocking Drizzle transaction types
-		}) as any;
+		}) as unknown as typeof originalTransaction;
 
 		const result = await helpers.formatDatabase();
 		expect(result).toBe(true);
@@ -448,7 +448,7 @@ suite.concurrent("formatDatabase", () => {
 		db.transaction = originalTransaction;
 	});
 
-	test.concurrent("should return false if transaction fails", async () => {
+	test("should return false if transaction fails", async () => {
 		const db = Reflect.get(helpers, "db");
 		const originalTransaction = db.transaction;
 		db.transaction = async () => {

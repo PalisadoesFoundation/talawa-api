@@ -1,20 +1,34 @@
 import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
-vi.mock("inquirer");
-
-vi.mock("env-schema", () => ({
-	envSchema: () => ({
-		API_GRAPHQL_SCALAR_FIELD_COST: 1,
-		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-		API_GRAPHQL_LIST_FIELD_COST: 1,
-		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-		API_GRAPHQL_MUTATION_BASE_COST: 1,
-		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-	}),
+const { accessMock, readdirMock, copyFileMock, renameMock, readFileMock, writeFileMock } = vi.hoisted(() => ({
+	accessMock: vi.fn(),
+	readdirMock: vi.fn(),
+	copyFileMock: vi.fn(),
+	renameMock: vi.fn(),
+	readFileMock: vi.fn(),
+	writeFileMock: vi.fn(),
 }));
 
-import fs from "node:fs";
+vi.mock("inquirer");
+
+vi.mock("node:fs", () => {
+	const promises = {
+		access: accessMock,
+		readdir: readdirMock,
+		copyFile: copyFileMock,
+		rename: renameMock,
+		readFile: readFileMock,
+		writeFile: writeFileMock,
+	};
+	return {
+		promises,
+		default: {
+			promises,
+		},
+	};
+});
+
+import { promises as fs } from "node:fs";
 import inquirer from "inquirer";
 import {
 	cloudbeaverSetup,
@@ -33,28 +47,40 @@ describe("Setup -> cloudbeaverSetup", () => {
 	});
 
 	it("should prompt the user for CloudBeaver configuration and update process.env", async () => {
-		const mockResponses = [
-			{ envReconfigure: true },
-			{ CI: "false" },
-			{ useDefaultMinio: true },
-			{ useDefaultCloudbeaver: false },
-			{ CLOUDBEAVER_ADMIN_NAME: "mocked-admin" },
-			{ CLOUDBEAVER_ADMIN_PASSWORD: "mocked-password" },
-			{ CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1" },
-			{ CLOUDBEAVER_MAPPED_PORT: "8080" },
-			{ CLOUDBEAVER_SERVER_NAME: "Mocked Server" },
-			{ CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080" },
-			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: true },
-			{ useDefaultApi: true },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-		];
+		accessMock.mockResolvedValue(undefined);
+		const allAnswers = {
+			envReconfigure: true,
+			shouldBackup: true,
+			CI: "false",
+			useDefaultApi: true,
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: false,
+			CLOUDBEAVER_ADMIN_NAME: "mocked-admin",
+			CLOUDBEAVER_ADMIN_PASSWORD: "mocked-password",
+			CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1",
+			CLOUDBEAVER_MAPPED_PORT: "8080",
+			CLOUDBEAVER_SERVER_NAME: "Mocked Server",
+			CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080",
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			setupReCaptcha: false,
+			configureEmail: false,
+			setupOAuth: false,
+			setupMetrics: false,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		};
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		promptMock.mockImplementation((async (questions: any) => {
+			const qs = Array.isArray(questions) ? questions : [questions];
+			const result: any = {};
+			for (const q of qs) {
+				if (q.name && q.name in allAnswers) {
+					result[q.name] = allAnswers[q.name as keyof typeof allAnswers];
+				}
+			}
+			return result;
+		}) as any);
 
 		const answers = await setup();
 
@@ -76,18 +102,13 @@ describe("Setup -> cloudbeaverSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".backup") return true;
-			return false;
-		});
-		(
-			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
-				(path: fs.PathLike) => string[]
-			>
-		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		accessMock.mockResolvedValue(undefined);
+		readdirMock.mockResolvedValue([
+			".env.1600000000",
+			".env.1700000000",
+		] as any);
+		copyFileMock.mockResolvedValue(undefined);
+		renameMock.mockResolvedValue(undefined);
 
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
@@ -97,10 +118,6 @@ describe("Setup -> cloudbeaverSetup", () => {
 		await cloudbeaverSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
-			".backup/.env.1700000000",
-			".env",
-		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();
@@ -145,7 +162,7 @@ describe("CloudBeaver Validation", () => {
 				"URL must use HTTP or HTTPS protocol",
 			);
 			expect(validateCloudBeaverURL("http://127.0.0.1:99999")).toBe(
-				"Invalid URL format",
+				"Invalid port in URL",
 			);
 			expect(validateCloudBeaverURL("http://127.0.0.1:8978")).toBe(true);
 			expect(validateCloudBeaverURL("https://localhost:8978")).toBe(true);

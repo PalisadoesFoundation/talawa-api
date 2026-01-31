@@ -1,17 +1,5 @@
 vi.mock("inquirer");
 
-vi.mock("env-schema", () => ({
-	envSchema: () => ({
-		API_GRAPHQL_SCALAR_FIELD_COST: 1,
-		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-		API_GRAPHQL_LIST_FIELD_COST: 1,
-		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-		API_GRAPHQL_MUTATION_BASE_COST: 1,
-		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-	}),
-}));
-
 import crypto from "node:crypto";
 import fs from "node:fs";
 import dotenv from "dotenv";
@@ -147,7 +135,7 @@ describe("Setup -> apiSetup", () => {
 		}
 	});
 
-	it.skip("should handle prompt errors correctly", async () => {
+	it("should handle prompt errors correctly", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
@@ -394,7 +382,7 @@ describe("Error handling without backup", () => {
 		vi.clearAllMocks();
 	});
 
-	it.skip("should handle prompt errors when backup doesn't exist", async () => {
+	it("should handle prompt errors when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);

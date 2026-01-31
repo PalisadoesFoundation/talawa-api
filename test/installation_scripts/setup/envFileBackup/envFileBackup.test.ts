@@ -1,3 +1,4 @@
+import path from "node:path";
 import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -43,7 +44,7 @@ describe("envFileBackup", () => {
 		copyFileMock.mockResolvedValue(undefined);
 		accessMock.mockResolvedValue(undefined);
 
-		cwdMock.mockReturnValue("/tmp/project");
+		cwdMock.mockReturnValue(path.normalize("/tmp/project"));
 		process.cwd = cwdMock as () => string;
 		vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.spyOn(console, "error").mockImplementation(() => {});
@@ -66,9 +67,9 @@ describe("envFileBackup", () => {
 	it("should create timestamped backup when env file exists", async () => {
 		await envFileBackup(true);
 
-		const backupDir = "/tmp/project/.backup";
-		const backupFile = `${backupDir}/.env.1731959200`;
-		const envPath = "/tmp/project/.env";
+		const backupDir = path.join(path.normalize("/tmp/project"), ".backup");
+		const backupFile = path.join(backupDir, ".env.1731959200");
+		const envPath = path.join(path.normalize("/tmp/project"), ".env");
 
 		expect(mkdirMock).toHaveBeenCalledWith(backupDir, { recursive: true });
 		expect(accessMock).toHaveBeenCalledWith(envPath, expect.anything());

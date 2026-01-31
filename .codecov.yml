@@ -5,6 +5,8 @@ coverage:
         target: 57%
     patch:
       default:
+        # This target applies only to installation scripts to ensure high quality for this critical component.
+        # Other files fall under the project-wide target.
         target: 95%
         paths:
           - "scripts/setup/**"
