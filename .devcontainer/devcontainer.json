@@ -73,10 +73,9 @@
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
 	"overrideCommand": true,
-	"postCreateCommand": "bash ./.devcontainer/post-create.sh",
+	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",
-	"workspaceFolder": "/home/talawa/api",
-	"runServices": ["api", "minio", "postgres", "redis"]
+	"workspaceFolder": "/home/talawa/api"
 }
