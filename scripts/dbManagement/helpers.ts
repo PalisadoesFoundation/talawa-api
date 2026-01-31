@@ -503,6 +503,63 @@ export async function insertCollections(
 					break;
 				}
 
+				case "recurring_event_templates": {
+					const now = new Date();
+					type TemplateRow = {
+						id: string;
+						createdAt: string | number | Date;
+						updatedAt: string | null;
+						updaterId: string | null;
+						startAt: string | number | Date;
+						endAt: string | number | Date;
+						creatorId: string;
+						description: string | null;
+						name: string;
+						organizationId: string;
+						allDay: boolean;
+						isPublic?: boolean;
+						isRecurringEventTemplate?: boolean;
+						isRegisterable?: boolean;
+					};
+					const templates = JSON.parse(fileContent).map(
+						(template: TemplateRow) => {
+							const startRef = parseDate(template.startAt);
+							const endRef = parseDate(template.endAt);
+							const start =
+								startRef != null
+									? getNextOccurrenceOfWeekdayTime(now, startRef)
+									: new Date(now.getTime());
+							const end =
+								endRef != null
+									? getNextOccurrenceOfWeekdayTime(now, endRef)
+									: new Date(start.getTime() + 2 * 60 * 60 * 1000);
+							const createdAt = parseDate(template.createdAt) ?? start;
+							return {
+								...template,
+								createdAt,
+								startAt: start,
+								endAt: end,
+								updatedAt: null,
+								updaterId: null,
+								isPublic: true,
+								isRecurringEventTemplate: true,
+							};
+						},
+					) as (typeof schema.eventsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventsTable,
+						templates,
+						schema.eventsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurring event templates (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				case "event_volunteers": {
 					const eventVolunteers = JSON.parse(fileContent).map(
 						(volunteer: {
@@ -694,6 +751,42 @@ export async function insertCollections(
 export function parseDate(date: string | number | Date): Date | null {
 	const parsedDate = new Date(date);
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+/**
+ * Returns the next occurrence of the same weekday and time (hours, minutes) as
+ * templateDate, on or after referenceDate. Used for recurring event template start/end.
+ */
+export function getNextOccurrenceOfWeekdayTime(
+	referenceDate: Date,
+	templateDate: Date,
+): Date {
+	const weekday = templateDate.getUTCDay();
+	const hours = templateDate.getUTCHours();
+	const minutes = templateDate.getUTCMinutes();
+	const seconds = templateDate.getUTCSeconds();
+	const ms = templateDate.getUTCMilliseconds();
+
+	// Start from reference date at midnight UTC, then find next matching weekday
+	const ref = new Date(
+		Date.UTC(
+			referenceDate.getUTCFullYear(),
+			referenceDate.getUTCMonth(),
+			referenceDate.getUTCDate(),
+			0,
+			0,
+			0,
+			0,
+		),
+	);
+	ref.setUTCHours(hours, minutes, seconds, ms);
+	const refDay = ref.getUTCDay();
+	let daysToAdd = (weekday - refDay + 7) % 7;
+	if (daysToAdd === 0 && referenceDate.getTime() > ref.getTime()) {
+		daysToAdd = 7;
+	}
+	ref.setUTCDate(ref.getUTCDate() + daysToAdd);
+	return ref;
 }
 
 /**

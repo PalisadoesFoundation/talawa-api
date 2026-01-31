@@ -66,6 +66,35 @@ suite.concurrent("parseDate", () => {
 	});
 });
 
+suite.concurrent("getNextOccurrenceOfWeekdayTime", () => {
+	test.concurrent("returns next occurrence of same weekday and time on or after reference", async () => {
+		// Template: Tuesday 2025-04-01 09:00 UTC
+		const templateStart = new Date("2025-04-01T09:00:00.000Z");
+		// Reference: Monday 2025-03-31 00:00 UTC → next Tuesday = 2025-04-01 09:00
+		const ref = new Date("2025-03-31T00:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.toISOString()).toBe("2025-04-01T09:00:00.000Z");
+	});
+
+	test.concurrent("returns same week occurrence when reference is before that weekday time", async () => {
+		// Template: Wednesday 14:00 UTC
+		const templateStart = new Date("2025-04-02T14:00:00.000Z");
+		// Reference: Monday 2025-03-31 00:00 → next Wed = 2025-04-02 14:00
+		const ref = new Date("2025-03-31T00:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.toISOString()).toBe("2025-04-02T14:00:00.000Z");
+	});
+
+	test.concurrent("returns next week when reference is past that weekday time", async () => {
+		// Template: Tuesday 09:00 UTC
+		const templateStart = new Date("2025-04-01T09:00:00.000Z");
+		// Reference: Tuesday 2025-04-01 10:00 (past 09:00) → next Tuesday = 2025-04-08 09:00
+		const ref = new Date("2025-04-01T10:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.toISOString()).toBe("2025-04-08T09:00:00.000Z");
+	});
+});
+
 suite.concurrent("action item ID generation", () => {
 	test.concurrent("should generate new uuidv7 when ID is not 36 characters", async () => {
 		const actionItem = {

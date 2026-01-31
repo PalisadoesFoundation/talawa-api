@@ -34,6 +34,7 @@ suite("addSampleData main function tests", () => {
 			"comment_votes",
 			"action_categories",
 			"events",
+			"recurring_event_templates",
 			"event_volunteers",
 			"event_volunteer_memberships",
 			"action_items",
