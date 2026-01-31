@@ -142,6 +142,21 @@ else
 fi
 
 ##############################################################################
+# Test: warn (stderr) writes to stderr and appends to LOG_FILE
+##############################################################################
+
+test_start "warn writes to stderr and appends to log file"
+set +e
+unique_msg="logging-test-warn-$$"
+stderr_capture=$(warn "$unique_msg" 2>&1)
+set -e
+if echo "$stderr_capture" | grep -q "WARNING:.*$unique_msg" && grep -q "WARNING:.*$unique_msg" "$LOG_FILE"; then
+  test_pass
+else
+  test_fail "Expected '$unique_msg' on stderr and in $LOG_FILE. stderr=$stderr_capture"
+fi
+
+##############################################################################
 # Test: print_timing_summary parses labels containing colons
 ##############################################################################
 

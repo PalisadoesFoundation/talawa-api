@@ -63,7 +63,7 @@ print_log_location() {
 }
 
 # Run command and record elapsed time. Label is first arg; rest is the command.
-# Writes to console and log via success(). Returns the exit code of the command.
+# On success: success() to console/log. On failure: error() and return original exit code.
 with_timer() {
   local label="$1"
   shift
@@ -73,15 +73,17 @@ with_timer() {
   fi
   local t0 t1 elapsed ret
   t0=$(date +%s)
+  ret=0
   "$@" || ret=$?
   t1=$(date +%s)
   elapsed=$((t1 - t0))
   __TIMINGS+=("$label:$elapsed")
-  success "$label completed in ${elapsed}s"
-  if [ -n "${ret:-}" ]; then
-    return "$ret"
+  if [ "$ret" -eq 0 ]; then
+    success "$label completed in ${elapsed}s"
+  else
+    error "$label failed (exit $ret) after ${elapsed}s"
   fi
-  return 0
+  return "$ret"
 }
 
 # Run command with ASCII spinner. Message is first arg; rest is the command.
@@ -105,11 +107,11 @@ with_spinner() {
     sleep 0.2
   done
   printf "\033[2K\r"
-  wait "$pid"
-  local ret=$?
+  local ret=0
+  wait "$pid" || ret=$?
   [ -f "$tmpfile" ] && cat "$tmpfile"
   rm -f "$tmpfile"
-  return $ret
+  return "$ret"
 }
 
 # Print timing summary to console and log (dual output).
