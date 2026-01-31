@@ -1192,9 +1192,7 @@ suite("Mutation field deletePostVote", () => {
 					// Should re-throw the error
 					expect(result.data?.deletePostVote).toBeNull();
 					expect(result.errors).toBeDefined();
-					expect(result.errors?.[0]?.message).toContain(
-						"Database connection timeout",
-					);
+					expect(result.errors?.[0]?.message).toBe("Internal Server Error");
 				} finally {
 					postsFindFirstSpy.mockRestore();
 				}

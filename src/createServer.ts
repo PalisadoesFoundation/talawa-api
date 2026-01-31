@@ -3,7 +3,6 @@ import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
-import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyRedis from "@fastify/redis";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import envSchema from "env-schema";
@@ -79,7 +78,6 @@ export const createServer = async (options?: {
 
 	fastify.decorate("envConfig", envConfig);
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
-	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
 	fastify.register(fastifyCors, {
