@@ -62,7 +62,9 @@ RUN userdel -r node \
     && groupadd -g ${API_GID} talawa \
     # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
     && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
-    && corepack enable
+    && corepack enable \
+    # Pin pnpm to match package.json "packageManager" so later stages' "pnpm install --offline" do not trigger a Corepack download (avoids CI network failures).
+    && corepack prepare pnpm@10.26.1 --activate
 USER talawa
 WORKDIR /home/talawa/api
 
@@ -74,14 +76,14 @@ RUN pnpm install --frozen-lockfile --offline
 
 # This build stage is used to build the codebase used in production environment of talawa api. 
 FROM base AS production_code
-COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml 
+COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
 RUN pnpm install --frozen-lockfile --offline && pnpm build_production
 
 # This build stage is used to download and install the dependencies used in production environment of talawa api.
 FROM base AS production_dependencies
-COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml 
+COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm fetch --frozen-lockfile --prod
 COPY --chown=talawa:talawa ./package.json ./package.json
 RUN pnpm install --frozen-lockfile --offline --prod

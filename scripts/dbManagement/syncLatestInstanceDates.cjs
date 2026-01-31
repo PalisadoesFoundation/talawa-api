@@ -28,9 +28,11 @@ function main() {
 		const ruleId = inst.recurrenceRuleId;
 		const start = inst.actualStartTime;
 		if (!ruleId || !start) continue;
+		const date = new Date(start);
+		if (!Number.isFinite(date.getTime())) continue;
 		if (
 			!maxByRule[ruleId] ||
-			new Date(start).getTime() > new Date(maxByRule[ruleId]).getTime()
+			date.getTime() > new Date(maxByRule[ruleId]).getTime()
 		) {
 			maxByRule[ruleId] = start;
 		}
