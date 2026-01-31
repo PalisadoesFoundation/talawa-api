@@ -97,6 +97,21 @@ else
 fi
 
 ##############################################################################
+# Test: with_spinner propagates non-zero exit code
+##############################################################################
+
+test_start "with_spinner propagates non-zero exit code"
+set +e
+with_spinner "Failing" false
+exitcode=$?
+set -e
+if [ "$exitcode" -ne 0 ]; then
+  test_pass
+else
+  test_fail "Expected non-zero exit from with_spinner false, got $exitcode"
+fi
+
+##############################################################################
 # Test: with_timer with no command returns error and non-zero
 ##############################################################################
 
