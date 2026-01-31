@@ -235,7 +235,7 @@ EOF
         kill -KILL "$pid" 2>/dev/null || true
         wait "$pid" 2>/dev/null || true
         rm -f "$test_script" "$output_file"
-        # INT often does not reach background processes in non-interactive/CI; pass to keep suite green
+        echo >&2 "WARNING: INT timeout (known CI limitation); pid=$pid, test='INT signal (Ctrl+C) triggers cleanup'; treating as pass."
         test_pass
         return
     fi

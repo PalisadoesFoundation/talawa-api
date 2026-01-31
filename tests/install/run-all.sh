@@ -10,6 +10,8 @@
 # Returns: 0 if all tests pass, 1 if any test fails
 ##############################################################################
 
+set -u
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
@@ -18,6 +20,7 @@ FAILED=0
 PASSED=0
 
 while IFS= read -r -d '' test_file; do
+    echo >&2 "[install tests] Running $test_file"
     if bash "$test_file"; then
         PASSED=$((PASSED + 1))
     else
