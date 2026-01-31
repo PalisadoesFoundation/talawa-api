@@ -93,6 +93,38 @@ function loadJson(filePath) {
 }
 
 /**
+ * Parse RRULE-style string (e.g. "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE") into { frequency, interval, byDay, byMonthDay }.
+ * Used when rule object omits frequency/interval/byDay but has recurrenceRule.
+ * @param {string} s - recurrenceRule string
+ * @returns {{ frequency?: string, interval?: number, byDay?: string[], byMonthDay?: number[] } | null}
+ */
+function parseRecurrenceRuleString(s) {
+	if (typeof s !== "string" || s.trim() === "") return null;
+	const out = {};
+	const parts = s.split(";");
+	for (const part of parts) {
+		const eq = part.indexOf("=");
+		if (eq <= 0) continue;
+		const key = part.slice(0, eq).trim().toUpperCase();
+		const value = part.slice(eq + 1).trim();
+		if (key === "FREQ") out.frequency = value;
+		else if (key === "INTERVAL")
+			out.interval = Math.max(1, parseInt(value, 10) || 1);
+		else if (key === "BYDAY")
+			out.byDay = value
+				.split(",")
+				.map((d) => d.trim())
+				.filter(Boolean);
+		else if (key === "BYMONTHDAY")
+			out.byMonthDay = value
+				.split(",")
+				.map((d) => parseInt(d.trim(), 10))
+				.filter((n) => !Number.isNaN(n));
+	}
+	return Object.keys(out).length > 0 ? out : null;
+}
+
+/**
  * Generate recurring event instances from events and rules.
  * @param {Array} events - Array of event objects (must include isRecurringEventTemplate templates)
  * @param {Array} rules - Array of recurrence rule objects (frequency, interval, recurrenceStartDate, byDay, etc.)
@@ -137,9 +169,18 @@ function generateInstances(events, rules, options = {}) {
 		const endDate = new Date(start);
 		endDate.setUTCMonth(endDate.getUTCMonth() + monthsAhead);
 
-		const frequency = (rule.frequency || "WEEKLY").toUpperCase();
-		const interval = Math.max(1, parseInt(rule.interval, 10) || 1);
-		const byDay = rule.byDay ?? [];
+		const parsed = parseRecurrenceRuleString(rule.recurrenceRule);
+		const frequency = (
+			rule.frequency ??
+			parsed?.frequency ??
+			"WEEKLY"
+		).toUpperCase();
+		const interval = Math.max(
+			1,
+			parseInt(rule.interval, 10) || parsed?.interval || 1,
+		);
+		const byDayRaw = rule.byDay ?? parsed?.byDay ?? [];
+		const byDay = Array.isArray(byDayRaw) ? byDayRaw : [];
 		const wantDOW = byDay
 			.map((d) => BYDAY_TO_DOW[d])
 			.filter((x) => x !== undefined);
@@ -151,7 +192,9 @@ function generateInstances(events, rules, options = {}) {
 			const byMonthDay =
 				rule.byMonthDay && rule.byMonthDay.length > 0
 					? rule.byMonthDay
-					: [start.getUTCDate()];
+					: parsed?.byMonthDay?.length > 0
+						? parsed.byMonthDay
+						: [start.getUTCDate()];
 			const byDayMonthly =
 				byDay.length > 0 ? byDay.map(parseByDayMonthly).filter(Boolean) : null;
 			const startUTCHours = start.getUTCHours();

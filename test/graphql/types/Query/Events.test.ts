@@ -502,6 +502,11 @@ suite("Query eventsByIds", () => {
 			},
 		);
 
+		if (orgResult.errors?.length) {
+			throw new Error(
+				`createOrganization failed: ${JSON.stringify(orgResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(orgResult.data?.createOrganization);
 		const organizationId = orgResult.data.createOrganization.id;
 
@@ -537,6 +542,11 @@ suite("Query eventsByIds", () => {
 			},
 		);
 
+		if (inviteOnlyEventResult.errors?.length) {
+			throw new Error(
+				`createEvent failed: ${JSON.stringify(inviteOnlyEventResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(inviteOnlyEventResult.data?.createEvent);
 		const inviteOnlyEventId = inviteOnlyEventResult.data.createEvent.id;
 
@@ -547,9 +557,16 @@ suite("Query eventsByIds", () => {
 			},
 		});
 
-		expect(creatorResult.errors).toBeUndefined();
+		if (creatorResult.errors?.length) {
+			throw new Error(
+				`eventsByIds failed: ${JSON.stringify(creatorResult.errors)}`,
+			);
+		}
 		const creatorEvents = creatorResult.data?.eventsByIds;
-		assertToBeNonNullish(creatorEvents);
+		assertToBeNonNullish(
+			creatorEvents,
+			"eventsByIds returned null; creator should see their invite-only event",
+		);
 		// Creator should see their invite-only event
 		expect(creatorEvents).toHaveLength(1);
 		expect(creatorEvents[0]?.id).toBe(inviteOnlyEventId);

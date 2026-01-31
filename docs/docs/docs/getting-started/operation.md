@@ -191,6 +191,7 @@ This applies to users running Talawa API in dev containers.
    ```bash
     docker exec talawa-api-1 /bin/bash -c 'pnpm run add:sample_data && exit'
    ```
+   Sample data includes users, organizations, events, recurrence rules, recurring event instances, and other collections (see `scripts/dbManagement/sample_data/SAMPLE_DATA.md`).
 
 Refer to the next section for login information.
 

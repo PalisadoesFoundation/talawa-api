@@ -24,7 +24,7 @@ const {
 		orgId: string,
 		generatedAt?: string,
 	) => unknown;
-	parseDate: (s: string | number | Date) => Date | null;
+	parseDate: (s: string | number | Date | null | undefined) => Date | null;
 	buildInstanceId: (ruleIndex: number, seq: number) => string;
 	getNthWeekdayOfMonth: (
 		year: number,
@@ -58,6 +58,7 @@ function syntheticRule(
 		recurrenceStartDate?: string;
 		byDay?: string[] | null;
 		byMonthDay?: number[] | null;
+		recurrenceRule?: string;
 		baseRecurringEventId?: string;
 		originalSeriesId?: string;
 		id?: string;
@@ -125,6 +126,26 @@ describe("generateRecurringInstances", () => {
 		});
 		expect(mondays.length).toBeGreaterThan(0);
 		expect(wednesdays.length).toBeGreaterThan(0);
+	});
+
+	test("recurrenceRule fallback is parsed when frequency/interval/byDay are missing", () => {
+		const events = [syntheticTemplate()];
+		const rules = [
+			syntheticRule({
+				frequency: undefined,
+				interval: undefined,
+				byDay: undefined,
+				recurrenceRule: "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE",
+			}),
+		];
+		const instances = generateInstances(events, rules, {
+			monthsAhead: 1,
+		}) as { actualStartTime: string }[];
+		expect(instances.length).toBeGreaterThan(0);
+		for (const inst of instances) {
+			const dow = new Date(inst.actualStartTime).getUTCDay();
+			expect([1, 3]).toContain(dow); // Mon=1, Wed=3
+		}
 	});
 
 	test("endDate cutoff: instances beyond endDate are omitted", () => {
@@ -361,11 +382,28 @@ describe("generateRecurringInstances", () => {
 });
 
 describe("parseDate", () => {
-	test("returns null for invalid date", () => {
+	test("returns null for null input", () => {
+		expect(parseDate(null)).toBeNull();
+	});
+	test("returns null for undefined input", () => {
+		expect(parseDate(undefined)).toBeNull();
+	});
+	test("returns null for invalid date string", () => {
 		expect(parseDate("not-a-date")).toBeNull();
 	});
 	test("returns Date for valid ISO string", () => {
 		const d = parseDate("2026-02-02T06:00:00.000Z");
+		expect(d).not.toBeNull();
+		expect((d as Date).toISOString()).toBe("2026-02-02T06:00:00.000Z");
+	});
+	test("returns Date for valid timestamp number", () => {
+		const d = parseDate(1738483200000); // 2026-02-02T00:00:00.000Z
+		expect(d).not.toBeNull();
+		expect((d as Date).getTime()).toBe(1738483200000);
+	});
+	test("returns Date for Date input", () => {
+		const input = new Date("2026-02-02T06:00:00.000Z");
+		const d = parseDate(input);
 		expect(d).not.toBeNull();
 		expect((d as Date).toISOString()).toBe("2026-02-02T06:00:00.000Z");
 	});

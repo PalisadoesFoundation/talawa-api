@@ -64,6 +64,11 @@ suite.concurrent("parseDate", () => {
 		// Test an invalid number (NaN)
 		expect(helpers.parseDate(Number.NaN)).toBeNull();
 	});
+
+	test.concurrent("should return null for null and undefined to avoid corrupting nullable timestamps", async () => {
+		expect(helpers.parseDate(null)).toBeNull();
+		expect(helpers.parseDate(undefined)).toBeNull();
+	});
 });
 
 suite.concurrent("action item ID generation", () => {

@@ -65,7 +65,6 @@ export default defineConfig({
 			"drizzle_migrations/**",
 			"envFiles/**",
 			"scripts/**",
-			"**/scripts/**",
 		],
 		coverage: {
 			provider: "v8",
@@ -84,7 +83,7 @@ export default defineConfig({
 				"docker/**",
 				"drizzle_migrations/**",
 				"envFiles/**",
-				"**/scripts/**",
+				"scripts/**",
 				"vitest.*.config.ts",
 			],
 		},
