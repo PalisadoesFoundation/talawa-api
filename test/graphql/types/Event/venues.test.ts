@@ -953,18 +953,25 @@ suite("Event venues Field", () => {
 		});
 
 		// Query event venues with attachments
-		const result = await mercuriusClient.query(Query_eventVenuesWithAttachments, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: eventId }, first: 10 },
-		});
+		const result = await mercuriusClient.query(
+			Query_eventVenuesWithAttachments,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: eventId }, first: 10 },
+			},
+		);
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.event?.venues?.edges).toHaveLength(1);
-		expect(result.data?.event?.venues?.edges?.[0]?.node?.attachments).toBeDefined();
-		expect(result.data?.event?.venues?.edges?.[0]?.node?.attachments).toHaveLength(1);
-		expect(result.data?.event?.venues?.edges?.[0]?.node?.attachments?.[0]?.mimeType).toBe(
-			"image/png",
-		);
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments,
+		).toBeDefined();
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments,
+		).toHaveLength(1);
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments?.[0]?.mimeType,
+		).toBe("image/png");
 	});
 
 	test("should return venue with multiple attachments", async () => {
@@ -1041,19 +1048,27 @@ suite("Event venues Field", () => {
 		});
 
 		// Query event venues with attachments
-		const result = await mercuriusClient.query(Query_eventVenuesWithAttachments, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: eventId }, first: 10 },
-		});
+		const result = await mercuriusClient.query(
+			Query_eventVenuesWithAttachments,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: eventId }, first: 10 },
+			},
+		);
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.event?.venues?.edges).toHaveLength(1);
-		expect(result.data?.event?.venues?.edges?.[0]?.node?.attachments).toBeDefined();
-		expect(result.data?.event?.venues?.edges?.[0]?.node?.attachments).toHaveLength(3);
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments,
+		).toBeDefined();
+		expect(
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments,
+		).toHaveLength(3);
 
-		const mimeTypes = result.data?.event?.venues?.edges?.[0]?.node?.attachments?.map(
-			(a) => a?.mimeType,
-		);
+		const mimeTypes =
+			result.data?.event?.venues?.edges?.[0]?.node?.attachments?.map(
+				(a) => a?.mimeType,
+			);
 		expect(mimeTypes).toContain("image/png");
 		expect(mimeTypes).toContain("image/jpeg");
 		expect(mimeTypes).toContain("application/pdf");
