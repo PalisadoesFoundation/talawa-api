@@ -93,6 +93,40 @@ suite.concurrent("getNextOccurrenceOfWeekdayTime", () => {
 		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
 		expect(result.toISOString()).toBe("2025-04-08T09:00:00.000Z");
 	});
+
+	test.concurrent("same weekday exact same time returns that same date (no week shift)", async () => {
+		const same = new Date("2025-04-01T09:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(same, same);
+		expect(result.getTime()).toBe(same.getTime());
+		expect(result.toISOString()).toBe("2025-04-01T09:00:00.000Z");
+	});
+
+	test.concurrent("Sunday handling: next occurrence around references before and after that Sunday", async () => {
+		// Template: Sunday 2025-04-06 12:00 UTC (weekday 0)
+		const templateStart = new Date("2025-04-06T12:00:00.000Z");
+		// Reference: Saturday 2025-04-05 00:00 → next Sunday = 2025-04-06 12:00
+		const refBefore = new Date("2025-04-05T00:00:00.000Z");
+		const resultBefore = helpers.getNextOccurrenceOfWeekdayTime(
+			refBefore,
+			templateStart,
+		);
+		expect(resultBefore.toISOString()).toBe("2025-04-06T12:00:00.000Z");
+		// Reference: Monday 2025-04-07 00:00 → next Sunday = 2025-04-13 12:00
+		const refAfter = new Date("2025-04-07T00:00:00.000Z");
+		const resultAfter = helpers.getNextOccurrenceOfWeekdayTime(
+			refAfter,
+			templateStart,
+		);
+		expect(resultAfter.toISOString()).toBe("2025-04-13T12:00:00.000Z");
+	});
+
+	test.concurrent("milliseconds preservation in returned date", async () => {
+		const templateStart = new Date("2025-04-01T09:00:00.123Z");
+		const ref = new Date("2025-03-31T00:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.getUTCMilliseconds()).toBe(123);
+		expect(result.toISOString()).toBe("2025-04-01T09:00:00.123Z");
+	});
 });
 
 suite.concurrent("action item ID generation", () => {
@@ -260,6 +294,7 @@ suite.concurrent("insertCollections", () => {
 			"comment_votes",
 			"action_categories",
 			"events",
+			"recurring_event_templates",
 			"action_items",
 			"membership_requests",
 		]);
@@ -270,6 +305,53 @@ suite.concurrent("insertCollections", () => {
 		await expect(
 			helpers.insertCollections(["invalid_collection"]),
 		).rejects.toThrow(/Error adding data to tables:/);
+	});
+
+	test.concurrent("should transform recurring_event_templates with parseDate/getNextOccurrenceOfWeekdayTime and set isPublic and isRecurringEventTemplate", async () => {
+		const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+		await helpers.insertCollections([
+			"users",
+			"organizations",
+			"organization_memberships",
+			"posts",
+			"post_votes",
+			"post_attachments",
+			"comments",
+			"comment_votes",
+			"action_categories",
+			"events",
+			"recurring_event_templates",
+			"action_items",
+			"membership_requests",
+		]);
+		const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+			(call) => call[0] === schema.eventsTable,
+		);
+		expect(eventsTableCalls.length).toBeGreaterThanOrEqual(2);
+		const lastEventsCall = eventsTableCalls[eventsTableCalls.length - 1];
+		const templateRows = lastEventsCall?.[1];
+		expect(templateRows).toBeDefined();
+		expect(Array.isArray(templateRows)).toBe(true);
+		const rows = templateRows as (typeof schema.eventsTable.$inferInsert)[];
+		expect(rows.length).toBeGreaterThan(0);
+		const now = Date.now();
+		const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+		for (const row of rows) {
+			expect(row.createdAt).toBeInstanceOf(Date);
+			expect(row.startAt).toBeInstanceOf(Date);
+			expect(row.endAt).toBeInstanceOf(Date);
+			expect(row.updatedAt).toBeNull();
+			expect(row.updaterId).toBeNull();
+			expect(row.isPublic).toBe(true);
+			expect(row.isRecurringEventTemplate).toBe(true);
+			expect((row.startAt as Date).getTime()).toBeLessThanOrEqual(
+				(row.endAt as Date).getTime(),
+			);
+			expect((row.startAt as Date).getTime()).toBeGreaterThanOrEqual(
+				oneWeekAgo,
+			);
+		}
+		checkAndInsertDataSpy.mockRestore();
 	});
 
 	test.concurrent("should generate new uuidv7 for action items with short IDs", async () => {

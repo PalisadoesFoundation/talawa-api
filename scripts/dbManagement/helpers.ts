@@ -529,10 +529,18 @@ export async function insertCollections(
 								startRef != null
 									? getNextOccurrenceOfWeekdayTime(now, startRef)
 									: new Date(now.getTime());
-							const end =
-								endRef != null
-									? getNextOccurrenceOfWeekdayTime(now, endRef)
-									: new Date(start.getTime() + 2 * 60 * 60 * 1000);
+							let end: Date;
+							if (startRef != null && endRef != null) {
+								const durationMs = endRef.getTime() - startRef.getTime();
+								end = new Date(start.getTime() + durationMs);
+							} else if (endRef != null) {
+								end = getNextOccurrenceOfWeekdayTime(now, endRef);
+								if (end.getTime() < start.getTime()) {
+									end = new Date(end.getTime() + 7 * 24 * 60 * 60 * 1000);
+								}
+							} else {
+								end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+							}
 							const createdAt = parseDate(template.createdAt) ?? start;
 							return {
 								...template,
