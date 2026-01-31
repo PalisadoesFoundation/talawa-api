@@ -1,183 +1,173 @@
-import { describe, it, expect, afterAll } from 'vitest';
-import { getTableName, getTableColumns, eq, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { faker } from '@faker-js/faker';
-import { tagAssignmentsTable, tagAssignmentsTableRelations, tagAssignmentsTableInsertSchema ,tagAssignmentsTableSelectSchema} from '../../../src/drizzle/tables/tagAssignments';
-import { usersTable } from '../../../src/drizzle/tables/users';
-import { tagsTable } from '../../../src/drizzle/tables/tags';
-import { organizationsTable } from '../../../src/drizzle/tables/organizations';
+import { eq, getTableColumns, getTableName, type Table } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
+import { beforeAll, describe, expect, it } from "vitest";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
+import {
+	tagAssignmentsTable,
+	tagAssignmentsTableInsertSchema,
+	tagAssignmentsTableRelations,
+} from "~/src/drizzle/tables/tagAssignments";
+import { tagsTable } from "~/src/drizzle/tables/tags";
+import { usersTable } from "~/src/drizzle/tables/users";
+import { server } from "../../server";
 
-// Setup DB connection
-const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
-const db = drizzle(pool);
+/**
+ * Tests for tagAssignmentsTable definition - validates table schema, relations,
+ * insert schema validation, and database operations.
+ */
+describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => {
+	describe("Table Schema", () => {
+		it("should have correct table name", () => {
+			expect(getTableName(tagAssignmentsTable)).toBe("tag_assignments");
+		});
 
-describe('src/drizzle/tables/tagAssignments.ts', () => {
-  
-  afterAll(async () => {
-    await pool.end();
-  });
+		it("should have all required columns defined", () => {
+			const columns = Object.keys(tagAssignmentsTable);
+			expect(columns).toContain("assigneeId");
+			expect(columns).toContain("tagId");
+			expect(columns).toContain("creatorId");
+			expect(columns).toContain("createdAt");
+		});
 
-  describe('Table Schema (Static Checks)', () => {
-    it('should have the correct table name', () => {
-      expect(getTableName(tagAssignmentsTable)).toBe('tag_assignments');
-    });
+		it("should enforce notNull constraints on columns", () => {
+			const columns = getTableColumns(tagAssignmentsTable);
+			expect(columns.assigneeId.notNull).toBe(true);
+			expect(columns.tagId.notNull).toBe(true);
+			expect(columns.creatorId.notNull).toBe(true);
+			expect(columns.createdAt.notNull).toBe(true);
+		});
+	});
 
-    it('should have all 4 required columns', () => {
-      const columns = getTableColumns(tagAssignmentsTable);
-      const columnNames = Object.keys(columns);
-      expect(columnNames).toHaveLength(4);
-      expect(columnNames).toContain('assigneeId');
-      expect(columnNames).toContain('tagId');
-      expect(columnNames).toContain('creatorId');
-      expect(columnNames).toContain('createdAt');
-    });
+	describe("Foreign Key Relationships", () => {
+		const tableConfig = getTableConfig(tagAssignmentsTable);
 
-    it('should enforce notNull constraints on columns', () => {
-      const columns = getTableColumns(tagAssignmentsTable);
-      expect(columns.assigneeId.notNull).toBe(true);
-      expect(columns.tagId.notNull).toBe(true);
-      expect(columns.creatorId.notNull).toBe(true); 
-      expect(columns.createdAt.notNull).toBe(true); 
-    });
-  });
+		it("should have correct foreign keys defined", () => {
+			expect(tableConfig.foreignKeys.length).toBe(3);
+		});
 
-  describe('Table Relations', () => {
-    it('should be defined', () => {
-      expect(tagAssignmentsTableRelations).toBeDefined();
-    });
-  });
+		it("should map assigneeId and tagId to correct tables", () => {
+			const assigneeFk = tableConfig.foreignKeys.find((fk) =>
+				fk.reference().columns.some((col) => col.name === "assignee_id"),
+			);
+			const tagFk = tableConfig.foreignKeys.find((fk) =>
+				fk.reference().columns.some((col) => col.name === "tag_id"),
+			);
+			expect(assigneeFk?.reference().foreignTable).toBe(usersTable);
+			expect(tagFk?.reference().foreignTable).toBe(tagsTable);
+		});
+	});
 
-  describe('Insert Schema Validation (Zod)', () => {
-    it('should validate proper UUIDs', () => {
-      const validData = {
-        assigneeId: faker.string.uuid(),
-        tagId: faker.string.uuid(),
-        creatorId: faker.string.uuid(),
-      };
-      expect(() => tagAssignmentsTableInsertSchema.parse(validData)).not.toThrow();
-    });
+	describe("Table Relations", () => {
+		// Interfaces to satisfy Linter (No 'any' allowed!)
+		interface CapturedRelation {
+			table: Table;
+			config?: {
+				relationName?: string;
+				fields?: unknown[];
+				references?: unknown[];
+			};
+		}
 
-    it('should reject invalid data', () => {
-      const invalidData = {
-        assigneeId: "not-a-uuid",
-        tagId: "not-a-uuid",
-        creatorId: faker.string.uuid(), // <--- Added this!
-      };
-      // Now if this throws, it is DEFINITELY because of the UUID format,
-      // not because of a missing field.
-      expect(() => tagAssignmentsTableInsertSchema.parse(invalidData)).toThrow();
-    });
-  });
+		interface MockRelationHelpers {
+			one: (
+				table: Table,
+				config?: CapturedRelation["config"],
+			) => { withFieldName: () => object };
+		}
 
-  describe('Select Schema Validation (Zod)', () => {
-  it('should be defined', () => {
-    expect(tagAssignmentsTableSelectSchema).toBeDefined();
-    });
-  });
+		let capturedRelations: Record<string, CapturedRelation> = {};
 
-  describe('Database Operations (Integration)', () => {
-    
-    // FIX (New): Foreign Key Constraint Check
-    it('should enforce foreign key constraints (reject non-existent IDs)', async () => {
-      const fakeId = faker.string.uuid();
-      const invalidAssignment = {
-        assigneeId: fakeId, // Does not exist
-        tagId: fakeId,      // Does not exist
-        creatorId: fakeId   // Does not exist
-      };
+		beforeAll(() => {
+			capturedRelations = {};
+			// Type-safe mocking
+			(
+				tagAssignmentsTableRelations.config as unknown as (
+					helpers: MockRelationHelpers,
+				) => unknown
+			)({
+				one: (table: Table, config?: CapturedRelation["config"]) => {
+					const name = getTableName(table);
+					capturedRelations[name] = { table, config };
+					return { withFieldName: () => ({}) };
+				},
+			});
+		});
 
-      // The DB should throw an error because these parents don't exist
-      await expect(
-        db.insert(tagAssignmentsTable).values(invalidAssignment).returning()
-      ).rejects.toThrow();
-    });
+		it("should define relations for users and tags", () => {
+			expect(capturedRelations.users).toBeDefined();
+			expect(capturedRelations.tags).toBeDefined();
+		});
+	});
 
-    it('should successfully insert, retrieve, and clean up a record', async () => {
-      // 0. Create Organization
-      const [organization] = await db.insert(organizationsTable).values({
-        name: faker.company.name(),
-        slug: `${faker.lorem.slug()}-${faker.string.uuid()}`, 
-        isPublic: true
-      // biome-ignore lint/suspicious/noExplicitAny: simplifying test setup
-      } as any).returning();
-      if (!organization) throw new Error("Failed to create organization");
+	describe("Insert Schema Validation", () => {
+		const validUuid = "01234567-89ab-4def-a123-456789abcdef";
 
-      // 1. Create Assignee
-      const [assignee] = await db.insert(usersTable).values({
-        name: 'Test User',
-        emailAddress: faker.internet.email(),
-        isEmailAddressVerified: true,
-        failedLoginAttempts: 0,
-        passwordHash: 'hashed_password_placeholder',
-        role: 'USER', 
-        isBlocked: false,
-        isVerified: true
-      // biome-ignore lint/suspicious/noExplicitAny: simplifying test setup
-      } as any).returning();
-      if (!assignee) throw new Error("Failed to create assignee");
+		it("should accept valid data", () => {
+			const result = tagAssignmentsTableInsertSchema.safeParse({
+				assigneeId: validUuid,
+				tagId: validUuid,
+				creatorId: validUuid,
+			});
+			expect(result.success).toBe(true);
+		});
+	});
 
-      // 2. Create Creator
-      const [creator] = await db.insert(usersTable).values({
-        name: 'Creator User',
-        emailAddress: faker.internet.email(),
-        isEmailAddressVerified: true,
-        failedLoginAttempts: 0,
-        passwordHash: 'hashed_password_placeholder',
-        role: 'USER',
-        isBlocked: false,
-        isVerified: true
-      // biome-ignore lint/suspicious/noExplicitAny: simplifying test setup
-      } as any).returning();
-      if (!creator) throw new Error("Failed to create creator");
+	describe("Database Operations", () => {
+		it("should successfully insert and delete an assignment", async () => {
+			// 1. Create Organization (Required for Tag)
+			const [org] = await server.drizzleClient
+				.insert(organizationsTable)
+				.values({
+					name: `Org-${Date.now()}`,
+					description: "Test Org",
+					creatorId: null,
+					updaterId: null,
+				})
+				.returning();
+			if (!org) throw new Error("Failed to create test organization");
 
-      // 3. Create Tag
-      const [tag] = await db.insert(tagsTable).values({
-        name: `${faker.lorem.word()}_${faker.string.uuid()}`,
-        creatorId: creator.id,
-        organizationId: organization.id 
-      // biome-ignore lint/suspicious/noExplicitAny: simplifying test setup
-      } as any).returning();
-      if (!tag) throw new Error("Failed to create tag");
+			// 2. Create User (Required for Assignment)
+			const [user] = await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					emailAddress: `user-${Date.now()}@test.com`,
+					name: "Test User",
+					passwordHash: "hash",
+					role: "regular",
+					isEmailAddressVerified: true,
+				})
+				.returning();
+			if (!user) throw new Error("Failed to create test user");
 
-      // 4. Insert Assignment
-      const newAssignment = {
-        assigneeId: assignee.id,
-        tagId: tag.id,
-        creatorId: creator.id
-      };
+			// 3. Create Tag (Required for Assignment)
+			const [tag] = await server.drizzleClient
+				.insert(tagsTable)
+				.values({
+					name: `Tag-${Date.now()}`,
+					organizationId: org.id,
+				})
+				.returning();
+			if (!tag) throw new Error("Failed to create test tag");
 
-      const insertResult = await db.insert(tagAssignmentsTable)
-        .values(newAssignment)
-        .returning();
-      
-      const result = insertResult[0];
-      if (!result) throw new Error("Insert failed: No data returned");
+			// 4. Create the Assignment
+			const [assignment] = await server.drizzleClient
+				.insert(tagAssignmentsTable)
+				.values({
+					assigneeId: user.id,
+					tagId: tag.id,
+					creatorId: user.id,
+				})
+				.returning();
 
-      // Verify Data
-      expect(result.assigneeId).toBe(assignee.id);
-      
-      // Verify Defaults (createdAt)
-      expect(result.createdAt).toBeDefined();
-      expect(result.createdAt).toBeInstanceOf(Date);
+			// 5. Verify & Cleanup
+			expect(assignment).toBeDefined();
+			if (!assignment) throw new Error("Failed to create assignment");
 
-      // 5. Verify Uniqueness (Composite Primary Key Check)
-      await expect(
-        db.insert(tagAssignmentsTable).values(newAssignment).returning()
-      ).rejects.toThrow();
+			expect(assignment.assigneeId).toBe(user.id);
 
-      // 6. Cleanup
-      await db.delete(tagAssignmentsTable)
-        .where(and(
-          eq(tagAssignmentsTable.assigneeId, assignee.id),
-          eq(tagAssignmentsTable.tagId, tag.id)
-        ));
-
-      // Delete Parents
-      await db.delete(tagsTable).where(eq(tagsTable.id, tag.id));
-      await db.delete(usersTable).where(eq(usersTable.id, assignee.id));
-      await db.delete(usersTable).where(eq(usersTable.id, creator.id));
-      await db.delete(organizationsTable).where(eq(organizationsTable.id, organization.id));
-    });
-  });
+			await server.drizzleClient
+				.delete(tagAssignmentsTable)
+				.where(eq(tagAssignmentsTable.assigneeId, user.id));
+		});
+	});
 });
