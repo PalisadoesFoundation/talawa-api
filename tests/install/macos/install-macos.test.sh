@@ -40,6 +40,9 @@ test_fail() {
     echo -e "  ${RED}Reason: $message${NC}"
 }
 
+# Repo root (tests live in tests/install/macos/)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+
 # Create a temporary directory for mocks and test state
 TEST_DIR=$(mktemp -d)
 MOCK_BIN="$TEST_DIR/bin"
@@ -132,10 +135,10 @@ setup_test_repo() {
     mkdir -p "$TEST_DIR/scripts/install/common"
     mkdir -p "$TEST_DIR/.git"
     
-    # Copy actual scripts to test dir
-    cp scripts/install/macos/install-macos.sh "$TEST_DIR/scripts/install/macos/"
+    # Copy actual scripts to test dir (paths relative to repo root)
+    cp "$REPO_ROOT/scripts/install/macos/install-macos.sh" "$TEST_DIR/scripts/install/macos/"
     chmod +x "$TEST_DIR/scripts/install/macos/install-macos.sh"
-    cp scripts/install/common/*.sh "$TEST_DIR/scripts/install/common/"
+    cp "$REPO_ROOT/scripts/install/common/"*.sh "$TEST_DIR/scripts/install/common/"
     
     # Inject command_exists override into os-detection.sh
     cat >> "$TEST_DIR/scripts/install/common/os-detection.sh" <<'EOF'

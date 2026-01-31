@@ -18,12 +18,13 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Use a dedicated test log file so we don't pollute the default log
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
 LOG_FILE="/tmp/talawa-logging-test-$$.log"
 export LOG_FILE
 
 # Source the logging library (creates LOG_FILE and __TIMINGS)
-source "$SCRIPT_DIR/logging.sh"
+source "$SCRIPTS_INSTALL/common/logging.sh"
 
 ##############################################################################
 # Test framework functions

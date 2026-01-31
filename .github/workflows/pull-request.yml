@@ -78,12 +78,21 @@ jobs:
         shell: bash
         run: |
           shopt -s globstar nullglob
-          files=(scripts/**/*.sh)
+          files=(scripts/**/*.sh tests/install/**/*.sh)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No shell scripts found to lint."
           else
             shellcheck -x --severity=error "${files[@]}"
           fi
+
+  Install-Script-Tests:
+    name: Run install script tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Run install script tests
+        run: pnpm test:install
 
   Python-Compliance:
     name: Check Python Code Style

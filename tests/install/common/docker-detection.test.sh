@@ -28,10 +28,11 @@ error() { LOG_OUTPUT="${LOG_OUTPUT}ERROR: $1\n"; }
 success() { LOG_OUTPUT="${LOG_OUTPUT}SUCCESS: $1\n"; }
 
 # Source the docker detection functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
 # We need to temporarily disable set -u when sourcing if the script uses unbound variables
 set +u
-source "$SCRIPT_DIR/docker-detection.sh"
+source "$SCRIPTS_INSTALL/common/docker-detection.sh"
 set -u
 
 ##############################################################################

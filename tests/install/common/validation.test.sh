@@ -31,9 +31,10 @@ warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
 success() { echo -e "${GREEN}✓${NC} $1"; }
 
-# Source the validation functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/validation.sh"
+# Source the validation functions (scripts live under scripts/install when tests run from tests/install)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+source "$SCRIPTS_INSTALL/common/validation.sh"
 
 ##############################################################################
 # Test framework functions
@@ -77,7 +78,7 @@ guard_stderr=$( (
     warn() { :; }
     error() { :; }
     unset -f success 2>/dev/null || true
-    source "$SCRIPT_DIR/validation.sh"
+    source "$SCRIPTS_INSTALL/common/validation.sh"
 ) 2>&1 )
 guard_exitcode=$?
 set -e

@@ -25,8 +25,9 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Source the os detection functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/os-detection.sh"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+source "$SCRIPTS_INSTALL/common/os-detection.sh"
 
 ##############################################################################
 # Test framework functions
