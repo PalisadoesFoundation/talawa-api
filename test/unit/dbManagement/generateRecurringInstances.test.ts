@@ -57,6 +57,7 @@ function syntheticRule(
 		interval?: number;
 		recurrenceStartDate?: string;
 		byDay?: string[] | null;
+		byMonthDay?: number[] | null;
 		baseRecurringEventId?: string;
 		originalSeriesId?: string;
 		id?: string;
@@ -243,6 +244,68 @@ describe("generateRecurringInstances", () => {
 		}
 	});
 
+	test("monthly recurrence with byMonthDay clamps to last day of shorter months", () => {
+		// Start on 2026-01-15 so month advancement doesn't roll (Jan 15 -> Feb 15 -> Mar 15).
+		// byMonthDay [31] yields Jan 31, Feb 28 (clamped), Mar 31.
+		const events = [
+			syntheticTemplate({
+				startAt: "2026-01-15T14:00:00.000Z",
+				endAt: "2026-01-15T16:00:00.000Z",
+			}),
+		];
+		const rules = [
+			syntheticRule({
+				frequency: "MONTHLY",
+				interval: 1,
+				recurrenceStartDate: "2026-01-15T14:00:00.000Z",
+				byDay: null,
+				byMonthDay: [31],
+			}),
+		];
+		const instances = generateInstances(events, rules, {
+			monthsAhead: 3, // Jan, Feb, Mar
+			generatedAt: "2026-01-01T00:00:00.000Z",
+		}) as { actualStartTime: string }[];
+		expect(instances.length).toBeGreaterThanOrEqual(2);
+		expect(instances.length).toBeLessThanOrEqual(4);
+		// Jan: 31st, Feb: clamped to 28th, Mar: 31st
+		const starts = instances.map((i) => i.actualStartTime);
+		const jan = starts.find((s) => s.startsWith("2026-01-31"));
+		const feb = starts.find((s) => s.startsWith("2026-02-"));
+		const mar = starts.find((s) => s.startsWith("2026-03-31"));
+		expect(jan).toBeDefined();
+		expect(feb).toBeDefined();
+		expect(mar).toBeDefined();
+		// Feb must be 28th (2026 is not leap year)
+		expect(feb).toMatch(/2026-02-28T14:00:00/);
+	});
+
+	test("monthly recurrence with start on 31st clamps day-of-month for shorter months (regression)", () => {
+		// Template starts on 2026-01-31; byMonthDay [31]; monthsAhead covers Feb (no 31st).
+		// Jan->Feb must produce Feb 28 (2026 is not leap year).
+		const events = [
+			syntheticTemplate({
+				startAt: "2026-01-31T14:00:00.000Z",
+				endAt: "2026-01-31T15:00:00.000Z",
+			}),
+		];
+		const rules = [
+			syntheticRule({
+				frequency: "MONTHLY",
+				interval: 1,
+				recurrenceStartDate: "2026-01-31T14:00:00.000Z",
+				byDay: null,
+				byMonthDay: [31],
+			}),
+		];
+		const instances = generateInstances(events, rules, {
+			monthsAhead: 2, // Jan, Feb
+			generatedAt: "2026-01-01T00:00:00.000Z",
+		}) as { actualStartTime: string }[];
+		const starts = instances.map((i) => i.actualStartTime);
+		expect(starts).toContain("2026-02-28T14:00:00.000Z");
+	});
+
 	test("sequence numbers are strictly increasing per rule", () => {
 		const events = [
 			syntheticTemplate(),
@@ -319,7 +382,7 @@ describe("buildInstanceId", () => {
 
 describe("getNthWeekdayOfMonth", () => {
 	test("returns second Monday of Feb 2026", () => {
-		const monday = BYDAY_TO_DOW["MO"] ?? 1;
+		const monday = BYDAY_TO_DOW.MO ?? 1;
 		const d = getNthWeekdayOfMonth(2026, 1, monday, 2);
 		expect(d).not.toBeNull();
 		expect((d as Date).getUTCDate()).toBe(9);

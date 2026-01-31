@@ -5,8 +5,8 @@
  * Run from repo root: node scripts/dbManagement/generateRecurringInstances.cjs
  * Output: scripts/dbManagement/sample_data/recurring_event_instances.json
  */
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const { BYDAY_TO_DOW, parseDate } = require("./recurrenceCommon.cjs");
 
@@ -30,7 +30,7 @@ function pad12Hex(n) {
 function buildInstanceId(ruleIndex1Based, seqNumber) {
 	const rHex = ruleIndex1Based.toString(16).padStart(2, "0");
 	const sHex = pad12Hex(seqNumber);
-	const seg4 = "c0" + (seqNumber % 256).toString(16).padStart(2, "0");
+	const seg4 = `c0${(seqNumber % 256).toString(16).padStart(2, "0")}`;
 	return `01960b97-00c1-72${rHex}-${seg4}-${sHex}`;
 }
 
@@ -158,30 +158,32 @@ function generateInstances(events, rules, options = {}) {
 			const startUTCMinutes = start.getUTCMinutes();
 			const startUTCSeconds = start.getUTCSeconds();
 			const startUTCMs = start.getUTCMilliseconds();
+			const startYear = start.getUTCFullYear();
+			const startMonth = start.getUTCMonth();
 			for (let m = 0; m < monthsAhead; m += interval) {
-				const candidate = new Date(start);
-				candidate.setUTCMonth(candidate.getUTCMonth() + m);
+				const y = startYear + Math.floor((startMonth + m) / 12);
+				const mo = (startMonth + m) % 12;
+				const candidate = new Date(Date.UTC(y, mo, 1));
 				if (candidate > endDate) break;
 				let instanceStart = null;
 				if (byDayMonthly && byDayMonthly.length > 0) {
 					const { n, dow } = byDayMonthly[0];
-					instanceStart = getNthWeekdayOfMonth(
-						candidate.getUTCFullYear(),
-						candidate.getUTCMonth(),
-						dow,
-						n,
-					);
+					instanceStart = getNthWeekdayOfMonth(y, mo, dow, n);
 				}
 				if (!instanceStart && byMonthDay.length > 0) {
 					const day = byMonthDay[0];
-					const y = candidate.getUTCFullYear();
-					const mo = candidate.getUTCMonth();
 					const lastDay = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
 					const date =
 						day < 0 ? Math.max(1, lastDay + day + 1) : Math.min(day, lastDay);
 					instanceStart = new Date(Date.UTC(y, mo, date));
 				}
-				if (!instanceStart) instanceStart = new Date(candidate);
+				if (!instanceStart) {
+					instanceStart = new Date(Date.UTC(y, mo, start.getUTCDate()));
+					const lastDay = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+					if (instanceStart.getUTCDate() > lastDay) {
+						instanceStart.setUTCDate(lastDay);
+					}
+				}
 				instanceStart.setUTCHours(
 					startUTCHours,
 					startUTCMinutes,
@@ -271,7 +273,7 @@ function main() {
 	const instances = generateInstances(events, rules);
 	fs.writeFileSync(
 		OUT_PATH,
-		JSON.stringify(instances, null, "\t") + "\n",
+		`${JSON.stringify(instances, null, "\t")}\n`,
 		"utf8",
 	);
 	console.log("Wrote", instances.length, "instances to", OUT_PATH);

@@ -521,24 +521,49 @@ export async function insertCollections(
 
 				case "recurrence_rules": {
 					const recurrenceRules = JSON.parse(fileContent).map(
-						(rule: {
-							recurrenceStartDate: string | number | Date;
-							recurrenceEndDate: string | number | Date | null;
-							latestInstanceDate: string | number | Date;
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date | null;
-						}) => ({
-							...rule,
-							recurrenceStartDate:
-								parseDate(rule.recurrenceStartDate) ?? new Date(),
-							recurrenceEndDate: rule.recurrenceEndDate
-								? parseDate(rule.recurrenceEndDate)
-								: null,
-							latestInstanceDate:
-								parseDate(rule.latestInstanceDate) ?? new Date(),
-							createdAt: parseDate(rule.createdAt) ?? new Date(),
-							updatedAt: rule.updatedAt ? parseDate(rule.updatedAt) : null,
-						}),
+						(
+							rule: {
+								id?: string;
+								recurrenceStartDate: string | number | Date;
+								recurrenceEndDate: string | number | Date | null;
+								latestInstanceDate: string | number | Date;
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date | null;
+							},
+							index: number,
+						) => {
+							let recurrenceStartDate = parseDate(rule.recurrenceStartDate);
+							if (recurrenceStartDate === null) {
+								console.warn(
+									`Invalid recurrenceStartDate in rule ${rule.id ?? `[${index}]`} (index ${index}), using fallback`,
+								);
+								recurrenceStartDate = new Date();
+							}
+							let latestInstanceDate = parseDate(rule.latestInstanceDate);
+							if (latestInstanceDate === null) {
+								console.warn(
+									`Invalid latestInstanceDate in rule ${rule.id ?? `[${index}]`} (index ${index}), using fallback`,
+								);
+								latestInstanceDate = new Date();
+							}
+							let createdAt = parseDate(rule.createdAt);
+							if (createdAt === null) {
+								console.warn(
+									`Invalid createdAt in rule ${rule.id ?? `[${index}]`} (index ${index}), using fallback`,
+								);
+								createdAt = new Date();
+							}
+							return {
+								...rule,
+								recurrenceStartDate,
+								recurrenceEndDate: rule.recurrenceEndDate
+									? parseDate(rule.recurrenceEndDate)
+									: null,
+								latestInstanceDate,
+								createdAt,
+								updatedAt: rule.updatedAt ? parseDate(rule.updatedAt) : null,
+							};
+						},
 					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
 
 					await checkAndInsertData(

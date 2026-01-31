@@ -243,6 +243,148 @@ suite.concurrent("insertCollections", () => {
 		).rejects.toThrow(/Error adding data to tables:/);
 	});
 
+	// Focused tests for new insertion branches: recurrence_rules, recurring_event_instances, events (template-date-preservation).
+	// Verify: date parsing/normalization, correct table and conflict target (table.id), batchSize for duplicate/skip behavior.
+	test.concurrent("recurrence_rules case: normalizes dates and calls checkAndInsertData with correct table and conflict target", async () => {
+		const captures: Array<{
+			table: unknown;
+			rows: unknown[];
+			conflictTarget: unknown;
+			batchSize: number;
+		}> = [];
+		const original = helpers.checkAndInsertData;
+		const spy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows, conflictTarget, batchSize) => {
+				captures.push({
+					table,
+					rows: [...(rows as unknown[])],
+					conflictTarget,
+					batchSize,
+				});
+				return original.call(helpers, table, rows, conflictTarget, batchSize);
+			});
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		const call = captures.find((c) => c.table === schema.recurrenceRulesTable);
+		expect(call).toBeDefined();
+		expect(call?.table).toBe(schema.recurrenceRulesTable);
+		expect(call?.conflictTarget).toBe(schema.recurrenceRulesTable.id);
+		expect(call?.batchSize).toBe(1000); // duplicate/skipped insertion via onConflictDoNothing
+		expect(call?.rows.length).toBeGreaterThan(0);
+		for (const row of (call?.rows ?? []) as Array<{
+			recurrenceStartDate: unknown;
+			latestInstanceDate: unknown;
+			createdAt: unknown;
+		}>) {
+			expect(row.recurrenceStartDate).toBeInstanceOf(Date);
+			expect(row.latestInstanceDate).toBeInstanceOf(Date);
+			expect(row.createdAt).toBeInstanceOf(Date);
+		}
+
+		spy.mockRestore();
+	});
+
+	test.concurrent("recurring_event_instances case: normalizes dates and calls checkAndInsertData with correct table and conflict target", async () => {
+		const captures: Array<{
+			table: unknown;
+			rows: unknown[];
+			conflictTarget: unknown;
+			batchSize: number;
+		}> = [];
+		const original = helpers.checkAndInsertData;
+		const spy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows, conflictTarget, batchSize) => {
+				captures.push({
+					table,
+					rows: [...(rows as unknown[])],
+					conflictTarget,
+					batchSize,
+				});
+				return original.call(helpers, table, rows, conflictTarget, batchSize);
+			});
+
+		await helpers.insertCollections(["recurring_event_instances"]);
+
+		const call = captures.find(
+			(c) => c.table === schema.recurringEventInstancesTable,
+		);
+		expect(call).toBeDefined();
+		expect(call?.table).toBe(schema.recurringEventInstancesTable);
+		expect(call?.conflictTarget).toBe(schema.recurringEventInstancesTable.id);
+		expect(call?.batchSize).toBe(1000); // duplicate/skipped insertion via onConflictDoNothing
+		expect(call?.rows.length).toBeGreaterThan(0);
+		for (const row of (call?.rows ?? []) as Array<{
+			originalInstanceStartTime: unknown;
+			actualStartTime: unknown;
+			actualEndTime: unknown;
+			generatedAt: unknown;
+			lastUpdatedAt: unknown;
+		}>) {
+			expect(row.originalInstanceStartTime).toBeInstanceOf(Date);
+			expect(row.actualStartTime).toBeInstanceOf(Date);
+			expect(row.actualEndTime).toBeInstanceOf(Date);
+			expect(row.generatedAt).toBeInstanceOf(Date);
+			expect(
+				row.lastUpdatedAt === null || row.lastUpdatedAt instanceof Date,
+			).toBe(true);
+		}
+
+		spy.mockRestore();
+	});
+
+	test.concurrent("events case: template preserves parseDate-applied dates, non-template gets dynamic dates", async () => {
+		const captures: Array<{
+			table: unknown;
+			rows: unknown[];
+			conflictTarget: unknown;
+			batchSize: number;
+		}> = [];
+		const original = helpers.checkAndInsertData;
+		const spy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows, conflictTarget, batchSize) => {
+				captures.push({
+					table,
+					rows: [...(rows as unknown[])],
+					conflictTarget,
+					batchSize,
+				});
+				return original.call(helpers, table, rows, conflictTarget, batchSize);
+			});
+
+		await helpers.insertCollections(["events"]);
+
+		const call = captures.find((c) => c.table === schema.eventsTable);
+		expect(call).toBeDefined();
+		expect(call?.table).toBe(schema.eventsTable);
+		expect(call?.conflictTarget).toBe(schema.eventsTable.id);
+		expect(call?.batchSize).toBe(1000); // duplicate/skipped insertion via onConflictDoNothing
+		expect(call?.rows.length).toBeGreaterThan(0);
+		const rows = (call?.rows ?? []) as Array<{
+			isRecurringEventTemplate: boolean | null;
+			startAt: unknown;
+			endAt: unknown;
+			createdAt: unknown;
+		}>;
+		const templateRows = rows.filter((r) => r.isRecurringEventTemplate);
+		const nonTemplateRows = rows.filter((r) => !r.isRecurringEventTemplate);
+		for (const row of templateRows) {
+			expect(row.startAt).toBeInstanceOf(Date);
+			expect(row.endAt).toBeInstanceOf(Date);
+			expect(row.createdAt).toBeInstanceOf(Date);
+		}
+		for (const row of nonTemplateRows) {
+			expect(row.startAt).toBeInstanceOf(Date);
+			expect(row.endAt).toBeInstanceOf(Date);
+			expect(row.createdAt).toBeInstanceOf(Date);
+		}
+
+		spy.mockRestore();
+	});
+
 	test.concurrent("should generate new uuidv7 for action items with short IDs", async () => {
 		const userId = uuidv7();
 		await helpers.checkAndInsertData(
