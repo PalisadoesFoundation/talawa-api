@@ -204,7 +204,7 @@ test_trap_err() {
     fi
 }
 
-# Signal test timing: 2s startup + 20s timeout (200*0.1s) to reduce flakiness on
+# Signal test timing: 3s startup + 30s timeout (300*0.1s) in CI to reduce flakiness on
 # slow or sharded CI; timeout is treated as pass with a warning (known CI limitation).
 test_trap_int() {
     test_start "INT signal (Ctrl+C) triggers cleanup"

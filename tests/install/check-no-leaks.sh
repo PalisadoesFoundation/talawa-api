@@ -20,6 +20,10 @@ LEAK_CHECK_DIR=$(mktemp -d)
 trap 'rm -rf "$LEAK_CHECK_DIR"' EXIT
 export TMPDIR="$LEAK_CHECK_DIR"
 
+# Reference timestamp: only count /tmp/talawa-* files created after this (ignore pre-existing)
+LEAK_REF_FILE="$LEAK_CHECK_DIR/.ref"
+touch "$LEAK_REF_FILE"
+
 # Run the full install test suite
 if ! bash "$SCRIPT_DIR/run-all.sh"; then
     echo "Install tests failed; cannot verify leaks."
@@ -32,11 +36,11 @@ if [ -d "$LEAK_CHECK_DIR" ]; then
     LEFTOVER_COUNT=$(find "$LEAK_CHECK_DIR" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l | tr -d ' ')
 fi
 
-# Scan /tmp for talawa-* artifacts (e.g. talawa-logging-test-*.log) that tests should clean
+# Scan /tmp for talawa-* artifacts created after ref (ignore pre-existing); tests should clean these
 TMP_TALAWA_LEAKS=0
 TMP_TALAWA_LIST=""
-if [ -d /tmp ]; then
-    TMP_TALAWA_LIST=$(find /tmp -maxdepth 1 -name 'talawa-*' 2>/dev/null || true)
+if [ -d /tmp ] && [ -f "$LEAK_REF_FILE" ]; then
+    TMP_TALAWA_LIST=$(find /tmp -maxdepth 1 -name 'talawa-*' -newer "$LEAK_REF_FILE" 2>/dev/null || true)
     if [ -n "$TMP_TALAWA_LIST" ]; then
         TMP_TALAWA_LEAKS=$(echo "$TMP_TALAWA_LIST" | wc -l | tr -d ' ')
     fi
