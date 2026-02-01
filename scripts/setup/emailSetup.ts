@@ -53,7 +53,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			answers.SMTP_HOST = "mailpit";
 			answers.SMTP_PORT = "1025";
 			answers.SMTP_FROM_EMAIL = "test@talawa.local";
-			answers.SMTP_FROM_NAME = "Talawa Dev";
+			answers.SMTP_FROM_NAME = "Talawa";
 
 			// Clean up any previous email provider settings
 			delete answers.AWS_SES_REGION;

@@ -190,7 +190,7 @@ describe("EmailProviderFactory", () => {
 				password: undefined,
 				secure: false,
 				fromEmail: "test@talawa.local",
-				fromName: "Talawa Dev",
+				fromName: "Talawa",
 				name: undefined,
 				localAddress: undefined,
 			});

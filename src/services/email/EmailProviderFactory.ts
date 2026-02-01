@@ -65,7 +65,7 @@ export const EmailProviderFactory = {
 					password: undefined,
 					secure: false,
 					fromEmail: config.SMTP_FROM_EMAIL || "test@talawa.local",
-					fromName: config.SMTP_FROM_NAME || "Talawa Dev",
+					fromName: config.SMTP_FROM_NAME || "Talawa",
 					name: undefined,
 					localAddress: undefined,
 				});

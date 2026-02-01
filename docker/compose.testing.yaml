@@ -139,9 +139,11 @@ services:
       timeout: 10s
     networks:
       - mailpit_test
+    restart: unless-stopped
+    profiles:
+      - mailpit_test
     ports:
       - target: 8025
         published: 8025
       - target: 1025
         published: 1025
-    restart: unless-stopped
