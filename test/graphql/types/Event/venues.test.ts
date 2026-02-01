@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 import type { GraphQLObjectType } from "graphql";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
-import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venueBookingsTable } from "~/src/drizzle/tables/venueBookings";
@@ -27,6 +26,11 @@ import {
 let authToken: string;
 let adminUserId: string;
 
+// Track created resource IDs for scoped cleanup
+const createdOrganizationIds: string[] = [];
+const createdEventIds: string[] = [];
+const createdVenueIds: string[] = [];
+
 beforeAll(async () => {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -47,13 +51,56 @@ beforeAll(async () => {
 afterEach(async () => {
 	vi.restoreAllMocks();
 
-	// Clean up test data in reverse dependency order
-	await server.drizzleClient.delete(venueAttachmentsTable);
-	await server.drizzleClient.delete(venueBookingsTable);
-	await server.drizzleClient.delete(venuesTable);
-	await server.drizzleClient.delete(eventsTable);
-	await server.drizzleClient.delete(organizationMembershipsTable);
-	await server.drizzleClient.delete(organizationsTable);
+	// Clean up test data in reverse dependency order, only deleting rows created by this test
+	// Delete venue attachments for created venues
+	if (createdVenueIds.length > 0) {
+		for (const venueId of createdVenueIds) {
+			await server.drizzleClient
+				.delete(venueAttachmentsTable)
+				.where(eq(venueAttachmentsTable.venueId, venueId));
+		}
+	}
+
+	// Delete venue bookings for created events
+	if (createdEventIds.length > 0) {
+		for (const eventId of createdEventIds) {
+			await server.drizzleClient
+				.delete(venueBookingsTable)
+				.where(eq(venueBookingsTable.eventId, eventId));
+		}
+	}
+
+	// Delete created venues
+	if (createdVenueIds.length > 0) {
+		for (const venueId of createdVenueIds) {
+			await server.drizzleClient
+				.delete(venuesTable)
+				.where(eq(venuesTable.id, venueId));
+		}
+	}
+
+	// Delete created events
+	if (createdEventIds.length > 0) {
+		for (const eventId of createdEventIds) {
+			await server.drizzleClient
+				.delete(eventsTable)
+				.where(eq(eventsTable.id, eventId));
+		}
+	}
+
+	// Delete created organizations (memberships are cascade-deleted automatically)
+	if (createdOrganizationIds.length > 0) {
+		for (const orgId of createdOrganizationIds) {
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, orgId));
+		}
+	}
+
+	// Clear the tracking arrays
+	createdOrganizationIds.length = 0;
+	createdEventIds.length = 0;
+	createdVenueIds.length = 0;
 });
 
 async function createOrganizationWithMembership(): Promise<string> {
@@ -72,6 +119,7 @@ async function createOrganizationWithMembership(): Promise<string> {
 	expect(createOrgResult.errors).toBeUndefined();
 	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
 	const orgId = createOrgResult.data.createOrganization.id;
+	createdOrganizationIds.push(orgId);
 
 	const membershipResult = await mercuriusClient.mutate(
 		Mutation_createOrganizationMembership,
@@ -113,8 +161,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query event venues
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -155,6 +205,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Create event
 		const createEventResult = await mercuriusClient.mutate(
@@ -175,6 +226,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -225,8 +277,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create multiple venues and bookings
 		const venueIds = [];
@@ -242,19 +296,27 @@ suite("Event venues Field", () => {
 					},
 				},
 			});
-			const venueId = venueResult.data?.createVenue?.id;
+			expect(venueResult.errors).toBeUndefined();
+			assertToBeNonNullish(venueResult.data?.createVenue);
+			const venueId = venueResult.data.createVenue.id;
 			assertToBeNonNullish(venueId);
 			venueIds.push(venueId);
+			createdVenueIds.push(venueId);
 
-			await mercuriusClient.mutate(Mutation_createVenueBooking, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						venueId: venueId,
-						eventId: eventId,
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venueId,
+							eventId: eventId,
+						},
 					},
 				},
-			});
+			);
+			expect(bookingResult.errors).toBeUndefined();
+			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with first: 2
@@ -290,8 +352,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create multiple venues and bookings
 		for (let i = 0; i < 3; i++) {
@@ -306,18 +370,26 @@ suite("Event venues Field", () => {
 					},
 				},
 			});
-			const venueId = venueResult.data?.createVenue?.id;
+			expect(venueResult.errors).toBeUndefined();
+			assertToBeNonNullish(venueResult.data?.createVenue);
+			const venueId = venueResult.data.createVenue.id;
 			assertToBeNonNullish(venueId);
+			createdVenueIds.push(venueId);
 
-			await mercuriusClient.mutate(Mutation_createVenueBooking, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						venueId: venueId,
-						eventId: eventId,
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venueId,
+							eventId: eventId,
+						},
 					},
 				},
-			});
+			);
+			expect(bookingResult.errors).toBeUndefined();
+			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with last: 2
@@ -353,8 +425,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with both first and last (invalid)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -386,8 +460,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query without first or last (invalid)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -419,8 +495,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with before and first (invalid combination)
 		const someCursor = Buffer.from(
@@ -459,8 +537,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with after and last (invalid combination)
 		const someCursor = Buffer.from(
@@ -499,8 +579,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create multiple venues and bookings
 		for (let i = 0; i < 3; i++) {
@@ -515,18 +597,26 @@ suite("Event venues Field", () => {
 					},
 				},
 			});
-			const venueId = venueResult.data?.createVenue?.id;
+			expect(venueResult.errors).toBeUndefined();
+			assertToBeNonNullish(venueResult.data?.createVenue);
+			const venueId = venueResult.data.createVenue.id;
 			assertToBeNonNullish(venueId);
+			createdVenueIds.push(venueId);
 
-			await mercuriusClient.mutate(Mutation_createVenueBooking, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						venueId: venueId,
-						eventId: eventId,
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venueId,
+							eventId: eventId,
+						},
 					},
 				},
-			});
+			);
+			expect(bookingResult.errors).toBeUndefined();
+			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query first page
@@ -574,8 +664,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with maximum allowed limit (32)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -611,8 +703,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with limit exceeding maximum (33 > 32)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -649,8 +743,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with limit exceeding maximum (33 > 32)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -687,8 +783,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with invalid cursor (forward pagination)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -724,8 +822,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Query with invalid cursor (backward pagination)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -761,8 +861,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create multiple venues and bookings
 		for (let i = 0; i < 3; i++) {
@@ -777,18 +879,26 @@ suite("Event venues Field", () => {
 					},
 				},
 			});
-			const venueId = venueResult.data?.createVenue?.id;
+			expect(venueResult.errors).toBeUndefined();
+			assertToBeNonNullish(venueResult.data?.createVenue);
+			const venueId = venueResult.data.createVenue.id;
 			assertToBeNonNullish(venueId);
+			createdVenueIds.push(venueId);
 
-			await mercuriusClient.mutate(Mutation_createVenueBooking, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						venueId: venueId,
-						eventId: eventId,
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venueId,
+							eventId: eventId,
+						},
 					},
 				},
-			});
+			);
+			expect(bookingResult.errors).toBeUndefined();
+			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query last page
@@ -836,6 +946,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Create event
 		const createEventResult = await mercuriusClient.mutate(
@@ -856,6 +967,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -920,6 +1032,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Create event
 		const createEventResult = await mercuriusClient.mutate(
@@ -940,6 +1053,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -1004,6 +1118,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Insert attachment directly via drizzle
 		await server.drizzleClient.insert(venueAttachmentsTable).values({
@@ -1031,6 +1146,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		await mercuriusClient.mutate(Mutation_createVenueBooking, {
@@ -1087,6 +1203,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Do NOT insert any attachments - testing the empty case
 
@@ -1109,6 +1226,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		await mercuriusClient.mutate(Mutation_createVenueBooking, {
@@ -1165,6 +1283,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Insert multiple attachments directly via drizzle
 		await server.drizzleClient.insert(venueAttachmentsTable).values([
@@ -1204,6 +1323,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		await mercuriusClient.mutate(Mutation_createVenueBooking, {
@@ -1263,8 +1383,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venues with deterministic createdAt timestamps
 		const baseTime = new Date("2026-01-01T00:00:00.000Z");
@@ -1284,16 +1406,22 @@ suite("Event venues Field", () => {
 				.returning({ id: venuesTable.id });
 			assertToBeNonNullish(venue?.id);
 			venueIds.push(venue.id);
+			createdVenueIds.push(venue.id);
 
-			await mercuriusClient.mutate(Mutation_createVenueBooking, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						venueId: venue.id,
-						eventId: eventId,
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venue.id,
+							eventId: eventId,
+						},
 					},
 				},
-			});
+			);
+			expect(bookingResult.errors).toBeUndefined();
+			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with first (forward pagination)
@@ -1332,8 +1460,10 @@ suite("Event venues Field", () => {
 				},
 			},
 		);
+		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venues with deterministic createdAt timestamps
 		const baseTime = new Date("2026-01-01T00:00:00.000Z");
@@ -1353,16 +1483,22 @@ suite("Event venues Field", () => {
 				.returning({ id: venuesTable.id });
 			assertToBeNonNullish(venue?.id);
 			venueIds.push(venue.id);
+			createdVenueIds.push(venue.id);
 
-			await mercuriusClient.mutate(Mutation_createVenueBooking, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						venueId: venue.id,
-						eventId: eventId,
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venue.id,
+							eventId: eventId,
+						},
 					},
 				},
-			});
+			);
+			expect(bookingResult.errors).toBeUndefined();
+			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with last (backward pagination)
@@ -1405,6 +1541,7 @@ suite("Event venues Field", () => {
 		expect(createVenueResult.errors).toBeUndefined();
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		// Create event
 		const createEventResult = await mercuriusClient.mutate(
@@ -1425,6 +1562,7 @@ suite("Event venues Field", () => {
 		expect(createEventResult.errors).toBeUndefined();
 		const eventId = createEventResult.data?.createEvent?.id;
 		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
 
 		// Create venue booking
 		await mercuriusClient.mutate(Mutation_createVenueBooking, {
