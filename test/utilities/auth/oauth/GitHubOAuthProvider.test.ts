@@ -577,6 +577,39 @@ describe("GitHubOAuthProvider", () => {
 			expect(result.email).toBe("noverified@example.com");
 			expect(result.emailVerified).toBe(false);
 		});
+
+		it("should prefer unverified primary over verified non-primary email", async () => {
+			const mockUserResponse = {
+				id: 12345,
+				login: "octocat",
+				name: "GitHub User",
+				email: null,
+				avatar_url: "https://avatars.githubusercontent.com/u/12345?v=4",
+			};
+
+			const mockEmailsResponse = [
+				{
+					email: "verified-nonprimary@example.com",
+					verified: true,
+					primary: false,
+				},
+				{
+					email: "unverified-primary@example.com",
+					verified: false,
+					primary: true,
+				},
+			];
+
+			mockedGet
+				.mockResolvedValueOnce({ data: mockUserResponse } as AxiosResponse)
+				.mockResolvedValueOnce({ data: mockEmailsResponse } as AxiosResponse);
+
+			const result = await provider.getUserProfile(accessToken);
+
+			// Implementation prioritizes primary over verified status when no primary+verified exists
+			expect(result.email).toBe("unverified-primary@example.com");
+			expect(result.emailVerified).toBe(false);
+		});
 	});
 
 	describe("error handling", () => {
