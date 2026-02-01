@@ -164,7 +164,7 @@ describe("src/drizzle/tables/tagAssignments.ts - Table Definition Tests", () => 
 
 			expect(assignment).toBeDefined();
 			if (!assignment) throw new Error("Failed to create assignment");
-			
+
 			// Verify fields
 			expect(assignment.assigneeId).toBe(user.id);
 			// Verify createdAt was auto-populated
