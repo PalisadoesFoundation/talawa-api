@@ -916,137 +916,146 @@ describe("ErrorHandlingValidator", () => {
 	describe("Incremental Scan & CI Logic", () => {
 		it("should use local git diff when not in CI", () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: undefined,
-				GITHUB_BASE_REF: undefined,
-			};
+			try {
+				process.env = {
+					...originalEnv,
+					CI: undefined,
+					GITHUB_BASE_REF: undefined,
+				};
 
-			vi.mocked(child_process.execFileSync).mockImplementation(
-				(cmd, args: readonly string[] = []) => {
-					if (cmd !== "git") return "";
+				vi.mocked(child_process.execFileSync).mockImplementation(
+					(cmd, args: readonly string[] = []) => {
+						if (cmd !== "git") return "";
 
-					const argsStr = args.join(" ");
-					if (argsStr.includes("diff --name-only --cached")) {
-						return "src/file2.ts\n";
-					}
-					if (argsStr.includes("diff --name-only")) {
-						return "src/file1.ts\n";
-					}
-					return "";
-				},
-			);
+						const argsStr = args.join(" ");
+						if (argsStr.includes("diff --name-only --cached")) {
+							return "src/file2.ts\n";
+						}
+						if (argsStr.includes("diff --name-only")) {
+							return "src/file1.ts\n";
+						}
+						return "";
+					},
+				);
 
-			const modified = validator.getModifiedFiles();
-			expect(modified).toContain("src/file1.ts");
-			expect(modified).toContain("src/file2.ts");
-			expect(child_process.execFileSync).toHaveBeenCalledWith(
-				"git",
-				expect.arrayContaining(["diff", "--name-only"]),
-				expect.anything(),
-			);
-
-			process.env = originalEnv;
+				const modified = validator.getModifiedFiles();
+				expect(modified).toContain("src/file1.ts");
+				expect(modified).toContain("src/file2.ts");
+				expect(child_process.execFileSync).toHaveBeenCalledWith(
+					"git",
+					expect.arrayContaining(["diff", "--name-only"]),
+					expect.anything(),
+				);
+			} finally {
+				process.env = originalEnv;
+			}
 		});
 
 		it("should handle error in local git diff", () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: undefined,
-				GITHUB_BASE_REF: undefined,
-			};
+			try {
+				process.env = {
+					...originalEnv,
+					CI: undefined,
+					GITHUB_BASE_REF: undefined,
+				};
 
-			vi.mocked(child_process.execFileSync).mockImplementation(() => {
-				throw new TalawaRestError({
-					code: ErrorCode.INTERNAL_SERVER_ERROR,
-					message: "Git failed",
+				vi.mocked(child_process.execFileSync).mockImplementation(() => {
+					throw new TalawaRestError({
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: "Git failed",
+					});
 				});
-			});
 
-			expect(() => validator.getModifiedFiles()).toThrow("Git command failed");
-
-			process.env = originalEnv;
+				expect(() => validator.getModifiedFiles()).toThrow(
+					"Git command failed",
+				);
+			} finally {
+				process.env = originalEnv;
+			}
 		});
 
 		it("should handle fatal error in CI git diff gracefully", () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: "true",
-				GITHUB_BASE_REF: "develop",
-			};
-
-			vi.mocked(child_process.execFileSync).mockImplementation((cmd) => {
-				if (cmd === "git") {
-					throw new Error("Fatal git error");
-				}
-				return "";
-			});
-
 			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				process.env = {
+					...originalEnv,
+					CI: "true",
+					GITHUB_BASE_REF: "develop",
+				};
 
-			const files = validator.getModifiedFiles();
+				vi.mocked(child_process.execFileSync).mockImplementation((cmd) => {
+					if (cmd === "git") {
+						throw new Error("Fatal git error");
+					}
+					return "";
+				});
 
-			expect(files).toEqual([]);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining("CI git diff failed"),
-			);
+				const files = validator.getModifiedFiles();
 
-			process.env = originalEnv;
-			consoleSpy.mockRestore();
+				expect(files).toEqual([]);
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining("CI git diff failed"),
+				);
+			} finally {
+				process.env = originalEnv;
+				consoleSpy.mockRestore();
+			}
 		});
 
 		it("should handle non-Error throw in CI git diff", () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: "true",
-				GITHUB_BASE_REF: "develop",
-			};
-
-			vi.mocked(child_process.execFileSync).mockImplementation((_cmd) => {
-				throw "String Error";
-			});
-
 			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				process.env = {
+					...originalEnv,
+					CI: "true",
+					GITHUB_BASE_REF: "develop",
+				};
 
-			const files = validator.getModifiedFiles();
+				vi.mocked(child_process.execFileSync).mockImplementation((_cmd) => {
+					throw "String Error";
+				});
 
-			expect(files).toEqual([]);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining("CI git diff failed: String Error"),
-			);
+				const files = validator.getModifiedFiles();
 
-			process.env = originalEnv;
-			consoleSpy.mockRestore();
+				expect(files).toEqual([]);
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining("CI git diff failed: String Error"),
+				);
+			} finally {
+				process.env = originalEnv;
+				consoleSpy.mockRestore();
+			}
 		});
 
 		it("should handle object error throw in CI git diff", () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: "true",
-				GITHUB_BASE_REF: "develop",
-			};
-
-			vi.mocked(child_process.execFileSync).mockImplementation((_cmd) => {
-				throw { message: "Object Error" };
-			});
-
 			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			try {
+				process.env = {
+					...originalEnv,
+					CI: "true",
+					GITHUB_BASE_REF: "develop",
+				};
 
-			const files = validator.getModifiedFiles();
+				vi.mocked(child_process.execFileSync).mockImplementation((_cmd) => {
+					throw { message: "Object Error" };
+				});
 
-			expect(files).toEqual([]);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining(
-					'CI git diff failed: {"message":"Object Error"}',
-				),
-			);
+				const files = validator.getModifiedFiles();
 
-			process.env = originalEnv;
-			consoleSpy.mockRestore();
+				expect(files).toEqual([]);
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining(
+						'CI git diff failed: {"message":"Object Error"}',
+					),
+				);
+			} finally {
+				process.env = originalEnv;
+				consoleSpy.mockRestore();
+			}
 		});
 
 		it("checkLineForViolations should delegate correctly", () => {
