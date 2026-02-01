@@ -316,7 +316,6 @@ suite("Event venues Field", () => {
 				},
 			);
 			expect(bookingResult.errors).toBeUndefined();
-			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with first: 2
@@ -389,7 +388,6 @@ suite("Event venues Field", () => {
 				},
 			);
 			expect(bookingResult.errors).toBeUndefined();
-			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with last: 2
@@ -616,7 +614,6 @@ suite("Event venues Field", () => {
 				},
 			);
 			expect(bookingResult.errors).toBeUndefined();
-			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query first page
@@ -898,7 +895,6 @@ suite("Event venues Field", () => {
 				},
 			);
 			expect(bookingResult.errors).toBeUndefined();
-			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query last page
@@ -1149,15 +1145,20 @@ suite("Event venues Field", () => {
 		createdEventIds.push(eventId);
 
 		// Create venue booking
-		await mercuriusClient.mutate(Mutation_createVenueBooking, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: {
-				input: {
-					venueId: venueId,
-					eventId: eventId,
+		const bookingResult = await mercuriusClient.mutate(
+			Mutation_createVenueBooking,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						venueId: venueId,
+						eventId: eventId,
+					},
 				},
 			},
-		});
+		);
+		expect(bookingResult.errors).toBeUndefined();
+		expect(bookingResult.data?.createVenueBooking).toBeDefined();
 
 		// Query event venues with attachments
 		const result = await mercuriusClient.query(
@@ -1229,15 +1230,20 @@ suite("Event venues Field", () => {
 		createdEventIds.push(eventId);
 
 		// Create venue booking
-		await mercuriusClient.mutate(Mutation_createVenueBooking, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: {
-				input: {
-					venueId: venueId,
-					eventId: eventId,
+		const bookingResult = await mercuriusClient.mutate(
+			Mutation_createVenueBooking,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						venueId: venueId,
+						eventId: eventId,
+					},
 				},
 			},
-		});
+		);
+		expect(bookingResult.errors).toBeUndefined();
+		expect(bookingResult.data?.createVenueBooking).toBeDefined();
 
 		// Query event venues with attachments
 		const result = await mercuriusClient.query(
@@ -1326,15 +1332,20 @@ suite("Event venues Field", () => {
 		createdEventIds.push(eventId);
 
 		// Create venue booking
-		await mercuriusClient.mutate(Mutation_createVenueBooking, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: {
-				input: {
-					venueId: venueId,
-					eventId: eventId,
+		const bookingResult = await mercuriusClient.mutate(
+			Mutation_createVenueBooking,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						venueId: venueId,
+						eventId: eventId,
+					},
 				},
 			},
-		});
+		);
+		expect(bookingResult.errors).toBeUndefined();
+		expect(bookingResult.data?.createVenueBooking).toBeDefined();
 
 		// Query event venues with attachments
 		const result = await mercuriusClient.query(
@@ -1421,7 +1432,6 @@ suite("Event venues Field", () => {
 				},
 			);
 			expect(bookingResult.errors).toBeUndefined();
-			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with first (forward pagination)
@@ -1498,7 +1508,6 @@ suite("Event venues Field", () => {
 				},
 			);
 			expect(bookingResult.errors).toBeUndefined();
-			assertToBeNonNullish(bookingResult.data?.createVenueBooking);
 		}
 
 		// Query with last (backward pagination)
@@ -1565,15 +1574,20 @@ suite("Event venues Field", () => {
 		createdEventIds.push(eventId);
 
 		// Create venue booking
-		await mercuriusClient.mutate(Mutation_createVenueBooking, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: {
-				input: {
-					venueId: venueId,
-					eventId: eventId,
+		const bookingResult = await mercuriusClient.mutate(
+			Mutation_createVenueBooking,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						venueId: venueId,
+						eventId: eventId,
+					},
 				},
 			},
-		});
+		);
+		expect(bookingResult.errors).toBeUndefined();
+		expect(bookingResult.data?.createVenueBooking).toBeDefined();
 
 		// Query event venues
 		const result = await mercuriusClient.query(Query_eventVenues, {
