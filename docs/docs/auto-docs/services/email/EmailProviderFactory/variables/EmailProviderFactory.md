@@ -24,7 +24,7 @@ Email environment configuration
 
 ###### API_EMAIL_PROVIDER?
 
-`"ses"` \| `"smtp"`
+`"ses"` \| `"smtp"` \| `"mailpit"`
 
 ###### AWS_ACCESS_KEY_ID?
 
@@ -110,3 +110,4 @@ For SMTP provider, optional fields (SMTP_USER, SMTP_PASSWORD, SMTP_SECURE,
 SMTP_FROM_EMAIL, SMTP_FROM_NAME) are passed through to SMTPProvider.
 For SES provider, optional fields (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
 AWS_SES_FROM_NAME) are passed through to SESProvider.
+Mailpit is used for local email testing by default.

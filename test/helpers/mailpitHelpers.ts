@@ -246,7 +246,7 @@ export async function getMailpitInfo(): Promise<MailpitInfo> {
  * @param messageId - The ID of the message to mark as read
  */
 export async function markMessageAsRead(messageId: string): Promise<void> {
-	await fetch(`${MAILPIT_BASE_URL}/messages`, {
+	const res = await fetch(`${MAILPIT_BASE_URL}/messages`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
@@ -254,6 +254,13 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
 			Read: true,
 		}),
 	});
+
+	if (!res.ok) {
+		const body = await res.text();
+		throw new Error(
+			`markMessageAsRead failed: ${res.status} ${res.statusText} - ${body}`,
+		);
+	}
 }
 
 /**
@@ -261,11 +268,18 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
  * @param messageId - The ID of the message to delete
  */
 export async function deleteMessage(messageId: string): Promise<void> {
-	await fetch(`${MAILPIT_BASE_URL}/messages`, {
+	const res = await fetch(`${MAILPIT_BASE_URL}/messages`, {
 		method: "DELETE",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
 			IDs: [messageId],
 		}),
 	});
+
+	if (!res.ok) {
+		const body = await res.text();
+		throw new Error(
+			`deleteMessage failed: ${res.status} ${res.statusText} - ${body}`,
+		);
+	}
 }

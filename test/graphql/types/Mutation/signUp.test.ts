@@ -22,9 +22,8 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 import {
 	clearMailpitMessages,
-	findMessageByRecipient,
 	getMailpitMessageDetails,
-	getMailpitMessages,
+	waitForEmail,
 } from "../../../helpers/mailpitHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -1270,13 +1269,7 @@ describe("Mailpit E2E - Email verification on signup", () => {
 		expect(signUpResult.data?.signUp?.user?.emailAddress).toBe(testEmail);
 
 		// Wait for async email to be sent and captured
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		// Query mailpit for captured messages
-		const messages = await getMailpitMessages();
-
-		// Find the email sent to our test user
-		const verificationEmail = findMessageByRecipient(messages, testEmail);
+		const verificationEmail = await waitForEmail(testEmail);
 
 		// Verify the email was captured
 		expect(verificationEmail).toBeDefined();
@@ -1324,11 +1317,7 @@ describe("Mailpit E2E - Email verification on signup", () => {
 		});
 
 		// Wait for email
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		// Get messages
-		const messages = await getMailpitMessages();
-		const email = findMessageByRecipient(messages, testEmail);
+		const email = await waitForEmail(testEmail);
 
 		expect(email).toBeDefined();
 		expect(email?.From).toBeDefined();
