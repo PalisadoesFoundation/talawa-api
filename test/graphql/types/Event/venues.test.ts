@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { type GraphQLObjectType } from "graphql";
+import type { GraphQLObjectType } from "graphql";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
