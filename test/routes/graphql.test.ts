@@ -1,8 +1,24 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	type ExecutionResult,
+	type GraphQLFormattedError,
+	GraphQLObjectType,
+	GraphQLSchema,
+	GraphQLString,
+} from "graphql";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
-import { createContext } from "~/src/routes/graphql";
+import { createContext, graphql } from "~/src/routes/graphql";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -15,6 +31,7 @@ vi.mock("~/src/graphql/schemaManager", () => ({
 	default: {
 		buildInitialSchema: vi.fn(),
 		onSchemaUpdate: vi.fn(),
+		setLogger: vi.fn(),
 	},
 }));
 
@@ -25,8 +42,13 @@ vi.mock("~/src/utilities/leakyBucket", () => {
 	};
 });
 
-vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
-	TalawaGraphQLError: vi.fn(),
+vi.mock("~/src/utilities/dataloaders", () => ({
+	createDataloaders: vi.fn().mockReturnValue({
+		user: {},
+		organization: {},
+		event: {},
+		actionItem: {},
+	}),
 }));
 
 // Import mocked functions
@@ -440,6 +462,32 @@ describe("GraphQL Routes", () => {
 					}),
 				);
 			});
+
+			it("should use default refresh token expires when not configured", async () => {
+				// Remove the refresh token expires config to test the fallback
+				if (mockFastify.envConfig) {
+					delete (mockFastify.envConfig as Record<string, unknown>)
+						.API_REFRESH_TOKEN_EXPIRES_IN;
+				}
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				context.cookie?.setAuthCookies("access", "refresh");
+
+				// Should use the default value (604800 seconds = 7 days)
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					COOKIE_NAMES.REFRESH_TOKEN,
+					"refresh",
+					expect.objectContaining({
+						maxAge: 604800, // Default value from DEFAULT_REFRESH_TOKEN_EXPIRES_MS / 1000
+					}),
+				);
+			});
 		});
 
 		describe("Performance Tracker Integration", () => {
@@ -513,6 +561,19 @@ describe("GraphQL Routes", () => {
 	});
 
 	describe("GraphQL Plugin Registration", () => {
+		const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+
+		beforeAll(() => {
+			vi.stubEnv("NODE_ENV", "test");
+		});
+
+		afterAll(() => {
+			if (ORIGINAL_NODE_ENV !== undefined) {
+				vi.stubEnv("NODE_ENV", ORIGINAL_NODE_ENV);
+			} else {
+				vi.unstubAllEnvs();
+			}
+		});
 		let mockFastifyInstance: {
 			register: ReturnType<typeof vi.fn>;
 			envConfig: {
@@ -583,8 +644,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should register mercurius upload with correct configuration", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Check that the first register call is for mercurius upload
@@ -598,8 +657,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should register mercurius with correct configuration", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Check that the second register call is for mercurius
@@ -625,8 +682,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle schema updates successfully", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const newSchema = new GraphQLSchema({
@@ -661,8 +716,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle non-Error objects in schema update", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
@@ -693,9 +746,44 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should log fields for schema with mutations/subscriptions but no query", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
+		it("should handle Error objects in schema update failure", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
+			const testError = new Error("Schema replacement failed");
+			testError.stack = "Error stack trace";
+			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
+				throw testError;
+			});
+
+			const newSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						test: {
+							type: GraphQLString,
+							resolve: () => "test",
+						},
+					},
+				}),
+			});
+
+			// Trigger schema update
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: {
+						message: "Schema replacement failed",
+						stack: "Error stack trace",
+						name: "Error",
+					},
+					timestamp: expect.any(String),
+				}),
+				"❌ Failed to Update GraphQL Schema",
+			);
+		});
+
+		it("should log fields for schema with mutations/subscriptions but no query", async () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const newSchema = new GraphQLSchema({
@@ -833,7 +921,6 @@ describe("GraphQL Routes", () => {
 			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
 
 			// Import and register the plugin to capture the hook
-			const { graphql } = await import("~/src/routes/graphql");
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Extract the preExecution hook
@@ -1025,25 +1112,9 @@ describe("GraphQL Routes", () => {
 				new Error("No token"),
 			);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation(
-				(config: { message?: string; extensions?: unknown }) => {
-					const error = new Error(config.message);
-					(error as Error & { extensions?: unknown }).extensions =
-						config.extensions;
-					return error as TalawaGraphQLError;
-				},
-			);
-
 			await expect(
 				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
 			).rejects.toThrow("IP address is not available for rate limiting");
-
-			expect(TalawaGraphQLError).toHaveBeenCalledWith({
-				extensions: {
-					code: "unexpected",
-				},
-				message: "IP address is not available for rate limiting",
-			});
 		});
 
 		it("should throw error when rate limit is exceeded", async () => {
@@ -1055,22 +1126,20 @@ describe("GraphQL Routes", () => {
 			);
 			vi.mocked(complexityLeakyBucket).mockResolvedValue(false);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation(
-				(config: { message?: string; extensions?: unknown }) => {
-					const error = new Error("Rate limit exceeded");
-					(error as Error & { extensions?: unknown }).extensions =
-						config.extensions;
-					return error as TalawaGraphQLError;
-				},
-			);
-
-			await expect(
-				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
-			).rejects.toThrow("Rate limit exceeded");
-
-			expect(TalawaGraphQLError).toHaveBeenCalledWith({
-				extensions: { code: "too_many_requests" },
-			});
+			try {
+				await preExecutionHook(
+					mockSchema,
+					mockContext,
+					mockDocument,
+					mockVariables,
+				);
+				expect.fail("Should have thrown error");
+			} catch (error: unknown) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions.code).toBe(
+					ErrorCode.RATE_LIMIT_EXCEEDED,
+				);
+			}
 		});
 
 		it("should handle operation without operation definition", async () => {
@@ -1189,8 +1258,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription onConnect to reject connections without authorization", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1211,8 +1278,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should authorize subscription connections with valid Bearer token", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			// Prepare a fake token and decoded payload
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
@@ -1259,8 +1324,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should extract perf tracker from socket.request.perf in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			const perfTracker = createPerformanceTracker();
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
@@ -1306,6 +1369,61 @@ describe("GraphQL Routes", () => {
 				expect.objectContaining({
 					currentClient: { isAuthenticated: true, user: decoded.user },
 					perf: perfTracker,
+				}),
+			);
+
+			// Verify that perf was passed to createDataloaders
+			expect(result).toHaveProperty("dataloaders");
+
+			// Explicitly check that the perf property is set in the result
+			expect((result as { perf: unknown }).perf).toBe(perfTracker);
+		});
+
+		it("should handle subscription onConnect without perf tracker", async () => {
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-456" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+				socket: {
+					request: {
+						// No perf property
+					},
+				},
+			});
+
+			expect(result).toEqual(
+				expect.objectContaining({
+					currentClient: { isAuthenticated: true, user: decoded.user },
+					perf: undefined,
 				}),
 			);
 		});
@@ -1372,8 +1490,6 @@ describe("GraphQL Routes", () => {
 			description: string;
 			socket: unknown;
 		}) => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
 				user: { id: "user-789" },
@@ -1419,8 +1535,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should reject subscription connections with invalid Bearer token and log error", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			// Make fastify.jwt.verify throw to simulate invalid token
 			mockFastifyInstance.jwt = {
 				verify: vi.fn().mockRejectedValue(new Error("Invalid token")),
@@ -1448,8 +1562,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription onDisconnect as no-op", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1471,8 +1583,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription verifyClient to accept all connections", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1544,8 +1654,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should format errors with correlation ID from request", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1557,10 +1665,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1575,10 +1683,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1588,12 +1696,11 @@ describe("GraphQL Routes", () => {
 			const mockExecution = {
 				data: { user: { id: "123" } },
 				errors: [
-					{
+					new TalawaGraphQLError({
 						message: "Test error",
-						locations: [{ line: 1, column: 5 }],
 						path: ["user", "email"],
-						extensions: { code: "VALIDATION_ERROR" },
-					},
+						extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+					}),
 				],
 			};
 
@@ -1611,17 +1718,18 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 200,
+				statusCode: 400,
 				response: {
 					data: { user: { id: "123" } },
 					errors: [
 						{
 							message: "Test error",
-							locations: [{ line: 1, column: 5 }],
+							locations: undefined,
 							path: ["user", "email"],
 							extensions: {
-								code: "VALIDATION_ERROR",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								correlationId: "correlation-123",
+								httpStatus: 400,
 							},
 						},
 					],
@@ -1630,8 +1738,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle errors without extensions", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1643,10 +1749,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1661,10 +1767,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1695,16 +1801,22 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 200,
+				statusCode: 500, // Errors without extensions get 500 status
 				response: {
 					data: null,
 					errors: [
 						{
-							message: "Syntax error",
+							message: "Internal Server Error",
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
 								correlationId: "req-456",
+								httpStatus: 500,
+								details:
+									process.env.NODE_ENV === "production"
+										? undefined
+										: "Syntax error",
 							},
 						},
 					],
@@ -1713,8 +1825,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle multiple errors with different extensions", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1726,10 +1836,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1744,10 +1854,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1757,10 +1867,10 @@ describe("GraphQL Routes", () => {
 			const mockExecution = {
 				data: null,
 				errors: [
-					{
+					new TalawaGraphQLError({
 						message: "Unauthorized",
-						extensions: { code: "UNAUTHENTICATED" },
-					},
+						extensions: { code: ErrorCode.UNAUTHENTICATED },
+					}),
 					{
 						message: "Field not found",
 						path: ["query", "nonExistent"],
@@ -1786,7 +1896,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 200,
+				statusCode: 401, // UNAUTHENTICATED errors have priority and return 401
 				response: {
 					data: null,
 					errors: [
@@ -1795,8 +1905,9 @@ describe("GraphQL Routes", () => {
 							locations: undefined,
 							path: undefined,
 							extensions: {
-								code: "UNAUTHENTICATED",
+								code: ErrorCode.UNAUTHENTICATED,
 								correlationId: "multi-error-789",
+								httpStatus: 401,
 							},
 						},
 						{
@@ -1804,9 +1915,9 @@ describe("GraphQL Routes", () => {
 							locations: undefined,
 							path: ["query", "nonExistent"],
 							extensions: {
-								code: "GRAPHQL_VALIDATION_FAILED",
-								timestamp: 123456,
+								code: ErrorCode.INVALID_ARGUMENTS,
 								correlationId: "multi-error-789",
+								httpStatus: 400,
 							},
 						},
 					],
@@ -1815,8 +1926,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should return null data when execution data is undefined", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1828,10 +1937,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1846,10 +1955,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1878,7 +1987,2394 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result.response.data).toBeNull();
-			expect(result.statusCode).toBe(200);
+			expect(result.statusCode).toBe(500); // Errors without extensions get 500 status
+		});
+	});
+
+	describe("GraphQL Error Formatting", () => {
+		// Unit test for isolated errorFormatter testing
+		describe("Unit Tests - ErrorFormatter Isolation", () => {
+			let mockFastifyInstance: {
+				register: ReturnType<typeof vi.fn>;
+				envConfig: {
+					API_IS_GRAPHIQL: boolean;
+					API_GRAPHQL_MUTATION_BASE_COST: number;
+					API_RATE_LIMIT_BUCKET_CAPACITY: number;
+					API_RATE_LIMIT_REFILL_RATE: number;
+				};
+				log: {
+					info: ReturnType<typeof vi.fn>;
+					error: ReturnType<typeof vi.fn>;
+				};
+				graphql: {
+					replaceSchema: ReturnType<typeof vi.fn>;
+					addHook: ReturnType<typeof vi.fn>;
+				};
+			};
+
+			let errorFormatter: (
+				execution: ExecutionResult,
+				context: unknown,
+			) => {
+				statusCode: number;
+				response: { data: unknown; errors?: GraphQLFormattedError[] };
+			};
+
+			beforeEach(async () => {
+				mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: true,
+						API_GRAPHQL_MUTATION_BASE_COST: 10,
+						API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+						API_RATE_LIMIT_REFILL_RATE: 1,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
+
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: { hello: { type: GraphQLString } },
+						}),
+					}),
+				);
+
+				await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+				// Robust errorFormatter extraction - find mercurius registration by schema property
+				const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+					(call) => call[1]?.schema !== undefined,
+				);
+
+				expect(mercuriusCall).toBeDefined();
+				if (!mercuriusCall) return;
+
+				errorFormatter = mercuriusCall[1].errorFormatter;
+
+				expect(errorFormatter).toBeDefined();
+				if (!errorFormatter) return;
+			});
+
+			it("should preserve TalawaGraphQLError extensions and add correlationId", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Sensitive Error",
+								extensions: {
+									code: ErrorCode.INTERNAL_SERVER_ERROR,
+									stack: "stack trace",
+									internal: "internal data",
+									debug: "debug info",
+									raw: "raw data",
+									error: "error obj",
+									secrets: "hidden",
+									exception: "crash",
+									safe: "safe data",
+								},
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-1", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const extensions = result.response.errors?.[0]?.extensions;
+				expect(extensions).toBeDefined();
+				expect(extensions).toHaveProperty(
+					"code",
+					ErrorCode.INTERNAL_SERVER_ERROR,
+				);
+				expect(extensions).toHaveProperty("correlationId", "req-1");
+			});
+
+			it("should correctly format multiple errors", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Error 1",
+								extensions: { code: ErrorCode.NOT_FOUND },
+							}),
+							new TalawaGraphQLError({
+								message: "Error 2",
+								extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-multi", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.response.errors).toHaveLength(2);
+				expect(result.response.errors?.[0]?.extensions?.code).toBe(
+					ErrorCode.NOT_FOUND,
+				);
+				expect(result.response.errors?.[1]?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+			});
+
+			it("should map standard ErrorCode enum values preserving code", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Not Found Error",
+								extensions: { code: ErrorCode.NOT_FOUND },
+							}),
+							new TalawaGraphQLError({
+								message: "Invalid Args Error",
+								extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-enums", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const errors = result.response.errors;
+				expect(errors).toBeDefined();
+
+				const notFoundError = errors?.[0];
+				expect(notFoundError?.extensions?.code).toBe(ErrorCode.NOT_FOUND);
+
+				const invalidArgsError = errors?.[1];
+				expect(invalidArgsError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+			});
+
+			it("should include populated details field in output", () => {
+				const details = { field: "username", reason: "duplicate" };
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Detailed Error",
+								extensions: {
+									code: ErrorCode.INVALID_INPUT,
+									details,
+								},
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-details", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const error = result.response.errors?.[0];
+				expect(error?.extensions?.details).toEqual(details);
+			});
+
+			it("should derive status code correctly in real HTTP context", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							{
+								message: "Error",
+								locations: undefined,
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+								name: "Error",
+								nodes: undefined,
+								source: undefined,
+								positions: undefined,
+								originalError: undefined,
+								path: undefined,
+								toJSON: () => ({ message: "Error" }),
+								[Symbol.toStringTag]: "Error",
+							},
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-http", log: { error: vi.fn() } },
+							send: vi.fn(), // Presence of send implies real HTTP request
+						},
+					},
+				);
+
+				// INTERNAL_SERVER_ERROR returns 500 for HTTP context (reply.send present), subscriptions derive status when reply.send is absent
+				expect(result.statusCode).toBe(500);
+			});
+
+			it("should use pre-set correlationId and log in subscription context", () => {
+				const correlationId = "sub-123456";
+				const logErrorSpy = vi.fn();
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Sub Error",
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+							}),
+						],
+					},
+					{
+						// Subscription context (no reply)
+						correlationId,
+						log: { error: logErrorSpy },
+					},
+				);
+
+				const error = result.response.errors?.[0];
+				expect(error?.extensions?.correlationId).toBe(correlationId);
+				expect(logErrorSpy).toHaveBeenCalled();
+				expect(logErrorSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						correlationId,
+						msg: "GraphQL error",
+					}),
+				);
+			});
+
+			it("should call structured logging with correlationId and errors", () => {
+				const logErrorSpy = vi.fn();
+				errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Log Test Error",
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-log-test", log: { error: logErrorSpy } },
+						},
+					},
+				);
+
+				expect(logErrorSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						correlationId: "req-log-test",
+						msg: "GraphQL error",
+						errors: expect.arrayContaining([
+							expect.objectContaining({
+								message: "Log Test Error",
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							}),
+						]),
+					}),
+				);
+			});
+			it("should return 'unknown' correlationId when context is empty", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Error",
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+							}),
+						],
+					},
+					{}, // Empty context
+				);
+
+				const error = result.response.errors?.[0];
+				expect(error?.extensions?.correlationId).toBe("unknown");
+			});
+
+			it("should return status code 200 when there are no errors", () => {
+				const result = errorFormatter(
+					{
+						data: { user: { id: "123" } },
+						errors: [], // No errors
+					},
+					{
+						reply: {
+							request: { id: "success-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(200);
+				expect(result.response.data).toEqual({ user: { id: "123" } });
+				expect(result.response.errors).toEqual([]);
+			});
+
+			it("should handle GraphQL error with TalawaGraphQLError as originalError", () => {
+				const originalTalawaError = new TalawaGraphQLError({
+					message: "Original Talawa Error",
+					extensions: { code: ErrorCode.NOT_FOUND },
+				});
+
+				// Create a GraphQL error that wraps the TalawaGraphQLError
+				const graphqlError = {
+					message: "GraphQL wrapper error",
+					locations: undefined,
+					path: ["test"],
+					originalError: originalTalawaError,
+					extensions: {},
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					toJSON: () => ({ message: "GraphQL wrapper error" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [graphqlError],
+					},
+					{
+						reply: {
+							request: { id: "wrapped-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.message).toBe("Original Talawa Error");
+				expect(formattedError?.extensions?.code).toBe(ErrorCode.NOT_FOUND);
+				expect(formattedError?.path).toEqual(["test"]);
+			});
+
+			it("should handle GraphQL validation errors with INVALID_ARGUMENTS and HTTP 400", () => {
+				const validationError = {
+					message: "Field 'invalidField' doesn't exist on type 'Query'",
+					locations: [{ line: 2, column: 3 }],
+					path: ["query", "invalidField"],
+					extensions: { code: "GRAPHQL_VALIDATION_FAILED" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({
+						message: "Field 'invalidField' doesn't exist on type 'Query'",
+					}),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [validationError],
+					},
+					{
+						reply: {
+							request: { id: "validation-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe(
+					"Field 'invalidField' doesn't exist on type 'Query'",
+				);
+			});
+
+			it("should handle BAD_USER_INPUT errors with INVALID_ARGUMENTS and HTTP 400", () => {
+				const badInputError = {
+					message: "Invalid input provided",
+					locations: [{ line: 1, column: 1 }],
+					path: ["mutation", "createUser"],
+					extensions: { code: "BAD_USER_INPUT" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({ message: "Invalid input provided" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [badInputError],
+					},
+					{
+						reply: {
+							request: { id: "bad-input-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe("Invalid input provided");
+			});
+
+			it("should handle error with unknown code and use default 500 status", () => {
+				const errorWithUnknownCode = new TalawaGraphQLError({
+					message: "Unknown error",
+					extensions: {
+						code: "UNKNOWN_ERROR_CODE" as ErrorCode,
+						// No httpStatus provided
+					},
+				});
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [errorWithUnknownCode],
+					},
+					{
+						reply: {
+							request: { id: "unknown-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(500); // Unknown error codes default to 500 status
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.httpStatus).toBe(500);
+			});
+
+			it("should handle GRAPHQL_PARSE_FAILED errors with INVALID_ARGUMENTS and HTTP 400", () => {
+				const parseFailedError = {
+					message: "Syntax Error: Expected Name, found }",
+					locations: [{ line: 1, column: 15 }],
+					path: undefined,
+					extensions: { code: "GRAPHQL_PARSE_FAILED" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({ message: "Syntax Error: Expected Name, found }" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [parseFailedError],
+					},
+					{
+						reply: {
+							request: { id: "parse-failed-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe(
+					"Syntax Error: Expected Name, found }",
+				);
+			});
+
+			it("should handle Syntax Error messages with INVALID_ARGUMENTS and HTTP 400", () => {
+				const syntaxError = {
+					message: "Syntax Error: Unexpected character '{'",
+					locations: [{ line: 2, column: 5 }],
+					path: undefined,
+					extensions: { code: "GRAPHQL_SYNTAX_ERROR" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({ message: "Syntax Error: Unexpected character '{'" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [syntaxError],
+					},
+					{
+						reply: {
+							request: { id: "syntax-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe(
+					"Syntax Error: Unexpected character '{'",
+				);
+			});
+		});
+	});
+
+	describe("Observability Code Coverage", () => {
+		it("should register hooks and execute without throwing", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+					API_GRAPHQL_MUTATION_BASE_COST: 10,
+					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+					API_RATE_LIMIT_REFILL_RATE: 1,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			const mockSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						hello: {
+							type: GraphQLString,
+							resolve: () => "Hello",
+						},
+					},
+				}),
+			});
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalled();
+
+			const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+
+			const preExecutionHooks = addHookCalls.filter(
+				(call: unknown[]) => call?.[0] === "preExecution",
+			);
+
+			for (const hookCall of preExecutionHooks) {
+				const hook = hookCall[1] as (
+					schema: GraphQLSchema,
+					context: { definitions: Array<{ kind: string; operation?: string }> },
+					document: {
+						__currentQuery: Record<string, unknown>;
+						reply: {
+							request: { ip?: string; jwtVerify?: () => Promise<unknown> };
+						};
+					},
+					variables: Record<string, unknown>,
+				) => Promise<void>;
+
+				// Mock leakyBucket to return true (allow request)
+				vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
+
+				const mockContext = {
+					definitions: [{ kind: "OperationDefinition", operation: "query" }],
+				};
+
+				const mockDocument = {
+					__currentQuery: {},
+					reply: {
+						request: {
+							ip: "127.0.0.1",
+							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+						},
+					},
+				};
+
+				await expect(
+					hook(mockSchema, mockContext, mockDocument, {}),
+				).resolves.not.toThrow();
+			}
+
+			const onResolutionHooks = addHookCalls.filter(
+				(call: unknown[]) => call?.[0] === "onResolution",
+			);
+
+			for (const hookCall of onResolutionHooks) {
+				const hook = hookCall[1] as (
+					execution: { errors?: Array<{ message: string }> },
+					context: Record<string, unknown>,
+				) => Promise<void>;
+
+				await expect(
+					hook({ errors: [{ message: "test" }] }, {}),
+				).resolves.not.toThrow();
+
+				await expect(hook({}, {})).resolves.not.toThrow();
+			}
+		});
+	});
+	describe("Mercurius Context Function Coverage", () => {
+		it("should call the mercurius context function", async () => {
+			let contextFunction: ((...args: unknown[]) => unknown) | undefined;
+
+			const mockFastifyInstance = {
+				register: vi.fn().mockImplementation((_plugin, options) => {
+					// Capture the context function from mercurius registration
+					if (options && typeof options === "object" && "context" in options) {
+						contextFunction = options.context as (
+							...args: unknown[]
+						) => unknown;
+					}
+					return Promise.resolve();
+				}),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: {
+								type: GraphQLString,
+								resolve: () => "Hello",
+							},
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Verify the context function was captured
+			expect(contextFunction).toBeDefined();
+
+			if (contextFunction) {
+				// Create mock request and reply
+				const mockRequest = {
+					jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+					ip: "127.0.0.1",
+					cookies: {},
+					log: { child: vi.fn().mockReturnThis() },
+					body: { operationName: "TestOperation" },
+				};
+
+				const mockReply = {
+					setCookie: vi.fn(),
+				};
+
+				// Call the context function to cover lines 249-254
+				const context = await contextFunction(mockRequest, mockReply);
+
+				// Verify the context was created
+				expect(context).toBeDefined();
+				expect(context).toHaveProperty("currentClient");
+				expect(context).toHaveProperty("dataloaders");
+				expect(context).toHaveProperty("drizzleClient");
+			}
+		});
+	});
+
+	describe("Final Coverage - Perf Line", () => {
+		it("should cover the perf property in subscription onConnect return", async () => {
+			// Create a real performance tracker
+			const perfTracker = createPerformanceTracker();
+
+			// Verify it passes the type guard
+			expect(perfTracker).toHaveProperty("time");
+			expect(perfTracker).toHaveProperty("start");
+			expect(perfTracker).toHaveProperty("trackComplexity");
+			expect(perfTracker).toHaveProperty("snapshot");
+			expect(perfTracker).toHaveProperty("trackDb");
+			expect(perfTracker).toHaveProperty("trackCacheHit");
+			expect(perfTracker).toHaveProperty("trackCacheMiss");
+
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-perf-test" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+				jwt: { verify: vi.fn().mockResolvedValue(decoded) },
+				cache: {},
+				drizzleClient: {},
+				minio: {},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the subscription configuration
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] && typeof call[1] === "object" && "subscription" in call[1],
+			);
+
+			expect(mercuriusCall).toBeDefined();
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: {
+						payload?: { authorization?: string };
+						socket?: {
+							request?: {
+								perf?: unknown;
+							};
+						};
+					}) => Promise<boolean | object>;
+				};
+			};
+
+			expect(subscriptionConfig.subscription.onConnect).toBeDefined();
+
+			// Call onConnect with a proper perf tracker
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+				socket: {
+					request: {
+						perf: perfTracker,
+					},
+				},
+			});
+
+			// Verify the result includes the perf tracker
+			expect(result).not.toBe(false);
+			expect(typeof result).toBe("object");
+
+			const contextResult = result as {
+				perf?: unknown;
+				currentClient: { isAuthenticated: boolean; user: unknown };
+			};
+
+			expect(contextResult.perf).toBe(perfTracker);
+			expect(contextResult.currentClient.isAuthenticated).toBe(true);
+		});
+
+		it("should cover JWT sign function in subscription onConnect", async () => {
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-jwt-test" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			const mockJwtSign = vi.fn().mockReturnValue("new-signed-token");
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+				jwt: {
+					verify: vi.fn().mockResolvedValue(decoded),
+					sign: mockJwtSign,
+				},
+				cache: {},
+				drizzleClient: {},
+				minio: {},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the subscription configuration
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] && typeof call[1] === "object" && "subscription" in call[1],
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: {
+						payload?: { authorization?: string };
+					}) => Promise<boolean | object>;
+				};
+			};
+
+			// Call onConnect to get the context
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+			});
+
+			expect(result).not.toBe(false);
+			const contextResult = result as {
+				jwt: { sign: (payload: ExplicitAuthenticationTokenPayload) => string };
+			};
+
+			// Call the JWT sign function to cover the uncovered line
+			const signedToken = contextResult.jwt.sign(decoded);
+			expect(signedToken).toBe("new-signed-token");
+			expect(mockJwtSign).toHaveBeenCalledWith(decoded);
+		});
+	});
+
+	describe("Error Formatter Status Code Coverage", () => {
+		it("should return 403 status code for UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES in non-HTTP context", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: { errors: Array<{ extensions?: { code?: string } }> },
+					context: unknown,
+				) => { statusCode: number };
+			};
+
+			// Test with UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error in non-HTTP context
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							extensions: {
+								code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+							},
+						},
+					],
+				},
+				{}, // Non-HTTP context (no reply.send method)
+			);
+
+			expect(result.statusCode).toBe(403);
+		});
+
+		it("should return 429 status code for RATE_LIMIT_EXCEEDED in non-HTTP context", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: { errors: Array<{ extensions?: { code?: string } }> },
+					context: unknown,
+				) => { statusCode: number };
+			};
+
+			// Test with RATE_LIMIT_EXCEEDED error in non-HTTP context
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							extensions: {
+								code: ErrorCode.RATE_LIMIT_EXCEEDED,
+							},
+						},
+					],
+				},
+				{}, // Non-HTTP context (no reply.send method)
+			);
+
+			expect(result.statusCode).toBe(429);
+		});
+	});
+
+	describe("Observability Coverage", () => {
+		it("should execute observability tracing code when enabled", async () => {
+			try {
+				vi.doMock("~/src/config/observability", () => ({
+					observabilityConfig: { enabled: true },
+				}));
+
+				// Mock OpenTelemetry
+				const mockSpan = {
+					setAttribute: vi.fn(),
+					end: vi.fn(),
+				};
+				const mockTracer = {
+					startSpan: vi.fn().mockReturnValue(mockSpan),
+				};
+
+				vi.doMock("@opentelemetry/api", () => ({
+					trace: {
+						getTracer: vi.fn().mockReturnValue(mockTracer),
+					},
+				}));
+
+				// Re-import the module to get the mocked version
+				vi.resetModules();
+				const { graphql: graphqlWithObservability } = await import(
+					"~/src/routes/graphql"
+				);
+
+				const mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: false,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
+
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: {
+								hello: { type: GraphQLString, resolve: () => "Hello" },
+							},
+						}),
+					}),
+				);
+
+				await graphqlWithObservability(
+					mockFastifyInstance as unknown as FastifyInstance,
+				);
+
+				// Verify observability hooks were added
+				expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
+					"preExecution",
+					expect.any(Function),
+				);
+				expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
+					"onResolution",
+					expect.any(Function),
+				);
+
+				// Test the tracing hooks
+				const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+				const preExecutionHook = addHookCalls.find(
+					(call: unknown[]) =>
+						call?.[0] === "preExecution" && call?.[1] !== undefined,
+				)?.[1] as (...args: unknown[]) => unknown;
+
+				const onResolutionHook = addHookCalls.find(
+					(call: unknown[]) =>
+						call?.[0] === "onResolution" && call?.[1] !== undefined,
+				)?.[1] as (...args: unknown[]) => unknown;
+
+				// Test preExecution hook
+				if (preExecutionHook) {
+					const mockDocument = {
+						definitions: [
+							{
+								kind: "OperationDefinition",
+								operation: "query",
+								name: { value: "TestQuery" },
+							},
+						],
+					};
+					const mockContext = {};
+
+					await preExecutionHook(null, mockDocument, mockContext);
+
+					expect(mockTracer.startSpan).toHaveBeenCalledWith(
+						"graphql:TestQuery",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.name",
+						"TestQuery",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.type",
+						"query",
+					);
+				}
+
+				// Test onResolution hook
+				if (onResolutionHook) {
+					const mockExecution = {
+						errors: [{ message: "Test error" }],
+					};
+					const mockContext = { _tracingSpan: mockSpan };
+
+					await onResolutionHook(mockExecution, mockContext);
+
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.errors.count",
+						1,
+					);
+					expect(mockSpan.end).toHaveBeenCalled();
+				}
+			} finally {
+				// Restore mocks
+				vi.doUnmock("~/src/config/observability");
+				vi.doUnmock("@opentelemetry/api");
+				vi.resetModules();
+			}
+		});
+
+		it("should handle anonymous operations and unknown operation types in tracing", async () => {
+			try {
+				// Mock observabilityConfig to be enabled
+				vi.doMock("~/src/config/observability", () => ({
+					observabilityConfig: { enabled: true },
+				}));
+
+				// Mock OpenTelemetry
+				const mockSpan = {
+					setAttribute: vi.fn(),
+					end: vi.fn(),
+				};
+				const mockTracer = {
+					startSpan: vi.fn().mockReturnValue(mockSpan),
+				};
+
+				vi.doMock("@opentelemetry/api", () => ({
+					trace: {
+						getTracer: vi.fn().mockReturnValue(mockTracer),
+					},
+				}));
+
+				// Re-import the module to get the mocked version
+				vi.resetModules();
+				const { graphql: graphqlWithObservability } = await import(
+					"~/src/routes/graphql"
+				);
+
+				const mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: false,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
+
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: {
+								hello: { type: GraphQLString, resolve: () => "Hello" },
+							},
+						}),
+					}),
+				);
+
+				await graphqlWithObservability(
+					mockFastifyInstance as unknown as FastifyInstance,
+				);
+
+				// Get the preExecution hook
+				const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+				const preExecutionHook = addHookCalls.find(
+					(call: unknown[]) =>
+						call?.[0] === "preExecution" && call?.[1] !== undefined,
+				)?.[1] as (...args: unknown[]) => unknown;
+
+				if (preExecutionHook) {
+					// Test with operation definition that has no name (anonymous)
+					const mockDocumentAnonymous = {
+						definitions: [
+							{
+								kind: "OperationDefinition",
+								operation: "query",
+								// No name property - should fallback to "anonymous"
+							},
+						],
+					};
+
+					await preExecutionHook(null, mockDocumentAnonymous, {});
+
+					expect(mockTracer.startSpan).toHaveBeenCalledWith(
+						"graphql:anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.name",
+						"anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.type",
+						"query",
+					);
+
+					// Reset mocks for next test
+					vi.clearAllMocks();
+
+					// Test with non-operation definition (should fallback to "unknown")
+					const mockDocumentUnknown = {
+						definitions: [
+							{
+								kind: "FragmentDefinition", // Not an OperationDefinition
+								name: { value: "TestFragment" },
+							},
+						],
+					};
+
+					await preExecutionHook(null, mockDocumentUnknown, {});
+
+					expect(mockTracer.startSpan).toHaveBeenCalledWith(
+						"graphql:anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.name",
+						"anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.type",
+						"unknown",
+					);
+				}
+			} finally {
+				// Restore mocks
+				vi.doUnmock("~/src/config/observability");
+				vi.doUnmock("@opentelemetry/api");
+				vi.resetModules();
+			}
+		});
+	});
+
+	describe("Error Formatter covering Edge Cases and Normalization", () => {
+		it("should handle errors with extensions but invalid codes using normalizeError", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: { code?: string; someOtherField?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ message: string; extensions?: { code?: string } }>;
+					};
+				};
+			};
+
+			// Test with error that has extensions but invalid code (not in ErrorCode enum)
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Custom error with invalid code",
+							locations: [{ line: 1, column: 1 }],
+							path: ["test"],
+							extensions: {
+								code: "INVALID_CUSTOM_CODE", // Not a valid ErrorCode
+								someOtherField: "value",
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalizeError and return secure message
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Internal Server Error",
+			);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			); // normalizeError default
+		});
+
+		it("should use normalized message when original message contains Internal Server Error", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ message: string }> };
+				};
+			};
+
+			// Test with error that has extensions but invalid code and contains "Internal Server Error"
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Internal Server Error occurred", // Contains "Internal Server Error"
+							extensions: {
+								code: "INVALID_CUSTOM_CODE", // Not a valid ErrorCode
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalized message instead of original
+			expect(result.response.errors?.[0]?.message).not.toBe(
+				"Internal Server Error occurred",
+			);
+		});
+
+		it("should handle error with empty message using normalizeError", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ message: string }> };
+				};
+			};
+
+			// Test with error that has empty message
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "", // Empty message - should not preserve
+							extensions: {
+								code: "INVALID_CUSTOM_CODE", // Not a valid ErrorCode
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalized message instead of empty original
+			expect(result.response.errors?.[0]?.message).not.toBe("");
+		});
+
+		it("should handle error with valid ErrorCode in extensions", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message?: string;
+							extensions?: { code?: string; details?: unknown };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ message: string; extensions?: { code?: string } }>;
+					};
+				};
+			};
+
+			// Test with error that has valid ErrorCode in extensions but no message
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							// No message property - should use fallback
+							extensions: {
+								code: ErrorCode.NOT_FOUND, // Valid ErrorCode
+								details: { field: "test" },
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalized message "Internal Server Error" for security
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Internal Server Error",
+			);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.NOT_FOUND,
+			);
+		});
+
+		it("should handle error without extensions and no message", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message?: string;
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ message: string }> };
+				};
+			};
+
+			// Test with error that has no extensions and no message
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							// No message property and no extensions
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalized message "Internal Server Error" for security
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Internal Server Error",
+			);
+		});
+
+		it("should use first error httpStatus when no specific error codes match", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string; httpStatus?: number };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => { statusCode: number };
+			};
+
+			// Test with TalawaGraphQLError that has custom httpStatus but no matching error codes
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						new TalawaGraphQLError({
+							message: "Custom error",
+							extensions: {
+								code: "CUSTOM_ERROR_CODE" as ErrorCode, // Not in the specific error code checks
+								httpStatus: 418, // Custom status code
+							},
+						}),
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use the first error's httpStatus
+			expect(result.statusCode).toBe(418);
+		});
+
+		it("should fallback to 500 when first error has no httpStatus", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => { statusCode: number };
+			};
+
+			// Test with error that has no httpStatus in extensions
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Custom error",
+							extensions: {
+								code: "CUSTOM_ERROR_CODE", // Not in the specific error code checks
+								// No httpStatus property
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should fallback to 500
+			expect(result.statusCode).toBe(500);
+		});
+
+		it("should handle context with reply but no request.id", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: { reply?: { request?: { id?: string } } },
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ extensions?: { correlationId?: string } }>;
+					};
+				};
+			};
+
+			// Test with context that has reply but no request.id
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							// No id property
+						},
+					},
+				},
+			);
+
+			// Should use "unknown" as correlationId
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"unknown",
+			);
+		});
+
+		it("should handle error with valid ErrorCode but no httpStatus mapping", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message?: string;
+							extensions?: { code?: string; details?: unknown };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ extensions?: { httpStatus?: number } }>;
+					};
+				};
+			};
+
+			// Test with error that has valid ErrorCode but no httpStatus mapping (fallback to 500)
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							// No message - should use fallback
+							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR, // Valid ErrorCode but maps to 500 by default
+								details: { test: "value" },
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use 500 as httpStatus (default fallback)
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(500);
+		});
+
+		it("should handle context with non-object type", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: unknown,
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ extensions?: { correlationId?: string } }>;
+					};
+				};
+			};
+
+			// Test with context that is not an object
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							},
+						},
+					],
+				},
+				"not-an-object", // Non-object context
+			);
+
+			// Should use "unknown" as correlationId
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"unknown",
+			);
+		});
+
+		it("should handle error with extensions.code that exists but is not in ErrorCode enum", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ extensions?: { code?: string } }> };
+				};
+			};
+
+			// Test with error that has extensions.code but it's not a valid ErrorCode enum value
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: "NOT_A_VALID_ERROR_CODE", // Not in ErrorCode enum
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalizeError and get INTERNAL_SERVER_ERROR
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+		});
+
+		it("should handle formattedErrors with undefined httpStatus", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => { statusCode: number };
+			};
+
+			// Test with error that results in formattedError with undefined httpStatus
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: "CUSTOM_CODE_NO_STATUS", // Will go through normalizeError path
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should fallback to 500 when httpStatus is undefined
+			expect(result.statusCode).toBe(500);
+		});
+
+		it("should handle error with extensions but no code property", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { someOtherField?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ extensions?: { code?: string } }> };
+				};
+			};
+
+			// Test with error that has extensions but no code property
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								someOtherField: "value", // Has extensions but no code
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalizeError path
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
 		});
 	});
 });

@@ -522,6 +522,48 @@ describe("NotificationEngine (unit tests)", () => {
 		]);
 	});
 
+	test("creates in-app notifications with deduplication across multiple audiences", async () => {
+		// Test that same user appearing in multiple audience specs only gets one entry
+		// This prevents UNIQUE(notificationId, userId) constraint violations
+		const mockMembers = [
+			{ memberId: "user_001", organizationId: "org_001" },
+			{ memberId: "user_002", organizationId: "org_001" },
+		];
+
+		const { ctx, inserts } = createMockContext({
+			orgMembers: mockMembers,
+			template: createMockTemplate({
+				eventType: "multi_audience_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		// user_001 appears in both ORGANIZATION and USER audiences
+		await engine.createNotification("multi_audience_event", {}, [
+			{
+				targetType: NotificationTargetType.ORGANIZATION,
+				targetIds: ["org_001"],
+			},
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["user_001", "user_003"],
+			},
+		]);
+
+		const audienceInserts = inserts.filter(
+			(i) => i.table === "notificationAudienceTable",
+		);
+
+		// Should have only one insert with 3 unique users (user_001 appears only once)
+		const allValues = audienceInserts.flatMap((insert) => insert.values);
+		expect(allValues).toHaveLength(3);
+
+		const userIds = allValues.map((v) => v.userId as string).sort();
+		// user_001 should appear only once, not twice
+		expect(userIds).toEqual(["user_001", "user_002", "user_003"]);
+	});
+
 	test("does not exclude sender when unauthenticated", async () => {
 		const { ctx, inserts } = createMockContext({
 			currentClient: {
@@ -615,54 +657,6 @@ describe("NotificationEngine (unit tests)", () => {
 	});
 
 	test("covers resolveAudienceToUserIds ORGANIZATION path with empty targetIds (line 230-272 coverage)", async () => {
-		const { ctx, inserts } = createMockContext({
-			template: createMockTemplate({
-				eventType: "org_event",
-				channelType: "in_app",
-			}),
-		});
-		const engine = new NotificationEngine(ctx);
-
-		await engine.createNotification(
-			"org_event",
-			{},
-			{
-				targetType: NotificationTargetType.ORGANIZATION,
-				targetIds: [],
-			},
-		);
-
-		const audienceInsert = inserts.find(
-			(i) => i.table === "notificationAudienceTable",
-		);
-		expect(audienceInsert).toBeUndefined();
-	});
-
-	test("covers createAudienceEntries with empty organization ID (line 230-272 coverage)", async () => {
-		const { ctx, inserts } = createMockContext({
-			template: createMockTemplate({
-				eventType: "org_admin_event",
-				channelType: "in_app",
-			}),
-		});
-		const engine = new NotificationEngine(ctx);
-
-		await engine.createNotification(
-			"org_admin_event",
-			{},
-			{
-				targetType: NotificationTargetType.ORGANIZATION_ADMIN,
-				targetIds: [],
-			},
-		);
-
-		const audienceInsert = inserts.find(
-			(i) => i.table === "notificationAudienceTable",
-		);
-		expect(audienceInsert).toBeUndefined();
-	});
-
-	test("covers createAudienceEntries ORGANIZATION path with empty targetIds (line 230-272 coverage)", async () => {
 		const { ctx, inserts } = createMockContext({
 			template: createMockTemplate({
 				eventType: "org_event",
