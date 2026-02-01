@@ -130,31 +130,33 @@ async function createOrganizationWithMembership(): Promise<string> {
 	return orgId;
 }
 
+async function createEvent(orgId: string): Promise<string> {
+	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `Bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				name: `Test Event ${faker.string.uuid()}`,
+				description: "Test event for venues",
+				startAt: new Date(Date.now() + 86400000).toISOString(),
+				endAt: new Date(Date.now() + 90000000).toISOString(),
+			},
+		},
+	});
+	expect(createEventResult.errors).toBeUndefined();
+	const eventId = createEventResult.data?.createEvent?.id;
+	assertToBeNonNullish(eventId);
+	createdEventIds.push(eventId);
+	return eventId;
+}
+
 suite("Event venues Field", () => {
 	test("should return empty venues connection when event has no venue bookings", async () => {
 		// Create organization
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query event venues
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -198,25 +200,7 @@ suite("Event venues Field", () => {
 		createdVenueIds.push(venueId);
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -252,25 +236,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create multiple venues and bookings
 		const venueIds = [];
@@ -326,25 +292,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create multiple venues and bookings
 		for (let i = 0; i < 3; i++) {
@@ -398,25 +346,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with both first and last (invalid)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -433,25 +363,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query without first or last (invalid)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -468,25 +380,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with before and first (invalid combination)
 		const someCursor = Buffer.from(
@@ -510,25 +404,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with after and last (invalid combination)
 		const someCursor = Buffer.from(
@@ -552,25 +428,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create multiple venues and bookings
 		for (let i = 0; i < 3; i++) {
@@ -636,25 +494,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with maximum allowed limit (32)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -675,25 +515,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with limit exceeding maximum (33 > 32)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -715,25 +537,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with limit exceeding maximum (33 > 32)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -755,25 +559,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with invalid cursor (forward pagination)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -794,25 +580,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Query with invalid cursor (backward pagination)
 		const result = await mercuriusClient.query(Query_eventVenues, {
@@ -833,25 +601,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create multiple venues and bookings
 		for (let i = 0; i < 3; i++) {
@@ -935,25 +685,7 @@ suite("Event venues Field", () => {
 		createdVenueIds.push(venueId);
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -1021,25 +753,7 @@ suite("Event venues Field", () => {
 		createdVenueIds.push(venueId);
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -1114,25 +828,7 @@ suite("Event venues Field", () => {
 		});
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -1199,25 +895,7 @@ suite("Event venues Field", () => {
 		// Do NOT insert any attachments - testing the empty case
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -1301,25 +979,7 @@ suite("Event venues Field", () => {
 		]);
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
@@ -1369,25 +1029,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venues with deterministic createdAt timestamps
 		const baseTime = new Date("2026-01-01T00:00:00.000Z");
@@ -1445,25 +1087,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venues with deterministic createdAt timestamps
 		const baseTime = new Date("2026-01-01T00:00:00.000Z");
@@ -1523,25 +1147,7 @@ suite("Event venues Field", () => {
 		const orgId = await createOrganizationWithMembership();
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venues with SAME createdAt timestamp to test tie-breaker
 		const sameTimestamp = new Date("2026-01-01T00:00:00.000Z");
@@ -1650,25 +1256,7 @@ suite("Event venues Field", () => {
 		createdVenueIds.push(venueId);
 
 		// Create event
-		const createEventResult = await mercuriusClient.mutate(
-			Mutation_createEvent,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Event ${faker.string.uuid()}`,
-						description: "Test event for venues",
-						startAt: new Date(Date.now() + 86400000).toISOString(),
-						endAt: new Date(Date.now() + 90000000).toISOString(),
-					},
-				},
-			},
-		);
-		expect(createEventResult.errors).toBeUndefined();
-		const eventId = createEventResult.data?.createEvent?.id;
-		assertToBeNonNullish(eventId);
-		createdEventIds.push(eventId);
+		const eventId = await createEvent(orgId);
 
 		// Create venue booking
 		const bookingResult = await mercuriusClient.mutate(
