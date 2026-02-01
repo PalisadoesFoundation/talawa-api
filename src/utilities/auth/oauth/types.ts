@@ -47,5 +47,5 @@ export interface GitHubUser {
 export interface GitHubEmail {
 	email: string;
 	primary: boolean;
-	verified: boolean;
+	verified?: boolean;
 }

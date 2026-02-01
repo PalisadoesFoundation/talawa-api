@@ -204,6 +204,37 @@ describe("GitHubOAuthProvider", () => {
 				provider.exchangeCodeForTokens(validCode, redirectUri),
 			).rejects.toThrow(TokenExchangeError);
 		});
+
+		it("should throw error when redirect_uri parameter is empty and config is missing", async () => {
+			// This test should fail at provider creation since redirectUri is required by BaseOAuthProvider validation
+			expect(() => {
+				new GitHubOAuthProvider({
+					clientId: "github_client_id",
+					clientSecret: "github_client_secret",
+					// redirectUri is undefined/missing
+				});
+			}).toThrow(OAuthError);
+		});
+
+		it("should throw TokenExchangeError when redirect_uri cannot be resolved", async () => {
+			// Create a provider instance with valid config but temporarily override validation
+			const tempProvider = Object.create(GitHubOAuthProvider.prototype);
+			tempProvider.config = {
+				clientId: "github_client_id",
+				clientSecret: "github_client_secret",
+				redirectUri: undefined, // This simulates the case where redirectUri is missing
+			};
+			tempProvider.post = vi.fn();
+
+			// Test the specific validation logic in exchangeCodeForTokens
+			await expect(
+				tempProvider.exchangeCodeForTokens("valid_code", ""),
+			).rejects.toThrow(TokenExchangeError);
+
+			await expect(
+				tempProvider.exchangeCodeForTokens("valid_code", ""),
+			).rejects.toThrow("redirect_uri is required but was not provided");
+		});
 	});
 
 	describe("getUserProfile", () => {

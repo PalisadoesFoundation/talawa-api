@@ -1,3 +1,4 @@
+import { TokenExchangeError } from "../errors";
 import type {
 	GitHubEmail,
 	GitHubUser,
@@ -38,13 +39,19 @@ export class GitHubOAuthProvider extends BaseOAuthProvider {
 		code: string,
 		redirectUri: string,
 	): Promise<OAuthProviderTokenResponse> {
-		this.validateConfig();
+		const resolvedRedirectUri = redirectUri || this.config.redirectUri;
+		if (!resolvedRedirectUri) {
+			throw new TokenExchangeError(
+				"Token exchange failed",
+				"redirect_uri is required but was not provided",
+			);
+		}
 
 		const data = new URLSearchParams({
 			client_id: this.config.clientId,
 			client_secret: this.config.clientSecret,
 			code,
-			redirect_uri: redirectUri || this.config.redirectUri || "",
+			redirect_uri: resolvedRedirectUri,
 		});
 		const resp = await this.post<OAuthProviderTokenResponse>(
 			"https://github.com/login/oauth/access_token",
@@ -89,7 +96,9 @@ export class GitHubOAuthProvider extends BaseOAuthProvider {
 				},
 			);
 
-			const primary = emails?.find((e) => e.primary) || emails?.[0];
+			const primaryVerified = emails?.find((e) => e.primary && e.verified);
+			const primary =
+				primaryVerified || emails?.find((e) => e.primary) || emails?.[0];
 
 			email = primary?.email;
 			emailVerified = primary?.verified ?? false;

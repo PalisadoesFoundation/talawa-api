@@ -4,7 +4,7 @@
 
 # Class: GitHubOAuthProvider
 
-Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L19)
+Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L20)
 
 GitHub OAuth provider implementation.
 Handles authentication flow with GitHub OAuth service.
@@ -24,7 +24,7 @@ Features:
 
 > **new GitHubOAuthProvider**(`config`): `GitHubOAuthProvider`
 
-Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L25)
+Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L26)
 
 Creates a new GitHub OAuth provider instance.
 
@@ -50,7 +50,7 @@ OAuth configuration containing client credentials and settings
 
 > **exchangeCodeForTokens**(`code`, `redirectUri`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L37)
+Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L38)
 
 Exchanges an authorization code for access tokens using GitHub's OAuth service.
 
@@ -108,7 +108,7 @@ Provider name (e.g., "google", "github")
 
 > **getUserProfile**(`accessToken`): `Promise`\<[`OAuthUserProfile`](../../../types/interfaces/OAuthUserProfile.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L74)
+Defined in: [src/utilities/auth/oauth/providers/GitHubOAuthProvider.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GitHubOAuthProvider.ts#L81)
 
 Fetches user profile information from GitHub API.
 

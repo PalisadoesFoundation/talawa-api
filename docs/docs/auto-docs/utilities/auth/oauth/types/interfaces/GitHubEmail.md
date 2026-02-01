@@ -26,8 +26,8 @@ Defined in: [src/utilities/auth/oauth/types.ts:49](https://github.com/Palisadoes
 
 ***
 
-### verified
+### verified?
 
-> **verified**: `boolean`
+> `optional` **verified**: `boolean`
 
 Defined in: [src/utilities/auth/oauth/types.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L50)
