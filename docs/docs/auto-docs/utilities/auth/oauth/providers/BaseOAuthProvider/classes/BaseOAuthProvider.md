@@ -12,6 +12,7 @@ Implements common HTTP logic and error handling
 ## Extended by
 
 - [`GitHubOAuthProvider`](../../GitHubOAuthProvider/classes/GitHubOAuthProvider.md)
+- [`GoogleOAuthProvider`](../../GoogleOAuthProvider/classes/GoogleOAuthProvider.md)
 
 ## Implements
 
@@ -43,7 +44,7 @@ Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:26](https:/
 
 ### exchangeCodeForTokens()
 
-> `abstract` **exchangeCodeForTokens**(`code`, `redirectUri`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
+> `abstract` **exchangeCodeForTokens**(`code`, `redirectUri?`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
 
 Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L36)
 
@@ -57,11 +58,11 @@ Exchange authorization code for access tokens
 
 Authorization code from OAuth callback
 
-##### redirectUri
+##### redirectUri?
 
 `string`
 
-Redirect URI used in authorization request
+Optional redirect URI used in authorization request. If not provided, uses config redirectUri
 
 #### Returns
 
@@ -71,7 +72,7 @@ Token response with access token and optional refresh token
 
 #### Throws
 
-If token exchange fails
+If token exchange fails or if no redirect URI is available
 
 #### Throws
 
