@@ -217,6 +217,15 @@ const y = 2;
         violations = self.checker.check_file(filepath, repo="api")
         self.assertEqual(len(violations), 0)
 
+    def test_check_file_skips_binary_extensions(self):
+        """Test that binary file extensions are skipped."""
+        filepath = os.path.join(self.temp_dir, "image.png")
+        with open(filepath, "wb") as f:
+            f.write(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR")
+
+        violations = self.checker.check_file(filepath, repo="api")
+        self.assertEqual(len(violations), 0)
+
     def test_check_file_api_repo_checks(self):
         """Test API-specific checks are run."""
         filepath = self._create_temp_file(

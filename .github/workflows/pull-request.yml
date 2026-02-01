@@ -135,7 +135,10 @@ jobs:
       - name: Get changed files
         id: changed-files
         run: |
-          echo "all_changed_files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          # Skip binary assets that cannot be decoded as UTF-8 by the disable-statements check
+          FILTERED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -Ev '\.(png|jpg|jpeg|gif|webp)$' || true)
+          echo "all_changed_files=$(echo "$FILTERED_FILES" | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -144,6 +147,10 @@ jobs:
 
       - name: Run Disable Statements Check
         run: |
+          if [ -z "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
+            echo "No eligible text files changed; skipping disable statements check."
+            exit 0
+          fi
           python .github-central/.github/workflows/scripts/disable_statements_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
