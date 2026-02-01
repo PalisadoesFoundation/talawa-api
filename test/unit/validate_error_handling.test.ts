@@ -1453,40 +1453,47 @@ describe("ErrorHandlingValidator", () => {
 
 	describe("Coverage Gaps", () => {
 		it("should handle WARN_ONLY_MODE", async () => {
-			vi.resetModules();
-			process.env.WARN_ONLY_MODE = "true";
-			const { ErrorHandlingValidator } = await import(
-				"../../scripts/validate_error_handling"
-			);
-			const validator = new ErrorHandlingValidator();
+			const originalWarnMode = process.env.WARN_ONLY_MODE;
+			try {
+				vi.resetModules();
+				process.env.WARN_ONLY_MODE = "true";
+				const { ErrorHandlingValidator } = await import(
+					"../../scripts/validate_error_handling"
+				);
+				const validator = new ErrorHandlingValidator();
 
-			// Add a violation
-			vi.spyOn(validator, "getFilesToScan").mockResolvedValue(["file1.ts"]);
-			vi.spyOn(validator, "validateFile").mockImplementation(async () => {
-				validator.result.violations.push({
-					filePath: "file1.ts",
-					lineNumber: 1,
-					violationType: "test",
-					line: "",
-					suggestion: "",
+				// Add a violation
+				vi.spyOn(validator, "getFilesToScan").mockResolvedValue(["file1.ts"]);
+				vi.spyOn(validator, "validateFile").mockImplementation(async () => {
+					validator.result.violations.push({
+						filePath: "file1.ts",
+						lineNumber: 1,
+						violationType: "test",
+						line: "",
+						suggestion: "",
+					});
 				});
-			});
 
-			const exitCode = await validator.validate();
-			expect(exitCode).toBe(0); // Should be 0 in warn-only mode despite violations
-
-			delete process.env.WARN_ONLY_MODE;
+				const exitCode = await validator.validate();
+				expect(exitCode).toBe(0); // Should be 0 in warn-only mode despite violations
+			} finally {
+				process.env.WARN_ONLY_MODE = originalWarnMode;
+			}
 		});
 
 		it("should return empty list if all CHANGED_FILES are filtered out", async () => {
-			process.env.CHANGED_FILES = "ignored.txt node_modules/file.ts";
-			const spy = vi.spyOn(validator, "shouldScanFile").mockReturnValue(false);
+			const originalChangedFiles = process.env.CHANGED_FILES;
+			let spy: MockInstance | undefined;
+			try {
+				process.env.CHANGED_FILES = "ignored.txt node_modules/file.ts";
+				spy = vi.spyOn(validator, "shouldScanFile").mockReturnValue(false);
 
-			const files = await validator.getFilesToScan();
-			expect(files).toEqual([]);
-
-			delete process.env.CHANGED_FILES;
-			spy.mockRestore();
+				const files = await validator.getFilesToScan();
+				expect(files).toEqual([]);
+			} finally {
+				process.env.CHANGED_FILES = originalChangedFiles;
+				if (spy) spy.mockRestore();
+			}
 		});
 
 		it("should handle missing file in validateFile", async () => {
