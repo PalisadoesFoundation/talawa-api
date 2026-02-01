@@ -1518,6 +1518,113 @@ suite("Event venues Field", () => {
 		expect(result.data?.event?.venues?.edges?.[2]?.node?.id).toBe(venueIds[0]);
 	});
 
+	test("should use venueId as tie-breaker when createdAt timestamps are equal", async () => {
+		// Create organization
+		const orgId = await createOrganizationWithMembership();
+
+		// Create event
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event for venues",
+						startAt: new Date(Date.now() + 86400000).toISOString(),
+						endAt: new Date(Date.now() + 90000000).toISOString(),
+					},
+				},
+			},
+		);
+		expect(createEventResult.errors).toBeUndefined();
+		const eventId = createEventResult.data?.createEvent?.id;
+		assertToBeNonNullish(eventId);
+		createdEventIds.push(eventId);
+
+		// Create venues with SAME createdAt timestamp to test tie-breaker
+		const sameTimestamp = new Date("2026-01-01T00:00:00.000Z");
+		const venueIds: string[] = [];
+		for (let i = 0; i < 3; i++) {
+			const [venue] = await server.drizzleClient
+				.insert(venuesTable)
+				.values({
+					organizationId: orgId,
+					name: `Tie-breaker Venue ${i} ${faker.string.uuid()}`,
+					description: `Test venue ${i}`,
+					capacity: 100 + i * 10,
+					creatorId: adminUserId,
+					createdAt: sameTimestamp, // Same timestamp for all venues
+				})
+				.returning({ id: venuesTable.id });
+			assertToBeNonNullish(venue?.id);
+			venueIds.push(venue.id);
+			createdVenueIds.push(venue.id);
+
+			const bookingResult = await mercuriusClient.mutate(
+				Mutation_createVenueBooking,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							venueId: venue.id,
+							eventId: eventId,
+						},
+					},
+				},
+			);
+			expect(bookingResult.errors).toBeUndefined();
+		}
+
+		// Sort venueIds to determine expected order
+		// Forward pagination uses desc(createdAt), desc(venueId)
+		// With same createdAt, higher venueId should come first
+		const sortedByIdDesc = [...venueIds].sort((a, b) => b.localeCompare(a));
+
+		// Query with first (forward pagination)
+		const forwardResult = await mercuriusClient.query(Query_eventVenues, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: eventId }, first: 10 },
+		});
+
+		expect(forwardResult.errors).toBeUndefined();
+		expect(forwardResult.data?.event?.venues?.edges).toHaveLength(3);
+
+		// Verify tie-breaker ordering: with same createdAt, venues should be ordered by venueId DESC
+		expect(forwardResult.data?.event?.venues?.edges?.[0]?.node?.id).toBe(
+			sortedByIdDesc[0],
+		);
+		expect(forwardResult.data?.event?.venues?.edges?.[1]?.node?.id).toBe(
+			sortedByIdDesc[1],
+		);
+		expect(forwardResult.data?.event?.venues?.edges?.[2]?.node?.id).toBe(
+			sortedByIdDesc[2],
+		);
+
+		// Query with last (backward pagination)
+		// Backward pagination uses asc(createdAt), asc(venueId) then reverses
+		// Final display order should still be consistent (venueId DESC)
+		const backwardResult = await mercuriusClient.query(Query_eventVenues, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: eventId }, last: 10 },
+		});
+
+		expect(backwardResult.errors).toBeUndefined();
+		expect(backwardResult.data?.event?.venues?.edges).toHaveLength(3);
+
+		// After reversal, the order should match forward pagination for display consistency
+		expect(backwardResult.data?.event?.venues?.edges?.[0]?.node?.id).toBe(
+			sortedByIdDesc[0],
+		);
+		expect(backwardResult.data?.event?.venues?.edges?.[1]?.node?.id).toBe(
+			sortedByIdDesc[1],
+		);
+		expect(backwardResult.data?.event?.venues?.edges?.[2]?.node?.id).toBe(
+			sortedByIdDesc[2],
+		);
+	});
+
 	test("should generate cursor with correct structure (createdAt, venueId)", async () => {
 		// Create organization
 		const orgId = await createOrganizationWithMembership();
