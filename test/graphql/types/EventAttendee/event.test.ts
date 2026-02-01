@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
@@ -36,7 +36,10 @@ describe("EventAttendee Event Resolver Tests", () => {
 			updatedAt: new Date("2024-03-10T08:00:00Z"),
 		} as EventAttendeeType;
 	});
-
+	afterEach(() => {
+		vi.clearAllMocks();
+		vi.restoreAllMocks();
+	});
 	describe("Authentication", () => {
 		it("should throw unauthenticated error if user is not logged in", async () => {
 			ctx.currentClient.isAuthenticated = false;
@@ -141,11 +144,6 @@ describe("EventAttendee Event Resolver Tests", () => {
 			attachments: [],
 		};
 
-		beforeEach(() => {
-			vi.mocked(getRecurringEventInstancesByIds).mockReset();
-			ctx.dataloaders.event.load = vi.fn();
-		});
-
 		it("should resolve recurring event instance and return resolved instance", async () => {
 			const recurringAttendee = {
 				...mockEventAttendee,
@@ -153,8 +151,13 @@ describe("EventAttendee Event Resolver Tests", () => {
 				recurringEventInstanceId: "instance-789",
 			} as EventAttendeeType;
 
+			// Update: explicitly set attachments to undefined to test the resolver's ?? [] logic
 			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
-				mockResolvedInstance,
+				{
+					...mockResolvedInstance,
+					attachments:
+						undefined as unknown as typeof mockResolvedInstance.attachments,
+				},
 			]);
 
 			const result = await eventAttendeeEventResolver(
@@ -165,7 +168,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 
 			expect(result).toEqual({
 				...mockResolvedInstance,
-				attachments: [],
+				attachments: [], // Verified: undefined input became [] output
 			});
 			expect(getRecurringEventInstancesByIds).toHaveBeenCalledWith(
 				["instance-789"],
