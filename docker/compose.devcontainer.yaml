@@ -181,7 +181,7 @@ services:
   mailpit:
     # https://github.com/axllent/mailpit
     # https://hub.docker.com/r/axllent/mailpit
-    image: axllent/mailpit:v1.28
+    image: axllent/mailpit:v1.21
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:

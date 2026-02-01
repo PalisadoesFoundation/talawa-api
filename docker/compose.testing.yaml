@@ -1,5 +1,6 @@
 # https://docs.docker.com/reference/compose-file/networks/
 networks:
+  mailpit_test:
   minio_test:
   postgres_test:
   redis_test:
@@ -121,3 +122,26 @@ services:
     restart: unless-stopped
     profiles:
       - redis_test
+  mailpit:
+    # https://hub.docker.com/r/axllent/mailpit
+    image: axllent/mailpit:v1.21
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8025/api/v1/info || exit 1"]
+      timeout: 10s
+    networks:
+      - mailpit_test
+    ports:
+      - target: 8025
+        published: 8025
+      - target: 1025
+        published: 1025
+    restart: unless-stopped
