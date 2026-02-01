@@ -30,10 +30,10 @@ if ! bash "$SCRIPT_DIR/run-all.sh"; then
     exit 1
 fi
 
-# Count leftovers under TMPDIR; allow empty or only . (some shells leave . when cd'ing)
+# Count leftovers under TMPDIR; exclude reference file so it is not counted as a leak
 LEFTOVER_COUNT=0
 if [ -d "$LEAK_CHECK_DIR" ]; then
-    LEFTOVER_COUNT=$(find "$LEAK_CHECK_DIR" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l | tr -d ' ')
+    LEFTOVER_COUNT=$(find "$LEAK_CHECK_DIR" -mindepth 1 -maxdepth 1 ! -name "$(basename "$LEAK_REF_FILE")" 2>/dev/null | wc -l | tr -d ' ')
 fi
 
 # Scan /tmp for talawa-* artifacts created after ref (ignore pre-existing); tests should clean these
