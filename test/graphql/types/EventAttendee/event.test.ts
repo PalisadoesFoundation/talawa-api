@@ -17,6 +17,40 @@ describe("EventAttendee Event Resolver Tests", () => {
 	let ctx: GraphQLContext;
 	let mockEventAttendee: EventAttendeeType;
 
+	// Moved up here so it is visible to ALL tests for type casting
+	const mockResolvedInstance = {
+		id: "instance-789",
+		name: "Recurring Instance Event",
+		description: "Instance description",
+		location: "Instance location",
+		actualStartTime: new Date("2024-03-15T09:00:00Z"),
+		actualEndTime: new Date("2024-03-15T12:00:00Z"),
+		organizationId: "org-123",
+		baseRecurringEventId: "template-456",
+		recurrenceRuleId: "rule-789",
+		originalSeriesId: "series-123",
+		originalInstanceStartTime: new Date("2024-03-15T09:00:00Z"),
+		isCancelled: false,
+		generatedAt: new Date("2024-03-01T00:00:00Z"),
+		lastUpdatedAt: null,
+		version: "1",
+		sequenceNumber: 1,
+		totalCount: 10,
+		allDay: false,
+		isPublic: true,
+		isRegisterable: true,
+		isInviteOnly: false,
+		creatorId: "creator-123",
+		updaterId: null,
+		createdAt: new Date("2024-03-01T00:00:00Z"),
+		updatedAt: null,
+		hasExceptions: false,
+		appliedExceptionData: null,
+		exceptionCreatedBy: null,
+		exceptionCreatedAt: null,
+		attachments: [],
+	};
+
 	beforeEach(() => {
 		const { context } = createMockGraphQLContext(true, "user-123");
 		ctx = context;
@@ -113,41 +147,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 	});
 
 	describe("Recurring Event Instance Resolution", () => {
-		const mockResolvedInstance = {
-			id: "instance-789",
-			name: "Recurring Instance Event",
-			description: "Instance description",
-			location: "Instance location",
-			actualStartTime: new Date("2024-03-15T09:00:00Z"),
-			actualEndTime: new Date("2024-03-15T12:00:00Z"),
-			organizationId: "org-123",
-			baseRecurringEventId: "template-456",
-			recurrenceRuleId: "rule-789",
-			originalSeriesId: "series-123",
-			originalInstanceStartTime: new Date("2024-03-15T09:00:00Z"),
-			isCancelled: false,
-			generatedAt: new Date("2024-03-01T00:00:00Z"),
-			lastUpdatedAt: null,
-			version: "1",
-			sequenceNumber: 1,
-			totalCount: 10,
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			creatorId: "creator-123",
-			updaterId: null,
-			createdAt: new Date("2024-03-01T00:00:00Z"),
-			updatedAt: null,
-			hasExceptions: false,
-			appliedExceptionData: null,
-			exceptionCreatedBy: null,
-			exceptionCreatedAt: null,
-			attachments: [],
-		};
-
 		it("should resolve recurring event instance and return resolved instance", async () => {
-			// FIX: Manually mock the loader so .not.toHaveBeenCalled() works correctly
 			ctx.dataloaders.event.load = vi.fn();
 
 			const recurringAttendee = {
@@ -156,13 +156,12 @@ describe("EventAttendee Event Resolver Tests", () => {
 				recurringEventInstanceId: "instance-789",
 			} as EventAttendeeType;
 
-			// FIX: Explicitly set attachments to undefined to test the resolver's ?? [] logic
 			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
 				{
 					...mockResolvedInstance,
-					// FIX: Use 'as any' to bypass TypeScript complaint about undefined
-					// biome-ignore lint/suspicious/noExplicitAny: Testing undefined edge case
-					attachments: undefined as any,
+					// FIX: Use 'as unknown' to trick TS without using 'any'
+					attachments:
+						undefined as unknown as typeof mockResolvedInstance.attachments,
 				},
 			]);
 
@@ -174,7 +173,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 
 			expect(result).toEqual({
 				...mockResolvedInstance,
-				attachments: [], // Verified: undefined input became [] output
+				attachments: [],
 			});
 			expect(getRecurringEventInstancesByIds).toHaveBeenCalledWith(
 				["instance-789"],
@@ -477,8 +476,6 @@ describe("EventAttendee Event Resolver Tests", () => {
 				recurringEventInstanceId: "instance-789",
 			} as EventAttendeeType;
 
-			// Updated: Fully independent mock object to avoid scoping issues
-			// and explicitly test NULL attachments
 			const instanceWithNullAttachments = {
 				id: "instance-789",
 				name: "Recurring Instance Event",
@@ -509,9 +506,8 @@ describe("EventAttendee Event Resolver Tests", () => {
 				appliedExceptionData: null,
 				exceptionCreatedBy: null,
 				exceptionCreatedAt: null,
-				// FIX: use 'as any' to allow testing NULL here
-				// biome-ignore lint/suspicious/noExplicitAny: Testing null edge case
-				attachments: null as any,
+
+				attachments: null as unknown as typeof mockResolvedInstance.attachments,
 			};
 
 			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
