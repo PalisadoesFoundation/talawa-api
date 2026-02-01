@@ -30,7 +30,7 @@ API_EMAIL_PROVIDER=mailpit
 SMTP_HOST=mailpit
 SMTP_PORT=1025
 SMTP_FROM_EMAIL=test@talawa.local
-SMTP_FROM_NAME=Talawa Dev
+SMTP_FROM_NAME=Talawa
 ```
 
 ### Accessing the Mailpit Web Interface
