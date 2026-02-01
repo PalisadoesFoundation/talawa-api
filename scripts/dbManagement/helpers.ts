@@ -569,6 +569,10 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Recurrence rules table data (skipping duplicates), ensured event generation windows\x1b[0m",
+					);
+					break;
+				}
+
 				case "recurring_event_templates": {
 					// PR2: Insert template events only. recurrence_rules and
 					// recurring_event_instances are populated in a follow-up (PR3).

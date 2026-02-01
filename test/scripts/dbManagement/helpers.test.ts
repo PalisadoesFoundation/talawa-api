@@ -14,6 +14,10 @@ import {
 	vi,
 } from "vitest";
 
+vi.mock("src/services/eventGeneration/windowManager", () => ({
+	initializeGenerationWindow: vi.fn().mockResolvedValue({}),
+}));
+
 let testEnvConfig: TestEnvConfig;
 let helpers: typeof import("scripts/dbManagement/helpers");
 
@@ -668,6 +672,147 @@ suite.concurrent("insertCollections", () => {
 		checkAndInsertDataSpy.mockRestore();
 	});
 });
+
+suite.concurrent("events isRecurringEventTemplate", () => {
+	test.concurrent("should set isRecurringEventTemplate true when event has isRecurringEventTemplate in JSON", async () => {
+		let capturedEvents: { isRecurringEventTemplate?: boolean }[] = [];
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows) => {
+				if (table === schema.eventsTable) {
+					capturedEvents = rows as { isRecurringEventTemplate?: boolean }[];
+				}
+				return true;
+			});
+
+		await helpers.insertCollections(["events"]);
+
+		expect(capturedEvents.length).toBeGreaterThan(0);
+		const withTemplate = capturedEvents.some(
+			(e) => e.isRecurringEventTemplate === true,
+		);
+		expect(withTemplate).toBe(true);
+		checkAndInsertDataSpy.mockRestore();
+	});
+});
+
+suite.concurrent("recurrence_rules ingestion", () => {
+	test.concurrent("should parse recurrence_rules with null recurrenceEndDate and updatedAt", async () => {
+		let capturedRules: {
+			recurrenceEndDate: Date | null;
+			updatedAt: Date | null;
+			recurrenceStartDate: Date | null;
+			latestInstanceDate: Date | null;
+			createdAt: Date | null;
+		}[] = [];
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows) => {
+				if (table === schema.recurrenceRulesTable) {
+					capturedRules = rows as typeof capturedRules;
+				}
+				return true;
+			});
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(capturedRules.length).toBeGreaterThan(0);
+		for (const rule of capturedRules) {
+			expect(rule.recurrenceEndDate).toBeNull();
+			expect(rule.updatedAt).toBeNull();
+			expect(rule.recurrenceStartDate).toBeInstanceOf(Date);
+			expect(rule.latestInstanceDate).toBeInstanceOf(Date);
+			expect(rule.createdAt).toBeInstanceOf(Date);
+		}
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("should use idempotent insert for recurrence_rules (conflict target id)", async () => {
+		let conflictTarget: unknown = null;
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (_table, _rows, target) => {
+				conflictTarget = target;
+				return true;
+			});
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(conflictTarget).toBe(schema.recurrenceRulesTable.id);
+		checkAndInsertDataSpy.mockRestore();
+	});
+});
+
+suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
+	test.concurrent("should call initializeGenerationWindow when no window exists for org", async () => {
+		const windowManager = await import(
+			"src/services/eventGeneration/windowManager"
+		);
+		vi.mocked(windowManager.initializeGenerationWindow).mockClear();
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		const db = Reflect.get(helpers, "db");
+		const originalFindFirst = db.query.eventGenerationWindowsTable.findFirst;
+		db.query.eventGenerationWindowsTable.findFirst = vi
+			.fn()
+			.mockResolvedValue(null);
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(windowManager.initializeGenerationWindow).toHaveBeenCalled();
+		db.query.eventGenerationWindowsTable.findFirst = originalFindFirst;
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("should not call initializeGenerationWindow when window already exists", async () => {
+		const windowManager = await import(
+			"src/services/eventGeneration/windowManager"
+		);
+		vi.mocked(windowManager.initializeGenerationWindow).mockClear();
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		const db = Reflect.get(helpers, "db");
+		const originalFindFirst = db.query.eventGenerationWindowsTable.findFirst;
+		db.query.eventGenerationWindowsTable.findFirst = vi
+			.fn()
+			.mockResolvedValue({ id: "existing-window-id" });
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(windowManager.initializeGenerationWindow).not.toHaveBeenCalled();
+		db.query.eventGenerationWindowsTable.findFirst = originalFindFirst;
+		checkAndInsertDataSpy.mockRestore();
+	});
+});
+
+suite.concurrent(
+	"checkDataSize includes recurrence_rules and event_generation_windows",
+	() => {
+		test.concurrent("should query recurrence_rules and event_generation_windows tables", async () => {
+			const tablesQueried: unknown[] = [];
+			const db = Reflect.get(helpers, "db");
+			const originalSelect = db.select;
+			db.select = vi.fn().mockReturnValue({
+				from: vi.fn((table: unknown) => {
+					tablesQueried.push(table);
+					return Promise.resolve([{ count: 0 }]);
+				}),
+			});
+
+			await helpers.checkDataSize("Test Stage");
+
+			expect(tablesQueried).toContain(schema.recurrenceRulesTable);
+			expect(tablesQueried).toContain(schema.eventGenerationWindowsTable);
+			db.select = originalSelect;
+		});
+	},
+);
 
 suite.concurrent("checkDataSize integration test", () => {
 	test.concurrent("should return a boolean indicating record existence", async () => {
