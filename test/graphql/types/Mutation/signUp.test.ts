@@ -7,7 +7,6 @@ import {
 	afterEach,
 	beforeAll,
 	beforeEach,
-	describe,
 	expect,
 	suite,
 	test,
@@ -20,11 +19,6 @@ import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
-import {
-	clearMailpitMessages,
-	getMailpitMessageDetails,
-	waitForEmail,
-} from "../../../helpers/mailpitHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
