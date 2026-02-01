@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import path, { resolve } from "node:path";
+import { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
@@ -168,130 +168,7 @@ async function gracefulCleanup(signal?: string): Promise<void> {
 	}
 }
 
-// Register signal handlers
-process.on("SIGINT", () => gracefulCleanup("SIGINT"));
-process.on("SIGTERM", () => gracefulCleanup("SIGTERM"));
-
-/**
- * Old restoreBackup for backward compatibility with existing backup system.
- * This will be removed once we fully migrate to AtomicEnvWriter.
- * @deprecated Use gracefulCleanup instead
- */
-async function restoreBackup(): Promise<boolean> {
-	if (cleaning) {
-		return false;
-	}
-
-	try {
-		if (!backupCreated) {
-			console.log("📋 No backup was created yet, nothing to restore");
-			return true;
-		}
-
-		try {
-			const backupDir = ".backup";
-			try {
-				await fs.access(backupDir);
-			} catch (err: unknown) {
-				const error = err as NodeJS.ErrnoException;
-				if (error.code === "ENOENT") {
-					console.warn(
-						"⚠️  Backup was marked as created but backup directory does not exist",
-					);
-					return false;
-				}
-				throw err;
-			}
-
-			await restoreLatestBackup();
-			console.log("✅ Original configuration restored successfully");
-			return true;
-		} catch (error: unknown) {
-			console.error("❌ Failed to restore backup:", error);
-			console.error(
-				"\n   You may need to manually restore from the .backup directory",
-			);
-			return false;
-		}
-	} finally {
-		// No-op for compatibility
-	}
-}
-
-/**
- * Test-only export to allow testing the cleaning guard
- * @internal
- */
-export function __test__setCleanupInProgress(value: boolean): void {
-	cleaning = value;
-}
-
-/**
- * Test-only export to allow testing restoreBackup function
- * @internal
- */
-export async function __test__restoreBackup(): Promise<boolean> {
-	return restoreBackup();
-}
-
-async function restoreLatestBackup(): Promise<void> {
-	const backupDir = ".backup";
-	const envPrefix = ".env.";
-	try {
-		await fs.access(backupDir);
-	} catch (err: unknown) {
-		const error = err as NodeJS.ErrnoException;
-		if (error.code === "ENOENT") {
-			console.warn("⚠️  Backup directory .backup does not exist");
-			return;
-		}
-		console.error("❌ Error accessing backup directory:", error);
-		throw error;
-	}
-	try {
-		const files = await fs.readdir(backupDir);
-		const backupFiles = files.filter((file) => file.startsWith(envPrefix));
-		if (backupFiles.length > 0) {
-			const sortedBackups = backupFiles
-				.map((fileName) => {
-					const epochStr = fileName.substring(envPrefix.length);
-					return {
-						name: fileName,
-						epoch: Number.parseInt(epochStr, 10),
-					};
-				})
-				.filter((file) => !Number.isNaN(file.epoch))
-				.sort((a, b) => b.epoch - a.epoch);
-			const latestBackup = sortedBackups[0];
-			if (latestBackup) {
-				const backupPath = path.join(backupDir, latestBackup.name);
-				console.log(`Restoring from latest backup: ${backupPath}`);
-				// Use atomic write: write to temp file first, then rename
-				// This ensures the .env file is either fully restored or unchanged
-				const tempPath = ".env.tmp";
-				try {
-					await fs.copyFile(backupPath, tempPath);
-					await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
-				} catch (err) {
-					// Clean up temp file if it exists (e.g., if copyFile succeeded but rename failed)
-					try {
-						await fs.unlink(tempPath);
-					} catch {
-						// Ignore cleanup errors - temp file may not exist or already be removed
-					}
-					throw err; // Re-throw the original error after cleanup attempt
-				}
-			} else {
-				console.warn("⚠️  No valid backup files found with epoch timestamps");
-			}
-		} else {
-			console.warn("⚠️  No backup files found in .backup directory");
-		}
-	} catch (readError) {
-		console.error("❌ Error reading backup directory:", readError);
-		throw readError;
-	}
-}
+// Signal handlers will be registered in setup() to avoid test pollution
 
 export function isBooleanString(input: unknown): input is "true" | "false" {
 	return typeof input === "string" && (input === "true" || input === "false");
@@ -493,7 +370,14 @@ export async function metricsSetup(
 }
 async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
-	await restoreLatestBackup();
+	if (backupCreated) {
+		try {
+			await atomicRestoreBackup(envFileName, envBackupFile);
+			console.log("✅ Original configuration restored successfully");
+		} catch (restoreErr) {
+			console.error("❌ Failed to restore backup:", restoreErr);
+		}
+	}
 	process.exit(1);
 }
 export async function checkEnvFile(): Promise<boolean> {
@@ -530,10 +414,9 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 			.join("\n");
 
 		// Use AtomicEnvWriter for safe file operations
-		await ensureBackup(envFileName, envBackupFile);
+		// Note: Backup is already created in setup() based on user preference
 		await writeTemp(envTempFile, safeContent);
 		await commitTemp(envFileName, envTempFile);
-		await cleanupTemp(envTempFile);
 
 		dotenv.config({ path: envFileName });
 		console.log(
@@ -1213,6 +1096,12 @@ export async function setup(): Promise<SetupAnswers> {
 	backupCreated = false;
 	cleaning = false;
 
+	// Register signal handlers for graceful cleanup
+	const sigintHandler = () => gracefulCleanup("SIGINT");
+	const sigtermHandler = () => gracefulCleanup("SIGTERM");
+	process.on("SIGINT", sigintHandler);
+	process.on("SIGTERM", sigtermHandler);
+
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
 	if (await checkEnvFile()) {
@@ -1334,6 +1223,11 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");
+
+	// Cleanup: Unregister signal handlers after successful setup
+	process.removeListener("SIGINT", sigintHandler);
+	process.removeListener("SIGTERM", sigtermHandler);
+
 	return answers;
 }
 if (
