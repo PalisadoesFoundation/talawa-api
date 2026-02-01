@@ -486,7 +486,7 @@ describe("backgroundServiceWorker", () => {
 			const cron = await import("node-cron");
 			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(2);
 
-			// Should validation metricsEnabled is false in logs
+			// Should validate metricsEnabled is false in logs
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				expect.objectContaining({
 					metricsEnabled: false,
