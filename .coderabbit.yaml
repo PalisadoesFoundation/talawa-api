@@ -41,6 +41,7 @@ reviews:
                 4. 100% code coverage is achieved for the associated implementation files
                 5. No redundant or duplicate test cases exist
                 6. Test files are in the correct location (e.g., test/graphql/types/Mutation/ not test/routes/graphql/Mutation/)
+                7. Tests won't be flaky when CI/CD response times are highly variable
           
             2. For each modified or new source file, identify:
               - Specific lines of code lacking test coverage (list exact line numbers)
