@@ -36,10 +36,12 @@ describe("EventAttendee Event Resolver Tests", () => {
 			updatedAt: new Date("2024-03-10T08:00:00Z"),
 		} as EventAttendeeType;
 	});
+
 	afterEach(() => {
 		vi.clearAllMocks();
 		vi.restoreAllMocks();
 	});
+
 	describe("Authentication", () => {
 		it("should throw unauthenticated error if user is not logged in", async () => {
 			ctx.currentClient.isAuthenticated = false;
@@ -145,18 +147,22 @@ describe("EventAttendee Event Resolver Tests", () => {
 		};
 
 		it("should resolve recurring event instance and return resolved instance", async () => {
+			// FIX: Manually mock the loader so .not.toHaveBeenCalled() works correctly
+			ctx.dataloaders.event.load = vi.fn();
+
 			const recurringAttendee = {
 				...mockEventAttendee,
 				eventId: null,
 				recurringEventInstanceId: "instance-789",
 			} as EventAttendeeType;
 
-			// Update: explicitly set attachments to undefined to test the resolver's ?? [] logic
+			// FIX: Explicitly set attachments to undefined to test the resolver's ?? [] logic
 			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
 				{
 					...mockResolvedInstance,
-					attachments:
-						undefined as unknown as typeof mockResolvedInstance.attachments,
+					// FIX: Use 'as any' to bypass TypeScript complaint about undefined
+					// biome-ignore lint/suspicious/noExplicitAny: Testing undefined edge case
+					attachments: undefined as any,
 				},
 			]);
 
@@ -464,14 +470,16 @@ describe("EventAttendee Event Resolver Tests", () => {
 	});
 
 	describe("Attachments Nullish Coalescing", () => {
-		it("should return empty array when resolved instance has undefined attachments", async () => {
+		it("should return empty array when resolved instance has null attachments", async () => {
 			const recurringAttendee = {
 				...mockEventAttendee,
 				eventId: null,
 				recurringEventInstanceId: "instance-789",
 			} as EventAttendeeType;
 
-			const instanceWithUndefinedAttachments = {
+			// Updated: Fully independent mock object to avoid scoping issues
+			// and explicitly test NULL attachments
+			const instanceWithNullAttachments = {
 				id: "instance-789",
 				name: "Recurring Instance Event",
 				description: "Instance description",
@@ -501,14 +509,14 @@ describe("EventAttendee Event Resolver Tests", () => {
 				appliedExceptionData: null,
 				exceptionCreatedBy: null,
 				exceptionCreatedAt: null,
-				attachments: undefined,
+				// FIX: use 'as any' to allow testing NULL here
+				// biome-ignore lint/suspicious/noExplicitAny: Testing null edge case
+				attachments: null as any,
 			};
 
 			vi.mocked(getRecurringEventInstancesByIds).mockResolvedValue([
-				instanceWithUndefinedAttachments,
-			] as unknown as Awaited<
-				ReturnType<typeof getRecurringEventInstancesByIds>
-			>);
+				instanceWithNullAttachments,
+			]);
 
 			const result = await eventAttendeeEventResolver(
 				recurringAttendee,
