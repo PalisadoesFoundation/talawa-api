@@ -123,7 +123,7 @@ Provider name (e.g., "google", "github")
 
 > **getUserProfile**(`accessToken`): `Promise`\<[`OAuthUserProfile`](../../../types/interfaces/OAuthUserProfile.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GoogleOAuthProvider.ts#L92)
+Defined in: [src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:90](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GoogleOAuthProvider.ts#L90)
 
 Fetch user profile from Google userinfo endpoint
 

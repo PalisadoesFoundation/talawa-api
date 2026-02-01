@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosResponse } from "axios";
 import type { MockedFunction } from "vitest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	OAuthError,
 	ProfileFetchError,
@@ -113,6 +113,8 @@ describe("BaseOAuthProvider", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Reset the mock function's behavior to prevent state leakage
+		mockedIsAxiosError.mockReset();
 
 		config = {
 			clientId: "test_client_id",
@@ -121,6 +123,13 @@ describe("BaseOAuthProvider", () => {
 		};
 
 		provider = new ConcreteOAuthProvider("test-provider", config);
+	});
+
+	afterEach(() => {
+		// Restore all mocks to original implementations to prevent leakage across shards
+		vi.restoreAllMocks();
+		vi.unstubAllEnvs();
+		vi.clearAllTimers();
 	});
 
 	describe("constructor", () => {

@@ -54,8 +54,6 @@ export class GoogleOAuthProvider extends BaseOAuthProvider {
 		code: string,
 		redirectUri?: string,
 	): Promise<OAuthProviderTokenResponse> {
-		this.validateConfig();
-
 		// Resolve redirect URI from parameter or config
 		const resolvedRedirectUri = redirectUri || this.config.redirectUri;
 

@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type AxiosResponse } from "axios";
 import type { MockedFunction } from "vitest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	OAuthError,
 	ProfileFetchError,
@@ -79,12 +79,21 @@ describe("GoogleOAuthProvider", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Reset the mock function's behavior to prevent state leakage
+		mockedIsAxiosError.mockReset();
 		config = {
 			clientId: "test_google_client_id.apps.googleusercontent.com",
 			clientSecret: "test_google_client_secret",
 			redirectUri: "http://localhost:3000/auth/google/callback",
 		};
 		provider = new GoogleOAuthProvider(config);
+	});
+
+	afterEach(() => {
+		// Restore all mocks to original implementations to prevent leakage across shards
+		vi.restoreAllMocks();
+		vi.unstubAllEnvs();
+		vi.clearAllTimers();
 	});
 
 	describe("constructor and getProviderName", () => {
@@ -171,21 +180,46 @@ describe("GoogleOAuthProvider", () => {
 
 			const urlParams = mockedPost.mock.calls[0]?.[1] as URLSearchParams;
 			expect(urlParams.get("grant_type")).toBe("authorization_code");
-		});
-
-		it("should use config redirectUri when parameter is not provided", async () => {
-			mockedPost.mockResolvedValueOnce({
-				data: { access_token: "token", token_type: "Bearer" },
-			} as AxiosResponse);
-
-			await provider.exchangeCodeForTokens("test_code");
-
-			const urlParams = mockedPost.mock.calls[0]?.[1] as URLSearchParams;
+			expect(urlParams.get("code")).toBe("test_code");
+			expect(urlParams.get("client_id")).toBe(
+				"test_google_client_id.apps.googleusercontent.com",
+			);
+			expect(urlParams.get("client_secret")).toBe("test_google_client_secret");
 			expect(urlParams.get("redirect_uri")).toBe(
 				"http://localhost:3000/auth/google/callback",
 			);
 		});
+		it("should use explicit redirectUri parameter over configured value", async () => {
+			const overrideUri = "http://example.com/oauth/callback";
+			const mockTokenResponse: OAuthProviderTokenResponse = {
+				access_token: "ya29.test_token",
+				token_type: "Bearer",
+				expires_in: 3599,
+			};
 
+			mockedPost.mockResolvedValueOnce({
+				data: mockTokenResponse,
+			} as AxiosResponse);
+
+			const result = await provider.exchangeCodeForTokens(
+				"test_code",
+				overrideUri,
+			);
+
+			expect(result).toEqual(mockTokenResponse);
+			expect(mockedPost).toHaveBeenCalledWith(
+				"https://oauth2.googleapis.com/token",
+				expect.any(URLSearchParams),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"Content-Type": "application/x-www-form-urlencoded",
+					}),
+				}),
+			);
+
+			const urlParams = mockedPost.mock.calls[0]?.[1] as URLSearchParams;
+			expect(urlParams.get("redirect_uri")).toBe(overrideUri);
+		});
 		it("should throw TokenExchangeError when no redirectUri is available", async () => {
 			const providerNoRedirect = new GoogleOAuthProvider({
 				clientId: "test_id",
@@ -218,39 +252,55 @@ describe("GoogleOAuthProvider", () => {
 				provider.exchangeCodeForTokens("bad_code", "http://localhost/callback"),
 			).rejects.toThrow(TokenExchangeError);
 		});
+
+	it("should handle timeout in token exchange", async () => {
+		const timeoutError = {
+			isAxiosError: true,
+			code: "ECONNABORTED",
+			message: "timeout of 10000ms exceeded",
+			config: { headers: {} },
+		} as AxiosError;
+
+		mockedIsAxiosError.mockReturnValue(true);
+		mockedPost.mockRejectedValueOnce(timeoutError);
+
+		await expect(
+			provider.exchangeCodeForTokens("test_code", "http://localhost/callback"),
+		).rejects.toThrow(TokenExchangeError);
 	});
+});
 
-	describe("getUserProfile", () => {
-		it("should fetch and normalize user profile", async () => {
-			const mockGoogleProfile = {
-				sub: "123456789",
-				email: "test@gmail.com",
-				name: "Test User",
-				picture: "https://example.com/photo.jpg",
-				email_verified: true,
-			};
+describe("getUserProfile", () => {
+	it("should fetch and normalize user profile", async () => {
+		const mockGoogleProfile = {
+			sub: "123456789",
+			email: "test@gmail.com",
+			name: "Test User",
+			picture: "https://example.com/photo.jpg",
+			email_verified: true,
+		};
 
-			mockedGet.mockResolvedValueOnce({
-				data: mockGoogleProfile,
-			} as AxiosResponse);
+		mockedGet.mockResolvedValueOnce({
+			data: mockGoogleProfile,
+		} as AxiosResponse);
 
-			const result = await provider.getUserProfile("test_access_token");
+		const result = await provider.getUserProfile("test_access_token");
 
-			expect(result).toEqual({
-				providerId: "123456789",
-				email: "test@gmail.com",
-				name: "Test User",
-				picture: "https://example.com/photo.jpg",
-				emailVerified: true,
-			} satisfies OAuthUserProfile);
+		expect(result).toEqual({
+			providerId: "123456789",
+			email: "test@gmail.com",
+			name: "Test User",
+			picture: "https://example.com/photo.jpg",
+			emailVerified: true,
+		} satisfies OAuthUserProfile);
 
-			expect(mockedGet).toHaveBeenCalledWith(
-				"https://www.googleapis.com/oauth2/v3/userinfo",
-				expect.objectContaining({
-					headers: { Authorization: "Bearer test_access_token" },
-				}),
-			);
-		});
+		expect(mockedGet).toHaveBeenCalledWith(
+			"https://www.googleapis.com/oauth2/v3/userinfo",
+			expect.objectContaining({
+				headers: { Authorization: "Bearer test_access_token" },
+			}),
+		);
+	});
 
 		it("should handle minimal profile (only sub)", async () => {
 			mockedGet.mockResolvedValueOnce({
@@ -272,6 +322,22 @@ describe("GoogleOAuthProvider", () => {
 			} as AxiosError);
 
 			await expect(provider.getUserProfile("bad_token")).rejects.toThrow(
+				ProfileFetchError,
+			);
+		});
+
+		it("should handle timeout in profile fetch", async () => {
+			const timeoutError = {
+				isAxiosError: true,
+				code: "ECONNABORTED",
+				message: "timeout of 10000ms exceeded",
+				config: { headers: {} },
+			} as AxiosError;
+
+			mockedIsAxiosError.mockReturnValue(true);
+			mockedGet.mockRejectedValueOnce(timeoutError);
+
+			await expect(provider.getUserProfile("test_token")).rejects.toThrow(
 				ProfileFetchError,
 			);
 		});
