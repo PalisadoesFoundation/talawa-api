@@ -121,6 +121,7 @@ describe("Setup -> postgresSetup", () => {
 
 	it("should not change API_POSTGRES_PASSWORD if POSTGRES_PASSWORD matches", async () => {
 		const promptMock = vi.spyOn(inquirer, "prompt");
+		const consoleLogSpy = vi.spyOn(console, "log");
 		promptMock
 			.mockResolvedValueOnce({ POSTGRES_DB: "talawa" })
 			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "password" })
@@ -135,6 +136,10 @@ describe("Setup -> postgresSetup", () => {
 		await postgresSetup(answers);
 
 		expect(answers.API_POSTGRES_PASSWORD).toBe("password");
+		// Verify no-op branch was taken (no sync message logged)
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			expect.stringContaining("updated to match POSTGRES_PASSWORD"),
+		);
 	});
 
 	it("should initialize API_POSTGRES_PASSWORD when undefined", async () => {

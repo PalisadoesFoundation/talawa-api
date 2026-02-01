@@ -175,7 +175,7 @@ describe("Setup -> minioSetup", () => {
 		expect(answers.API_MINIO_SECRET_KEY).toBe("password");
 		// Verify no-op branch was taken (no sync message logged)
 		expect(consoleLogSpy).not.toHaveBeenCalledWith(
-			expect.stringContaining("Synchronized"),
+			expect.stringContaining("updated to match MINIO_ROOT_PASSWORD"),
 		);
 	});
 
