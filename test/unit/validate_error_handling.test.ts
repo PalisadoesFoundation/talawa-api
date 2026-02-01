@@ -1539,4 +1539,38 @@ describe("ErrorHandlingValidator", () => {
 			vi.restoreAllMocks();
 		});
 	});
+
+	describe("Validation Exit Logic", () => {
+		it("should return exit code 1 when violations exist and WARN_ONLY_MODE is false", async () => {
+			// Ensure WARN_ONLY_MODE is false (default behavior)
+
+			// Mock getting files
+			vi.spyOn(validator, "getFilesToScan").mockResolvedValue(["dirty.ts"]);
+
+			// Mock validateFile to add a violation
+			vi.spyOn(validator, "validateFile").mockImplementation(async () => {
+				validator.addViolation(
+					"dirty.ts",
+					1,
+					"test_violation",
+					"code",
+					"fix it",
+				);
+			});
+
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(1);
+		});
+
+		it("should return exit code 0 when violations are empty", async () => {
+			// Mock getting files
+			vi.spyOn(validator, "getFilesToScan").mockResolvedValue(["clean.ts"]);
+
+			// Mock validateFile to do nothing (clean file)
+			vi.spyOn(validator, "validateFile").mockResolvedValue(undefined);
+
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(0);
+		});
+	});
 });

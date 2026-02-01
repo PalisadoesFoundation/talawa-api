@@ -1009,8 +1009,9 @@ export class ErrorHandlingValidator {
 					);
 
 					// Explicitly check for directory traversal segments
+					const segments = relativePath.split(/[/\\]/);
 					if (
-						relativePath.includes("..") ||
+						segments.some((segment) => segment === ".." || segment === ".") ||
 						!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)
 					) {
 						throw new TalawaRestError({
