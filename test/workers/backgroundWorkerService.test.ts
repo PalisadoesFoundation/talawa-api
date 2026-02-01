@@ -238,6 +238,12 @@ describe("backgroundServiceWorker", () => {
 				"Starting metrics aggregation worker run",
 			);
 
+			expect(runMetricsAggregationWorker).toHaveBeenCalledWith(
+				getSnapshots,
+				5,
+				mockLogger,
+			);
+
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				expect.objectContaining({
 					duration: expect.stringMatching(/^\d+ms$/),
@@ -257,6 +263,12 @@ describe("backgroundServiceWorker", () => {
 
 			const getSnapshots = vi.fn();
 			await runMetricsAggregationWorkerSafely(getSnapshots, 5, mockLogger);
+
+			expect(runMetricsAggregationWorker).toHaveBeenCalledWith(
+				getSnapshots,
+				5,
+				mockLogger,
+			);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -278,6 +290,12 @@ describe("backgroundServiceWorker", () => {
 
 			const getSnapshots = vi.fn();
 			await runMetricsAggregationWorkerSafely(getSnapshots, 5, mockLogger);
+
+			expect(runMetricsAggregationWorker).toHaveBeenCalledWith(
+				getSnapshots,
+				5,
+				mockLogger,
+			);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -403,6 +421,16 @@ describe("backgroundServiceWorker", () => {
 			const { runMaterializationWorker } = await import(
 				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
 			vi.mocked(runMaterializationWorker).mockResolvedValue({
 				organizationsProcessed: 0,
 				instancesCreated: 0,
@@ -432,6 +460,16 @@ describe("backgroundServiceWorker", () => {
 			const { runMaterializationWorker } = await import(
 				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
 			vi.mocked(runMaterializationWorker).mockResolvedValue({
 				organizationsProcessed: 0,
 				instancesCreated: 0,
@@ -771,6 +809,22 @@ describe("backgroundServiceWorker", () => {
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Background workers not running");
 			expect(result.details.isRunning).toBe(false);
+		});
+
+		it("returns unhealthy when status check fails", async () => {
+			const { healthCheck } = await import(
+				"~/src/workers/backgroundWorkerService"
+			);
+
+			const mockStatusGetter = vi.fn().mockImplementation(() => {
+				throw new Error("Status check failed");
+			});
+
+			const result = await healthCheck(mockStatusGetter);
+
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("Status check failed");
 		});
 	});
 
