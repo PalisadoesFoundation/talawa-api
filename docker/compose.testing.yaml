@@ -135,8 +135,7 @@ services:
       retries: 3
       start_interval: 1s
       start_period: 5s
-      # https://mailpit.axllent.org/docs/integration/healthcheck/
-      test: ["/mailpit", "readyz"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8025/api/v1/info || exit 1"]
       timeout: 10s
     networks:
       - mailpit_test
