@@ -8,11 +8,11 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { eventAttachmentMimeTypeZodEnum } from "../enums/eventAttachmentMimeType";
 import { imageMimeTypes } from "../enums/imageMimeType";
 import { videoMimeTypes } from "../enums/videoMimeType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
-import { eventAttachmentMimeTypeZodEnum } from "../enums/eventAttachmentMimeType";
 
 /**
  * PostgreSQL enum for event attachment MIME types.
@@ -122,6 +122,6 @@ export const eventAttachmentsTableInsertSchema = createInsertSchema(
 	eventAttachmentsTable,
 	{
 		name: (schema) => schema.min(1),
-		mimeType: () => eventAttachmentMimeTypeZodEnum
+		mimeType: () => eventAttachmentMimeTypeZodEnum,
 	},
 );
