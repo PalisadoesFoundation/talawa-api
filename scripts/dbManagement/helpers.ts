@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
@@ -14,6 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import { initializeGenerationWindow } from "src/services/eventGeneration/windowManager";
 import { uuidv7 } from "uuidv7";
 
 const envConfig = envSchema<EnvConfig>({
@@ -466,6 +467,7 @@ export async function insertCollections(
 								updatedAt: string | number | Date;
 								startAt: string | number | Date;
 								endAt: string | number | Date;
+								isRecurringEventTemplate?: boolean;
 							},
 							index: number,
 						) => {
@@ -486,6 +488,8 @@ export async function insertCollections(
 								startAt: start,
 								endAt: end,
 								updatedAt: null,
+								isRecurringEventTemplate:
+									event.isRecurringEventTemplate === true,
 							};
 						},
 					) as (typeof schema.eventsTable.$inferInsert)[];
@@ -499,6 +503,72 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurrence_rules": {
+					const recurrenceRules = JSON.parse(fileContent).map(
+						(rule: {
+							recurrenceStartDate: string | number | Date;
+							recurrenceEndDate: string | number | Date | null;
+							latestInstanceDate: string | number | Date;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date | null;
+						}) => ({
+							...rule,
+							recurrenceStartDate: parseDate(rule.recurrenceStartDate),
+							recurrenceEndDate: rule.recurrenceEndDate
+								? parseDate(rule.recurrenceEndDate)
+								: null,
+							latestInstanceDate: parseDate(rule.latestInstanceDate),
+							createdAt: parseDate(rule.createdAt),
+							updatedAt: rule.updatedAt ? parseDate(rule.updatedAt) : null,
+						}),
+					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.recurrenceRulesTable,
+						recurrenceRules,
+						schema.recurrenceRulesTable.id,
+						1000,
+					);
+
+					// Ensure event_generation_windows exist for each org with recurrence rules (Option B)
+					const sampleDataLogger = {
+						info: (obj: unknown, msg?: string) =>
+							console.log(msg ?? "", typeof obj === "object" ? obj : ""),
+						error: (obj: unknown, msg?: string) =>
+							console.error(msg ?? "", typeof obj === "object" ? obj : ""),
+					};
+					const orgToCreatorId = new Map<string, string>();
+					for (const rule of recurrenceRules) {
+						if (!orgToCreatorId.has(rule.organizationId)) {
+							orgToCreatorId.set(rule.organizationId, rule.creatorId);
+						}
+					}
+					for (const [organizationId, createdById] of orgToCreatorId) {
+						const existing =
+							await db.query.eventGenerationWindowsTable.findFirst({
+								where: eq(
+									schema.eventGenerationWindowsTable.organizationId,
+									organizationId,
+								),
+								columns: { id: true },
+							});
+						if (!existing) {
+							await initializeGenerationWindow(
+								{ organizationId, createdById },
+								db as Parameters<typeof initializeGenerationWindow>[1],
+								sampleDataLogger as Parameters<
+									typeof initializeGenerationWindow
+								>[2],
+							);
+						}
+					}
+
+					console.log(
+						"\x1b[35mAdded: Recurrence rules table data (skipping duplicates), ensured event generation windows\x1b[0m",
 					);
 					break;
 				}
@@ -717,6 +787,11 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
+			{
+				name: "event_generation_windows",
+				table: schema.eventGenerationWindowsTable,
+			},
 			{ name: "event_volunteers", table: schema.eventVolunteersTable },
 			{
 				name: "event_volunteer_memberships",
