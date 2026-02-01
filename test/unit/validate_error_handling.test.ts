@@ -115,6 +115,7 @@ describe("ErrorHandlingValidator", () => {
 				"src/fastifyPlugins/errorHandler.ts",
 				"setup.ts",
 				"scripts/config.ts",
+				"src\\utilities\\errors\\errorHandler.ts",
 			];
 
 			allowedFiles.forEach((file) => {

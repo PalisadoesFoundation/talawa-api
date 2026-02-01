@@ -408,7 +408,8 @@ export class ErrorHandlingValidator {
 	}
 
 	public isAllowedFile(filePath: string): boolean {
-		return ALLOWED_PATTERNS.some((pattern) => pattern.test(filePath));
+		const normalizedPath = filePath.replace(/\\/g, "/");
+		return ALLOWED_PATTERNS.some((pattern) => pattern.test(normalizedPath));
 	}
 
 	public async validateFile(filePath: string): Promise<void> {
