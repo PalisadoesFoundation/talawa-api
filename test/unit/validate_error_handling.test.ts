@@ -644,6 +644,12 @@ describe("ErrorHandlingValidator", () => {
 			).toBe(false);
 		});
 
+		it("should use fast path for exact matches", () => {
+			expect(
+				validator.matchesGlobPattern("src/routes/api.ts", "src/routes/api.ts"),
+			).toBe(true);
+		});
+
 		it("should match recursive patterns correctly", () => {
 			expect(
 				validator.matchesGlobPattern(
@@ -1317,6 +1323,36 @@ describe("ErrorHandlingValidator", () => {
 			expect(consoleSpy).toHaveBeenCalledWith(
 				expect.stringContaining(
 					"No modified files detected. Skipping validation",
+				),
+			);
+			process.env = originalEnv;
+			consoleSpy.mockRestore();
+		});
+
+		it("should fall back to full scan in CI when no specific modifications detected", async () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: "true",
+				GITHUB_BASE_REF: "develop",
+				CHANGED_FILES: undefined,
+			};
+
+			// Mock getModifiedFiles to return empty array (simulating no diffs returned)
+			vi.spyOn(validator, "getModifiedFiles").mockReturnValue([]);
+
+			// Use glob mock result
+			const globMock = await import("glob");
+			vi.mocked(globMock.glob).mockResolvedValue(["fallbackFile.ts"]);
+
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const files = await validator.getFilesToScan();
+
+			expect(files).toEqual(["fallbackFile.ts"]);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				expect.stringContaining(
+					"No modified files detected in CI context. Falling back to full scan pattern check.",
 				),
 			);
 

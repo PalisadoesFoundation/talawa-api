@@ -173,8 +173,12 @@ export class ErrorHandlingValidator {
 				console.log(
 					`Using changed files from environment: ${files.length} files`,
 				);
-				return files;
+			} else {
+				console.log(
+					"Changed files from environment filtered to empty list. Skipping validation.",
+				);
 			}
+			return files;
 		}
 
 		try {
