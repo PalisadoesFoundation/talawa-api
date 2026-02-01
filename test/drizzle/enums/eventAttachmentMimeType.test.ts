@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { eventAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 
 /**
  * Tests for eventAttachmentMimeTypeEnum - validates allowed event attachment MIME types.
@@ -13,14 +13,14 @@ describe("eventAttachmentMimeTypeEnum", () => {
 			["image/png"],
 			["image/webp"],
 		])("should accept %s", (mimeType) => {
-			const result = eventAttachmentMimeTypeEnum.safeParse(mimeType);
+			const result = eventAttachmentMimeTypeZodEnum.safeParse(mimeType);
 			expect(result.success).toBe(true);
 		});
 	});
 
 	describe("allowed video MIME types", () => {
 		it.each([["video/mp4"], ["video/webm"]])("should accept %s", (mimeType) => {
-			const result = eventAttachmentMimeTypeEnum.safeParse(mimeType);
+			const result = eventAttachmentMimeTypeZodEnum.safeParse(mimeType);
 			expect(result.success).toBe(true);
 		});
 	});
@@ -35,12 +35,12 @@ describe("eventAttachmentMimeTypeEnum", () => {
 			["application/zip", "ZIP archives"],
 			["application/x-php", "PHP files"],
 		])("should reject %s (%s)", (mimeType) => {
-			const result = eventAttachmentMimeTypeEnum.safeParse(mimeType);
+			const result = eventAttachmentMimeTypeZodEnum.safeParse(mimeType);
 			expect(result.success).toBe(false);
 		});
 
 		it("should reject empty string", () => {
-			const result = eventAttachmentMimeTypeEnum.safeParse("");
+			const result = eventAttachmentMimeTypeZodEnum.safeParse("");
 			expect(result.success).toBe(false);
 		});
 	});

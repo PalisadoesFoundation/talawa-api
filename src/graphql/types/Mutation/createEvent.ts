@@ -2,7 +2,7 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { eventAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
@@ -52,13 +52,13 @@ export const mutationCreateEventArgumentsSchema = z.object({
 
 		let attachments:
 			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
+					mimetype: z.infer<typeof eventAttachmentMimeTypeZodEnum>;
 			  })[]
 			| undefined;
 
 		if (arg.attachments !== undefined) {
 			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = eventAttachmentMimeTypeEnum
+			const { data, error, success } = eventAttachmentMimeTypeZodEnum
 				.array()
 				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
 

@@ -1,9 +1,22 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgEnum,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { imageMimeTypes } from "../enums/imageMimeType";
+import { videoMimeTypes } from "../enums/videoMimeType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
+
+export const eventAttachmentMimeTypePgEnum = pgEnum(
+	"event_attachment_mime_type",
+	[...imageMimeTypes, ...videoMimeTypes],
+);
 
 /**
  * Drizzle orm postgres table definition for event attachments.
@@ -40,9 +53,7 @@ export const eventAttachmentsTable = pgTable(
 		/**
 		 * Mime type of the attachment.
 		 */
-		mimeType: text("mime_type", {
-			enum: eventAttachmentMimeTypeEnum.options as [string, ...string[]],
-		}).notNull(),
+		mimeType: eventAttachmentMimeTypePgEnum("mime_type").notNull(),
 		/**
 		 * Identifier name of the attachment.
 		 */
