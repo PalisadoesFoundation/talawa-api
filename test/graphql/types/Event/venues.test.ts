@@ -1,9 +1,15 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
+import { type GraphQLObjectType } from "graphql";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
+import { eventsTable } from "~/src/drizzle/tables/events";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venueBookingsTable } from "~/src/drizzle/tables/venueBookings";
 import { venuesTable } from "~/src/drizzle/tables/venues";
+import { schema } from "~/src/graphql/schema";
+import envConfig from "~/src/utilities/graphqLimits";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -38,8 +44,16 @@ beforeAll(async () => {
 	adminUserId = signInResult.data.signIn.user.id;
 });
 
-afterEach(() => {
+afterEach(async () => {
 	vi.restoreAllMocks();
+
+	// Clean up test data in reverse dependency order
+	await server.drizzleClient.delete(venueAttachmentsTable);
+	await server.drizzleClient.delete(venueBookingsTable);
+	await server.drizzleClient.delete(venuesTable);
+	await server.drizzleClient.delete(eventsTable);
+	await server.drizzleClient.delete(organizationMembershipsTable);
+	await server.drizzleClient.delete(organizationsTable);
 });
 
 async function createOrganizationWithMembership(): Promise<string> {
@@ -1445,5 +1459,86 @@ suite("Event venues Field", () => {
 		// Verify createdAt is a valid ISO datetime string
 		const createdAtDate = new Date(decodedCursor.createdAt);
 		expect(createdAtDate.toString()).not.toBe("Invalid Date");
+	});
+
+	test("should calculate complexity correctly with first parameter", () => {
+		const eventType = schema.getType("Event") as GraphQLObjectType;
+		if (!eventType) {
+			throw new Error("Event type not found");
+		}
+
+		const venuesField = eventType.getFields().venues;
+		if (!venuesField) {
+			throw new Error("Venues field not found");
+		}
+
+		const complexityFn = venuesField.extensions?.complexity as (args: {
+			first?: number | null;
+			last?: number | null;
+		}) => { field: number; multiplier: number };
+
+		if (!complexityFn) {
+			throw new Error("Complexity function not found");
+		}
+
+		const result = complexityFn({ first: 10 });
+		expect(result).toEqual({
+			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			multiplier: 10,
+		});
+	});
+
+	test("should calculate complexity correctly with last parameter", () => {
+		const eventType = schema.getType("Event") as GraphQLObjectType;
+		if (!eventType) {
+			throw new Error("Event type not found");
+		}
+
+		const venuesField = eventType.getFields().venues;
+		if (!venuesField) {
+			throw new Error("Venues field not found");
+		}
+
+		const complexityFn = venuesField.extensions?.complexity as (args: {
+			first?: number | null;
+			last?: number | null;
+		}) => { field: number; multiplier: number };
+
+		if (!complexityFn) {
+			throw new Error("Complexity function not found");
+		}
+
+		const result = complexityFn({ last: 5 });
+		expect(result).toEqual({
+			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			multiplier: 5,
+		});
+	});
+
+	test("should default complexity multiplier to 1 when neither first nor last provided", () => {
+		const eventType = schema.getType("Event") as GraphQLObjectType;
+		if (!eventType) {
+			throw new Error("Event type not found");
+		}
+
+		const venuesField = eventType.getFields().venues;
+		if (!venuesField) {
+			throw new Error("Venues field not found");
+		}
+
+		const complexityFn = venuesField.extensions?.complexity as (args: {
+			first?: number | null;
+			last?: number | null;
+		}) => { field: number; multiplier: number };
+
+		if (!complexityFn) {
+			throw new Error("Complexity function not found");
+		}
+
+		const result = complexityFn({});
+		expect(result).toEqual({
+			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			multiplier: 1,
+		});
 	});
 });
