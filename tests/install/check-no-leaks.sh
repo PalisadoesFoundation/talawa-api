@@ -26,18 +26,36 @@ if ! bash "$SCRIPT_DIR/run-all.sh"; then
     exit 1
 fi
 
-# Count leftovers; allow empty or only . (some shells leave . when cd'ing)
+# Count leftovers under TMPDIR; allow empty or only . (some shells leave . when cd'ing)
 LEFTOVER_COUNT=0
 if [ -d "$LEAK_CHECK_DIR" ]; then
     LEFTOVER_COUNT=$(find "$LEAK_CHECK_DIR" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l | tr -d ' ')
 fi
 
-if [ "${LEFTOVER_COUNT:-0}" -ne 0 ]; then
-    echo "Leaked $LEFTOVER_COUNT item(s) under TMPDIR ($LEAK_CHECK_DIR):"
-    find "$LEAK_CHECK_DIR" -mindepth 1 -maxdepth 3 2>/dev/null || true
+# Scan /tmp for talawa-* artifacts (e.g. talawa-logging-test-*.log) that tests should clean
+TMP_TALAWA_LEAKS=0
+TMP_TALAWA_LIST=""
+if [ -d /tmp ]; then
+    TMP_TALAWA_LIST=$(find /tmp -maxdepth 1 -name 'talawa-*' 2>/dev/null || true)
+    if [ -n "$TMP_TALAWA_LIST" ]; then
+        TMP_TALAWA_LEAKS=$(echo "$TMP_TALAWA_LIST" | wc -l | tr -d ' ')
+    fi
+fi
+
+TOTAL_LEAKS=$((LEFTOVER_COUNT + TMP_TALAWA_LEAKS))
+
+if [ "$TOTAL_LEAKS" -ne 0 ]; then
+    if [ "${LEFTOVER_COUNT:-0}" -ne 0 ]; then
+        echo "Leaked $LEFTOVER_COUNT item(s) under TMPDIR ($LEAK_CHECK_DIR):"
+        find "$LEAK_CHECK_DIR" -mindepth 1 -maxdepth 3 2>/dev/null || true
+    fi
+    if [ "$TMP_TALAWA_LEAKS" -ne 0 ]; then
+        echo "Leaked $TMP_TALAWA_LEAKS talawa-* file(s) under /tmp:"
+        echo "$TMP_TALAWA_LIST"
+    fi
     echo "Ensure all test files register EXIT traps and clean temp dirs/files."
     exit 1
 fi
 
-echo "No temp files leaked; TMPDIR was empty after test suite."
+echo "No temp files leaked; TMPDIR was empty and no /tmp/talawa-* artifacts after test suite."
 exit 0

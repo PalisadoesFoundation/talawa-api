@@ -241,7 +241,7 @@ EOF
     local i
     for ((i = 1; i <= TEST_SIGNAL_POLL_ITER; i++)); do
         if ! kill -0 "$pid" 2>/dev/null; then
-            wait "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null
             exit_code=$?
             break
         fi
@@ -321,7 +321,7 @@ EOF
     local i
     for ((i = 1; i <= TEST_SIGNAL_POLL_ITER; i++)); do
         if ! kill -0 "$pid" 2>/dev/null; then
-            wait "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null
             exit_code=$?
             break
         fi

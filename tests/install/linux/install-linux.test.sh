@@ -163,13 +163,24 @@ run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-true}"
     local extra_env="${3:-}"
+    # Build minimal env for install script: no host FNM/PNPM etc.
+    local env_args=(
+        "PATH=$MOCK_BIN:/usr/bin:/bin"
+        "TERM=dumb"
+        "MOCK_BIN=$MOCK_BIN"
+        "TEST_DIR=$TEST_DIR"
+        "HOME=${HOME:-}"
+        "USER=${USER:-}"
+    )
+    local token
+    for token in $extra_env; do
+        case "$token" in
+            *=*) env_args+=("$token") ;;
+        esac
+    done
     (
         cd "$TEST_DIR"
-        export PATH="$MOCK_BIN:/usr/bin:/bin"
-        export TERM=dumb
-        export MOCK_BIN="$MOCK_BIN"
-        apply_extra_env "$extra_env"
-        "$TEST_DIR/scripts/install/linux/install-linux.sh" "$install_mode" "$skip_prereqs"
+        env -i "${env_args[@]}" bash --noprofile --norc -c "\"$TEST_DIR/scripts/install/linux/install-linux.sh\" \"$install_mode\" \"$skip_prereqs\""
     )
 }
 
