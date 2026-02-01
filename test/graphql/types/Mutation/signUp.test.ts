@@ -7,6 +7,7 @@ import {
 	afterEach,
 	beforeAll,
 	beforeEach,
+	describe,
 	expect,
 	suite,
 	test,
@@ -19,6 +20,12 @@ import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
+import {
+	clearMailpitMessages,
+	findMessageByRecipient,
+	getMailpitMessageDetails,
+	getMailpitMessages,
+} from "../../../helpers/mailpitHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -1188,5 +1195,144 @@ suite("Mutation field signUp", () => {
 				]),
 			);
 		});
+	});
+});
+
+/**
+ * Mailpit E2E Test Suite
+ * These tests verify that emails are actually captured by mailpit during user signup.
+ * They query mailpit's REST API to confirm email delivery.
+ */
+describe("Mailpit E2E - Email verification on signup", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
+	let originalEmailProvider: "ses" | "smtp" | "mailpit" | undefined;
+	let originalSmtpHost: string | undefined;
+
+	beforeAll(() => {
+		// Save original config
+		originalEmailProvider = server.envConfig.API_EMAIL_PROVIDER;
+		originalSmtpHost = server.envConfig.SMTP_HOST;
+	});
+
+	afterAll(() => {
+		// Restore original config
+		server.envConfig.API_EMAIL_PROVIDER = originalEmailProvider;
+		if (originalSmtpHost) {
+			server.envConfig.SMTP_HOST = originalSmtpHost;
+		}
+	});
+
+	afterEach(async () => {
+		// Run all cleanup functions
+		for (const cleanup of testCleanupFunctions.reverse()) {
+			try {
+				await cleanup();
+			} catch (error) {
+				console.error("Cleanup failed:", error);
+			}
+		}
+		testCleanupFunctions.length = 0;
+
+		// Clear mailpit messages after each test
+		await clearMailpitMessages();
+	});
+
+	test("should capture verification email in mailpit when user signs up", async () => {
+		// Skip test if not using mailpit
+		if (server.envConfig.API_EMAIL_PROVIDER !== "mailpit") {
+			console.log(
+				"Skipping mailpit test - API_EMAIL_PROVIDER is not 'mailpit'",
+			);
+			return;
+		}
+
+		// Create a test organization
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		// Generate a unique email address for this test
+		const testEmail = `test-${Date.now()}@example.com`;
+
+		// Sign up a new user
+		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+			variables: {
+				input: {
+					emailAddress: testEmail,
+					name: "Test User",
+					password: "password123",
+					selectedOrganization: organization.orgId,
+				},
+			},
+		});
+
+		// Verify signup was successful
+		expect(signUpResult.errors).toBeUndefined();
+		expect(signUpResult.data?.signUp?.user?.emailAddress).toBe(testEmail);
+
+		// Wait for async email to be sent and captured
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
+		// Query mailpit for captured messages
+		const messages = await getMailpitMessages();
+
+		// Find the email sent to our test user
+		const verificationEmail = findMessageByRecipient(messages, testEmail);
+
+		// Verify the email was captured
+		expect(verificationEmail).toBeDefined();
+		expect(verificationEmail?.Subject).toContain("Verify Your Email");
+		expect(verificationEmail?.From.Address).toContain("@");
+
+		// Get full message details
+		if (verificationEmail) {
+			const messageDetails = await getMailpitMessageDetails(
+				verificationEmail.ID,
+			);
+
+			// Verify email content
+			expect(messageDetails.Text).toContain("Verify Your Email");
+			expect(messageDetails.HTML).toContain("Verify Your Email");
+			expect(messageDetails.To[0]?.Address).toBe(testEmail);
+		}
+	});
+
+	test("should capture email with correct sender information", async () => {
+		// Skip test if not using mailpit
+		if (server.envConfig.API_EMAIL_PROVIDER !== "mailpit") {
+			console.log(
+				"Skipping mailpit test - API_EMAIL_PROVIDER is not 'mailpit'",
+			);
+			return;
+		}
+
+		// Create a test organization
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const testEmail = `sender-test-${Date.now()}@example.com`;
+
+		// Sign up user
+		await mercuriusClient.mutate(Mutation_signUp, {
+			variables: {
+				input: {
+					emailAddress: testEmail,
+					name: "Sender Test User",
+					password: "password123",
+					selectedOrganization: organization.orgId,
+				},
+			},
+		});
+
+		// Wait for email
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
+		// Get messages
+		const messages = await getMailpitMessages();
+		const email = findMessageByRecipient(messages, testEmail);
+
+		expect(email).toBeDefined();
+		expect(email?.From).toBeDefined();
+		expect(email?.From.Address).toBeTruthy();
+		expect(email?.From.Name).toBeTruthy();
 	});
 });

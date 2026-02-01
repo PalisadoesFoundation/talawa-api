@@ -54,6 +54,7 @@ This table defines the most important parameters in the file that will be requir
 | `<PROVIDER>_CLIENT_SECRET` | OAuth Client Secret for authentication providers, used for server-side OAuth token exchange with providers. |
 | `<PROVIDER>_REDIRECT_URI` | OAuth Redirect URI for authentication callback, must match the URI registered in provider settings. |
 | `API_OAUTH_REQUEST_TIMEOUT_MS` | Request timeout in milliseconds for OAuth provider API calls, defaults to 10000ms (10 seconds) if not specified. |
+| `API_EMAIL_PROVIDER` | Email provider configuration. Defaults to `mailpit` for development. Use `ses` or `smtp` for production. See [Email Configuration](./email-configuration.md) for details. |
 
 ## Production Environment Setup
 
@@ -124,6 +125,43 @@ You will need to update the `.env` file with the following information. This val
 
 1. `CADDY_TALAWA_API_DOMAIN_NAME` can be set to `localhost`
 2. `CADDY_TALAWA_API_EMAIL` can be set to a suitable email address
+
+#### Configure Email Provider
+
+For production environments, you must configure an email provider to send transactional emails (verification, password reset, etc.). The default `mailpit` provider only works for local development.
+
+Choose one of the following options:
+
+**Option 1: AWS SES (Recommended for Production)**
+
+Update the `.env` file with:
+
+```env
+API_EMAIL_PROVIDER=ses
+AWS_SES_REGION=your-region
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_SES_FROM_EMAIL=verified@yourdomain.com
+AWS_SES_FROM_NAME=Your Organization
+```
+
+Note: You must verify your domain or email address in AWS SES console before sending emails.
+
+**Option 2: SMTP Provider**
+
+For providers like Gmail, SendGrid, or Mailgun, update the `.env` file with:
+
+```env
+API_EMAIL_PROVIDER=smtp
+SMTP_HOST=smtp.yourprovider.com
+SMTP_PORT=587
+SMTP_USER=your-username
+SMTP_PASSWORD=your-password
+SMTP_FROM_EMAIL=sender@yourdomain.com
+SMTP_FROM_NAME=Your Organization
+```
+
+See the [Email Configuration Guide](./email-configuration.md) for detailed setup instructions and troubleshooting.
 
 #### Update the Social Media URLs
 
@@ -290,6 +328,15 @@ Most of these steps are specific to Linux. You will need to modify them accordin
     ```bash
     cp envFiles/.env.devcontainer .env
     ```
+
+#### Email Testing in Development
+
+The development environment automatically configures [Mailpit](https://github.com/axllent/mailpit) for email testing. All emails sent by the API are captured by Mailpit and can be viewed at:
+
+- **Web Interface**: http://localhost:8025
+- **SMTP Port**: 1025 (internal, used by API)
+
+This allows you to test email functionality (verification emails, password resets, etc.) without sending real emails. For more details, see the [Email Configuration Guide](./email-configuration.md).
 
 ### Operating the Development Server
 

@@ -149,4 +149,93 @@ describe("EmailProviderFactory", () => {
 		const provider = EmailProviderFactory.create(config);
 		expect(provider).toBeInstanceOf(SESProvider);
 	});
+
+	describe("mailpit provider", () => {
+		it("should return SMTPProvider with correct config when API_EMAIL_PROVIDER is 'mailpit'", () => {
+			const config = {
+				API_EMAIL_PROVIDER: "mailpit",
+				SMTP_HOST: "mailpit",
+				SMTP_PORT: 1025,
+				SMTP_FROM_EMAIL: "test@talawa.local",
+				SMTP_FROM_NAME: "Talawa Test",
+			} as unknown as EnvConfig;
+
+			const provider = EmailProviderFactory.create(config);
+			expect(provider).toBeInstanceOf(SMTPProvider);
+			expect((provider as SMTPProvider).getConfig()).toEqual({
+				host: "mailpit",
+				port: 1025,
+				user: undefined,
+				password: undefined,
+				secure: false,
+				fromEmail: "test@talawa.local",
+				fromName: "Talawa Test",
+				name: undefined,
+				localAddress: undefined,
+			});
+		});
+
+		it("should use default mailpit values when minimal config is provided", () => {
+			const config = {
+				API_EMAIL_PROVIDER: "mailpit",
+				// Only minimal config - should use defaults
+			} as unknown as EnvConfig;
+
+			const provider = EmailProviderFactory.create(config);
+			expect(provider).toBeInstanceOf(SMTPProvider);
+			expect((provider as SMTPProvider).getConfig()).toEqual({
+				host: "mailpit",
+				port: 1025,
+				user: undefined,
+				password: undefined,
+				secure: false,
+				fromEmail: "test@talawa.local",
+				fromName: "Talawa Dev",
+				name: undefined,
+				localAddress: undefined,
+			});
+		});
+
+		it("should work without SMTP_USER and SMTP_PASSWORD (no auth required)", () => {
+			const config = {
+				API_EMAIL_PROVIDER: "mailpit",
+				SMTP_HOST: "mailpit",
+				SMTP_PORT: 1025,
+				// SMTP_USER omitted
+				// SMTP_PASSWORD omitted
+				SMTP_FROM_EMAIL: "test@talawa.local",
+			} as unknown as EnvConfig;
+
+			const provider = EmailProviderFactory.create(config);
+			expect(provider).toBeInstanceOf(SMTPProvider);
+			const smtpConfig = (provider as SMTPProvider).getConfig();
+			expect(smtpConfig.user).toBeUndefined();
+			expect(smtpConfig.password).toBeUndefined();
+			expect(smtpConfig.secure).toBe(false);
+		});
+
+		it("should use provided custom values for mailpit", () => {
+			const config = {
+				API_EMAIL_PROVIDER: "mailpit",
+				SMTP_HOST: "custom-mailpit",
+				SMTP_PORT: 2525,
+				SMTP_FROM_EMAIL: "custom@example.com",
+				SMTP_FROM_NAME: "Custom Name",
+			} as unknown as EnvConfig;
+
+			const provider = EmailProviderFactory.create(config);
+			expect(provider).toBeInstanceOf(SMTPProvider);
+			expect((provider as SMTPProvider).getConfig()).toEqual({
+				host: "custom-mailpit",
+				port: 2525,
+				user: undefined,
+				password: undefined,
+				secure: false,
+				fromEmail: "custom@example.com",
+				fromName: "Custom Name",
+				name: undefined,
+				localAddress: undefined,
+			});
+		});
+	});
 });

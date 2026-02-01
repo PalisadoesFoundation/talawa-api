@@ -138,11 +138,14 @@ export const envConfigSchema = Type.Object({
 	),
 	/**
 	 * Email provider selection.
-	 * Supported values: 'ses' (Amazon SES) and 'smtp'.
-	 * Defaults to 'ses' if not specified.
+	 * Supported values: 'ses' (Amazon SES), 'smtp', and 'mailpit' (local testing).
+	 * Defaults to 'mailpit' if not specified.
 	 */
 	API_EMAIL_PROVIDER: Type.Optional(
-		Type.Union([Type.Literal("ses"), Type.Literal("smtp")], { default: "ses" }),
+		Type.Union(
+			[Type.Literal("ses"), Type.Literal("smtp"), Type.Literal("mailpit")],
+			{ default: "mailpit" },
+		),
 	),
 	/**
 	 * AWS access key ID for SES email service.

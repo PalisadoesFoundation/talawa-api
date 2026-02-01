@@ -41,16 +41,36 @@ function clearEmailCredentials(answers: SetupAnswers): void {
 
 export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
-		const configureEmail = await promptConfirm(
-			"configureEmail",
-			"Do you want to configure email? (Required for registration verification)",
-			true,
+		const useManualEmail = await promptConfirm(
+			"useManualEmail",
+			"Do you want to manually configure email (AWS SES or SMTP)?",
+			false,
 		);
 
-		if (!configureEmail) {
+		if (!useManualEmail) {
+			// Auto-configure Mailpit with defaults for local development/testing
+			answers.API_EMAIL_PROVIDER = "mailpit";
+			answers.SMTP_HOST = "mailpit";
+			answers.SMTP_PORT = "1025";
+			answers.SMTP_FROM_EMAIL = "test@talawa.local";
+			answers.SMTP_FROM_NAME = "Talawa Dev";
+
+			// Clean up any previous email provider settings
+			delete answers.AWS_SES_REGION;
+			delete answers.AWS_ACCESS_KEY_ID;
+			delete answers.AWS_SECRET_ACCESS_KEY;
+			delete answers.AWS_SES_FROM_EMAIL;
+			delete answers.AWS_SES_FROM_NAME;
+			delete answers.SMTP_USER;
+			delete answers.SMTP_PASSWORD;
+			delete answers.SMTP_SECURE;
+			delete answers.SMTP_NAME;
+			delete answers.SMTP_LOCAL_ADDRESS;
+
 			console.log(
-				"⚠️  Email configuration skipped. Email-related features will not work.",
+				"SUCCESS: Mailpit configured automatically for local email testing.",
 			);
+			console.log("   - Web UI available at: http://localhost:8025");
 			return answers;
 		}
 

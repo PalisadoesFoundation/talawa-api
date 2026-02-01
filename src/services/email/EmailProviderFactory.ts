@@ -17,6 +17,7 @@ export const EmailProviderFactory = {
 	 * SMTP_FROM_EMAIL, SMTP_FROM_NAME) are passed through to SMTPProvider.
 	 * For SES provider, optional fields (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
 	 * AWS_SES_FROM_NAME) are passed through to SESProvider.
+	 * Mailpit is used for local email testing by default.
 	 */
 	create(config: EmailEnvConfig): IEmailProvider {
 		switch (config.API_EMAIL_PROVIDER) {
@@ -52,6 +53,21 @@ export const EmailProviderFactory = {
 					fromName: config.SMTP_FROM_NAME,
 					name: config.SMTP_NAME,
 					localAddress: config.SMTP_LOCAL_ADDRESS,
+				});
+			}
+			case "mailpit": {
+				const mailpitHost = config.SMTP_HOST || "mailpit";
+				const mailpitPort = config.SMTP_PORT || 1025;
+				return new SMTPProvider({
+					host: mailpitHost as NonEmptyString,
+					port: mailpitPort,
+					user: undefined,
+					password: undefined,
+					secure: false,
+					fromEmail: config.SMTP_FROM_EMAIL || "test@talawa.local",
+					fromName: config.SMTP_FROM_NAME || "Talawa Dev",
+					name: undefined,
+					localAddress: undefined,
 				});
 			}
 			default:

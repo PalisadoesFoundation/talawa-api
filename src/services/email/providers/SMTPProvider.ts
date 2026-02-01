@@ -51,6 +51,14 @@ export class SMTPProvider implements IEmailProvider {
 		this.config = config;
 	}
 
+	/**
+	 * Returns the SMTP configuration for testing purposes.
+	 * @returns The SMTP configuration object.
+	 */
+	getConfig(): SMTPProviderConfig {
+		return { ...this.config };
+	}
+
 	private async getTransporter(): Promise<{
 		sendMail: (options: unknown) => Promise<{ messageId?: string }>;
 	}> {
