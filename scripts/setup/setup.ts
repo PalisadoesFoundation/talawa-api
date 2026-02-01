@@ -17,7 +17,6 @@ import { postgresSetup } from "./services/postgresSetup";
 import type { SetupAnswers } from "./types";
 import { updateEnvVariable } from "./updateEnvVariable";
 
-
 const envFileName = ".env";
 let backupCreated = false;
 let cleanupInProgress = false;
@@ -136,7 +135,7 @@ async function restoreLatestBackup(): Promise<void> {
 				} catch (err) {
 					try {
 						await fs.unlink(tempPath);
-					} catch { }
+					} catch {}
 					throw err;
 				}
 			} else {
@@ -150,8 +149,6 @@ async function restoreLatestBackup(): Promise<void> {
 		throw readError;
 	}
 }
-
-
 
 async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
@@ -288,7 +285,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"GOOGLE_REDIRECT_URI",
 				"Enter Google OAuth Redirect URI:",
 				answers.GOOGLE_REDIRECT_URI ||
-				"http://localhost:4000/auth/google/callback",
+					"http://localhost:4000/auth/google/callback",
 				(input: string) => {
 					if (input.trim().length < 1) {
 						return "Google Redirect URI cannot be empty.";
@@ -340,7 +337,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"GITHUB_REDIRECT_URI",
 				"Enter GitHub OAuth Redirect URI:",
 				answers.GITHUB_REDIRECT_URI ||
-				"http://localhost:4000/auth/github/callback",
+					"http://localhost:4000/auth/github/callback",
 				(input: string) => {
 					if (input.trim().length < 1) {
 						return "GitHub Redirect URI cannot be empty.";

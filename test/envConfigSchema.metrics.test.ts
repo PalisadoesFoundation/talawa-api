@@ -1,8 +1,9 @@
+import path from "node:path";
+import dotenv from "dotenv";
 import envSchema from "env-schema";
 import { beforeEach, describe, expect, it } from "vitest";
 import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
-import dotenv from "dotenv";
-import path from "node:path";
+
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 describe("envConfigSchema - Metrics Configuration", () => {

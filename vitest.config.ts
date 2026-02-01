@@ -62,7 +62,6 @@ export default defineConfig({
 			"docker/**",
 			"drizzle_migrations/**",
 			"envFiles/**",
-
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer

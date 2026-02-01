@@ -198,5 +198,3 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	);
 	return answers;
 }
-
-

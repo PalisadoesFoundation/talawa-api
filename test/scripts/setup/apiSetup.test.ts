@@ -203,12 +203,17 @@ describe("Setup -> apiSetup", () => {
 
 		const consoleWarnSpy = vi
 			.spyOn(console, "warn")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		// Use mockImplementation to handle the retry loop logic dynamically
-		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer implementation
-		vi.spyOn(inquirer, "prompt").mockImplementation((async (args: any) => {
-			const question = Array.isArray(args) ? args[0] : args;
+		// @ts-expect-error - Mocking inquirer prompt with simplified implementation
+		vi.spyOn(inquirer, "prompt").mockImplementation(async (args: unknown) => {
+			const question = (Array.isArray(args) ? args[0] : args) as {
+				name: string;
+				default?: unknown;
+				type?: string;
+				choices?: unknown[];
+			};
 			// Handle the secret key prompt specifically
 			if (question.name === "API_MINIO_SECRET_KEY") {
 				// If we haven't warned yet, return wrong password to trigger retry
@@ -224,15 +229,14 @@ describe("Setup -> apiSetup", () => {
 			const returnVal =
 				question.default !== undefined
 					? question.default
-					: question.type === "list"
+					: question.type === "list" && Array.isArray(question.choices)
 						? question.choices[0]
 						: "mocked-value";
 
 			return { [question.name]: returnVal };
-			// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer type
-		}) as any);
+		});
 
-		await apiSetup({});
+		await apiSetup({} as SetupAnswers);
 
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
 			"⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.",
@@ -245,12 +249,17 @@ describe("Setup -> apiSetup", () => {
 
 		const consoleWarnSpy = vi
 			.spyOn(console, "warn")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		// Use mockImplementation to handle the retry loop logic dynamically
-		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer implementation
-		vi.spyOn(inquirer, "prompt").mockImplementation((async (args: any) => {
-			const question = Array.isArray(args) ? args[0] : args;
+		// @ts-expect-error - Mocking inquirer prompt with simplified implementation
+		vi.spyOn(inquirer, "prompt").mockImplementation(async (args: unknown) => {
+			const question = (Array.isArray(args) ? args[0] : args) as {
+				name: string;
+				default?: unknown;
+				type?: string;
+				choices?: unknown[];
+			};
 			// Handle the Postgres password prompt specifically
 			if (question.name === "API_POSTGRES_PASSWORD") {
 				// If we haven't warned yet, return wrong password to trigger retry
@@ -265,14 +274,14 @@ describe("Setup -> apiSetup", () => {
 			const returnVal =
 				question.default !== undefined
 					? question.default
-					: question.type === "list"
+					: question.type === "list" && Array.isArray(question.choices)
 						? question.choices[0]
 						: "mocked-value";
 
 			return { [question.name]: returnVal };
-		}) as any); // biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer type
+		});
 
-		await apiSetup({});
+		await apiSetup({} as SetupAnswers);
 
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
 			"⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.",
@@ -285,9 +294,16 @@ describe("Setup -> apiSetup", () => {
 		delete process.env.POSTGRES_PASSWORD;
 
 		// Use mockImplementation to handle the retry loop logic dynamically
-		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer implementation
-		vi.spyOn(inquirer, "prompt").mockImplementation((async (args: any) => {
-			const question = Array.isArray(args) ? args[0] : args;
+		// Use mockImplementation to handle the retry loop logic dynamically
+		// @ts-expect-error - Mocking inquirer prompt with simplified implementation
+		vi.spyOn(inquirer, "prompt").mockImplementation(async (args: unknown) => {
+			const question = (Array.isArray(args) ? args[0] : args) as {
+				name: string;
+				default?: unknown;
+				type?: string;
+				choices?: unknown[];
+			};
+
 			if (question.name === "API_MINIO_SECRET_KEY")
 				return { API_MINIO_SECRET_KEY: "generated-minio-secret" };
 			if (question.name === "API_POSTGRES_PASSWORD")
@@ -297,15 +313,15 @@ describe("Setup -> apiSetup", () => {
 			const returnVal =
 				question.default !== undefined
 					? question.default
-					: question.type === "list"
+					: question.type === "list" && Array.isArray(question.choices)
 						? question.choices[0]
 						: "mocked-value";
 
 			return { [question.name]: returnVal };
-		}) as any); // biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer type
+		});
 
-		const answers: any = {};
-		await apiSetup(answers);
+		const answers: Partial<SetupAnswers> = {};
+		await apiSetup(answers as SetupAnswers);
 
 		// Check if propagated to process.env and answers
 		expect(answers.MINIO_ROOT_PASSWORD).toBe("generated-minio-secret");
@@ -315,8 +331,6 @@ describe("Setup -> apiSetup", () => {
 		expect(process.env.POSTGRES_PASSWORD).toBe("generated-postgres-password");
 	});
 });
-
-
 
 describe("validateURL", () => {
 	it("should validate standard URLs", () => {
@@ -420,7 +434,7 @@ describe("generateJwtSecret", () => {
 			});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -489,7 +503,7 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		// Mock file system to indicate no .env file exists (so no backup will be created)
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);

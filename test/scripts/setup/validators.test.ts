@@ -187,7 +187,8 @@ describe("Setup -> Validators", () => {
 			// Check that specific fields are mentioned (order might vary)
 			try {
 				validatePortNumbers(answers);
-			} catch (e: any) {
+			} catch (error: unknown) {
+				const e = error as Error;
 				expect(e.message).toContain("API_PORT");
 				expect(e.message).toContain("API_MINIO_PORT");
 				expect(e.message).toContain("POSTGRES_MAPPED_PORT");

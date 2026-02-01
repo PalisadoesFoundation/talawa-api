@@ -55,8 +55,8 @@ describe("Setup", () => {
 
 		// Mock fs to prevent deleting real .env
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		vi.spyOn(fs, "unlinkSync").mockImplementation(() => { });
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		vi.spyOn(fs, "unlinkSync").mockImplementation(() => {});
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		vi.doMock("env-schema", () => ({
 			envSchema: () => ({
@@ -97,11 +97,10 @@ describe("Setup", () => {
 			if (!envExistedBefore && originalExistsSync(".env")) {
 				fs.unlinkSync(".env");
 			}
-		} catch { }
+		} catch {}
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
-
 		const mockResponses = {
 			envReconfigure: true,
 			CI: "false",
@@ -117,10 +116,12 @@ describe("Setup", () => {
 		};
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-		// @ts-ignore
+		// @ts-expect-error
 		promptMock.mockImplementation((questions) => {
 			const q = Array.isArray(questions) ? questions[0] : questions;
-			return Promise.resolve({ [q.name]: mockResponses[q.name] });
+			return Promise.resolve({
+				[q.name]: (mockResponses as Record<string, string | boolean>)[q.name],
+			});
 		});
 
 		if (fs.existsSync(".env")) {
@@ -318,7 +319,7 @@ describe("Setup", () => {
 	// TODO: Re-enable when SIGINT handling can be tested without aborting Vitest runner
 	// Skipped because process.emit('SIGINT') causes the test runner to abort with exit code 130
 	it.skip("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		// Mock fs.promises methods for restoreLatestBackup
 		const fsCopyFileSpy = vi
@@ -415,10 +416,10 @@ describe("Setup", () => {
 	// TODO: Re-enable when SIGINT handling can be tested without aborting Vitest runner
 	// Skipped because process.emit('SIGINT') causes the test runner to abort with exit code 130
 	it.skip("should exit with code 1 when restoreLatestBackup fails", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		// Mock fs.promises methods for restoreLatestBackup to throw an error
 		const fsAccessSpy = vi
@@ -506,7 +507,7 @@ describe("Setup", () => {
 	});
 
 	it("should return false and skip restoration when cleanupInProgress is true", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		// Spy on file operations that would be performed during restoration
 		const fsAccessSpy = vi.spyOn(fs.promises, "access");
 		const fsReaddirSpy = vi.spyOn(fs.promises, "readdir");
@@ -1047,7 +1048,7 @@ describe("Validation Helpers", () => {
 		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
-			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		});
 
 		afterEach(() => {
@@ -1118,8 +1119,6 @@ describe("Validation Helpers", () => {
 		});
 	});
 
-
-
 	describe("validateSamplingRatio", () => {
 		let validateSamplingRatio: typeof import("scripts/setup/validators").validateSamplingRatio;
 
@@ -1146,8 +1145,6 @@ describe("Validation Helpers", () => {
 			);
 		});
 	});
-
-
 
 	describe("validatePositiveInteger", () => {
 		let validatePositiveInteger: typeof import("scripts/setup/validators").validatePositiveInteger;
