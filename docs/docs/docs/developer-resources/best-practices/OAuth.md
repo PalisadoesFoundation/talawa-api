@@ -33,32 +33,36 @@ The table is defined using Drizzle ORM and includes the following fields:
 export const oauthAccountsTable = pgTable("oauth_accounts", {
   // Primary unique identifier
   id: uuid("id").primaryKey().$default(uuidv7),
-  
+
   // Foreign key to users table
   userId: uuid("user_id")
     .notNull()
     .references(() => usersTable.id, { onDelete: "cascade" }),
-  
+
   // OAuth provider information
   provider: varchar("provider", { length: 50 }).notNull(),
   providerId: varchar("provider_id", { length: 255 }).notNull(),
-  
+
   // Account details from provider
   email: varchar("email", { length: 255 }),
   profile: jsonb("profile").$type<OAuthAccountProfile>(),
-  
+
   // Timestamp tracking
   linkedAt: timestamp("linked_at", {
     withTimezone: true,
     mode: "date",
     precision: 3,
-  }).notNull().defaultNow(),
-  
+  })
+    .notNull()
+    .defaultNow(),
+
   lastUsedAt: timestamp("last_used_at", {
     withTimezone: true,
     mode: "date",
     precision: 3,
-  }).notNull().defaultNow(),
+  })
+    .notNull()
+    .defaultNow(),
 });
 ```
 
@@ -111,9 +115,9 @@ export const oauthAccountsTableRelations = relations(
 #### Querying OAuth Accounts
 
 ```typescript
-import { db } from '~/src/drizzle/db';
-import { oauthAccountsTable } from '~/src/drizzle/tables/oauthAccount';
-import { eq, and } from 'drizzle-orm';
+import { db } from "~/src/drizzle/db";
+import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
+import { eq, and } from "drizzle-orm";
 
 // Find all OAuth accounts for a user
 const userOAuthAccounts = await db
@@ -128,8 +132,8 @@ const googleAccount = await db
   .where(
     and(
       eq(oauthAccountsTable.userId, userId),
-      eq(oauthAccountsTable.provider, 'google')
-    )
+      eq(oauthAccountsTable.provider, "google"),
+    ),
   );
 
 // Find account by provider ID
@@ -138,21 +142,21 @@ const providerAccount = await db
   .from(oauthAccountsTable)
   .where(
     and(
-      eq(oauthAccountsTable.provider, 'google'),
-      eq(oauthAccountsTable.providerId, externalUserId)
-    )
+      eq(oauthAccountsTable.provider, "google"),
+      eq(oauthAccountsTable.providerId, externalUserId),
+    ),
   );
 ```
 
 #### Creating OAuth Account Linkage
 
 ```typescript
-import { oauthAccountsTableInsertSchema } from '~/src/drizzle/tables/oauthAccount';
+import { oauthAccountsTableInsertSchema } from "~/src/drizzle/tables/oauthAccount";
 
 // Validate and create new OAuth account linkage
 const newOAuthAccount = oauthAccountsTableInsertSchema.parse({
   userId: user.id,
-  provider: 'google',
+  provider: "google",
   providerId: userProfile.providerId,
   email: userProfile.email,
   profile: {
@@ -209,21 +213,25 @@ The OAuth configuration system provides utility functions for loading and valida
 The `loadOAuthConfig` function loads and validates OAuth configuration from environment variables, automatically enabling or disabling providers based on the availability of required credentials.
 
 ```typescript
-function loadOAuthConfig(env = process.env): OAuthProvidersConfig
+function loadOAuthConfig(env = process.env): OAuthProvidersConfig;
 ```
 
 #### Parameters
+
 - **`env`** (optional): Environment variables object. Defaults to `process.env`
 
 #### Returns
+
 - **`OAuthProvidersConfig`**: Configuration object containing Google and GitHub provider settings
 
 #### Behavior
+
 - **Provider Enablement**: Providers are automatically enabled only when all required environment variables are present
 - **Timeout Handling**: Uses `API_OAUTH_REQUEST_TIMEOUT_MS` with fallback to 10000ms (10 seconds)
 - **Error Recovery**: Invalid timeout values (NaN) automatically fall back to the default timeout
 
 #### Environment Variables
+
 - **Google Provider**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
 - **GitHub Provider**: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`
 - **Request Timeout**: `API_OAUTH_REQUEST_TIMEOUT_MS` (optional, defaults to 10000)
@@ -231,22 +239,22 @@ function loadOAuthConfig(env = process.env): OAuthProvidersConfig
 #### Usage Example
 
 ```typescript
-import { loadOAuthConfig } from '~/src/config/oauth';
+import { loadOAuthConfig } from "~/src/config/oauth";
 
 // Load configuration from process.env
 const config = loadOAuthConfig();
 
 if (config.google.enabled) {
-  console.log('Google OAuth is configured');
-  console.log('Timeout:', config.google.requestTimeoutMs);
+  console.log("Google OAuth is configured");
+  console.log("Timeout:", config.google.requestTimeoutMs);
 }
 
 // Load configuration from custom environment
 const customEnv = {
-  GOOGLE_CLIENT_ID: 'your-google-client-id',
-  GOOGLE_CLIENT_SECRET: 'your-google-secret',
-  GOOGLE_REDIRECT_URI: 'http://localhost:4000/auth/google/callback',
-  API_OAUTH_REQUEST_TIMEOUT_MS: '15000',
+  GOOGLE_CLIENT_ID: "your-google-client-id",
+  GOOGLE_CLIENT_SECRET: "your-google-secret",
+  GOOGLE_REDIRECT_URI: "http://localhost:4000/auth/google/callback",
+  API_OAUTH_REQUEST_TIMEOUT_MS: "15000",
 };
 
 const customConfig = loadOAuthConfig(customEnv);
@@ -280,21 +288,25 @@ The `getProviderConfig` function retrieves a specific provider's configuration a
 ```typescript
 function getProviderConfig(
   provider: ProviderKey,
-  env = process.env
-): Required<OAuthProviderConfig>
+  env = process.env,
+): Required<OAuthProviderConfig>;
 ```
 
 #### Parameters
+
 - **`provider`**: Provider key (`"google"` or `"github"`)
 - **`env`** (optional): Environment variables object. Defaults to `process.env`
 
 #### Returns
+
 - **`Required<OAuthProviderConfig>`**: Complete provider configuration with all required fields
 
 #### Throws
+
 - **`Error`**: When the provider is not properly configured or disabled
 
 #### Behavior
+
 - **Validation**: Ensures the provider is enabled and has all required configuration
 - **Fallback Timeout**: Provides 10000ms fallback if timeout is falsy (defensive programming)
 - **Type Safety**: Returns a configuration object with all fields guaranteed to be present
@@ -302,28 +314,28 @@ function getProviderConfig(
 #### Usage Example
 
 ```typescript
-import { getProviderConfig } from '~/src/config/oauth';
+import { getProviderConfig } from "~/src/config/oauth";
 
 try {
   // Get Google provider configuration
-  const googleConfig = getProviderConfig('google');
-  
+  const googleConfig = getProviderConfig("google");
+
   // Safe to use - all fields are guaranteed to be present
-  console.log('Client ID:', googleConfig.clientId);
-  console.log('Timeout:', googleConfig.requestTimeoutMs);
-  
+  console.log("Client ID:", googleConfig.clientId);
+  console.log("Timeout:", googleConfig.requestTimeoutMs);
+
   // Initialize OAuth provider
   const provider = new GoogleOAuthProvider(googleConfig);
 } catch (error) {
-  console.error('Google OAuth is not configured:', error.message);
+  console.error("Google OAuth is not configured:", error.message);
 }
 
 // Custom environment example
 try {
-  const githubConfig = getProviderConfig('github', customEnvironment);
+  const githubConfig = getProviderConfig("github", customEnvironment);
   // Use configuration...
 } catch (error) {
-  console.error('GitHub OAuth configuration error:', error.message);
+  console.error("GitHub OAuth configuration error:", error.message);
 }
 ```
 
@@ -338,7 +350,7 @@ throw new Error('OAuth provider "google" is not properly configured');
 // This covers scenarios where:
 // - Provider is disabled (missing required credentials)
 // - clientId is missing or empty
-// - clientSecret is missing or empty  
+// - clientSecret is missing or empty
 // - redirectUri is missing or empty
 ```
 
@@ -349,6 +361,7 @@ type ProviderKey = "google" | "github";
 ```
 
 Currently supported providers:
+
 - **`"google"`**: Google OAuth 2.0
 - **`"github"`**: GitHub OAuth Apps
 
@@ -371,7 +384,10 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
   protected providerName: string;
 
   constructor(providerName: string, config: OAuthConfig);
-  abstract exchangeCodeForTokens(code: string, redirectUri: string): Promise<OAuthProviderTokenResponse>;
+  abstract exchangeCodeForTokens(
+    code: string,
+    redirectUri: string,
+  ): Promise<OAuthProviderTokenResponse>;
   abstract getUserProfile(accessToken: string): Promise<OAuthUserProfile>;
 }
 ```
@@ -382,47 +398,51 @@ The provider requires an `OAuthConfig` object:
 
 ```typescript
 interface OAuthConfig {
-  clientId: string;              // Required: OAuth client ID
-  clientSecret: string;          // Required: OAuth client secret  
-  redirectUri?: string;          // Optional: Redirect URI (provider-specific)
-  requestTimeoutMs?: number;     // Optional: Request timeout (default: 10000ms)
+  clientId: string; // Required: OAuth client ID
+  clientSecret: string; // Required: OAuth client secret
+  redirectUri?: string; // Optional: Redirect URI (provider-specific)
+  requestTimeoutMs?: number; // Optional: Request timeout (default: 10000ms)
 }
 ```
 
 :::warning Security Notice
 The `clientSecret` contains sensitive credentials and must:
+
 - Be used server-side only
 - Never be logged or exposed in error messages
 - Be stored securely in environment variables
-:::
+  :::
 
 ### Usage Example
 
 ```typescript
 class GoogleOAuthProvider extends BaseOAuthProvider {
   constructor(config: OAuthConfig) {
-    super('google', config);
+    super("google", config);
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<OAuthProviderTokenResponse> {
+  async exchangeCodeForTokens(
+    code: string,
+    redirectUri: string,
+  ): Promise<OAuthProviderTokenResponse> {
     return await this.post<OAuthProviderTokenResponse>(
-      'https://oauth2.googleapis.com/token',
+      "https://oauth2.googleapis.com/token",
       {
-        grant_type: 'authorization_code',
+        grant_type: "authorization_code",
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
         code,
         redirect_uri: redirectUri,
-      }
+      },
     );
   }
 
   async getUserProfile(accessToken: string): Promise<OAuthUserProfile> {
     const response = await this.get<GoogleUserResponse>(
-      'https://www.googleapis.com/oauth2/v2/userinfo',
+      "https://www.googleapis.com/oauth2/v2/userinfo",
       {
         Authorization: `Bearer ${accessToken}`,
-      }
+      },
     );
 
     return {
@@ -517,8 +537,8 @@ export class OAuthProviderRegistry {
 ### Usage Example
 
 ```typescript
-import { OAuthProviderRegistry } from '~/src/utilities/auth/oauth/OAuthProviderRegistry';
-import { GoogleOAuthProvider } from '~/src/utilities/auth/oauth/providers/GoogleOAuthProvider';
+import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
+import { GoogleOAuthProvider } from "~/src/utilities/auth/oauth/providers/GoogleOAuthProvider";
 
 // Get singleton instance
 const registry = OAuthProviderRegistry.getInstance();
@@ -533,7 +553,7 @@ const googleProvider = new GoogleOAuthProvider({
 registry.register(googleProvider);
 
 // Retrieve and use a provider
-const provider = registry.get('google');
+const provider = registry.get("google");
 const tokenResponse = await provider.exchangeCodeForTokens(code, redirectUri);
 const userProfile = await provider.getUserProfile(tokenResponse.access_token);
 ```
@@ -614,12 +634,12 @@ Response structure from OAuth provider token endpoints:
 
 ```typescript
 interface OAuthProviderTokenResponse {
-  access_token: string;      // Required: OAuth access token
-  token_type: string;        // Required: Token type (usually "Bearer")
-  expires_in?: number;       // Optional: Token expiration time in seconds
-  refresh_token?: string;    // Optional: Refresh token for renewing access
-  scope?: string;           // Optional: Granted scopes
-  id_token?: string;        // Optional: OpenID Connect ID token
+  access_token: string; // Required: OAuth access token
+  token_type: string; // Required: Token type (usually "Bearer")
+  expires_in?: number; // Optional: Token expiration time in seconds
+  refresh_token?: string; // Optional: Refresh token for renewing access
+  scope?: string; // Optional: Granted scopes
+  id_token?: string; // Optional: OpenID Connect ID token
 }
 ```
 
@@ -629,11 +649,11 @@ Normalized user profile structure:
 
 ```typescript
 interface OAuthUserProfile {
-  providerId: string;        // Required: Unique user ID from provider
-  email?: string;           // Optional: User email address
-  name?: string;            // Optional: User display name
-  picture?: string;         // Optional: User profile picture URL
-  emailVerified?: boolean;  // Optional: Email verification status
+  providerId: string; // Required: Unique user ID from provider
+  email?: string; // Optional: User email address
+  name?: string; // Optional: User display name
+  picture?: string; // Optional: User profile picture URL
+  emailVerified?: boolean; // Optional: Email verification status
 }
 ```
 
@@ -643,10 +663,10 @@ Configuration object for OAuth providers:
 
 ```typescript
 interface OAuthConfig {
-  clientId: string;              // Required: OAuth client ID
-  clientSecret: string;          // Required: OAuth client secret
-  redirectUri?: string;          // Optional: Redirect URI
-  requestTimeoutMs?: number;     // Optional: Request timeout (default: 10000ms)
+  clientId: string; // Required: OAuth client ID
+  clientSecret: string; // Required: OAuth client secret
+  redirectUri?: string; // Optional: Redirect URI
+  requestTimeoutMs?: number; // Optional: Request timeout (default: 10000ms)
 }
 ```
 
@@ -685,6 +705,7 @@ class OAuthError extends Error {
 ```
 
 Common error codes:
+
 - `INVALID_CONFIG`: Configuration validation failed
 - `INVALID_PROVIDER_NAME`: Provider name is empty or invalid
 - `DUPLICATE_PROVIDER`: Attempting to register an already registered provider
@@ -701,7 +722,7 @@ const config: OAuthConfig = {
   clientId: process.env.OAUTH_CLIENT_ID!,
   clientSecret: process.env.OAUTH_CLIENT_SECRET!,
   redirectUri: process.env.OAUTH_REDIRECT_URI,
-  requestTimeoutMs: parseInt(process.env.OAUTH_TIMEOUT_MS || '10000'),
+  requestTimeoutMs: parseInt(process.env.OAUTH_TIMEOUT_MS || "10000"),
 };
 ```
 
@@ -714,16 +735,19 @@ try {
   const provider = registry.get(providerName);
   const tokenResponse = await provider.exchangeCodeForTokens(code, redirectUri);
   const userProfile = await provider.getUserProfile(tokenResponse.access_token);
-  
+
   // Handle successful authentication
 } catch (error) {
   if (error instanceof TokenExchangeError) {
     // Handle token exchange failure
-    logger.error('Token exchange failed:', error.message);
+    logger.error("Token exchange failed:", error.message);
   } else if (error instanceof ProfileFetchError) {
     // Handle profile fetch failure
-    logger.error('Profile fetch failed:', error.message);
-  } else if (error instanceof OAuthError && error.code === 'PROVIDER_NOT_FOUND') {
+    logger.error("Profile fetch failed:", error.message);
+  } else if (
+    error instanceof OAuthError &&
+    error.code === "PROVIDER_NOT_FOUND"
+  ) {
     // Handle unknown provider
     throw new Error(`Unsupported OAuth provider: ${providerName}`);
   } else {
@@ -738,7 +762,7 @@ try {
 When testing OAuth functionality:
 
 ```typescript
-import { OAuthProviderRegistry } from '~/src/utilities/auth/oauth/OAuthProviderRegistry';
+import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 
 beforeEach(() => {
   // Clear registry before each test
@@ -750,3 +774,55 @@ beforeEach(() => {
 ### 4. Security Considerations
 
 - Never log or expose `clientSecret` in error messages
+
+## Provider Implementations
+
+### GoogleOAuthProvider
+
+The `GoogleOAuthProvider` is a concrete implementation of the `BaseOAuthProvider` that enables OAuth 2.0 authentication with Google accounts.
+
+#### Features
+
+- Exchanges authorization codes for access tokens via Google OAuth 2.0 token endpoint
+- Fetches user profile information from Google's userinfo API
+- Automatically normalizes Google profile data to match Talawa's internal format
+- Supports optional redirect URI for enhanced security
+
+#### Usage
+
+```typescript
+import { GoogleOAuthProvider } from "~/src/utilities/auth/oauth";
+
+// Initialize the provider
+const googleProvider = new GoogleOAuthProvider({
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  redirectUri: process.env.GOOGLE_REDIRECT_URI,
+});
+
+// Exchange authorization code for access token
+const tokenData = await googleProvider.exchangeCodeForTokens(
+  "authorization_code_from_google",
+);
+// Returns: { access_token: string, token_type: string, expires_in: number, ... }
+
+// Fetch user profile using the access token
+const userProfile = await googleProvider.getUserProfile(tokenData.access_token);
+// Returns normalized profile: { providerId, email, name, picture, emailVerified }
+```
+
+#### Required Scopes
+
+When configuring your Google OAuth application, ensure the following scopes are included in your authorization request:
+
+- `openid` - Required for OpenID Connect authentication
+- `email` - Access to user's email address
+- `profile` - Access to user's basic profile information
+
+#### Environment Variables
+
+The following environment variables must be configured:
+
+- `GOOGLE_CLIENT_ID`: Your Google OAuth application's client ID
+- `GOOGLE_CLIENT_SECRET`: Your Google OAuth application's client secret
+- `GOOGLE_REDIRECT_URI`: The authorized redirect URI configured in your Google OAuth app
