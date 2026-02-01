@@ -64,12 +64,24 @@ describe("ErrorHandlingValidator", () => {
 				"src/types.d.ts",
 				"pnpm-lock.yaml",
 				"package-lock.json",
-				".github/workflows/ci.yml",
 				"docker/Dockerfile.yml",
+				"config/settings.yaml",
 			];
 
 			negativeCases.forEach((file) => {
 				expect(validator.shouldScanFile(file)).toBe(false);
+			});
+		});
+
+		it("should include .github workflow files (not excluded)", () => {
+			const githubWorkflowFiles = [
+				".github/workflows/ci.yml",
+				".github/workflows/deploy.yaml",
+				".github/workflows/test.yml",
+			];
+
+			githubWorkflowFiles.forEach((file) => {
+				expect(validator.shouldScanFile(file)).toBe(true);
 			});
 		});
 
@@ -669,7 +681,8 @@ describe("ErrorHandlingValidator", () => {
 			expect(EXCLUDE_PATTERNS).toBeDefined();
 			expect(EXCLUDE_PATTERNS.length).toBeGreaterThan(0);
 			// Access element at index causing potential coverage gap
-			expect(EXCLUDE_PATTERNS).toContain("**/*.yaml");
+			expect(EXCLUDE_PATTERNS).toContain("docker/**/*.yml");
+			expect(EXCLUDE_PATTERNS).toContain("*.yaml");
 		});
 
 		it("should have valid ALLOW_CONSOLE_USAGE and SCAN_PATTERNS", () => {
@@ -1507,9 +1520,13 @@ describe("ErrorHandlingValidator", () => {
 			const { glob } = await import("glob");
 			vi.mocked(glob).mockResolvedValue([]);
 
-			await import("../../scripts/validate_error_handling");
+			// Import the module, which will set runValidateErrorHandling if executed directly
+			const module = await import("../../scripts/validate_error_handling");
 
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			// Await the exported Promise to know when processing finished
+			if (module.runValidateErrorHandling) {
+				await module.runValidateErrorHandling;
+			}
 
 			expect(exitSpy).toHaveBeenCalledWith(0);
 			expect(consoleSpy).toHaveBeenCalledWith(

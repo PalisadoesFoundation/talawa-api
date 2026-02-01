@@ -56,6 +56,8 @@ export const SCAN_PATTERNS = [
 	".github/**/*.yaml",
 ];
 
+// Note: EXCLUDE_PATTERNS are checked first by shouldScanFile() (line 378-382).
+// To allow .github workflow files to be scanned, we exclude YAML files outside .github.
 export const EXCLUDE_PATTERNS = [
 	"**/node_modules/**",
 	"**/dist/**",
@@ -64,8 +66,13 @@ export const EXCLUDE_PATTERNS = [
 	"**/*.d.ts",
 	"**/pnpm-lock.yaml",
 	"**/package-lock.json",
-	"**/*.yml",
-	"**/*.yaml",
+	// Exclude YAML files but NOT those in .github (to allow workflow scanning)
+	"docker/**/*.yml",
+	"docker/**/*.yaml",
+	"config/**/*.yml",
+	"config/**/*.yaml",
+	"*.yml", // Root-level YAML files only
+	"*.yaml", // Root-level YAML files only
 ];
 
 // Files exempted from generic Error checking
@@ -340,14 +347,23 @@ export class ErrorHandlingValidator {
 			.replace(/\*\*/g, "___DOUBLESTAR___") // Temporarily replace **
 			.replace(/\*/g, "[^/]*") // * matches anything except directory separator
 			.replace(/\?/g, "[^/]") // ? matches single character except directory separator
+			.replace(/___DOUBLESTARSLASH___/g, "(?:[^/]+/)*") // **/ matches zero or more directories
 			.replace(/___DOUBLESTAR___/g, ".*"); // ** matches any number of directories
 
 		// Anchor the pattern
 		regexPattern = `^${regexPattern}$`;
 
-		// Limit glob pattern complexity to prevent backtracking
-		// Prevent ReDoS attacks on dynamically constructed regex patterns
-		// Patterns are hardcoded, but this safeguard protects against future changes
+		// ReDoS Safety Justification:
+		// The dynamic RegExp construction below is safe from ReDoS attacks because:
+		// 1. Input source: The 'pattern' variable originates from hardcoded config values in
+		//    SCAN_PATTERNS and EXCLUDE_PATTERNS (lines 42-69), not from user input or external sources.
+		// 2. Complexity safeguards: We enforce strict limits on regexPattern.length (≤500 chars)
+		//    and wildcard count (≤10 wildcards) to prevent catastrophic backtracking scenarios.
+		// 3. Fallback mechanism: If complexity checks fail or RegExp construction throws (lines 355-358
+		//    and 368-369), we fall back to a simple string-based simplePattern match via filePath.includes().
+		// 4. Future-proofing: If the input 'pattern' ever becomes dynamic or user-controlled in the future,
+		//    these safeguards MUST be revisited and strengthened accordingly.
+		// Related variables: regexPattern (line 338-346), pattern (parameter), filePath (parameter).
 		if (
 			regexPattern.length > 500 ||
 			(regexPattern.match(/\*/g) || []).length > 10
@@ -1067,6 +1083,22 @@ export async function run() {
 	}
 }
 
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
-	run();
+// Export a Promise that resolves when the script finishes (for testing)
+export let runValidateErrorHandling: Promise<void> | null = null;
+
+// Detect if this module is being run directly
+const isDirectExecution = (() => {
+	const scriptPath = fileURLToPath(import.meta.url);
+	const argPath = process.argv[1];
+	if (!argPath) return false;
+
+	// Normalize both paths for consistent comparison
+	const normalizedScriptPath = resolve(scriptPath);
+	const normalizedArgPath = resolve(argPath);
+
+	return normalizedScriptPath === normalizedArgPath;
+})();
+
+if (isDirectExecution) {
+	runValidateErrorHandling = run();
 }
