@@ -1150,39 +1150,39 @@ describe("ErrorHandlingValidator", () => {
 			expect(validator.result.violations).toHaveLength(0);
 		});
 
-		it("should handle error when reading file", () => {
+		it("should handle error when reading file", async () => {
 			const consoleSpy = vi.spyOn(console, "warn");
 			vi.mocked(fs.existsSync).mockReturnValue(true);
 			vi.mocked(fs.readFileSync).mockImplementation(() => {
 				throw new Error("Read failed");
 			});
 
-			validator.validateFile("test.ts");
+			await validator.validateFile("test.ts");
 
 			expect(consoleSpy).toHaveBeenCalledWith(
 				expect.stringContaining("Could not read file test.ts: Read failed"),
 			);
 		});
 
-		it("should handle string error processing in validateFile", () => {
+		it("should handle string error processing in validateFile", async () => {
 			const consoleSpy = vi.spyOn(console, "warn");
 			vi.mocked(fs.existsSync).mockReturnValue(true);
 			vi.mocked(fs.readFileSync).mockImplementation(() => {
 				throw "String Error";
 			});
-			validator.validateFile("test.ts");
+			await validator.validateFile("test.ts");
 			expect(consoleSpy).toHaveBeenCalledWith(
 				expect.stringContaining("Could not read file test.ts: String Error"),
 			);
 		});
 
-		it("should handle object error processing in validateFile", () => {
+		it("should handle object error processing in validateFile", async () => {
 			const consoleSpy = vi.spyOn(console, "warn");
 			vi.mocked(fs.existsSync).mockReturnValue(true);
 			vi.mocked(fs.readFileSync).mockImplementation(() => {
 				throw { custom: "Object Error" };
 			});
-			validator.validateFile("test.ts");
+			await validator.validateFile("test.ts");
 			expect(consoleSpy).toHaveBeenCalledWith(
 				expect.stringContaining(
 					'Could not read file test.ts: {"custom":"Object Error"}',
