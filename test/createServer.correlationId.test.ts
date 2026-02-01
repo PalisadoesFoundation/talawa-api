@@ -10,13 +10,9 @@ vi.mock("../src/routes/index", () => ({
 	default: async () => {},
 }));
 
-import path from "node:path";
-import dotenv from "dotenv";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "../src/createServer";
-
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 /**
  * UUID v4 regex (case-insensitive)

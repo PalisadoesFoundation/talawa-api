@@ -173,6 +173,28 @@ describe("Setup -> minioSetup", () => {
 
 		expect(answers.API_MINIO_SECRET_KEY).toBe("password");
 	});
+
+	it("should initialize API_MINIO_SECRET_KEY when undefined", async () => {
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ MINIO_BROWSER: "off" })
+			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "SecurePass123!" })
+			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
+
+		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
+		const answers: any = {
+			CI: "true",
+			// API_MINIO_SECRET_KEY is undefined
+		};
+
+		await minioSetup(answers);
+
+		// Both should be set to the same value
+		expect(answers.MINIO_ROOT_PASSWORD).toBe("SecurePass123!");
+		expect(answers.API_MINIO_SECRET_KEY).toBe("SecurePass123!");
+		expect(process.env.MINIO_ROOT_PASSWORD).toBe("SecurePass123!");
+	});
+
 	it("should handle prompt errors correctly", async () => {
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);

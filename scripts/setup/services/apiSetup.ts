@@ -2,9 +2,11 @@ import { promptInput, promptList } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
 import {
 	generateJwtSecret,
+	generateSecurePassword,
 	validateHmacSecretLength,
 	validateJwtSecretLength,
 	validatePort,
+	validateSecurePassword,
 	validateTokenExpiration,
 	validateURL,
 } from "../validators.js";
@@ -98,9 +100,19 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers.API_MINIO_SECRET_KEY = await promptInput(
 		"API_MINIO_SECRET_KEY",
 		"Minio secret key:",
-		existingMinioPassword ?? "password",
+		existingMinioPassword ?? generateSecurePassword(),
+		validateSecurePassword,
 	);
-	if (existingMinioPassword !== undefined) {
+	if (existingMinioPassword === undefined) {
+		// No configured value (or empty): set both answers.MINIO_ROOT_PASSWORD and
+		// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
+		// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
+		answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+		process.env.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+		console.log(
+			"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
+		);
+	} else {
 		// Configured non-empty password found, validate against it
 		const minioPassword = existingMinioPassword;
 		while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
@@ -112,15 +124,6 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			);
 		}
 		console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
-	} else {
-		// No configured value (or empty): set both answers.MINIO_ROOT_PASSWORD and
-		// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
-		// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
-		answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
-		process.env.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
-		console.log(
-			"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
-		);
 	}
 	answers.API_MINIO_TEST_END_POINT = await promptInput(
 		"API_MINIO_TEST_END_POINT",
@@ -150,9 +153,19 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers.API_POSTGRES_PASSWORD = await promptInput(
 		"API_POSTGRES_PASSWORD",
 		"Postgres password:",
-		postgresPassword ?? "password",
+		postgresPassword ?? generateSecurePassword(),
+		validateSecurePassword,
 	);
-	if (postgresPassword !== undefined) {
+	if (postgresPassword === undefined) {
+		// No configured value (or empty): set both answers.POSTGRES_PASSWORD and
+		// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
+		// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
+		answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
+		process.env.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
+		console.log(
+			"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
+		);
+	} else {
 		// Configured non-empty password found, validate against it
 		const postgresPasswordLocal = postgresPassword;
 		while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
@@ -164,15 +177,6 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			);
 		}
 		console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
-	} else {
-		// No configured value (or empty): set both answers.POSTGRES_PASSWORD and
-		// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
-		// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
-		answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
-		process.env.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
-		console.log(
-			"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
-		);
 	}
 	answers.API_POSTGRES_PORT = await promptInput(
 		"API_POSTGRES_PORT",

@@ -135,6 +135,27 @@ describe("Setup -> postgresSetup", () => {
 		expect(answers.API_POSTGRES_PASSWORD).toBe("password");
 	});
 
+	it("should initialize API_POSTGRES_PASSWORD when undefined", async () => {
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ POSTGRES_DB: "talawa" })
+			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "SecurePass456!" })
+			.mockResolvedValueOnce({ POSTGRES_USER: "talawa" });
+
+		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
+		const answers: any = {
+			CI: "true",
+			// API_POSTGRES_PASSWORD is undefined
+		};
+
+		await postgresSetup(answers);
+
+		// Both should be set to the same value
+		expect(answers.POSTGRES_PASSWORD).toBe("SecurePass456!");
+		expect(answers.API_POSTGRES_PASSWORD).toBe("SecurePass456!");
+		expect(process.env.POSTGRES_PASSWORD).toBe("SecurePass456!");
+	});
+
 	it("should handle prompt errors correctly", async () => {
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);

@@ -1,6 +1,10 @@
 import { promptInput } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
-import { validatePort, validateSecurePassword } from "../validators.js";
+import {
+	generateSecurePassword,
+	validatePort,
+	validateSecurePassword,
+} from "../validators.js";
 
 /**
  * Prompt for Postgres configuration.
@@ -34,7 +38,7 @@ export async function postgresSetup(
 		answers.API_POSTGRES_PASSWORD ??
 		answers.POSTGRES_PASSWORD ??
 		process.env.POSTGRES_PASSWORD ??
-		"password";
+		generateSecurePassword();
 	answers.POSTGRES_PASSWORD = await promptInput(
 		"POSTGRES_PASSWORD",
 		"Postgres password:",
@@ -42,19 +46,15 @@ export async function postgresSetup(
 		validateSecurePassword,
 	);
 	// Sync back to API_POSTGRES_PASSWORD if it was set
-	if (answers.API_POSTGRES_PASSWORD !== undefined) {
-		if (answers.POSTGRES_PASSWORD !== answers.API_POSTGRES_PASSWORD) {
-			// User changed POSTGRES_PASSWORD, update API_POSTGRES_PASSWORD to match
-			answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
-			process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
-			console.log(
-				"ℹ️  API_POSTGRES_PASSWORD updated to match POSTGRES_PASSWORD",
-			);
-		}
-	} else {
+	if (answers.API_POSTGRES_PASSWORD === undefined) {
 		// No API_POSTGRES_PASSWORD set yet, set it now
 		answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
 		process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+	} else if (answers.POSTGRES_PASSWORD !== answers.API_POSTGRES_PASSWORD) {
+		// User changed POSTGRES_PASSWORD, update API_POSTGRES_PASSWORD to match
+		answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+		process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+		console.log("ℹ️  API_POSTGRES_PASSWORD updated to match POSTGRES_PASSWORD");
 	}
 	answers.POSTGRES_USER = await promptInput(
 		"POSTGRES_USER",

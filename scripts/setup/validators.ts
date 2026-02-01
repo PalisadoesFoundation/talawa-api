@@ -18,6 +18,58 @@ export function generateJwtSecret(): string {
 }
 
 /**
+ * Generates a cryptographically secure random password that meets security requirements.
+ * The generated password contains uppercase, lowercase, numbers, and special characters.
+ * @param length - The desired password length (minimum 12, default 16).
+ * @returns A secure random password string.
+ * @throws Error if crypto operations fail.
+ */
+export function generateSecurePassword(length = 16): string {
+	if (length < 12) {
+		length = 12; // Enforce minimum length
+	}
+
+	try {
+		// Character sets
+		const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		const lowercase = "abcdefghijklmnopqrstuvwxyz";
+		const numbers = "0123456789";
+		const special = "!@#$%^&*()";
+		const allChars = uppercase + lowercase + numbers + special;
+
+		// Ensure at least one character from each set
+		let password = "";
+		password += uppercase[crypto.randomInt(uppercase.length)];
+		password += lowercase[crypto.randomInt(lowercase.length)];
+		password += numbers[crypto.randomInt(numbers.length)];
+		password += special[crypto.randomInt(special.length)];
+
+		// Fill the rest with random characters
+		for (let i = password.length; i < length; i++) {
+			password += allChars[crypto.randomInt(allChars.length)];
+		}
+
+		// Shuffle the password to avoid predictable patterns
+		const passwordArray = password.split("");
+		for (let i = passwordArray.length - 1; i > 0; i--) {
+			const j = crypto.randomInt(i + 1);
+			[passwordArray[i], passwordArray[j]] = [
+				passwordArray[j],
+				passwordArray[i],
+			];
+		}
+
+		return passwordArray.join("");
+	} catch (err) {
+		console.error(
+			"⚠️ Warning: Failed to generate random password. This may indicate a system entropy issue.",
+			err,
+		);
+		throw new Error("Failed to generate secure password");
+	}
+}
+
+/**
  * Validates that the input is a valid URL with http or https protocol.
  * @param input - The URL string to validate.
  * @returns `true` if valid, or an error message string if invalid.

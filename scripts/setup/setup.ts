@@ -23,10 +23,10 @@ let cleanupInProgress = false;
 let sigintHandler: (() => void | Promise<void>) | null = null;
 
 async function restoreBackup(): Promise<boolean> {
+	// Atomic check-and-set to prevent race condition
 	if (cleanupInProgress) {
 		return false;
 	}
-
 	cleanupInProgress = true;
 
 	try {

@@ -1,6 +1,10 @@
 import { promptInput } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
-import { validatePort, validateSecurePassword } from "../validators.js";
+import {
+	generateSecurePassword,
+	validatePort,
+	validateSecurePassword,
+} from "../validators.js";
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers.MINIO_BROWSER = await promptInput(
@@ -53,7 +57,7 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_MINIO_SECRET_KEY ??
 		answers.MINIO_ROOT_PASSWORD ??
 		process.env.MINIO_ROOT_PASSWORD ??
-		"password";
+		generateSecurePassword();
 	answers.MINIO_ROOT_PASSWORD = await promptInput(
 		"MINIO_ROOT_PASSWORD",
 		"Minio root password:",
@@ -61,19 +65,15 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		validateSecurePassword,
 	);
 	// Sync back to API_MINIO_SECRET_KEY if it was set
-	if (answers.API_MINIO_SECRET_KEY !== undefined) {
-		if (answers.MINIO_ROOT_PASSWORD !== answers.API_MINIO_SECRET_KEY) {
-			// User changed MINIO_ROOT_PASSWORD, update API_MINIO_SECRET_KEY to match
-			answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
-			process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
-			console.log(
-				"ℹ️  API_MINIO_SECRET_KEY updated to match MINIO_ROOT_PASSWORD",
-			);
-		}
-	} else {
+	if (answers.API_MINIO_SECRET_KEY === undefined) {
 		// No API_MINIO_SECRET_KEY set yet, set it now
 		answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
 		process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+	} else if (answers.MINIO_ROOT_PASSWORD !== answers.API_MINIO_SECRET_KEY) {
+		// User changed MINIO_ROOT_PASSWORD, update API_MINIO_SECRET_KEY to match
+		answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+		process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+		console.log("ℹ️  API_MINIO_SECRET_KEY updated to match MINIO_ROOT_PASSWORD");
 	}
 	answers.MINIO_ROOT_USER = await promptInput(
 		"MINIO_ROOT_USER",

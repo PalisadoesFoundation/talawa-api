@@ -5,6 +5,12 @@ import {
 	validateSamplingRatio,
 } from "../validators.js";
 
+/**
+ * Configure OpenTelemetry observability and performance metrics settings.
+ *
+ * @param answers - Accumulated setup answers.
+ * @returns Updated answers with observability settings.
+ */
 export async function observabilitySetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
