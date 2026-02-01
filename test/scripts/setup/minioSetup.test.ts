@@ -158,6 +158,7 @@ describe("Setup -> minioSetup", () => {
 
 	it("should not change API_MINIO_SECRET_KEY if MINIO_ROOT_PASSWORD matches", async () => {
 		const promptMock = vi.spyOn(inquirer, "prompt");
+		const consoleLogSpy = vi.spyOn(console, "log");
 		promptMock
 			.mockResolvedValueOnce({ MINIO_BROWSER: "off" })
 			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" })
@@ -172,6 +173,10 @@ describe("Setup -> minioSetup", () => {
 		await minioSetup(answers);
 
 		expect(answers.API_MINIO_SECRET_KEY).toBe("password");
+		// Verify no-op branch was taken (no sync message logged)
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			expect.stringContaining("Synchronized"),
+		);
 	});
 
 	it("should initialize API_MINIO_SECRET_KEY when undefined", async () => {

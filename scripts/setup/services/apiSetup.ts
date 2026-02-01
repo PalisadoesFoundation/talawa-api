@@ -186,8 +186,8 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	);
 	answers.API_POSTGRES_SSL_MODE = await promptList(
 		"API_POSTGRES_SSL_MODE",
-		"Use Postgres SSL?",
-		["true", "false"],
+		"Select Postgres SSL mode:",
+		["false", "true", "allow", "prefer", "require", "verify-full"],
 		"false",
 	);
 	answers.API_POSTGRES_TEST_HOST = await promptInput(

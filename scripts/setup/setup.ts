@@ -23,7 +23,9 @@ let cleanupInProgress = false;
 let sigintHandler: (() => void | Promise<void>) | null = null;
 
 async function restoreBackup(): Promise<boolean> {
-	// Atomic check-and-set to prevent race condition
+	// Atomic check-and-set to prevent race condition.
+	// This relies on JavaScript's single-threaded execution model:
+	// no await between check and set means no task interleaving.
 	if (cleanupInProgress) {
 		return false;
 	}

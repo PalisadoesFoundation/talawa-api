@@ -115,6 +115,8 @@ describe("Setup -> postgresSetup", () => {
 		expect(answers.POSTGRES_PASSWORD).toBe("new-password");
 		// API password should be updated to match
 		expect(answers.API_POSTGRES_PASSWORD).toBe("new-password");
+		// Verify process.env was also updated
+		expect(process.env.POSTGRES_PASSWORD).toBe("new-password");
 	});
 
 	it("should not change API_POSTGRES_PASSWORD if POSTGRES_PASSWORD matches", async () => {
