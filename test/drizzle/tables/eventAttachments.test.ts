@@ -708,7 +708,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			}
 		});
 
-		it("should reject invalid enum values in insert schema", async () => {
+		it("should reject invalid enum values at the database layer", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const eventId = await createTestEvent();
 			const name = faker.system.fileName();

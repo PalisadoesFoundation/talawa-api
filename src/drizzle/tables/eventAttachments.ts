@@ -12,7 +12,12 @@ import { imageMimeTypes } from "../enums/imageMimeType";
 import { videoMimeTypes } from "../enums/videoMimeType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
+import { eventAttachmentMimeTypeZodEnum } from "../enums/eventAttachmentMimeType";
 
+/**
+ * PostgreSQL enum for event attachment MIME types.
+ * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm
+ */
 export const eventAttachmentMimeTypePgEnum = pgEnum(
 	"event_attachment_mime_type",
 	[...imageMimeTypes, ...videoMimeTypes],
@@ -117,5 +122,6 @@ export const eventAttachmentsTableInsertSchema = createInsertSchema(
 	eventAttachmentsTable,
 	{
 		name: (schema) => schema.min(1),
+		mimeType: () => eventAttachmentMimeTypeZodEnum
 	},
 );
