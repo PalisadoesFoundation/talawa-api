@@ -743,7 +743,7 @@ export class ErrorHandlingValidator {
 			/console\s*\.\s*error/,
 			/console\s*\.\s*warn/,
 			/logger\s*(?:\?\.|\.)/,
-			/log\s*\(/,
+			/\blog\s*\(/,
 			/process\s*\.\s*exit/,
 			/TalawaGraphQLError/,
 			/TalawaRestError/,
