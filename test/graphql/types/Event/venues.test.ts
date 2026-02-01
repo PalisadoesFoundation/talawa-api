@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import type { GraphQLObjectType } from "graphql";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -54,47 +54,37 @@ afterEach(async () => {
 	// Clean up test data in reverse dependency order, only deleting rows created by this test
 	// Delete venue attachments for created venues
 	if (createdVenueIds.length > 0) {
-		for (const venueId of createdVenueIds) {
-			await server.drizzleClient
-				.delete(venueAttachmentsTable)
-				.where(eq(venueAttachmentsTable.venueId, venueId));
-		}
+		await server.drizzleClient
+			.delete(venueAttachmentsTable)
+			.where(inArray(venueAttachmentsTable.venueId, createdVenueIds));
 	}
 
 	// Delete venue bookings for created events
 	if (createdEventIds.length > 0) {
-		for (const eventId of createdEventIds) {
-			await server.drizzleClient
-				.delete(venueBookingsTable)
-				.where(eq(venueBookingsTable.eventId, eventId));
-		}
+		await server.drizzleClient
+			.delete(venueBookingsTable)
+			.where(inArray(venueBookingsTable.eventId, createdEventIds));
 	}
 
 	// Delete created venues
 	if (createdVenueIds.length > 0) {
-		for (const venueId of createdVenueIds) {
-			await server.drizzleClient
-				.delete(venuesTable)
-				.where(eq(venuesTable.id, venueId));
-		}
+		await server.drizzleClient
+			.delete(venuesTable)
+			.where(inArray(venuesTable.id, createdVenueIds));
 	}
 
 	// Delete created events
 	if (createdEventIds.length > 0) {
-		for (const eventId of createdEventIds) {
-			await server.drizzleClient
-				.delete(eventsTable)
-				.where(eq(eventsTable.id, eventId));
-		}
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.id, createdEventIds));
 	}
 
 	// Delete created organizations (memberships are cascade-deleted automatically)
 	if (createdOrganizationIds.length > 0) {
-		for (const orgId of createdOrganizationIds) {
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, orgId));
-		}
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, createdOrganizationIds));
 	}
 
 	// Clear the tracking arrays
