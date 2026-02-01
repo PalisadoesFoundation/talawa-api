@@ -60,6 +60,19 @@ export class GitHubOAuthProvider extends BaseOAuthProvider {
 				Accept: "application/json",
 			},
 		);
+
+		// GitHub returns HTTP 200 even for errors, check for error field in response
+		const errorResponse = resp as unknown as {
+			error?: string;
+			error_description?: string;
+		};
+		if (errorResponse.error) {
+			throw new TokenExchangeError(
+				"Token exchange failed",
+				errorResponse.error_description || errorResponse.error,
+			);
+		}
+
 		return {
 			access_token: resp.access_token,
 			token_type: resp.token_type,

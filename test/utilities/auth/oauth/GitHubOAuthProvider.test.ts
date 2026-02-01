@@ -206,18 +206,77 @@ describe("GitHubOAuthProvider", () => {
 		});
 
 		it("should throw error when redirect_uri parameter is empty and config is missing", async () => {
-			// This test should fail at provider creation since redirectUri is required by BaseOAuthProvider validation
-			expect(() => {
-				new GitHubOAuthProvider({
-					clientId: "github_client_id",
-					clientSecret: "github_client_secret",
-					// redirectUri is undefined/missing
-				});
-			}).toThrow(OAuthError);
+			// Test that exchangeCodeForTokens throws when both redirectUri parameter and config.redirectUri are missing
+			const configWithoutRedirect: OAuthConfig = {
+				clientId: "github_client_id",
+				clientSecret: "github_client_secret",
+				// redirectUri is undefined/missing
+			};
+
+			// Constructor should succeed since redirectUri is optional in OAuthConfig
+			const providerWithoutRedirect = new GitHubOAuthProvider(
+				configWithoutRedirect,
+			);
+
+			// But exchangeCodeForTokens should throw when both parameter and config redirectUri are missing
+			await expect(
+				providerWithoutRedirect.exchangeCodeForTokens(validCode, ""),
+			).rejects.toThrow(TokenExchangeError);
+
+			await expect(
+				providerWithoutRedirect.exchangeCodeForTokens(validCode, ""),
+			).rejects.toThrow("redirect_uri is required but was not provided");
+		});
+
+		it("should handle GitHub OAuth errors in HTTP 200 response", async () => {
+			const errorResponse = {
+				error: "bad_verification_code",
+				error_description: "The code passed is incorrect or expired.",
+			};
+
+			mockedPost.mockResolvedValue({
+				data: errorResponse,
+			} as AxiosResponse);
+
+			await expect(
+				provider.exchangeCodeForTokens(validCode, redirectUri),
+			).rejects.toThrow(TokenExchangeError);
+
+			try {
+				await provider.exchangeCodeForTokens(validCode, redirectUri);
+			} catch (error) {
+				if (error instanceof TokenExchangeError) {
+					// Should include error_description in the message
+					expect(error.message).toBe(
+						"Token exchange failed: The code passed is incorrect or expired.",
+					);
+				}
+			}
+		});
+
+		it("should handle GitHub OAuth errors without description", async () => {
+			const errorResponse = {
+				error: "invalid_grant",
+			};
+
+			mockedPost.mockResolvedValue({
+				data: errorResponse,
+			} as AxiosResponse);
+
+			try {
+				await provider.exchangeCodeForTokens(validCode, redirectUri);
+			} catch (error) {
+				if (error instanceof TokenExchangeError) {
+					// Should fallback to error field when error_description is missing
+					expect(error.message).toBe("Token exchange failed: invalid_grant");
+				}
+			}
 		});
 
 		it("should throw TokenExchangeError when redirect_uri cannot be resolved", async () => {
-			// Create a provider instance with valid config but temporarily override validation
+			// Create a provider instance bypassing constructor validation to test
+			// the specific redirect_uri validation in exchangeCodeForTokens.
+			// This simulates an edge case where config.redirectUri is undefined.
 			const tempProvider = Object.create(GitHubOAuthProvider.prototype);
 			tempProvider.config = {
 				clientId: "github_client_id",

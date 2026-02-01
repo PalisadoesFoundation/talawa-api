@@ -122,11 +122,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 	 * @throws {OAuthError} If configuration is invalid
 	 */
 	protected validateConfig(): void {
-		if (
-			!this.config.clientId ||
-			!this.config.clientSecret ||
-			!this.config.redirectUri
-		) {
+		if (!this.config.clientId || !this.config.clientSecret) {
 			throw new OAuthError(
 				`Invalid OAuth configuration for ${this.providerName}`,
 				"INVALID_CONFIG",
