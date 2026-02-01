@@ -9,6 +9,10 @@ Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:14](https:/
 Abstract base class for OAuth providers
 Implements common HTTP logic and error handling
 
+## Extended by
+
+- [`GitHubOAuthProvider`](../../GitHubOAuthProvider/classes/GitHubOAuthProvider.md)
+
 ## Implements
 
 - [`IOAuthProvider`](../../../interfaces/IOAuthProvider/interfaces/IOAuthProvider.md)
