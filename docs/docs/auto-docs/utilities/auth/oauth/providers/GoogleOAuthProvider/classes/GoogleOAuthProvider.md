@@ -4,7 +4,7 @@
 
 # Class: GoogleOAuthProvider
 
-Defined in: src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:29
+Defined in: [src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GoogleOAuthProvider.ts#L30)
 
 Google OAuth 2.0 provider implementation
 Handles code exchange and user profile retrieval from Google's OAuth endpoints
@@ -43,7 +43,7 @@ https://developers.google.com/identity/protocols/oauth2/web-server
 
 > **new GoogleOAuthProvider**(`config`): `GoogleOAuthProvider`
 
-Defined in: src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:41
+Defined in: [src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GoogleOAuthProvider.ts#L42)
 
 #### Parameters
 
@@ -63,9 +63,9 @@ Defined in: src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:41
 
 ### exchangeCodeForTokens()
 
-> **exchangeCodeForTokens**(`code`, `redirectUri`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
+> **exchangeCodeForTokens**(`code`, `redirectUri?`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
 
-Defined in: src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:52
+Defined in: [src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GoogleOAuthProvider.ts#L53)
 
 Exchange authorization code for access tokens
 
@@ -77,11 +77,11 @@ Exchange authorization code for access tokens
 
 Authorization code from Google OAuth callback
 
-##### redirectUri
+##### redirectUri?
 
 `string`
 
-Redirect URI that was used in the authorization request
+Optional redirect URI that was used in the authorization request. If not provided, uses config redirectUri
 
 #### Returns
 
@@ -91,7 +91,7 @@ Token response with access token and optional refresh token
 
 #### Throws
 
-If token exchange fails (e.g., invalid_grant, invalid_client)
+If token exchange fails (e.g., invalid_grant, invalid_client) or if no redirect URI is available
 
 #### Overrides
 
@@ -123,7 +123,7 @@ Provider name (e.g., "google", "github")
 
 > **getUserProfile**(`accessToken`): `Promise`\<[`OAuthUserProfile`](../../../types/interfaces/OAuthUserProfile.md)\>
 
-Defined in: src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:80
+Defined in: [src/utilities/auth/oauth/providers/GoogleOAuthProvider.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/GoogleOAuthProvider.ts#L92)
 
 Fetch user profile from Google userinfo endpoint
 

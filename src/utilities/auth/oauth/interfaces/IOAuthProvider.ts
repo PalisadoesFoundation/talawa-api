@@ -14,14 +14,14 @@ export interface IOAuthProvider {
 	/**
 	 * Exchange authorization code for access tokens
 	 * @param code - Authorization code from OAuth callback
-	 * @param redirectUri - Redirect URI used in authorization request
+	 * @param redirectUri - Optional redirect URI used in authorization request. If not provided, uses config redirectUri
 	 * @returns Token response with access token and optional refresh token
-	 * @throws {TokenExchangeError} If token exchange fails
+	 * @throws {TokenExchangeError} If token exchange fails or if no redirect URI is available
 	 * @throws {InvalidAuthorizationCodeError} If authorization code is invalid
 	 */
 	exchangeCodeForTokens(
 		code: string,
-		redirectUri: string,
+		redirectUri?: string,
 	): Promise<OAuthProviderTokenResponse>;
 
 	/**

@@ -1,3 +1,4 @@
+import { TokenExchangeError } from "../errors";
 import type { OAuthProviderTokenResponse, OAuthUserProfile } from "../types";
 import { BaseOAuthProvider } from "./BaseOAuthProvider";
 
@@ -45,21 +46,32 @@ export class GoogleOAuthProvider extends BaseOAuthProvider {
 	/**
 	 * Exchange authorization code for access tokens
 	 * @param code - Authorization code from Google OAuth callback
-	 * @param redirectUri - Redirect URI that was used in the authorization request
+	 * @param redirectUri - Optional redirect URI that was used in the authorization request. If not provided, uses config redirectUri
 	 * @returns Token response with access token and optional refresh token
-	 * @throws {TokenExchangeError} If token exchange fails (e.g., invalid_grant, invalid_client)
+	 * @throws {TokenExchangeError} If token exchange fails (e.g., invalid_grant, invalid_client) or if no redirect URI is available
 	 */
 	async exchangeCodeForTokens(
 		code: string,
-		redirectUri: string,
+		redirectUri?: string,
 	): Promise<OAuthProviderTokenResponse> {
 		this.validateConfig();
+
+		// Resolve redirect URI from parameter or config
+		const resolvedRedirectUri = redirectUri || this.config.redirectUri;
+
+		// Validate that a non-empty redirect URI is available
+		if (!resolvedRedirectUri) {
+			throw new TokenExchangeError(
+				"Token exchange failed",
+				"redirect_uri is required but was not provided in the method parameter or provider configuration",
+			);
+		}
 
 		const data = new URLSearchParams({
 			code,
 			client_id: this.config.clientId,
 			client_secret: this.config.clientSecret,
-			redirect_uri: redirectUri || this.config.redirectUri || "",
+			redirect_uri: resolvedRedirectUri,
 			grant_type: "authorization_code",
 		});
 
