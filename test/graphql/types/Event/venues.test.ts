@@ -52,39 +52,62 @@ afterEach(async () => {
 	vi.restoreAllMocks();
 
 	// Clean up test data in reverse dependency order, only deleting rows created by this test
+	// Each step is wrapped in try-catch to ensure cleanup continues even if one step fails
+	// (e.g., if a test fails mid-execution and some resources don't exist)
+
 	// Delete venue attachments for created venues
-	if (createdVenueIds.length > 0) {
-		await server.drizzleClient
-			.delete(venueAttachmentsTable)
-			.where(inArray(venueAttachmentsTable.venueId, createdVenueIds));
+	try {
+		if (createdVenueIds.length > 0) {
+			await server.drizzleClient
+				.delete(venueAttachmentsTable)
+				.where(inArray(venueAttachmentsTable.venueId, createdVenueIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for venue attachments:", error);
 	}
 
 	// Delete venue bookings for created events
-	if (createdEventIds.length > 0) {
-		await server.drizzleClient
-			.delete(venueBookingsTable)
-			.where(inArray(venueBookingsTable.eventId, createdEventIds));
+	try {
+		if (createdEventIds.length > 0) {
+			await server.drizzleClient
+				.delete(venueBookingsTable)
+				.where(inArray(venueBookingsTable.eventId, createdEventIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for venue bookings:", error);
 	}
 
 	// Delete created venues
-	if (createdVenueIds.length > 0) {
-		await server.drizzleClient
-			.delete(venuesTable)
-			.where(inArray(venuesTable.id, createdVenueIds));
+	try {
+		if (createdVenueIds.length > 0) {
+			await server.drizzleClient
+				.delete(venuesTable)
+				.where(inArray(venuesTable.id, createdVenueIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for venues:", error);
 	}
 
 	// Delete created events
-	if (createdEventIds.length > 0) {
-		await server.drizzleClient
-			.delete(eventsTable)
-			.where(inArray(eventsTable.id, createdEventIds));
+	try {
+		if (createdEventIds.length > 0) {
+			await server.drizzleClient
+				.delete(eventsTable)
+				.where(inArray(eventsTable.id, createdEventIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for events:", error);
 	}
 
 	// Delete created organizations (memberships are cascade-deleted automatically)
-	if (createdOrganizationIds.length > 0) {
-		await server.drizzleClient
-			.delete(organizationsTable)
-			.where(inArray(organizationsTable.id, createdOrganizationIds));
+	try {
+		if (createdOrganizationIds.length > 0) {
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(inArray(organizationsTable.id, createdOrganizationIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for organizations:", error);
 	}
 
 	// Clear the tracking arrays
@@ -148,6 +171,28 @@ async function createEvent(orgId: string): Promise<string> {
 	assertToBeNonNullish(eventId);
 	createdEventIds.push(eventId);
 	return eventId;
+}
+
+function getVenuesComplexityFn(): (args: {
+	first?: number | null;
+	last?: number | null;
+}) => { field: number; multiplier: number } {
+	const eventType = schema.getType("Event") as GraphQLObjectType;
+	if (!eventType) {
+		throw new Error("Event type not found");
+	}
+	const venuesField = eventType.getFields().venues;
+	if (!venuesField) {
+		throw new Error("Venues field not found");
+	}
+	const complexityFn = venuesField.extensions?.complexity as (args: {
+		first?: number | null;
+		last?: number | null;
+	}) => { field: number; multiplier: number };
+	if (!complexityFn) {
+		throw new Error("Complexity function not found");
+	}
+	return complexityFn;
 }
 
 suite("Event venues Field", () => {
@@ -1299,25 +1344,7 @@ suite("Event venues Field", () => {
 	});
 
 	test("should calculate complexity correctly with first parameter", () => {
-		const eventType = schema.getType("Event") as GraphQLObjectType;
-		if (!eventType) {
-			throw new Error("Event type not found");
-		}
-
-		const venuesField = eventType.getFields().venues;
-		if (!venuesField) {
-			throw new Error("Venues field not found");
-		}
-
-		const complexityFn = venuesField.extensions?.complexity as (args: {
-			first?: number | null;
-			last?: number | null;
-		}) => { field: number; multiplier: number };
-
-		if (!complexityFn) {
-			throw new Error("Complexity function not found");
-		}
-
+		const complexityFn = getVenuesComplexityFn();
 		const result = complexityFn({ first: 10 });
 		expect(result).toEqual({
 			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
@@ -1326,25 +1353,7 @@ suite("Event venues Field", () => {
 	});
 
 	test("should calculate complexity correctly with last parameter", () => {
-		const eventType = schema.getType("Event") as GraphQLObjectType;
-		if (!eventType) {
-			throw new Error("Event type not found");
-		}
-
-		const venuesField = eventType.getFields().venues;
-		if (!venuesField) {
-			throw new Error("Venues field not found");
-		}
-
-		const complexityFn = venuesField.extensions?.complexity as (args: {
-			first?: number | null;
-			last?: number | null;
-		}) => { field: number; multiplier: number };
-
-		if (!complexityFn) {
-			throw new Error("Complexity function not found");
-		}
-
+		const complexityFn = getVenuesComplexityFn();
 		const result = complexityFn({ last: 5 });
 		expect(result).toEqual({
 			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
@@ -1353,25 +1362,7 @@ suite("Event venues Field", () => {
 	});
 
 	test("should default complexity multiplier to 1 when neither first nor last provided", () => {
-		const eventType = schema.getType("Event") as GraphQLObjectType;
-		if (!eventType) {
-			throw new Error("Event type not found");
-		}
-
-		const venuesField = eventType.getFields().venues;
-		if (!venuesField) {
-			throw new Error("Venues field not found");
-		}
-
-		const complexityFn = venuesField.extensions?.complexity as (args: {
-			first?: number | null;
-			last?: number | null;
-		}) => { field: number; multiplier: number };
-
-		if (!complexityFn) {
-			throw new Error("Complexity function not found");
-		}
-
+		const complexityFn = getVenuesComplexityFn();
 		const result = complexityFn({});
 		expect(result).toEqual({
 			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
