@@ -75,6 +75,7 @@ describe("Setup -> minioSetup", () => {
 			{ setupReCaptcha: false },
 			{ configureEmail: false },
 			{ setupOAuth: false },
+			{ setupObservability: false },
 			{ setupMetrics: false },
 		];
 

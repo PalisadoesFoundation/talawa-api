@@ -12,10 +12,11 @@ import { caddySetup } from "./services/caddySetup";
 import { setCI } from "./services/ciSetup";
 import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 import { minioSetup } from "./services/minioSetup";
+import { observabilitySetup } from "./services/observabilitySetup";
 import { postgresSetup } from "./services/postgresSetup";
 import type { SetupAnswers } from "./types";
 import { updateEnvVariable } from "./updateEnvVariable";
-import { validatePositiveInteger } from "./validators";
+
 
 const envFileName = ".env";
 let backupCreated = false;
@@ -135,7 +136,7 @@ async function restoreLatestBackup(): Promise<void> {
 				} catch (err) {
 					try {
 						await fs.unlink(tempPath);
-					} catch {}
+					} catch { }
 					throw err;
 				}
 			} else {
@@ -150,90 +151,11 @@ async function restoreLatestBackup(): Promise<void> {
 	}
 }
 
-export async function metricsSetup(
-	answers: SetupAnswers,
-): Promise<SetupAnswers> {
-	try {
-		console.log("\n--- Performance Metrics Configuration ---");
-		console.log("Configure performance monitoring for your API.");
-		console.log();
 
-		answers.API_METRICS_ENABLED = await promptList(
-			"API_METRICS_ENABLED",
-			"Enable performance metrics collection?",
-			["true", "false"],
-			"true",
-		);
-
-		if (answers.API_METRICS_ENABLED === "true") {
-			const apiKeyInput = await promptInput(
-				"API_METRICS_API_KEY",
-				"API key for /metrics/perf endpoint (leave empty for no auth):",
-				"",
-			);
-			answers.API_METRICS_API_KEY = apiKeyInput.trim() || undefined;
-
-			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
-				"API_METRICS_SLOW_REQUEST_MS",
-				"Slow request threshold in milliseconds:",
-				"500",
-				validatePositiveInteger,
-			);
-
-			answers.API_METRICS_SLOW_OPERATION_MS = await promptInput(
-				"API_METRICS_SLOW_OPERATION_MS",
-				"Slow operation threshold in milliseconds:",
-				"200",
-				validatePositiveInteger,
-			);
-
-			answers.API_METRICS_AGGREGATION_ENABLED = await promptList(
-				"API_METRICS_AGGREGATION_ENABLED",
-				"Enable background metrics aggregation?",
-				["true", "false"],
-				"true",
-			);
-
-			if (answers.API_METRICS_AGGREGATION_ENABLED === "true") {
-				answers.API_METRICS_AGGREGATION_CRON_SCHEDULE = await promptInput(
-					"API_METRICS_AGGREGATION_CRON_SCHEDULE",
-					"Aggregation cron schedule (default: every 5 minutes):",
-					"*/5 * * * *",
-				);
-
-				answers.API_METRICS_AGGREGATION_WINDOW_MINUTES = await promptInput(
-					"API_METRICS_AGGREGATION_WINDOW_MINUTES",
-					"Aggregation window in minutes:",
-					"5",
-					validatePositiveInteger,
-				);
-
-				answers.API_METRICS_CACHE_TTL_SECONDS = await promptInput(
-					"API_METRICS_CACHE_TTL_SECONDS",
-					"Cache TTL for aggregated metrics in seconds:",
-					"300",
-					validatePositiveInteger,
-				);
-			}
-
-			answers.API_METRICS_SNAPSHOT_RETENTION_COUNT = await promptInput(
-				"API_METRICS_SNAPSHOT_RETENTION_COUNT",
-				"Maximum snapshots to retain in memory:",
-				"1000",
-				validatePositiveInteger,
-			);
-		}
-
-		console.log("\nMetrics configuration completed!");
-	} catch (err) {
-		await handlePromptError(err);
-	}
-	return answers;
-}
 
 async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
-	await restoreLatestBackup();
+	await restoreBackup();
 	process.exit(1);
 }
 
@@ -366,7 +288,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"GOOGLE_REDIRECT_URI",
 				"Enter Google OAuth Redirect URI:",
 				answers.GOOGLE_REDIRECT_URI ||
-					"http://localhost:4000/auth/google/callback",
+				"http://localhost:4000/auth/google/callback",
 				(input: string) => {
 					if (input.trim().length < 1) {
 						return "Google Redirect URI cannot be empty.";
@@ -418,7 +340,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"GITHUB_REDIRECT_URI",
 				"Enter GitHub OAuth Redirect URI:",
 				answers.GITHUB_REDIRECT_URI ||
-					"http://localhost:4000/auth/github/callback",
+				"http://localhost:4000/auth/github/callback",
 				(input: string) => {
 					if (input.trim().length < 1) {
 						return "GitHub Redirect URI cannot be empty.";
@@ -580,13 +502,17 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupOAuth) {
 		answers = await oauthSetup(answers);
 	}
-	const setupMetrics = await promptConfirm(
-		"setupMetrics",
-		"Do you want to configure performance metrics settings now?",
+	const setupObservability = await promptConfirm(
+		"setupObservability",
+		"Do you want to configure observability settings (OpenTelemetry & Metrics) now?",
 		false,
 	);
-	if (setupMetrics) {
-		answers = await metricsSetup(answers);
+	if (setupObservability) {
+		try {
+			answers = await observabilitySetup(answers);
+		} catch (err) {
+			await handlePromptError(err);
+		}
 	}
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");

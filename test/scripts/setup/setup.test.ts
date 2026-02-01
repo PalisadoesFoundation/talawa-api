@@ -55,8 +55,8 @@ describe("Setup", () => {
 
 		// Mock fs to prevent deleting real .env
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		vi.spyOn(fs, "unlinkSync").mockImplementation(() => {});
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+		vi.spyOn(fs, "unlinkSync").mockImplementation(() => { });
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
 
 		vi.doMock("env-schema", () => ({
 			envSchema: () => ({
@@ -97,27 +97,31 @@ describe("Setup", () => {
 			if (!envExistedBefore && originalExistsSync(".env")) {
 				fs.unlinkSync(".env");
 			}
-		} catch {}
+		} catch { }
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
-		const mockResponses = [
-			{ CI: "false" },
-			{ useDefaultApi: true },
-			{ useDefaultMinio: true },
-			{ useDefaultCloudbeaver: true },
-			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: true },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-			{ setupReCaptcha: false },
-			{ setupOAuth: false },
-			{ setupMetrics: false },
-		];
+
+		const mockResponses = {
+			envReconfigure: true,
+			CI: "false",
+			useDefaultApi: true,
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
+			setupOAuth: false,
+			setupObservability: false,
+		};
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		// @ts-ignore
+		promptMock.mockImplementation((questions) => {
+			const q = Array.isArray(questions) ? questions[0] : questions;
+			return Promise.resolve({ [q.name]: mockResponses[q.name] });
+		});
 
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
@@ -178,7 +182,7 @@ describe("Setup", () => {
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ setupReCaptcha: false },
 			{ setupOAuth: false },
-			{ setupMetrics: false },
+			{ setupObservability: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -314,7 +318,7 @@ describe("Setup", () => {
 	// TODO: Re-enable when SIGINT handling can be tested without aborting Vitest runner
 	// Skipped because process.emit('SIGINT') causes the test runner to abort with exit code 130
 	it.skip("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 
 		// Mock fs.promises methods for restoreLatestBackup
 		const fsCopyFileSpy = vi
@@ -411,10 +415,10 @@ describe("Setup", () => {
 	// TODO: Re-enable when SIGINT handling can be tested without aborting Vitest runner
 	// Skipped because process.emit('SIGINT') causes the test runner to abort with exit code 130
 	it.skip("should exit with code 1 when restoreLatestBackup fails", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 
 		// Mock fs.promises methods for restoreLatestBackup to throw an error
 		const fsAccessSpy = vi
@@ -502,7 +506,7 @@ describe("Setup", () => {
 	});
 
 	it("should return false and skip restoration when cleanupInProgress is true", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		// Spy on file operations that would be performed during restoration
 		const fsAccessSpy = vi.spyOn(fs.promises, "access");
 		const fsReaddirSpy = vi.spyOn(fs.promises, "readdir");
@@ -563,7 +567,7 @@ describe("Setup", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 			setupReCaptcha: false,
 			setupOAuth: false,
-			setupMetrics: false,
+			setupObservability: false,
 		});
 
 		await setup();
@@ -592,7 +596,7 @@ describe("Setup", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 			setupReCaptcha: false,
 			setupOAuth: false,
-			setupMetrics: false,
+			setupObservability: false,
 		});
 
 		await setup();
@@ -640,7 +644,7 @@ describe("Setup", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 			setupReCaptcha: false,
 			setupOAuth: false,
-			setupMetrics: false,
+			setupObservability: false,
 		});
 
 		await setup();
@@ -676,7 +680,7 @@ describe("Setup", () => {
 		});
 		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
 		promptMock.mockResolvedValueOnce({ setupOAuth: false });
-		promptMock.mockResolvedValueOnce({ setupMetrics: false });
+		promptMock.mockResolvedValueOnce({ setupObservability: false });
 
 		await setup();
 
@@ -719,7 +723,7 @@ describe("Setup", () => {
 		});
 		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
 		promptMock.mockResolvedValueOnce({ setupOAuth: false });
-		promptMock.mockResolvedValueOnce({ setupMetrics: false });
+		promptMock.mockResolvedValueOnce({ setupObservability: false });
 
 		await setup();
 
@@ -1043,7 +1047,7 @@ describe("Validation Helpers", () => {
 		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
-			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		});
 
 		afterEach(() => {
@@ -1114,72 +1118,7 @@ describe("Validation Helpers", () => {
 		});
 	});
 
-	describe("observabilitySetup", () => {
-		let observabilitySetup: typeof import("scripts/setup/services/apiSetup").observabilitySetup;
-		type SetupAnswers = import("scripts/setup/types").SetupAnswers;
 
-		beforeAll(async () => {
-			const module = await import("scripts/setup/services/apiSetup");
-			observabilitySetup = module.observabilitySetup;
-		});
-
-		afterEach(() => {
-			vi.restoreAllMocks();
-		});
-
-		it("prompts for sampling ratio when observability is enabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({
-				API_OTEL_ENABLED: "true",
-			});
-
-			promptMock.mockResolvedValueOnce({
-				API_OTEL_SAMPLING_RATIO: "0.5",
-			});
-
-			const answers: SetupAnswers = {};
-
-			const result = await observabilitySetup(answers);
-
-			expect(promptMock).toHaveBeenCalledTimes(2);
-			expect(result.API_OTEL_ENABLED).toBe("true");
-			expect(result.API_OTEL_SAMPLING_RATIO).toBe("0.5");
-		});
-
-		it("does not prompt for sampling ratio when observability is disabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({
-				API_OTEL_ENABLED: "false",
-			});
-
-			const answers: SetupAnswers = {};
-
-			const result = await observabilitySetup(answers);
-
-			expect(promptMock).toHaveBeenCalledTimes(1);
-			expect(result.API_OTEL_ENABLED).toBe("false");
-			expect(result.API_OTEL_SAMPLING_RATIO).toBeUndefined();
-		});
-
-		it("preserves existing answers", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({
-				API_OTEL_ENABLED: "false",
-			});
-
-			const answers: SetupAnswers = {
-				CI: "true",
-			};
-
-			const result = await observabilitySetup(answers);
-
-			expect(result.CI).toBe("true");
-			expect(result.API_OTEL_ENABLED).toBe("false");
-		});
-	});
 
 	describe("validateSamplingRatio", () => {
 		let validateSamplingRatio: typeof import("scripts/setup/validators").validateSamplingRatio;
@@ -1208,126 +1147,7 @@ describe("Validation Helpers", () => {
 		});
 	});
 
-	describe("metricsSetup", () => {
-		let metricsSetup: typeof import("scripts/setup/setup").metricsSetup;
-		type SetupAnswers = import("scripts/setup/types").SetupAnswers;
 
-		beforeAll(async () => {
-			const module = await import("scripts/setup/setup");
-			metricsSetup = module.metricsSetup;
-		});
-
-		afterEach(() => {
-			vi.restoreAllMocks();
-		});
-
-		it("returns answers immediately when metrics is disabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_ENABLED: "false",
-			});
-
-			const answers: SetupAnswers = {};
-
-			const result = await metricsSetup(answers);
-
-			expect(promptMock).toHaveBeenCalledTimes(1);
-			expect(result.API_METRICS_ENABLED).toBe("false");
-			expect(result.API_METRICS_SLOW_REQUEST_MS).toBeUndefined();
-		});
-
-		it("prompts for all settings when metrics and aggregation are enabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({ API_METRICS_ENABLED: "true" });
-			promptMock.mockResolvedValueOnce({ API_METRICS_API_KEY: "test-key" });
-			promptMock.mockResolvedValueOnce({ API_METRICS_SLOW_REQUEST_MS: "500" });
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_SLOW_OPERATION_MS: "200",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_AGGREGATION_ENABLED: "true",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_AGGREGATION_WINDOW_MINUTES: "5",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_CACHE_TTL_SECONDS: "300",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_SNAPSHOT_RETENTION_COUNT: "1000",
-			});
-
-			const answers: SetupAnswers = {};
-
-			const result = await metricsSetup(answers);
-
-			expect(promptMock).toHaveBeenCalledTimes(9);
-			expect(result.API_METRICS_ENABLED).toBe("true");
-			expect(result.API_METRICS_API_KEY).toBe("test-key");
-			expect(result.API_METRICS_SLOW_REQUEST_MS).toBe("500");
-			expect(result.API_METRICS_SLOW_OPERATION_MS).toBe("200");
-			expect(result.API_METRICS_AGGREGATION_ENABLED).toBe("true");
-			expect(result.API_METRICS_AGGREGATION_CRON_SCHEDULE).toBe("*/5 * * * *");
-			expect(result.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBe("5");
-			expect(result.API_METRICS_CACHE_TTL_SECONDS).toBe("300");
-			expect(result.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe("1000");
-		});
-
-		it("skips aggregation settings when aggregation is disabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({ API_METRICS_ENABLED: "true" });
-			promptMock.mockResolvedValueOnce({ API_METRICS_API_KEY: "" });
-			promptMock.mockResolvedValueOnce({ API_METRICS_SLOW_REQUEST_MS: "500" });
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_SLOW_OPERATION_MS: "200",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_AGGREGATION_ENABLED: "false",
-			});
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_SNAPSHOT_RETENTION_COUNT: "1000",
-			});
-
-			const answers: SetupAnswers = {};
-
-			const result = await metricsSetup(answers);
-
-			expect(promptMock).toHaveBeenCalledTimes(6);
-			expect(result.API_METRICS_ENABLED).toBe("true");
-			// Empty API key should not be persisted (undefined for schema validation)
-			expect(result.API_METRICS_API_KEY).toBeUndefined();
-			expect(result.API_METRICS_AGGREGATION_ENABLED).toBe("false");
-			expect(result.API_METRICS_AGGREGATION_CRON_SCHEDULE).toBeUndefined();
-			expect(result.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBeUndefined();
-			expect(result.API_METRICS_CACHE_TTL_SECONDS).toBeUndefined();
-			expect(result.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe("1000");
-		});
-
-		it("preserves existing answers", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({
-				API_METRICS_ENABLED: "false",
-			});
-
-			const answers: SetupAnswers = {
-				CI: "true",
-				API_PORT: "4000",
-			};
-
-			const result = await metricsSetup(answers);
-
-			expect(result.CI).toBe("true");
-			expect(result.API_PORT).toBe("4000");
-			expect(result.API_METRICS_ENABLED).toBe("false");
-		});
-	});
 
 	describe("validatePositiveInteger", () => {
 		let validatePositiveInteger: typeof import("scripts/setup/validators").validatePositiveInteger;

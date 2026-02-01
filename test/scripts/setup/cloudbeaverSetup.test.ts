@@ -52,6 +52,7 @@ describe("Setup -> cloudbeaverSetup", () => {
 			{ setupReCaptcha: false },
 			{ configureEmail: false },
 			{ setupOAuth: false },
+			{ setupObservability: false },
 			{ setupMetrics: false },
 		];
 

@@ -1,18 +1,21 @@
 vi.mock("@fastify/redis", () => ({
-	default: async () => {},
+	default: async () => { },
 }));
 
 vi.mock("../src/fastifyPlugins/index", () => ({
-	default: async () => {},
+	default: async () => { },
 }));
 
 vi.mock("../src/routes/index", () => ({
-	default: async () => {},
+	default: async () => { },
 }));
 
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "../src/createServer";
+import dotenv from "dotenv";
+import path from "node:path";
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 /**
  * UUID v4 regex (case-insensitive)

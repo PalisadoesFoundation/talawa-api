@@ -5,7 +5,6 @@ import {
 	validateHmacSecretLength,
 	validateJwtSecretLength,
 	validatePort,
-	validateSamplingRatio,
 	validateTokenExpiration,
 	validateURL,
 } from "../validators.js";
@@ -200,22 +199,4 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	return answers;
 }
 
-export async function observabilitySetup(
-	answers: SetupAnswers,
-): Promise<SetupAnswers> {
-	answers.API_OTEL_ENABLED = await promptList(
-		"API_OTEL_ENABLED",
-		"Enable OpenTelemetry observability?",
-		["true", "false"],
-		"false",
-	);
-	if (answers.API_OTEL_ENABLED === "true") {
-		answers.API_OTEL_SAMPLING_RATIO = await promptInput(
-			"API_OTEL_SAMPLING_RATIO",
-			"OpenTelemetry sampling ratio (0-1):",
-			"1.0",
-			validateSamplingRatio,
-		);
-	}
-	return answers;
-}
+

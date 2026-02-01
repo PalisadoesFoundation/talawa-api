@@ -41,7 +41,9 @@ export const createServer = async (options?: {
 	// The `data` option has highest precedence, allowing tests to override required env vars.
 	const envConfig = envSchema<EnvConfig>({
 		ajv: envSchemaAjv,
-		data: options?.envConfig,
+		data: options?.envConfig
+			? { ...process.env, ...options.envConfig }
+			: undefined,
 		dotenv: true,
 		schema: envConfigSchema,
 	});

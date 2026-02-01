@@ -76,11 +76,17 @@ export default defineConfig({
 			"drizzle_migrations/**",
 			"envFiles/**",
 			"scripts/**",
-			"**/scripts/**",
+
 			"test/drizzle/**",
 			"test/graphql/**",
 			"test/install/**",
+			"**/*.integration.test.ts",
+			"**/*.integration.spec.ts",
+			"test/scripts/dbManagement/**",
+			"test/routes/rest/serverTiming.test.ts",
+			"test/routes/graphql.test.ts",
 		],
+
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "lcov", "html", "json"],

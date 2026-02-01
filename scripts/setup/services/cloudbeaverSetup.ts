@@ -2,9 +2,9 @@ import { promptInput } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
 import {
 	validateCloudBeaverAdmin,
-	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
 	validatePort,
+	validateSecurePassword,
 } from "../validators.js";
 
 /**
@@ -26,7 +26,7 @@ export async function cloudbeaverSetup(
 		"CLOUDBEAVER_ADMIN_PASSWORD",
 		"CloudBeaver admin password:",
 		process.env.CLOUDBEAVER_ADMIN_PASSWORD ?? "",
-		validateCloudBeaverPassword,
+		validateSecurePassword,
 	);
 	answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
 		"CLOUDBEAVER_MAPPED_HOST_IP",

@@ -1,6 +1,6 @@
 import { promptInput } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
-import { validatePort } from "../validators.js";
+import { validatePort, validateSecurePassword } from "../validators.js";
 
 /**
  * Prompt for Postgres configuration.
@@ -39,6 +39,7 @@ export async function postgresSetup(
 		"POSTGRES_PASSWORD",
 		"Postgres password:",
 		postgresPasswordDefault,
+		validateSecurePassword,
 	);
 	// Sync back to API_POSTGRES_PASSWORD if it was set
 	if (answers.API_POSTGRES_PASSWORD !== undefined) {

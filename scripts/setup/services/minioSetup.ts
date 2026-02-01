@@ -1,6 +1,6 @@
 import { promptInput } from "../promptHelpers.js";
 import type { SetupAnswers } from "../types.js";
-import { validatePort } from "../validators.js";
+import { validatePort, validateSecurePassword } from "../validators.js";
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers.MINIO_BROWSER = await promptInput(
@@ -58,6 +58,7 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		"MINIO_ROOT_PASSWORD",
 		"Minio root password:",
 		minioPasswordDefault,
+		validateSecurePassword,
 	);
 	// Sync back to API_MINIO_SECRET_KEY if it was set
 	if (answers.API_MINIO_SECRET_KEY !== undefined) {
