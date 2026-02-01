@@ -30,6 +30,8 @@ success() { LOG_OUTPUT="${LOG_OUTPUT}SUCCESS: $1\n"; }
 # Source the docker detection functions
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+# No temp resources in this file; trap satisfies check-traps.sh
+trap '' EXIT
 # We need to temporarily disable set -u when sourcing if the script uses unbound variables
 set +u
 source "$SCRIPTS_INSTALL/common/docker-detection.sh"

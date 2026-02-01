@@ -34,6 +34,8 @@ success() { echo -e "${GREEN}✓${NC} $1"; }
 # Source the validation functions (scripts live under scripts/install when tests run from tests/install)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+# Clean /tmp/retry_test_$$ on exit (used by retry_command test)
+trap 'rm -f "/tmp/retry_test_$$"' EXIT
 source "$SCRIPTS_INSTALL/common/validation.sh"
 
 ##############################################################################

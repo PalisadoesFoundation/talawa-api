@@ -130,6 +130,7 @@
     "run_tests": "vitest --coverage --minWorkers=1 --maxWorkers=1",
     "check_tests": "vitest run",
     "test:install": "bash tests/install/run-all.sh",
+    "test:install:no-leaks": "bash tests/install/check-no-leaks.sh",
     "test:shard": "node scripts/run-shard.js",
     "test:shard:coverage": "node scripts/run-shard.js --coverage",
     "start_development_server": "tsx watch ./src/index.ts",

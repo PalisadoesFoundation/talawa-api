@@ -70,17 +70,29 @@ else
 fi
 
 ##############################################################################
-# Mocked E2E tests: temp dir, PATH overrides, command stubs
+# Mocked E2E tests: unique temp dir per test, PATH overrides, command stubs
 # Skip mocked tests if we cannot create .git (e.g. sandbox restrictions)
 ##############################################################################
-TEST_DIR=$(mktemp -d)
-trap 'rm -rf "$TEST_DIR"' EXIT
-MOCK_BIN="$TEST_DIR/bin"
-mkdir -p "$MOCK_BIN"
+DIRS_TO_CLEAN=()
+trap 'rm -rf "${DIRS_TO_CLEAN[@]}"' EXIT
+
 CAN_RUN_MOCKED_E2E=true
-if ! mkdir -p "$TEST_DIR/.git" 2>/dev/null; then
+_check_dir=$(mktemp -d 2>/dev/null) || true
+if [ -n "${_check_dir:-}" ] && ! mkdir -p "$_check_dir/.git" 2>/dev/null; then
     CAN_RUN_MOCKED_E2E=false
 fi
+rm -rf "${_check_dir:-}" 2>/dev/null || true
+unset _check_dir
+
+# Call at start of each mocked E2E test to get a fresh TEST_DIR and MOCK_BIN
+init_test_dir() {
+    TEST_DIR=$(mktemp -d)
+    DIRS_TO_CLEAN+=("$TEST_DIR")
+    trap 'rm -rf "${DIRS_TO_CLEAN[@]}"' EXIT
+    MOCK_BIN="$TEST_DIR/bin"
+    mkdir -p "$MOCK_BIN"
+    setup_test_repo
+}
 
 create_mock() {
     local cmd_name="$1"
@@ -169,10 +181,6 @@ setup_clean_system() {
     touch "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
 }
 
-if [ "$CAN_RUN_MOCKED_E2E" = true ]; then
-    setup_test_repo
-fi
-
 ##############################################################################
 # Test: AUTO_YES / non-interactive (CI=true)
 ##############################################################################
@@ -181,6 +189,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
@@ -207,6 +216,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; exit 0'
 create_mock "node" 'echo "v20.10.0"'
@@ -232,6 +242,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 echo '{"name":"other","version":"1.0.0","engines":{"node":"20.10.0"},"packageManager":"pnpm@8.14.0"}' > "$TEST_DIR/package.json"
 set +e
@@ -243,7 +254,6 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "This script must be run f
 else
     test_fail "Expected validation error for wrong package name. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
@@ -254,6 +264,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 rm -f "$TEST_DIR/package.json"
 set +e
@@ -265,7 +276,6 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "package.json not found"; 
 else
     test_fail "Expected missing package.json error. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
@@ -276,6 +286,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
@@ -302,6 +313,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ]; then echo "Installing Node $2"; exit 0; fi; if [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
@@ -328,6 +340,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 echo '{"name":"talawa-api","version":"1.0.0","engines":{"node":"20.10.0; rm -rf /"},"packageManager":"pnpm@8.14.0"}' > "$TEST_DIR/package.json"
 # Exact message from validation.sh validate_version_string for invalid chars (e.g. semicolon)
@@ -341,7 +354,6 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -qF "$EXPECTED_ERROR"; then
 else
     test_fail "Expected validation error. Expected in output: $EXPECTED_ERROR. Exit: $EXIT_CODE. Actual output: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
@@ -352,6 +364,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 # MIN_DISK_SPACE_KB=2097152 (2GB). Report ~100MB available (4th column in 1K-blocks).
 create_mock "df" 'echo "Filesystem 1K-blocks Used Available"; echo "dummy 100000 50000 100000 /"'
@@ -370,7 +383,6 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "Insufficient disk space";
 else
     test_fail "Expected disk-space error. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
@@ -381,6 +393,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; exit 0'
@@ -398,7 +411,6 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "This directory is not a g
 else
     test_fail "Expected git repo error. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
@@ -409,6 +421,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "git" 'if [ "$1" = "rev-parse" ]; then exit 1; fi; exit 0'
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
@@ -426,7 +439,6 @@ if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q "Invalid git repository"; 
 else
     test_fail "Expected invalid git repo error. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
@@ -437,6 +449,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
@@ -463,6 +476,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'if [ "$1" = "info" ]; then echo "Cannot connect to daemon"; exit 1; fi; if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0"; exit 0; fi; echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
@@ -489,6 +503,7 @@ if [ "$CAN_RUN_MOCKED_E2E" != true ]; then
     echo "SKIP (cannot create .git in test dir)"
     test_pass
 else
+init_test_dir
 setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
@@ -511,7 +526,6 @@ if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Installation completed su
 else
     test_fail "Expected success with pnpm install path. Exit: $EXIT_CODE. Logs: $OUTPUT"
 fi
-setup_test_repo
 fi
 
 ##############################################################################
