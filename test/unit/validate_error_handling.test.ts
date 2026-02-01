@@ -669,6 +669,10 @@ describe("ErrorHandlingValidator", () => {
 					"src/routes/**/*.ts",
 				),
 			).toBe(false);
+
+			expect(
+				validator.matchesGlobPattern("src/routes/api.ts", "src/routes/**/*.ts"),
+			).toBe(true);
 		});
 
 		it("should use matchesPattern to check multiple patterns", () => {
