@@ -253,54 +253,57 @@ describe("GoogleOAuthProvider", () => {
 			).rejects.toThrow(TokenExchangeError);
 		});
 
-	it("should handle timeout in token exchange", async () => {
-		const timeoutError = {
-			isAxiosError: true,
-			code: "ECONNABORTED",
-			message: "timeout of 10000ms exceeded",
-			config: { headers: {} },
-		} as AxiosError;
+		it("should handle timeout in token exchange", async () => {
+			const timeoutError = {
+				isAxiosError: true,
+				code: "ECONNABORTED",
+				message: "timeout of 10000ms exceeded",
+				config: { headers: {} },
+			} as AxiosError;
 
-		mockedIsAxiosError.mockReturnValue(true);
-		mockedPost.mockRejectedValueOnce(timeoutError);
+			mockedIsAxiosError.mockReturnValue(true);
+			mockedPost.mockRejectedValueOnce(timeoutError);
 
-		await expect(
-			provider.exchangeCodeForTokens("test_code", "http://localhost/callback"),
-		).rejects.toThrow(TokenExchangeError);
+			await expect(
+				provider.exchangeCodeForTokens(
+					"test_code",
+					"http://localhost/callback",
+				),
+			).rejects.toThrow(TokenExchangeError);
+		});
 	});
-});
 
-describe("getUserProfile", () => {
-	it("should fetch and normalize user profile", async () => {
-		const mockGoogleProfile = {
-			sub: "123456789",
-			email: "test@gmail.com",
-			name: "Test User",
-			picture: "https://example.com/photo.jpg",
-			email_verified: true,
-		};
+	describe("getUserProfile", () => {
+		it("should fetch and normalize user profile", async () => {
+			const mockGoogleProfile = {
+				sub: "123456789",
+				email: "test@gmail.com",
+				name: "Test User",
+				picture: "https://example.com/photo.jpg",
+				email_verified: true,
+			};
 
-		mockedGet.mockResolvedValueOnce({
-			data: mockGoogleProfile,
-		} as AxiosResponse);
+			mockedGet.mockResolvedValueOnce({
+				data: mockGoogleProfile,
+			} as AxiosResponse);
 
-		const result = await provider.getUserProfile("test_access_token");
+			const result = await provider.getUserProfile("test_access_token");
 
-		expect(result).toEqual({
-			providerId: "123456789",
-			email: "test@gmail.com",
-			name: "Test User",
-			picture: "https://example.com/photo.jpg",
-			emailVerified: true,
-		} satisfies OAuthUserProfile);
+			expect(result).toEqual({
+				providerId: "123456789",
+				email: "test@gmail.com",
+				name: "Test User",
+				picture: "https://example.com/photo.jpg",
+				emailVerified: true,
+			} satisfies OAuthUserProfile);
 
-		expect(mockedGet).toHaveBeenCalledWith(
-			"https://www.googleapis.com/oauth2/v3/userinfo",
-			expect.objectContaining({
-				headers: { Authorization: "Bearer test_access_token" },
-			}),
-		);
-	});
+			expect(mockedGet).toHaveBeenCalledWith(
+				"https://www.googleapis.com/oauth2/v3/userinfo",
+				expect.objectContaining({
+					headers: { Authorization: "Bearer test_access_token" },
+				}),
+			);
+		});
 
 		it("should handle minimal profile (only sub)", async () => {
 			mockedGet.mockResolvedValueOnce({
