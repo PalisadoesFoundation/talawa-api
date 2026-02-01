@@ -288,6 +288,16 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			const result = eventAttachmentsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
+
+		it("should reject invalid mimeType in insert schema", () => {
+			const result = eventAttachmentsTableInsertSchema.safeParse({
+				name: faker.system.fileName(),
+				mimeType: "not/a/real-type",
+				eventId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 
 	describe("Database Operations", () => {
