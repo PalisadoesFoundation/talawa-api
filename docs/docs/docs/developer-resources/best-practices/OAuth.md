@@ -456,6 +456,43 @@ class GoogleOAuthProvider extends BaseOAuthProvider {
 }
 ```
 
+## Provider Implementations
+
+### GitHubOAuthProvider
+
+The `GitHubOAuthProvider` implements OAuth 2.0 authentication with GitHub. It handles the complete authentication flow including token exchange and user profile retrieval.
+
+#### Features
+- Token exchange with GitHub OAuth endpoints
+- User profile fetching from GitHub API
+- Automatic email resolution for private email addresses
+
+#### Usage
+
+```typescript
+import { GitHubOAuthProvider } from '~/src/utilities/auth/oauth/providers/GitHubOAuthProvider';
+
+const provider = new GitHubOAuthProvider({
+  clientId: process.env.GITHUB_CLIENT_ID!,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+  redirectUri: process.env.GITHUB_REDIRECT_URI,
+});
+
+// Exchange authorization code for tokens
+const tokens = await provider.exchangeCodeForTokens(authCode, redirectUri);
+
+// Get user profile
+const profile = await provider.getUserProfile(tokens.access_token);
+```
+
+#### Required Scopes
+- `user:email` - Required to access private email addresses when the primary email is not public
+
+#### Environment Variables
+- `GITHUB_CLIENT_ID` - GitHub OAuth app client ID
+- `GITHUB_CLIENT_SECRET` - GitHub OAuth app client secret
+- `GITHUB_REDIRECT_URI` - Authorized redirect URI
+
 ### Protected Methods
 
 #### `post<T>(url, data, headers?)`

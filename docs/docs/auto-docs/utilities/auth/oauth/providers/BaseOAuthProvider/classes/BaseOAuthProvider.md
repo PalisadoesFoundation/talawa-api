@@ -12,6 +12,7 @@ Implements common HTTP logic and error handling
 ## Extended by
 
 - [`GoogleOAuthProvider`](../../GoogleOAuthProvider/classes/GoogleOAuthProvider.md)
+- [`GitHubOAuthProvider`](../../GitHubOAuthProvider/classes/GitHubOAuthProvider.md)
 
 ## Implements
 

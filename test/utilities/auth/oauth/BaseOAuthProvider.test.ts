@@ -152,6 +152,7 @@ describe("BaseOAuthProvider", () => {
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
+					redirectUri: "https://example.com/callback",
 					clientSecret: "test_secret",
 				});
 			}).not.toThrow();
@@ -619,6 +620,7 @@ describe("BaseOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "test_client_id",
 				clientSecret: "test_client_secret",
+				redirectUri: "https://example.com/callback",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new ConcreteOAuthProvider(
@@ -655,6 +657,7 @@ describe("BaseOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "test_client_id",
 				clientSecret: "test_client_secret",
+				redirectUri: "https://example.com/callback",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new ConcreteOAuthProvider(
