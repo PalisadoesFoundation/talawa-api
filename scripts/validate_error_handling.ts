@@ -833,8 +833,8 @@ export class ErrorHandlingValidator {
 		}
 
 		if (
-			/throw\s+new\s+Error\s*\(/g.test(line) ||
-			/throw\s+Error\s*\(/g.test(line) ||
+			/throw\s+new\s+Error\s*\(/.test(line) ||
+			/throw\s+Error\s*\(/.test(line) ||
 			// Also catch instantiation of generic Error without throw (e.g. return new Error(), const e = new Error())
 			/new\s+Error\s*\(/.test(line)
 		) {
@@ -868,7 +868,7 @@ export class ErrorHandlingValidator {
 				);
 			}
 		} else {
-			if (/console\.error\s*\(/g.test(line)) {
+			if (/console\.error\s*\(/.test(line)) {
 				this.addViolation(
 					filePath,
 					lineNumber,
