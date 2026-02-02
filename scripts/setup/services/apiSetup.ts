@@ -45,8 +45,8 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	);
 	answers.API_JWT_EXPIRES_IN = await promptInput(
 		"API_JWT_EXPIRES_IN",
-		"JWT expiration (ms):",
-		"2592000000",
+		"JWT expiration (seconds):",
+		"2592000",
 		validateTokenExpiration,
 	);
 	const jwtSecret = generateJwtSecret();
@@ -122,7 +122,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"API_MINIO_SECRET_KEY",
 				"Minio secret key:",
 				minioPassword, // Use configured password as default
-				validateSecurePassword,
+				// Do not enforce strict validation when confirming an existing legacy password
 			);
 		}
 		console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
@@ -176,7 +176,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				"API_POSTGRES_PASSWORD",
 				"Postgres password:",
 				postgresPasswordLocal, // Use configured password as default
-				validateSecurePassword,
+				// Do not enforce strict validation when confirming an existing legacy password
 			);
 		}
 		console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");

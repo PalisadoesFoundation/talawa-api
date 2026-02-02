@@ -56,6 +56,10 @@ describe("Setup -> minioSetup", () => {
 	});
 
 	it("should prompt extended Minio config fields when CI=false", async () => {
+		// Mock sequence must match setup() orchestration order:
+		// 1. envReconfigure, 2. CI, 3. useDefaultApi, 4. useDefaultMinio,
+		// 5-11. MinIO fields, 12. useDefaultCloudbeaver, 13. useDefaultPostgres,
+		// 14. useDefaultCaddy, 15. admin email, 16-19. feature toggles
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
@@ -102,8 +106,6 @@ describe("Setup -> minioSetup", () => {
 		}
 	});
 	it("should handle port conflict between API and Console ports by prompting for a new port", async () => {
-		process.env.CI = "false";
-
 		const promptMock = vi.spyOn(inquirer, "prompt");
 
 		promptMock
