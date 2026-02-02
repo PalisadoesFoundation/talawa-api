@@ -348,11 +348,20 @@ export class ErrorHandlingValidator {
 		// Convert glob pattern to regex
 		let regexPattern = pattern
 			.replace(/[.+^${}()|[\]\\]/g, "\\$&") // Escape regex special chars except * and ?
-			.replace(/\*\*/g, "___DOUBLESTAR___") // Temporarily replace **
-			.replace(/\*/g, "[^/]*") // * matches anything except directory separator
-			.replace(/\?/g, "[^/]") // ? matches single character except directory separator
-			.replace(/___DOUBLESTARSLASH___/g, "(?:[^/]+/)*") // **/ matches zero or more directories
-			.replace(/___DOUBLESTAR___/g, ".*"); // ** matches any number of directories
+			.replace(/\*\*\/|\*\*|\*|\?/g, (match) => {
+				switch (match) {
+					case "**/":
+						return "(?:[^/]+/)*";
+					case "**":
+						return ".*";
+					case "*":
+						return "[^/]*";
+					case "?":
+						return "[^/]";
+					default:
+						return match;
+				}
+			});
 
 		// Anchor the pattern
 		regexPattern = `^${regexPattern}$`;
