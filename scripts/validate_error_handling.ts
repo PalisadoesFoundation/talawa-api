@@ -756,10 +756,6 @@ export class ErrorHandlingValidator {
 			/return\s+new\s+\w*Error/,
 			/return\s+process\w+/,
 			/return\s+reject\w*/,
-			/return\s+"[^"]*"/,
-			/return\s+'[^']*'/,
-			/return\s+`[^`]*`/,
-			/return[\s\S]*["'`][^"'`]*["'`]/,
 		];
 
 		return properHandlingPatterns.some((pattern) =>
