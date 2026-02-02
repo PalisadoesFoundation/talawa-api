@@ -410,6 +410,39 @@ suite.concurrent("insertCollections", () => {
 		).rejects.toThrow(/Error adding data to tables:/);
 	});
 
+	test.each([
+		"users",
+		"organizations",
+		"organization_memberships",
+		"posts",
+		"post_votes",
+		"membership_requests",
+		"post_attachments",
+		"comments",
+		"comment_votes",
+		"events",
+		"recurrence_rules",
+		"recurring_event_templates",
+		"event_volunteers",
+		"event_volunteer_memberships",
+		"action_categories",
+		"action_items",
+		"notification_templates",
+	])("should throw Missing file content for %s when sample file read returns undefined", async (collection) => {
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockResolvedValue(undefined as unknown as string);
+
+		await expect(helpers.insertCollections([collection])).rejects.toThrow(
+			new RegExp(
+				`Missing file content for ${collection.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+			),
+		);
+		expect(readFileSpy).toHaveBeenCalled();
+
+		readFileSpy.mockRestore();
+	});
+
 	test.concurrent("should transform recurring_event_templates with parseDate/getNextOccurrenceOfWeekdayTime and set isPublic and isRecurringEventTemplate", async () => {
 		const fixedTime = new Date("2025-02-01T12:00:00.000Z");
 		vi.useFakeTimers();
@@ -950,29 +983,47 @@ suite("recurring_event_instances generation", () => {
 		);
 		vi.mocked(eventGen.generateInstancesForRecurringEvent).mockClear();
 
-		const checkAndInsertDataSpy = vi
-			.spyOn(helpers, "checkAndInsertData")
-			.mockResolvedValue(true);
+		const retentionStart = new Date("2025-01-01T00:00:00Z");
+		const currentWindowEnd = new Date("2026-01-01T00:00:00Z");
+		const realDb = Reflect.get(helpers, "db");
+		const mockDb = {
+			...realDb,
+			query: {
+				...realDb.query,
+				recurrenceRulesTable: {
+					...realDb.query.recurrenceRulesTable,
+					findMany: vi.fn().mockResolvedValue([
+						{
+							baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+							organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+						},
+					]),
+				},
+				eventGenerationWindowsTable: {
+					...realDb.query.eventGenerationWindowsTable,
+					findFirst: vi.fn().mockResolvedValue({
+						retentionStartDate: retentionStart,
+						currentWindowEndDate: currentWindowEnd,
+					}),
+				},
+			},
+		};
 
-		await helpers.insertCollections(["recurrence_rules"]);
-		await helpers.insertCollections(["recurring_event_instances"]);
+		await helpers.insertCollections(["recurring_event_instances"], {
+			db: mockDb as unknown as typeof helpers.db,
+		});
 
 		expect(eventGen.generateInstancesForRecurringEvent).toHaveBeenCalled();
 		const calls = vi.mocked(eventGen.generateInstancesForRecurringEvent).mock
 			.calls;
 		for (const [input] of calls) {
 			expect(input).toMatchObject({
-				baseRecurringEventId: expect.any(String),
-				organizationId: expect.any(String),
-				windowStartDate: expect.any(Date),
-				windowEndDate: expect.any(Date),
+				baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+				organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+				windowStartDate: retentionStart,
+				windowEndDate: currentWindowEnd,
 			});
-			expect(input.windowStartDate.getTime()).toBeLessThanOrEqual(
-				input.windowEndDate.getTime(),
-			);
 		}
-
-		checkAndInsertDataSpy.mockRestore();
 	});
 
 	test("should throw aggregated error when generation window is missing for an org", async () => {
@@ -1014,31 +1065,52 @@ suite("recurring_event_instances generation", () => {
 			eventGen.generateInstancesForRecurringEvent,
 		).mockRejectedValueOnce(new Error("generation failed"));
 
-		const checkAndInsertDataSpy = vi
-			.spyOn(helpers, "checkAndInsertData")
-			.mockResolvedValue(true);
-
-		await helpers.insertCollections(["recurrence_rules"]);
+		const retentionStart = new Date("2025-01-01T00:00:00Z");
+		const currentWindowEnd = new Date("2026-01-01T00:00:00Z");
+		const realDb = Reflect.get(helpers, "db");
+		const mockDb = {
+			...realDb,
+			query: {
+				...realDb.query,
+				recurrenceRulesTable: {
+					...realDb.query.recurrenceRulesTable,
+					findMany: vi.fn().mockResolvedValue([
+						{
+							baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+							organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+						},
+					]),
+				},
+				eventGenerationWindowsTable: {
+					...realDb.query.eventGenerationWindowsTable,
+					findFirst: vi.fn().mockResolvedValue({
+						retentionStartDate: retentionStart,
+						currentWindowEndDate: currentWindowEnd,
+					}),
+				},
+			},
+		};
 
 		await expect(
-			helpers.insertCollections(["recurring_event_instances"]),
+			helpers.insertCollections(["recurring_event_instances"], {
+				db: mockDb as unknown as typeof helpers.db,
+			}),
 		).rejects.toThrow(
 			/Failed to generate instances for \d+ recurring event.*generation failed/,
 		);
 
-		checkAndInsertDataSpy.mockRestore();
 		vi.mocked(eventGen.generateInstancesForRecurringEvent).mockResolvedValue(0);
 	});
 });
 
 suite(
-	"checkDataSize includes recurrence_rules and event_generation_windows",
+	"checkDataSize includes recurrence_rules, event_generation_windows, and recurring_event_instances",
 	() => {
 		afterEach(() => {
 			vi.restoreAllMocks();
 		});
 
-		test("should query recurrence_rules and event_generation_windows tables", async () => {
+		test("should query recurrence_rules, event_generation_windows, and recurring_event_instances tables", async () => {
 			const tablesQueried: unknown[] = [];
 			const db = Reflect.get(helpers, "db");
 			const selectSpy = vi.spyOn(db, "select").mockReturnValue({
@@ -1051,6 +1123,7 @@ suite(
 				await helpers.checkDataSize("Test Stage");
 				expect(tablesQueried).toContain(schema.recurrenceRulesTable);
 				expect(tablesQueried).toContain(schema.eventGenerationWindowsTable);
+				expect(tablesQueried).toContain(schema.recurringEventInstancesTable);
 			} finally {
 				selectSpy.mockRestore();
 			}
