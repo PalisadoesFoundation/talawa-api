@@ -34,6 +34,7 @@ suite("addSampleData main function tests", () => {
 			"comment_votes",
 			"action_categories",
 			"events",
+			"recurring_event_templates",
 			"event_volunteers",
 			"event_volunteer_memberships",
 			"action_items",
@@ -70,5 +71,40 @@ suite("addSampleData main function tests", () => {
 
 		// Act & Assert: main() should throw an error indicating sample data insertion failure.
 		await expect(mainModule.main()).rejects.toThrow("Error adding sample data");
+	});
+});
+
+suite("addSampleData run (CLI runner) tests", () => {
+	beforeEach(async () => {
+		vi.resetModules();
+	});
+
+	test("run() returns 0 when main and disconnect succeed", async () => {
+		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
+		vi.spyOn(helpers, "insertCollections").mockResolvedValue(true);
+		vi.spyOn(helpers, "disconnect").mockResolvedValue(true);
+		vi.spyOn(console, "log").mockImplementation(() => {});
+
+		await expect(mainModule.run()).resolves.toBe(0);
+	});
+
+	test("run() returns 1 when main fails", async () => {
+		vi.spyOn(helpers, "pingDB").mockRejectedValue(
+			new Error("connection failed"),
+		);
+
+		await expect(mainModule.run()).resolves.toBe(1);
+	});
+
+	test("run() returns 1 when disconnect fails after main succeeds", async () => {
+		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
+		vi.spyOn(helpers, "insertCollections").mockResolvedValue(true);
+		vi.spyOn(helpers, "disconnect").mockRejectedValue(
+			new Error("disconnect failed"),
+		);
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+
+		await expect(mainModule.run()).resolves.toBe(1);
 	});
 });
