@@ -385,6 +385,28 @@ describe("leakyBucket", () => {
 			expect(result.allowed).toBe(false);
 			expect(result.resetAt).toBe(oldestTimestamp + windowMs);
 		});
+
+		it("should fallback to now + windowMs when oldest entry is missing at limit", async () => {
+			const now = Date.now();
+			const windowMs = 60000;
+			const entries: Array<{ timestamp: number; id: string }> = [];
+			for (let i = 0; i < 10; i++) {
+				entries.push({ timestamp: now - (10 - i) * 100, id: `req-empty-${i}` });
+			}
+			redis.populate(`${testKeyPrefix}-7b`, entries);
+			redis.setReturnEmptyZRange(true);
+
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-7b`,
+				10,
+				windowMs,
+				logger,
+			);
+
+			expect(result.allowed).toBe(false);
+			expect(result.resetAt).toBe(now + windowMs);
+		});
 	});
 
 	describe("sliding window behavior", () => {
