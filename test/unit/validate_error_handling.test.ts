@@ -28,12 +28,24 @@ vi.mock("glob", () => ({
 	glob: vi.fn(),
 }));
 
+/**
+ * Test Isolation Notes:
+ * - Tests in this file should run sequentially within a shard
+ * - Module-level mocks are shared; cleaned up in beforeEach/afterEach
+ * - Do not add test.concurrent as it will break mock isolation
+ */
+
 describe("ErrorHandlingValidator", () => {
 	let validator: ErrorHandlingValidator;
 
 	beforeEach(() => {
 		validator = new ErrorHandlingValidator();
-		vi.resetAllMocks();
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe("Pattern Matching", () => {
@@ -1287,90 +1299,98 @@ describe("ErrorHandlingValidator", () => {
 	describe("Environment Variable Overrides", () => {
 		it("should use CHANGED_FILES when provided", async () => {
 			const originalEnv = process.env;
-			process.env = { ...originalEnv, CHANGED_FILES: "file1.ts file2.ts" };
-			const spy = vi.spyOn(validator, "shouldScanFile").mockReturnValue(true);
-			const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+			try {
+				process.env = { ...originalEnv, CHANGED_FILES: "file1.ts file2.ts" };
+				vi.spyOn(validator, "shouldScanFile").mockReturnValue(true);
+				const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-			const files = await validator.getFilesToScan();
-			expect(files).toEqual(["file1.ts", "file2.ts"]);
-			expect(logSpy).toHaveBeenCalledWith(
-				expect.stringContaining("Using changed files from environment"),
-			);
-
-			spy.mockRestore();
-			logSpy.mockRestore();
-			process.env = originalEnv;
+				const files = await validator.getFilesToScan();
+				expect(files).toEqual(["file1.ts", "file2.ts"]);
+				expect(logSpy).toHaveBeenCalledWith(
+					expect.stringContaining("Using changed files from environment"),
+				);
+			} finally {
+				process.env = originalEnv;
+			}
 		});
 
 		it("should filter invalid files from CHANGED_FILES", async () => {
 			const originalEnv = process.env;
-			process.env = { ...originalEnv, CHANGED_FILES: "file1.ts ignored.txt" };
-			const spy = vi
-				.spyOn(validator, "shouldScanFile")
-				.mockImplementation((f) => f === "file1.ts");
+			try {
+				process.env = { ...originalEnv, CHANGED_FILES: "file1.ts ignored.txt" };
+				vi.spyOn(validator, "shouldScanFile").mockImplementation(
+					(f) => f === "file1.ts",
+				);
 
-			const files = await validator.getFilesToScan();
-			expect(files).toEqual(["file1.ts"]);
-
-			spy.mockRestore();
-			process.env = originalEnv;
+				const files = await validator.getFilesToScan();
+				expect(files).toEqual(["file1.ts"]);
+			} finally {
+				process.env = originalEnv;
+			}
 		});
 
 		it("should skip validation locally if no modified files", async () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: undefined,
-				GITHUB_BASE_REF: undefined,
-				CHANGED_FILES: undefined,
-			};
+			try {
+				process.env = {
+					...originalEnv,
+					CI: undefined,
+					GITHUB_BASE_REF: undefined,
+					CHANGED_FILES: undefined,
+				};
 
-			// Mock getModifiedFiles to return empty array
-			vi.spyOn(validator, "getModifiedFiles").mockReturnValue([]);
+				// Mock getModifiedFiles to return empty array
+				vi.spyOn(validator, "getModifiedFiles").mockReturnValue([]);
 
-			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+				const consoleSpy = vi
+					.spyOn(console, "log")
+					.mockImplementation(() => {});
 
-			const files = await validator.getFilesToScan();
+				const files = await validator.getFilesToScan();
 
-			expect(files).toEqual([]);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"No modified files detected. Skipping validation",
-				),
-			);
-			process.env = originalEnv;
-			consoleSpy.mockRestore();
+				expect(files).toEqual([]);
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining(
+						"No modified files detected. Skipping validation",
+					),
+				);
+			} finally {
+				process.env = originalEnv;
+			}
 		});
 
 		it("should fall back to full scan in CI when no specific modifications detected", async () => {
 			const originalEnv = process.env;
-			process.env = {
-				...originalEnv,
-				CI: "true",
-				GITHUB_BASE_REF: "develop",
-				CHANGED_FILES: undefined,
-			};
+			try {
+				process.env = {
+					...originalEnv,
+					CI: "true",
+					GITHUB_BASE_REF: "develop",
+					CHANGED_FILES: undefined,
+				};
 
-			// Mock getModifiedFiles to return empty array (simulating no diffs returned)
-			vi.spyOn(validator, "getModifiedFiles").mockReturnValue([]);
+				// Mock getModifiedFiles to return empty array (simulating no diffs returned)
+				vi.spyOn(validator, "getModifiedFiles").mockReturnValue([]);
 
-			// Use glob mock result
-			const globMock = await import("glob");
-			vi.mocked(globMock.glob).mockResolvedValue(["fallbackFile.ts"]);
+				// Use glob mock result
+				const globMock = await import("glob");
+				vi.mocked(globMock.glob).mockResolvedValue(["fallbackFile.ts"]);
 
-			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+				const consoleSpy = vi
+					.spyOn(console, "log")
+					.mockImplementation(() => {});
 
-			const files = await validator.getFilesToScan();
+				const files = await validator.getFilesToScan();
 
-			expect(files).toEqual(["fallbackFile.ts"]);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"No modified files detected in CI context. Falling back to full scan pattern check.",
-				),
-			);
-
-			process.env = originalEnv;
-			consoleSpy.mockRestore();
+				expect(files).toEqual(["fallbackFile.ts"]);
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining(
+						"No modified files detected in CI context. Falling back to full scan pattern check.",
+					),
+				);
+			} finally {
+				process.env = originalEnv;
+			}
 		});
 	});
 
@@ -1462,10 +1482,10 @@ describe("ErrorHandlingValidator", () => {
 
 	describe("Coverage Gaps", () => {
 		it("should handle WARN_ONLY_MODE", async () => {
-			const originalWarnMode = process.env.WARN_ONLY_MODE;
+			const originalEnv = process.env;
 			try {
 				vi.resetModules();
-				process.env.WARN_ONLY_MODE = "true";
+				process.env = { ...originalEnv, WARN_ONLY_MODE: "true" };
 				const { ErrorHandlingValidator } = await import(
 					"../../scripts/validate_error_handling"
 				);
@@ -1486,21 +1506,24 @@ describe("ErrorHandlingValidator", () => {
 				const exitCode = await validator.validate();
 				expect(exitCode).toBe(0); // Should be 0 in warn-only mode despite violations
 			} finally {
-				process.env.WARN_ONLY_MODE = originalWarnMode;
+				process.env = originalEnv;
 			}
 		});
 
 		it("should return empty list if all CHANGED_FILES are filtered out", async () => {
-			const originalChangedFiles = process.env.CHANGED_FILES;
+			const originalEnv = process.env;
 			let spy: MockInstance | undefined;
 			try {
-				process.env.CHANGED_FILES = "ignored.txt node_modules/file.ts";
+				process.env = {
+					...originalEnv,
+					CHANGED_FILES: "ignored.txt node_modules/file.ts",
+				};
 				spy = vi.spyOn(validator, "shouldScanFile").mockReturnValue(false);
 
 				const files = await validator.getFilesToScan();
 				expect(files).toEqual([]);
 			} finally {
-				process.env.CHANGED_FILES = originalChangedFiles;
+				process.env = originalEnv;
 				if (spy) spy.mockRestore();
 			}
 		});
@@ -1539,22 +1562,24 @@ describe("ErrorHandlingValidator", () => {
 
 		it("should not call applyFixes if fix mode has no violations", async () => {
 			const originalArgv = process.argv;
-			process.argv = ["node", "script", "--fix"];
+			try {
+				process.argv = ["node", "script", "--fix"];
 
-			const validateSpy = vi
-				.spyOn(ErrorHandlingValidator.prototype, "validate")
-				.mockResolvedValue(0);
-			const applyFixesSpy = vi.spyOn(
-				ErrorHandlingValidator.prototype,
-				"applyFixes",
-			);
+				const validateSpy = vi
+					.spyOn(ErrorHandlingValidator.prototype, "validate")
+					.mockResolvedValue(0);
+				const applyFixesSpy = vi.spyOn(
+					ErrorHandlingValidator.prototype,
+					"applyFixes",
+				);
 
-			await main();
+				await main();
 
-			expect(validateSpy).toHaveBeenCalled();
-			expect(applyFixesSpy).not.toHaveBeenCalled();
-
-			process.argv = originalArgv;
+				expect(validateSpy).toHaveBeenCalled();
+				expect(applyFixesSpy).not.toHaveBeenCalled();
+			} finally {
+				process.argv = originalArgv;
+			}
 		});
 	});
 
@@ -1562,37 +1587,49 @@ describe("ErrorHandlingValidator", () => {
 		it("should execute run() when invoked directly", async () => {
 			vi.resetModules();
 			const originalArgv = process.argv;
+			try {
+				const scriptPath = resolve(
+					process.cwd(),
+					"scripts/validate_error_handling.ts",
+				);
+				process.argv = ["node", scriptPath];
 
-			const scriptPath = resolve(
-				process.cwd(),
-				"scripts/validate_error_handling.ts",
-			);
-			process.argv = ["node", scriptPath];
+				const exitSpy = vi
+					.spyOn(process, "exit")
+					.mockImplementation(() => undefined as never);
+				const consoleSpy = vi
+					.spyOn(console, "log")
+					.mockImplementation(() => {});
 
-			const exitSpy = vi
-				.spyOn(process, "exit")
-				.mockImplementation(() => undefined as never);
-			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+				const { glob } = await import("glob");
+				vi.mocked(glob).mockResolvedValue([]);
 
-			const { glob } = await import("glob");
-			vi.mocked(glob).mockResolvedValue([]);
+				// Import the module, which will set runValidateErrorHandling if executed directly
+				const module = await import("../../scripts/validate_error_handling");
 
-			// Import the module, which will set runValidateErrorHandling if executed directly
-			const module = await import("../../scripts/validate_error_handling");
+				// Await the exported Promise to know when processing finished
+				if (module.runValidateErrorHandling) {
+					await module.runValidateErrorHandling;
+				}
 
-			// Await the exported Promise to know when processing finished
-			if (module.runValidateErrorHandling) {
-				await module.runValidateErrorHandling;
+				expect(exitSpy).toHaveBeenCalledWith(0);
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining("No relevant modified files"),
+				);
+			} finally {
+				process.argv = originalArgv;
+				vi.resetModules();
+				vi.restoreAllMocks();
 			}
+		});
+	});
 
-			expect(exitSpy).toHaveBeenCalledWith(0);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining("No relevant modified files"),
-			);
-
-			process.argv = originalArgv;
-			vi.resetModules();
-			vi.restoreAllMocks();
+	describe("Test Isolation", () => {
+		it("should have module-level mocks in place and clean state between tests", async () => {
+			expect(vi.isMockFunction(fs.readFileSync)).toBe(true);
+			expect(vi.isMockFunction(child_process.execFileSync)).toBe(true);
+			const { glob } = await import("glob");
+			expect(vi.isMockFunction(glob)).toBe(true);
 		});
 	});
 
