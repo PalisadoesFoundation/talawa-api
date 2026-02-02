@@ -1,8 +1,18 @@
+import fs from "node:fs/promises";
 import readline from "node:readline";
+import { eq } from "drizzle-orm";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
 import { uuidv7 } from "uuidv7";
-import { beforeAll, expect, suite, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 
 let testEnvConfig: TestEnvConfig;
 let helpers: typeof import("scripts/dbManagement/helpers");
@@ -27,6 +37,20 @@ beforeAll(async () => {
 	});
 	vi.resetModules();
 	helpers = await import("scripts/dbManagement/helpers");
+});
+
+afterEach(async () => {
+	// Clean up recurring event template rows to avoid DB state pollution across tests/shards
+	if (helpers?.db && schema.eventsTable) {
+		await helpers.db
+			.delete(schema.eventsTable)
+			.where(eq(schema.eventsTable.isRecurringEventTemplate, true));
+	}
+});
+
+afterAll(async () => {
+	vi.resetModules();
+	vi.unmock("env-schema");
 });
 
 suite.concurrent("parseDate", () => {
@@ -63,6 +87,69 @@ suite.concurrent("parseDate", () => {
 		expect(helpers.parseDate("invalid-date")).toBeNull();
 		// Test an invalid number (NaN)
 		expect(helpers.parseDate(Number.NaN)).toBeNull();
+	});
+});
+
+suite.concurrent("getNextOccurrenceOfWeekdayTime", () => {
+	test.concurrent("returns next occurrence of same weekday and time on or after reference", async () => {
+		// Template: Tuesday 2025-04-01 09:00 UTC
+		const templateStart = new Date("2025-04-01T09:00:00.000Z");
+		// Reference: Monday 2025-03-31 00:00 UTC → next Tuesday = 2025-04-01 09:00
+		const ref = new Date("2025-03-31T00:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.toISOString()).toBe("2025-04-01T09:00:00.000Z");
+	});
+
+	test.concurrent("returns same week occurrence when reference is before that weekday time", async () => {
+		// Template: Wednesday 14:00 UTC
+		const templateStart = new Date("2025-04-02T14:00:00.000Z");
+		// Reference: Monday 2025-03-31 00:00 → next Wed = 2025-04-02 14:00
+		const ref = new Date("2025-03-31T00:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.toISOString()).toBe("2025-04-02T14:00:00.000Z");
+	});
+
+	test.concurrent("returns next week when reference is past that weekday time", async () => {
+		// Template: Tuesday 09:00 UTC
+		const templateStart = new Date("2025-04-01T09:00:00.000Z");
+		// Reference: Tuesday 2025-04-01 10:00 (past 09:00) → next Tuesday = 2025-04-08 09:00
+		const ref = new Date("2025-04-01T10:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.toISOString()).toBe("2025-04-08T09:00:00.000Z");
+	});
+
+	test.concurrent("same weekday exact same time returns that same date (no week shift)", async () => {
+		const same = new Date("2025-04-01T09:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(same, same);
+		expect(result.getTime()).toBe(same.getTime());
+		expect(result.toISOString()).toBe("2025-04-01T09:00:00.000Z");
+	});
+
+	test.concurrent("Sunday handling: next occurrence around references before and after that Sunday", async () => {
+		// Template: Sunday 2025-04-06 12:00 UTC (weekday 0)
+		const templateStart = new Date("2025-04-06T12:00:00.000Z");
+		// Reference: Saturday 2025-04-05 00:00 → next Sunday = 2025-04-06 12:00
+		const refBefore = new Date("2025-04-05T00:00:00.000Z");
+		const resultBefore = helpers.getNextOccurrenceOfWeekdayTime(
+			refBefore,
+			templateStart,
+		);
+		expect(resultBefore.toISOString()).toBe("2025-04-06T12:00:00.000Z");
+		// Reference: Monday 2025-04-07 00:00 → next Sunday = 2025-04-13 12:00
+		const refAfter = new Date("2025-04-07T00:00:00.000Z");
+		const resultAfter = helpers.getNextOccurrenceOfWeekdayTime(
+			refAfter,
+			templateStart,
+		);
+		expect(resultAfter.toISOString()).toBe("2025-04-13T12:00:00.000Z");
+	});
+
+	test.concurrent("milliseconds preservation in returned date", async () => {
+		const templateStart = new Date("2025-04-01T09:00:00.123Z");
+		const ref = new Date("2025-03-31T00:00:00.000Z");
+		const result = helpers.getNextOccurrenceOfWeekdayTime(ref, templateStart);
+		expect(result.getUTCMilliseconds()).toBe(123);
+		expect(result.toISOString()).toBe("2025-04-01T09:00:00.123Z");
 	});
 });
 
@@ -148,16 +235,26 @@ const overrideDbExecute = (newExecute: () => Promise<unknown>): void => {
 
 suite.concurrent("pingDB", () => {
 	test.concurrent("should return true when db.execute resolves", async () => {
-		overrideDbExecute(() => Promise.resolve());
-		const result = await helpers.pingDB();
-		expect(result).toBe(true);
+		const originalExecute = Reflect.get(helpers.db, "execute");
+		try {
+			overrideDbExecute(() => Promise.resolve());
+			const result = await helpers.pingDB();
+			expect(result).toBe(true);
+		} finally {
+			Reflect.set(helpers.db, "execute", originalExecute);
+		}
 	});
 
 	test.concurrent("should throw error when db.execute rejects", async () => {
-		overrideDbExecute(() => Promise.reject(new Error("connection failed")));
-		await expect(helpers.pingDB()).rejects.toThrow(
-			"Unable to connect to the database.",
-		);
+		const originalExecute = Reflect.get(helpers.db, "execute");
+		try {
+			overrideDbExecute(() => Promise.reject(new Error("connection failed")));
+			await expect(helpers.pingDB()).rejects.toThrow(
+				"Unable to connect to the database.",
+			);
+		} finally {
+			Reflect.set(helpers.db, "execute", originalExecute);
+		}
 	});
 });
 
@@ -169,20 +266,22 @@ suite.concurrent("emptyMinioBucket", () => {
 	test.concurrent("should return false if listing objects fails", async () => {
 		const minioClient = Reflect.get(helpers, "minioClient");
 		const originalListObjects = minioClient.listObjects;
-		minioClient.listObjects = () => {
-			const { Readable } = require("node:stream");
-			const stream = new Readable({ read() {} });
-			process.nextTick(() => {
-				stream.emit("error", new Error("Failed to list objects"));
-				stream.push(null);
-			});
-			return stream;
-		};
+		try {
+			minioClient.listObjects = () => {
+				const { Readable } = require("node:stream");
+				const stream = new Readable({ read() {} });
+				process.nextTick(() => {
+					stream.emit("error", new Error("Failed to list objects"));
+					stream.push(null);
+				});
+				return stream;
+			};
 
-		const result = await helpers.emptyMinioBucket();
-		expect(result).toBe(false);
-
-		minioClient.listObjects = originalListObjects;
+			const result = await helpers.emptyMinioBucket();
+			expect(result).toBe(false);
+		} finally {
+			minioClient.listObjects = originalListObjects;
+		}
 	});
 });
 
@@ -198,23 +297,24 @@ suite.concurrent("checkAndInsertData", () => {
 	});
 
 	test.concurrent("should throw error if transaction fails", async () => {
-		// Override db.transaction to simulate a failure.
 		const db = Reflect.get(helpers, "db");
 		const originalTransaction = db.transaction;
-		db.transaction = async () => {
-			throw new Error("Transaction failed");
-		};
+		try {
+			db.transaction = async () => {
+				throw new Error("Transaction failed");
+			};
 
-		await expect(
-			helpers.checkAndInsertData(
-				schema.usersTable,
-				[{ id: 1 }],
-				schema.usersTable.id,
-				1000,
-			),
-		).rejects.toThrow("Transaction failed");
-
-		db.transaction = originalTransaction;
+			await expect(
+				helpers.checkAndInsertData(
+					schema.usersTable,
+					[{ id: 1 }],
+					schema.usersTable.id,
+					1000,
+				),
+			).rejects.toThrow("Transaction failed");
+		} finally {
+			db.transaction = originalTransaction;
+		}
 	});
 });
 
@@ -231,6 +331,7 @@ suite.concurrent("insertCollections", () => {
 			"comment_votes",
 			"action_categories",
 			"events",
+			"recurring_event_templates",
 			"action_items",
 			"membership_requests",
 		]);
@@ -241,6 +342,220 @@ suite.concurrent("insertCollections", () => {
 		await expect(
 			helpers.insertCollections(["invalid_collection"]),
 		).rejects.toThrow(/Error adding data to tables:/);
+	});
+
+	test.concurrent("should transform recurring_event_templates with parseDate/getNextOccurrenceOfWeekdayTime and set isPublic and isRecurringEventTemplate", async () => {
+		const fixedTime = new Date("2025-02-01T12:00:00.000Z");
+		vi.useFakeTimers();
+		vi.setSystemTime(fixedTime);
+		try {
+			const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+			await helpers.insertCollections([
+				"users",
+				"organizations",
+				"organization_memberships",
+				"posts",
+				"post_votes",
+				"post_attachments",
+				"comments",
+				"comment_votes",
+				"action_categories",
+				"events",
+				"recurring_event_templates",
+				"action_items",
+				"membership_requests",
+			]);
+			const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+				(call) => call[0] === schema.eventsTable,
+			);
+			expect(eventsTableCalls.length).toBeGreaterThanOrEqual(2);
+			const lastEventsCall = eventsTableCalls[eventsTableCalls.length - 1];
+			const templateRows = lastEventsCall?.[1];
+			expect(templateRows).toBeDefined();
+			expect(Array.isArray(templateRows)).toBe(true);
+			const rows = templateRows as (typeof schema.eventsTable.$inferInsert)[];
+			expect(rows.length).toBeGreaterThan(0);
+			const oneWeekAgo = fixedTime.getTime() - 7 * 24 * 60 * 60 * 1000;
+			for (const row of rows) {
+				expect(row.createdAt).toBeInstanceOf(Date);
+				expect(row.startAt).toBeInstanceOf(Date);
+				expect(row.endAt).toBeInstanceOf(Date);
+				expect(row.updatedAt).toBeNull();
+				expect(row.updaterId).toBeNull();
+				expect(row.isPublic).toBe(true);
+				expect(row.isRecurringEventTemplate).toBe(true);
+				expect((row.startAt as Date).getTime()).toBeLessThanOrEqual(
+					(row.endAt as Date).getTime(),
+				);
+				expect((row.startAt as Date).getTime()).toBeGreaterThanOrEqual(
+					oneWeekAgo,
+				);
+			}
+			checkAndInsertDataSpy.mockRestore();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test.concurrent("recurring_event_templates uses fallback start and end when startAt and endAt are invalid (startRef/endRef null)", async () => {
+		const fallbackTemplate = {
+			id: "01960b97-00c0-7e00-8000-0000000000ff",
+			name: "Fallback Template",
+			organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+			creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+			description: "Template with invalid dates",
+			startAt: "invalid-date",
+			endAt: "not-a-date",
+			allDay: true,
+			createdAt: "2025-03-30T01:00:00.000Z",
+		};
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockResolvedValue(JSON.stringify([fallbackTemplate]));
+		const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+		await helpers.insertCollections(["recurring_event_templates"]);
+		const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+			(call) => call[0] === schema.eventsTable,
+		);
+		expect(eventsTableCalls.length).toBe(1);
+		const rows =
+			eventsTableCalls[0]?.[1] as (typeof schema.eventsTable.$inferInsert)[];
+		expect(rows).toBeDefined();
+		expect(rows.length).toBe(1);
+		const row = rows[0];
+		expect(row?.startAt).toBeInstanceOf(Date);
+		expect(row?.endAt).toBeInstanceOf(Date);
+		expect(
+			(row?.endAt as Date).getTime() - (row?.startAt as Date).getTime(),
+		).toBe(2 * 60 * 60 * 1000);
+		expect(row?.isPublic).toBe(true);
+		expect(row?.isRecurringEventTemplate).toBe(true);
+		expect(row?.updatedAt).toBeNull();
+		expect(row?.updaterId).toBeNull();
+		readFileSpy.mockRestore();
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("recurring_event_templates uses fallback end when endAt is invalid (endRef null)", async () => {
+		const templateValidStart = {
+			id: "01960b97-00c0-7e00-8000-0000000000fe",
+			name: "Fallback End Template",
+			organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+			creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+			description: "Template with invalid endAt",
+			startAt: "2025-04-01T09:00:00.000Z",
+			endAt: null,
+			allDay: true,
+			createdAt: "2025-03-30T01:00:00.000Z",
+		};
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockResolvedValue(JSON.stringify([templateValidStart]));
+		const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+		await helpers.insertCollections(["recurring_event_templates"]);
+		const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+			(call) => call[0] === schema.eventsTable,
+		);
+		expect(eventsTableCalls.length).toBe(1);
+		const rows =
+			eventsTableCalls[0]?.[1] as (typeof schema.eventsTable.$inferInsert)[];
+		expect(rows).toBeDefined();
+		expect(rows.length).toBe(1);
+		const row = rows[0];
+		expect(row?.startAt).toBeInstanceOf(Date);
+		expect(row?.endAt).toBeInstanceOf(Date);
+		expect(
+			(row?.endAt as Date).getTime() - (row?.startAt as Date).getTime(),
+		).toBe(2 * 60 * 60 * 1000);
+		expect(row?.isPublic).toBe(true);
+		expect(row?.isRecurringEventTemplate).toBe(true);
+		readFileSpy.mockRestore();
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test.concurrent("recurring_event_templates uses fallback start when startAt is invalid (startRef null)", async () => {
+		const fixedTime = new Date("2025-02-01T12:00:00.000Z");
+		vi.useFakeTimers();
+		vi.setSystemTime(fixedTime);
+		try {
+			const templateValidEnd = {
+				id: "01960b97-00c0-7e00-8000-0000000000fd",
+				name: "Fallback Start Template",
+				organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+				creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+				description: "Template with invalid startAt",
+				startAt: null,
+				endAt: "2025-04-01T11:00:00.000Z",
+				allDay: true,
+				createdAt: "2025-03-30T01:00:00.000Z",
+			};
+			const readFileSpy = vi
+				.spyOn(fs, "readFile")
+				.mockResolvedValue(JSON.stringify([templateValidEnd]));
+			const checkAndInsertDataSpy = vi.spyOn(helpers, "checkAndInsertData");
+			await helpers.insertCollections(["recurring_event_templates"]);
+			const eventsTableCalls = checkAndInsertDataSpy.mock.calls.filter(
+				(call) => call[0] === schema.eventsTable,
+			);
+			expect(eventsTableCalls.length).toBe(1);
+			const rows =
+				eventsTableCalls[0]?.[1] as (typeof schema.eventsTable.$inferInsert)[];
+			expect(rows).toBeDefined();
+			expect(rows.length).toBe(1);
+			const row = rows[0];
+			expect(row?.startAt).toBeInstanceOf(Date);
+			expect((row?.startAt as Date).getTime()).toBe(fixedTime.getTime());
+			expect(row?.endAt).toBeInstanceOf(Date);
+			expect(row?.isPublic).toBe(true);
+			expect(row?.isRecurringEventTemplate).toBe(true);
+			readFileSpy.mockRestore();
+			checkAndInsertDataSpy.mockRestore();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test.concurrent("recurring_event_templates survive multiple seeding cycles (idempotent)", async () => {
+		const fixedTime = new Date("2025-02-01T12:00:00.000Z");
+		vi.useFakeTimers();
+		vi.setSystemTime(fixedTime);
+		try {
+			const collections = [
+				"users",
+				"organizations",
+				"organization_memberships",
+				"posts",
+				"post_votes",
+				"post_attachments",
+				"comments",
+				"comment_votes",
+				"action_categories",
+				"events",
+				"recurring_event_templates",
+				"action_items",
+				"membership_requests",
+			] as const;
+			const first = await helpers.insertCollections([...collections]);
+			expect(first).toBe(true);
+			const afterFirst = await helpers.db
+				.select()
+				.from(schema.eventsTable)
+				.where(eq(schema.eventsTable.isRecurringEventTemplate, true));
+			expect(afterFirst.length).toBeGreaterThan(0);
+			const second = await helpers.insertCollections([...collections]);
+			expect(second).toBe(true);
+			const afterSecond = await helpers.db
+				.select()
+				.from(schema.eventsTable)
+				.where(eq(schema.eventsTable.isRecurringEventTemplate, true));
+			expect(afterSecond.length).toBe(afterFirst.length);
+			for (const row of afterSecond) {
+				expect(row.isPublic).toBe(true);
+				expect(row.isRecurringEventTemplate).toBe(true);
+			}
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	test.concurrent("should generate new uuidv7 for action items with short IDs", async () => {
