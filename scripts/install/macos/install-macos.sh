@@ -141,7 +141,7 @@ print_step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 if [ "$INSTALL_MODE" = "docker" ]; then
     if [ "$SKIP_PREREQS" = "true" ]; then
         # User claims Docker is already installed - verify it actually works
-        if ! command_exists docker || ! docker ps >/dev/null 2>&1; then
+        if ! command_exists docker || ! docker info >/dev/null 2>&1; then
             error "Docker mode requires Docker, but Docker is not available or not running"
             error "Either install/start Docker, or use local mode: ./install-macos.sh local"
             exit 1
