@@ -18,6 +18,10 @@ vi.mock("src/services/eventGeneration/windowManager", () => ({
 	initializeGenerationWindow: vi.fn().mockResolvedValue({}),
 }));
 
+vi.mock("src/services/eventGeneration/eventGeneration", () => ({
+	generateInstancesForRecurringEvent: vi.fn().mockResolvedValue(0),
+}));
+
 let testEnvConfig: TestEnvConfig;
 let helpers: typeof import("scripts/dbManagement/helpers");
 
@@ -931,6 +935,99 @@ suite("initializeGenerationWindow in recurrence_rules flow", () => {
 				ReturnType<typeof windowManager.initializeGenerationWindow>
 			>,
 		);
+	});
+});
+
+suite("recurring_event_instances generation", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
+	test("should call generateInstancesForRecurringEvent with org window for each rule", async () => {
+		const eventGen = await import(
+			"src/services/eventGeneration/eventGeneration"
+		);
+		vi.mocked(eventGen.generateInstancesForRecurringEvent).mockClear();
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		await helpers.insertCollections(["recurrence_rules"]);
+		await helpers.insertCollections(["recurring_event_instances"]);
+
+		expect(eventGen.generateInstancesForRecurringEvent).toHaveBeenCalled();
+		const calls = vi.mocked(eventGen.generateInstancesForRecurringEvent).mock
+			.calls;
+		for (const [input] of calls) {
+			expect(input).toMatchObject({
+				baseRecurringEventId: expect.any(String),
+				organizationId: expect.any(String),
+				windowStartDate: expect.any(Date),
+				windowEndDate: expect.any(Date),
+			});
+			expect(input.windowStartDate.getTime()).toBeLessThanOrEqual(
+				input.windowEndDate.getTime(),
+			);
+		}
+
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test("should throw aggregated error when generation window is missing for an org", async () => {
+		const realDb = Reflect.get(helpers, "db");
+		const mockDb = {
+			...realDb,
+			query: {
+				...realDb.query,
+				recurrenceRulesTable: {
+					...realDb.query.recurrenceRulesTable,
+					findMany: vi.fn().mockResolvedValue([
+						{
+							baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+							organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+						},
+					]),
+				},
+				eventGenerationWindowsTable: {
+					...realDb.query.eventGenerationWindowsTable,
+					findFirst: vi.fn().mockResolvedValue(null),
+				},
+			},
+		};
+
+		await expect(
+			helpers.insertCollections(["recurring_event_instances"], {
+				db: mockDb as unknown as typeof helpers.db,
+			}),
+		).rejects.toThrow(
+			/Failed to generate instances for 1 recurring event.*missing generation window/,
+		);
+	});
+
+	test("should throw aggregated error when generateInstancesForRecurringEvent throws", async () => {
+		const eventGen = await import(
+			"src/services/eventGeneration/eventGeneration"
+		);
+		vi.mocked(
+			eventGen.generateInstancesForRecurringEvent,
+		).mockRejectedValueOnce(new Error("generation failed"));
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		await expect(
+			helpers.insertCollections(["recurring_event_instances"]),
+		).rejects.toThrow(
+			/Failed to generate instances for \d+ recurring event.*generation failed/,
+		);
+
+		checkAndInsertDataSpy.mockRestore();
+		vi.mocked(eventGen.generateInstancesForRecurringEvent).mockResolvedValue(0);
 	});
 });
 

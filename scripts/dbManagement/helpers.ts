@@ -651,8 +651,13 @@ export async function insertCollections(
 					// PR4: Generate recurring event instances after templates and windows exist.
 					// No JSON file; instances are created via the event generation service.
 					// Idempotent: generateInstancesForRecurringEvent skips existing instances in the window.
+					// Failures (missing window or generation errors) are aggregated and thrown at the end.
 					const dbForGen = options?.db ?? db;
 					const logger = new SampleDataLoggerAdapter();
+					const failures: {
+						baseRecurringEventId: string;
+						reason: string;
+					}[] = [];
 					const rules = await dbForGen.query.recurrenceRulesTable.findMany({
 						columns: {
 							baseRecurringEventId: true,
@@ -685,7 +690,20 @@ export async function insertCollections(
 					}
 					for (const rule of rules) {
 						const window = orgWindowMap.get(rule.organizationId);
-						if (!window) continue;
+						if (!window) {
+							failures.push({
+								baseRecurringEventId: rule.baseRecurringEventId,
+								reason: "missing generation window",
+							});
+							logger.warn(
+								{
+									organizationId: rule.organizationId,
+									baseRecurringEventId: rule.baseRecurringEventId,
+								},
+								"Missing generation window for recurring event",
+							);
+							continue;
+						}
 						try {
 							await generateInstancesForRecurringEvent(
 								{
@@ -698,11 +716,23 @@ export async function insertCollections(
 								logger,
 							);
 						} catch (error) {
+							failures.push({
+								baseRecurringEventId: rule.baseRecurringEventId,
+								reason: "generation failed",
+							});
 							logger.warn(
-								{ error, baseRecurringEventId: rule.baseRecurringEventId },
+								{
+									error,
+									baseRecurringEventId: rule.baseRecurringEventId,
+								},
 								"Failed to generate instances for recurring event",
 							);
 						}
+					}
+					if (failures.length > 0) {
+						throw new Error(
+							`Failed to generate instances for ${failures.length} recurring event(s): ${failures.map((f) => `${f.baseRecurringEventId} (${f.reason})`).join("; ")}`,
+						);
 					}
 					console.log(
 						"\x1b[35mAdded: Recurring event instances (generated via event generation service)\x1b[0m",
