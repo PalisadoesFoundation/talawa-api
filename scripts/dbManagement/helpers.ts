@@ -14,8 +14,50 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import type { ServiceDependencies } from "src/services/eventGeneration/types";
 import { initializeGenerationWindow } from "src/services/eventGeneration/windowManager";
 import { uuidv7 } from "uuidv7";
+
+/** Logger type required by the window manager (e.g. initializeGenerationWindow). */
+type WindowManagerLogger = ServiceDependencies["logger"];
+
+/** No-op used for FastifyBaseLogger.silent (pino uses a LogFn for the silent level). */
+const noopLogFn: WindowManagerLogger["silent"] = () => {};
+
+/** Logger adapter for sample-data operations that implements the window manager's logger interface. */
+class SampleDataLoggerAdapter implements WindowManagerLogger {
+	readonly level = "info" as const;
+	readonly silent = noopLogFn;
+
+	info(obj: unknown, msg?: string): void;
+	info(msg: string): void;
+	info(objOrMsg: unknown, msg?: string): void {
+		if (typeof objOrMsg === "string") {
+			console.log(objOrMsg);
+		} else {
+			console.log(msg ?? "", typeof objOrMsg === "object" ? objOrMsg : "");
+		}
+	}
+
+	error(obj: unknown, msg?: string): void;
+	error(msg: string): void;
+	error(objOrMsg: unknown, msg?: string): void {
+		if (typeof objOrMsg === "string") {
+			console.error(objOrMsg);
+		} else {
+			console.error(msg ?? "", typeof objOrMsg === "object" ? objOrMsg : "");
+		}
+	}
+
+	// Stubs for FastifyBaseLogger so the adapter is assignable; sample-data path does not use these.
+	warn = this.info.bind(this) as WindowManagerLogger["warn"];
+	debug = this.info.bind(this) as WindowManagerLogger["debug"];
+	trace = this.info.bind(this) as WindowManagerLogger["trace"];
+	fatal = this.error.bind(this) as WindowManagerLogger["fatal"];
+	child(): WindowManagerLogger {
+		return new SampleDataLoggerAdapter();
+	}
+}
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -535,12 +577,7 @@ export async function insertCollections(
 					);
 
 					// Ensure event_generation_windows exist for each org with recurrence rules (Option B)
-					const sampleDataLogger = {
-						info: (obj: unknown, msg?: string) =>
-							console.log(msg ?? "", typeof obj === "object" ? obj : ""),
-						error: (obj: unknown, msg?: string) =>
-							console.error(msg ?? "", typeof obj === "object" ? obj : ""),
-					};
+					const sampleDataLogger = new SampleDataLoggerAdapter();
 					const orgToCreatorId = new Map<string, string>();
 					for (const rule of recurrenceRules) {
 						if (!orgToCreatorId.has(rule.organizationId)) {
@@ -560,9 +597,7 @@ export async function insertCollections(
 							await initializeGenerationWindow(
 								{ organizationId, createdById },
 								db as Parameters<typeof initializeGenerationWindow>[1],
-								sampleDataLogger as Parameters<
-									typeof initializeGenerationWindow
-								>[2],
+								sampleDataLogger,
 							);
 						}
 					}
