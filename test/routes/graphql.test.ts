@@ -1604,6 +1604,136 @@ describe("GraphQL Routes", () => {
 
 			expect(mockNext).toHaveBeenCalledWith(true);
 		});
+
+		it("should include oauthProviderRegistry in subscription context during onConnect (success path)", async () => {
+			// Create a mock OAuth provider registry
+			const mockOAuthProviderRegistry = {
+				get: vi.fn(),
+				has: vi.fn(),
+				listProviders: vi.fn().mockReturnValue(["google", "github"]),
+				register: vi.fn(),
+				unregister: vi.fn(),
+			};
+
+			// Prepare a fake token and decoded payload
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-oauth-test" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			// Setup mock fastify instance with oauthProviderRegistry
+			const mockFastifyWithOAuth = {
+				...mockFastifyInstance,
+				jwt: { verify: vi.fn().mockResolvedValue(decoded) },
+				oauthProviderRegistry: mockOAuthProviderRegistry,
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyWithOAuth as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyWithOAuth.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			// Simulate WebSocket subscription connection (triggers onConnect)
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+			});
+
+			// Assert that the resolver context includes oauthProviderRegistry
+			expect(result).toEqual(
+				expect.objectContaining({
+					currentClient: { isAuthenticated: true, user: decoded.user },
+					oauthProviderRegistry: mockOAuthProviderRegistry,
+				}),
+			);
+
+			// Verify oauthProviderRegistry is non-null and has expected methods
+			expect(
+				(result as { oauthProviderRegistry: unknown }).oauthProviderRegistry,
+			).not.toBeNull();
+			expect(
+				(result as { oauthProviderRegistry: unknown }).oauthProviderRegistry,
+			).toBeDefined();
+			expect(
+				(result as { oauthProviderRegistry: { listProviders: () => string[] } })
+					.oauthProviderRegistry.listProviders,
+			).toBeDefined();
+		});
+
+		it("should handle missing oauthProviderRegistry in subscription context (error path)", async () => {
+			// Prepare a fake token and decoded payload
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-no-oauth" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			// Setup mock fastify instance WITHOUT oauthProviderRegistry
+			const mockFastifyWithoutOAuth = {
+				...mockFastifyInstance,
+				jwt: { verify: vi.fn().mockResolvedValue(decoded) },
+				// Note: oauthProviderRegistry is intentionally missing
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyWithoutOAuth as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyWithoutOAuth.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			// Simulate WebSocket subscription connection
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+			});
+
+			// Assert that oauthProviderRegistry is undefined when not provided in fastify instance
+			expect(result).toEqual(
+				expect.objectContaining({
+					currentClient: { isAuthenticated: true, user: decoded.user },
+					oauthProviderRegistry: undefined,
+				}),
+			);
+
+			// Verify oauthProviderRegistry is undefined (error path)
+			expect(
+				(result as { oauthProviderRegistry: unknown }).oauthProviderRegistry,
+			).toBeUndefined();
+		});
 	});
 
 	describe("Error Formatter", () => {

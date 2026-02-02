@@ -6,7 +6,7 @@ import { GoogleOAuthProvider } from "./providers/GoogleOAuthProvider";
 /**
  * Builds and initializes the OAuth provider registry from configuration.
  * Clears any existing providers (idempotent) and registers enabled providers.
- * `@returns` The populated OAuthProviderRegistry singleton instance
+ * @returns The populated OAuthProviderRegistry singleton instance
  */
 
 export function buildOAuthProviderRegistry(): OAuthProviderRegistry {
