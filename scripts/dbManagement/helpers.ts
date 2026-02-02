@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
@@ -14,55 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
-import type { ServiceDependencies } from "src/services/eventGeneration/types";
-import { initializeGenerationWindow } from "src/services/eventGeneration/windowManager";
 import { uuidv7 } from "uuidv7";
-
-/** Logger type required by the window manager (e.g. initializeGenerationWindow). */
-type WindowManagerLogger = ServiceDependencies["logger"];
-
-/** DB client type expected by initializeGenerationWindow (second parameter). */
-type InitializeGenerationWindowDB = Parameters<
-	typeof initializeGenerationWindow
->[1];
-
-/** No-op used for FastifyBaseLogger.silent (pino uses a LogFn for the silent level). */
-const noopLogFn: WindowManagerLogger["silent"] = () => {};
-
-/** Logger adapter for sample-data operations that implements the window manager's logger interface. */
-export class SampleDataLoggerAdapter implements WindowManagerLogger {
-	readonly level = "info" as const;
-	readonly silent = noopLogFn;
-
-	info(obj: unknown, msg?: string): void;
-	info(msg: string): void;
-	info(objOrMsg: unknown, msg?: string): void {
-		if (typeof objOrMsg === "string") {
-			console.log(objOrMsg);
-		} else {
-			console.log(msg ?? "", typeof objOrMsg === "object" ? objOrMsg : "");
-		}
-	}
-
-	error(obj: unknown, msg?: string): void;
-	error(msg: string): void;
-	error(objOrMsg: unknown, msg?: string): void {
-		if (typeof objOrMsg === "string") {
-			console.error(objOrMsg);
-		} else {
-			console.error(msg ?? "", typeof objOrMsg === "object" ? objOrMsg : "");
-		}
-	}
-
-	// Stubs for FastifyBaseLogger so the adapter is assignable; sample-data path does not use these.
-	warn = this.info.bind(this) as WindowManagerLogger["warn"];
-	debug = this.info.bind(this) as WindowManagerLogger["debug"];
-	trace = this.info.bind(this) as WindowManagerLogger["trace"];
-	fatal = this.error.bind(this) as WindowManagerLogger["fatal"];
-	child(): WindowManagerLogger {
-		return new SampleDataLoggerAdapter();
-	}
-}
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -231,11 +183,11 @@ export async function checkAndInsertData<T>(
 /**
  * Inserts data into specified tables.
  * @param collections - Array of collection/table names to insert data into
- * @param options - Options for loading data (e.g. db override for tests to avoid mutating shared state)
+ * @param options - Options for loading data
  */
+
 export async function insertCollections(
 	collections: string[],
-	options?: { db?: typeof db },
 ): Promise<boolean> {
 	try {
 		await checkDataSize("Before");
@@ -514,7 +466,6 @@ export async function insertCollections(
 								updatedAt: string | number | Date;
 								startAt: string | number | Date;
 								endAt: string | number | Date;
-								isRecurringEventTemplate?: boolean;
 							},
 							index: number,
 						) => {
@@ -535,8 +486,6 @@ export async function insertCollections(
 								startAt: start,
 								endAt: end,
 								updatedAt: null,
-								isRecurringEventTemplate:
-									event.isRecurringEventTemplate === true,
 							};
 						},
 					) as (typeof schema.eventsTable.$inferInsert)[];
@@ -550,73 +499,6 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
-					);
-					break;
-				}
-
-				case "recurrence_rules": {
-					const recurrenceRules = JSON.parse(fileContent).map(
-						(rule: {
-							recurrenceStartDate: string | number | Date;
-							recurrenceEndDate: string | number | Date | null;
-							latestInstanceDate: string | number | Date;
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date | null;
-						}) => ({
-							...rule,
-							recurrenceStartDate: parseDate(rule.recurrenceStartDate),
-							recurrenceEndDate: rule.recurrenceEndDate
-								? parseDate(rule.recurrenceEndDate)
-								: null,
-							latestInstanceDate: parseDate(rule.latestInstanceDate),
-							createdAt: parseDate(rule.createdAt),
-							updatedAt: rule.updatedAt ? parseDate(rule.updatedAt) : null,
-						}),
-					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
-
-					await checkAndInsertData(
-						schema.recurrenceRulesTable,
-						recurrenceRules,
-						schema.recurrenceRulesTable.id,
-						1000,
-					);
-
-					// Ensure event_generation_windows exist for each org with recurrence rules (Option B)
-					const dbForWindow = options?.db ?? db;
-					const sampleDataLogger = new SampleDataLoggerAdapter();
-					const orgToCreatorId = new Map<string, string>();
-					for (const rule of recurrenceRules) {
-						if (!orgToCreatorId.has(rule.organizationId)) {
-							orgToCreatorId.set(rule.organizationId, rule.creatorId);
-						}
-					}
-					for (const [organizationId, createdById] of orgToCreatorId) {
-						const existing =
-							await dbForWindow.query.eventGenerationWindowsTable.findFirst({
-								where: eq(
-									schema.eventGenerationWindowsTable.organizationId,
-									organizationId,
-								),
-								columns: { id: true },
-							});
-						if (!existing) {
-							try {
-								await initializeGenerationWindow(
-									{ organizationId, createdById },
-									dbForWindow as InitializeGenerationWindowDB,
-									sampleDataLogger,
-								);
-							} catch (error) {
-								sampleDataLogger.warn(
-									{ error, organizationId, createdById },
-									"Failed to initialize generation window for organization",
-								);
-							}
-						}
-					}
-
-					console.log(
-						"\x1b[35mAdded: Recurrence rules table data (skipping duplicates), ensured event generation windows\x1b[0m",
 					);
 					break;
 				}
@@ -938,11 +820,6 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
-			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
-			{
-				name: "event_generation_windows",
-				table: schema.eventGenerationWindowsTable,
-			},
 			{ name: "event_volunteers", table: schema.eventVolunteersTable },
 			{
 				name: "event_volunteer_memberships",
