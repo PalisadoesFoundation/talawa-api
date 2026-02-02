@@ -18,6 +18,7 @@ class FakeRedisZ {
 	private pipelineExecutionCount = 0;
 	private shouldReturnNullPipelineOnSecondExec = false;
 	private shouldFailPipelineCommandOnSecondExec = false;
+	private shouldReturnEmptyZRange = false;
 
 	pipeline() {
 		const self = this;
@@ -132,6 +133,9 @@ class FakeRedisZ {
 		_withScores?: "WITHSCORES",
 	) {
 		const arr = this.z.get(key) ?? [];
+		if (this.shouldReturnEmptyZRange) {
+			return [];
+		}
 		const slice = arr.slice(start, stop + 1);
 		if (_withScores === "WITHSCORES") {
 			const flat: string[] = [];
@@ -182,9 +186,14 @@ class FakeRedisZ {
 		this.pipelineExecutionCount = 0;
 	}
 
+	setReturnEmptyZRange(shouldReturnEmpty: boolean) {
+		this.shouldReturnEmptyZRange = shouldReturnEmpty;
+	}
+
 	clear() {
 		this.z.clear();
 		this.pipelineExecutionCount = 0;
+		this.shouldReturnEmptyZRange = false;
 	}
 }
 
@@ -522,28 +531,35 @@ describe("leakyBucket", () => {
 		});
 
 		it("should calculate resetAt correctly for allowed request", async () => {
-			const now = Date.now();
+			const now = 1625097600000; // Fixed timestamp
+			vi.useFakeTimers();
+			vi.setSystemTime(now);
+
 			const windowMs = 60000;
 
-			const result = await leakyBucket(
-				redis,
-				"test-key-17",
-				10,
-				windowMs,
-				logger,
-			);
+			try {
+				const result = await leakyBucket(
+					redis,
+					"test-key-17",
+					10,
+					windowMs,
+					logger,
+				);
 
-			expect(result.allowed).toBe(true);
-			// resetAt should be approximately now + windowMs
-			expect(result.resetAt).toBeGreaterThanOrEqual(now + windowMs - 100);
-			expect(result.resetAt).toBeLessThanOrEqual(now + windowMs + 100);
+				expect(result.allowed).toBe(true);
+				expect(result.resetAt).toBe(now + windowMs);
+			} finally {
+				vi.useRealTimers();
+			}
 		});
 
 		it("should handle empty zrange result when calculating resetAt", async () => {
 			const now = Date.now();
 			const windowMs = 60000;
 
-			// This tests the fallback when zrange returns empty array
+			// Enable empty zrange simulation
+			redis.setReturnEmptyZRange(true);
+
 			const result = await leakyBucket(
 				redis,
 				"test-key-18",
@@ -870,9 +886,10 @@ describe("complexityLeakyBucket", () => {
 				logger,
 			);
 
-			// parseInt("invalid", 10) returns NaN, Math.min(capacity, NaN) returns NaN
-			// NaN < 5 is false, so the check passes and request is allowed
-			expect(result).toBe(true);
+			// "invalid" parses to NaN, falls back to 0.
+			// With 0 tokens and minimal elapsed time, request should be rejected (cost 5 > tokens 0).
+
+			expect(result).toBe(false);
 		});
 
 		it("should handle non-numeric lastUpdate value", async () => {
