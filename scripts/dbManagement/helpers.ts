@@ -21,6 +21,11 @@ import { uuidv7 } from "uuidv7";
 /** Logger type required by the window manager (e.g. initializeGenerationWindow). */
 type WindowManagerLogger = ServiceDependencies["logger"];
 
+/** DB client type expected by initializeGenerationWindow (second parameter). */
+type InitializeGenerationWindowDB = Parameters<
+	typeof initializeGenerationWindow
+>[1];
+
 /** No-op used for FastifyBaseLogger.silent (pino uses a LogFn for the silent level). */
 const noopLogFn: WindowManagerLogger["silent"] = () => {};
 
@@ -596,7 +601,7 @@ export async function insertCollections(
 						if (!existing) {
 							await initializeGenerationWindow(
 								{ organizationId, createdById },
-								db as Parameters<typeof initializeGenerationWindow>[1],
+								db as InitializeGenerationWindowDB,
 								sampleDataLogger,
 							);
 						}
