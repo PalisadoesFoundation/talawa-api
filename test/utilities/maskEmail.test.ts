@@ -17,4 +17,25 @@ describe("maskEmail", () => {
 		expect(maskEmail("invalid-email")).toBe("***");
 		expect(maskEmail("")).toBe("***");
 	});
+
+	it("should mask unicode/internationalized email addresses", () => {
+		expect(maskEmail("用户@example.com")).toBe("用***@example.com");
+		expect(maskEmail("münchen@test.de")).toBe("m***@test.de");
+	});
+
+	it("should handle quoted local parts (uses first @ found)", () => {
+		// Current implementation uses indexOf("@") which finds first @
+		expect(maskEmail('"user@local"@example.com')).toBe(
+			'"***@local"@example.com',
+		);
+	});
+
+	it("should mask emails with nested subdomains", () => {
+		expect(maskEmail("a@sub.domain.example.com")).toBe(
+			"a***@sub.domain.example.com",
+		);
+		expect(maskEmail("user@mail.corp.company.org")).toBe(
+			"u***@mail.corp.company.org",
+		);
+	});
 });
