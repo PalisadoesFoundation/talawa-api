@@ -789,6 +789,57 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 		db.query.eventGenerationWindowsTable.findFirst = originalFindFirst;
 		checkAndInsertDataSpy.mockRestore();
 	});
+
+	test.concurrent("when initializeGenerationWindow throws for one org, logs warn and continues for others", async () => {
+		const windowManager = await import(
+			"src/services/eventGeneration/windowManager"
+		);
+		// recurrence_rules.json has 3 rules with 3 distinct organizationIds → orgToCreatorId has 3 entries
+		const failOrgId = "01960b81-bfed-7369-ae96-689dbd4281ba";
+		const thrownError = new Error("FK violation");
+		vi.mocked(windowManager.initializeGenerationWindow).mockImplementation(
+			async (input) => {
+				if (input.organizationId === failOrgId) throw thrownError;
+				return {} as Awaited<
+					ReturnType<typeof windowManager.initializeGenerationWindow>
+				>;
+			},
+		);
+
+		const warnSpy = vi.spyOn(helpers.SampleDataLoggerAdapter.prototype, "warn");
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		const db = Reflect.get(helpers, "db");
+		const originalFindFirst = db.query.eventGenerationWindowsTable.findFirst;
+		db.query.eventGenerationWindowsTable.findFirst = vi
+			.fn()
+			.mockResolvedValue(null);
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(warnSpy).toHaveBeenCalledTimes(1);
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error: thrownError,
+				organizationId: failOrgId,
+				createdById: "67378abd-8500-4f17-9cf2-990d00000005",
+			}),
+			"Failed to initialize generation window for organization",
+		);
+		expect(windowManager.initializeGenerationWindow).toHaveBeenCalledTimes(3);
+
+		warnSpy.mockRestore();
+		db.query.eventGenerationWindowsTable.findFirst = originalFindFirst;
+		checkAndInsertDataSpy.mockRestore();
+		vi.mocked(windowManager.initializeGenerationWindow).mockResolvedValue(
+			{} as Awaited<
+				ReturnType<typeof windowManager.initializeGenerationWindow>
+			>,
+		);
+	});
 });
 
 suite.concurrent(

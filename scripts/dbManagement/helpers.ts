@@ -30,7 +30,7 @@ type InitializeGenerationWindowDB = Parameters<
 const noopLogFn: WindowManagerLogger["silent"] = () => {};
 
 /** Logger adapter for sample-data operations that implements the window manager's logger interface. */
-class SampleDataLoggerAdapter implements WindowManagerLogger {
+export class SampleDataLoggerAdapter implements WindowManagerLogger {
 	readonly level = "info" as const;
 	readonly silent = noopLogFn;
 
