@@ -39,9 +39,9 @@ describe("ErrorHandlingValidator", () => {
 	let validator: ErrorHandlingValidator;
 
 	beforeEach(() => {
-		validator = new ErrorHandlingValidator();
 		vi.restoreAllMocks();
 		vi.clearAllMocks();
+		validator = new ErrorHandlingValidator();
 	});
 
 	afterEach(() => {
