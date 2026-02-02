@@ -105,7 +105,7 @@ export type ExplicitGraphQLContext = {
 	/**
 	 * OAuth provider registry for accessing configured OAuth providers.
 	 */
-	oauthProviderRegistry: OAuthProviderRegistry;
+	oauthProviderRegistry?: OAuthProviderRegistry;
 	/**
 	 * Per-request notification helper. Implementations may enqueue notifications
 	 * for delivery and support flush() to perform delivery after transaction commit.

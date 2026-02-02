@@ -294,9 +294,9 @@ for delivery and support flush() to perform delivery after transaction commit.
 
 ***
 
-### oauthProviderRegistry
+### oauthProviderRegistry?
 
-> **oauthProviderRegistry**: [`OAuthProviderRegistry`](../../../utilities/auth/oauth/OAuthProviderRegistry/classes/OAuthProviderRegistry.md)
+> `optional` **oauthProviderRegistry**: [`OAuthProviderRegistry`](../../../utilities/auth/oauth/OAuthProviderRegistry/classes/OAuthProviderRegistry.md)
 
 Defined in: [src/graphql/context.ts:108](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L108)
 

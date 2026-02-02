@@ -76,7 +76,16 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			expect(server.oauthProviderRegistry).toBeDefined();
 			expect(server.oauthProviderRegistry.listProviders()).toHaveLength(0);
 
-			// Test that GraphQL requests work with empty registry
+			// Test resolver-level access to oauthProviderRegistry in context
+			// Use preExecution hook to capture context and verify oauthProviderRegistry
+			let capturedContext: Record<string, unknown> | null = null;
+			server.graphql.addHook(
+				"preExecution",
+				async (_schema, _document, context) => {
+					capturedContext = context as unknown as Record<string, unknown>;
+				},
+			);
+
 			const response = await server.inject({
 				method: "POST",
 				url: "/graphql",
@@ -95,6 +104,23 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			expect(response.statusCode).toBe(200);
 			const body = JSON.parse(response.body);
 			expect(body.data.__typename).toBe("Query");
+
+			// Assert that the resolver context includes oauthProviderRegistry
+			expect(capturedContext).toBeDefined();
+			expect(
+				(capturedContext as Record<string, unknown> | null)
+					?.oauthProviderRegistry,
+			).toBeDefined();
+			expect(
+				(capturedContext as Record<string, unknown> | null)
+					?.oauthProviderRegistry,
+			).toBe(server.oauthProviderRegistry);
+			expect(
+				(
+					(capturedContext as Record<string, unknown> | null)
+						?.oauthProviderRegistry as { listProviders: () => string[] }
+				).listProviders(),
+			).toHaveLength(0);
 		});
 
 		it("should include oauthProviderRegistry in GraphQL context when Google provider enabled", async () => {
@@ -138,7 +164,15 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			expect(server.oauthProviderRegistry.listProviders()).toContain("google");
 			expect(server.oauthProviderRegistry.has("google")).toBe(true);
 
-			// Test that GraphQL requests work with Google provider
+			// Test resolver-level access to oauthProviderRegistry with Google provider
+			let capturedContext: Record<string, unknown> | null = null;
+			server.graphql.addHook(
+				"preExecution",
+				async (_schema, _document, context) => {
+					capturedContext = context as unknown as Record<string, unknown>;
+				},
+			);
+
 			const response = await server.inject({
 				method: "POST",
 				url: "/graphql",
@@ -157,6 +191,29 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			expect(response.statusCode).toBe(200);
 			const body = JSON.parse(response.body);
 			expect(body.data.__typename).toBe("Query");
+
+			// Assert that the resolver context includes oauthProviderRegistry with Google provider
+			expect(capturedContext).toBeDefined();
+			expect(
+				(capturedContext as Record<string, unknown> | null)
+					?.oauthProviderRegistry,
+			).toBeDefined();
+			expect(
+				(capturedContext as Record<string, unknown> | null)
+					?.oauthProviderRegistry,
+			).toBe(server.oauthProviderRegistry);
+			expect(
+				(
+					(capturedContext as Record<string, unknown> | null)
+						?.oauthProviderRegistry as { listProviders: () => string[] }
+				).listProviders(),
+			).toContain("google");
+			expect(
+				(
+					(capturedContext as Record<string, unknown> | null)
+						?.oauthProviderRegistry as { has: (name: string) => boolean }
+				).has("google"),
+			).toBe(true);
 		});
 
 		it("should include oauthProviderRegistry in GraphQL context when both providers enabled", async () => {
@@ -211,7 +268,15 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			expect(server.oauthProviderRegistry.has("google")).toBe(true);
 			expect(server.oauthProviderRegistry.has("github")).toBe(true);
 
-			// Test that GraphQL requests work with both providers
+			// Test resolver-level access to oauthProviderRegistry with both providers
+			let capturedContext: Record<string, unknown> | null = null;
+			server.graphql.addHook(
+				"preExecution",
+				async (_schema, _document, context) => {
+					capturedContext = context as unknown as Record<string, unknown>;
+				},
+			);
+
 			const response = await server.inject({
 				method: "POST",
 				url: "/graphql",
@@ -230,6 +295,35 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			expect(response.statusCode).toBe(200);
 			const body = JSON.parse(response.body);
 			expect(body.data.__typename).toBe("Query");
+
+			// Assert that the resolver context includes oauthProviderRegistry with both providers
+			expect(capturedContext).toBeDefined();
+			expect(
+				(capturedContext as Record<string, unknown> | null)
+					?.oauthProviderRegistry,
+			).toBeDefined();
+			expect(
+				(capturedContext as Record<string, unknown> | null)
+					?.oauthProviderRegistry,
+			).toBe(server.oauthProviderRegistry);
+			expect(
+				(
+					(capturedContext as Record<string, unknown> | null)
+						?.oauthProviderRegistry as { listProviders: () => string[] }
+				).listProviders(),
+			).toHaveLength(2);
+			expect(
+				(
+					(capturedContext as Record<string, unknown> | null)
+						?.oauthProviderRegistry as { has: (name: string) => boolean }
+				).has("google"),
+			).toBe(true);
+			expect(
+				(
+					(capturedContext as Record<string, unknown> | null)
+						?.oauthProviderRegistry as { has: (name: string) => boolean }
+				).has("github"),
+			).toBe(true);
 		});
 
 		it("should maintain registry state across multiple GraphQL requests", async () => {
