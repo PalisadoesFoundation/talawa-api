@@ -10,8 +10,7 @@
 		"startAt": "2025-04-01T09:00:00.000Z",
 		"allDay": true,
 		"updatedAt": null,
-		"updaterId": null,
-		"isRecurringEventTemplate": true
+		"updaterId": null
 	},
 	{
 		"id": "01960b97-00c0-7c17-a591-298872003f06",
@@ -206,8 +205,7 @@
 		"startAt": "2025-03-30T01:00:00Z",
 		"allDay": true,
 		"updatedAt": null,
-		"updaterId": null,
-		"isRecurringEventTemplate": true
+		"updaterId": null
 	},
 	{
 		"id": "dbb303f3-c5c3-47fd-bb3b-2952f6d19bcf",
@@ -402,8 +400,7 @@
 		"startAt": "2025-04-01T01:00:00Z",
 		"allDay": true,
 		"updatedAt": null,
-		"updaterId": null,
-		"isRecurringEventTemplate": true
+		"updaterId": null
 	},
 	{
 		"id": "35cc300a-8ba9-405c-90c9-dc112297109a",
