@@ -211,16 +211,16 @@ builder.mutationField("updateAgendaItem", (t) =>
 			}
 
 			if (isNotNullish(parsedArgs.input.categoryId)) {
- 				const categoryId = parsedArgs.input.categoryId;
-  
-  				const existingAgendaCategory =
-  					await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
-  						columns: {
-  							eventId: true,
-  						},
-  						where: (fields, operators) => operators.eq(fields.id, categoryId),
-  					});
-  
+				const categoryId = parsedArgs.input.categoryId;
+
+				const existingAgendaCategory =
+					await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
+						columns: {
+							eventId: true,
+						},
+						where: (fields, operators) => operators.eq(fields.id, categoryId),
+					});
+
 				if (existingAgendaCategory === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {

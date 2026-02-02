@@ -380,6 +380,96 @@ suite("Mutation field updateAgendaItem", () => {
 		expect(afterUpdate.categoryId).toBe(newCategoryId);
 	});
 
+	test("should throw not found error when categoryId does not exist", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		const nonExistentCategoryId = faker.string.uuid();
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					categoryId: nonExistentCategoryId,
+				},
+			},
+		});
+
+		expect(result.data?.updateAgendaItem ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "categoryId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("should throw forbidden error when category belongs to a different event", async () => {
+		const { agendaItemId, eventId: itemEventId } =
+			await createCategoryFolderAgendaItem();
+
+		// Create another organization + event
+		const otherOrgEvent = await createOrganizationAndEvent();
+
+		// Create category in DIFFERENT event
+		const foreignCategoryRes = await mercuriusClient.mutate(
+			Mutation_createAgendaCategory,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						eventId: otherOrgEvent.eventId,
+						name: "Foreign Category",
+						description: "Different event category",
+					},
+				},
+			},
+		);
+
+		const foreignCategoryId = foreignCategoryRes.data?.createAgendaCategory?.id;
+		assertToBeNonNullish(foreignCategoryId);
+
+		// Sanity check (events differ)
+		expect(otherOrgEvent.eventId).not.toBe(itemEventId);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					categoryId: foreignCategoryId,
+				},
+			},
+		});
+
+		expect(result.data?.updateAgendaItem ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "categoryId"],
+								message: expect.stringContaining(
+									"does not belong to the event",
+								),
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
+
 	test("should throw unexpected error when update returns nothing", async () => {
 		const { agendaItemId } = await createCategoryFolderAgendaItem();
 
