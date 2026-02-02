@@ -14,6 +14,7 @@ vi.mock("uuidv7", () => ({
 }));
 
 import { hash } from "@node-rs/argon2";
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import seedInitialData from "~/src/fastifyPlugins/seedInitialData";
 import { createMockDrizzleClient } from "test/_Mocks_/drizzleClientMock";
@@ -88,22 +89,9 @@ describe("seedInitialData plugin", () => {
 
 	describe("Administrator User Seeding", () => {
 		it("should skip creation when administrator already exists with correct role", async () => {
-			mockFastify.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				async (options?: {
-					where?: (
-						fields: Record<string, unknown>,
-						operators: Record<string, (...args: unknown[]) => unknown>,
-					) => unknown;
-				}) => {
-					if (options?.where) {
-						options.where(
-							{ emailAddress: "email_field" },
-							{ eq: vi.fn() },
-						);
-					}
-					return { role: "administrator" };
-				},
-			);
+			mockFastify.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
 			mockFastify.drizzleClient.query.communitiesTable.findFirst.mockResolvedValue(
 				{
 					logoMimeType: "image/png",
@@ -145,6 +133,10 @@ describe("seedInitialData plugin", () => {
 			expect(updateChain.set).toHaveBeenCalledWith({
 				role: "administrator",
 			});
+			const setChain = updateChain.set.mock.results[0]?.value;
+			expect(setChain.where).toHaveBeenCalledWith(
+				eq(usersTable.emailAddress, "admin@example.com"),
+			);
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Successfully assigned the correct role to the administrator user.",
 			);
@@ -276,6 +268,15 @@ describe("seedInitialData plugin", () => {
 				expect.objectContaining({
 					name: "Test Community",
 					inactivityTimeoutDuration: 900,
+					facebookURL: undefined,
+					githubURL: undefined,
+					instagramURL: undefined,
+					linkedinURL: undefined,
+					redditURL: undefined,
+					slackURL: undefined,
+					websiteURL: undefined,
+					xURL: undefined,
+					youtubeURL: undefined,
 				}),
 			);
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
