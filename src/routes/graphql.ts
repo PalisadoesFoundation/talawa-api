@@ -705,6 +705,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						},
 						log: fastify.log,
 						minio: fastify.minio,
+						oauthProviderRegistry: fastify.oauthProviderRegistry,
 						notification: new NotificationService(),
 						perf,
 					};

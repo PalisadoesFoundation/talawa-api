@@ -399,7 +399,7 @@ describe("buildOAuthProviderRegistry", () => {
 			expect(oauthConfig.getProviderConfig).toHaveBeenCalledWith("google");
 		});
 
-		it("should skip provider if getProviderConfig throws", () => {
+		it("should propagate getProviderConfig errors", () => {
 			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
 				google: {
 					enabled: true,

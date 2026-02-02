@@ -1,9 +1,11 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as oauthConfig from "~/src/config/oauth";
 import oauthProviderRegistry from "~/src/fastifyPlugins/oauthProviderRegistry";
+import type { IOAuthProvider } from "~/src/utilities/auth/oauth/interfaces/IOAuthProvider";
+import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
+import { buildOAuthProviderRegistry } from "~/src/utilities/auth/oauth/providerFactory";
 
-vi.mock("~/src/config/oauth");
+vi.mock("~/src/utilities/auth/oauth/providerFactory");
 
 describe("oauthProviderRegistry plugin", () => {
 	let fastify: FastifyInstance;
@@ -22,54 +24,42 @@ describe("oauthProviderRegistry plugin", () => {
 
 	describe("plugin initialization", () => {
 		it("should initialize registry with no providers when all are disabled", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-			});
+			const mockRegistry = OAuthProviderRegistry.getInstance();
+			mockRegistry.clear();
+
+			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+
+			const logInfoSpy = vi.spyOn(fastify.log, "info");
 
 			await fastify.register(oauthProviderRegistry);
 
 			expect(fastify.oauthProviderRegistry).toBeDefined();
 			expect(fastify.oauthProviderRegistry.listProviders()).toHaveLength(0);
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				"Initializing OAuth provider registry...",
+			);
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				"OAuth provider registry initialized with no providers (all disabled in config)",
+			);
 		});
 
 		it("should initialize registry with Google provider when enabled", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: true,
-					clientId: "test-google-client-id",
-					clientSecret: "test-google-client-secret",
-					redirectUri: "https://test.com/auth/google/callback",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-			});
+			const mockRegistry = OAuthProviderRegistry.getInstance();
+			mockRegistry.clear();
 
-			vi.mocked(oauthConfig.getProviderConfig).mockReturnValue({
-				enabled: true,
-				clientId: "test-google-client-id",
-				clientSecret: "test-google-client-secret",
-				redirectUri: "https://test.com/auth/google/callback",
-				requestTimeoutMs: 10000,
-			});
+			// Create a mock Google provider
+			const mockGoogleProvider = {
+				getProviderName: vi.fn().mockReturnValue("google"),
+				getAuthorizationUrl: vi.fn(),
+				exchangeCodeForTokens: vi.fn(),
+				getUserProfile: vi.fn(),
+			};
+
+			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+
+			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+
+			const logInfoSpy = vi.spyOn(fastify.log, "info");
 
 			await fastify.register(oauthProviderRegistry);
 
@@ -79,33 +69,33 @@ describe("oauthProviderRegistry plugin", () => {
 
 			const googleProvider = fastify.oauthProviderRegistry.get("google");
 			expect(googleProvider.getProviderName()).toBe("google");
+
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				"Initializing OAuth provider registry...",
+			);
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				{ providers: ["google"] },
+				"OAuth provider registry initialized with 1 provider(s)",
+			);
 		});
 
 		it("should initialize registry with GitHub provider when enabled", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: true,
-					clientId: "test-github-client-id",
-					clientSecret: "test-github-client-secret",
-					redirectUri: "https://test.com/auth/github/callback",
-					requestTimeoutMs: 10000,
-				},
-			});
+			const mockRegistry = OAuthProviderRegistry.getInstance();
+			mockRegistry.clear();
 
-			vi.mocked(oauthConfig.getProviderConfig).mockReturnValue({
-				enabled: true,
-				clientId: "test-github-client-id",
-				clientSecret: "test-github-client-secret",
-				redirectUri: "https://test.com/auth/github/callback",
-				requestTimeoutMs: 10000,
-			});
+			// Create a mock GitHub provider
+			const mockGitHubProvider = {
+				getProviderName: vi.fn().mockReturnValue("github"),
+				getAuthorizationUrl: vi.fn(),
+				exchangeCodeForTokens: vi.fn(),
+				getUserProfile: vi.fn(),
+			};
+
+			mockRegistry.register(mockGitHubProvider as IOAuthProvider);
+
+			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+
+			const logInfoSpy = vi.spyOn(fastify.log, "info");
 
 			await fastify.register(oauthProviderRegistry);
 
@@ -115,43 +105,41 @@ describe("oauthProviderRegistry plugin", () => {
 
 			const githubProvider = fastify.oauthProviderRegistry.get("github");
 			expect(githubProvider.getProviderName()).toBe("github");
+
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				"Initializing OAuth provider registry...",
+			);
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				{ providers: ["github"] },
+				"OAuth provider registry initialized with 1 provider(s)",
+			);
 		});
 
 		it("should initialize registry with both providers when enabled", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: true,
-					clientId: "test-google-client-id",
-					clientSecret: "test-google-client-secret",
-					redirectUri: "https://test.com/auth/google/callback",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: true,
-					clientId: "test-github-client-id",
-					clientSecret: "test-github-client-secret",
-					redirectUri: "https://test.com/auth/github/callback",
-					requestTimeoutMs: 10000,
-				},
-			});
+			const mockRegistry = OAuthProviderRegistry.getInstance();
+			mockRegistry.clear();
 
-			vi.mocked(oauthConfig.getProviderConfig).mockImplementation((provider) =>
-				provider === "google"
-					? {
-							enabled: true,
-							clientId: "test-google-client-id",
-							clientSecret: "test-google-client-secret",
-							redirectUri: "https://test.com/auth/google/callback",
-							requestTimeoutMs: 10000,
-						}
-					: {
-							enabled: true,
-							clientId: "test-github-client-id",
-							clientSecret: "test-github-client-secret",
-							redirectUri: "https://test.com/auth/github/callback",
-							requestTimeoutMs: 10000,
-						},
-			);
+			// Create mock providers
+			const mockGoogleProvider = {
+				getProviderName: vi.fn().mockReturnValue("google"),
+				getAuthorizationUrl: vi.fn(),
+				exchangeCodeForTokens: vi.fn(),
+				getUserProfile: vi.fn(),
+			};
+
+			const mockGitHubProvider = {
+				getProviderName: vi.fn().mockReturnValue("github"),
+				getAuthorizationUrl: vi.fn(),
+				exchangeCodeForTokens: vi.fn(),
+				getUserProfile: vi.fn(),
+			};
+
+			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+			mockRegistry.register(mockGitHubProvider as IOAuthProvider);
+
+			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+
+			const logInfoSpy = vi.spyOn(fastify.log, "info");
 
 			await fastify.register(oauthProviderRegistry);
 
@@ -159,35 +147,34 @@ describe("oauthProviderRegistry plugin", () => {
 			expect(fastify.oauthProviderRegistry.listProviders()).toHaveLength(2);
 			expect(fastify.oauthProviderRegistry.has("google")).toBe(true);
 			expect(fastify.oauthProviderRegistry.has("github")).toBe(true);
+
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				"Initializing OAuth provider registry...",
+			);
+			expect(logInfoSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providers: expect.arrayContaining(["google", "github"]),
+				}),
+				"OAuth provider registry initialized with 2 provider(s)",
+			);
 		});
 	});
 
 	describe("registry availability", () => {
 		it("should make registry accessible via fastify instance", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: true,
-					clientId: "test-client-id",
-					clientSecret: "test-client-secret",
-					redirectUri: "https://test.com/callback",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-			});
+			const mockRegistry = OAuthProviderRegistry.getInstance();
+			mockRegistry.clear();
 
-			vi.mocked(oauthConfig.getProviderConfig).mockReturnValue({
-				enabled: true,
-				clientId: "test-client-id",
-				clientSecret: "test-client-secret",
-				redirectUri: "https://test.com/callback",
-				requestTimeoutMs: 10000,
-			});
+			const mockGoogleProvider = {
+				getProviderName: vi.fn().mockReturnValue("google"),
+				getAuthorizationUrl: vi.fn(),
+				exchangeCodeForTokens: vi.fn(),
+				getUserProfile: vi.fn(),
+			};
+
+			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+
+			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
 			await fastify.register(oauthProviderRegistry);
 
@@ -201,30 +188,19 @@ describe("oauthProviderRegistry plugin", () => {
 		});
 
 		it("should maintain registry state across multiple requests", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: true,
-					clientId: "test-client-id",
-					clientSecret: "test-client-secret",
-					redirectUri: "https://test.com/callback",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-			});
+			const mockRegistry = OAuthProviderRegistry.getInstance();
+			mockRegistry.clear();
 
-			vi.mocked(oauthConfig.getProviderConfig).mockReturnValue({
-				enabled: true,
-				clientId: "test-client-id",
-				clientSecret: "test-client-secret",
-				redirectUri: "https://test.com/callback",
-				requestTimeoutMs: 10000,
-			});
+			const mockGoogleProvider = {
+				getProviderName: vi.fn().mockReturnValue("google"),
+				getAuthorizationUrl: vi.fn(),
+				exchangeCodeForTokens: vi.fn(),
+				getUserProfile: vi.fn(),
+			};
+
+			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+
+			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
 			await fastify.register(oauthProviderRegistry);
 
@@ -239,13 +215,21 @@ describe("oauthProviderRegistry plugin", () => {
 	});
 
 	describe("error handling", () => {
-		it("should handle initialization gracefully when config throws error", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockImplementation(() => {
-				throw new Error("Configuration error");
+		it("should handle initialization gracefully when buildOAuthProviderRegistry throws error", async () => {
+			const error = new Error("Configuration error");
+			vi.mocked(buildOAuthProviderRegistry).mockImplementation(() => {
+				throw error;
 			});
+
+			const logErrorSpy = vi.spyOn(fastify.log, "error");
 
 			await expect(fastify.register(oauthProviderRegistry)).rejects.toThrow(
 				"Configuration error",
+			);
+
+			expect(logErrorSpy).toHaveBeenCalledWith(
+				{ error },
+				"Failed to initialize OAuth provider registry",
 			);
 		});
 	});
