@@ -497,5 +497,61 @@ suite("Mutation field deleteAgendaFolder", () => {
 			// Agenda item moved to default folder
 			expect(updatedItem.folderId).toBe(defaultFolder.id);
 		});
+
+		test("Returns unexpected when default agenda folder is missing", async () => {
+			const { token } = await getAdminAuth();
+			const env = await createOrganizationEventAndFolder(token);
+			cleanupFns.push(env.cleanup);
+
+			const spy = vi
+				.spyOn(server.drizzleClient, "transaction")
+				.mockImplementationOnce(async (cb) => {
+					const tx = {
+						query: {
+							...server.drizzleClient.query,
+							agendaFoldersTable: {
+								...server.drizzleClient.query.agendaFoldersTable,
+								findFirst: vi.fn().mockResolvedValue(null), // 👈 key line
+							},
+						},
+						update: () => ({
+							set: () => ({
+								where: async () => undefined,
+							}),
+						}),
+						delete: () => ({
+							where: () => ({
+								returning: async () => [],
+							}),
+						}),
+					};
+
+					return cb(
+						tx as unknown as Parameters<
+							typeof server.drizzleClient.transaction
+						>[0] extends (arg: infer T) => unknown
+							? T
+							: never,
+					);
+				});
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: { authorization: `bearer ${token}` },
+				variables: { input: { id: env.folderId } },
+			});
+
+			expect(result.data?.deleteAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+					}),
+				]),
+			);
+
+			spy.mockRestore();
+		});
 	});
 });
