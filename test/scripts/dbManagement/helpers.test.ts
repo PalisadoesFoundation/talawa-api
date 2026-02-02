@@ -673,8 +673,8 @@ suite.concurrent("insertCollections", () => {
 	});
 });
 
-suite.concurrent("events isRecurringEventTemplate", () => {
-	test.concurrent("should set isRecurringEventTemplate true when event has isRecurringEventTemplate in JSON", async () => {
+suite("events isRecurringEventTemplate", () => {
+	test("should set isRecurringEventTemplate true when event has isRecurringEventTemplate in JSON", async () => {
 		let capturedEvents: { isRecurringEventTemplate?: boolean }[] = [];
 		const checkAndInsertDataSpy = vi
 			.spyOn(helpers, "checkAndInsertData")
@@ -696,8 +696,8 @@ suite.concurrent("events isRecurringEventTemplate", () => {
 	});
 });
 
-suite.concurrent("recurrence_rules ingestion", () => {
-	test.concurrent("should parse recurrence_rules with null recurrenceEndDate and updatedAt", async () => {
+suite("recurrence_rules ingestion", () => {
+	test("should parse recurrence_rules with null recurrenceEndDate and updatedAt", async () => {
 		let capturedRules: {
 			recurrenceEndDate: Date | null;
 			updatedAt: Date | null;
@@ -727,7 +727,7 @@ suite.concurrent("recurrence_rules ingestion", () => {
 		checkAndInsertDataSpy.mockRestore();
 	});
 
-	test.concurrent("should use idempotent insert for recurrence_rules (conflict target id)", async () => {
+	test("should use idempotent insert for recurrence_rules (conflict target id)", async () => {
 		let conflictTarget: unknown = null;
 		const checkAndInsertDataSpy = vi
 			.spyOn(helpers, "checkAndInsertData")
@@ -743,8 +743,8 @@ suite.concurrent("recurrence_rules ingestion", () => {
 	});
 });
 
-suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
-	test.concurrent("should call initializeGenerationWindow when no window exists for org", async () => {
+suite("initializeGenerationWindow in recurrence_rules flow", () => {
+	test("should call initializeGenerationWindow when no window exists for org", async () => {
 		const windowManager = await import(
 			"src/services/eventGeneration/windowManager"
 		);
@@ -767,7 +767,7 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 		checkAndInsertDataSpy.mockRestore();
 	});
 
-	test.concurrent("should not call initializeGenerationWindow when window already exists", async () => {
+	test("should not call initializeGenerationWindow when window already exists", async () => {
 		const windowManager = await import(
 			"src/services/eventGeneration/windowManager"
 		);
@@ -790,7 +790,7 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 		checkAndInsertDataSpy.mockRestore();
 	});
 
-	test.concurrent("when initializeGenerationWindow throws for one org, logs warn and continues for others", async () => {
+	test("when initializeGenerationWindow throws for one org, logs warn and continues for others", async () => {
 		const windowManager = await import(
 			"src/services/eventGeneration/windowManager"
 		);
@@ -806,7 +806,7 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 			},
 		);
 
-		const warnSpy = vi.spyOn(helpers.SampleDataLoggerAdapter.prototype, "warn");
+		const infoSpy = vi.spyOn(helpers.SampleDataLoggerAdapter.prototype, "info");
 
 		const checkAndInsertDataSpy = vi
 			.spyOn(helpers, "checkAndInsertData")
@@ -820,8 +820,8 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 
 		await helpers.insertCollections(["recurrence_rules"]);
 
-		expect(warnSpy).toHaveBeenCalledTimes(1);
-		expect(warnSpy).toHaveBeenCalledWith(
+		expect(infoSpy).toHaveBeenCalledTimes(1);
+		expect(infoSpy).toHaveBeenCalledWith(
 			expect.objectContaining({
 				error: thrownError,
 				organizationId: failOrgId,
@@ -831,7 +831,7 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 		);
 		expect(windowManager.initializeGenerationWindow).toHaveBeenCalledTimes(3);
 
-		warnSpy.mockRestore();
+		infoSpy.mockRestore();
 		db.query.eventGenerationWindowsTable.findFirst = originalFindFirst;
 		checkAndInsertDataSpy.mockRestore();
 		vi.mocked(windowManager.initializeGenerationWindow).mockResolvedValue(
@@ -842,10 +842,10 @@ suite.concurrent("initializeGenerationWindow in recurrence_rules flow", () => {
 	});
 });
 
-suite.concurrent(
+suite(
 	"checkDataSize includes recurrence_rules and event_generation_windows",
 	() => {
-		test.concurrent("should query recurrence_rules and event_generation_windows tables", async () => {
+		test("should query recurrence_rules and event_generation_windows tables", async () => {
 			const tablesQueried: unknown[] = [];
 			const db = Reflect.get(helpers, "db");
 			const originalSelect = db.select;
