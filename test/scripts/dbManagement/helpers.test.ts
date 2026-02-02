@@ -14,6 +14,10 @@ import {
 	vi,
 } from "vitest";
 
+vi.mock("src/services/eventGeneration/windowManager", () => ({
+	initializeGenerationWindow: vi.fn().mockResolvedValue({}),
+}));
+
 let testEnvConfig: TestEnvConfig;
 let helpers: typeof import("scripts/dbManagement/helpers");
 
@@ -87,6 +91,64 @@ suite.concurrent("parseDate", () => {
 		expect(helpers.parseDate("invalid-date")).toBeNull();
 		// Test an invalid number (NaN)
 		expect(helpers.parseDate(Number.NaN)).toBeNull();
+	});
+});
+
+suite("SampleDataLoggerAdapter", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("SampleDataLoggerAdapter.error logs string when passed a string", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.error("some string");
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith("some string");
+		errorSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.error logs msg and object when passed object and msg", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.error({ a: 1 }, "msg");
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith("msg", { a: 1 });
+		errorSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.fatal delegates to error", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.fatal("fatal message");
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith("fatal message");
+		errorSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.debug delegates to info", () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.debug("debug message");
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		expect(logSpy).toHaveBeenCalledWith("debug message");
+		logSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.trace delegates to info", () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.trace("trace message");
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		expect(logSpy).toHaveBeenCalledWith("trace message");
+		logSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.child returns a new distinct adapter instance", () => {
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		const childAdapter = adapter.child();
+		expect(childAdapter).toBeInstanceOf(helpers.SampleDataLoggerAdapter);
+		expect(childAdapter).not.toBe(adapter);
 	});
 });
 
@@ -668,6 +730,236 @@ suite.concurrent("insertCollections", () => {
 		checkAndInsertDataSpy.mockRestore();
 	});
 });
+
+suite("events isRecurringEventTemplate", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("should set isRecurringEventTemplate true when event has isRecurringEventTemplate in JSON", async () => {
+		let capturedEvents: { isRecurringEventTemplate?: boolean }[] = [];
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows) => {
+				if (table === schema.eventsTable) {
+					capturedEvents = rows as { isRecurringEventTemplate?: boolean }[];
+				}
+				return true;
+			});
+
+		await helpers.insertCollections(["events"]);
+
+		expect(capturedEvents.length).toBeGreaterThan(0);
+		const withTemplate = capturedEvents.some(
+			(e) => e.isRecurringEventTemplate === true,
+		);
+		expect(withTemplate).toBe(true);
+		checkAndInsertDataSpy.mockRestore();
+	});
+});
+
+suite("recurrence_rules ingestion", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("should parse recurrence_rules with null recurrenceEndDate and updatedAt", async () => {
+		let capturedRules: {
+			recurrenceEndDate: Date | null;
+			updatedAt: Date | null;
+			recurrenceStartDate: Date | null;
+			latestInstanceDate: Date | null;
+			createdAt: Date | null;
+		}[] = [];
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (table, rows) => {
+				if (table === schema.recurrenceRulesTable) {
+					capturedRules = rows as typeof capturedRules;
+				}
+				return true;
+			});
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(capturedRules.length).toBeGreaterThan(0);
+		for (const rule of capturedRules) {
+			expect(rule.recurrenceEndDate).toBeNull();
+			expect(rule.updatedAt).toBeNull();
+			expect(rule.recurrenceStartDate).toBeInstanceOf(Date);
+			expect(rule.latestInstanceDate).toBeInstanceOf(Date);
+			expect(rule.createdAt).toBeInstanceOf(Date);
+		}
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test("should use idempotent insert for recurrence_rules (conflict target id)", async () => {
+		let conflictTarget: unknown = null;
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockImplementation(async (_table, _rows, target) => {
+				conflictTarget = target;
+				return true;
+			});
+
+		await helpers.insertCollections(["recurrence_rules"]);
+
+		expect(conflictTarget).toBe(schema.recurrenceRulesTable.id);
+		checkAndInsertDataSpy.mockRestore();
+	});
+});
+
+suite("initializeGenerationWindow in recurrence_rules flow", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
+	test("should call initializeGenerationWindow when no window exists for org", async () => {
+		const windowManager = await import(
+			"src/services/eventGeneration/windowManager"
+		);
+		vi.mocked(windowManager.initializeGenerationWindow).mockClear();
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		const realDb = Reflect.get(helpers, "db");
+		const mockDb = {
+			...realDb,
+			query: {
+				...realDb.query,
+				eventGenerationWindowsTable: {
+					...realDb.query.eventGenerationWindowsTable,
+					findFirst: vi.fn().mockResolvedValue(null),
+				},
+			},
+		};
+
+		await helpers.insertCollections(["recurrence_rules"], {
+			db: mockDb as unknown as typeof helpers.db,
+		});
+
+		expect(windowManager.initializeGenerationWindow).toHaveBeenCalled();
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test("should not call initializeGenerationWindow when window already exists", async () => {
+		const windowManager = await import(
+			"src/services/eventGeneration/windowManager"
+		);
+		vi.mocked(windowManager.initializeGenerationWindow).mockClear();
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		const realDb = Reflect.get(helpers, "db");
+		const mockDb = {
+			...realDb,
+			query: {
+				...realDb.query,
+				eventGenerationWindowsTable: {
+					...realDb.query.eventGenerationWindowsTable,
+					findFirst: vi.fn().mockResolvedValue({ id: "existing-window-id" }),
+				},
+			},
+		};
+
+		await helpers.insertCollections(["recurrence_rules"], {
+			db: mockDb as unknown as typeof helpers.db,
+		});
+
+		expect(windowManager.initializeGenerationWindow).not.toHaveBeenCalled();
+		checkAndInsertDataSpy.mockRestore();
+	});
+
+	test("when initializeGenerationWindow throws for one org, logs warn and continues for others", async () => {
+		const windowManager = await import(
+			"src/services/eventGeneration/windowManager"
+		);
+		// recurrence_rules.json has 3 rules with 3 distinct organizationIds → orgToCreatorId has 3 entries
+		const failOrgId = "01960b81-bfed-7369-ae96-689dbd4281ba";
+		const thrownError = new Error("FK violation");
+		vi.mocked(windowManager.initializeGenerationWindow).mockImplementation(
+			async (input) => {
+				if (input.organizationId === failOrgId) throw thrownError;
+				return {} as Awaited<
+					ReturnType<typeof windowManager.initializeGenerationWindow>
+				>;
+			},
+		);
+
+		const infoSpy = vi.spyOn(helpers.SampleDataLoggerAdapter.prototype, "info");
+
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+
+		const realDb = Reflect.get(helpers, "db");
+		const mockDb = {
+			...realDb,
+			query: {
+				...realDb.query,
+				eventGenerationWindowsTable: {
+					...realDb.query.eventGenerationWindowsTable,
+					findFirst: vi.fn().mockResolvedValue(null),
+				},
+			},
+		};
+
+		await helpers.insertCollections(["recurrence_rules"], {
+			db: mockDb as unknown as typeof helpers.db,
+		});
+
+		expect(infoSpy).toHaveBeenCalledTimes(1);
+		expect(infoSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error: thrownError,
+				organizationId: failOrgId,
+				createdById: "67378abd-8500-4f17-9cf2-990d00000005",
+			}),
+			"Failed to initialize generation window for organization",
+		);
+		expect(windowManager.initializeGenerationWindow).toHaveBeenCalledTimes(3);
+
+		infoSpy.mockRestore();
+		checkAndInsertDataSpy.mockRestore();
+		vi.mocked(windowManager.initializeGenerationWindow).mockResolvedValue(
+			{} as Awaited<
+				ReturnType<typeof windowManager.initializeGenerationWindow>
+			>,
+		);
+	});
+});
+
+suite(
+	"checkDataSize includes recurrence_rules and event_generation_windows",
+	() => {
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		test("should query recurrence_rules and event_generation_windows tables", async () => {
+			const tablesQueried: unknown[] = [];
+			const db = Reflect.get(helpers, "db");
+			const selectSpy = vi.spyOn(db, "select").mockReturnValue({
+				from: vi.fn((table: unknown) => {
+					tablesQueried.push(table);
+					return Promise.resolve([{ count: 0 }]);
+				}),
+			} as unknown as ReturnType<typeof db.select>);
+			try {
+				await helpers.checkDataSize("Test Stage");
+				expect(tablesQueried).toContain(schema.recurrenceRulesTable);
+				expect(tablesQueried).toContain(schema.eventGenerationWindowsTable);
+			} finally {
+				selectSpy.mockRestore();
+			}
+		});
+	},
+);
 
 suite.concurrent("checkDataSize integration test", () => {
 	test.concurrent("should return a boolean indicating record existence", async () => {

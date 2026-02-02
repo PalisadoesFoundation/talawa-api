@@ -14,6 +14,7 @@ type Collection =
 	| "comment_votes"
 	| "action_categories"
 	| "events"
+	| "recurrence_rules"
 	| "recurring_event_templates"
 	| "event_volunteers"
 	| "event_volunteer_memberships"
@@ -33,6 +34,7 @@ export async function main(): Promise<void> {
 		"comment_votes",
 		"action_categories",
 		"events",
+		"recurrence_rules",
 		"recurring_event_templates",
 		"event_volunteers",
 		"event_volunteer_memberships",
