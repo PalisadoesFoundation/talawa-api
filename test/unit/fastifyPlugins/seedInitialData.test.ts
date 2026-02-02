@@ -16,27 +16,9 @@ vi.mock("uuidv7", () => ({
 import { hash } from "@node-rs/argon2";
 import { uuidv7 } from "uuidv7";
 import seedInitialData from "~/src/fastifyPlugins/seedInitialData";
-
-function createMockDrizzleClient() {
-	return {
-		query: {
-			usersTable: {
-				findFirst: vi.fn(),
-			},
-			communitiesTable: {
-				findFirst: vi.fn(),
-			},
-		},
-		insert: vi.fn(() => ({
-			values: vi.fn(),
-		})),
-		update: vi.fn(() => ({
-			set: vi.fn(() => ({
-				where: vi.fn(),
-			})),
-		})),
-	};
-}
+import { createMockDrizzleClient } from "test/_Mocks_/drizzleClientMock";
+import { communitiesTable } from "~/src/drizzle/tables/communities";
+import { usersTable } from "~/src/drizzle/tables/users";
 
 type MockDrizzleClient = ReturnType<typeof createMockDrizzleClient>;
 
@@ -155,7 +137,14 @@ describe("seedInitialData plugin", () => {
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Administrator user already exists in the database with an invalid role. Assigning the correct role to the administrator user.",
 			);
-			expect(mockFastify.drizzleClient.update).toHaveBeenCalled();
+			expect(mockFastify.drizzleClient.update).toHaveBeenCalledWith(
+				usersTable,
+			);
+			const updateChain =
+				mockFastify.drizzleClient.update.mock.results[0]?.value;
+			expect(updateChain.set).toHaveBeenCalledWith({
+				role: "administrator",
+			});
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Successfully assigned the correct role to the administrator user.",
 			);
@@ -178,7 +167,22 @@ describe("seedInitialData plugin", () => {
 			);
 			expect(hash).toHaveBeenCalledWith("testPassword123");
 			expect(uuidv7).toHaveBeenCalled();
-			expect(mockFastify.drizzleClient.insert).toHaveBeenCalled();
+			expect(mockFastify.drizzleClient.insert).toHaveBeenCalledWith(
+				usersTable,
+			);
+			const insertChain =
+				mockFastify.drizzleClient.insert.mock.results[0]?.value;
+			expect(insertChain.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					emailAddress: "admin@example.com",
+					name: "Test Admin",
+					role: "administrator",
+					passwordHash: "$argon2id$v=19$m=65536$hashedpassword",
+					id: "019478a1-bcc8-7da0-92ee-123456789abc",
+					creatorId: "019478a1-bcc8-7da0-92ee-123456789abc",
+					isEmailAddressVerified: true,
+				}),
+			);
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Successfully created the administrator in the database.",
 			);
@@ -263,7 +267,17 @@ describe("seedInitialData plugin", () => {
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Community does not exist in the database. Creating the community.",
 			);
-			expect(mockFastify.drizzleClient.insert).toHaveBeenCalled();
+			expect(mockFastify.drizzleClient.insert).toHaveBeenCalledWith(
+				communitiesTable,
+			);
+			const insertChain =
+				mockFastify.drizzleClient.insert.mock.results[0]?.value;
+			expect(insertChain.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					name: "Test Community",
+					inactivityTimeoutDuration: 900,
+				}),
+			);
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Successfully created the community in the database.",
 			);
