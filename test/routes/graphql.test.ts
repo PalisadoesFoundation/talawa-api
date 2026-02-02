@@ -1678,7 +1678,7 @@ describe("GraphQL Routes", () => {
 			).toBeDefined();
 		});
 
-		it("should handle missing oauthProviderRegistry in subscription context (error path)", async () => {
+		it("should handle missing oauthProviderRegistry in subscription context (fallback path)", async () => {
 			// Prepare a fake token and decoded payload
 			const fakeToken = "signed-jwt-token";
 			const decoded = {

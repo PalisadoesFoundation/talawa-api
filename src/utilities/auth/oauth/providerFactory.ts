@@ -8,7 +8,6 @@ import { GoogleOAuthProvider } from "./providers/GoogleOAuthProvider";
  * Clears any existing providers (idempotent) and registers enabled providers.
  * @returns The populated OAuthProviderRegistry singleton instance
  */
-
 export function buildOAuthProviderRegistry(): OAuthProviderRegistry {
 	const reg = OAuthProviderRegistry.getInstance();
 	reg.clear(); // idempotent
