@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
@@ -14,7 +14,55 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import type { ServiceDependencies } from "src/services/eventGeneration/types";
+import { initializeGenerationWindow } from "src/services/eventGeneration/windowManager";
 import { uuidv7 } from "uuidv7";
+
+/** Logger type required by the window manager (e.g. initializeGenerationWindow). */
+type WindowManagerLogger = ServiceDependencies["logger"];
+
+/** DB client type expected by initializeGenerationWindow (second parameter). */
+type InitializeGenerationWindowDB = Parameters<
+	typeof initializeGenerationWindow
+>[1];
+
+/** No-op used for FastifyBaseLogger.silent (pino uses a LogFn for the silent level). */
+const noopLogFn: WindowManagerLogger["silent"] = () => {};
+
+/** Logger adapter for sample-data operations that implements the window manager's logger interface. */
+export class SampleDataLoggerAdapter implements WindowManagerLogger {
+	readonly level = "info" as const;
+	readonly silent = noopLogFn;
+
+	info(obj: unknown, msg?: string): void;
+	info(msg: string): void;
+	info(objOrMsg: unknown, msg?: string): void {
+		if (typeof objOrMsg === "string") {
+			console.log(objOrMsg);
+		} else {
+			console.log(msg ?? "", typeof objOrMsg === "object" ? objOrMsg : "");
+		}
+	}
+
+	error(obj: unknown, msg?: string): void;
+	error(msg: string): void;
+	error(objOrMsg: unknown, msg?: string): void {
+		if (typeof objOrMsg === "string") {
+			console.error(objOrMsg);
+		} else {
+			console.error(msg ?? "", typeof objOrMsg === "object" ? objOrMsg : "");
+		}
+	}
+
+	// Stubs for FastifyBaseLogger so the adapter is assignable; sample-data path does not use these.
+	warn = this.info.bind(this) as WindowManagerLogger["warn"];
+	debug = this.info.bind(this) as WindowManagerLogger["debug"];
+	trace = this.info.bind(this) as WindowManagerLogger["trace"];
+	fatal = this.error.bind(this) as WindowManagerLogger["fatal"];
+	child(): WindowManagerLogger {
+		return new SampleDataLoggerAdapter();
+	}
+}
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -183,11 +231,11 @@ export async function checkAndInsertData<T>(
 /**
  * Inserts data into specified tables.
  * @param collections - Array of collection/table names to insert data into
- * @param options - Options for loading data
+ * @param options - Options for loading data (e.g. db override for tests to avoid mutating shared state)
  */
-
 export async function insertCollections(
 	collections: string[],
+	options?: { db?: typeof db },
 ): Promise<boolean> {
 	try {
 		await checkDataSize("Before");
@@ -466,6 +514,7 @@ export async function insertCollections(
 								updatedAt: string | number | Date;
 								startAt: string | number | Date;
 								endAt: string | number | Date;
+								isRecurringEventTemplate?: boolean;
 							},
 							index: number,
 						) => {
@@ -486,6 +535,8 @@ export async function insertCollections(
 								startAt: start,
 								endAt: end,
 								updatedAt: null,
+								isRecurringEventTemplate:
+									event.isRecurringEventTemplate === true,
 							};
 						},
 					) as (typeof schema.eventsTable.$inferInsert)[];
@@ -499,6 +550,140 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurrence_rules": {
+					const recurrenceRules = JSON.parse(fileContent).map(
+						(rule: {
+							recurrenceStartDate: string | number | Date;
+							recurrenceEndDate: string | number | Date | null;
+							latestInstanceDate: string | number | Date;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date | null;
+						}) => ({
+							...rule,
+							recurrenceStartDate: parseDate(rule.recurrenceStartDate),
+							recurrenceEndDate: rule.recurrenceEndDate
+								? parseDate(rule.recurrenceEndDate)
+								: null,
+							latestInstanceDate: parseDate(rule.latestInstanceDate),
+							createdAt: parseDate(rule.createdAt),
+							updatedAt: rule.updatedAt ? parseDate(rule.updatedAt) : null,
+						}),
+					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.recurrenceRulesTable,
+						recurrenceRules,
+						schema.recurrenceRulesTable.id,
+						1000,
+					);
+
+					// Ensure event_generation_windows exist for each org with recurrence rules (Option B)
+					const dbForWindow = options?.db ?? db;
+					const sampleDataLogger = new SampleDataLoggerAdapter();
+					const orgToCreatorId = new Map<string, string>();
+					for (const rule of recurrenceRules) {
+						if (!orgToCreatorId.has(rule.organizationId)) {
+							orgToCreatorId.set(rule.organizationId, rule.creatorId);
+						}
+					}
+					for (const [organizationId, createdById] of orgToCreatorId) {
+						const existing =
+							await dbForWindow.query.eventGenerationWindowsTable.findFirst({
+								where: eq(
+									schema.eventGenerationWindowsTable.organizationId,
+									organizationId,
+								),
+								columns: { id: true },
+							});
+						if (!existing) {
+							try {
+								await initializeGenerationWindow(
+									{ organizationId, createdById },
+									dbForWindow as InitializeGenerationWindowDB,
+									sampleDataLogger,
+								);
+							} catch (error) {
+								sampleDataLogger.warn(
+									{ error, organizationId, createdById },
+									"Failed to initialize generation window for organization",
+								);
+							}
+						}
+					}
+
+					console.log(
+						"\x1b[35mAdded: Recurrence rules table data (skipping duplicates), ensured event generation windows\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurring_event_templates": {
+					// PR2: Insert template events only. recurrence_rules and
+					// recurring_event_instances are populated in a follow-up (PR3).
+					const now = new Date();
+					type TemplateRow = {
+						id: string;
+						createdAt: string | number | Date;
+						updatedAt: string | null;
+						updaterId: string | null;
+						startAt: string | number | Date;
+						endAt: string | number | Date;
+						creatorId: string;
+						description: string | null;
+						name: string;
+						organizationId: string;
+						allDay: boolean;
+						isPublic?: boolean;
+						isRecurringEventTemplate?: boolean;
+						isRegisterable?: boolean;
+					};
+					const templates = JSON.parse(fileContent).map(
+						(template: TemplateRow) => {
+							const startRef = parseDate(template.startAt);
+							const endRef = parseDate(template.endAt);
+							const start =
+								startRef != null
+									? getNextOccurrenceOfWeekdayTime(now, startRef)
+									: new Date(now.getTime());
+							let end: Date;
+							if (startRef != null && endRef != null) {
+								const durationMs = endRef.getTime() - startRef.getTime();
+								end = new Date(start.getTime() + durationMs);
+							} else if (endRef != null) {
+								end = getNextOccurrenceOfWeekdayTime(now, endRef);
+								if (end.getTime() < start.getTime()) {
+									end = new Date(end.getTime() + 7 * 24 * 60 * 60 * 1000);
+								}
+							} else {
+								end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+							}
+							const createdAt = parseDate(template.createdAt) ?? start;
+							return {
+								...template,
+								createdAt,
+								startAt: start,
+								endAt: end,
+								updatedAt: null,
+								updaterId: null,
+								isPublic: true,
+								isRecurringEventTemplate: true,
+							};
+						},
+					) as (typeof schema.eventsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventsTable,
+						templates,
+						schema.eventsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurring event templates (skipping duplicates)\x1b[0m",
 					);
 					break;
 				}
@@ -697,6 +882,42 @@ export function parseDate(date: string | number | Date): Date | null {
 }
 
 /**
+ * Returns the next occurrence of the same weekday and time (hours, minutes) as
+ * templateDate, on or after referenceDate. Used for recurring event template start/end.
+ */
+export function getNextOccurrenceOfWeekdayTime(
+	referenceDate: Date,
+	templateDate: Date,
+): Date {
+	const weekday = templateDate.getUTCDay();
+	const hours = templateDate.getUTCHours();
+	const minutes = templateDate.getUTCMinutes();
+	const seconds = templateDate.getUTCSeconds();
+	const ms = templateDate.getUTCMilliseconds();
+
+	// Start from reference date at midnight UTC, then find next matching weekday
+	const ref = new Date(
+		Date.UTC(
+			referenceDate.getUTCFullYear(),
+			referenceDate.getUTCMonth(),
+			referenceDate.getUTCDate(),
+			0,
+			0,
+			0,
+			0,
+		),
+	);
+	ref.setUTCHours(hours, minutes, seconds, ms);
+	const refDay = ref.getUTCDay();
+	let daysToAdd = (weekday - refDay + 7) % 7;
+	if (daysToAdd === 0 && referenceDate.getTime() > ref.getTime()) {
+		daysToAdd = 7;
+	}
+	ref.setUTCDate(ref.getUTCDate() + daysToAdd);
+	return ref;
+}
+
+/**
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
  */
@@ -717,6 +938,11 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
+			{
+				name: "event_generation_windows",
+				table: schema.eventGenerationWindowsTable,
+			},
 			{ name: "event_volunteers", table: schema.eventVolunteersTable },
 			{
 				name: "event_volunteer_memberships",
