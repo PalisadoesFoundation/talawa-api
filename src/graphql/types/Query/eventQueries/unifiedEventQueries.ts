@@ -3,6 +3,7 @@ import { and, eq, inArray, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { eventsTable } from "~/src/drizzle/tables/events";
+import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 import {
 	type GetRecurringEventInstancesInput,
@@ -281,41 +282,7 @@ export async function getUnifiedEventsInDateRange(
 
 			// Transform generated instances to unified format
 			const enrichedGeneratedInstances: EventWithAttachments[] =
-				generatedInstances.map((instance) => {
-					const transformedInstance = {
-						// Core event properties (resolved from template + exceptions)
-						id: instance.id, // Use generated instance ID
-						name: instance.name,
-						description: instance.description,
-						startAt: instance.actualStartTime,
-						endAt: instance.actualEndTime,
-						location: instance.location,
-						allDay: instance.allDay,
-						isPublic: instance.isPublic,
-						isRegisterable: instance.isRegisterable,
-						isInviteOnly: instance.isInviteOnly,
-						organizationId: instance.organizationId,
-						creatorId: instance.creatorId,
-						updaterId: instance.updaterId,
-						createdAt: instance.createdAt,
-						updatedAt: instance.updatedAt,
-
-						// Generated instance metadata
-						isRecurringEventTemplate: false, // Instances are never templates
-
-						// Additional generated properties
-						baseRecurringEventId: instance.baseRecurringEventId,
-						sequenceNumber: instance.sequenceNumber,
-						totalCount: instance.totalCount,
-						hasExceptions: instance.hasExceptions,
-						isGenerated: true,
-
-						attachments: [],
-						eventType: "generated" as const,
-					};
-
-					return transformedInstance;
-				});
+				generatedInstances.map(mapRecurringInstanceToEvent);
 
 			allEvents.push(...enrichedGeneratedInstances);
 		}
@@ -367,11 +334,13 @@ export async function getEventsByIds(
 	try {
 		const events: EventWithAttachments[] = [];
 
-		// Step 1: Try to get standalone events
+		// Step 1: Try to get standalone events (and templates if they are requested by ID)
+		// We include templates here so that we can expand them later or display them if needed
 		const standaloneEvents = await getStandaloneEventsByIds(
 			eventIds,
 			drizzleClient,
 			logger,
+			{ includeTemplates: true },
 		);
 
 		// Add standalone events to results
@@ -396,31 +365,7 @@ export async function getEventsByIds(
 			);
 
 			const generatedEvents: EventWithAttachments[] = resolvedInstances.map(
-				(resolvedInstance) => ({
-					id: resolvedInstance.id,
-					name: resolvedInstance.name,
-					description: resolvedInstance.description,
-					startAt: resolvedInstance.actualStartTime,
-					endAt: resolvedInstance.actualEndTime,
-					location: resolvedInstance.location,
-					allDay: resolvedInstance.allDay,
-					isPublic: resolvedInstance.isPublic,
-					isRegisterable: resolvedInstance.isRegisterable,
-					isInviteOnly: resolvedInstance.isInviteOnly,
-					organizationId: resolvedInstance.organizationId,
-					creatorId: resolvedInstance.creatorId,
-					updaterId: resolvedInstance.updaterId,
-					createdAt: resolvedInstance.createdAt,
-					updatedAt: resolvedInstance.updatedAt,
-					isRecurringEventTemplate: false,
-					baseRecurringEventId: resolvedInstance.baseRecurringEventId,
-					sequenceNumber: resolvedInstance.sequenceNumber,
-					totalCount: resolvedInstance.totalCount,
-					hasExceptions: resolvedInstance.hasExceptions,
-					attachments: [], // TODO: Handle attachments for generated instances
-					eventType: "generated" as const,
-					isGenerated: true,
-				}),
+				mapRecurringInstanceToEvent,
 			);
 			events.push(...generatedEvents);
 		}

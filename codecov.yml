@@ -5,14 +5,38 @@ coverage:
         target: 90%
         threshold: 1%
 
+
 flags:
   unit:
+    carryforward: false
     paths:
-      - test/unit/
-      - src/utilities/
+      - src/config/
+      - src/fastifyPlugins/
+      - src/observability/
+      - src/plugin/
+      - src/plugins/
+      - src/routes/
       - src/services/
+      - src/setup/
+      - src/types/
+      - src/utilities/
+      - src/workers/
+      - src/*.ts
   integration:
+    carryforward: false
     paths:
-      - test/drizzle/
-      - test/graphql/
-      - test/install/
+      - src/drizzle/
+      - src/graphql/
+      - src/install/
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+        name_prefix: project-
+      - type: patch
+        target: 80%
+        threshold: 1%
+        name_prefix: patch-

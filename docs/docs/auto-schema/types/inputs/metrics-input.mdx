@@ -1,0 +1,111 @@
+---
+id: metrics-input
+title: MetricsInput
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Input type for querying metrics data. Supports time range filtering, operation type filtering, and duration-based filtering.
+
+```graphql
+input MetricsInput {
+  endTime: DateTime!
+  includeCacheMetrics: Boolean!
+  maxDuration: Float
+  minDuration: Float
+  operationType: String
+  startTime: DateTime!
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>endTime</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The end time for the metrics query. Must be after startTime.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>includeCacheMetrics</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>maxDuration</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Optional maximum duration filter in milliseconds. Must be positive and greater than minDuration if both are provided.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>minDuration</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Optional minimum duration filter in milliseconds. Must be positive and less than maxDuration if both are provided.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>operationType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Optional filter to limit results to a specific operation type.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>startTime</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The start time for the metrics query. Must be a valid DateTime.

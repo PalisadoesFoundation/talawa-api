@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { chatMembershipsTable } from "./chatMemberships";
 import { chatMessagesTable } from "./chatMessages";
@@ -18,7 +19,7 @@ export const chatsTable = pgTable(
 		 * Mime type of the avatar of the chat.
 		 */
 		avatarMimeType: text("avatar_mime_type", {
-			enum: imageMimeTypeEnum.options,
+			enum: imageMimeTypeEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * Primary unique identifier of the chat's avatar.
@@ -131,4 +132,8 @@ export const chatsTableInsertSchema = createInsertSchema(chatsTable, {
 	avatarName: (schema) => schema.min(1).optional(),
 	description: (schema) => schema.min(1).max(2048).optional(),
 	name: (schema) => schema.min(1).max(256),
+	id: (_schema) => z.string().uuid().optional(),
+	organizationId: (_schema) => z.string().uuid(),
+	creatorId: (_schema) => z.string().uuid().nullable().optional(),
+	updaterId: (_schema) => z.string().uuid().nullable().optional(),
 });

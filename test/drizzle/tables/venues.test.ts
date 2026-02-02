@@ -23,7 +23,7 @@ describe("venuesTable", () => {
 	describe("venuesTableInsertSchema", () => {
 		const validVenueData = {
 			name: "Conference Room A",
-			organizationId: "01234567-89ab-cdef-0123-456789abcdef",
+			organizationId: "01234567-89ab-4def-a123-456789abcdef",
 		};
 
 		describe("name field", () => {
@@ -230,7 +230,7 @@ describe("venuesTable", () => {
 			it("should accept a valid UUID for id", () => {
 				const result = venuesTableInsertSchema.safeParse({
 					...validVenueData,
-					id: "01234567-89ab-cdef-0123-456789abcdef",
+					id: "01234567-89ab-4def-a123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -253,7 +253,7 @@ describe("venuesTable", () => {
 			it("should accept a valid UUID for creatorId", () => {
 				const result = venuesTableInsertSchema.safeParse({
 					...validVenueData,
-					creatorId: "01234567-89ab-cdef-0123-456789abcdef",
+					creatorId: "01234567-89ab-4def-a123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -284,7 +284,7 @@ describe("venuesTable", () => {
 			it("should accept a valid UUID for updaterId", () => {
 				const result = venuesTableInsertSchema.safeParse({
 					...validVenueData,
-					updaterId: "01234567-89ab-cdef-0123-456789abcdef",
+					updaterId: "01234567-89ab-4def-a123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -316,10 +316,10 @@ describe("venuesTable", () => {
 				const completeVenueData = {
 					name: "Main Auditorium",
 					description: "A large auditorium for events and conferences.",
-					organizationId: "01234567-89ab-cdef-0123-456789abcdef",
+					organizationId: "01234567-89ab-4def-a123-456789abcdef",
 					capacity: 500,
-					creatorId: "11111111-1111-1111-1111-111111111111",
-					updaterId: "22222222-2222-2222-2222-222222222222",
+					creatorId: "11111111-1111-4111-8111-111111111111",
+					updaterId: "22222222-2222-4222-8222-222222222222",
 				};
 				const result = venuesTableInsertSchema.safeParse(completeVenueData);
 				expect(result.success).toBe(true);
@@ -328,7 +328,7 @@ describe("venuesTable", () => {
 			it("should accept minimal valid venue data", () => {
 				const minimalVenueData = {
 					name: "Room 1",
-					organizationId: "01234567-89ab-cdef-0123-456789abcdef",
+					organizationId: "01234567-89ab-4def-a123-456789abcdef",
 				};
 				const result = venuesTableInsertSchema.safeParse(minimalVenueData);
 				expect(result.success).toBe(true);

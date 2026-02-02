@@ -1,0 +1,105 @@
+---
+id: oauth-account-info
+title: OAuthAccountInfo
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Linked OAuth account info for a user.
+
+```graphql
+type OAuthAccountInfo {
+  email: String
+  lastUsedAt: DateTime
+  linkedAt: DateTime
+  provider: OAuthProvider
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthAccountInfo.<b>email</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Email address associated with the OAuth account.
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthAccountInfo.<b>lastUsedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date and time when the OAuth account was last used for authentication.
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthAccountInfo.<b>linkedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date and time when the OAuth account was linked.
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthAccountInfo.<b>provider</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OAuthProvider</b></code>](/auto-schema/types/enums/oauth-provider.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+The OAuth provider.
+
+### Member Of
+
+[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

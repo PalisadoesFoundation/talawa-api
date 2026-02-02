@@ -1,0 +1,219 @@
+import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
+import type { z } from "zod";
+import {
+	agendaItemsTable,
+	agendaItemsTableInsertSchema,
+} from "~/src/drizzle/tables/agendaItems";
+import type { GraphQLContext } from "~/src/graphql/context";
+import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
+import envConfig from "~/src/utilities/graphqLimits";
+import {
+	defaultGraphQLConnectionArgumentsSchema,
+	transformDefaultGraphQLConnectionArguments,
+	transformToDefaultGraphQLConnection,
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { AgendaFolder as AgendaFolderType } from "./AgendaFolder";
+import { AgendaFolder } from "./AgendaFolder";
+
+const cursorSchema = agendaItemsTableInsertSchema
+	.pick({
+		sequence: true,
+	})
+	.extend({
+		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
+	});
+
+export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+	.transform(transformDefaultGraphQLConnectionArguments)
+	.transform((arg, ctx) => {
+		let cursor: z.infer<typeof cursorSchema> | undefined;
+
+		try {
+			if (arg.cursor !== undefined) {
+				cursor = cursorSchema.parse(
+					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+				);
+			}
+		} catch (_error) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Not a valid cursor.",
+				path: [arg.isInversed ? "before" : "after"],
+			});
+		}
+
+		return {
+			cursor,
+			isInversed: arg.isInversed,
+			limit: arg.limit,
+		};
+	});
+
+type AgendaItemsArgs = z.input<typeof defaultGraphQLConnectionArgumentsSchema>;
+
+// Exported resolver for unit testing
+export const resolveItems = async (
+	parent: AgendaFolderType,
+	args: AgendaItemsArgs,
+	ctx: GraphQLContext,
+) => {
+	const {
+		data: parsedArgs,
+		error,
+		success,
+	} = itemsArgumentsSchema.safeParse(args);
+
+	if (!success) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "invalid_arguments",
+				issues: error.issues.map((issue) => ({
+					argumentPath: issue.path,
+					message: issue.message,
+				})),
+			},
+		});
+	}
+
+	const { cursor, isInversed, limit } = parsedArgs;
+
+	const orderBy = isInversed
+		? [desc(agendaItemsTable.sequence), desc(agendaItemsTable.id)]
+		: [asc(agendaItemsTable.sequence), asc(agendaItemsTable.id)];
+
+	let where: SQL | undefined;
+
+	if (isInversed) {
+		if (cursor !== undefined) {
+			where = and(
+				exists(
+					ctx.drizzleClient
+						.select()
+						.from(agendaItemsTable)
+						.where(
+							and(
+								eq(agendaItemsTable.folderId, parent.id),
+								eq(agendaItemsTable.id, cursor.id),
+								eq(agendaItemsTable.sequence, cursor.sequence),
+							),
+						),
+				),
+				eq(agendaItemsTable.folderId, parent.id),
+				or(
+					and(
+						eq(agendaItemsTable.sequence, cursor.sequence),
+						lt(agendaItemsTable.id, cursor.id),
+					),
+					lt(agendaItemsTable.sequence, cursor.sequence),
+				),
+			);
+		} else {
+			where = eq(agendaItemsTable.folderId, parent.id);
+		}
+	} else {
+		if (cursor !== undefined) {
+			where = and(
+				exists(
+					ctx.drizzleClient
+						.select()
+						.from(agendaItemsTable)
+						.where(
+							and(
+								eq(agendaItemsTable.folderId, parent.id),
+								eq(agendaItemsTable.id, cursor.id),
+								eq(agendaItemsTable.sequence, cursor.sequence),
+							),
+						),
+				),
+				eq(agendaItemsTable.folderId, parent.id),
+				or(
+					and(
+						eq(agendaItemsTable.sequence, cursor.sequence),
+						gt(agendaItemsTable.id, cursor.id),
+					),
+					gt(agendaItemsTable.sequence, cursor.sequence),
+				),
+			);
+		} else {
+			where = eq(agendaItemsTable.folderId, parent.id);
+		}
+	}
+
+	const agendaItems = await ctx.drizzleClient.query.agendaItemsTable.findMany({
+		limit,
+		orderBy,
+		where,
+	});
+
+	if (cursor !== undefined && agendaItems.length === 0) {
+		const cursorExists =
+			await ctx.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { id: true },
+				where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.folderId, parent.id),
+						operators.eq(fields.id, cursor.id),
+						operators.eq(fields.sequence, cursor.sequence),
+					),
+			});
+
+		if (cursorExists === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: [isInversed ? "before" : "after"],
+						},
+					],
+				},
+			});
+		}
+	}
+
+	return transformToDefaultGraphQLConnection({
+		createCursor: (agendaItem) => ({
+			id: agendaItem.id,
+			sequence: agendaItem.sequence,
+		}),
+		createNode: (agendaItem) => agendaItem,
+		parsedArgs,
+		rawNodes: agendaItems,
+	});
+};
+
+AgendaFolder.implement({
+	fields: (t) => ({
+		items: t.connection(
+			{
+				description:
+					"GraphQL connection to traverse through the agenda items contained within the agenda folder.",
+				complexity: (args) => ({
+					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+					multiplier: args.first || args.last || 1,
+				}),
+				resolve: resolveItems,
+				type: AgendaItem,
+			},
+			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
+				description: "",
+			},
+			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
+				description: "",
+			},
+		),
+	}),
+});

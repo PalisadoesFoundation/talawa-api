@@ -17,6 +17,40 @@ set -euo pipefail
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
+##############################################################################
+# Non-interactive Mode Configuration
+##############################################################################
+# AUTO_YES controls whether the script runs in non-interactive mode.
+# When enabled, confirmation prompts for downloading and executing external
+# scripts (Docker installer, fnm installer) are skipped automatically.
+#
+# Acceptable values:
+#   - "true"  : Skip all confirmation prompts (non-interactive mode)
+#   - "false" : Prompt user for confirmation (interactive mode, default)
+#
+# The script automatically detects non-interactive environments:
+#   1. If AUTO_YES=true is set explicitly
+#   2. If CI=true is set (common in CI/CD pipelines like GitHub Actions)
+#   3. If stdin is not a terminal (piped input or background execution)
+#
+# Example usage:
+#   # For CI pipelines (GitHub Actions, Jenkins, etc.)
+#   CI=true ./scripts/install/linux/install-linux.sh
+#
+#   # For automated local installs
+#   AUTO_YES=true ./scripts/install/linux/install-linux.sh
+#
+#   # Interactive mode (default) - will prompt before running external scripts
+#   ./scripts/install/linux/install-linux.sh
+#
+# Safety note: In non-interactive mode, the following prompts are skipped:
+#   - Docker installer execution confirmation (downloads from https://get.docker.com)
+#   - fnm installer execution confirmation (downloads from https://fnm.vercel.app)
+#   The scripts are still downloaded to temporary files first (not piped directly
+#   to shell), providing some protection against partial/corrupted downloads.
+##############################################################################
+AUTO_YES="${AUTO_YES:-${CI:-false}}"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -378,19 +412,42 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
         info "Installing Docker..."
-        # Security Note: This uses Docker's official convenience script over HTTPS.
-        # The script is from a trusted source (get.docker.com) but piping to shell
-        # carries inherent risk. Users can review the script first by visiting:
-        # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
-        # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
+        # Security Note: Docker's official convenience script is downloaded to a temporary file
+        # for review before execution. This prevents direct pipe-to-shell vulnerabilities.
         docker_installer="$(mktemp /tmp/get-docker.XXXXXX.sh)"
         trap 'rm -f "$docker_installer"' EXIT
+        
+        info "Downloading Docker installation script from https://get.docker.com..."
         if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
             error "Failed to download Docker installer after multiple attempts."
+            error "Check your internet connection and try again."
+            rm -f "$docker_installer"
             exit 1
         fi
+        success "Docker installer downloaded to: $docker_installer"
+        
+        # User confirmation before execution (skip in non-interactive mode)
+        if [ "$AUTO_YES" = "true" ] || ! test -t 0; then
+            info "Non-interactive mode detected, proceeding with Docker installation..."
+        else
+            info "You can review the script before installation:"
+            info "  less $docker_installer"
+            info "  cat $docker_installer"
+            echo ""
+            read -p "Proceed with Docker installation? (y/N): " -n 1 -r
+            echo ""
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                warn "Docker installation cancelled by user."
+                rm -f "$docker_installer"
+                exit 1
+            fi
+        fi
+        
+        info "Executing Docker installer..."
         if ! sh "$docker_installer"; then
             error "Docker installer script failed."
+            error "Check the error messages above for details."
+            rm -f "$docker_installer"
             exit 1
         fi
         rm -f "$docker_installer"
@@ -438,19 +495,43 @@ if command_exists fnm; then
     success "fnm is already installed"
     eval "$(fnm env)"
 else
-    info "Installing fnm..."
-    # Security Note: This uses fnm's official installer over HTTPS.
-    # Users can review the script first at: https://fnm.vercel.app/install
-    # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
-
+    info "Installing fnm (Fast Node Manager)..."
+    # Security Note: fnm's official installer is downloaded to a temporary file
+    # for review before execution. This prevents direct pipe-to-shell vulnerabilities.
     fnm_installer="$(mktemp /tmp/fnm-install.XXXXXX.sh)"
     trap 'rm -f "$fnm_installer"' EXIT
+    
+    info "Downloading fnm installation script from https://fnm.vercel.app/install..."
     if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
-        error "Failed to download fnm installer."
+        error "Failed to download fnm installer after multiple attempts."
+        error "Check your internet connection and try again."
+        rm -f "$fnm_installer"
         exit 1
     fi
+    success "fnm installer downloaded to: $fnm_installer"
+    
+    # User confirmation before execution (skip in non-interactive mode)
+    if [ "$AUTO_YES" = "true" ] || ! test -t 0; then
+        info "Non-interactive mode detected, proceeding with fnm installation..."
+    else
+        info "You can review the script before installation:"
+        info "  less $fnm_installer"
+        info "  cat $fnm_installer"
+        echo ""
+        read -p "Proceed with fnm installation? (y/N): " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            warn "fnm installation cancelled by user."
+            rm -f "$fnm_installer"
+            exit 1
+        fi
+    fi
+    
+    info "Executing fnm installer..."
     if ! bash "$fnm_installer" --skip-shell; then
         error "fnm installer script failed."
+        error "Check the error messages above for details."
+        rm -f "$fnm_installer"
         exit 1
     fi
     rm -f "$fnm_installer"
@@ -754,7 +835,7 @@ success "pnpm installed: v$(pnpm --version)"
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
 # Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
-LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
+LOCKFILE_HASH_CACHE=".git/.talawa-pnpm-lock-hash"
 NEEDS_INSTALL=true
 
 if [ -f "pnpm-lock.yaml" ]; then

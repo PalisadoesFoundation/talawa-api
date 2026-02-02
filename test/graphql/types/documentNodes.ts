@@ -823,18 +823,6 @@ export const Query_agendaCategoriesByEventId =
   }
 }`);
 
-export const Query_agendaItem =
-	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
-  agendaItem(input: $input) {
-    id
-    name
-    description
-    duration
-    key
-    type
-  }
-}`);
-
 export const Query_agendaFoldersByEventId = gql(`
     query Query_agendaFoldersByEventId($eventId: ID!) {
       agendaFoldersByEventId(eventId: $eventId) {
@@ -899,6 +887,15 @@ export const Mutation_updateAgendaFolder = gql(`
   }
 `);
 
+export const MUTATION_updateAgendaItemSequence = gql(`
+  mutation Mutation_updateAgendaItemSequence($input: MutationUpdateAgendaItemSequenceInput!) {
+    updateAgendaItemSequence(input: $input) {
+      id
+      sequence
+    }
+  }
+`);
+
 export const Mutation_createAgendaCategory = gql(`
   mutation Mutation_createAgendaCategory($input: MutationCreateAgendaCategoryInput!) {
     createAgendaCategory(input: $input) {
@@ -924,6 +921,30 @@ export const Mutation_createAgendaItem = gql(`
       name
       description
       duration
+      notes
+      attachments {
+        name
+        fileHash
+        mimeType
+        objectName
+      }
+      category {
+        id
+        name
+      }
+      event {
+        id
+        name
+        startAt
+      }
+      url {
+        id
+        url
+      }
+      creator {
+        id
+        name
+      }
       type
     }
   }
@@ -951,7 +972,29 @@ export const Mutation_updateAgendaItem = gql(`
       name
       description
       duration
-      type
+    	attachments {
+        name
+        fileHash
+        objectName
+        mimeType
+      }
+    	category {
+        id
+        name
+      }
+      url {
+        id
+        url
+      }
+      folder {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      updatedAt
     }
   }
 `);
@@ -971,6 +1014,7 @@ export const Mutation_deleteAgendaItem = gql(`
     deleteAgendaItem(input: $input) {
       id
       name
+      description
     }
   }
 `);
@@ -1092,6 +1136,7 @@ export const Mutation_createChat = gql(`
     createChat(input: $input) {
       id
       name
+      avatarMimeType
     }
   }
 `);
@@ -1439,6 +1484,8 @@ export const Query_eventsByOrganizationId = gql(`
       attachments {
         mimeType
       }
+      isGenerated
+      baseRecurringEventId
     }
   }
 `);
@@ -2525,6 +2572,14 @@ export const Mutation_updateChatMembership = gql(`
   }
 `);
 
+export const Mutation_updateOrganizationMembership = gql(` 
+  mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
+    updateOrganizationMembership(input: $input) {
+      id
+    }
+  }
+`);
+
 export const Mutation_registerEventAttendee = gql(`
   mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
     registerEventAttendee(data: $data) {
@@ -2706,8 +2761,8 @@ export const Query_getEventInvitesByUserId = gql(`
 `);
 
 export const Query_getRecurringEvents = gql(`
-  query Query_getRecurringEvents($baseRecurringEventId: ID!) {
-    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId) {
+  query Query_getRecurringEvents($baseRecurringEventId: ID!, $includeCancelled: Boolean, $limit: Int, $offset: Int) {
+    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId, includeCancelled: $includeCancelled, limit: $limit, offset: $offset) {
       id
       name
       description
@@ -2717,6 +2772,7 @@ export const Query_getRecurringEvents = gql(`
       isRegisterable
       location
       isRecurringEventTemplate
+      isCancelled
       recurrenceRule {
         id
       }
@@ -2743,50 +2799,3 @@ export const Query_community = gql(`
 		}
 	}
 `);
-
-export const Mutation_updateCommunity = gql(`
-	mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
-		updateCommunity(input: $input) {
-			id
-			name
-			facebookURL
-			githubURL
-			instagramURL
-			linkedinURL
-			logoMimeType
-			redditURL
-			slackURL
-			websiteURL
-			xURL
-			youtubeURL
-			inactivityTimeoutDuration
-		}
-	}
-`);
-
-export const Mutation_updateChat = gql(`
-  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
-    updateChat(input: $input) {
-      id
-      name
-      description
-      avatarURL
-    }
-  }
-`);
-
-export const Mutation_sendVerificationEmail =
-	gql(`mutation Mutation_sendVerificationEmail {
-    sendVerificationEmail {
-        success
-        message
-    }
-}`);
-
-export const Mutation_verifyEmail =
-	gql(`mutation Mutation_verifyEmail($input: MutationVerifyEmailInput!) {
-    verifyEmail(input: $input) {
-        success
-        message
-    }
-}`);

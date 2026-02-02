@@ -25,6 +25,14 @@ from pathlib import Path
 class DisableStatementsChecker:
     """Checker for various disable statements in code files."""
 
+    BINARY_EXTENSIONS = {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".webp",
+    }
+
     def check_eslint_disable(self, content: str, file_path: str) -> list[str]:
         """Check for eslint-disable comments (Admin-specific).
 
@@ -195,6 +203,10 @@ class DisableStatementsChecker:
         if basename == "disable_statements_check.py" or file_path.endswith(
             ".py"
         ):
+            return []
+
+        # Skip known binary file types (e.g. screenshots)
+        if Path(file_path).suffix.lower() in self.BINARY_EXTENSIONS:
             return []
 
         # Check if it's a test file

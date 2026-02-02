@@ -332,7 +332,7 @@ suite("Mutation field createFundCampaign", () => {
 						issues: [
 							{
 								argumentPath: ["input", "fundId"],
-								message: "Invalid uuid",
+								message: "Invalid UUID",
 							},
 						],
 					}),
