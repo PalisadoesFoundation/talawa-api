@@ -3728,6 +3728,9 @@ input MutationUpdateAgendaItemInput {
   """File metadata for attachments uploaded via MinIO presigned URLs."""
   attachments: [FileMetadataInput!]
 
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
+
   """Custom information about the agenda item."""
   description: String
 
