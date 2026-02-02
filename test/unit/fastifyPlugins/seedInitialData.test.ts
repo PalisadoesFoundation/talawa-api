@@ -15,15 +15,15 @@ vi.mock("uuidv7", () => ({
 
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
-import seedInitialData from "~/src/fastifyPlugins/seedInitialData";
 import { createMockDrizzleClient } from "test/_Mocks_/drizzleClientMock";
+import { uuidv7 } from "uuidv7";
 import { communitiesTable } from "~/src/drizzle/tables/communities";
 import { usersTable } from "~/src/drizzle/tables/users";
+import seedInitialData from "~/src/fastifyPlugins/seedInitialData";
 
 type MockDrizzleClient = ReturnType<typeof createMockDrizzleClient>;
 
-type MockFastifyInstance = Partial<FastifyInstance> & {
+type MockFastifyInstance = {
 	log: {
 		info: ReturnType<typeof vi.fn>;
 	};
@@ -98,7 +98,7 @@ describe("seedInitialData plugin", () => {
 				},
 			);
 
-			await seedInitialData(mockFastify as unknown as FastifyInstance);
+			await seedInitialData(mockFastify as unknown as FastifyInstance, {});
 
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Checking if the administrator user already exists in the database.",
@@ -120,14 +120,12 @@ describe("seedInitialData plugin", () => {
 				},
 			);
 
-			await seedInitialData(mockFastify as unknown as FastifyInstance);
+			await seedInitialData(mockFastify as unknown as FastifyInstance, {});
 
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Administrator user already exists in the database with an invalid role. Assigning the correct role to the administrator user.",
 			);
-			expect(mockFastify.drizzleClient.update).toHaveBeenCalledWith(
-				usersTable,
-			);
+			expect(mockFastify.drizzleClient.update).toHaveBeenCalledWith(usersTable);
 			const updateChain =
 				mockFastify.drizzleClient.update.mock.results[0]?.value;
 			expect(updateChain.set).toHaveBeenCalledWith({
@@ -152,16 +150,14 @@ describe("seedInitialData plugin", () => {
 				},
 			);
 
-			await seedInitialData(mockFastify as unknown as FastifyInstance);
+			await seedInitialData(mockFastify as unknown as FastifyInstance, {});
 
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Administrator user does not exist in the database. Creating the administrator.",
 			);
 			expect(hash).toHaveBeenCalledWith("testPassword123");
 			expect(uuidv7).toHaveBeenCalled();
-			expect(mockFastify.drizzleClient.insert).toHaveBeenCalledWith(
-				usersTable,
-			);
+			expect(mockFastify.drizzleClient.insert).toHaveBeenCalledWith(usersTable);
 			const insertChain =
 				mockFastify.drizzleClient.insert.mock.results[0]?.value;
 			expect(insertChain.values).toHaveBeenCalledWith(
@@ -187,7 +183,7 @@ describe("seedInitialData plugin", () => {
 			);
 
 			await expect(
-				seedInitialData(mockFastify as unknown as FastifyInstance),
+				seedInitialData(mockFastify as unknown as FastifyInstance, {}),
 			).rejects.toThrow(
 				"Failed to check if the administrator user already exists in the database.",
 			);
@@ -202,7 +198,7 @@ describe("seedInitialData plugin", () => {
 			});
 
 			await expect(
-				seedInitialData(mockFastify as unknown as FastifyInstance),
+				seedInitialData(mockFastify as unknown as FastifyInstance, {}),
 			).rejects.toThrow(
 				"Failed to assign the correct role to the existing administrator user.",
 			);
@@ -217,10 +213,8 @@ describe("seedInitialData plugin", () => {
 			});
 
 			await expect(
-				seedInitialData(mockFastify as unknown as FastifyInstance),
-			).rejects.toThrow(
-				"Failed to create the administrator in the database.",
-			);
+				seedInitialData(mockFastify as unknown as FastifyInstance, {}),
+			).rejects.toThrow("Failed to create the administrator in the database.");
 		});
 	});
 
@@ -238,7 +232,7 @@ describe("seedInitialData plugin", () => {
 				},
 			);
 
-			await seedInitialData(mockFastify as unknown as FastifyInstance);
+			await seedInitialData(mockFastify as unknown as FastifyInstance, {});
 
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Checking if the community already exists in the database.",
@@ -254,7 +248,7 @@ describe("seedInitialData plugin", () => {
 				undefined,
 			);
 
-			await seedInitialData(mockFastify as unknown as FastifyInstance);
+			await seedInitialData(mockFastify as unknown as FastifyInstance, {});
 
 			expect(mockFastify.log.info).toHaveBeenCalledWith(
 				"Community does not exist in the database. Creating the community.",
@@ -290,7 +284,7 @@ describe("seedInitialData plugin", () => {
 			);
 
 			await expect(
-				seedInitialData(mockFastify as unknown as FastifyInstance),
+				seedInitialData(mockFastify as unknown as FastifyInstance, {}),
 			).rejects.toThrow(
 				"Failed to check if the community already exists in the database.",
 			);
@@ -305,10 +299,8 @@ describe("seedInitialData plugin", () => {
 			});
 
 			await expect(
-				seedInitialData(mockFastify as unknown as FastifyInstance),
-			).rejects.toThrow(
-				"Failed to create the community in the database.",
-			);
+				seedInitialData(mockFastify as unknown as FastifyInstance, {}),
+			).rejects.toThrow("Failed to create the community in the database.");
 		});
 	});
 });
