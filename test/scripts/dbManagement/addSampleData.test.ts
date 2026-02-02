@@ -43,13 +43,14 @@ suite("addSampleData main function tests", () => {
 			"notification_templates",
 		]);
 
-		// Verify that success messages are logged.
+		// Verify that success messages are logged (exact match to avoid false positives).
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Database connected successfully"),
+			"\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n",
 		);
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Sample Data added to the database"),
+			"\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database",
 		);
+		expect(consoleLogSpy).toHaveBeenCalledTimes(2);
 	});
 
 	test("should throw an error when pingDB fails", async () => {

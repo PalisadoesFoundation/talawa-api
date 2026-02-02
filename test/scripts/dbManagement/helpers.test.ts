@@ -8,19 +8,12 @@ import {
 	afterAll,
 	afterEach,
 	beforeAll,
+	beforeEach,
 	expect,
 	suite,
 	test,
 	vi,
 } from "vitest";
-
-vi.mock("src/services/eventGeneration/windowManager", () => ({
-	initializeGenerationWindow: vi.fn().mockResolvedValue({}),
-}));
-
-vi.mock("src/services/eventGeneration/eventGeneration", () => ({
-	generateInstancesForRecurringEvent: vi.fn().mockResolvedValue(0),
-}));
 
 let testEnvConfig: TestEnvConfig;
 let helpers: typeof import("scripts/dbManagement/helpers");
@@ -43,17 +36,34 @@ beforeAll(async () => {
 			}),
 		};
 	});
+});
+
+beforeEach(async () => {
 	vi.resetModules();
+	const windowManager = await import(
+		"src/services/eventGeneration/windowManager"
+	);
+	const eventGen = await import("src/services/eventGeneration/eventGeneration");
+	vi.spyOn(windowManager, "initializeGenerationWindow").mockResolvedValue(
+		{} as Awaited<ReturnType<typeof windowManager.initializeGenerationWindow>>,
+	);
+	vi.spyOn(eventGen, "generateInstancesForRecurringEvent").mockResolvedValue(0);
 	helpers = await import("scripts/dbManagement/helpers");
 });
 
 afterEach(async () => {
-	// Clean up recurring event template rows to avoid DB state pollution across tests/shards
-	if (helpers?.db && schema.eventsTable) {
+	// Clean up recurring-event-related rows to avoid DB state pollution across tests/shards.
+	// Order respects FK constraints: instances → rules → template events → windows.
+	if (helpers?.db) {
+		await helpers.db.delete(schema.recurringEventInstancesTable);
+		await helpers.db.delete(schema.recurrenceRulesTable);
 		await helpers.db
 			.delete(schema.eventsTable)
 			.where(eq(schema.eventsTable.isRecurringEventTemplate, true));
+		await helpers.db.delete(schema.eventGenerationWindowsTable);
 	}
+	vi.restoreAllMocks();
+	vi.resetModules();
 });
 
 afterAll(async () => {
@@ -441,6 +451,63 @@ suite.concurrent("insertCollections", () => {
 		expect(readFileSpy).toHaveBeenCalled();
 
 		readFileSpy.mockRestore();
+	});
+
+	test("should log error and rethrow when Minio putObject fails for post_attachments", async () => {
+		const minioClient = Reflect.get(helpers, "minioClient");
+		const oneAttachment = [
+			{
+				id: "01960b97-00c0-71b6-bdf7-d257a23c7a2d",
+				createdAt: "2025-03-30T11:00:00.000Z",
+				creatorId: "67378abd-8500-4f17-9cf2-990d00000005",
+				postId: "01960b97-00c0-7d11-abaa-af2213ec018a",
+				mimeType: "image/webp",
+				name: "DALL·E_talawa_1",
+				objectName: "DALL·E_talawa_10",
+				fileHash:
+					"4e633ed7cb59ea708e913e6bf3a194c9c8b92f0f975b185e584ac38e9ba14be5",
+				updatedAt: null,
+				updaterId: null,
+			},
+		];
+		const readFileSpy = vi
+			.spyOn(fs, "readFile")
+			.mockImplementation((pathArg: Parameters<typeof fs.readFile>[0]) => {
+				const pathStr = String(pathArg);
+				if (pathStr.includes("post_attachments.json")) {
+					return Promise.resolve(JSON.stringify(oneAttachment));
+				}
+				if (pathStr.includes("images/")) {
+					return Promise.resolve(Buffer.from("")) as ReturnType<
+						typeof fs.readFile
+					>;
+				}
+				return Promise.reject(new Error("unexpected path"));
+			});
+		const checkAndInsertDataSpy = vi
+			.spyOn(helpers, "checkAndInsertData")
+			.mockResolvedValue(true);
+		const putObjectSpy = vi
+			.spyOn(minioClient, "putObject")
+			.mockRejectedValueOnce(new Error("upload failed"));
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		try {
+			await expect(
+				helpers.insertCollections(["post_attachments"]),
+			).rejects.toThrow("upload failed");
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Failed to upload attachment"),
+				expect.any(Error),
+			);
+		} finally {
+			readFileSpy.mockRestore();
+			checkAndInsertDataSpy.mockRestore();
+			putObjectSpy.mockRestore();
+			consoleErrorSpy.mockRestore();
+		}
 	});
 
 	test.concurrent("should transform recurring_event_templates with parseDate/getNextOccurrenceOfWeekdayTime and set isPublic and isRecurringEventTemplate", async () => {
@@ -978,51 +1045,58 @@ suite("recurring_event_instances generation", () => {
 	});
 
 	test("should call generateInstancesForRecurringEvent with org window for each rule", async () => {
-		const eventGen = await import(
-			"src/services/eventGeneration/eventGeneration"
-		);
-		vi.mocked(eventGen.generateInstancesForRecurringEvent).mockClear();
+		const fixedTime = new Date("2025-02-01T12:00:00.000Z");
+		vi.useFakeTimers();
+		vi.setSystemTime(fixedTime);
+		try {
+			const eventGen = await import(
+				"src/services/eventGeneration/eventGeneration"
+			);
+			vi.mocked(eventGen.generateInstancesForRecurringEvent).mockClear();
 
-		const retentionStart = new Date("2025-01-01T00:00:00Z");
-		const currentWindowEnd = new Date("2026-01-01T00:00:00Z");
-		const realDb = Reflect.get(helpers, "db");
-		const mockDb = {
-			...realDb,
-			query: {
-				...realDb.query,
-				recurrenceRulesTable: {
-					...realDb.query.recurrenceRulesTable,
-					findMany: vi.fn().mockResolvedValue([
-						{
-							baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
-							organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
-						},
-					]),
+			const retentionStart = new Date("2025-01-01T00:00:00Z");
+			const currentWindowEnd = new Date("2026-01-01T00:00:00Z");
+			const realDb = Reflect.get(helpers, "db");
+			const mockDb = {
+				...realDb,
+				query: {
+					...realDb.query,
+					recurrenceRulesTable: {
+						...realDb.query.recurrenceRulesTable,
+						findMany: vi.fn().mockResolvedValue([
+							{
+								baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+								organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+							},
+						]),
+					},
+					eventGenerationWindowsTable: {
+						...realDb.query.eventGenerationWindowsTable,
+						findFirst: vi.fn().mockResolvedValue({
+							retentionStartDate: retentionStart,
+							currentWindowEndDate: currentWindowEnd,
+						}),
+					},
 				},
-				eventGenerationWindowsTable: {
-					...realDb.query.eventGenerationWindowsTable,
-					findFirst: vi.fn().mockResolvedValue({
-						retentionStartDate: retentionStart,
-						currentWindowEndDate: currentWindowEnd,
-					}),
-				},
-			},
-		};
+			};
 
-		await helpers.insertCollections(["recurring_event_instances"], {
-			db: mockDb as unknown as typeof helpers.db,
-		});
-
-		expect(eventGen.generateInstancesForRecurringEvent).toHaveBeenCalled();
-		const calls = vi.mocked(eventGen.generateInstancesForRecurringEvent).mock
-			.calls;
-		for (const [input] of calls) {
-			expect(input).toMatchObject({
-				baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
-				organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
-				windowStartDate: retentionStart,
-				windowEndDate: currentWindowEnd,
+			await helpers.insertCollections(["recurring_event_instances"], {
+				db: mockDb as unknown as typeof helpers.db,
 			});
+
+			expect(eventGen.generateInstancesForRecurringEvent).toHaveBeenCalled();
+			const calls = vi.mocked(eventGen.generateInstancesForRecurringEvent).mock
+				.calls;
+			for (const [input] of calls) {
+				expect(input).toMatchObject({
+					baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+					organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+					windowStartDate: retentionStart,
+					windowEndDate: currentWindowEnd,
+				});
+			}
+		} finally {
+			vi.useRealTimers();
 		}
 	});
 
@@ -1057,16 +1131,7 @@ suite("recurring_event_instances generation", () => {
 		);
 	});
 
-	test("should throw aggregated error when generateInstancesForRecurringEvent throws", async () => {
-		const eventGen = await import(
-			"src/services/eventGeneration/eventGeneration"
-		);
-		vi.mocked(
-			eventGen.generateInstancesForRecurringEvent,
-		).mockRejectedValueOnce(new Error("generation failed"));
-
-		const retentionStart = new Date("2025-01-01T00:00:00Z");
-		const currentWindowEnd = new Date("2026-01-01T00:00:00Z");
+	test("should throw aggregated error when multiple rules have missing generation window", async () => {
 		const realDb = Reflect.get(helpers, "db");
 		const mockDb = {
 			...realDb,
@@ -1079,14 +1144,15 @@ suite("recurring_event_instances generation", () => {
 							baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
 							organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
 						},
+						{
+							baseRecurringEventId: "01970b97-00c0-7c17-a591-298872003f06",
+							organizationId: "01960b81-bfed-7524-bc73-c1a67449d746",
+						},
 					]),
 				},
 				eventGenerationWindowsTable: {
 					...realDb.query.eventGenerationWindowsTable,
-					findFirst: vi.fn().mockResolvedValue({
-						retentionStartDate: retentionStart,
-						currentWindowEndDate: currentWindowEnd,
-					}),
+					findFirst: vi.fn().mockResolvedValue(null),
 				},
 			},
 		};
@@ -1096,10 +1162,61 @@ suite("recurring_event_instances generation", () => {
 				db: mockDb as unknown as typeof helpers.db,
 			}),
 		).rejects.toThrow(
-			/Failed to generate instances for \d+ recurring event.*generation failed/,
+			/Failed to generate instances for 2 recurring event.*missing generation window/,
 		);
+	});
 
-		vi.mocked(eventGen.generateInstancesForRecurringEvent).mockResolvedValue(0);
+	test("should throw aggregated error when generateInstancesForRecurringEvent throws", async () => {
+		const fixedTime = new Date("2025-02-01T12:00:00.000Z");
+		vi.useFakeTimers();
+		vi.setSystemTime(fixedTime);
+		const eventGen = await import(
+			"src/services/eventGeneration/eventGeneration"
+		);
+		vi.mocked(
+			eventGen.generateInstancesForRecurringEvent,
+		).mockRejectedValueOnce(new Error("generation failed"));
+
+		try {
+			const retentionStart = new Date("2025-01-01T00:00:00Z");
+			const currentWindowEnd = new Date("2026-01-01T00:00:00Z");
+			const realDb = Reflect.get(helpers, "db");
+			const mockDb = {
+				...realDb,
+				query: {
+					...realDb.query,
+					recurrenceRulesTable: {
+						...realDb.query.recurrenceRulesTable,
+						findMany: vi.fn().mockResolvedValue([
+							{
+								baseRecurringEventId: "01960b97-00c0-7508-915b-7f4875a3d84a",
+								organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+							},
+						]),
+					},
+					eventGenerationWindowsTable: {
+						...realDb.query.eventGenerationWindowsTable,
+						findFirst: vi.fn().mockResolvedValue({
+							retentionStartDate: retentionStart,
+							currentWindowEndDate: currentWindowEnd,
+						}),
+					},
+				},
+			};
+
+			await expect(
+				helpers.insertCollections(["recurring_event_instances"], {
+					db: mockDb as unknown as typeof helpers.db,
+				}),
+			).rejects.toThrow(
+				/Failed to generate instances for \d+ recurring event.*generation failed/,
+			);
+		} finally {
+			vi.mocked(eventGen.generateInstancesForRecurringEvent).mockResolvedValue(
+				0,
+			);
+			vi.useRealTimers();
+		}
 	});
 });
 
