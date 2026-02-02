@@ -36,6 +36,7 @@ suite("addSampleData main function tests", () => {
 			"events",
 			"recurrence_rules",
 			"recurring_event_templates",
+			"recurring_event_instances",
 			"event_volunteers",
 			"event_volunteer_memberships",
 			"action_items",

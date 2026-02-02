@@ -14,6 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import { generateInstancesForRecurringEvent } from "src/services/eventGeneration/eventGeneration";
 import type { ServiceDependencies } from "src/services/eventGeneration/types";
 import { initializeGenerationWindow } from "src/services/eventGeneration/windowManager";
 import { uuidv7 } from "uuidv7";
@@ -250,14 +251,19 @@ export async function insertCollections(
 		}
 
 		for (const collection of collections) {
-			const dataPath = path.resolve(
-				dirname,
-				`./sample_data/${collection}.json`,
-			);
-			const fileContent = await fs.readFile(dataPath, "utf8");
+			// PR4: recurring_event_instances has no JSON file; instances are generated in code.
+			const fileContent: string | undefined =
+				collection === "recurring_event_instances"
+					? undefined
+					: await fs.readFile(
+							path.resolve(dirname, `./sample_data/${collection}.json`),
+							"utf8",
+						);
 
 			switch (collection) {
 				case "users": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const users = JSON.parse(fileContent).map(
 						(user: {
 							createdAt: string | number | Date;
@@ -283,6 +289,8 @@ export async function insertCollections(
 				}
 
 				case "organizations": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const organizations = JSON.parse(fileContent).map(
 						(org: {
 							createdAt: string | number | Date;
@@ -342,6 +350,8 @@ export async function insertCollections(
 				}
 
 				case "organization_memberships": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const organizationMemberships = JSON.parse(fileContent).map(
 						(membership: { createdAt: string | number | Date }) => ({
 							...membership,
@@ -365,6 +375,8 @@ export async function insertCollections(
 					break;
 				}
 				case "posts": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const posts = JSON.parse(fileContent).map(
 						(post: { createdAt: string | number | Date }) => ({
 							...post,
@@ -383,6 +395,8 @@ export async function insertCollections(
 					break;
 				}
 				case "post_votes": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const post_votes = JSON.parse(fileContent).map(
 						(post_vote: { createdAt: string | number | Date }) => ({
 							...post_vote,
@@ -401,6 +415,8 @@ export async function insertCollections(
 					break;
 				}
 				case "membership_requests": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const membership_requests = JSON.parse(fileContent).map(
 						(membership_request: { createdAt: string | number | Date }) => ({
 							...membership_request,
@@ -422,6 +438,8 @@ export async function insertCollections(
 					break;
 				}
 				case "post_attachments": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const post_attachments = JSON.parse(fileContent).map(
 						(post_attachment: { createdAt: string | number | Date }) => ({
 							...post_attachment,
@@ -468,6 +486,8 @@ export async function insertCollections(
 					break;
 				}
 				case "comments": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const comments = JSON.parse(fileContent).map(
 						(comment: { createdAt: string | number | Date }) => ({
 							...comment,
@@ -486,6 +506,8 @@ export async function insertCollections(
 					break;
 				}
 				case "comment_votes": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const comment_votes = JSON.parse(fileContent).map(
 						(comment_vote: { createdAt: string | number | Date }) => ({
 							...comment_vote,
@@ -505,6 +527,8 @@ export async function insertCollections(
 				}
 
 				case "events": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const now = new Date();
 					const events = JSON.parse(fileContent).map(
 						(
@@ -555,6 +579,8 @@ export async function insertCollections(
 				}
 
 				case "recurrence_rules": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const recurrenceRules = JSON.parse(fileContent).map(
 						(rule: {
 							recurrenceStartDate: string | number | Date;
@@ -621,6 +647,69 @@ export async function insertCollections(
 					break;
 				}
 
+				case "recurring_event_instances": {
+					// PR4: Generate recurring event instances after templates and windows exist.
+					// No JSON file; instances are created via the event generation service.
+					// Idempotent: generateInstancesForRecurringEvent skips existing instances in the window.
+					const dbForGen = options?.db ?? db;
+					const logger = new SampleDataLoggerAdapter();
+					const rules = await dbForGen.query.recurrenceRulesTable.findMany({
+						columns: {
+							baseRecurringEventId: true,
+							organizationId: true,
+						},
+					});
+					const orgIds = [...new Set(rules.map((r) => r.organizationId))];
+					const orgWindowMap = new Map<
+						string,
+						{ retentionStartDate: Date; currentWindowEndDate: Date }
+					>();
+					for (const orgId of orgIds) {
+						const windowRow =
+							await dbForGen.query.eventGenerationWindowsTable.findFirst({
+								where: eq(
+									schema.eventGenerationWindowsTable.organizationId,
+									orgId,
+								),
+								columns: {
+									retentionStartDate: true,
+									currentWindowEndDate: true,
+								},
+							});
+						if (windowRow) {
+							orgWindowMap.set(orgId, {
+								retentionStartDate: windowRow.retentionStartDate,
+								currentWindowEndDate: windowRow.currentWindowEndDate,
+							});
+						}
+					}
+					for (const rule of rules) {
+						const window = orgWindowMap.get(rule.organizationId);
+						if (!window) continue;
+						try {
+							await generateInstancesForRecurringEvent(
+								{
+									baseRecurringEventId: rule.baseRecurringEventId,
+									organizationId: rule.organizationId,
+									windowStartDate: window.retentionStartDate,
+									windowEndDate: window.currentWindowEndDate,
+								},
+								dbForGen as ServiceDependencies["drizzleClient"],
+								logger,
+							);
+						} catch (error) {
+							logger.warn(
+								{ error, baseRecurringEventId: rule.baseRecurringEventId },
+								"Failed to generate instances for recurring event",
+							);
+						}
+					}
+					console.log(
+						"\x1b[35mAdded: Recurring event instances (generated via event generation service)\x1b[0m",
+					);
+					break;
+				}
+
 				case "recurring_event_templates": {
 					// PR2: Insert template events only. recurrence_rules and
 					// recurring_event_instances are populated in a follow-up (PR3).
@@ -641,6 +730,8 @@ export async function insertCollections(
 						isRecurringEventTemplate?: boolean;
 						isRegisterable?: boolean;
 					};
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const templates = JSON.parse(fileContent).map(
 						(template: TemplateRow) => {
 							const startRef = parseDate(template.startAt);
@@ -689,6 +780,8 @@ export async function insertCollections(
 				}
 
 				case "event_volunteers": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const eventVolunteers = JSON.parse(fileContent).map(
 						(volunteer: {
 							createdAt: string | number | Date;
@@ -714,6 +807,8 @@ export async function insertCollections(
 				}
 
 				case "event_volunteer_memberships": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const eventVolunteerMemberships = JSON.parse(fileContent).map(
 						(membership: {
 							createdAt: string | number | Date;
@@ -739,6 +834,8 @@ export async function insertCollections(
 				}
 
 				case "action_categories": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const actionCategories = JSON.parse(fileContent).map(
 						(category: {
 							createdAt: string | number | Date;
@@ -768,6 +865,8 @@ export async function insertCollections(
 				}
 
 				case "action_items": {
+					if (fileContent === undefined)
+						throw new Error(`Missing file content for ${collection}`);
 					const action_items = JSON.parse(fileContent).map(
 						(action_item: {
 							id: string;
@@ -942,6 +1041,10 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{
 				name: "event_generation_windows",
 				table: schema.eventGenerationWindowsTable,
+			},
+			{
+				name: "recurring_event_instances",
+				table: schema.recurringEventInstancesTable,
 			},
 			{ name: "event_volunteers", table: schema.eventVolunteersTable },
 			{
