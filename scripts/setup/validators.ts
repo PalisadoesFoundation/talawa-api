@@ -53,10 +53,9 @@ export function generateSecurePassword(length = 16): string {
 		const passwordArray = password.split("");
 		for (let i = passwordArray.length - 1; i > 0; i--) {
 			const j = crypto.randomInt(i + 1);
-			[passwordArray[i], passwordArray[j]] = [
-				passwordArray[j],
-				passwordArray[i],
-			];
+			const temp = passwordArray[i] as string;
+			passwordArray[i] = passwordArray[j] as string;
+			passwordArray[j] = temp;
 		}
 
 		return passwordArray.join("");
