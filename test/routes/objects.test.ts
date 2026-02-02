@@ -6,13 +6,99 @@ import { testEnvConfig } from "test/envConfigSchema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTier } from "~/src/config/rateLimits";
 import { createServer } from "~/src/createServer";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+
+const expectValidErrorResponse = (
+	body: { error: Record<string, unknown> },
+	expectedCode: string,
+	message?: string,
+	detailsMatcher?: (d: unknown) => void,
+) => {
+	expect(body.error.code).toBe(expectedCode);
+	expect(body.error.correlationId).toBeDefined();
+	expect(typeof body.error.correlationId).toBe("string");
+	expect((body.error.correlationId as string).length).toBeGreaterThan(0);
+
+	if (message) {
+		expect(body.error.message).toContain(message);
+	}
+	if (detailsMatcher) {
+		expect(body.error.details).toBeDefined();
+		detailsMatcher(body.error.details);
+	}
+};
 
 describe("/objects/:name route", () => {
 	let app: FastifyInstance;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Reset shared mock bucket state
+		const globalWithMock = global as unknown as {
+			__mockBucketState: Record<string, number>;
+		};
+		globalWithMock.__mockBucketState = {};
 	});
+
+	// Mock other external dependencies to avoid connection errors and speed up tests
+	vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/seedInitialData", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
+		default: async () => {},
+	}));
+	vi.mock("~/src/fastifyPlugins/performance", () => ({
+		default: async () => {},
+	}));
+
+	// Mock Redis to avoid connection errors
+	vi.mock("@fastify/redis", async () => {
+		const fp = await import("fastify-plugin");
+		return {
+			default: fp.default(
+				async (fastify: {
+					decorate: (key: string, value: unknown) => void;
+				}) => {
+					fastify.decorate("redis", {
+						status: "ready",
+						quit: async () => "OK",
+						pipeline: () => ({ exec: async () => [] }),
+					});
+				},
+				{ name: "@fastify/redis" },
+			),
+		};
+	});
+
+	// Mock leakyBucket to control rate limiting behavior
+	vi.mock("~/src/utilities/leakyBucket", () => ({
+		leakyBucket: vi
+			.fn()
+			.mockImplementation(
+				async (_redis, key: string, max: number, _windowMs) => {
+					const globalWithMock = global as unknown as {
+						__mockBucketState: Record<string, number>;
+					};
+					const bucketState = globalWithMock.__mockBucketState || {};
+					globalWithMock.__mockBucketState = bucketState;
+
+					const count = (bucketState[key] || 0) + 1;
+					bucketState[key] = count;
+
+					const allowed = count <= max;
+					const remaining = Math.max(0, max - count);
+					const resetAt = Date.now() + 10000; // future
+
+					return { allowed, remaining, resetAt };
+				},
+			),
+	}));
 
 	afterEach(async () => {
 		if (app) {
@@ -120,6 +206,8 @@ describe("/objects/:name route", () => {
 			expect(body.error).toHaveProperty("message");
 			expect(body.error).toHaveProperty("code");
 			expect(body.error.message).toContain("Too many requests");
+			expect(body.error.correlationId).toBeDefined();
+			expect(typeof body.error.correlationId).toBe("string");
 
 			// Verify resetAt is in seconds (epoch timestamp)
 			if (body.error.details?.resetAt) {
@@ -177,7 +265,8 @@ describe("/objects/:name route", () => {
 	});
 
 	describe("object retrieval", () => {
-		it("should successfully fetch an object", async () => {
+		// Helper to create server with fresh config for each test
+		const setupServer = async () => {
 			app = await createServer({
 				envConfig: {
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
@@ -186,6 +275,11 @@ describe("/objects/:name route", () => {
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 				},
 			});
+			return app;
+		};
+
+		it("should successfully fetch an object", async () => {
+			await setupServer();
 
 			const mockContent = "test file content";
 			const mockStream = new Readable({
@@ -208,7 +302,6 @@ describe("/objects/:name route", () => {
 			const res = await app.inject({
 				method: "GET",
 				url: "/objects/test-file.txt",
-				remoteAddress: "127.0.0.102", // Unique IP
 			});
 
 			expect(res.statusCode).toBe(200);
@@ -217,15 +310,8 @@ describe("/objects/:name route", () => {
 			expect(res.body).toBe(mockContent);
 		});
 
-		it("should return 404 when object does not exist", async () => {
-			app = await createServer({
-				envConfig: {
-					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
-					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				},
-			});
+		it("should return 404 when object does not exist (NoSuchKey)", async () => {
+			await setupServer();
 
 			const s3Error = new S3Error("NoSuchKey");
 			s3Error.code = "NoSuchKey";
@@ -236,23 +322,48 @@ describe("/objects/:name route", () => {
 			const res = await app.inject({
 				method: "GET",
 				url: "/objects/nonexistent.txt",
-				remoteAddress: "127.0.0.103", // Unique IP
 			});
 
 			expect(res.statusCode).toBe(404);
 			const body = JSON.parse(res.body);
-			expect(body.message).toContain("No object found");
+			expectValidErrorResponse(
+				body,
+				ErrorCode.NOT_FOUND,
+				"No object found",
+				(details) => {
+					expect(details).toEqual({ objectName: "nonexistent.txt" });
+				},
+			);
+		});
+
+		it("should return 404 when S3Error is NotFound", async () => {
+			await setupServer();
+
+			const s3Error = new S3Error("Not found");
+			s3Error.code = "NotFound";
+
+			vi.spyOn(app.minio.client, "getObject").mockRejectedValue(s3Error);
+			// We assert that if getObject fails, it handles it.
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/missing.png",
+			});
+
+			expect(res.statusCode).toBe(404);
+			const body = JSON.parse(res.body);
+			expectValidErrorResponse(
+				body,
+				ErrorCode.NOT_FOUND,
+				undefined,
+				(details) => {
+					expect(details).toEqual({ objectName: "missing.png" });
+				},
+			);
 		});
 
 		it("should return 500 on internal MinIO errors", async () => {
-			app = await createServer({
-				envConfig: {
-					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
-					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				},
-			});
+			await setupServer();
 
 			const error = new Error("Internal MinIO error");
 
@@ -262,23 +373,19 @@ describe("/objects/:name route", () => {
 			const res = await app.inject({
 				method: "GET",
 				url: "/objects/test-file.txt",
-				remoteAddress: "127.0.0.104", // Unique IP
 			});
 
 			expect(res.statusCode).toBe(500);
 			const body = JSON.parse(res.body);
-			expect(body.message).toContain("Something went wrong");
+			expectValidErrorResponse(
+				body,
+				ErrorCode.INTERNAL_SERVER_ERROR,
+				"Something went wrong",
+			);
 		});
 
 		it("should use default content-type when not provided", async () => {
-			app = await createServer({
-				envConfig: {
-					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
-					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				},
-			});
+			await setupServer();
 
 			const mockStream = new Readable({
 				read() {
@@ -300,7 +407,35 @@ describe("/objects/:name route", () => {
 			const res = await app.inject({
 				method: "GET",
 				url: "/objects/unknown.bin",
-				remoteAddress: "127.0.0.105", // Unique IP
+			});
+
+			expect(res.statusCode).toBe(200);
+			expect(res.headers["content-type"]).toBe("application/octet-stream");
+		});
+
+		it("should default content-type when metaData content-type is non-string", async () => {
+			await setupServer();
+
+			const mockStream = new Readable({
+				read() {
+					this.push("binary data");
+					this.push(null);
+				},
+			});
+
+			const mockStat: BucketItemStat = {
+				size: 100,
+				etag: "test-etag",
+				lastModified: new Date(),
+				metaData: { "content-type": 123 as unknown as string },
+			};
+
+			vi.spyOn(app.minio.client, "getObject").mockResolvedValue(mockStream);
+			vi.spyOn(app.minio.client, "statObject").mockResolvedValue(mockStat);
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/objects/non-string.bin",
 			});
 
 			expect(res.statusCode).toBe(200);
@@ -308,31 +443,29 @@ describe("/objects/:name route", () => {
 		});
 
 		it("should validate object name length", async () => {
-			app = await createServer({
-				envConfig: {
-					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
-					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				},
-			});
+			await setupServer();
 
 			// Test empty name
 			const res1 = await app.inject({
 				method: "GET",
 				url: "/objects/",
-				remoteAddress: "127.0.0.106", // Unique IP
 			});
-			expect(res1.statusCode).toBe(400); // Validation error (minLength: 1)
+			expect(res1.statusCode).toBe(400);
 
 			// Test name exceeding max length (37 characters)
 			const longName = "a".repeat(37);
 			const res2 = await app.inject({
 				method: "GET",
 				url: `/objects/${longName}`,
-				remoteAddress: "127.0.0.106", // Reuse IP is fine here
 			});
-			expect(res2.statusCode).toBe(400); // Validation error
+			expect(res2.statusCode).toBe(400);
+
+			const body = JSON.parse(res2.body);
+			expectValidErrorResponse(
+				body,
+				ErrorCode.INVALID_ARGUMENTS,
+				"Validation failed",
+			);
 		});
 	});
 });

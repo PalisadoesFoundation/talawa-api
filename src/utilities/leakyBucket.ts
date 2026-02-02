@@ -175,10 +175,16 @@ export async function complexityLeakyBucket(
 		});
 	} else {
 		// Parse existing bucket data
-		tokens = bucket.tokens ? Number.parseInt(bucket.tokens, 10) : capacity;
-		lastUpdate = bucket.lastUpdate
+		const rawTokens = bucket.tokens
+			? Number.parseFloat(bucket.tokens)
+			: capacity;
+		const rawLastUpdate = bucket.lastUpdate
 			? Number.parseInt(bucket.lastUpdate, 10)
 			: Date.now();
+
+		// Validate parsed values, fallback if NaN
+		tokens = Number.isNaN(rawTokens) ? 0 : rawTokens;
+		lastUpdate = Number.isNaN(rawLastUpdate) ? Date.now() : rawLastUpdate;
 	}
 	logger.debug({ tokens, lastUpdate }, "Leaky bucket state");
 	const now = Date.now();

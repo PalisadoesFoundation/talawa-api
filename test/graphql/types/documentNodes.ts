@@ -1136,6 +1136,7 @@ export const Mutation_createChat = gql(`
     createChat(input: $input) {
       id
       name
+      avatarMimeType
     }
   }
 `);

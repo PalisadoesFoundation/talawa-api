@@ -3,130 +3,154 @@ import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 describe("TalawaRestError", () => {
-	describe("constructor", () => {
-		it("should create an error with default statusCode of 500 when statusCodeOverride is not provided", () => {
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "Internal server error",
-			});
-
-			expect(error).toBeInstanceOf(Error);
-			expect(error).toBeInstanceOf(TalawaRestError);
-			expect(error.name).toBe("TalawaRestError");
-			expect(error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(error.message).toBe("Internal server error");
-			expect(error.statusCode).toBe(500);
-			expect(error.details).toBeUndefined();
+	it("should create error with required fields", () => {
+		const error = new TalawaRestError({
+			code: ErrorCode.NOT_FOUND,
+			message: "Resource not found",
 		});
 
-		it("should create an error with custom statusCode when statusCodeOverride is provided", () => {
+		expect(error.name).toBe("TalawaRestError");
+		expect(error.code).toBe(ErrorCode.NOT_FOUND);
+		expect(error.message).toBe("Resource not found");
+		expect(error.statusCode).toBe(404);
+		expect(error.details).toBeUndefined();
+	});
+
+	it("should create error with details", () => {
+		const details = { resourceId: "123", resourceType: "user" };
+		const error = new TalawaRestError({
+			code: ErrorCode.NOT_FOUND,
+			message: "User not found",
+			details,
+		});
+
+		expect(error.details).toEqual(details);
+	});
+
+	it("should use status code override when provided", () => {
+		const error = new TalawaRestError({
+			code: ErrorCode.NOT_FOUND,
+			message: "Custom error",
+			statusCodeOverride: 418,
+		});
+
+		expect(error.statusCode).toBe(418);
+	});
+
+	it("should fall back to 500 for unmapped error codes", () => {
+		// Create error with a code that might not be in the mapping
+		const error = new TalawaRestError({
+			code: "unknown_code" as ErrorCode,
+			message: "Unknown error",
+		});
+
+		expect(error.statusCode).toBe(500);
+	});
+
+	it("should extend Error class properly", () => {
+		const error = new TalawaRestError({
+			code: ErrorCode.INVALID_ARGUMENTS,
+			message: "Invalid input",
+		});
+
+		expect(error instanceof Error).toBe(true);
+		expect(error instanceof TalawaRestError).toBe(true);
+		expect(error.stack).toBeDefined();
+	});
+
+	describe("toJSON method", () => {
+		it("should return standard error payload without correlationId", () => {
+			const error = new TalawaRestError({
+				code: ErrorCode.UNAUTHORIZED,
+				message: "Access denied",
+				details: { permission: "admin" },
+			});
+
+			const json = error.toJSON();
+
+			expect(json).toEqual({
+				error: {
+					code: ErrorCode.UNAUTHORIZED,
+					message: "Access denied",
+					details: { permission: "admin" },
+				},
+			});
+		});
+
+		it("should return standard error payload with correlationId", () => {
+			const error = new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Server error",
+			});
+
+			const correlationId = "req-12345";
+			const json = error.toJSON(correlationId);
+
+			expect(json).toEqual({
+				error: {
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Server error",
+					correlationId,
+				},
+			});
+			expect(json.error).not.toHaveProperty("details");
+		});
+
+		it("should handle empty details", () => {
 			const error = new TalawaRestError({
 				code: ErrorCode.RATE_LIMIT_EXCEEDED,
 				message: "Too many requests",
-				statusCodeOverride: 429,
 			});
 
-			expect(error.statusCode).toBe(429);
-			expect(error.code).toBe(ErrorCode.RATE_LIMIT_EXCEEDED);
-			expect(error.message).toBe("Too many requests");
+			const json = error.toJSON("req-456");
+
+			expect(json.error.details).toBeUndefined();
+			expect(json.error.correlationId).toBe("req-456");
 		});
+	});
 
-		it("should correctly assign details property when provided", () => {
-			const details = { resetAt: 1234567890, userId: "user123" };
-			const error = new TalawaRestError({
-				code: ErrorCode.RATE_LIMIT_EXCEEDED,
-				message: "Too many requests",
-				details,
-				statusCodeOverride: 429,
-			});
+	describe("HTTP status code mapping", () => {
+		const testCases = [
+			{ code: ErrorCode.UNAUTHENTICATED, expectedStatus: 401 },
+			{ code: ErrorCode.TOKEN_EXPIRED, expectedStatus: 401 },
+			{ code: ErrorCode.TOKEN_INVALID, expectedStatus: 401 },
+			{ code: ErrorCode.UNAUTHORIZED, expectedStatus: 403 },
+			{ code: ErrorCode.INSUFFICIENT_PERMISSIONS, expectedStatus: 403 },
+			{ code: ErrorCode.INVALID_ARGUMENTS, expectedStatus: 400 },
+			{ code: ErrorCode.INVALID_INPUT, expectedStatus: 400 },
+			{ code: ErrorCode.NOT_FOUND, expectedStatus: 404 },
+			{ code: ErrorCode.ALREADY_EXISTS, expectedStatus: 409 },
+			{ code: ErrorCode.CONFLICT, expectedStatus: 409 },
+			{ code: ErrorCode.RATE_LIMIT_EXCEEDED, expectedStatus: 429 },
+			{ code: ErrorCode.DEPRECATED, expectedStatus: 400 },
+			{ code: ErrorCode.INTERNAL_SERVER_ERROR, expectedStatus: 500 },
+			{ code: ErrorCode.DATABASE_ERROR, expectedStatus: 500 },
+			{ code: ErrorCode.EXTERNAL_SERVICE_ERROR, expectedStatus: 502 },
+			{
+				code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				expectedStatus: 403,
+			},
+			{
+				code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+				expectedStatus: 404,
+			},
+			{ code: ErrorCode.FORBIDDEN_ACTION, expectedStatus: 403 },
+			{
+				code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				expectedStatus: 403,
+			},
+			{ code: ErrorCode.UNEXPECTED, expectedStatus: 500 },
+		];
 
-			expect(error.details).toEqual(details);
-			expect(error.details).toBe(details);
-		});
-
-		it("should handle empty details object", () => {
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "Error",
-				details: {},
-			});
-
-			expect(error.details).toEqual({});
-		});
-
-		it("should set error name to TalawaRestError", () => {
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "Test error",
-			});
-
-			expect(error.name).toBe("TalawaRestError");
-		});
-
-		it("should inherit from Error class correctly", () => {
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "Test error",
-			});
-
-			expect(error).toBeInstanceOf(Error);
-			expect(error.stack).toBeDefined();
-		});
-
-		it("should preserve message property", () => {
-			const message = "Custom error message with special characters: !@#$%";
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message,
-			});
-
-			expect(error.message).toBe(message);
-		});
-
-		it("should handle different error codes", () => {
-			const codes = [
-				ErrorCode.INTERNAL_SERVER_ERROR,
-				ErrorCode.RATE_LIMIT_EXCEEDED,
-			];
-
-			for (const code of codes) {
+		testCases.forEach(({ code, expectedStatus }) => {
+			it(`should map ${code} to status ${expectedStatus}`, () => {
 				const error = new TalawaRestError({
 					code,
-					message: "Test",
+					message: "Test error",
 				});
-				expect(error.code).toBe(code);
-			}
-		});
 
-		it("should allow statusCodeOverride of 0", () => {
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "Test",
-				statusCodeOverride: 0,
+				expect(error.statusCode).toBe(expectedStatus);
 			});
-
-			expect(error.statusCode).toBe(0);
-		});
-
-		it("should handle complex nested details", () => {
-			const complexDetails = {
-				user: {
-					id: "123",
-					name: "John",
-				},
-				metadata: {
-					timestamp: Date.now(),
-					context: ["api", "rate-limit"],
-				},
-			};
-
-			const error = new TalawaRestError({
-				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "Test",
-				details: complexDetails,
-			});
-
-			expect(error.details).toEqual(complexDetails);
 		});
 	});
 });

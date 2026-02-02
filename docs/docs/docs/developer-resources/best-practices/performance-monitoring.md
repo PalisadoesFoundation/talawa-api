@@ -19,6 +19,10 @@ Use the table below to quickly find common commands and access points for perfor
 | View metrics via CLI | `curl -v http://localhost:4000/graphql` → Look for `Server-Timing` header |
 | Get recent metrics (API) | `curl http://localhost:4000/metrics/perf` |
 | Track custom operation | `await ctx.perf?.time('my-op', async () => { ... })` |
+| Instrument a mutation | `withMutationMetrics({ operationName: "mutation:createUser" }, resolver)` |
+| Instrument a query | `withQueryMetrics({ operationName: "query:user" }, resolver)` or `executeWithMetrics(ctx, "query:event", fn)` |
+| View DataLoader metrics | Check `ops["db:users.byId"]` etc. in snapshot |
+| Access aggregated metrics | `fastify.getMetricsSnapshots(windowMinutes?)` |
 
 ### Key Thresholds at a Glance
 
@@ -31,6 +35,33 @@ The following thresholds help you quickly identify whether your system performan
 | `totalOps` | < 20 | 20-50 | > 50 |
 | `ops.db.max` | < 100ms | 100-200ms | > 200ms |
 | `slow` array | Empty | 1-5 entries | > 5 entries |
+
+### Acceptable ranges: rationale
+
+The thresholds above are based on typical API and user-experience goals:
+
+| Parameter | Acceptable range | Why |
+|-----------|------------------|-----|
+| `totalMs` | < 500ms (good), 500–1000ms (warning), > 1000ms (critical) | Response time strongly affects perceived performance; under 500ms feels responsive, over 1s risks timeouts and poor UX. |
+| `hitRate` | > 0.7 (good), 0.5–0.7 (warning), < 0.5 (critical) | High hit rate reduces database load and latency; below 50% means the cache is not effectively offloading the DB. |
+| `totalOps` | < 20 (good), 20–50 (warning), > 50 (critical) | Fewer operations mean less overhead and fewer round-trips; > 50 often indicates N+1 patterns and unnecessary work. |
+| `ops.db.max` (or per-op `max`) | < 100ms (good), 100–200ms (warning), > 200ms (critical) | Single operations over 200ms are treated as "slow" and usually indicate missing indexes, heavy queries, or external latency. |
+| `slow` array length | 0 (good), 1–5 (warning), > 5 (critical) | Each entry is an operation over the slow threshold; many entries mean multiple bottlenecks to fix. |
+| `complexityScore` | < 100 (simple), 100–500 (moderate), > 1000 (very complex) | Higher complexity increases CPU and risk of abuse; very high values may need query depth/limit controls. |
+
+### Remediation steps to bring parameters to acceptable ranges
+
+When a parameter is outside the acceptable range, use these steps to bring it back:
+
+| Parameter out of range | Remediation steps |
+|------------------------|-------------------|
+| **`totalMs`** too high | 1. Identify the main cost: check `ops` and `slow` to see which operation types dominate. 2. If DB: add indexes, use DataLoaders, or optimize queries (see `ops.db.max` and N+1). 3. If cache: improve hit rate (see `hitRate`). 4. If external APIs: add caching, timeouts, or async processing. 5. Re-run the request and compare `totalMs` and `ops` until within target. |
+| **`hitRate`** too low | 1. Confirm cache is enabled and keys are stable (no random or per-request-only keys). 2. Review TTL: increase for read-heavy, rarely changing data. 3. Add cache warming for critical paths after deploy or cold start. 4. Avoid over-invalidation: invalidate only when data actually changes. 5. Re-check `cacheHits`, `cacheMisses`, and `hitRate` after changes. |
+| **`totalOps`** too high (e.g. N+1) | 1. Use DataLoaders for batched lookups by ID (users, organizations, events, etc.). 2. Replace N single-query resolvers with one batched loader call per entity type. 3. Consider JOINs or denormalization where batching is not enough. 4. Add field-level caching for hot, read-heavy fields. 5. Verify with metrics: `totalOps` and `ops.db.count` should drop. |
+| **`ops[name].max`** or **`slow`** entries too high | 1. For DB: run `EXPLAIN ANALYZE` on the slow queries, add indexes on filter/sort columns, and simplify or split very heavy queries. 2. For external APIs: add timeouts, response caching, and circuit breakers. 3. Move non-critical work to background jobs where possible. 4. Re-check `slow` and per-operation `max` after changes. |
+| **`complexityScore`** too high | 1. Enforce query depth and breadth limits in the GraphQL schema or middleware. 2. Add pagination (e.g. cursor-based) for list fields. 3. Consider cost/complexity analysis and reject or throttle very expensive queries. 4. Re-test with representative queries and confirm score stays within target. |
+
+After applying remediation, re-check the same request or workload via `/metrics/perf` or Server-Timing to confirm parameters are within the acceptable ranges above.
 
 ## Overview
 
@@ -283,6 +314,50 @@ app.get('/health', async (req, reply) => {
 | `perf.trackComplexity(score)` | Track GraphQL complexity | `perf.trackComplexity(150)` |
 | `perf.snapshot()` | Get current metrics | `const metrics = perf.snapshot()` |
 
+### Automatic DataLoader Metrics Tracking
+
+DataLoaders automatically track performance metrics when a performance tracker is provided to `createDataloaders()`. This provides visibility into batch loading operation timing and helps identify N+1 query patterns. **Note:** This is separate from OpenTelemetry tracing (see [Database Operation Tracing](#database-operation-tracing)); metrics tracking focuses on performance timing, while tracing focuses on distributed request flow.
+
+**How It Works:**
+
+When you create DataLoaders with a performance tracker:
+
+```typescript
+const dataloaders = createDataloaders(db, cache, ctx.perf);
+const user = await dataloaders.user.load(userId);
+```
+
+The DataLoader batch function is automatically wrapped with performance metrics tracking. Each batch operation is tracked with the operation name pattern: `db:{loaderName}.byId`. These metrics appear in the performance snapshot (accessible via `/metrics/perf` endpoint or `ctx.perf?.snapshot()`).
+
+**Operation Names:**
+
+| DataLoader | Operation Name |
+|------------|----------------|
+| User Loader | `db:users.byId` |
+| Organization Loader | `db:organizations.byId` |
+| Event Loader | `db:events.byId` |
+| Action Item Loader | `db:actionItems.byId` |
+
+**Example Snapshot with DataLoader Metrics:**
+
+```json
+{
+  "totalMs": 156,
+  "totalOps": 3,
+  "ops": {
+    "db:users.byId": { "count": 1, "ms": 45.2, "max": 45.2 },
+    "db:organizations.byId": { "count": 1, "ms": 32.1, "max": 32.1 },
+    "db:events.byId": { "count": 1, "ms": 28.7, "max": 28.7 }
+  }
+}
+```
+
+**Benefits:**
+
+- Automatic tracking - no manual instrumentation needed
+- Identifies N+1 query patterns (high `count` values)
+- Detects slow batch operations (high `max` values)
+- Works seamlessly with cache metrics (cache hits reduce DB calls)
 
 ## Performance Metrics Reference
 
@@ -771,6 +846,35 @@ The background worker automatically aggregates performance snapshots at the conf
 - `slowOperationCount`: Number of operations potentially needing optimization
 - `cacheHitRate`: Global cache efficiency for the period
 
+#### Programmatic Access to Aggregated Metrics
+
+Access aggregated metrics programmatically via the Fastify instance:
+
+```typescript
+// Get all recent snapshots
+const snapshots = fastify.getMetricsSnapshots();
+
+// Get snapshots from last 10 minutes
+const recentSnapshots = fastify.getMetricsSnapshots(10);
+
+// Use in custom endpoints or monitoring
+fastify.get("/admin/metrics", async (req, reply) => {
+  const snapshots = fastify.getMetricsSnapshots(5); // Last 5 minutes
+  return {
+    window: "5 minutes",
+    count: snapshots.length,
+    snapshots: snapshots.slice(0, 20) // Return top 20
+  };
+});
+```
+
+**Use Cases:**
+
+- Custom monitoring dashboards
+- Alerting systems
+- Performance trend analysis
+- Capacity planning
+
 ### Metrics Caching
 
 Aggregated metrics can be cached to improve performance when accessing metrics data. The metrics cache service provides:
@@ -791,6 +895,32 @@ Aggregated metrics can be cached to improve performance when accessing metrics d
 
 The metrics cache service is automatically initialized when the performance plugin starts and is available via `fastify.metricsCache`. Cache failures are handled gracefully and do not affect metrics collection.
 
+#### Programmatic Access to Cached Metrics
+
+Access cached aggregated metrics via the metrics cache service (`fastify.metricsCache`):
+
+```typescript
+// Get by timestamp
+const cached = await fastify.metricsCache.getCachedMetrics(timestamp);
+
+// Get by time window (hourly or daily)
+const hourly = await fastify.metricsCache.getCachedMetricsByWindow("hourly", "2024-01-15-14");
+const daily = await fastify.metricsCache.getCachedMetricsByWindow("daily", "2024-01-15");
+
+// Cache aggregated metrics (metrics object first, then timestamp, then optional TTL)
+await fastify.metricsCache.cacheAggregatedMetrics(aggregatedMetrics, timestamp, 600);
+
+// Invalidate: no args = all metrics; pattern = e.g. "aggregated:hourly:*"
+await fastify.metricsCache.invalidateMetricsCache();
+await fastify.metricsCache.invalidateMetricsCache("aggregated:hourly:*");
+```
+
+**Cache Invalidation Strategies:**
+
+- **Time-based**: Let TTL expire naturally (default)
+- **Event-based**: Invalidate on significant events (deployments, config changes)
+- **Manual**: Invalidate specific time windows when data is known to be stale
+
 ## Extending Performance Tracking
 
 You can extend the built-in performance tracking by adding custom operations and manual timing to monitor application-specific code paths.
@@ -800,13 +930,172 @@ You can extend the built-in performance tracking by adding custom operations and
 The codebase provides helpers that wrap GraphQL resolvers for consistent operation naming and timing:
 
 - **`withMutationMetrics`** (from `~/src/graphql/utils/withMutationMetrics`) — wraps mutation resolvers with `ctx.perf?.time(operationName, ...)` so each mutation is recorded under a name like `mutation:createUser`. Options: `{ operationName: string }`.
-- **`withQueryMetrics`** — analogous for query resolvers.
+- **`withQueryMetrics`** — analogous for query resolvers (see [Instrumenting GraphQL Queries](#instrumenting-graphql-queries)).
 
 These utilities only add **resolver-level** timing. They do not implement request-scoped wiring, Server-Timing header integration, aggregation workers, the `/metrics/perf` endpoint, or DataLoader/cache instrumentation; those are part of the broader performance foundation and are documented elsewhere in this guide. When linking PRs to issues that cover the full foundation, consider either (a) limiting the issue link to the resolver-level change and adding a checklist of remaining tasks, or (b) implementing the remaining pieces before marking the issue resolved.
 
+#### Mutations: withMutationMetrics and manual patterns
+
+Track performance metrics for GraphQL mutations to identify slow operations.
+
+##### Using the Helper
+
+The `withMutationMetrics` helper takes an **options object** with `operationName` and the resolver:
+
+```typescript
+import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
+
+const resolve = withMutationMetrics(
+  { operationName: "mutation:createUser" },
+  async (_parent, args, ctx) => {
+    // Your mutation logic here
+    const user = await ctx.drizzleClient.insert(usersTable).values({...});
+    return user;
+  },
+);
+```
+
+##### Manual Instrumentation
+
+For more control, instrument mutations manually:
+
+```typescript
+export const createEvent = async (parent, args, ctx) => {
+  return await ctx.perf?.time("mutation:createEvent", async () => {
+    // Main mutation logic
+    const event = await createEventInDb(args);
+
+    // Track sub-operations
+    await ctx.perf?.time("mutation:createEvent:notification:enqueue", async () => {
+      ctx.notification?.enqueueEventCreated({...});
+    });
+
+    await ctx.perf?.time("mutation:createEvent:notification:flush", async () => {
+      await ctx.notification?.flush(ctx);
+    });
+
+    return event;
+  });
+};
+```
+
+##### Operation Naming
+
+Mutations follow the pattern: `mutation:{mutationName}`
+
+| Mutation | Operation Name |
+|----------|----------------|
+| createUser | `mutation:createUser` |
+| createOrganization | `mutation:createOrganization` |
+| createEvent | `mutation:createEvent` |
+| updateOrganization | `mutation:updateOrganization` |
+| deleteOrganization | `mutation:deleteOrganization` |
+
+##### Sub-operation Tracking
+
+For complex mutations with multiple steps, track sub-operations:
+
+```typescript
+// Track notification operations separately
+"mutation:createEvent:notification:enqueue"
+"mutation:createEvent:notification:flush"
+
+// Track validation separately from DB operations
+"mutation:updateOrganization:validation"
+"mutation:updateOrganization:database"
+```
+
+This provides granular visibility into where time is spent within complex mutations.
+
+### Instrumenting GraphQL Queries
+
+Track performance metrics for GraphQL queries to identify slow operations and optimize data fetching.
+
+#### Using the Helper Utility
+
+The `withQueryMetrics` helper takes an **options object** with `operationName` and the resolver:
+
+```typescript
+import { withQueryMetrics } from "~/src/graphql/utils/withQueryMetrics";
+
+const resolve = withQueryMetrics(
+  { operationName: "query:user" },
+  async (_parent, args, ctx) => {
+    const user = await ctx.drizzleClient.query.usersTable.findFirst({
+      where: (f, op) => op.eq(f.id, args.input.id),
+    });
+    return user;
+  },
+);
+```
+
+#### Inline Execution: executeWithMetrics
+
+For inline execution (e.g. inside a resolver with branching logic), use `executeWithMetrics`:
+
+```typescript
+import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
+
+// Inside resolver
+return await executeWithMetrics(ctx, "query:event", async () => {
+  return await fetchEvent(args.id, ctx);
+});
+```
+
+#### Manual Instrumentation
+
+For more control, instrument queries manually:
+
+```typescript
+export const organizations = async (parent, args, ctx) => {
+  return await ctx.perf?.time("query:organizations", async () => {
+    // Query logic with filtering, pagination
+    const orgs = await ctx.drizzleClient.query.organizationsTable.findMany({
+      where: (fields, ops) => ops.ilike(fields.name, `%${args.filter}%`),
+      limit: args.limit,
+      offset: args.offset,
+    });
+    return orgs;
+  });
+};
+```
+
+#### Operation Naming Convention
+
+Queries follow the naming pattern: `query:{queryName}`
+
+| Query | Operation Name |
+|-------|----------------|
+| user | `query:user` |
+| organization | `query:organization` |
+| event | `query:event` |
+| organizations | `query:organizations` |
+
+#### Integration with DataLoader Metrics
+
+Query instrumentation works seamlessly with DataLoader metrics. When a query uses DataLoaders, both metrics appear in the snapshot:
+
+```json
+{
+  "totalMs": 234,
+  "ops": {
+    "query:organization": { "count": 1, "ms": 234, "max": 234 },
+    "db:organizations.byId": { "count": 1, "ms": 45, "max": 45 },
+    "db:users.byId": { "count": 1, "ms": 32, "max": 32 }
+  }
+}
+```
+
+This shows:
+
+- Total query time: 234ms
+- Organization DataLoader: 45ms
+- User DataLoader (for creator): 32ms
+- Overhead (validation, etc.): ~157ms
+
 ### Custom Operations
 
-Track custom operations in your code to measure specific functionality:
+Track custom operations in your code to measure specific functionality. For detailed examples of mutation and query instrumentation, see [Resolver-level instrumentation (withMutationMetrics / withQueryMetrics)](#resolver-level-instrumentation-withmutationmetrics--withquerymetrics) and [Instrumenting GraphQL Queries](#instrumenting-graphql-queries).
 
 ```typescript
 // In a GraphQL resolver
@@ -822,7 +1111,7 @@ export const myResolver = async (parent, args, ctx) => {
 
 ### Manual Timing
 
-For non-async operations, use manual timing:
+For non-async operations, use manual timing. For resolver-level examples using `perf.time()`, see [Mutations: withMutationMetrics and manual patterns](#mutations-withmutationmetrics-and-manual-patterns) and [Instrumenting GraphQL Queries](#instrumenting-graphql-queries).
 
 ```typescript
 const stopTimer = ctx.request.perf?.start('computation');
