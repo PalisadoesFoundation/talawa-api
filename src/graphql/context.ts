@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { CacheService } from "~/src/services/caching";
+import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { AppLogger } from "~/src/utilities/logging/logger";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -101,6 +102,10 @@ export type ExplicitGraphQLContext = {
 	};
 	log: AppLogger;
 	minio: FastifyInstance["minio"];
+	/**
+	 * OAuth provider registry for accessing configured OAuth providers.
+	 */
+	oauthProviderRegistry: OAuthProviderRegistry;
 	/**
 	 * Per-request notification helper. Implementations may enqueue notifications
 	 * for delivery and support flush() to perform delivery after transaction commit.
