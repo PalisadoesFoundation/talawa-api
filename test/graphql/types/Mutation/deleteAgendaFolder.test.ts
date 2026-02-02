@@ -17,6 +17,7 @@ import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createAgendaFolder,
+	Mutation_createAgendaItem,
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
@@ -325,6 +326,42 @@ suite("Mutation field deleteAgendaFolder", () => {
 				]),
 			);
 		});
+
+		test("Returns forbidden when trying to delete default agenda folder", async () => {
+			const { token } = await getAdminAuth();
+
+			const env = await createOrganizationEventAndFolder(token);
+			cleanupFns.push(env.cleanup);
+
+			// Fetch default folder id for this event
+			const defaultFolder =
+				await server.drizzleClient.query.agendaFoldersTable.findFirst({
+					columns: { id: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.eventId, env.eventId),
+							operators.eq(fields.isDefaultFolder, true),
+						),
+				});
+
+			assertToBeNonNullish(defaultFolder);
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: { authorization: `bearer ${token}` },
+				variables: { input: { id: defaultFolder.id } },
+			});
+
+			expect(result.data?.deleteAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "forbidden_action_on_arguments_associated_resources",
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("Successful Deletion", () => {
@@ -349,28 +386,34 @@ suite("Mutation field deleteAgendaFolder", () => {
 			const env = await createOrganizationEventAndFolder(token);
 			cleanupFns.push(env.cleanup);
 
-			const originalDelete = server.drizzleClient.delete.bind(
-				server.drizzleClient,
-			);
-
-			vi.spyOn(server.drizzleClient, "delete").mockImplementationOnce(
-				(table: unknown) => {
-					const tableName =
-						typeof table === "object" &&
-						table !== null &&
-						(table as Record<symbol, unknown>)[Symbol.for("drizzle:Name")];
-
-					if (tableName === "agenda_folders") {
-						return {
+			// Mock required: This edge case (delete returning empty array) cannot be
+			// reproduced with real DB constraints. The mock ensures branch coverage
+			// for the defensive check after agenda folder deletion.
+			const spy = vi
+				.spyOn(server.drizzleClient, "transaction")
+				.mockImplementationOnce(async (cb) => {
+					const tx = {
+						query: server.drizzleClient.query,
+						update: () => ({
+							set: () => ({
+								where: async () => undefined,
+							}),
+						}),
+						delete: () => ({
 							where: () => ({
 								returning: async () => [],
 							}),
-						} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-					}
+						}),
+					};
 
-					return originalDelete(table as never);
-				},
-			);
+					return cb(
+						tx as unknown as Parameters<
+							typeof server.drizzleClient.transaction
+						>[0] extends (arg: infer T) => unknown
+							? T
+							: never,
+					);
+				});
 
 			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
 				headers: { authorization: `bearer ${token}` },
@@ -387,6 +430,72 @@ suite("Mutation field deleteAgendaFolder", () => {
 					}),
 				]),
 			);
+
+			spy.mockRestore();
+		});
+
+		test("Reassigns agenda items to default folder on folder deletion", async () => {
+			const { token } = await getAdminAuth();
+
+			// Setup org, event, non-default folder
+			const env = await createOrganizationEventAndFolder(token);
+			cleanupFns.push(env.cleanup);
+
+			// Fetch default folder for this event
+			const defaultFolder =
+				await server.drizzleClient.query.agendaFoldersTable.findFirst({
+					columns: { id: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.eventId, env.eventId),
+							operators.eq(fields.isDefaultFolder, true),
+						),
+				});
+
+			assertToBeNonNullish(defaultFolder);
+
+			// Create agenda item inside the folder that will be deleted
+			const createItemResult = await mercuriusClient.mutate(
+				Mutation_createAgendaItem,
+				{
+					headers: { authorization: `bearer ${token}` },
+					variables: {
+						input: {
+							eventId: env.eventId,
+							folderId: env.folderId,
+							name: "Item to be reassigned",
+							sequence: 1,
+							type: "general",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createItemResult.data?.createAgendaItem);
+			const agendaItemId = createItemResult.data.createAgendaItem.id;
+
+			// Delete the folder
+			const deleteResult = await mercuriusClient.mutate(
+				Mutation_deleteAgendaFolder,
+				{
+					headers: { authorization: `bearer ${token}` },
+					variables: { input: { id: env.folderId } },
+				},
+			);
+
+			expect(deleteResult.errors).toBeUndefined();
+
+			// Fetch agenda item again from DB
+			const updatedItem =
+				await server.drizzleClient.query.agendaItemsTable.findFirst({
+					columns: { folderId: true },
+					where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+				});
+
+			assertToBeNonNullish(updatedItem);
+
+			// Agenda item moved to default folder
+			expect(updatedItem.folderId).toBe(defaultFolder.id);
 		});
 	});
 });

@@ -244,6 +244,9 @@ builder.mutationField("updateAgendaItem", (t) =>
 				if (parsedArgs.input.duration !== undefined) {
 					updates.duration = parsedArgs.input.duration;
 				}
+				if (parsedArgs.input.categoryId !== undefined) {
+					updates.categoryId = parsedArgs.input.categoryId;
+				}
 				if (parsedArgs.input.folderId !== undefined) {
 					updates.folderId = parsedArgs.input.folderId;
 				}

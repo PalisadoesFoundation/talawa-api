@@ -316,6 +316,70 @@ suite("Mutation field updateAgendaItem", () => {
 		);
 	});
 
+	test("should update categoryId from one category to another", async () => {
+		const { eventId, categoryId, agendaItemId } =
+			await createCategoryFolderAgendaItem();
+
+		// Create a second category in the same event
+		const secondCategoryRes = await mercuriusClient.mutate(
+			Mutation_createAgendaCategory,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						eventId,
+						name: "Second Category",
+						description: "Another category",
+					},
+				},
+			},
+		);
+
+		const newCategoryId = secondCategoryRes.data?.createAgendaCategory?.id;
+		assertToBeNonNullish(newCategoryId);
+
+		// Sanity check: agenda item initially has first category
+		const beforeUpdate =
+			await server.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { categoryId: true },
+				where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+			});
+
+		assertToBeNonNullish(beforeUpdate);
+		expect(beforeUpdate.categoryId).toBe(categoryId);
+
+		// Update agenda item → change category
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					categoryId: newCategoryId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaItem).toEqual(
+			expect.objectContaining({
+				id: agendaItemId,
+				category: expect.objectContaining({
+					id: newCategoryId,
+				}),
+			}),
+		);
+
+		// Verify DB state reflects updated category
+		const afterUpdate =
+			await server.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { categoryId: true },
+				where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+			});
+
+		assertToBeNonNullish(afterUpdate);
+		expect(afterUpdate.categoryId).toBe(newCategoryId);
+	});
+
 	test("should throw unexpected error when update returns nothing", async () => {
 		const { agendaItemId } = await createCategoryFolderAgendaItem();
 
