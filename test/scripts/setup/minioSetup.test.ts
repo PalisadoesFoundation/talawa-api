@@ -90,6 +90,7 @@ describe("Setup -> minioSetup", () => {
 		const expectedEnv = {
 			MINIO_BROWSER: "on",
 			MINIO_API_MAPPED_HOST_IP: "1.2.3.4",
+			MINIO_API_MAPPED_PORT: "9000",
 			MINIO_CONSOLE_MAPPED_HOST_IP: "1.2.3.5",
 			MINIO_CONSOLE_MAPPED_PORT: "9001",
 			MINIO_ROOT_PASSWORD: "mocked-password",
@@ -154,6 +155,8 @@ describe("Setup -> minioSetup", () => {
 		expect(answers.MINIO_ROOT_PASSWORD).toBe("new-password");
 		// Secret key should be updated to match
 		expect(answers.API_MINIO_SECRET_KEY).toBe("new-password");
+		// Verify process.env was also updated
+		expect(process.env.MINIO_ROOT_PASSWORD).toBe("new-password");
 	});
 
 	it("should not change API_MINIO_SECRET_KEY if MINIO_ROOT_PASSWORD matches", async () => {

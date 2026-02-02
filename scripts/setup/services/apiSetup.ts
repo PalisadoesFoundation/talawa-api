@@ -47,6 +47,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		"API_JWT_EXPIRES_IN",
 		"JWT expiration (ms):",
 		"2592000000",
+		validateTokenExpiration,
 	);
 	const jwtSecret = generateJwtSecret();
 	answers.API_JWT_SECRET = await promptInput(
