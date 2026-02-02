@@ -1,5 +1,6 @@
+import { faker } from "@faker-js/faker";
 import type { FastifyBaseLogger, FastifyInstance } from "fastify";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	complexityLeakyBucket,
 	leakyBucket,
@@ -227,9 +228,14 @@ class FakeRedisHash {
 describe("leakyBucket", () => {
 	let redis: FakeRedisZ;
 	let logger: FastifyBaseLogger;
+	let testKeyPrefix: string;
+	const NOW = 1625097600000;
 
 	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
 		redis = new FakeRedisZ();
+		testKeyPrefix = faker.string.uuid();
 		logger = {
 			debug: vi.fn(),
 			info: vi.fn(),
@@ -241,9 +247,21 @@ describe("leakyBucket", () => {
 		} as unknown as FastifyBaseLogger;
 	});
 
+	afterEach(() => {
+		redis.clear();
+		vi.clearAllMocks();
+		vi.useRealTimers();
+	});
+
 	describe("successful rate limiting - empty bucket", () => {
 		it("should allow the first request when bucket is empty", async () => {
-			const result = await leakyBucket(redis, "test-key-1", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-1`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(9);
@@ -251,7 +269,7 @@ describe("leakyBucket", () => {
 		});
 
 		it("should allow request without logger", async () => {
-			const result = await leakyBucket(redis, "test-key-2", 10, 60000);
+			const result = await leakyBucket(redis, `${testKeyPrefix}-2`, 10, 60000);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(9);
@@ -261,12 +279,18 @@ describe("leakyBucket", () => {
 	describe("successful rate limiting - within limit", () => {
 		it("should allow requests within the limit", async () => {
 			const now = Date.now();
-			redis.populate("test-key-3", [
+			redis.populate(`${testKeyPrefix}-3`, [
 				{ timestamp: now - 1000, id: "req-1" },
 				{ timestamp: now - 500, id: "req-2" },
 			]);
 
-			const result = await leakyBucket(redis, "test-key-3", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-3`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(7);
@@ -274,7 +298,7 @@ describe("leakyBucket", () => {
 
 		it("should calculate remaining correctly when approaching limit", async () => {
 			const now = Date.now();
-			redis.populate("test-key-4", [
+			redis.populate(`${testKeyPrefix}-4`, [
 				{ timestamp: now - 5000, id: "req-1" },
 				{ timestamp: now - 4000, id: "req-2" },
 				{ timestamp: now - 3000, id: "req-3" },
@@ -282,7 +306,13 @@ describe("leakyBucket", () => {
 				{ timestamp: now - 1000, id: "req-5" },
 			]);
 
-			const result = await leakyBucket(redis, "test-key-4", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-4`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(4);
@@ -296,9 +326,15 @@ describe("leakyBucket", () => {
 			for (let i = 0; i < 10; i++) {
 				entries.push({ timestamp: now - (10 - i) * 100, id: `req-${i}` });
 			}
-			redis.populate("test-key-5", entries);
+			redis.populate(`${testKeyPrefix}-5`, entries);
 
-			const result = await leakyBucket(redis, "test-key-5", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-5`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(false);
 			expect(result.remaining).toBe(0);
@@ -311,9 +347,15 @@ describe("leakyBucket", () => {
 			for (let i = 0; i < 15; i++) {
 				entries.push({ timestamp: now - (15 - i) * 100, id: `req-${i}` });
 			}
-			redis.populate("test-key-6", entries);
+			redis.populate(`${testKeyPrefix}-6`, entries);
 
-			const result = await leakyBucket(redis, "test-key-6", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-6`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(false);
 			expect(result.remaining).toBe(0);
@@ -324,7 +366,7 @@ describe("leakyBucket", () => {
 			const windowMs = 60000;
 			const oldestTimestamp = now - 5000;
 
-			redis.populate("test-key-7", [
+			redis.populate(`${testKeyPrefix}-7`, [
 				{ timestamp: oldestTimestamp, id: "req-1" },
 				{ timestamp: now - 4000, id: "req-2" },
 				{ timestamp: now - 3000, id: "req-3" },
@@ -334,7 +376,7 @@ describe("leakyBucket", () => {
 
 			const result = await leakyBucket(
 				redis,
-				"test-key-7",
+				`${testKeyPrefix}-7`,
 				5,
 				windowMs,
 				logger,
@@ -351,7 +393,7 @@ describe("leakyBucket", () => {
 			const windowMs = 60000;
 
 			// Add some old entries that should be removed
-			redis.populate("test-key-8", [
+			redis.populate(`${testKeyPrefix}-8`, [
 				{ timestamp: now - 70000, id: "old-req-1" }, // Outside window
 				{ timestamp: now - 65000, id: "old-req-2" }, // Outside window
 				{ timestamp: now - 5000, id: "recent-req-1" },
@@ -360,7 +402,7 @@ describe("leakyBucket", () => {
 
 			const result = await leakyBucket(
 				redis,
-				"test-key-8",
+				`${testKeyPrefix}-8`,
 				10,
 				windowMs,
 				logger,
@@ -380,11 +422,11 @@ describe("leakyBucket", () => {
 			for (let i = 0; i < 5; i++) {
 				entries.push({ timestamp: now - 2000, id: `old-req-${i}` }); // 2 seconds old
 			}
-			redis.populate("test-key-9", entries);
+			redis.populate(`${testKeyPrefix}-9`, entries);
 
 			const result = await leakyBucket(
 				redis,
-				"test-key-9",
+				`${testKeyPrefix}-9`,
 				5,
 				windowMs,
 				logger,
@@ -400,14 +442,20 @@ describe("leakyBucket", () => {
 		it("should degrade gracefully when pipeline returns null", async () => {
 			redis.setReturnNullPipeline(true);
 
-			const result = await leakyBucket(redis, "test-key-10", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-10`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(10);
 			expect(logger.warn).toHaveBeenCalledWith(
 				expect.objectContaining({
 					msg: "leakyBucket failure; allowing request",
-					key: "test-key-10",
+					key: `${testKeyPrefix}-10`,
 				}),
 			);
 		});
@@ -417,14 +465,20 @@ describe("leakyBucket", () => {
 		it("should handle errors in pipeline command results", async () => {
 			redis.setFailPipelineCommand(true);
 
-			const result = await leakyBucket(redis, "test-key-11", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-11`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(10);
 			expect(logger.warn).toHaveBeenCalledWith(
 				expect.objectContaining({
 					msg: "leakyBucket failure; allowing request",
-					key: "test-key-11",
+					key: `${testKeyPrefix}-11`,
 				}),
 			);
 		});
@@ -434,14 +488,20 @@ describe("leakyBucket", () => {
 		it("should degrade gracefully when Redis throws error", async () => {
 			redis.setFailPipeline(true);
 
-			const result = await leakyBucket(redis, "test-key-12", 10, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-12`,
+				10,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(10);
 			expect(logger.warn).toHaveBeenCalledWith(
 				expect.objectContaining({
 					msg: "leakyBucket failure; allowing request",
-					key: "test-key-12",
+					key: `${testKeyPrefix}-12`,
 					err: expect.any(Error),
 				}),
 			);
@@ -450,7 +510,7 @@ describe("leakyBucket", () => {
 		it("should degrade gracefully without logger when Redis fails", async () => {
 			redis.setFailPipeline(true);
 
-			const result = await leakyBucket(redis, "test-key-13", 5, 30000);
+			const result = await leakyBucket(redis, `${testKeyPrefix}-13`, 5, 30000);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(5);
@@ -463,7 +523,7 @@ describe("leakyBucket", () => {
 
 			const result = await leakyBucket(
 				redis,
-				"test-key-14a",
+				`${testKeyPrefix}-14a`,
 				10,
 				60000,
 				logger,
@@ -474,7 +534,7 @@ describe("leakyBucket", () => {
 			expect(logger.warn).toHaveBeenCalledWith(
 				expect.objectContaining({
 					msg: "leakyBucket failure; allowing request",
-					key: "test-key-14a",
+					key: `${testKeyPrefix}-14a`,
 				}),
 			);
 		});
@@ -484,7 +544,7 @@ describe("leakyBucket", () => {
 
 			const result = await leakyBucket(
 				redis,
-				"test-key-14b",
+				`${testKeyPrefix}-14b`,
 				10,
 				60000,
 				logger,
@@ -495,7 +555,7 @@ describe("leakyBucket", () => {
 			expect(logger.warn).toHaveBeenCalledWith(
 				expect.objectContaining({
 					msg: "leakyBucket failure; allowing request",
-					key: "test-key-14b",
+					key: `${testKeyPrefix}-14b`,
 					err: expect.any(Error),
 				}),
 			);
@@ -504,14 +564,26 @@ describe("leakyBucket", () => {
 
 	describe("edge cases", () => {
 		it("should handle limit of 1", async () => {
-			const result = await leakyBucket(redis, "test-key-14", 1, 60000, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-14`,
+				1,
+				60000,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(0);
 		});
 
 		it("should handle very short window", async () => {
-			const result = await leakyBucket(redis, "test-key-15", 10, 100, logger);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-15`,
+				10,
+				100,
+				logger,
+			);
 
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(9);
@@ -520,7 +592,7 @@ describe("leakyBucket", () => {
 		it("should handle large limit", async () => {
 			const result = await leakyBucket(
 				redis,
-				"test-key-16",
+				`${testKeyPrefix}-16`,
 				1000,
 				60000,
 				logger,
@@ -531,26 +603,18 @@ describe("leakyBucket", () => {
 		});
 
 		it("should calculate resetAt correctly for allowed request", async () => {
-			const now = 1625097600000; // Fixed timestamp
-			vi.useFakeTimers();
-			vi.setSystemTime(now);
-
 			const windowMs = 60000;
 
-			try {
-				const result = await leakyBucket(
-					redis,
-					"test-key-17",
-					10,
-					windowMs,
-					logger,
-				);
+			const result = await leakyBucket(
+				redis,
+				`${testKeyPrefix}-17`,
+				10,
+				windowMs,
+				logger,
+			);
 
-				expect(result.allowed).toBe(true);
-				expect(result.resetAt).toBe(now + windowMs);
-			} finally {
-				vi.useRealTimers();
-			}
+			expect(result.allowed).toBe(true);
+			expect(result.resetAt).toBe(NOW + windowMs);
 		});
 
 		it("should handle empty zrange result when calculating resetAt", async () => {
@@ -562,7 +626,7 @@ describe("leakyBucket", () => {
 
 			const result = await leakyBucket(
 				redis,
-				"test-key-18",
+				`${testKeyPrefix}-18`,
 				10,
 				windowMs,
 				logger,
@@ -578,9 +642,14 @@ describe("complexityLeakyBucket", () => {
 	let redis: FakeRedisHash;
 	let fastify: FastifyInstance;
 	let logger: AppLogger;
+	let testKeyPrefix: string;
+	const NOW = 1625097600000;
 
 	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
 		redis = new FakeRedisHash();
+		testKeyPrefix = faker.string.uuid();
 		fastify = {
 			redis,
 		} as unknown as FastifyInstance;
@@ -592,11 +661,17 @@ describe("complexityLeakyBucket", () => {
 		} as unknown as AppLogger;
 	});
 
+	afterEach(() => {
+		redis.clear();
+		vi.clearAllMocks();
+		vi.useRealTimers();
+	});
+
 	describe("bucket initialization", () => {
 		it("should initialize new bucket with full capacity", async () => {
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-1",
+				`${testKeyPrefix}-1`,
 				100,
 				10,
 				5,
@@ -612,18 +687,18 @@ describe("complexityLeakyBucket", () => {
 			);
 
 			// Verify bucket was stored in Redis
-			const bucket = await redis.hgetall("bucket-1");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-1`);
 			expect(bucket.tokens).toBeDefined();
 			expect(bucket.lastUpdate).toBeDefined();
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(95); // 100 - 5
 		});
 
 		it("should initialize bucket when hgetall returns empty object", async () => {
-			redis.setHash("bucket-2", {});
+			redis.setHash(`${testKeyPrefix}-2`, {});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-2",
+				`${testKeyPrefix}-2`,
 				100,
 				10,
 				5,
@@ -639,7 +714,7 @@ describe("complexityLeakyBucket", () => {
 			const now = Date.now();
 			const lastUpdate = now - 5000; // 5 seconds ago
 
-			redis.setHash("bucket-3", {
+			redis.setHash(`${testKeyPrefix}-3`, {
 				tokens: "50",
 				lastUpdate: lastUpdate.toString(),
 			});
@@ -648,7 +723,7 @@ describe("complexityLeakyBucket", () => {
 			// 50 + 50 = 100 (at capacity)
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-3",
+				`${testKeyPrefix}-3`,
 				100,
 				10,
 				5,
@@ -669,7 +744,7 @@ describe("complexityLeakyBucket", () => {
 			const now = Date.now();
 			const lastUpdate = now - 20000; // 20 seconds ago
 
-			redis.setHash("bucket-4", {
+			redis.setHash(`${testKeyPrefix}-4`, {
 				tokens: "50",
 				lastUpdate: lastUpdate.toString(),
 			});
@@ -678,7 +753,7 @@ describe("complexityLeakyBucket", () => {
 			// But should cap at capacity (100)
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-4",
+				`${testKeyPrefix}-4`,
 				100,
 				10,
 				5,
@@ -687,7 +762,7 @@ describe("complexityLeakyBucket", () => {
 
 			expect(result).toBe(true);
 
-			const bucket = await redis.hgetall("bucket-4");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-4`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(95); // capped at 100, then - 5
 		});
 
@@ -695,14 +770,14 @@ describe("complexityLeakyBucket", () => {
 			const now = Date.now();
 			const lastUpdate = now - 5000;
 
-			redis.setHash("bucket-5", {
+			redis.setHash(`${testKeyPrefix}-5`, {
 				tokens: "50",
 				lastUpdate: lastUpdate.toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-5",
+				`${testKeyPrefix}-5`,
 				100,
 				0, // No refill
 				5,
@@ -711,21 +786,21 @@ describe("complexityLeakyBucket", () => {
 
 			expect(result).toBe(true);
 
-			const bucket = await redis.hgetall("bucket-5");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-5`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(45); // 50 - 5, no refill
 		});
 	});
 
 	describe("request allowed (sufficient tokens)", () => {
 		it("should allow request when sufficient tokens available", async () => {
-			redis.setHash("bucket-6", {
+			redis.setHash(`${testKeyPrefix}-6`, {
 				tokens: "100",
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-6",
+				`${testKeyPrefix}-6`,
 				100,
 				10,
 				20,
@@ -734,19 +809,19 @@ describe("complexityLeakyBucket", () => {
 
 			expect(result).toBe(true);
 
-			const bucket = await redis.hgetall("bucket-6");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-6`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(80); // 100 - 20
 		});
 
 		it("should allow request with exact token count", async () => {
-			redis.setHash("bucket-7", {
+			redis.setHash(`${testKeyPrefix}-7`, {
 				tokens: "50",
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-7",
+				`${testKeyPrefix}-7`,
 				100,
 				10,
 				50, // Exact match
@@ -755,19 +830,19 @@ describe("complexityLeakyBucket", () => {
 
 			expect(result).toBe(true);
 
-			const bucket = await redis.hgetall("bucket-7");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-7`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(0);
 		});
 
 		it("should allow request with zero cost", async () => {
-			redis.setHash("bucket-8", {
+			redis.setHash(`${testKeyPrefix}-8`, {
 				tokens: "50",
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-8",
+				`${testKeyPrefix}-8`,
 				100,
 				10,
 				0, // Zero cost
@@ -776,21 +851,21 @@ describe("complexityLeakyBucket", () => {
 
 			expect(result).toBe(true);
 
-			const bucket = await redis.hgetall("bucket-8");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-8`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(50); // No deduction
 		});
 	});
 
 	describe("request rejected (insufficient tokens)", () => {
 		it("should reject request when insufficient tokens", async () => {
-			redis.setHash("bucket-9", {
+			redis.setHash(`${testKeyPrefix}-9`, {
 				tokens: "10",
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-9",
+				`${testKeyPrefix}-9`,
 				100,
 				10,
 				20, // Need 20, have 10
@@ -800,14 +875,14 @@ describe("complexityLeakyBucket", () => {
 			expect(result).toBe(false);
 
 			// Token count should NOT be updated
-			const bucket = await redis.hgetall("bucket-9");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-9`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(10); // Unchanged
 		});
 
 		it("should reject request when cost exceeds capacity", async () => {
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-10",
+				`${testKeyPrefix}-10`,
 				100,
 				10,
 				150, // Cost exceeds capacity
@@ -818,14 +893,14 @@ describe("complexityLeakyBucket", () => {
 		});
 
 		it("should reject when tokens just below cost", async () => {
-			redis.setHash("bucket-11", {
+			redis.setHash(`${testKeyPrefix}-11`, {
 				tokens: "19.9",
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-11",
+				`${testKeyPrefix}-11`,
 				100,
 				10,
 				20,
@@ -838,13 +913,13 @@ describe("complexityLeakyBucket", () => {
 
 	describe("edge cases - invalid bucket data", () => {
 		it("should handle missing tokens field", async () => {
-			redis.setHash("bucket-12", {
+			redis.setHash(`${testKeyPrefix}-12`, {
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-12",
+				`${testKeyPrefix}-12`,
 				100,
 				10,
 				5,
@@ -855,13 +930,13 @@ describe("complexityLeakyBucket", () => {
 		});
 
 		it("should handle missing lastUpdate field", async () => {
-			redis.setHash("bucket-13", {
+			redis.setHash(`${testKeyPrefix}-13`, {
 				tokens: "50",
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-13",
+				`${testKeyPrefix}-13`,
 				100,
 				10,
 				5,
@@ -872,14 +947,14 @@ describe("complexityLeakyBucket", () => {
 		});
 
 		it("should handle non-numeric tokens value", async () => {
-			redis.setHash("bucket-14", {
+			redis.setHash(`${testKeyPrefix}-14`, {
 				tokens: "invalid",
 				lastUpdate: Date.now().toString(),
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-14",
+				`${testKeyPrefix}-14`,
 				100,
 				10,
 				5,
@@ -893,14 +968,14 @@ describe("complexityLeakyBucket", () => {
 		});
 
 		it("should handle non-numeric lastUpdate value", async () => {
-			redis.setHash("bucket-15", {
+			redis.setHash(`${testKeyPrefix}-15`, {
 				tokens: "50",
 				lastUpdate: "invalid",
 			});
 
 			const result = await complexityLeakyBucket(
 				fastify,
-				"bucket-15",
+				`${testKeyPrefix}-15`,
 				100,
 				10,
 				5,
@@ -915,14 +990,21 @@ describe("complexityLeakyBucket", () => {
 	describe("timestamp and state updates", () => {
 		it("should update lastUpdate timestamp after request", async () => {
 			const oldTimestamp = Date.now() - 10000;
-			redis.setHash("bucket-16", {
+			redis.setHash(`${testKeyPrefix}-16`, {
 				tokens: "100",
 				lastUpdate: oldTimestamp.toString(),
 			});
 
-			await complexityLeakyBucket(fastify, "bucket-16", 100, 10, 5, logger);
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-16`,
+				100,
+				10,
+				5,
+				logger,
+			);
 
-			const bucket = await redis.hgetall("bucket-16");
+			const bucket = await redis.hgetall(`${testKeyPrefix}-16`);
 			const newTimestamp = Number.parseInt(bucket.lastUpdate ?? "0", 10);
 			expect(newTimestamp).toBeGreaterThan(oldTimestamp);
 			expect(newTimestamp).toBeLessThanOrEqual(Date.now());
@@ -930,25 +1012,53 @@ describe("complexityLeakyBucket", () => {
 
 		it("should maintain accurate token count across multiple requests", async () => {
 			// First request
-			await complexityLeakyBucket(fastify, "bucket-17", 100, 10, 20, logger);
-			let bucket = await redis.hgetall("bucket-17");
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-17`,
+				100,
+				10,
+				20,
+				logger,
+			);
+			let bucket = await redis.hgetall(`${testKeyPrefix}-17`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(80);
 
 			// Second request (no time elapsed)
-			await complexityLeakyBucket(fastify, "bucket-17", 100, 10, 30, logger);
-			bucket = await redis.hgetall("bucket-17");
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-17`,
+				100,
+				10,
+				30,
+				logger,
+			);
+			bucket = await redis.hgetall(`${testKeyPrefix}-17`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(50);
 
 			// Third request
-			await complexityLeakyBucket(fastify, "bucket-17", 100, 10, 10, logger);
-			bucket = await redis.hgetall("bucket-17");
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-17`,
+				100,
+				10,
+				10,
+				logger,
+			);
+			bucket = await redis.hgetall(`${testKeyPrefix}-17`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(40);
 		});
 	});
 
 	describe("logger calls", () => {
 		it("should log bucket state on each call", async () => {
-			await complexityLeakyBucket(fastify, "bucket-18", 100, 10, 5, logger);
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-18`,
+				100,
+				10,
+				5,
+				logger,
+			);
 
 			expect(logger.debug).toHaveBeenCalledWith(
 				{
@@ -961,17 +1071,31 @@ describe("complexityLeakyBucket", () => {
 
 		it("should log state for both allowed and rejected requests", async () => {
 			// Allowed request
-			await complexityLeakyBucket(fastify, "bucket-19", 100, 10, 50, logger);
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-19`,
+				100,
+				10,
+				50,
+				logger,
+			);
 			expect(logger.debug).toHaveBeenCalled();
 
 			vi.clearAllMocks();
 
 			// Rejected request
-			redis.setHash("bucket-19", {
+			redis.setHash(`${testKeyPrefix}-19`, {
 				tokens: "10",
 				lastUpdate: Date.now().toString(),
 			});
-			await complexityLeakyBucket(fastify, "bucket-19", 100, 10, 50, logger);
+			await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-19`,
+				100,
+				10,
+				50,
+				logger,
+			);
 			expect(logger.debug).toHaveBeenCalled();
 		});
 	});
