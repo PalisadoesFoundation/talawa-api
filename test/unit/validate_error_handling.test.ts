@@ -1507,6 +1507,7 @@ describe("ErrorHandlingValidator", () => {
 				expect(exitCode).toBe(0); // Should be 0 in warn-only mode despite violations
 			} finally {
 				process.env = originalEnv;
+				vi.resetModules();
 			}
 		});
 
