@@ -599,11 +599,18 @@ export async function insertCollections(
 								columns: { id: true },
 							});
 						if (!existing) {
-							await initializeGenerationWindow(
-								{ organizationId, createdById },
-								db as InitializeGenerationWindowDB,
-								sampleDataLogger,
-							);
+							try {
+								await initializeGenerationWindow(
+									{ organizationId, createdById },
+									db as InitializeGenerationWindowDB,
+									sampleDataLogger,
+								);
+							} catch (error) {
+								sampleDataLogger.warn(
+									{ error, organizationId, createdById },
+									"Failed to initialize generation window for organization",
+								);
+							}
 						}
 					}
 
