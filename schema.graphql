@@ -948,7 +948,9 @@ type EventAttendee {
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
-  """The event the attendee is associated with."""
+  """
+  The event the attendee is associated with. Supports both standalone events and recurring event instances.
+  """
   event: Event
 
   """Indicates if the attendee has submitted feedback for the event."""
@@ -3725,6 +3727,9 @@ input MutationUpdateAgendaFolderInput {
 input MutationUpdateAgendaItemInput {
   """File metadata for attachments uploaded via MinIO presigned URLs."""
   attachments: [FileMetadataInput!]
+
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
 
   """Custom information about the agenda item."""
   description: String
