@@ -211,6 +211,13 @@ setup_clean_system() {
 test_start "Standard Install (Docker Mode) - Fresh Install with Skip Prereqs"
 setup_clean_system
 
+# Mock Docker as available and running (required for docker mode with --skip-prereqs)
+create_mock "docker" '
+    if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+    if [ "$1" = "ps" ]; then exit 0; fi # Docker daemon is running
+    if [ "$1" = "info" ]; then exit 0; fi
+'
+
 # Mock fnm to behave like it installs node
 create_mock "fnm" '
     if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi
@@ -230,16 +237,16 @@ create_mock "node" 'echo "v20.10.0"'
 create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'echo "8.14.0"'
 
-# Run script with SKIP_PREREQS=true to bypass Docker validation
+# Run script with SKIP_PREREQS=true - Docker should be validated but not installed
 set +e
 OUTPUT=$(run_test_script docker true 2>&1)
 EXIT_CODE=$?
 set -e
 
 if [ $EXIT_CODE -eq 0 ]; then
-    # Verify expected actions in output (system deps and Docker are skipped with SKIP_PREREQS)
+    # Verify expected actions in output (system deps are skipped, Docker is validated)
     if echo "$OUTPUT" | grep -q "Skipping prerequisite installation" && \
-       echo "$OUTPUT" | grep -q "Skipping Docker installation" && \
+       echo "$OUTPUT" | grep -q "Docker is available" && \
        echo "$OUTPUT" | grep -q "Mock brew installed fnm" && \
        echo "$OUTPUT" | grep -q "Installing Node.js v20.10.0"; then
         test_pass
@@ -890,10 +897,10 @@ OUTPUT=$(run_test_script docker false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker is required"; then
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker is not installed"; then
     test_pass
 else
-    test_fail "Expected non-zero exit and missing Docker warning.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+    test_fail "Expected non-zero exit and 'Docker is not installed' message.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
