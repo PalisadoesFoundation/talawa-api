@@ -94,6 +94,64 @@ suite.concurrent("parseDate", () => {
 	});
 });
 
+suite("SampleDataLoggerAdapter", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("SampleDataLoggerAdapter.error logs string when passed a string", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.error("some string");
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith("some string");
+		errorSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.error logs msg and object when passed object and msg", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.error({ a: 1 }, "msg");
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith("msg", { a: 1 });
+		errorSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.fatal delegates to error", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.fatal("fatal message");
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith("fatal message");
+		errorSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.debug delegates to info", () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.debug("debug message");
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		expect(logSpy).toHaveBeenCalledWith("debug message");
+		logSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.trace delegates to info", () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		adapter.trace("trace message");
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		expect(logSpy).toHaveBeenCalledWith("trace message");
+		logSpy.mockRestore();
+	});
+
+	test("SampleDataLoggerAdapter.child returns a new distinct adapter instance", () => {
+		const adapter = new helpers.SampleDataLoggerAdapter();
+		const childAdapter = adapter.child();
+		expect(childAdapter).toBeInstanceOf(helpers.SampleDataLoggerAdapter);
+		expect(childAdapter).not.toBe(adapter);
+	});
+});
+
 suite.concurrent("getNextOccurrenceOfWeekdayTime", () => {
 	test.concurrent("returns next occurrence of same weekday and time on or after reference", async () => {
 		// Template: Tuesday 2025-04-01 09:00 UTC
@@ -886,19 +944,19 @@ suite(
 		test("should query recurrence_rules and event_generation_windows tables", async () => {
 			const tablesQueried: unknown[] = [];
 			const db = Reflect.get(helpers, "db");
-			const originalSelect = db.select;
-			db.select = vi.fn().mockReturnValue({
+			const selectSpy = vi.spyOn(db, "select").mockReturnValue({
 				from: vi.fn((table: unknown) => {
 					tablesQueried.push(table);
 					return Promise.resolve([{ count: 0 }]);
 				}),
-			});
-
-			await helpers.checkDataSize("Test Stage");
-
-			expect(tablesQueried).toContain(schema.recurrenceRulesTable);
-			expect(tablesQueried).toContain(schema.eventGenerationWindowsTable);
-			db.select = originalSelect;
+			} as unknown as ReturnType<typeof db.select>);
+			try {
+				await helpers.checkDataSize("Test Stage");
+				expect(tablesQueried).toContain(schema.recurrenceRulesTable);
+				expect(tablesQueried).toContain(schema.eventGenerationWindowsTable);
+			} finally {
+				selectSpy.mockRestore();
+			}
 		});
 	},
 );
