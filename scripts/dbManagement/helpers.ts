@@ -231,11 +231,11 @@ export async function checkAndInsertData<T>(
 /**
  * Inserts data into specified tables.
  * @param collections - Array of collection/table names to insert data into
- * @param options - Options for loading data
+ * @param options - Options for loading data (e.g. db override for tests to avoid mutating shared state)
  */
-
 export async function insertCollections(
 	collections: string[],
+	options?: { db?: typeof db },
 ): Promise<boolean> {
 	try {
 		await checkDataSize("Before");
@@ -582,6 +582,7 @@ export async function insertCollections(
 					);
 
 					// Ensure event_generation_windows exist for each org with recurrence rules (Option B)
+					const dbForWindow = options?.db ?? db;
 					const sampleDataLogger = new SampleDataLoggerAdapter();
 					const orgToCreatorId = new Map<string, string>();
 					for (const rule of recurrenceRules) {
@@ -591,7 +592,7 @@ export async function insertCollections(
 					}
 					for (const [organizationId, createdById] of orgToCreatorId) {
 						const existing =
-							await db.query.eventGenerationWindowsTable.findFirst({
+							await dbForWindow.query.eventGenerationWindowsTable.findFirst({
 								where: eq(
 									schema.eventGenerationWindowsTable.organizationId,
 									organizationId,
@@ -602,7 +603,7 @@ export async function insertCollections(
 							try {
 								await initializeGenerationWindow(
 									{ organizationId, createdById },
-									db as InitializeGenerationWindowDB,
+									dbForWindow as InitializeGenerationWindowDB,
 									sampleDataLogger,
 								);
 							} catch (error) {
