@@ -258,6 +258,7 @@ describe("gracefulCleanup", () => {
 		resetCleanupState({ backupCreated: false, cleaning: false });
 
 		// Mock cleanupTemp to throw synchronously (simulates immediate failure)
+		// Note: Even synchronous throws from await-ed functions are caught by try-catch
 		const internalError = new Error("Synchronous failure");
 		cleanupTempMock.mockImplementation(() => {
 			throw internalError;
@@ -269,14 +270,19 @@ describe("gracefulCleanup", () => {
 			expect((error as Error).message).toBe("process.exit called");
 		}
 
-		// Assert console.error was called
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			"✗ Cleanup encountered errors:",
+		// Assert console.warn was called (inner try-catch intercepts the error)
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️  Failed to clean temp file:",
 			internalError,
 		);
 
-		// Assert process.exit was called with 1
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Assert that cleanup continued and completed successfully
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✓ Cleanup complete. No backup to restore.",
+		);
+
+		// Assert process.exit was called with 0 (success, since no backup to restore)
+		expect(processExitSpy).toHaveBeenCalledWith(0);
 	});
 
 	it("should exercise outer catch block when both cleanupTemp and atomicRestoreBackup fail", async () => {
