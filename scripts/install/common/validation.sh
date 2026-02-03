@@ -301,3 +301,134 @@ retry_command() {
     error "Command failed after $max_attempts attempts: $*"
     return "$exit_code"
 }
+
+##############################################################################
+# NEW: Repository Root Validation
+#
+# Ensures the script is executed from the project root.
+# Supports both normal git repos and git worktrees (.git may be file or dir).
+#
+# Returns:
+#   0 on success
+#   1 on failure
+##############################################################################
+validate_repository_root() {
+    debug "Validating repository root..."
+
+    if [ -e ".git" ] && [ -f "package.json" ]; then
+        success "Repository root validated"
+        return 0
+    fi
+
+    error "Not at repository root (.git and package.json required)"
+    return 1
+}
+
+##############################################################################
+# NEW: Disk Space Validation
+#
+# Checks that sufficient disk space is available.
+#
+# Usage: validate_disk_space <min_mb>
+# Default: 2000 MB
+#
+# Returns:
+#   0 on success
+#   1 on insufficient space or unable to determine space
+##############################################################################
+validate_disk_space() {
+    local min_mb="${1:-2000}"
+    debug "Checking for at least ${min_mb}MB free disk space..."
+
+    local avail_kb
+    avail_kb="$(df -Pk . 2>/dev/null | awk 'NR==2 {print $4}')"
+
+    # Guard against empty or non-numeric output
+    if [ -z "$avail_kb" ] || ! [[ "$avail_kb" =~ ^[0-9]+$ ]]; then
+        error "Unable to determine available disk space"
+        return 1
+    fi
+
+    local avail_mb=$((avail_kb / 1024))
+
+    if [ "$avail_mb" -ge "$min_mb" ]; then
+        success "Disk space OK: ${avail_mb}MB available (Required: ${min_mb}MB)"
+        return 0
+    fi
+
+    error "Insufficient disk space: ${avail_mb}MB available (Minimum: ${min_mb}MB)"
+    return 1
+}
+
+##############################################################################
+# NEW: Internet Connectivity Validation
+#
+# Verifies connectivity to required external services.
+# Specifically checks GitHub and npm registry.
+#
+# Returns:
+#   0 if all required hosts are reachable
+#   1 otherwise
+##############################################################################
+validate_internet_connectivity() {
+    debug "Checking internet connectivity..."
+
+    local hosts=("github.com" "registry.npmjs.org")
+    local all_ok=1
+
+    for host in "${hosts[@]}"; do
+        local host_ok=0
+
+        if command -v curl >/dev/null 2>&1; then
+            if curl -sSf --max-time 5 "https://${host}" >/dev/null 2>&1; then
+                host_ok=1
+            fi
+        elif command -v ping >/dev/null 2>&1; then
+            if ping -c 1 -W 3 "$host" >/dev/null 2>&1; then
+                host_ok=1
+            fi
+        else
+            warn "Neither curl nor ping is available to test connectivity"
+        fi
+
+        if [ "$host_ok" -eq 1 ]; then
+            success "Connection to ${host} verified"
+        else
+            warn "Unable to reach ${host}"
+            all_ok=0
+        fi
+    done
+
+    if [ "$all_ok" -eq 1 ]; then
+        return 0
+    fi
+
+    error "Internet connectivity check failed"
+    return 1
+}
+
+##############################################################################
+# NEW: Aggregate Prerequisite Validation
+#
+# Runs all system pre-flight checks and aggregates results.
+#
+# Returns:
+#   0 if all checks pass
+#   1 if any check fails
+##############################################################################
+validate_prerequisites() {
+    info "Running system pre-flight checks..."
+    local rc=0
+
+    validate_repository_root || rc=1
+    validate_disk_space 2000 || rc=1
+    validate_internet_connectivity || rc=1
+
+    if [ "$rc" -eq 0 ]; then
+        success "All prerequisites met"
+    else
+        error "Prerequisites check failed"
+    fi
+
+    return "$rc"
+}
