@@ -1635,9 +1635,22 @@ describe("ErrorHandlingValidator", () => {
 	});
 
 	describe("Validation Exit Logic", () => {
-		it("should return exit code 1 when violations exist and WARN_ONLY_MODE is false", async () => {
-			// Ensure WARN_ONLY_MODE is false (default behavior)
+		let originalWarnOnlyMode: string | undefined;
 
+		beforeEach(() => {
+			originalWarnOnlyMode = process.env.WARN_ONLY_MODE;
+			process.env.WARN_ONLY_MODE = "false";
+		});
+
+		afterEach(() => {
+			if (originalWarnOnlyMode === undefined) {
+				delete process.env.WARN_ONLY_MODE;
+			} else {
+				process.env.WARN_ONLY_MODE = originalWarnOnlyMode;
+			}
+		});
+
+		it("should return exit code 1 when violations exist and WARN_ONLY_MODE is false", async () => {
 			// Mock getting files
 			vi.spyOn(validator, "getFilesToScan").mockResolvedValue(["dirty.ts"]);
 
