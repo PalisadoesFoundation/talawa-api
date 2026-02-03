@@ -878,6 +878,10 @@ suite("Query field getEventVolunteerGroups", () => {
 					}),
 				]),
 			);
+
+			// Note: Recurring event resources (template and instances) created by
+			// createRecurringEventWithInstances are cleaned up via cascade deletion
+			// when the organization is deleted in afterAll
 		});
 
 		test("should return volunteer groups for recurring event template", async () => {
