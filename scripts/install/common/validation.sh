@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##############################################################################
 # Talawa API - Common Validation Functions
@@ -374,37 +374,38 @@ validate_internet_connectivity() {
     debug "Checking internet connectivity..."
 
     local hosts=("github.com" "registry.npmjs.org")
-    local all_ok=1
+  local any_ok=0
 
-    for host in "${hosts[@]}"; do
-        local host_ok=0
+for host in "${hosts[@]}"; do
+    local host_ok=0
 
-        if command -v curl >/dev/null 2>&1; then
-            if curl -sSf --max-time 5 "https://${host}" >/dev/null 2>&1; then
-                host_ok=1
-            fi
-        elif command -v ping >/dev/null 2>&1; then
-            if ping -c 1 -W 3 "$host" >/dev/null 2>&1; then
-                host_ok=1
-            fi
-        else
-            warn "Neither curl nor ping is available to test connectivity"
+    if command -v curl >/dev/null 2>&1; then
+        if curl -sSf --max-time 5 "https://${host}" >/dev/null 2>&1; then
+            host_ok=1
         fi
-
-        if [ "$host_ok" -eq 1 ]; then
-            success "Connection to ${host} verified"
-        else
-            warn "Unable to reach ${host}"
-            all_ok=0
+    elif command -v ping >/dev/null 2>&1; then
+        if ping -c 1 -W 3 "$host" >/dev/null 2>&1; then
+            host_ok=1
         fi
-    done
-
-    if [ "$all_ok" -eq 1 ]; then
-        return 0
+    else
+        warn "Neither curl nor ping is available to test connectivity"
     fi
 
-    error "Internet connectivity check failed"
-    return 1
+    if [ "$host_ok" -eq 1 ]; then
+        success "Connection to ${host} verified"
+        any_ok=1
+    else
+        warn "Unable to reach ${host}"
+    fi
+done
+
+if [ "$any_ok" -eq 1 ]; then
+    return 0
+fi
+
+error "Internet connectivity check failed"
+return 1
+
 }
 
 ##############################################################################
