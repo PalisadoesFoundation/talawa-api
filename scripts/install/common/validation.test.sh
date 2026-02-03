@@ -572,28 +572,34 @@ fi
 ##############################################################################
 
 # Mock curl to simulate success
+# Mock curl success, disable ping
 test_start "validate_internet_connectivity succeeds when curl succeeds"
 curl() { return 0; }
-export -f curl
+ping() { return 1; }
+export -f curl ping
 
 if validate_internet_connectivity &>/dev/null; then
     test_pass
 else
     test_fail "Expected internet connectivity check to succeed"
 fi
-unset -f curl
+unset -f curl ping
+
 
 # Mock curl to simulate failure
+# Mock curl failure, disable ping
 test_start "validate_internet_connectivity fails when curl fails"
 curl() { return 1; }
-export -f curl
+ping() { return 1; }
+export -f curl ping
 
 if validate_internet_connectivity &>/dev/null; then
     test_fail "Expected internet connectivity check to fail"
 else
     test_pass
 fi
-unset -f curl
+unset -f curl ping
+
 
 ##############################################################################
 # Test: validate_prerequisites()
