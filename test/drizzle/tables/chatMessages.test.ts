@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { hash } from "@node-rs/argon2";
-import { eq, getTableName, type Table } from "drizzle-orm";
+import { eq, getTableName, inArray, type Table } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
 	chatMessagesTable,
 	chatMessagesTableInsertSchema,
@@ -29,6 +29,19 @@ const getColumnName = (col: unknown): string | undefined => {
  * Goal: 100% code coverage for src/drizzle/tables/chatMessages.ts.
  */
 describe("Table Definition Tests", () => {
+	const createdIds = {
+		organizations: [] as string[],
+		users: [] as string[],
+		chats: [] as string[],
+		messages: [] as string[],
+	};
+
+	function recordMessageId(message?: { id?: string | null }) {
+		if (message?.id) {
+			createdIds.messages.push(message.id);
+		}
+	}
+
 	async function createTestOrganization() {
 		const [organizationRow] = await server.drizzleClient
 			.insert(organizationsTable)
@@ -43,6 +56,7 @@ describe("Table Definition Tests", () => {
 			throw new Error("Failed to create test organization");
 		}
 
+		createdIds.organizations.push(organizationRow.id);
 		return organizationRow.id;
 	}
 
@@ -66,6 +80,7 @@ describe("Table Definition Tests", () => {
 			throw new Error("Failed to create test user");
 		}
 
+		createdIds.users.push(userRow.id);
 		return userRow.id;
 	}
 
@@ -83,6 +98,7 @@ describe("Table Definition Tests", () => {
 			throw new Error("Failed to create test chat");
 		}
 
+		createdIds.chats.push(chatRow.id);
 		return chatRow.id;
 	}
 
@@ -478,6 +494,7 @@ describe("Table Definition Tests", () => {
 				})
 				.returning();
 
+			recordMessageId(result);
 			expect(result).toBeDefined();
 			if (!result) throw new Error("Insert failed");
 			expect(result.id).toBeDefined();
@@ -503,6 +520,8 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Message 2", chatId })
 				.returning();
 
+			recordMessageId(message1);
+			recordMessageId(message2);
 			expect(message1?.id).toBeDefined();
 			expect(message2?.id).toBeDefined();
 			expect(message1?.id).not.toBe(message2?.id);
@@ -510,6 +529,7 @@ describe("Table Definition Tests", () => {
 
 		it("should set createdAt to current timestamp by default", async () => {
 			const beforeInsert = new Date();
+			const SKEW_MS = 5 * 60 * 1000; // tolerate up to 5 minutes clock skew
 			const orgId = await createTestOrganization();
 			const userId = await createTestUser();
 			const chatId = await createTestChat(orgId, userId);
@@ -519,13 +539,14 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Test message", chatId })
 				.returning();
 
+			recordMessageId(result);
 			const afterInsert = new Date();
 			expect(result?.createdAt).toBeInstanceOf(Date);
 			expect(result?.createdAt.getTime()).toBeGreaterThanOrEqual(
-				beforeInsert.getTime(),
+				beforeInsert.getTime() - SKEW_MS,
 			);
 			expect(result?.createdAt.getTime()).toBeLessThanOrEqual(
-				afterInsert.getTime(),
+				afterInsert.getTime() + SKEW_MS,
 			);
 		});
 
@@ -539,6 +560,7 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Test message", chatId })
 				.returning();
 
+			recordMessageId(result);
 			expect(result?.updatedAt).toBeNull();
 		});
 
@@ -552,6 +574,7 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Query test message", chatId })
 				.returning();
 
+			recordMessageId(inserted);
 			const results = await server.drizzleClient
 				.select()
 				.from(chatMessagesTable)
@@ -572,6 +595,7 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Original message", chatId })
 				.returning();
 
+			recordMessageId(inserted);
 			const [updated] = await server.drizzleClient
 				.update(chatMessagesTable)
 				.set({ body: "Updated message" })
@@ -593,6 +617,7 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Message to delete", chatId })
 				.returning();
 
+			recordMessageId(inserted);
 			const [deleted] = await server.drizzleClient
 				.delete(chatMessagesTable)
 				.where(eq(chatMessagesTable.id, inserted?.id ?? ""))
@@ -627,6 +652,8 @@ describe("Table Definition Tests", () => {
 				})
 				.returning();
 
+			recordMessageId(parentMessage);
+			recordMessageId(replyMessage);
 			expect(replyMessage?.parentMessageId).toBe(parentMessage?.id);
 		});
 
@@ -640,6 +667,7 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Message in chat", chatId })
 				.returning();
 
+			recordMessageId(messageRow);
 			await server.drizzleClient
 				.delete(chatsTable)
 				.where(eq(chatsTable.id, chatId));
@@ -666,6 +694,7 @@ describe("Table Definition Tests", () => {
 				})
 				.returning();
 
+			recordMessageId(messageRow);
 			await server.drizzleClient
 				.delete(usersTable)
 				.where(eq(usersTable.id, userId));
@@ -698,6 +727,8 @@ describe("Table Definition Tests", () => {
 				})
 				.returning();
 
+			recordMessageId(parentMessage);
+			recordMessageId(replyMessage);
 			await server.drizzleClient
 				.delete(chatMessagesTable)
 				.where(eq(chatMessagesTable.id, parentMessage?.id ?? ""));
@@ -732,6 +763,7 @@ describe("Table Definition Tests", () => {
 				.values({ body: "Message", chatId })
 				.returning();
 
+			recordMessageId(messageRow);
 			const newChatId = faker.string.uuid();
 
 			// Update the chat's ID
@@ -763,6 +795,7 @@ describe("Table Definition Tests", () => {
 				})
 				.returning();
 
+			recordMessageId(messageRow);
 			const newUserId = faker.string.uuid();
 
 			await server.drizzleClient
@@ -797,6 +830,8 @@ describe("Table Definition Tests", () => {
 				})
 				.returning();
 
+			recordMessageId(parentMessage);
+			recordMessageId(replyMessage);
 			const newParentId = faker.string.uuid();
 
 			await server.drizzleClient
@@ -860,5 +895,32 @@ describe("Table Definition Tests", () => {
 			);
 			expect(idx).toBeDefined();
 		});
+	});
+
+	afterAll(async () => {
+		// Clean up in reverse dependency order
+		if (createdIds.messages.length > 0) {
+			await server.drizzleClient
+				.delete(chatMessagesTable)
+				.where(inArray(chatMessagesTable.id, createdIds.messages));
+		}
+
+		if (createdIds.chats.length > 0) {
+			await server.drizzleClient
+				.delete(chatsTable)
+				.where(inArray(chatsTable.id, createdIds.chats));
+		}
+
+		if (createdIds.users.length > 0) {
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(inArray(usersTable.id, createdIds.users));
+		}
+
+		if (createdIds.organizations.length > 0) {
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(inArray(organizationsTable.id, createdIds.organizations));
+		}
 	});
 });
