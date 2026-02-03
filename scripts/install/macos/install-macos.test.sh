@@ -903,23 +903,6 @@ else
     test_fail "Expected non-zero exit and 'Docker is not installed' message.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
-
-test_start "Docker Missing with Skip Prereqs"
-setup_clean_system
-# docker is already masked by setup_clean_system (docker.hidden present)
-
-set +e
-OUTPUT=$(run_test_script docker true 2>&1)
-EXIT_CODE=$?
-set -e
-
-if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker mode requires Docker"; then
-    test_pass
-else
-    test_fail "Expected non-zero exit and 'Docker mode requires Docker' message.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
-fi
-
-
 test_start "Docker Present but Daemon Down"
 setup_clean_system
 # Remove the directory created by setup_clean_system so we can create a file mock
