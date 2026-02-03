@@ -1,4 +1,4 @@
-type Paths<T> = T extends object
+export type Paths<T> = T extends object
 	? { [K in keyof T]: [K, ...Paths<T[K]>] | [K] }[keyof T]
 	: never;
 
