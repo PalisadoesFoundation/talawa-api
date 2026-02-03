@@ -4,7 +4,7 @@
 
 # Function: getKeyPathsWithNonUndefinedValues()
 
-> **getKeyPathsWithNonUndefinedValues**\<`T`\>(`__namedParameters`): `Paths`\<`T`\>[]
+> **getKeyPathsWithNonUndefinedValues**\<`T`\>(`__namedParameters`): [`Paths`](../type-aliases/Paths.md)\<`T`\>[]
 
 Defined in: [src/utilities/getKeyPathsWithNonUndefinedValues.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/getKeyPathsWithNonUndefinedValues.ts#L42)
 
@@ -22,7 +22,7 @@ This function takes in a javascript object and a list of key paths within that o
 
 #### keyPaths
 
-`Paths`\<`T`\>[]
+[`Paths`](../type-aliases/Paths.md)\<`T`\>[]
 
 #### object
 
@@ -30,7 +30,7 @@ This function takes in a javascript object and a list of key paths within that o
 
 ## Returns
 
-`Paths`\<`T`\>[]
+[`Paths`](../type-aliases/Paths.md)\<`T`\>[]
 
 ## Example
 
