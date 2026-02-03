@@ -23,15 +23,31 @@ vi.mock("~/src/fastifyPlugins/performance", () => ({
 }));
 
 import type { FastifyInstance } from "fastify";
+import { initGraphQLTada } from "gql.tada";
+import { createMercuriusTestClient } from "mercurius-integration-testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as oauthConfig from "~/src/config/oauth";
 import { createServer } from "~/src/createServer";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { testEnvConfig } from "../envConfigSchema";
+import type { introspection } from "../graphql/types/gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Query_Typename = gql(`
+	query Query_Typename {
+		__typename
+	}
+`);
 
 vi.mock("~/src/config/oauth");
 
 describe("GraphQL Context OAuth Provider Registry Integration", () => {
 	let server: FastifyInstance;
+	let mercuriusClient: ReturnType<typeof createMercuriusTestClient>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -72,6 +88,10 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			});
 			await server.ready();
 
+			mercuriusClient = createMercuriusTestClient(server, {
+				url: "/graphql",
+			});
+
 			// Verify registry is attached to server
 			expect(server.oauthProviderRegistry).toBeDefined();
 			expect(server.oauthProviderRegistry.listProviders()).toHaveLength(0);
@@ -86,24 +106,9 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 				},
 			);
 
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				payload: {
-					query: `
-						query {
-							__typename
-						}
-					`,
-				},
-				headers: {
-					"content-type": "application/json",
-				},
-			});
+			const response = await mercuriusClient.query(Query_Typename);
 
-			expect(response.statusCode).toBe(200);
-			const body = JSON.parse(response.body);
-			expect(body.data.__typename).toBe("Query");
+			expect(response.data?.__typename).toBe("Query");
 
 			// Assert that the resolver context includes oauthProviderRegistry
 			expect(capturedContext).toBeDefined();
@@ -159,6 +164,10 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			});
 			await server.ready();
 
+			mercuriusClient = createMercuriusTestClient(server, {
+				url: "/graphql",
+			});
+
 			// Verify registry is attached to server with Google provider
 			expect(server.oauthProviderRegistry).toBeDefined();
 			expect(server.oauthProviderRegistry.listProviders()).toContain("google");
@@ -173,24 +182,9 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 				},
 			);
 
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				payload: {
-					query: `
-						query {
-							__typename
-						}
-					`,
-				},
-				headers: {
-					"content-type": "application/json",
-				},
-			});
+			const response = await mercuriusClient.query(Query_Typename);
 
-			expect(response.statusCode).toBe(200);
-			const body = JSON.parse(response.body);
-			expect(body.data.__typename).toBe("Query");
+			expect(response.data?.__typename).toBe("Query");
 
 			// Assert that the resolver context includes oauthProviderRegistry with Google provider
 			expect(capturedContext).toBeDefined();
@@ -262,6 +256,10 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			});
 			await server.ready();
 
+			mercuriusClient = createMercuriusTestClient(server, {
+				url: "/graphql",
+			});
+
 			// Verify registry is attached to server with both providers
 			expect(server.oauthProviderRegistry).toBeDefined();
 			expect(server.oauthProviderRegistry.listProviders()).toHaveLength(2);
@@ -277,24 +275,9 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 				},
 			);
 
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				payload: {
-					query: `
-						query {
-							__typename
-						}
-					`,
-				},
-				headers: {
-					"content-type": "application/json",
-				},
-			});
+			const response = await mercuriusClient.query(Query_Typename);
 
-			expect(response.statusCode).toBe(200);
-			const body = JSON.parse(response.body);
-			expect(body.data.__typename).toBe("Query");
+			expect(response.data?.__typename).toBe("Query");
 
 			// Assert that the resolver context includes oauthProviderRegistry with both providers
 			expect(capturedContext).toBeDefined();
@@ -362,44 +345,22 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 			});
 			await server.ready();
 
-			// First request
-			const response1 = await server.inject({
-				method: "POST",
+			mercuriusClient = createMercuriusTestClient(server, {
 				url: "/graphql",
-				payload: {
-					query: `
-						query {
-							__typename
-						}
-					`,
-				},
-				headers: {
-					"content-type": "application/json",
-				},
 			});
 
-			expect(response1.statusCode).toBe(200);
+			// First request
+			const response1 = await mercuriusClient.query(Query_Typename);
+
+			expect(response1.data?.__typename).toBe("Query");
 
 			// Verify registry state after first request
 			expect(server.oauthProviderRegistry.listProviders()).toContain("google");
 
 			// Second request
-			const response2 = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				payload: {
-					query: `
-						query {
-							__typename
-						}
-					`,
-				},
-				headers: {
-					"content-type": "application/json",
-				},
-			});
+			const response2 = await mercuriusClient.query(Query_Typename);
 
-			expect(response2.statusCode).toBe(200);
+			expect(response2.data?.__typename).toBe("Query");
 
 			// Verify registry state is maintained after second request
 			expect(server.oauthProviderRegistry.listProviders()).toContain("google");
