@@ -9,5 +9,5 @@ export const observabilityConfig = {
 	exporterEnabled: process.env.API_OTEL_EXPORTER_ENABLED === "true",
 	exporterType: process.env.API_OTEL_EXPORTER_TYPE ?? "otlp",
 	otlpTraceEndpoint: process.env.API_OTEL_TRACE_EXPORTER_ENDPOINT,
-	otlpMetricEndpoint: process.env.API_OTEL_METRIC_EXPORTER_ENDPOINT
+	otlpMetricEndpoint: process.env.API_OTEL_METRIC_EXPORTER_ENDPOINT,
 };
