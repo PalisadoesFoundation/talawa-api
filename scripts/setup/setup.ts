@@ -123,16 +123,17 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 
 const envFileName = ".env";
 const envBackupFile = ".env.backup";
-const envTempFile = ".env.tmp";
-let backupCreated = false;
+export const envTempFile = ".env.tmp";
+export let backupCreated = false;
 let cleaning = false;
 
 /**
  * Graceful cleanup handler for interruptions (SIGINT/SIGTERM).
  * Uses AtomicEnvWriter to clean up temp files and restore backups.
  * Idempotent - safe to call multiple times.
+ * @internal Exported for testing purposes
  */
-async function gracefulCleanup(signal?: string): Promise<void> {
+export async function gracefulCleanup(signal?: string): Promise<void> {
 	if (cleaning) {
 		return; // Already cleaning up
 	}
@@ -166,6 +167,18 @@ async function gracefulCleanup(signal?: string): Promise<void> {
 		console.error("✗ Cleanup encountered errors:", e);
 		process.exit(1);
 	}
+}
+
+/**
+ * Reset internal state for testing purposes.
+ * @internal Only for use in unit tests
+ */
+export function resetCleanupState(options?: {
+	backupCreated?: boolean;
+	cleaning?: boolean;
+}): void {
+	backupCreated = options?.backupCreated ?? false;
+	cleaning = options?.cleaning ?? false;
 }
 
 // Signal handlers will be registered in setup() to avoid test pollution
