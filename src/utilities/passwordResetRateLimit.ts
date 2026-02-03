@@ -84,3 +84,12 @@ function cleanupOldEntries(now: number): void {
 export function resetPasswordResetRateLimit(email: string): void {
 	PASSWORD_RESET_RATE_LIMITS.delete(email.toLowerCase());
 }
+
+/**
+ * Resets the last cleanup timestamp (useful for testing).
+ * @param value - The value to set lastCleanupAt to (default 0)
+ * @internal This function is for testing purposes only.
+ */
+export function __resetLastCleanupAtForTests(value = 0): void {
+	lastCleanupAt = value;
+}

@@ -3,6 +3,7 @@ import {
 	checkPasswordResetRateLimit,
 	PASSWORD_RESET_RATE_LIMITS,
 	resetPasswordResetRateLimit,
+	__resetLastCleanupAtForTests,
 } from "~/src/utilities/passwordResetRateLimit";
 
 describe("passwordResetRateLimit", () => {
@@ -10,6 +11,7 @@ describe("passwordResetRateLimit", () => {
 		vi.clearAllMocks();
 		// Clear rate limit state between tests for isolation
 		PASSWORD_RESET_RATE_LIMITS.clear();
+		__resetLastCleanupAtForTests(0);
 	});
 
 	afterEach(() => {
@@ -110,6 +112,33 @@ describe("passwordResetRateLimit", () => {
 			// 1ms after expiry (new window starts)
 			vi.setSystemTime(startTime + 60 * 60 * 1000 + 1);
 			expect(checkPasswordResetRateLimit(email)).toBe(true);
+
+			vi.useRealTimers();
+		});
+	});
+
+	describe("cleanup mechanism", () => {
+		it("should cleanup old entries", () => {
+			const email = "cleanup_test@example.com";
+			const startTime = 1000000;
+
+			vi.useFakeTimers();
+			vi.setSystemTime(startTime);
+
+			// create an entry
+			checkPasswordResetRateLimit(email);
+			expect(PASSWORD_RESET_RATE_LIMITS.has(email)).toBe(true);
+
+			// Advance time beyond cleanup threshold (2 hours)
+			// Window is 1 hour, cleanup checks for > 2 hours
+			vi.advanceTimersByTime(2 * 60 * 60 * 1000 + 1000);
+
+			// Trigger cleanup (it runs every 5 minutes on check)
+			// Use a different email to trigger the check without modifying the original entry map state for that email immediately (though check cleans up first)
+			checkPasswordResetRateLimit("trigger@example.com");
+
+			// Old entry should be gone
+			expect(PASSWORD_RESET_RATE_LIMITS.has(email)).toBe(false);
 
 			vi.useRealTimers();
 		});
