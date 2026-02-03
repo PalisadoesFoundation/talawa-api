@@ -514,6 +514,120 @@ else
 fi
 
 ##############################################################################
+# Test: validate_repository_root()
+##############################################################################
+
+test_start "validate_repository_root succeeds at repo root"
+(
+    cd "$SCRIPT_DIR/../../.." || exit 1
+    if validate_repository_root &>/dev/null; then
+        exit 0
+    else
+        exit 1
+    fi
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_repository_root to succeed at repo root"
+fi
+
+
+test_start "validate_repository_root fails outside repo root"
+(
+    temp_dir=$(mktemp -d)
+    cd "$temp_dir" || exit 1
+    if validate_repository_root &>/dev/null; then
+        exit 1
+    else
+        exit 0
+    fi
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_repository_root to fail outside repo root"
+fi
+
+##############################################################################
+# Test: validate_disk_space()
+##############################################################################
+
+test_start "validate_disk_space succeeds with low minimum"
+if validate_disk_space 1 &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected validate_disk_space to succeed with low threshold"
+fi
+
+test_start "validate_disk_space fails with unrealistic requirement"
+if validate_disk_space 99999999 &>/dev/null; then
+    test_fail "Expected validate_disk_space to fail with high threshold"
+else
+    test_pass
+fi
+
+##############################################################################
+# Test: validate_internet_connectivity()
+##############################################################################
+
+# Mock curl to simulate success
+test_start "validate_internet_connectivity succeeds when curl succeeds"
+curl() { return 0; }
+export -f curl
+
+if validate_internet_connectivity &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected internet connectivity check to succeed"
+fi
+unset -f curl
+
+# Mock curl to simulate failure
+test_start "validate_internet_connectivity fails when curl fails"
+curl() { return 1; }
+export -f curl
+
+if validate_internet_connectivity &>/dev/null; then
+    test_fail "Expected internet connectivity check to fail"
+else
+    test_pass
+fi
+unset -f curl
+
+##############################################################################
+# Test: validate_prerequisites()
+##############################################################################
+
+test_start "validate_prerequisites succeeds when all checks pass"
+(
+    cd "$SCRIPT_DIR/../../.." || exit 1
+    if validate_prerequisites &>/dev/null; then
+        exit 0
+    else
+        exit 1
+    fi
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_prerequisites to succeed"
+fi
+
+
+test_start "validate_prerequisites fails when disk space fails"
+validate_disk_space() { return 1; }
+export -f validate_disk_space
+
+if validate_prerequisites &>/dev/null; then
+    test_fail "Expected validate_prerequisites to fail when disk check fails"
+else
+    test_pass
+fi
+
+unset -f validate_disk_space
+
+##############################################################################
 # Test summary
 ##############################################################################
 
