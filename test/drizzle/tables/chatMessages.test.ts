@@ -772,6 +772,8 @@ describe("Table Definition Tests", () => {
 				.set({ id: newChatId })
 				.where(eq(chatsTable.id, chatId));
 
+			createdIds.chats.push(newChatId);
+
 			// Fetch the message to verify cascading update
 			const [result] = await server.drizzleClient
 				.select()
@@ -802,6 +804,8 @@ describe("Table Definition Tests", () => {
 				.update(usersTable)
 				.set({ id: newUserId })
 				.where(eq(usersTable.id, userId));
+
+			createdIds.users.push(newUserId);
 
 			const [result] = await server.drizzleClient
 				.select()
@@ -838,6 +842,8 @@ describe("Table Definition Tests", () => {
 				.update(chatMessagesTable)
 				.set({ id: newParentId })
 				.where(eq(chatMessagesTable.id, parentMessage?.id ?? ""));
+
+			recordMessageId({ id: newParentId });
 
 			const [result] = await server.drizzleClient
 				.select()
