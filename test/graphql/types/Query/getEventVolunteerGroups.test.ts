@@ -9,6 +9,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { createRecurringEventWithInstances } from "../../../helpers/recurringEventTestHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -691,6 +692,268 @@ suite("Query field getEventVolunteerGroups", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.getEventVolunteerGroups).toBeDefined();
 			expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
+		});
+	});
+
+	suite(
+		"Event Creator Authorization - Coverage for isEventCreator path",
+		() => {
+			test("should allow event creator (non-admin) to access volunteer groups", async () => {
+				// Create a new regular user who will be event creator
+				const creatorUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `${faker.string.ulid()}@test.com`,
+								isEmailAddressVerified: true,
+								name: `Event Creator ${faker.person.firstName()}`,
+								password: "password123",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(creatorUserResult.data?.createUser);
+				const creatorUserId = creatorUserResult.data.createUser.user
+					?.id as string;
+				const creatorAuthToken = creatorUserResult.data.createUser
+					.authenticationToken as string;
+
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Add creator as regular member (not admin) of the organization
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							organizationId,
+							memberId: creatorUserId,
+							role: "regular",
+						},
+					},
+				});
+
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Create an event where this user is the creator
+				const creatorEventResult = await mercuriusClient.mutate(
+					Mutation_createEvent,
+					{
+						headers: {
+							authorization: `bearer ${creatorAuthToken}`,
+						},
+						variables: {
+							input: {
+								name: `Creator Event ${faker.string.alphanumeric(4)}`,
+								description: "Event created by non-admin",
+								startAt: new Date(
+									Date.now() + 48 * 60 * 60 * 1000,
+								).toISOString(),
+								endAt: new Date(Date.now() + 49 * 60 * 60 * 1000).toISOString(),
+								organizationId,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(creatorEventResult.data?.createEvent);
+				const creatorEventId = creatorEventResult.data.createEvent.id;
+
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Query volunteer groups as event creator (non-admin)
+				const result = await mercuriusClient.query(
+					Query_getEventVolunteerGroups,
+					{
+						headers: {
+							authorization: `bearer ${creatorAuthToken}`,
+						},
+						variables: {
+							where: {
+								eventId: creatorEventId,
+							},
+						},
+					},
+				);
+
+				// Event creator should be authorized even though they're not an org admin
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.getEventVolunteerGroups).toBeDefined();
+				expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
+
+				// Cleanup
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								organizationId,
+								memberId: creatorUserId,
+							},
+						},
+					});
+					await new Promise((resolve) => setTimeout(resolve, 100));
+
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { input: { id: creatorUserId } },
+					});
+				} catch (error) {
+					console.warn(
+						`Failed to cleanup event creator test resources: ${error}`,
+					);
+				}
+			});
+		},
+	);
+
+	suite("Recurring Event Instance - Coverage for recurring event path", () => {
+		test("should trigger recurring instance lookup when querying with instance ID", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			// Create recurring event with instances using helper
+			// This creates entries in recurringEventInstancesTable
+			const { instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{
+					instanceCount: 2,
+					startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+				},
+			);
+
+			assertToBeNonNullish(instanceIds[0]);
+			const instanceId = instanceIds[0];
+
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Query volunteer groups using the recurring instance ID
+			// This triggers the recurring event instance code path (lines 127-148)
+			// The query checks recurringEventInstancesTable first, builds the OR condition,
+			// but then fails authorization since instance IDs aren't in eventsTable
+			const result = await mercuriusClient.query(
+				Query_getEventVolunteerGroups,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						where: {
+							eventId: instanceId,
+						},
+					},
+				},
+			);
+
+			// The recurring instance lookup executes (covering lines 127-148),
+			// but authorization fails because instance ID isn't in eventsTable
+			expect(result.data?.getEventVolunteerGroups).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+								{
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["where", "eventId"],
+										}),
+									]),
+								},
+							),
+						message: expect.any(String),
+						path: ["getEventVolunteerGroups"],
+					}),
+				]),
+			);
+		});
+
+		test("should return volunteer groups for recurring event template", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			// Create recurring event with instances using helper
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{
+					instanceCount: 2,
+					startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+				},
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Create a volunteer group on the template
+			const templateGroupResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: templateId,
+							leaderId: regularUserId,
+							name: `Template Group ${faker.string.alphanumeric(4)}`,
+							description: "Template volunteer group",
+							volunteersRequired: 3,
+						},
+					},
+				},
+			);
+
+			const templateGroupId =
+				templateGroupResult.data?.createEventVolunteerGroup?.id;
+
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Query volunteer groups using the template ID (which IS in eventsTable)
+			const result = await mercuriusClient.query(
+				Query_getEventVolunteerGroups,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						where: {
+							eventId: templateId,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getEventVolunteerGroups).toBeDefined();
+			expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
+			expect(result.data?.getEventVolunteerGroups?.length).toBeGreaterThan(0);
+
+			// Cleanup template group
+			if (templateGroupId) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { id: templateGroupId },
+					});
+				} catch (error) {
+					console.warn(
+						`Failed to cleanup recurring event test resources: ${error}`,
+					);
+				}
+			}
 		});
 	});
 });
