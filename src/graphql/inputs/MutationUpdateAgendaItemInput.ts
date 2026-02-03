@@ -23,6 +23,7 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.min(1)
 			.max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH)
 			.optional(),
+		categoryId: agendaItemsTableInsertSchema.shape.categoryId.optional(),
 		folderId: agendaItemsTableInsertSchema.shape.folderId.optional(),
 		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
 		name: sanitizedStringSchema
@@ -71,6 +72,10 @@ export const MutationUpdateAgendaItemInput = builder
 			}),
 			duration: t.string({
 				description: "Duration of the agenda item.",
+				required: false,
+			}),
+			categoryId: t.id({
+				description: "Global identifier of the associated agenda category.",
 				required: false,
 			}),
 			folderId: t.id({
