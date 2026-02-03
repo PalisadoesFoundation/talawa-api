@@ -232,7 +232,7 @@ describe("Table Definition Tests", () => {
 					}
 					if (
 						config?.relationName ===
-						"chat_messages.id:chat_messages.parent_message_id"
+						"chat_messages.parent_message_id:chat_messages.id"
 					) {
 						capturedRelations.parentMessage = { table, config };
 					}
@@ -241,7 +241,7 @@ describe("Table Definition Tests", () => {
 				many: (table: Table, config?: CapturedRelation["config"]) => {
 					if (
 						config?.relationName ===
-						"chat_messages.id:chat_messages.parent_message_id"
+						"chat_messages.parent_message_id:chat_messages.id"
 					) {
 						capturedRelations.chatMessagesWhereParentMessage = {
 							table,
