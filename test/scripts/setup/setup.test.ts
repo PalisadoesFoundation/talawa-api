@@ -1100,27 +1100,7 @@ describe("Validation Helpers", () => {
 			vi.restoreAllMocks();
 		});
 
-		it("prompts for sampling ratio when observability is enabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({
-				API_OTEL_ENABLED: "true",
-			});
-
-			promptMock.mockResolvedValueOnce({
-				API_OTEL_SAMPLING_RATIO: "0.5",
-			});
-
-			const answers: SetupAnswers = {};
-
-			const result = await observabilitySetup(answers);
-
-			expect(promptMock).toHaveBeenCalledTimes(2);
-			expect(result.API_OTEL_ENABLED).toBe("true");
-			expect(result.API_OTEL_SAMPLING_RATIO).toBe("0.5");
-		});
-
-		it("does not prompt for sampling ratio when observability is disabled", async () => {
+		it("should disable observability and skip all prompts when API_OTEL_ENABLED is false", async () => {
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
 			promptMock.mockResolvedValueOnce({
@@ -1128,32 +1108,317 @@ describe("Validation Helpers", () => {
 			});
 
 			const answers: SetupAnswers = {};
-
 			const result = await observabilitySetup(answers);
 
 			expect(promptMock).toHaveBeenCalledTimes(1);
 			expect(result.API_OTEL_ENABLED).toBe("false");
+			expect(result.API_OTEL_SERVICE_NAME).toBeUndefined();
 			expect(result.API_OTEL_SAMPLING_RATIO).toBeUndefined();
+			expect(result.API_OTEL_EXPORTER_ENABLED).toBeUndefined();
 		});
 
-		it("preserves existing answers", async () => {
+		it("should prompt for all observability settings when enabled with console exporter", async () => {
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SERVICE_NAME: "my-service" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "0.5" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_TYPE: "console" });
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(5);
+			expect(result.API_OTEL_ENABLED).toBe("true");
+			expect(result.API_OTEL_SERVICE_NAME).toBe("my-service");
+			expect(result.API_OTEL_SAMPLING_RATIO).toBe("0.5");
+			expect(result.API_OTEL_EXPORTER_ENABLED).toBe("true");
+			expect(result.API_OTEL_EXPORTER_TYPE).toBe("console");
+			expect(result.API_OTEL_TRACE_EXPORTER_ENDPOINT).toBe("");
+			expect(result.API_OTEL_METRIC_EXPORTER_ENDPOINT).toBe("");
+		});
+
+		it("should prompt for OTLP endpoints when OTLP exporter is selected", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SERVICE_NAME: "talawa-api" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "1" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_TYPE: "otlp" });
 			promptMock.mockResolvedValueOnce({
-				API_OTEL_ENABLED: "false",
+				API_OTEL_TRACE_EXPORTER_ENDPOINT: "http://localhost:4318/v1/traces",
 			});
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_METRIC_EXPORTER_ENDPOINT: "http://localhost:4318/v1/metrics",
+			});
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(7);
+			expect(result.API_OTEL_ENABLED).toBe("true");
+			expect(result.API_OTEL_SERVICE_NAME).toBe("talawa-api");
+			expect(result.API_OTEL_SAMPLING_RATIO).toBe("1");
+			expect(result.API_OTEL_EXPORTER_ENABLED).toBe("true");
+			expect(result.API_OTEL_EXPORTER_TYPE).toBe("otlp");
+			expect(result.API_OTEL_TRACE_EXPORTER_ENDPOINT).toBe(
+				"http://localhost:4318/v1/traces",
+			);
+			expect(result.API_OTEL_METRIC_EXPORTER_ENDPOINT).toBe(
+				"http://localhost:4318/v1/metrics",
+			);
+		});
+
+		it("should handle empty OTLP endpoints", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_SERVICE_NAME: "test-service",
+			});
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "0.8" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_TYPE: "otlp" });
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_TRACE_EXPORTER_ENDPOINT: "",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_METRIC_EXPORTER_ENDPOINT: "",
+			});
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(result.API_OTEL_TRACE_EXPORTER_ENDPOINT).toBe("");
+			expect(result.API_OTEL_METRIC_EXPORTER_ENDPOINT).toBe("");
+		});
+
+		it("should skip exporter configuration when exporter is disabled", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SERVICE_NAME: "talawa-api" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "1" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "false" });
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(4);
+			expect(result.API_OTEL_ENABLED).toBe("true");
+			expect(result.API_OTEL_SERVICE_NAME).toBe("talawa-api");
+			expect(result.API_OTEL_SAMPLING_RATIO).toBe("1");
+			expect(result.API_OTEL_EXPORTER_ENABLED).toBe("false");
+			expect(result.API_OTEL_EXPORTER_TYPE).toBeUndefined();
+			expect(result.API_OTEL_TRACE_EXPORTER_ENDPOINT).toBeUndefined();
+			expect(result.API_OTEL_METRIC_EXPORTER_ENDPOINT).toBeUndefined();
+		});
+
+		it("should preserve existing answers", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "false" });
 
 			const answers: SetupAnswers = {
 				CI: "true",
+				SOME_OTHER_CONFIG: "value",
 			};
 
 			const result = await observabilitySetup(answers);
 
 			expect(result.CI).toBe("true");
+			expect(result.SOME_OTHER_CONFIG).toBe("value");
 			expect(result.API_OTEL_ENABLED).toBe("false");
+		});
+
+		it("should handle errors and call handlePromptError", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+			const handlePromptErrorMock = vi.fn();
+
+			// Mock the handlePromptError function
+			vi.doMock("scripts/setup/setup", async (importOriginal) => {
+				const actual = await importOriginal();
+				return {
+					...actual,
+					handlePromptError: handlePromptErrorMock,
+				};
+			});
+
+			const error = new Error("Prompt failed");
+			promptMock.mockRejectedValueOnce(error);
+
+			const answers: SetupAnswers = {};
+			await observabilitySetup(answers);
+
+			expect(handlePromptErrorMock).toHaveBeenCalledWith(error);
+		});
+
+		it("should use default values when prompting", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			// Simulate user pressing enter to accept defaults
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "false" });
+
+			const answers: SetupAnswers = {};
+			await observabilitySetup(answers);
+
+			// Verify the default was used
+			expect(promptMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					default: "false",
+				}),
+			);
+		});
+
+		it("should handle custom service name", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_SERVICE_NAME: "custom-api-service",
+			});
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "0.3" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "false" });
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(result.API_OTEL_SERVICE_NAME).toBe("custom-api-service");
+		});
+
+		it("should handle different sampling ratios", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SERVICE_NAME: "talawa-api" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "0" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "false" });
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(result.API_OTEL_SAMPLING_RATIO).toBe("0");
+		});
+
+		it("should handle OTLP with only trace endpoint", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SERVICE_NAME: "talawa-api" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "1" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_TYPE: "otlp" });
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_TRACE_EXPORTER_ENDPOINT: "http://localhost:4318/v1/traces",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_METRIC_EXPORTER_ENDPOINT: "",
+			});
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(result.API_OTEL_TRACE_EXPORTER_ENDPOINT).toBe(
+				"http://localhost:4318/v1/traces",
+			);
+			expect(result.API_OTEL_METRIC_EXPORTER_ENDPOINT).toBe("");
+		});
+
+		it("should handle OTLP with only metric endpoint", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_OTEL_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SERVICE_NAME: "talawa-api" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_SAMPLING_RATIO: "1" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_OTEL_EXPORTER_TYPE: "otlp" });
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_TRACE_EXPORTER_ENDPOINT: "",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_METRIC_EXPORTER_ENDPOINT: "http://localhost:4318/v1/metrics",
+			});
+
+			const answers: SetupAnswers = {};
+			const result = await observabilitySetup(answers);
+
+			expect(result.API_OTEL_TRACE_EXPORTER_ENDPOINT).toBe("");
+			expect(result.API_OTEL_METRIC_EXPORTER_ENDPOINT).toBe(
+				"http://localhost:4318/v1/metrics",
+			);
 		});
 	});
 
+	describe("validateSamplingRatio", () => {
+		let validateSamplingRatio: typeof import("scripts/setup/setup").validateSamplingRatio;
+
+		beforeAll(async () => {
+			const module = await import("scripts/setup/setup");
+			validateSamplingRatio = module.validateSamplingRatio;
+		});
+
+		it("should return true for valid ratios at boundaries", () => {
+			expect(validateSamplingRatio("0")).toBe(true);
+			expect(validateSamplingRatio("1")).toBe(true);
+		});
+
+		it("should return true for valid decimal ratios", () => {
+			expect(validateSamplingRatio("0.5")).toBe(true);
+			expect(validateSamplingRatio("0.1")).toBe(true);
+			expect(validateSamplingRatio("0.9")).toBe(true);
+			expect(validateSamplingRatio("0.25")).toBe(true);
+			expect(validateSamplingRatio("0.75")).toBe(true);
+		});
+
+		it("should return error message for negative ratios", () => {
+			expect(validateSamplingRatio("-1")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("-0.5")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+		});
+
+		it("should return error message for ratios greater than 1", () => {
+			expect(validateSamplingRatio("1.1")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("2")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("100")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+		});
+
+		it("should return error message for non-numeric values", () => {
+			expect(validateSamplingRatio("abc")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("one")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+		});
+
+		it("should return error message for special characters", () => {
+			expect(validateSamplingRatio("!@#")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("0.5a")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+		});
+
+		it("should handle edge cases with whitespace", () => {
+			expect(validateSamplingRatio(" 0.5 ")).toBe(true);
+			expect(validateSamplingRatio("  1  ")).toBe(true);
+		});
+	});
 	describe("validateSamplingRatio", () => {
 		let validateSamplingRatio: typeof import("scripts/setup/setup").validateSamplingRatio;
 
