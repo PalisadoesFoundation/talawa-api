@@ -423,4 +423,42 @@ suite("Mutation field requestPasswordReset", () => {
 			}
 		});
 	});
+
+	suite("Rate limiting", () => {
+		test("fails when rate limit is exceeded", async () => {
+			// Mock the rate limiter to return false
+			const passwordResetRateLimit = await import(
+				"~/src/utilities/passwordResetRateLimit"
+			);
+			const rateLimitSpy = vi
+				.spyOn(passwordResetRateLimit, "checkPasswordResetRateLimit")
+				.mockReturnValue(false);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_requestPasswordReset,
+				{
+					variables: {
+						input: {
+							emailAddress: "spam@example.com",
+						},
+					},
+				},
+			);
+
+			expect(result.data.requestPasswordReset).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({
+							code: "too_many_requests",
+						}),
+						message: expect.any(String),
+						path: ["requestPasswordReset"],
+					}),
+				]),
+			);
+
+			rateLimitSpy.mockRestore();
+		});
+	});
 });
