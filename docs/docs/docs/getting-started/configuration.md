@@ -50,6 +50,10 @@ This table defines the most important parameters in the file that will be requir
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                                     |
 | `POSTGRES_PASSWORD`                    | Password for the PostgreSQL database (Docker Compose), used for database authentication and security.                         |
 | `RECAPTCHA_SECRET_KEY` | Optional secret key for Google reCAPTCHA, used for server-side verification of reCAPTCHA responses to prevent automated abuse and bots. |
+| `<PROVIDER>_CLIENT_ID` | OAuth Client ID for authentication providers (Google, GitHub), obtained from respective developer consoles. |
+| `<PROVIDER>_CLIENT_SECRET` | OAuth Client Secret for authentication providers, used for server-side OAuth token exchange with providers. |
+| `<PROVIDER>_REDIRECT_URI` | OAuth Redirect URI for authentication callback, must match the URI registered in provider settings. |
+| `API_OAUTH_REQUEST_TIMEOUT_MS` | Request timeout in milliseconds for OAuth provider API calls, defaults to 10000ms (10 seconds) if not specified. |
 
 ## Production Environment Setup
 
@@ -173,7 +177,97 @@ Add the **secret key** to your `.env` file:
 RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
 ```
 
-### Operating the Production Server
+#### Update the OAuth Configuration
+
+Talawa API supports OAuth authentication with Google and GitHub providers. OAuth configuration is optional but enables users to sign in using their existing accounts.
+
+You can configure OAuth providers in two ways:
+
+1. **Using the Setup Script (Recommended)**: The setup script will prompt you to configure OAuth providers interactively
+2. **Manual Configuration**: Update the `.env` file directly with OAuth provider information
+
+**Option 1: Setup Script Configuration**
+
+When you run the setup script (`npm run setup` or `pnpm tsx setup.ts`), you'll be prompted:
+- Whether you want to set up OAuth providers
+- Which providers to configure (Google, GitHub, or both)  
+- Provider credentials for each selected provider
+- OAuth request timeout settings
+
+**Option 2: Manual Configuration**
+
+You can also manually update the `.env` file with OAuth provider information if you want to enable OAuth authentication.
+
+**For Google OAuth:**
+1. Go to [Google Cloud Console](https://console.developers.google.com/apis/credentials)
+2. Create OAuth 2.0 Client ID credentials
+3. Add your redirect URI to authorized redirect URIs
+4. Update your `.env` file:
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:4000/auth/google/callback
+```
+
+**For GitHub OAuth:**
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Create a new OAuth App
+3. Set the Authorization callback URL
+4. Update your `.env` file:
+
+```env
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
+```
+
+**OAuth Request Timeout (Optional):**
+```env
+API_OAUTH_REQUEST_TIMEOUT_MS=10000
+```
+
+**Note:** OAuth providers are automatically enabled only when all required credentials (Client ID, Client Secret, and Redirect URI) are provided. If any credential is missing, the provider will be disabled.
+
+#### Update the Email Configuration
+
+Talawa API requires email configuration for features like user registration verification and event invitations.
+
+You will need to update the `.env` file with the following information.
+
+1. `API_EMAIL_PROVIDER` - Set to `ses` (default)
+2. `AWS_SES_REGION` - Your AWS SES region (e.g., `ap-south-1`)
+3. `AWS_ACCESS_KEY_ID` - Your AWS IAM Access Key
+4. `AWS_SECRET_ACCESS_KEY` - Your AWS IAM Secret Key
+5. `AWS_SES_FROM_EMAIL` - The email address you have verified in SES
+6. `AWS_SES_FROM_NAME` - (Optional) The name to display as the sender (default: "Talawa")
+
+**Alternatively, for SMTP Provider:**
+
+1. `API_EMAIL_PROVIDER` - Set to `smtp`
+2. `SMTP_HOST` - SMTP server hostname (required)
+3. `SMTP_PORT` - SMTP server port (required, e.g., 587 or 465)
+4. `SMTP_USER` - SMTP username (optional)
+5. `SMTP_PASSWORD` - SMTP password (optional)
+6. `SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
+7. `SMTP_FROM_EMAIL` - Sender email address (required)
+8. `SMTP_FROM_NAME` - Sender display name (optional)
+9. `SMTP_NAME` - Client hostname for HELO/EHLO (optional)
+10. `SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
+
+**Required IAM Permissions:**
+Your AWS IAM user needs the following permissions:
+- `ses:SendEmail`
+- `ses:SendRawEmail`
+
+### Troubleshooting
+
+If you encounter issues with email delivery:
+
+1.  **"Email not verified" Error**: AWS SES Sandbox mode requires verification of *both* the sender and recipient addresses. Verify the email addresses in the SES Console.
+2.  **"Access Denied" Error**: Ensure your IAM user has `ses:SendEmail` and `ses:SendRawEmail` permissions. check that the access key and secret key are correct.
+3.  **"Throttling" Error**: You may have exceeded your SES sending rate limits. Request a quota increase in the AWS Console.
+4.  **Test Email Fails**: If the setup script test email fails, check the console output for the specific error message. Common causes include network firewalls blocking the SES endpoint.
 
 After all the configuration steps are complete, you will be ready to start the production server.
 

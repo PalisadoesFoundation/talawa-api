@@ -16,9 +16,10 @@ import { isDeepStrictEqual } from "node:util";
  */
 export function assertToBeNonNullish<T>(
 	value: T | null | undefined,
+	message?: string,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		throw new Error("Not a non-nullish value.");
+		throw new Error(message ?? "Not a non-nullish value.");
 	}
 }
 
@@ -45,3 +46,49 @@ export const isSubSequence = <T>(sequence: T[], subsequence: T[]) => {
 	// Return true or false depending on whether the matching for the entire subsequence has completed along with the loop exit.
 	return j === subsequence.length;
 };
+
+export interface MultipartPayloadOptions {
+	operations: Record<string, unknown>;
+	map: Record<string, string[]>;
+	fileContent: string;
+	fileType?: string;
+	fileName?: string;
+	boundary?: string;
+}
+
+export function createMultipartPayload({
+	operations,
+	map,
+	fileContent,
+	fileType = "text/plain",
+	fileName = "blob",
+	boundary = `----WebKitFormBoundary${Math.random().toString(36)}`,
+}: MultipartPayloadOptions) {
+	const mapKeys = Object.keys(map);
+	if (mapKeys.length !== 1) {
+		throw new Error(
+			`createMultipartPayload expects exactly one file mapping, but got ${mapKeys.length} keys: ${mapKeys.join(", ")}`,
+		);
+	}
+	const fileField = mapKeys[0];
+	assertToBeNonNullish(fileField);
+
+	const body = [
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="operations"',
+		"",
+		JSON.stringify(operations),
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="map"',
+		"",
+		JSON.stringify(map),
+		`--${boundary}`,
+		`Content-Disposition: form-data; name="${fileField}"; filename="${fileName}"`,
+		`Content-Type: ${fileType}`,
+		"",
+		fileContent,
+		`--${boundary}--`,
+	].join("\r\n");
+
+	return { body, boundary };
+}

@@ -4,7 +4,7 @@
 
 # Variable: eventVolunteerGroupWhereInputSchema
 
-> `const` **eventVolunteerGroupWhereInputSchema**: `ZodObject`\<\{ `eventId`: `ZodOptional`\<`ZodString`\>; `leaderName`: `ZodOptional`\<`ZodString`\>; `name_contains`: `ZodOptional`\<`ZodString`\>; `orgId`: `ZodOptional`\<`ZodString`\>; `userId`: `ZodOptional`\<`ZodString`\>; \}, `"strip"`, `ZodTypeAny`, \{ `eventId?`: `string`; `leaderName?`: `string`; `name_contains?`: `string`; `orgId?`: `string`; `userId?`: `string`; \}, \{ `eventId?`: `string`; `leaderName?`: `string`; `name_contains?`: `string`; `orgId?`: `string`; `userId?`: `string`; \}\>
+> `const` **eventVolunteerGroupWhereInputSchema**: `ZodObject`\<\{ `eventId`: `ZodOptional`\<`ZodString`\>; `leaderName`: `ZodOptional`\<`ZodString`\>; `name_contains`: `ZodOptional`\<`ZodString`\>; `orgId`: `ZodOptional`\<`ZodString`\>; `userId`: `ZodOptional`\<`ZodString`\>; \}, `$strip`\>
 
 Defined in: [src/graphql/inputs/EventVolunteerGroupWhereInput.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/EventVolunteerGroupWhereInput.ts#L8)
 

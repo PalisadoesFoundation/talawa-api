@@ -4,12 +4,14 @@
 
 # Function: createDataloaders()
 
-> **createDataloaders**(`db`): [`Dataloaders`](../type-aliases/Dataloaders.md)
+> **createDataloaders**(`db`, `cache`, `perf?`): [`Dataloaders`](../type-aliases/Dataloaders.md)
 
-Defined in: [src/utilities/dataloaders/index.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L47)
+Defined in: [src/utilities/dataloaders/index.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L53)
 
 Creates all DataLoaders for a request context.
 Each loader is request-scoped to ensure proper caching and isolation.
+When a cache service is provided, DataLoaders use cache-first lookup strategy.
+When a performance tracker is provided, DataLoaders track database operation durations.
 
 ## Parameters
 
@@ -18,6 +20,18 @@ Each loader is request-scoped to ensure proper caching and isolation.
 [`DrizzleClient`](../../../fastifyPlugins/drizzleClient/type-aliases/DrizzleClient.md)
 
 The Drizzle client instance for database operations.
+
+### cache
+
+Optional cache service for cache-first lookups. Pass null to disable caching.
+
+[`CacheService`](../../../services/caching/CacheService/interfaces/CacheService.md) | `null`
+
+### perf?
+
+[`PerformanceTracker`](../../metrics/performanceTracker/interfaces/PerformanceTracker.md)
+
+Optional performance tracker for monitoring database operation durations.
 
 ## Returns
 
@@ -28,7 +42,7 @@ An object containing all DataLoaders.
 ## Example
 
 ```typescript
-const dataloaders = createDataloaders(drizzleClient);
+const dataloaders = createDataloaders(drizzleClient, cacheService, perfTracker);
 const user = await dataloaders.user.load(userId);
 const organization = await dataloaders.organization.load(orgId);
 ```

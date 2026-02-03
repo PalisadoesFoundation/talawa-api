@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
 import "~/src/graphql/types/Post/Post";
+import { upVotersComplexity } from "~/src/graphql/types/Post/upVoters";
 import "~/src/graphql/types/Post/upVoters";
 import type {
 	GraphQLFieldResolver,
@@ -12,6 +13,7 @@ import type {
 import { schema } from "~/src/graphql/schema";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import type { User } from "~/src/graphql/types/User/User";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { DefaultGraphQLConnection as Connection } from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -50,6 +52,21 @@ describe("Post Resolver - upVoters", () => {
 			pinnedAt: new Date(),
 			attachments: [],
 		} as PostType;
+	});
+
+	it("should calculate complexity correctly", () => {
+		expect(upVotersComplexity({ first: 10 })).toEqual({
+			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			multiplier: 10,
+		});
+		expect(upVotersComplexity({ last: 5 })).toEqual({
+			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			multiplier: 5,
+		});
+		expect(upVotersComplexity({})).toEqual({
+			field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			multiplier: 1,
+		});
 	});
 
 	it("should return upvoters successfully", async () => {
@@ -252,10 +269,11 @@ describe("Post Resolver - upVoters", () => {
 
 	it("should throw error if cursor provided but no results found (invalid cursor context)", async () => {
 		const mockDate = new Date();
+		const validUuid = "550e8400-e29b-41d4-a716-446655440001";
 		const mockCursor = Buffer.from(
 			JSON.stringify({
 				createdAt: mockDate.toISOString(),
-				creatorId: "user-1",
+				creatorId: validUuid,
 			}),
 		).toString("base64url");
 
@@ -265,6 +283,28 @@ describe("Post Resolver - upVoters", () => {
 			await resolveUpVoters(
 				mockPost,
 				{ first: 5, after: mockCursor },
+				ctx,
+				{} as GraphQLResolveInfo,
+			);
+		}).rejects.toThrow(TalawaGraphQLError);
+	});
+
+	it("should throw error if cursor provided but no results found (inversed)", async () => {
+		const mockDate = new Date();
+		const validUuid = "550e8400-e29b-41d4-a716-446655440001";
+		const mockCursor = Buffer.from(
+			JSON.stringify({
+				createdAt: mockDate.toISOString(),
+				creatorId: validUuid,
+			}),
+		).toString("base64url");
+
+		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce([]);
+
+		await expect(async () => {
+			await resolveUpVoters(
+				mockPost,
+				{ last: 5, before: mockCursor },
 				ctx,
 				{} as GraphQLResolveInfo,
 			);
@@ -317,6 +357,53 @@ describe("Post Resolver - upVoters", () => {
 				orderBy: expect.any(Array),
 			}),
 		);
+	});
+
+	it("should throw error for invalid cursor (inversed)", async () => {
+		const invalidCursor = "invalid-base64";
+		await expect(
+			resolveUpVoters(
+				mockPost,
+				{ last: 5, before: invalidCursor },
+				ctx,
+				{} as GraphQLResolveInfo,
+			),
+		).rejects.toThrow(TalawaGraphQLError);
+	});
+
+	it("should handle vote with null creatorId but valid creator (edge case)", async () => {
+		const mockDate = new Date();
+		const validUserId = "550e8400-e29b-41d4-a716-446655440001";
+
+		const mockUsers = [
+			{
+				createdAt: mockDate,
+				creatorId: null, // This triggers the ?? "" branch
+				creator: {
+					id: validUserId,
+					name: "Valid User",
+					emailAddress: "valid@example.com",
+				},
+			},
+		];
+
+		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce(
+			mockUsers,
+		);
+
+		const result = (await resolveUpVoters(
+			mockPost,
+			{ first: 5 },
+			ctx,
+			{} as GraphQLResolveInfo,
+		)) as Connection<User>;
+
+		expect(result.edges).toHaveLength(1);
+		if (!result.edges[0]) {
+			throw new Error("Expected edge not found in result");
+		}
+		expect(result.edges[0].cursor).toBeDefined();
+		// We can't easily check the cursor content without decoding, but we verified the path execution.
 	});
 
 	it("should filter out votes with null creator", async () => {

@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	AGENDA_ITEM_DESCRIPTION_MAX_LENGTH,
 	AGENDA_ITEM_NAME_MAX_LENGTH,
@@ -6,6 +6,10 @@ import {
 } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 
 export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 	.pick({
@@ -14,6 +18,7 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 	})
 	.partial()
 	.extend({
+		attachments: z.array(fileMetadataInputSchema).max(10).optional(),
 		description: sanitizedStringSchema
 			.min(1)
 			.max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH)
@@ -24,6 +29,10 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.min(1)
 			.max(AGENDA_ITEM_NAME_MAX_LENGTH)
 			.optional(),
+		url: z
+			.array(z.object({ url: z.string().url() }))
+			.max(5)
+			.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
@@ -33,6 +42,16 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		},
 	);
 
+const UpdateAgendaItemUrlInput = builder.inputType("UpdateAgendaItemUrlInput", {
+	description: "URL associated with an agenda item",
+	fields: (t) => ({
+		url: t.string({
+			description: "URL of the agenda item",
+			required: true,
+		}),
+	}),
+});
+
 export const MutationUpdateAgendaItemInput = builder
 	.inputRef<z.infer<typeof MutationUpdateAgendaItemInputSchema>>(
 		"MutationUpdateAgendaItemInput",
@@ -40,6 +59,12 @@ export const MutationUpdateAgendaItemInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			attachments: t.field({
+				description:
+					"File metadata for attachments uploaded via MinIO presigned URLs.",
+				required: false,
+				type: [FileMetadataInput],
+			}),
 			description: t.string({
 				description: "Custom information about the agenda item.",
 				required: false,
@@ -62,6 +87,10 @@ export const MutationUpdateAgendaItemInput = builder
 			}),
 			name: t.string({
 				description: "Name of the agenda item.",
+				required: false,
+			}),
+			url: t.field({
+				type: [UpdateAgendaItemUrlInput],
 				required: false,
 			}),
 		}),

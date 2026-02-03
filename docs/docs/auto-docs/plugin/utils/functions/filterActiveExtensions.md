@@ -6,7 +6,7 @@
 
 > **filterActiveExtensions**\<`T`\>(`items`, `activePlugins`): `T`[]
 
-Defined in: [src/plugin/utils.ts:169](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L169)
+Defined in: [src/plugin/utils.ts:170](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L170)
 
 Filters extensions by plugin status
 

@@ -1,7 +1,17 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import type { Client } from "minio";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
-import { assertToBeNonNullish } from "../../../helpers";
+import { assertToBeNonNullish, createMultipartPayload } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -14,6 +24,19 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+
+const createChatMutation = `
+mutation Mutation_createChat($input: MutationCreateChatInput!) {
+	createChat(input: $input) {
+		id
+		name
+		avatarMimeType
+	}
+}
+`;
+
+// Extract the return type of putObject from the minio Client
+type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
 
 // Helper function to get admin auth token
 async function getAdminToken() {
@@ -104,6 +127,14 @@ async function createOrganizationMembership(
 }
 
 suite("Mutation field createChat", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	let adminAuthToken: string;
 	let regularUserAuthToken: string;
 	let regularUserId: string;
@@ -238,7 +269,7 @@ suite("Mutation field createChat", () => {
 						issues: [
 							{
 								argumentPath: ["input", "organizationId"],
-								message: "Invalid uuid",
+								message: "Invalid UUID",
 							},
 						],
 					}),
@@ -317,6 +348,40 @@ suite("Mutation field createChat", () => {
 		);
 	});
 
+	test("system administrator can create chat in organization they do not belong to", async () => {
+		// Create a system administrator user
+		const systemAdmin = await createTestUser(adminAuthToken, "administrator");
+		createdUserIds.push(systemAdmin.userId);
+
+		// Create a separate organization (system admin is NOT a member)
+		const separateOrgId = await createTestOrganization(adminAuthToken);
+		createdOrganizationIds.push(separateOrgId);
+
+		const chatName = `System Admin Chat ${faker.string.uuid()}`;
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${systemAdmin.authToken}`,
+			},
+			variables: {
+				input: {
+					name: chatName,
+					description: "Chat created by system admin in non-member org",
+					organizationId: separateOrgId,
+				},
+			},
+		});
+
+		// Assert successful creation
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChat).not.toBeNull();
+		expect(result.data?.createChat?.name).toBe(chatName);
+		expect(result.data?.createChat?.id).toBeDefined();
+
+		if (result.data?.createChat?.id) {
+			createdChatIds.push(result.data.createChat.id);
+		}
+	});
+
 	test("organization administrator can successfully create a chat", async () => {
 		const chatName = `Admin Test Chat ${faker.string.uuid()}`;
 		const result = await mercuriusClient.mutate(Mutation_createChat, {
@@ -389,5 +454,223 @@ suite("Mutation field createChat", () => {
 		if (result.data?.createChat?.id) {
 			createdChatIds.push(result.data.createChat.id);
 		}
+	});
+
+	suite("Avatar handling", () => {
+		test("should handle invalid avatar mime type", async () => {
+			const { body, boundary } = createMultipartPayload({
+				operations: {
+					query: createChatMutation,
+					variables: {
+						input: {
+							name: "Invalid Avatar Chat",
+							organizationId: organizationId,
+							avatar: null,
+						},
+					},
+				},
+				map: {
+					"0": ["variables.input.avatar"],
+				},
+				fileContent: "fake content",
+				fileType: "text/plain",
+				fileName: "test.txt",
+			});
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${regularUserAuthToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.data?.createChat).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "avatar"],
+									message: 'Mime type "text/plain" is not allowed.',
+								}),
+							]),
+						}),
+						path: ["createChat"],
+					}),
+				]),
+			);
+		});
+
+		test("should successfully create chat with valid avatar", async () => {
+			// Mock minio putObject
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+
+			const chatName = `Avatar Chat ${faker.string.uuid()}`;
+
+			const { body, boundary } = createMultipartPayload({
+				operations: {
+					query: createChatMutation,
+					variables: {
+						input: {
+							name: chatName,
+							organizationId: organizationId,
+							avatar: null,
+						},
+					},
+				},
+				map: {
+					"0": ["variables.input.avatar"],
+				},
+				fileContent: "test content",
+				fileType: "image/jpeg",
+				fileName: "test.jpg",
+			});
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${regularUserAuthToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.createChat).not.toBeNull();
+			expect(result.data.createChat.name).toBe(chatName);
+			expect(result.data.createChat.avatarMimeType).toBe("image/jpeg");
+
+			if (result.data.createChat.id) {
+				createdChatIds.push(result.data.createChat.id);
+			}
+
+			expect(putObjectSpy).toHaveBeenCalled();
+			const [bucket, objectName, , sizeOrMeta, metaMaybe] =
+				putObjectSpy.mock.calls[0] ?? [];
+			expect(bucket).toBe(server.minio.bucketName);
+			expect(objectName).toEqual(expect.any(String));
+			const metadata = metaMaybe ?? sizeOrMeta;
+			expect(metadata).toEqual(
+				expect.objectContaining({
+					"content-type": "image/jpeg",
+				}),
+			);
+		});
+
+		test("should successfully create chat with explicitly null avatar", async () => {
+			const chatName = `Null Avatar Chat ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_createChat, {
+				headers: {
+					authorization: `bearer ${regularUserAuthToken}`,
+				},
+				variables: {
+					input: {
+						name: chatName,
+						organizationId: organizationId,
+						avatar: null,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createChat).not.toBeNull();
+			expect(result.data?.createChat?.name).toBe(chatName);
+			expect(result.data?.createChat?.avatarMimeType).toBeNull();
+
+			if (result.data?.createChat?.id) {
+				createdChatIds.push(result.data.createChat.id);
+			}
+		});
+	});
+
+	test("results in 'unauthenticated' error when current user is not found in database", async () => {
+		// Create a temp user
+		const tempUser = await createTestUser(adminAuthToken, "regular");
+
+		// Delete the user
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: tempUser.userId } },
+		});
+
+		// Try to create chat with deleted user's token
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${tempUser.authToken}`,
+			},
+			variables: {
+				input: {
+					name: "Test Chat",
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.data?.createChat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["createChat"],
+				}),
+			]),
+		);
+	});
+
+	test("results in 'unexpected' error when database insert fails unexpectedly", async () => {
+		// Mock the transaction to simulate database insert failure (returning empty array)
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockReturnValue({
+						values: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]), // Empty array simulates failure
+						}),
+					}),
+				};
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
+
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${regularUserAuthToken}`,
+			},
+			variables: {
+				input: {
+					name: "DB Fail Chat",
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.data?.createChat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unexpected",
+					}),
+					message: expect.any(String),
+					path: ["createChat"],
+				}),
+			]),
+		);
 	});
 });

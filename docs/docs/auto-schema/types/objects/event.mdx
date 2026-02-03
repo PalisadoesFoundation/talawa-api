@@ -92,12 +92,15 @@ type Event {
   attendees: [User!]
   attendeesCheckInStatus: [CheckInStatus!]!
   baseEvent: Event
+  baseRecurringEventId: ID
   createdAt: DateTime
   creator: User
   description: String
   endAt: DateTime
   hasExceptions: Boolean
   id: ID!
+  isCancelled: Boolean
+  isGenerated: Boolean
   isInviteOnly: Boolean
   isPublic: Boolean
   isRecurringEventTemplate: Boolean
@@ -159,7 +162,7 @@ A boolean flag indicating if the event lasts for the entire day.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventAttachment!]</b></code>](/auto-schema/types/objects/event-attachment.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
 
-A list of attachments associated with the event, such as images or documents.
+A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>attendees</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[User!]</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
 
@@ -172,6 +175,10 @@ Check-in status for all attendees of the event.
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>baseEvent</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 The base event from which this materialized instance was generated.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>baseRecurringEventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The ID of the base recurring event template if this is a generated instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -196,6 +203,14 @@ A boolean flag indicating if this materialized instance has any exceptions appli
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>isCancelled</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if this instance has been cancelled.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>isGenerated</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if this event was generated from a recurrence template.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>isInviteOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -287,8 +302,8 @@ Filter criteria for event volunteers.
 
 ### Returned By
 
-[`createEvent`](/auto-schema/operations/mutations/create-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteEntireRecurringEventSeries`](/auto-schema/operations/mutations/delete-entire-recurring-event-series.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteSingleEventInstance`](/auto-schema/operations/mutations/delete-single-event-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteStandaloneEvent`](/auto-schema/operations/mutations/delete-standalone-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteThisAndFollowingEvents`](/auto-schema/operations/mutations/delete-this-and-following-events.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`event`](/auto-schema/operations/queries/event.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByIds`](/auto-schema/operations/queries/events-by-ids.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByOrganizationId`](/auto-schema/operations/queries/events-by-organization-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getRecurringEvents`](/auto-schema/operations/queries/get-recurring-events.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateEntireRecurringEventSeries`](/auto-schema/operations/mutations/update-entire-recurring-event-series.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateSingleRecurringEventInstance`](/auto-schema/operations/mutations/update-single-recurring-event-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateStandaloneEvent`](/auto-schema/operations/mutations/update-standalone-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateThisAndFollowingEvents`](/auto-schema/operations/mutations/update-this-and-following-events.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`createEvent`](/auto-schema/operations/mutations/create-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteEntireRecurringEventSeries`](/auto-schema/operations/mutations/delete-entire-recurring-event-series.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteSingleEventInstance`](/auto-schema/operations/mutations/delete-single-event-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteStandaloneEvent`](/auto-schema/operations/mutations/delete-standalone-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteThisAndFollowingEvents`](/auto-schema/operations/mutations/delete-this-and-following-events.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`event`](/auto-schema/operations/queries/event.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByAdmin`](/auto-schema/operations/queries/events-by-admin.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByAttendee`](/auto-schema/operations/queries/events-by-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByCreator`](/auto-schema/operations/queries/events-by-creator.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByIds`](/auto-schema/operations/queries/events-by-ids.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByOrganizationId`](/auto-schema/operations/queries/events-by-organization-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByVolunteer`](/auto-schema/operations/queries/events-by-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getRecurringEvents`](/auto-schema/operations/queries/get-recurring-events.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateEntireRecurringEventSeries`](/auto-schema/operations/mutations/update-entire-recurring-event-series.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateSingleRecurringEventInstance`](/auto-schema/operations/mutations/update-single-recurring-event-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateStandaloneEvent`](/auto-schema/operations/mutations/update-standalone-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateThisAndFollowingEvents`](/auto-schema/operations/mutations/update-this-and-following-events.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
 
 ### Member Of
 
-[`ActionItem`](/auto-schema/types/objects/action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolder`](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Event`](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAttendee`](/auto-schema/types/objects/event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteerGroup`](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationEventsConnectionEdge`](/auto-schema/types/objects/organization-events-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VenueEventsConnectionEdge`](/auto-schema/types/objects/venue-events-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VolunteerMembership`](/auto-schema/types/objects/volunteer-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`ActionItem`](/auto-schema/types/objects/action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaCategory`](/auto-schema/types/objects/agenda-category.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolder`](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaItem`](/auto-schema/types/objects/agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Event`](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAttendee`](/auto-schema/types/objects/event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteerGroup`](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationEventsConnectionEdge`](/auto-schema/types/objects/organization-events-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VenueEventsConnectionEdge`](/auto-schema/types/objects/venue-events-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VolunteerMembership`](/auto-schema/types/objects/volunteer-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

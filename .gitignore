@@ -4,6 +4,9 @@
 ###################################################################
 ###################################################################
 
+# Centralized scripts downloaded by lefthook
+.github-central-scripts/
+
 # Keep directories that may have this file
 !.gitignore
 

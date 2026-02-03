@@ -3,7 +3,6 @@ import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
-import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyRedis from "@fastify/redis";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import envSchema from "env-schema";
@@ -15,6 +14,8 @@ import {
 } from "./envConfigSchema";
 import plugins from "./fastifyPlugins/index";
 import routes from "./routes/index";
+import { fastifyOtelInstrumentation } from "./tracing";
+import { loggerOptions } from "./utilities/logging/logger";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
@@ -36,14 +37,13 @@ export const createServer = async (options?: {
 	envConfig?: Partial<EnvConfig>;
 }) => {
 	// Configuration environment variables used by talawa api.
+	// The `data` option has highest precedence, allowing tests to override required env vars.
 	const envConfig = envSchema<EnvConfig>({
 		ajv: envSchemaAjv,
+		data: options?.envConfig,
 		dotenv: true,
 		schema: envConfigSchema,
 	});
-
-	// Merge or override default configuration environment variables with custom configuration environment variables passed by this function's caller.
-	Object.assign(envConfig, options?.envConfig);
 
 	/**
 	 * The root fastify instance or we could say the talawa api server itself. It could be considered as the root node of a directed acyclic graph(DAG) of fastify plugins.
@@ -54,14 +54,7 @@ export const createServer = async (options?: {
 		pluginTimeout: 30000,
 
 		// For configuring the pino.js logger that comes integrated with fastify. More information at this link: https://fastify.dev/docs/latest/Reference/Logging/
-		logger: {
-			level: envConfig.API_LOG_LEVEL,
-			transport: envConfig.API_IS_PINO_PRETTY
-				? {
-						target: "pino-pretty",
-					}
-				: undefined,
-		},
+		logger: loggerOptions,
 		genReqId: (req) => {
 			const headerValue = req.headers["x-correlation-id"];
 			if (
@@ -80,11 +73,12 @@ export const createServer = async (options?: {
 		request.log = request.log.child({ correlationId });
 	});
 
+	await fastify.register(fastifyOtelInstrumentation.plugin());
+
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
 	fastify.decorate("envConfig", envConfig);
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
-	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
 	fastify.register(fastifyCors, {

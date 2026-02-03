@@ -217,7 +217,7 @@ suite("Mutation field deleteActionItem", () => {
 					issues: expect.arrayContaining([
 						expect.objectContaining({
 							argumentPath: ["input", "id"],
-							message: expect.stringContaining("Invalid uuid"),
+							message: "Invalid UUID",
 						}),
 					]),
 				}),

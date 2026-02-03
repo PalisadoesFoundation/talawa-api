@@ -67,9 +67,6 @@ builder.mutationField("deleteAgendaItem", (t) =>
 					},
 					with: {
 						folder: {
-							columns: {
-								isAgendaItemFolder: true,
-							},
 							with: {
 								event: {
 									columns: {

@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { ActionItem as ActionItemType } from "~/src/graphql/types/ActionItem/ActionItem";
 import { resolveCreator } from "~/src/graphql/types/ActionItem/creator";
@@ -12,7 +12,7 @@ describe("ActionItem Resolver - Creator Field", () => {
 
 	beforeEach(() => {
 		mockActionItem = {
-			id: "01234567-89ab-cdef-0123-456789abcdef",
+			id: "01234567-89ab-4def-a123-456789abcdef",
 			organizationId: "org-123",
 			creatorId: "user-456",
 			assignedAt: new Date("2024-01-01T10:00:00Z"),
@@ -115,9 +115,12 @@ describe("ActionItem Resolver - Creator Field", () => {
 				role: "member",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser) // First call: current user
-				.mockResolvedValueOnce(creatorUser); // Second call: creator user
+			// First findFirst for currentUser permission check
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			// DataLoader is used to fetch the creator user
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 			expect(result).toEqual(creatorUser);
@@ -135,9 +138,12 @@ describe("ActionItem Resolver - Creator Field", () => {
 				role: "member",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser) // First call: current user
-				.mockResolvedValueOnce(creatorUser); // Second call: creator user
+			// First findFirst for currentUser permission check
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			// DataLoader is used to fetch the creator user
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 			expect(result).toEqual(creatorUser);
@@ -190,9 +196,12 @@ describe("ActionItem Resolver - Creator Field", () => {
 				name: "Creator User",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser) // First call: current user
-				.mockResolvedValueOnce(creatorUser); // Second call: creator user
+			// First findFirst for currentUser permission check
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			// DataLoader is used to fetch the creator user
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 			expect(result).toEqual(creatorUser);
@@ -205,9 +214,12 @@ describe("ActionItem Resolver - Creator Field", () => {
 				organizationMembershipsWhereMember: [{ role: "administrator" }],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser) // First call: current user
-				.mockResolvedValueOnce(undefined); // Second call: creator does not exist
+			// First findFirst for currentUser permission check
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			// DataLoader returns null for non-existent users
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 			mockActionItem.creatorId = "user-456";
 
@@ -266,16 +278,19 @@ describe("ActionItem Resolver - Creator Field", () => {
 				role: "member",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(creatorUser);
+			// First findFirst for currentUser permission check
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			// DataLoader is used to fetch the creator user
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			await resolveCreator(mockActionItem, {}, ctx);
 
-			// Verify both queries were made
+			// Verify first query was made for current user
 			expect(
 				mocks.drizzleClient.query.usersTable.findFirst,
-			).toHaveBeenCalledTimes(2);
+			).toHaveBeenCalledTimes(1);
 
 			// First call should be for current user with organization membership
 			expect(
@@ -292,12 +307,8 @@ describe("ActionItem Resolver - Creator Field", () => {
 				where: expect.any(Function),
 			});
 
-			// Second call should be for creator user (simpler query)
-			expect(
-				mocks.drizzleClient.query.usersTable.findFirst,
-			).toHaveBeenNthCalledWith(2, {
-				where: expect.any(Function),
-			});
+			// DataLoader should be called for creator user
+			expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("user-456");
 		});
 	});
 
@@ -321,9 +332,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				"user-789",
 			);
 
-			newMocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(orgAdminUser)
-				.mockResolvedValueOnce(creatorUser);
+			newMocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				orgAdminUser,
+			);
+			newCtx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, newCtx);
 			expect(result).toEqual(creatorUser);
@@ -354,9 +366,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				organizationMembershipsWhereMember: [{ role: "administrator" }],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(undefined);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 			mockActionItem.creatorId = ""; // Empty string instead of null
 
@@ -388,9 +401,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				role: "member",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(globalAdminUser)
-				.mockResolvedValueOnce(creatorUser);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				globalAdminUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 			expect(result).toEqual(creatorUser);
@@ -405,9 +419,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				organizationMembershipsWhereMember: [{ role: "administrator" }],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(undefined);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 			mockActionItem.creatorId = "non-existent-user";
 
@@ -436,9 +451,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				role: "member",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(creatorUser);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			await resolveCreator(mockActionItem, {}, ctx);
 
@@ -452,9 +468,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				organizationMembershipsWhereMember: [{ role: "administrator" }],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(undefined);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 			mockActionItem.creatorId = "missing-creator";
 
@@ -486,9 +503,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				createdAt: new Date("2024-01-01"),
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(creatorUser);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 
@@ -516,9 +534,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				metadata: { type: "creator", active: true },
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(currentUser)
-				.mockResolvedValueOnce(complexCreatorUser);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(complexCreatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 
@@ -561,9 +580,10 @@ describe("ActionItem Resolver - Creator Field", () => {
 				role: "member",
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(superAdminUser)
-				.mockResolvedValueOnce(creatorUser);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				superAdminUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 			const result = await resolveCreator(mockActionItem, {}, ctx);
 			expect(result).toEqual(creatorUser);

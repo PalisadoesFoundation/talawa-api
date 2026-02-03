@@ -1,10 +1,13 @@
-import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type {
 	ResolvedRecurringEventInstance,
 	recurringEventInstancesTable,
 } from "~/src/drizzle/tables/recurringEventInstances";
-import type { ResolveInstanceInput, ServiceDependencies } from "./types";
+import type {
+	EventTemplateWithAttachments,
+	ResolveInstanceInput,
+	ServiceDependencies,
+} from "./types";
 
 /**
  * Resolves a single generated instance by combining the properties of the base event template
@@ -60,6 +63,9 @@ export function resolveInstanceWithInheritance(
 		> | null,
 		exceptionCreatedBy: exception?.creatorId || null,
 		exceptionCreatedAt: exception?.createdAt || null,
+
+		// Attachments
+		attachments: baseTemplate.attachments,
 	};
 
 	// Apply exception data if it exists
@@ -154,7 +160,7 @@ function isValidExceptionField(
  */
 export function resolveMultipleInstances(
 	instances: (typeof recurringEventInstancesTable.$inferSelect)[],
-	templatesMap: Map<string, typeof eventsTable.$inferSelect>,
+	templatesMap: Map<string, EventTemplateWithAttachments>,
 	exceptionsMap: Map<string, typeof eventExceptionsTable.$inferSelect>,
 	logger: ServiceDependencies["logger"],
 ): ResolvedRecurringEventInstance[] {
@@ -242,9 +248,9 @@ export function createExceptionLookupMap(
  * @returns - A map of templates, keyed by their IDs.
  */
 export function createTemplateLookupMap(
-	templates: (typeof eventsTable.$inferSelect)[],
-): Map<string, typeof eventsTable.$inferSelect> {
-	const templateMap = new Map<string, typeof eventsTable.$inferSelect>();
+	templates: EventTemplateWithAttachments[],
+): Map<string, EventTemplateWithAttachments> {
+	const templateMap = new Map<string, EventTemplateWithAttachments>();
 
 	for (const template of templates) {
 		templateMap.set(template.id, template);

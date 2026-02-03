@@ -14,3 +14,4 @@ import "./UserMaritalStatus";
 import "./UserNatalSex";
 import "./UserRole";
 import "./membershipRequestStatus";
+import "./OAuthProvider";
