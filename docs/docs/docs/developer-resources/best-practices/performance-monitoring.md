@@ -1307,6 +1307,10 @@ Follow these steps to enable and test OpenTelemetry tracing in your local develo
 **Example `.env`:**
 ```bash
 API_OTEL_ENABLED=true
+<<<<<<< HEAD
+=======
+API_OTEL_ENVIRONMENT=local
+>>>>>>> develop
 API_OTEL_SERVICE_NAME=talawa-api
 API_OTEL_SAMPLING_RATIO=1
 ```

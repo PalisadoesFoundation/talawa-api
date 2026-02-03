@@ -745,3 +745,8 @@ This environment variable is used to configure the OAuth Redirect URI for GitHub
 ### API_OAUTH_REQUEST_TIMEOUT_MS
 
 This environment variable is used to configure the request timeout in milliseconds for OAuth provider API calls. Default value is `10000` milliseconds (10 seconds).
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> develop
