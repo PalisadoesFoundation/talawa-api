@@ -537,11 +537,16 @@ test_start "validate_repository_root fails outside repo root"
 (
     temp_dir=$(mktemp -d)
     cd "$temp_dir" || exit 1
+    
     if validate_repository_root &>/dev/null; then
-        exit 1
+        rc=1
     else
-        exit 0
+        rc=0
     fi
+    
+    cd / || true
+    rm -rf "$temp_dir"
+    exit "$rc"
 )
 if [ $? -eq 0 ]; then
     test_pass
@@ -608,6 +613,15 @@ unset -f curl ping
 test_start "validate_prerequisites succeeds when all checks pass"
 (
     cd "$SCRIPT_DIR/../../.." || exit 1
+
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 0; }
+
+    export -f validate_repository_root
+    export -f validate_disk_space
+    export -f validate_internet_connectivity
+
     if validate_prerequisites &>/dev/null; then
         exit 0
     else
