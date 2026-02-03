@@ -107,6 +107,15 @@ describe("getKeyPathsWithNonUndefinedValues", () => {
 		expect(result).toEqual([]);
 	});
 
+	it("should treat null intermediate values as undefined paths", () => {
+		const object = { a: null };
+		const keyPaths = [["a", "b"]] as unknown as Paths<typeof object>[];
+
+		const result = getKeyPathsWithNonUndefinedValues({ keyPaths, object });
+
+		expect(result).toEqual([]);
+	});
+
 	it("should handle complex nested structure", () => {
 		const object = {
 			field1: undefined,
