@@ -1,9 +1,24 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeUpdatedAtResolver } from "~/src/graphql/types/EventAttendee/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+vi.mock("~/src/graphql/types/EventAttendee/EventAttendee", () => {
+	return {
+		EventAttendee: {
+			implement: vi.fn().mockImplementation((config) => {
+				if (typeof config.fields === "function") {
+					const mockT = {
+						field: vi.fn(),
+					};
+					config.fields(mockT);
+				}
+			}),
+		},
+	};
+});
 
 type MockUser = {
 	id: string;
@@ -26,6 +41,47 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 		);
 		ctx = context;
 		mocks = newMocks;
+
+		// Default mock implementation to execute callbacks and cover lines
+		const findFirstReturnValues: Record<string, any> = {
+			eventsTable: undefined,
+			recurringEventInstancesTable: undefined,
+			usersTable: undefined,
+		};
+
+		const createMockImplementation = (tableName: string) => {
+			return async (options: any) => {
+				const mockFields = { id: "id", organizationId: "organizationId" };
+				const mockOperators = { eq: vi.fn() };
+
+				if (options?.where) {
+					options.where(mockFields, mockOperators);
+				}
+				if (options?.with?.organizationMembershipsWhereMember?.where) {
+					options.with.organizationMembershipsWhereMember.where(
+						mockFields,
+						mockOperators,
+					);
+				}
+				return findFirstReturnValues[tableName];
+			};
+		};
+
+		(mocks.drizzleClient.query.eventsTable.findFirst as any).mockImplementation(
+			createMockImplementation("eventsTable"),
+		);
+		(mocks.drizzleClient.query.recurringEventInstancesTable.findFirst as any).mockImplementation(
+			createMockImplementation("recurringEventInstancesTable"),
+		);
+		(mocks.drizzleClient.query.usersTable.findFirst as any).mockImplementation(
+			createMockImplementation("usersTable"),
+		);
+
+		// Helper to set return values
+		(mocks as any).setTableReturnValue = (tableName: string, val: any) => {
+			findFirstReturnValues[tableName] = val;
+		};
+
 		mockEventAttendee = {
 			id: "attendee-123",
 			userId: "user-789",
@@ -55,12 +111,10 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 		});
 
 		it("should throw unauthenticated error if current user doesn't exist", async () => {
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+			(mocks as any).setTableReturnValue("eventsTable", {
 				organizationId: "org-123",
 			});
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			(mocks as any).setTableReturnValue("usersTable", undefined);
 
 			await expect(
 				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
@@ -70,14 +124,14 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 		});
 	});
 
-	describe("Error Handling with Try-Catch", () => {
+	describe("Error Handling", () => {
 		it("should pass through TalawaGraphQLError without wrapping", async () => {
 			const originalError = new TalawaGraphQLError({
 				message: "Custom validation error",
 				extensions: { code: "unauthorized_action" },
 			});
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockRejectedValue(
+			mocks.drizzleClient.query.eventsTable.findFirst.mockRejectedValueOnce(
 				originalError,
 			);
 
@@ -85,14 +139,13 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
 			).rejects.toThrow(originalError);
 
-			// Should not double-log TalawaGraphQLErrors
 			expect(ctx.log.error).not.toHaveBeenCalled();
 		});
 
 		it("should wrap generic errors with internal server error", async () => {
 			const genericError = new Error("Database constraint violation");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockRejectedValue(
+			mocks.drizzleClient.query.eventsTable.findFirst.mockRejectedValueOnce(
 				genericError,
 			);
 
@@ -108,26 +161,6 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 
 			expect(ctx.log.error).toHaveBeenCalledWith(genericError);
 		});
-
-		it("should handle network timeout errors", async () => {
-			const timeoutError = new Error("ETIMEDOUT");
-
-			mocks.drizzleClient.query.eventsTable.findFirst.mockRejectedValue(
-				timeoutError,
-			);
-
-			await expect(
-				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					message:
-						"Unexpected error while resolving EventAttendee.updatedAt field",
-					extensions: { code: "unexpected" },
-				}),
-			);
-
-			expect(ctx.log.error).toHaveBeenCalledWith(timeoutError);
-		});
 	});
 
 	describe("Organization Context Resolution", () => {
@@ -139,12 +172,8 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				mockEvent,
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockAdmin,
-			);
+			(mocks as any).setTableReturnValue("eventsTable", mockEvent);
+			(mocks as any).setTableReturnValue("usersTable", mockAdmin);
 
 			const result = await eventAttendeeUpdatedAtResolver(
 				mockEventAttendee,
@@ -170,12 +199,8 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				],
 			};
 
-			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
-				mockInstance,
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockAdmin,
-			);
+			(mocks as any).setTableReturnValue("recurringEventInstancesTable", mockInstance);
+			(mocks as any).setTableReturnValue("usersTable", mockAdmin);
 
 			const result = await eventAttendeeUpdatedAtResolver(
 				recurringAttendee,
@@ -197,6 +222,77 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 			).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 			);
+		});
+	});
+
+	describe("Authorization", () => {
+		it("should throw unexpected error if event is not found", async () => {
+			(mocks as any).setTableReturnValue("eventsTable", undefined);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
+		it("should throw unexpected error if recurring instance is not found", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			(mocks as any).setTableReturnValue("recurringEventInstancesTable", undefined);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(recurringAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
+		it("should throw unauthorized_action error if user is not an admin", async () => {
+			(mocks as any).setTableReturnValue("eventsTable", {
+				organizationId: "org-123",
+			});
+
+			const regularUser: MockUser = {
+				id: "user-123",
+				role: "regular",
+				organizationMembershipsWhereMember: [
+					{ role: "regular", organizationId: "org-123" },
+				],
+			};
+
+			(mocks as any).setTableReturnValue("usersTable", regularUser);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+		});
+
+		it("should succeed if user is global administrator even without org membership", async () => {
+			(mocks as any).setTableReturnValue("eventsTable", {
+				organizationId: "org-123",
+			});
+
+			const globalAdmin: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+
+			(mocks as any).setTableReturnValue("usersTable", globalAdmin);
+
+			const result = await eventAttendeeUpdatedAtResolver(
+				mockEventAttendee,
+				{},
+				ctx,
+			);
+			expect(result).toEqual(mockEventAttendee.updatedAt);
 		});
 	});
 });
