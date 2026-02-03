@@ -1101,10 +1101,10 @@ export const Mutation_updatePost = gql(`
       pinnedAt
       caption
       attachments {
-        mimeType            
+        mimeType
         fileHash
         name
-        objectName          
+        objectName
         id
       }
     }
@@ -2572,7 +2572,7 @@ export const Mutation_updateChatMembership = gql(`
   }
 `);
 
-export const Mutation_updateOrganizationMembership = gql(` 
+export const Mutation_updateOrganizationMembership = gql(`
   mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
     updateOrganizationMembership(input: $input) {
       id
@@ -2798,4 +2798,172 @@ export const Query_community = gql(`
 			name
 		}
 	}
+`);
+
+export const Mutation_updateCommunity = gql(`
+	mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
+		updateCommunity(input: $input) {
+			id
+			name
+			facebookURL
+			githubURL
+			instagramURL
+			linkedinURL
+			logoMimeType
+			redditURL
+			slackURL
+			websiteURL
+			xURL
+			youtubeURL
+			inactivityTimeoutDuration
+		}
+	}
+`);
+
+export const Mutation_updateChat = gql(`
+  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
+    updateChat(input: $input) {
+      id
+      name
+      description
+      avatarURL
+    }
+  }
+`);
+
+export const Mutation_sendVerificationEmail =
+	gql(`mutation Mutation_sendVerificationEmail {
+    sendVerificationEmail {
+        success
+        message
+    }
+}`);
+
+export const Mutation_verifyEmail =
+	gql(`mutation Mutation_verifyEmail($input: MutationVerifyEmailInput!) {
+    verifyEmail(input: $input) {
+        success
+        message
+    }
+}`);
+
+export const Mutation_signInWithOAuth =
+	gql(`mutation Mutation_signInWithOAuth($input: OAuthLoginInput!) {
+    signInWithOAuth(input: $input) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+            emailAddress
+        }
+    }
+}`);
+
+export const Mutation_linkOAuthAccount =
+	gql(`mutation Mutation_linkOAuthAccount($input: OAuthLoginInput!) {
+    linkOAuthAccount(input: $input) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
+    }
+}`);
+
+export const Mutation_unlinkOAuthAccount =
+	gql(`mutation Mutation_unlinkOAuthAccount($provider: OAuthProvider!) {
+    unlinkOAuthAccount(provider: $provider) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
+    }
+}`);
+
+export const Query_eventVenues = gql(`
+  query Query_eventVenues($input: QueryEventInput!, $first: Int, $after: String, $last: Int, $before: String) {
+    event(input: $input) {
+      id
+      venues(first: $first, after: $after, last: $last, before: $before) {
+        edges {
+          node {
+            id
+            name
+            description
+            capacity
+            organization {
+              id
+            }
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+`);
+
+export const Mutation_createVenue = gql(`
+  mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
+    createVenue(input: $input) {
+      id
+      name
+      description
+      capacity
+    }
+  }
+`);
+
+export const Mutation_createVenueBooking = gql(`
+  mutation Mutation_createVenueBooking($input: MutationCreateVenueBookingInput!) {
+    createVenueBooking(input: $input) {
+      id
+    }
+  }
+`);
+
+export const Query_eventVenuesWithAttachments = gql(`
+  query Query_eventVenuesWithAttachments($input: QueryEventInput!, $first: Int, $after: String, $last: Int, $before: String) {
+    event(input: $input) {
+      id
+      venues(first: $first, after: $after, last: $last, before: $before) {
+        edges {
+          node {
+            id
+            name
+            description
+            capacity
+            attachments {
+              mimeType
+            }
+            organization {
+              id
+            }
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
 `);
