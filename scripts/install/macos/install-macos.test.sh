@@ -1078,7 +1078,7 @@ if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker mode requires Docker
     if echo "$OUTPUT" | grep -q "Docker is not installed"; then
         test_pass
     else
-         test_fail "Expected 'Docker is not installed' message.\nLogs:\n$OUTPUT"
+        test_fail "Expected 'Docker is not installed' message.\nLogs:\n$OUTPUT"
     fi
 else
     test_fail "Expected non-zero exit and failure message with --skip-prereqs.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
