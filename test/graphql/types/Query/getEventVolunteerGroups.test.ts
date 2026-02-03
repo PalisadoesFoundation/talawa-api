@@ -788,7 +788,9 @@ suite("Query field getEventVolunteerGroups", () => {
 				expect(result.data?.getEventVolunteerGroups).toBeDefined();
 				expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
 
-				// Cleanup
+				// Cleanup user resources
+				// Note: The event created by creatorEventId is cleaned up via cascade deletion
+				// when the organization is deleted in afterAll
 				try {
 					await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
 						headers: {
