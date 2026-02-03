@@ -904,6 +904,22 @@ else
 fi
 
 
+test_start "Docker Missing with Skip Prereqs"
+setup_clean_system
+# docker is already masked by setup_clean_system (docker.hidden present)
+
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker mode requires Docker"; then
+    test_pass
+else
+    test_fail "Expected non-zero exit and 'Docker mode requires Docker' message.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+fi
+
+
 test_start "Docker Present but Daemon Down"
 setup_clean_system
 # Remove the directory created by setup_clean_system so we can create a file mock
@@ -1064,6 +1080,49 @@ if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Running pnpm install fresh.
     test_pass
 else
     test_fail "Expected pnpm install execution for missing lockfile with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+fi
+
+##############################################################################
+# Test: Docker Missing (Docker Mode, Skip Prereqs)
+##############################################################################
+test_start "Docker Missing (Docker Mode, Skip Prereqs)"
+setup_clean_system
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker mode requires Docker"; then
+    if echo "$OUTPUT" | grep -q "Docker is not installed"; then
+        test_pass
+    else
+         test_fail "Expected 'Docker is not installed' message.\nLogs:\n$OUTPUT"
+    fi
+else
+    test_fail "Expected non-zero exit and failure message with --skip-prereqs.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+fi
+
+##############################################################################
+# Test: Docker Present but Daemon Down (Skip Prereqs)
+##############################################################################
+test_start "Docker Present but Daemon Down (Skip Prereqs)"
+setup_clean_system
+rm -rf "$MOCK_BIN/docker"
+create_mock "docker" '
+    if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+    if [ "$1" = "info" ]; then exit 1; fi # Daemon down
+'
+set +e
+OUTPUT=$(run_test_script docker true 2>&1)
+EXIT_CODE=$?
+set -e
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Docker mode requires Docker"; then
+    if echo "$OUTPUT" | grep -q "Docker is installed but not running"; then
+        test_pass
+    else
+        test_fail "Expected 'Docker is installed but not running' message.\nLogs:\n$OUTPUT"
+    fi
+else
+    test_fail "Expected non-zero exit and daemon failure warning with --skip-prereqs.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 ##############################################################################
