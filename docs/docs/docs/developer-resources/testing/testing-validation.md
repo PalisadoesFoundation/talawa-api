@@ -77,6 +77,18 @@ pnpm run lint:tsdoc
 pnpm run typecheck
 ```
 
+### Error Handling Validation
+
+**Check for error handling violations:**
+```bash
+pnpm run validate:error-handling
+```
+
+**Attempt to auto-fix violations:**
+```bash
+pnpm run validate:error-handling:fix
+```
+
 ## Code Coverage Flags
 
 We use Codecov flags to separate and track coverage metrics for different types of tests:
