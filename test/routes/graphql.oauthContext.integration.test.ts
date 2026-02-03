@@ -29,6 +29,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as oauthConfig from "~/src/config/oauth";
 import { createServer } from "~/src/createServer";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import { testEnvConfig } from "../envConfigSchema";
 import type { introspection } from "../graphql/types/gql.tada";
 
@@ -57,6 +58,8 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 		if (server) {
 			await server.close();
 		}
+		//Clear singleton registry after each test
+		OAuthProviderRegistry.getInstance().clear();
 	});
 
 	describe("context creation with OAuth registry", () => {

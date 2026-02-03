@@ -19,198 +19,227 @@ describe("oauthProviderRegistry plugin", () => {
 		if (fastify) {
 			await fastify.close();
 		}
+		OAuthProviderRegistry.getInstance().clear();
 		vi.restoreAllMocks();
 	});
 
 	describe("plugin initialization", () => {
 		it("should initialize registry with no providers when all are disabled", async () => {
 			const mockRegistry = OAuthProviderRegistry.getInstance();
-			mockRegistry.clear();
+			try {
+				mockRegistry.clear();
 
-			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+				vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
-			const logInfoSpy = vi.spyOn(fastify.log, "info");
+				const logInfoSpy = vi.spyOn(fastify.log, "info");
 
-			await fastify.register(oauthProviderRegistry);
+				await fastify.register(oauthProviderRegistry);
 
-			expect(fastify.oauthProviderRegistry).toBeDefined();
-			expect(fastify.oauthProviderRegistry.listProviders()).toHaveLength(0);
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				"Initializing OAuth provider registry...",
-			);
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				"OAuth provider registry initialized with no providers (all disabled in config)",
-			);
+				expect(fastify.oauthProviderRegistry).toBeDefined();
+				expect(fastify.oauthProviderRegistry.listProviders()).toHaveLength(0);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					"Initializing OAuth provider registry...",
+				);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					"OAuth provider registry initialized with no providers (all disabled in config)",
+				);
+			} finally {
+				mockRegistry.clear();
+			}
 		});
 
 		it("should initialize registry with Google provider when enabled", async () => {
 			const mockRegistry = OAuthProviderRegistry.getInstance();
-			mockRegistry.clear();
+			try {
+				mockRegistry.clear();
 
-			// Create a mock Google provider
-			const mockGoogleProvider = {
-				getProviderName: vi.fn().mockReturnValue("google"),
-				getAuthorizationUrl: vi.fn(),
-				exchangeCodeForTokens: vi.fn(),
-				getUserProfile: vi.fn(),
-			};
+				// Create a mock Google provider
+				const mockGoogleProvider = {
+					getProviderName: vi.fn().mockReturnValue("google"),
+					getAuthorizationUrl: vi.fn(),
+					exchangeCodeForTokens: vi.fn(),
+					getUserProfile: vi.fn(),
+				};
 
-			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+				mockRegistry.register(mockGoogleProvider as IOAuthProvider);
 
-			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+				vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
-			const logInfoSpy = vi.spyOn(fastify.log, "info");
+				const logInfoSpy = vi.spyOn(fastify.log, "info");
 
-			await fastify.register(oauthProviderRegistry);
+				await fastify.register(oauthProviderRegistry);
 
-			expect(fastify.oauthProviderRegistry).toBeDefined();
-			expect(fastify.oauthProviderRegistry.listProviders()).toContain("google");
-			expect(fastify.oauthProviderRegistry.has("google")).toBe(true);
+				expect(fastify.oauthProviderRegistry).toBeDefined();
+				expect(fastify.oauthProviderRegistry.listProviders()).toContain(
+					"google",
+				);
+				expect(fastify.oauthProviderRegistry.has("google")).toBe(true);
 
-			const googleProvider = fastify.oauthProviderRegistry.get("google");
-			expect(googleProvider.getProviderName()).toBe("google");
+				const googleProvider = fastify.oauthProviderRegistry.get("google");
+				expect(googleProvider.getProviderName()).toBe("google");
 
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				"Initializing OAuth provider registry...",
-			);
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				{ providers: ["google"] },
-				"OAuth provider registry initialized with 1 provider(s)",
-			);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					"Initializing OAuth provider registry...",
+				);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					{ providers: ["google"] },
+					"OAuth provider registry initialized with 1 provider(s)",
+				);
+			} finally {
+				mockRegistry.clear();
+			}
 		});
 
 		it("should initialize registry with GitHub provider when enabled", async () => {
 			const mockRegistry = OAuthProviderRegistry.getInstance();
-			mockRegistry.clear();
+			try {
+				mockRegistry.clear();
 
-			// Create a mock GitHub provider
-			const mockGitHubProvider = {
-				getProviderName: vi.fn().mockReturnValue("github"),
-				getAuthorizationUrl: vi.fn(),
-				exchangeCodeForTokens: vi.fn(),
-				getUserProfile: vi.fn(),
-			};
+				// Create a mock GitHub provider
+				const mockGitHubProvider = {
+					getProviderName: vi.fn().mockReturnValue("github"),
+					getAuthorizationUrl: vi.fn(),
+					exchangeCodeForTokens: vi.fn(),
+					getUserProfile: vi.fn(),
+				};
 
-			mockRegistry.register(mockGitHubProvider as IOAuthProvider);
+				mockRegistry.register(mockGitHubProvider as IOAuthProvider);
 
-			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+				vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
-			const logInfoSpy = vi.spyOn(fastify.log, "info");
+				const logInfoSpy = vi.spyOn(fastify.log, "info");
 
-			await fastify.register(oauthProviderRegistry);
+				await fastify.register(oauthProviderRegistry);
 
-			expect(fastify.oauthProviderRegistry).toBeDefined();
-			expect(fastify.oauthProviderRegistry.listProviders()).toContain("github");
-			expect(fastify.oauthProviderRegistry.has("github")).toBe(true);
+				expect(fastify.oauthProviderRegistry).toBeDefined();
+				expect(fastify.oauthProviderRegistry.listProviders()).toContain(
+					"github",
+				);
+				expect(fastify.oauthProviderRegistry.has("github")).toBe(true);
 
-			const githubProvider = fastify.oauthProviderRegistry.get("github");
-			expect(githubProvider.getProviderName()).toBe("github");
+				const githubProvider = fastify.oauthProviderRegistry.get("github");
+				expect(githubProvider.getProviderName()).toBe("github");
 
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				"Initializing OAuth provider registry...",
-			);
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				{ providers: ["github"] },
-				"OAuth provider registry initialized with 1 provider(s)",
-			);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					"Initializing OAuth provider registry...",
+				);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					{ providers: ["github"] },
+					"OAuth provider registry initialized with 1 provider(s)",
+				);
+			} finally {
+				mockRegistry.clear();
+			}
 		});
 
 		it("should initialize registry with both providers when enabled", async () => {
 			const mockRegistry = OAuthProviderRegistry.getInstance();
-			mockRegistry.clear();
+			try {
+				mockRegistry.clear();
 
-			// Create mock providers
-			const mockGoogleProvider = {
-				getProviderName: vi.fn().mockReturnValue("google"),
-				getAuthorizationUrl: vi.fn(),
-				exchangeCodeForTokens: vi.fn(),
-				getUserProfile: vi.fn(),
-			};
+				// Create mock providers
+				const mockGoogleProvider = {
+					getProviderName: vi.fn().mockReturnValue("google"),
+					getAuthorizationUrl: vi.fn(),
+					exchangeCodeForTokens: vi.fn(),
+					getUserProfile: vi.fn(),
+				};
 
-			const mockGitHubProvider = {
-				getProviderName: vi.fn().mockReturnValue("github"),
-				getAuthorizationUrl: vi.fn(),
-				exchangeCodeForTokens: vi.fn(),
-				getUserProfile: vi.fn(),
-			};
+				const mockGitHubProvider = {
+					getProviderName: vi.fn().mockReturnValue("github"),
+					getAuthorizationUrl: vi.fn(),
+					exchangeCodeForTokens: vi.fn(),
+					getUserProfile: vi.fn(),
+				};
 
-			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
-			mockRegistry.register(mockGitHubProvider as IOAuthProvider);
+				mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+				mockRegistry.register(mockGitHubProvider as IOAuthProvider);
 
-			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+				vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
-			const logInfoSpy = vi.spyOn(fastify.log, "info");
+				const logInfoSpy = vi.spyOn(fastify.log, "info");
 
-			await fastify.register(oauthProviderRegistry);
+				await fastify.register(oauthProviderRegistry);
 
-			expect(fastify.oauthProviderRegistry).toBeDefined();
-			expect(fastify.oauthProviderRegistry.listProviders()).toHaveLength(2);
-			expect(fastify.oauthProviderRegistry.has("google")).toBe(true);
-			expect(fastify.oauthProviderRegistry.has("github")).toBe(true);
+				expect(fastify.oauthProviderRegistry).toBeDefined();
+				expect(fastify.oauthProviderRegistry.listProviders()).toHaveLength(2);
+				expect(fastify.oauthProviderRegistry.has("google")).toBe(true);
+				expect(fastify.oauthProviderRegistry.has("github")).toBe(true);
 
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				"Initializing OAuth provider registry...",
-			);
-			expect(logInfoSpy).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providers: expect.arrayContaining(["google", "github"]),
-				}),
-				"OAuth provider registry initialized with 2 provider(s)",
-			);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					"Initializing OAuth provider registry...",
+				);
+				expect(logInfoSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						providers: expect.arrayContaining(["google", "github"]),
+					}),
+					"OAuth provider registry initialized with 2 provider(s)",
+				);
+			} finally {
+				mockRegistry.clear();
+			}
 		});
 	});
 
 	describe("registry availability", () => {
 		it("should make registry accessible via fastify instance", async () => {
 			const mockRegistry = OAuthProviderRegistry.getInstance();
-			mockRegistry.clear();
+			try {
+				mockRegistry.clear();
 
-			const mockGoogleProvider = {
-				getProviderName: vi.fn().mockReturnValue("google"),
-				getAuthorizationUrl: vi.fn(),
-				exchangeCodeForTokens: vi.fn(),
-				getUserProfile: vi.fn(),
-			};
+				const mockGoogleProvider = {
+					getProviderName: vi.fn().mockReturnValue("google"),
+					getAuthorizationUrl: vi.fn(),
+					exchangeCodeForTokens: vi.fn(),
+					getUserProfile: vi.fn(),
+				};
 
-			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+				mockRegistry.register(mockGoogleProvider as IOAuthProvider);
 
-			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+				vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
-			await fastify.register(oauthProviderRegistry);
+				await fastify.register(oauthProviderRegistry);
 
-			// Registry should be accessible from the fastify instance
-			expect(fastify.oauthProviderRegistry).toBeDefined();
-			expect(typeof fastify.oauthProviderRegistry.get).toBe("function");
-			expect(typeof fastify.oauthProviderRegistry.has).toBe("function");
-			expect(typeof fastify.oauthProviderRegistry.listProviders).toBe(
-				"function",
-			);
+				// Registry should be accessible from the fastify instance
+				expect(fastify.oauthProviderRegistry).toBeDefined();
+				expect(typeof fastify.oauthProviderRegistry.get).toBe("function");
+				expect(typeof fastify.oauthProviderRegistry.has).toBe("function");
+				expect(typeof fastify.oauthProviderRegistry.listProviders).toBe(
+					"function",
+				);
+			} finally {
+				mockRegistry.clear();
+			}
 		});
 
 		it("should maintain registry state across multiple requests", async () => {
 			const mockRegistry = OAuthProviderRegistry.getInstance();
-			mockRegistry.clear();
+			try {
+				mockRegistry.clear();
 
-			const mockGoogleProvider = {
-				getProviderName: vi.fn().mockReturnValue("google"),
-				getAuthorizationUrl: vi.fn(),
-				exchangeCodeForTokens: vi.fn(),
-				getUserProfile: vi.fn(),
-			};
+				const mockGoogleProvider = {
+					getProviderName: vi.fn().mockReturnValue("google"),
+					getAuthorizationUrl: vi.fn(),
+					exchangeCodeForTokens: vi.fn(),
+					getUserProfile: vi.fn(),
+				};
 
-			mockRegistry.register(mockGoogleProvider as IOAuthProvider);
+				mockRegistry.register(mockGoogleProvider as IOAuthProvider);
 
-			vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
+				vi.mocked(buildOAuthProviderRegistry).mockReturnValue(mockRegistry);
 
-			await fastify.register(oauthProviderRegistry);
+				await fastify.register(oauthProviderRegistry);
 
-			// First access
-			const providers1 = fastify.oauthProviderRegistry.listProviders();
-			expect(providers1).toContain("google");
+				// First access
+				const providers1 = fastify.oauthProviderRegistry.listProviders();
+				expect(providers1).toContain("google");
 
-			// Second access - should return same data
-			const providers2 = fastify.oauthProviderRegistry.listProviders();
-			expect(providers2).toEqual(providers1);
+				// Second access - should return same data
+				const providers2 = fastify.oauthProviderRegistry.listProviders();
+				expect(providers2).toEqual(providers1);
+			} finally {
+				mockRegistry.clear();
+			}
 		});
 	});
 
