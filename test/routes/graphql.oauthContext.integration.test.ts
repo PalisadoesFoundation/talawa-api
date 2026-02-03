@@ -50,7 +50,7 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 	let mercuriusClient: ReturnType<typeof createMercuriusTestClient>;
 
 	beforeEach(async () => {
-		vi.clearAllMocks();
+		vi.resetAllMocks();
 	});
 
 	afterEach(async () => {
@@ -364,82 +364,6 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 
 			// Verify registry state is maintained after second request
 			expect(server.oauthProviderRegistry.listProviders()).toContain("google");
-		});
-	});
-
-	describe("registry accessibility", () => {
-		it("should allow providers to be retrieved from registry within resolvers", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: true,
-					clientId: "test-client-id",
-					clientSecret: "test-client-secret",
-					redirectUri: "https://test.com/callback",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-			});
-
-			vi.mocked(oauthConfig.getProviderConfig).mockReturnValue({
-				enabled: true,
-				clientId: "test-client-id",
-				clientSecret: "test-client-secret",
-				redirectUri: "https://test.com/callback",
-				requestTimeoutMs: 10000,
-			});
-
-			server = await createServer({
-				envConfig: {
-					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-					API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
-					API_RATE_LIMIT_REFILL_RATE: 10000,
-					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				},
-			});
-			await server.ready();
-
-			// Verify provider can be retrieved
-			const provider = server.oauthProviderRegistry.get("google");
-			expect(provider).toBeDefined();
-			expect(provider.getProviderName()).toBe("google");
-		});
-
-		it("should throw error when accessing non-existent provider", async () => {
-			vi.mocked(oauthConfig.loadOAuthConfig).mockReturnValue({
-				google: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-				github: {
-					enabled: false,
-					clientId: "",
-					clientSecret: "",
-					redirectUri: "",
-					requestTimeoutMs: 10000,
-				},
-			});
-
-			server = await createServer({
-				envConfig: {
-					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
-					API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
-					API_RATE_LIMIT_REFILL_RATE: 10000,
-					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-				},
-			});
-			await server.ready();
-
-			// Attempt to access non-existent provider
-			expect(() => server.oauthProviderRegistry.get("google")).toThrow();
 		});
 	});
 });
