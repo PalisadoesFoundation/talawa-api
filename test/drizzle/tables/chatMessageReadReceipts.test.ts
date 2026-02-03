@@ -1,0 +1,643 @@
+import { getTableName, type Table } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
+import { beforeAll, describe, expect, it } from "vitest";
+import {
+	chatMessageReadReceiptsInsertSchema,
+	chatMessageReadReceiptsRelations,
+	chatMessageReadReceiptsTable,
+} from "~/src/drizzle/tables/chatMessageReadReceipts";
+
+/**
+ * Helper function to get column name from a column object.
+ * Used across multiple test suites to extract column names from Drizzle column definitions.
+ */
+const getColumnName = (col: unknown): string | undefined => {
+	if (col && typeof col === "object" && "name" in col) {
+		return col.name as string;
+	}
+	return undefined;
+};
+
+/**
+ * Tests for chatMessageReadReceiptsTable definition - validates table schema, relations,
+ * insert schema validation, database constraints, indexes, and primary key configuration.
+ * This ensures the chatMessageReadReceipts table is properly configured and all code paths are covered.
+ *
+ * Note: Unit-level Drizzle metadata tests are required here because:
+ * 1. They validate the table schema definition before database migrations
+ * 2. They catch schema definition errors early in the development cycle
+ * 3. They provide fast feedback without requiring database setup
+ * 4. GraphQL integration tests validate the exposed API layer separately
+ */
+describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests", () => {
+	describe("Table Schema", () => {
+		it("should have correct table name", () => {
+			expect(getTableName(chatMessageReadReceiptsTable)).toBe(
+				"chat_message_read_receipts",
+			);
+		});
+
+		it("should have all required columns defined", () => {
+			const columns = Object.keys(chatMessageReadReceiptsTable);
+			expect(columns).toContain("messageId");
+			expect(columns).toContain("readerId");
+			expect(columns).toContain("readAt");
+		});
+
+		it("should have at least 3 columns", () => {
+			const columns = Object.keys(chatMessageReadReceiptsTable);
+			expect(columns.length).toBeGreaterThanOrEqual(3);
+		});
+
+		it("should have messageId column defined", () => {
+			expect(chatMessageReadReceiptsTable.messageId).toBeDefined();
+			expect(chatMessageReadReceiptsTable.messageId.name).toBe("message_id");
+		});
+
+		it("should have readerId column defined", () => {
+			expect(chatMessageReadReceiptsTable.readerId).toBeDefined();
+			expect(chatMessageReadReceiptsTable.readerId.name).toBe("reader_id");
+		});
+
+		it("should have readAt column defined", () => {
+			expect(chatMessageReadReceiptsTable.readAt).toBeDefined();
+			expect(chatMessageReadReceiptsTable.readAt.name).toBe("read_at");
+		});
+
+		it("should have all fields configured as not null", () => {
+			expect(chatMessageReadReceiptsTable.messageId.notNull).toBe(true);
+			expect(chatMessageReadReceiptsTable.readerId.notNull).toBe(true);
+			expect(chatMessageReadReceiptsTable.readAt.notNull).toBe(true);
+		});
+
+		it("should have readAt with default value", () => {
+			expect(chatMessageReadReceiptsTable.readAt.hasDefault).toBe(true);
+		});
+
+		it("should not have individual primary keys on columns", () => {
+			// Since this table uses a composite primary key, individual columns should not be primary
+			expect(chatMessageReadReceiptsTable.messageId.primary).toBe(false);
+			expect(chatMessageReadReceiptsTable.readerId.primary).toBe(false);
+		});
+	});
+
+	describe("Primary Key Configuration", () => {
+		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
+
+		it("should have a composite primary key defined", () => {
+			expect(tableConfig.primaryKeys).toBeDefined();
+			expect(tableConfig.primaryKeys.length).toBeGreaterThan(0);
+		});
+
+		it("should have composite primary key on messageId and readerId", () => {
+			const primaryKey = tableConfig.primaryKeys[0];
+			expect(primaryKey).toBeDefined();
+			if (!primaryKey) return;
+			expect(primaryKey.columns.length).toBe(2);
+
+			const columnNames = primaryKey.columns.map((col) => getColumnName(col));
+			expect(columnNames).toContain("message_id");
+			expect(columnNames).toContain("reader_id");
+		});
+
+		it("should have exactly one primary key constraint", () => {
+			expect(tableConfig.primaryKeys.length).toBe(1);
+		});
+	});
+
+	describe("Foreign Key Relationships", () => {
+		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
+
+		it("should have foreign keys referencing chat_messages and users tables", () => {
+			// Verify we have exactly 2 foreign keys
+			expect(tableConfig.foreignKeys.length).toBe(2);
+
+			// Map all FK references to their target table names
+			const referencedTableNames = tableConfig.foreignKeys
+				.map((fk) => {
+					if (typeof fk.reference === "function") {
+						const ref = fk.reference();
+						if (ref && "foreignTable" in ref && ref.foreignTable) {
+							return getTableName(ref.foreignTable as Table);
+						}
+					}
+					return null;
+				})
+				.filter(Boolean);
+
+			// Verify the FK targets include both required tables
+			expect(referencedTableNames).toContain("chat_messages");
+			expect(referencedTableNames).toContain("users");
+			expect(referencedTableNames.length).toBe(2);
+		});
+
+		it("should have messageId column with foreign key reference to chat_messages.id", () => {
+			// Verify the messageId column exists
+			expect(chatMessageReadReceiptsTable.messageId).toBeDefined();
+
+			// Find the FK that references chat_messages
+			const chatMessagesFk = tableConfig.foreignKeys.find((fk) => {
+				if (typeof fk.reference === "function") {
+					const ref = fk.reference();
+					if (ref && "foreignTable" in ref && ref.foreignTable) {
+						const tableName = getTableName(ref.foreignTable as Table);
+						return tableName === "chat_messages";
+					}
+				}
+				return false;
+			});
+
+			expect(chatMessagesFk).toBeDefined();
+		});
+
+		it("should have readerId column with foreign key reference to users.id", () => {
+			// Verify the readerId column exists
+			expect(chatMessageReadReceiptsTable.readerId).toBeDefined();
+
+			// Find the FK that references users
+			const usersFk = tableConfig.foreignKeys.find((fk) => {
+				if (typeof fk.reference === "function") {
+					const ref = fk.reference();
+					if (ref && "foreignTable" in ref && ref.foreignTable) {
+						const tableName = getTableName(ref.foreignTable as Table);
+						return tableName === "users";
+					}
+				}
+				return false;
+			});
+
+			expect(usersFk).toBeDefined();
+		});
+	});
+
+	describe("Table Relations", () => {
+		// Helper type for captured relation data
+		interface CapturedRelation {
+			table: Table;
+			config: {
+				relationName?: string;
+				fields?: unknown[];
+				references?: unknown[];
+			};
+		}
+
+		// Type for the mock relation helpers
+		interface MockRelationHelpers {
+			one: (
+				table: Table,
+				config?: CapturedRelation["config"],
+			) => {
+				withFieldName: () => object;
+			};
+			many: (
+				table: Table,
+				config?: CapturedRelation["config"],
+			) => {
+				withFieldName: () => object;
+			};
+		}
+
+		// Capture all relations by invoking the config function with mock helpers
+		// Only capture public-facing metadata, avoiding brittle internal implementation details
+		let capturedRelations: Record<string, CapturedRelation> = {};
+
+		beforeAll(() => {
+			capturedRelations = {};
+			(
+				chatMessageReadReceiptsRelations.config as unknown as (
+					helpers: MockRelationHelpers,
+				) => unknown
+			)({
+				one: (table: Table, config?: CapturedRelation["config"]) => {
+					// Identify relations by their field mappings (public API)
+					if (config) {
+						const fields = config.fields;
+						if (fields?.[0] === chatMessageReadReceiptsTable.messageId) {
+							capturedRelations.message = { table, config };
+						}
+						if (fields?.[0] === chatMessageReadReceiptsTable.readerId) {
+							capturedRelations.reader = { table, config };
+						}
+					}
+					return { withFieldName: () => ({}) };
+				},
+				many: (_table: Table, _config?: CapturedRelation["config"]) => {
+					return { withFieldName: () => ({}) };
+				},
+			});
+		});
+
+		it("should be defined", () => {
+			expect(chatMessageReadReceiptsRelations).toBeDefined();
+		});
+
+		it("should have the correct table reference", () => {
+			expect(chatMessageReadReceiptsRelations.table).toBe(
+				chatMessageReadReceiptsTable,
+			);
+		});
+
+		it("should have config function defined", () => {
+			expect(typeof chatMessageReadReceiptsRelations.config).toBe("function");
+		});
+
+		describe("message relation", () => {
+			it("should have message relation defined", () => {
+				expect(capturedRelations.message).toBeDefined();
+			});
+
+			it("should reference the chat_messages table", () => {
+				const table = capturedRelations.message?.table;
+				expect(table).toBeDefined();
+				expect(getTableName(table as Table)).toBe("chat_messages");
+			});
+
+			it("should have correct FK field mapping", () => {
+				const fields = capturedRelations.message?.config?.fields;
+				expect(fields).toBeDefined();
+				expect(Array.isArray(fields)).toBe(true);
+				expect(fields?.length).toBe(1);
+				// Verify it maps to chatMessageReadReceiptsTable.messageId
+				expect(fields?.[0]).toBe(chatMessageReadReceiptsTable.messageId);
+			});
+
+			it("should have correct FK reference mapping", () => {
+				const references = capturedRelations.message?.config?.references;
+				expect(references).toBeDefined();
+				expect(Array.isArray(references)).toBe(true);
+				expect(references?.length).toBe(1);
+				/// Verify it references chatMessagesTable.id
+				const ref = references?.[0];
+				expect(ref).toBeDefined();
+				expect(typeof ref).toBe("object");
+				expect(ref).toHaveProperty("name", "id");
+			});
+		});
+
+		describe("reader relation", () => {
+			it("should have reader relation defined", () => {
+				expect(capturedRelations.reader).toBeDefined();
+			});
+
+			it("should reference the users table", () => {
+				const table = capturedRelations.reader?.table;
+				expect(table).toBeDefined();
+				expect(getTableName(table as Table)).toBe("users");
+			});
+
+			it("should have correct FK field mapping", () => {
+				const fields = capturedRelations.reader?.config?.fields;
+				expect(fields).toBeDefined();
+				expect(Array.isArray(fields)).toBe(true);
+				expect(fields?.length).toBe(1);
+				// Verify it maps to chatMessageReadReceiptsTable.readerId
+				expect(fields?.[0]).toBe(chatMessageReadReceiptsTable.readerId);
+			});
+
+			it("should have correct FK reference mapping", () => {
+				const references = capturedRelations.reader?.config?.references;
+				expect(references).toBeDefined();
+				expect(Array.isArray(references)).toBe(true);
+				expect(references?.length).toBe(1);
+				// Verify it references usersTable.id
+				const ref = references?.[0];
+				expect(ref).toBeDefined();
+				expect(typeof ref).toBe("object");
+				expect(ref).toHaveProperty("name", "id");
+			});
+		});
+
+		it("should define exactly two relations (message and reader)", () => {
+			// Verify the captured relations map has exactly the expected relations
+			expect(Object.keys(capturedRelations)).toHaveLength(2);
+			expect(capturedRelations.message).toBeDefined();
+			expect(capturedRelations.reader).toBeDefined();
+		});
+	});
+
+	describe("Insert Schema Validation", () => {
+		const validReceiptData = {
+			messageId: "01234567-89ab-4def-8123-456789abcdef", // RFC 4122 compliant UUID (version 4)
+			readerId: "11111111-1111-4111-8111-111111111111", // RFC 4122 compliant UUID (version 4)
+		};
+
+		describe("messageId field", () => {
+			it("should accept a valid UUID for messageId", () => {
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(validReceiptData);
+				expect(result.success).toBe(true);
+			});
+
+			it("should reject missing messageId", () => {
+				const { messageId: _messageId, ...dataWithoutMessageId } =
+					validReceiptData;
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(dataWithoutMessageId);
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject invalid UUID format for messageId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					messageId: "invalid-uuid",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject null messageId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					messageId: null,
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject undefined messageId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					messageId: undefined,
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject string messageId that is not UUID", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					messageId: "not-a-uuid",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject empty string messageId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					messageId: "",
+				});
+				expect(result.success).toBe(false);
+			});
+		});
+
+		describe("readerId field", () => {
+			it("should accept a valid UUID for readerId", () => {
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(validReceiptData);
+				expect(result.success).toBe(true);
+			});
+
+			it("should reject missing readerId", () => {
+				const { readerId: _readerId, ...dataWithoutReaderId } =
+					validReceiptData;
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(dataWithoutReaderId);
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject invalid UUID format for readerId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readerId: "invalid-uuid",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject null readerId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readerId: null,
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject undefined readerId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readerId: undefined,
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject string readerId that is not UUID", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readerId: "not-a-uuid",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject empty string readerId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readerId: "",
+				});
+				expect(result.success).toBe(false);
+			});
+		});
+
+		describe("readAt field", () => {
+			it("should accept valid readAt timestamp", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readAt: new Date(),
+				});
+				expect(result.success).toBe(true);
+			});
+
+			it("should accept undefined readAt (uses default)", () => {
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(validReceiptData);
+				expect(result.success).toBe(true);
+			});
+
+			it("should accept specific readAt date", () => {
+				const specificDate = new Date("2024-01-15T10:30:00Z");
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readAt: specificDate,
+				});
+				expect(result.success).toBe(true);
+			});
+
+			it("should reject string readAt", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readAt: "2024-01-15",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject numeric timestamp for readAt", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readAt: Date.now(),
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject null readAt", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					readAt: null,
+				});
+				expect(result.success).toBe(false);
+			});
+		});
+
+		describe("complete receipt data", () => {
+			it("should accept complete valid receipt data", () => {
+				const completeData = {
+					messageId: "01234567-89ab-4def-8123-456789abcdef",
+					readerId: "11111111-1111-4111-8111-111111111111",
+					readAt: new Date(),
+				};
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(completeData);
+				expect(result.success).toBe(true);
+			});
+
+			it("should accept minimal valid receipt data", () => {
+				const minimalData = {
+					messageId: "01234567-89ab-4def-8123-456789abcdef",
+					readerId: "11111111-1111-4111-8111-111111111111",
+				};
+				const result =
+					chatMessageReadReceiptsInsertSchema.safeParse(minimalData);
+				expect(result.success).toBe(true);
+			});
+
+			it("should reject empty object", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject null", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse(null);
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject undefined", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse(undefined);
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject object with only messageId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					messageId: "01234567-89ab-4def-8123-456789abcdef",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject object with only readerId", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					readerId: "11111111-1111-4111-8111-111111111111",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should allow data with extra unexpected fields", () => {
+				const result = chatMessageReadReceiptsInsertSchema.safeParse({
+					...validReceiptData,
+					extraField: "should not be here",
+				});
+				// Zod by default allows extra fields, but we test the core fields work
+				expect(result.success).toBe(true);
+			});
+		});
+	});
+
+	describe("Table Indexes", () => {
+		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
+
+		it("should have indexes defined", () => {
+			expect(tableConfig.indexes).toBeDefined();
+			expect(Array.isArray(tableConfig.indexes)).toBe(true);
+		});
+
+		it("should have at least one index", () => {
+			expect(tableConfig.indexes.length).toBeGreaterThan(0);
+		});
+
+		it("should have an index on messageId column", () => {
+			const messageIdIndex = tableConfig.indexes.find(
+				(idx) =>
+					idx.config.columns.length === 1 &&
+					getColumnName(idx.config.columns[0]) === "message_id",
+			);
+			expect(messageIdIndex).toBeDefined();
+		});
+
+		it("should have messageId index as non-unique", () => {
+			const messageIdIndex = tableConfig.indexes.find(
+				(idx) =>
+					idx.config.columns.length === 1 &&
+					getColumnName(idx.config.columns[0]) === "message_id",
+			);
+			expect(messageIdIndex?.config.unique).toBe(false);
+		});
+
+		it("should have exactly one index defined", () => {
+			expect(tableConfig.indexes.length).toBe(1);
+		});
+	});
+
+	describe("Table Configuration", () => {
+		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
+
+		it("should have table config defined", () => {
+			expect(tableConfig).toBeDefined();
+		});
+
+		it("should have correct table name in config", () => {
+			expect(tableConfig.name).toBe("chat_message_read_receipts");
+		});
+
+		it("should have columns defined in config", () => {
+			expect(tableConfig.columns).toBeDefined();
+			expect(Array.isArray(tableConfig.columns)).toBe(true);
+		});
+
+		it("should have exactly 3 columns in config", () => {
+			expect(tableConfig.columns.length).toBe(3);
+		});
+
+		it("should have foreign keys defined", () => {
+			expect(tableConfig.foreignKeys).toBeDefined();
+			expect(Array.isArray(tableConfig.foreignKeys)).toBe(true);
+		});
+
+		it("should have exactly 2 foreign keys (messageId and readerId)", () => {
+			expect(tableConfig.foreignKeys.length).toBe(2);
+		});
+	});
+
+	describe("Table exports", () => {
+		it("should export chatMessageReadReceiptsTable", () => {
+			expect(chatMessageReadReceiptsTable).toBeDefined();
+		});
+
+		it("should export chatMessageReadReceiptsRelations", () => {
+			expect(chatMessageReadReceiptsRelations).toBeDefined();
+		});
+
+		it("should export chatMessageReadReceiptsInsertSchema", () => {
+			expect(chatMessageReadReceiptsInsertSchema).toBeDefined();
+		});
+
+		it("should have chatMessageReadReceiptsTable as an object", () => {
+			expect(typeof chatMessageReadReceiptsTable).toBe("object");
+		});
+
+		it("should have chatMessageReadReceiptsRelations as an object", () => {
+			expect(typeof chatMessageReadReceiptsRelations).toBe("object");
+		});
+
+		it("should have chatMessageReadReceiptsInsertSchema with parse method", () => {
+			expect(typeof chatMessageReadReceiptsInsertSchema.parse).toBe("function");
+		});
+
+		it("should have chatMessageReadReceiptsInsertSchema with safeParse method", () => {
+			expect(typeof chatMessageReadReceiptsInsertSchema.safeParse).toBe(
+				"function",
+			);
+		});
+	});
+});

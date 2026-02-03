@@ -1,22 +1,34 @@
 import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-
+import { initGraphQLTada } from "gql.tada";
 import { beforeAll, expect, suite, test, vi } from "vitest";
-
 import { chatMembershipsTable } from "~/src/drizzle/schema";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
-
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import {
-	Mutation_createOrganization,
-	Mutation_updateChat,
-	Query_signIn,
-} from "../documentNodes";
+import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+export const Mutation_updateChat = gql(`
+  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
+    updateChat(input: $input) {
+      id
+      name
+      description
+      avatarURL
+    }
+  }
+`);
 
 async function createTestOrganization(): Promise<string> {
 	const signIn = await mercuriusClient.query(Query_signIn, {
@@ -138,7 +150,17 @@ suite("updateChat mutation", () => {
 
 		expect(result.data?.updateChat ?? null).toBeNull();
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toMatch(/Graphql validation error/i);
+
+		const firstError = result.errors?.[0];
+		expect(firstError).toBeDefined();
+		expect(firstError?.message).toBe("Graphql validation error");
+		expect(firstError?.extensions).toEqual(
+			expect.objectContaining({
+				code: "invalid_arguments",
+				httpStatus: 400,
+				correlationId: expect.any(String),
+			}),
+		);
 	});
 
 	test("successfully uploads and updates chat avatar with valid image", async () => {
@@ -503,7 +525,15 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toBe("boom");
+		const firstError = result.errors?.[0];
+		expect(firstError).toBeDefined();
+		expect(firstError?.extensions).toEqual(
+			expect.objectContaining({
+				code: "internal_server_error",
+				httpStatus: 500,
+				correlationId: expect.any(String),
+			}),
+		);
 
 		vi.restoreAllMocks();
 	});
