@@ -186,7 +186,9 @@ suite("Mutation signInWithOAuth", () => {
 					isEmailAddressVerified: false,
 				})
 				.returning();
-
+			if (!existingUser) {
+				throw new Error("Failed to create test user");
+			}
 			// Mock OAuth provider responses
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
 				access_token: "mock-access-token",
@@ -216,10 +218,6 @@ suite("Mutation signInWithOAuth", () => {
 			expect(res.data?.signInWithOAuth?.user?.isEmailAddressVerified).toBe(
 				true,
 			);
-
-			if (!existingUser) {
-				throw new Error("Failed to create test user");
-			}
 
 			// Verify OAuth account was created
 			const [createdOAuthAccount] = await server.drizzleClient
@@ -390,46 +388,48 @@ suite("Mutation signInWithOAuth", () => {
 				emailVerified: true,
 			} as OAuthUserProfile);
 
-			// Act: Sign in with OAuth
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
+			try {
+				// Act: Sign in with OAuth
+				const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
+					variables: {
+						input: {
+							provider: "GOOGLE",
+							authorizationCode: "valid-auth-code",
+							redirectUri: "http://localhost:3000/callback",
+						},
 					},
-				},
-			});
+				});
 
-			// Assert: OAuth sign-in succeeded
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.signInWithOAuth).toBeDefined();
-			expect(res.data?.signInWithOAuth?.user?.id).toBe(user.id);
+				// Assert: OAuth sign-in succeeded
+				expect(res.errors).toBeUndefined();
+				expect(res.data?.signInWithOAuth).toBeDefined();
+				expect(res.data?.signInWithOAuth?.user?.id).toBe(user.id);
 
-			// Debug: Check if membership exists
-			const membershipCheck = await server.drizzleClient.execute(
-				sql`SELECT role FROM organization_memberships WHERE member_id = ${user.id} AND role = 'administrator'`,
-			);
-			expect(membershipCheck.length).toBeGreaterThan(0); // Verify membership exists
+				// Debug: Check if membership exists
+				const membershipCheck = await server.drizzleClient.execute(
+					sql`SELECT role FROM organization_memberships WHERE member_id = ${user.id} AND role = 'administrator'`,
+				);
+				expect(membershipCheck.length).toBeGreaterThan(0); // Verify membership exists
 
-			// Assert: User role was upgraded from regular to administrator
-			// Note: The role upgrade happens in-memory during the transaction,
-			// so we check the response data rather than the database
-			expect(res.data?.signInWithOAuth?.user?.role).toBe("administrator"); // This is the key assertion for the uncovered line
-
-			// Cleanup using raw SQL
-			await server.drizzleClient
-				.delete(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.id, oauthAccount.id));
-			await server.drizzleClient.execute(
-				sql`DELETE FROM organization_memberships WHERE member_id = ${user.id}`,
-			);
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, user.id));
-			await server.drizzleClient.execute(
-				sql`DELETE FROM organizations WHERE id = ${organizationId}`,
-			);
+				// Assert: User role was upgraded from regular to administrator
+				// Note: The role upgrade happens in-memory during the transaction,
+				// so we check the response data rather than the database
+				expect(res.data?.signInWithOAuth?.user?.role).toBe("administrator"); // This is the key assertion for the uncovered line
+			} finally {
+				// Cleanup using raw SQL
+				await server.drizzleClient
+					.delete(oauthAccountsTable)
+					.where(eq(oauthAccountsTable.id, oauthAccount.id));
+				await server.drizzleClient.execute(
+					sql`DELETE FROM organization_memberships WHERE member_id = ${user.id}`,
+				);
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, user.id));
+				await server.drizzleClient.execute(
+					sql`DELETE FROM organizations WHERE id = ${organizationId}`,
+				);
+			}
 		});
 
 		test("should set HTTP-Only cookies when cookie helper is available", async () => {
