@@ -46,42 +46,74 @@ describe("assertOrganizationAdmin", () => {
 		expect(caught).toBeInstanceOf(TalawaGraphQLError);
 		const gqlError = caught as TalawaGraphQLError;
 		expect(gqlError.extensions.code).toBe("unauthorized_action");
-		expect(gqlError.extensions.message).toBe(errorMessage);
+		expect(gqlError.message).toBe(errorMessage);
 	});
 
 	it("should throw TalawaGraphQLError when currentUser is undefined", () => {
 		const currentUser = undefined;
 		const membership = { role: "member" };
 
-		expect(() =>
-			assertOrganizationAdmin(currentUser, membership, errorMessage),
-		).toThrow(TalawaGraphQLError);
+		let caught: unknown;
+		try {
+			assertOrganizationAdmin(currentUser, membership, errorMessage);
+		} catch (error) {
+			caught = error;
+		}
+
+		expect(caught).toBeInstanceOf(TalawaGraphQLError);
+		const gqlError = caught as TalawaGraphQLError;
+		expect(gqlError.extensions.code).toBe("unauthorized_action");
+		expect(gqlError.message).toBe(errorMessage);
 	});
 
 	it("should throw TalawaGraphQLError when membership is undefined", () => {
 		const currentUser = { role: "user" };
 		const membership = undefined;
 
-		expect(() =>
-			assertOrganizationAdmin(currentUser, membership, errorMessage),
-		).toThrow(TalawaGraphQLError);
+		let caught: unknown;
+		try {
+			assertOrganizationAdmin(currentUser, membership, errorMessage);
+		} catch (error) {
+			caught = error;
+		}
+
+		expect(caught).toBeInstanceOf(TalawaGraphQLError);
+		const gqlError = caught as TalawaGraphQLError;
+		expect(gqlError.extensions.code).toBe("unauthorized_action");
+		expect(gqlError.message).toBe(errorMessage);
 	});
 
 	it("should throw TalawaGraphQLError when both currentUser and membership are undefined", () => {
 		const currentUser = undefined;
 		const membership = undefined;
 
-		expect(() =>
-			assertOrganizationAdmin(currentUser, membership, errorMessage),
-		).toThrow(TalawaGraphQLError);
+		let caught: unknown;
+		try {
+			assertOrganizationAdmin(currentUser, membership, errorMessage);
+		} catch (error) {
+			caught = error;
+		}
+
+		expect(caught).toBeInstanceOf(TalawaGraphQLError);
+		const gqlError = caught as TalawaGraphQLError;
+		expect(gqlError.extensions.code).toBe("unauthorized_action");
+		expect(gqlError.message).toBe(errorMessage);
 	});
 
 	it("should throw TalawaGraphQLError when roles are null", () => {
 		const currentUser = { role: null };
 		const membership = { role: null };
 
-		expect(() =>
-			assertOrganizationAdmin(currentUser, membership, errorMessage),
-		).toThrow(TalawaGraphQLError);
+		let caught: unknown;
+		try {
+			assertOrganizationAdmin(currentUser, membership, errorMessage);
+		} catch (error) {
+			caught = error;
+		}
+
+		expect(caught).toBeInstanceOf(TalawaGraphQLError);
+		const gqlError = caught as TalawaGraphQLError;
+		expect(gqlError.extensions.code).toBe("unauthorized_action");
+		expect(gqlError.message).toBe(errorMessage);
 	});
 });
