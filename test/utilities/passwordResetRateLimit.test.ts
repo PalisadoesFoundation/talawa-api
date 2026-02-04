@@ -64,6 +64,19 @@ describe("passwordResetRateLimit", () => {
 			expect(checkPasswordResetRateLimit(email1)).toBe(false);
 		});
 
+		it("should handle email case-insensitivity", () => {
+			const email1 = "User@Example.COM";
+			const email2 = "user@example.com";
+
+			// Make 5 requests with mixed case
+			for (let i = 0; i < 5; i++) {
+				checkPasswordResetRateLimit(email1);
+			}
+
+			// Same email (different case) should be blocked
+			expect(checkPasswordResetRateLimit(email2)).toBe(false);
+		});
+
 		it("should reset window after expiry", () => {
 			const email = "user6@example.com";
 			const startTime = 1000000000;

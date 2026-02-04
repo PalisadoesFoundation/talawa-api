@@ -4,11 +4,13 @@ import {
 	afterAll,
 	afterEach,
 	beforeAll,
+	beforeEach,
 	expect,
 	suite,
 	test,
 	vi,
 } from "vitest";
+import { PASSWORD_RESET_RATE_LIMITS } from "~/src/utilities/passwordResetRateLimit";
 import type {
 	ForbiddenActionExtensions,
 	TalawaGraphQLFormattedError,
@@ -79,6 +81,11 @@ suite("Mutation field requestPasswordReset", () => {
 				},
 			},
 		});
+	});
+
+	beforeEach(() => {
+		// Clear rate limit state between tests to ensure isolation
+		PASSWORD_RESET_RATE_LIMITS.clear();
 	});
 
 	afterEach(() => {
