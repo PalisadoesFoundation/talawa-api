@@ -430,10 +430,9 @@ describe("Mutation field unassignUserTag", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					message: "You are not authorized to perform this action.",
+					message: "You must be an admin to unassign tags.",
 					extensions: expect.objectContaining({
 						code: "unauthorized_action",
-						message: "You must be an admin to unassign tags.",
 					}),
 				}),
 			]),
