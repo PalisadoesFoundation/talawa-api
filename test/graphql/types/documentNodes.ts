@@ -888,7 +888,7 @@ export const Mutation_updateAgendaFolder = gql(`
 `);
 
 export const MUTATION_updateAgendaItemSequence = gql(`
-  mutation MUTATION_updateAgendaItemSequence($input: MutationUpdateAgendaItemSequenceInput!) {
+  mutation Mutation_updateAgendaItemSequence($input: MutationUpdateAgendaItemSequenceInput!) {
     updateAgendaItemSequence(input: $input) {
       id
       sequence
@@ -1101,10 +1101,10 @@ export const Mutation_updatePost = gql(`
       pinnedAt
       caption
       attachments {
-        mimeType            
+        mimeType
         fileHash
         name
-        objectName          
+        objectName
         id
       }
     }
@@ -1136,6 +1136,7 @@ export const Mutation_createChat = gql(`
     createChat(input: $input) {
       id
       name
+      avatarMimeType
     }
   }
 `);
@@ -1483,6 +1484,8 @@ export const Query_eventsByOrganizationId = gql(`
       attachments {
         mimeType
       }
+      isGenerated
+      baseRecurringEventId
     }
   }
 `);
@@ -2569,7 +2572,7 @@ export const Mutation_updateChatMembership = gql(`
   }
 `);
 
-export const Mutation_updateOrganizationMembership = gql(` 
+export const Mutation_updateOrganizationMembership = gql(`
   mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
     updateOrganizationMembership(input: $input) {
       id
@@ -2758,8 +2761,8 @@ export const Query_getEventInvitesByUserId = gql(`
 `);
 
 export const Query_getRecurringEvents = gql(`
-  query Query_getRecurringEvents($baseRecurringEventId: ID!) {
-    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId) {
+  query Query_getRecurringEvents($baseRecurringEventId: ID!, $includeCancelled: Boolean, $limit: Int, $offset: Int) {
+    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId, includeCancelled: $includeCancelled, limit: $limit, offset: $offset) {
       id
       name
       description
@@ -2769,6 +2772,7 @@ export const Query_getRecurringEvents = gql(`
       isRegisterable
       location
       isRecurringEventTemplate
+      isCancelled
       recurrenceRule {
         id
       }
@@ -2885,3 +2889,81 @@ export const Mutation_unlinkOAuthAccount =
         }
     }
 }`);
+
+export const Query_eventVenues = gql(`
+  query Query_eventVenues($input: QueryEventInput!, $first: Int, $after: String, $last: Int, $before: String) {
+    event(input: $input) {
+      id
+      venues(first: $first, after: $after, last: $last, before: $before) {
+        edges {
+          node {
+            id
+            name
+            description
+            capacity
+            organization {
+              id
+            }
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+`);
+
+export const Mutation_createVenue = gql(`
+  mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
+    createVenue(input: $input) {
+      id
+      name
+      description
+      capacity
+    }
+  }
+`);
+
+export const Mutation_createVenueBooking = gql(`
+  mutation Mutation_createVenueBooking($input: MutationCreateVenueBookingInput!) {
+    createVenueBooking(input: $input) {
+      id
+    }
+  }
+`);
+
+export const Query_eventVenuesWithAttachments = gql(`
+  query Query_eventVenuesWithAttachments($input: QueryEventInput!, $first: Int, $after: String, $last: Int, $before: String) {
+    event(input: $input) {
+      id
+      venues(first: $first, after: $after, last: $last, before: $before) {
+        edges {
+          node {
+            id
+            name
+            description
+            capacity
+            attachments {
+              mimeType
+            }
+            organization {
+              id
+            }
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+`);

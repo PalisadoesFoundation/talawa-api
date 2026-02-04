@@ -14,6 +14,7 @@ type Collection =
 	| "comment_votes"
 	| "action_categories"
 	| "events"
+	| "recurring_event_templates"
 	| "event_volunteers"
 	| "event_volunteer_memberships"
 	| "action_items"
@@ -32,6 +33,7 @@ export async function main(): Promise<void> {
 		"comment_votes",
 		"action_categories",
 		"events",
+		"recurring_event_templates",
 		"event_volunteers",
 		"event_volunteer_memberships",
 		"action_items",
@@ -55,28 +57,32 @@ export async function main(): Promise<void> {
 	return;
 }
 
+/**
+ * CLI runner: runs main(), then disconnect(). Returns exit code (0 = success, 1 = failure).
+ * Extracted for testability so tests can assert on exit code without invoking process.exit().
+ */
+export async function run(): Promise<number> {
+	try {
+		await main();
+	} catch (_error: unknown) {
+		return 1;
+	}
+	try {
+		await disconnect();
+		console.log(
+			"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
+		);
+		return 0;
+	} catch (error: unknown) {
+		console.error("Error: Cannot disconnect", error);
+		return 1;
+	}
+}
+
 const scriptPath = fileURLToPath(import.meta.url);
 export const isMain =
 	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
 
 if (isMain) {
-	let exitCode = 0;
-	(async () => {
-		try {
-			await main();
-		} catch (_error: unknown) {
-			exitCode = 1;
-		}
-		try {
-			await disconnect();
-			console.log(
-				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
-			);
-		} catch (error: unknown) {
-			console.error("Error: Cannot disconnect", error);
-			exitCode = 1;
-		} finally {
-			process.exit(exitCode);
-		}
-	})();
+	run().then((exitCode) => process.exit(exitCode));
 }

@@ -779,7 +779,7 @@ type Event {
   allDay: Boolean
 
   """
-  A list of attachments associated with the event, such as images or documents.
+  A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.
   """
   attachments: [EventAttachment!]
 
@@ -791,6 +791,11 @@ type Event {
 
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
+
+  """
+  The ID of the base recurring event template if this is a generated instance.
+  """
+  baseRecurringEventId: ID
 
   """Date time at the time the event was created."""
   createdAt: DateTime
@@ -817,6 +822,14 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
+
+  """A boolean flag indicating if this instance has been cancelled."""
+  isCancelled: Boolean
+
+  """
+  A boolean flag indicating if this event was generated from a recurrence template.
+  """
+  isGenerated: Boolean
 
   """A boolean flag indicating if the event is invite-only."""
   isInviteOnly: Boolean
@@ -935,7 +948,9 @@ type EventAttendee {
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
-  """The event the attendee is associated with."""
+  """
+  The event the attendee is associated with. Supports both standalone events and recurring event instances.
+  """
   event: Event
 
   """Indicates if the attendee has submitted feedback for the event."""
@@ -3713,6 +3728,9 @@ input MutationUpdateAgendaItemInput {
   """File metadata for attachments uploaded via MinIO presigned URLs."""
   attachments: [FileMetadataInput!]
 
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
+
   """Custom information about the agenda item."""
   description: String
 
@@ -4983,12 +5001,64 @@ type Query {
   ): Event
 
   """
+  Query field to fetch all events where a user is an administrator (via organization role).
+  """
+  eventsByAdmin(
+    """Number of events to return (Max limit: 100)"""
+    limit: Int = 100
+
+    """Number of events to skip (Max offset: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose admin events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
+  Query field to fetch all events a user is registered for or has attended.
+  """
+  eventsByAttendee(
+    """Number of events to return (max: 100)"""
+    limit: Int = 100
+
+    """Number of events to skip (max: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose attended events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """Query field to fetch all events created by a specific user."""
+  eventsByCreator(
+    """Number of events to return (default: 100, max: 100)"""
+    limit: Int
+
+    """Number of events to skip (default: 0, max: 10000)"""
+    offset: Int
+
+    """ID of the user whose created events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
   Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.
   """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 
   """Fetch all events that belong to a given organization."""
   eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
+
+  """Query field to fetch all events a user is volunteering for."""
+  eventsByVolunteer(
+    """The maximum number of events to return (default: 100, max: 100)"""
+    limit: Int = 100
+
+    """The number of events to skip (default: 0, max: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose volunteer events to fetch"""
+    userId: ID!
+  ): [Event!]!
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
@@ -5079,6 +5149,15 @@ type Query {
   getRecurringEvents(
     """The ID of the base recurring event template"""
     baseRecurringEventId: ID!
+
+    """Whether to include cancelled instances. Defaults to false."""
+    includeCancelled: Boolean = false
+
+    """Number of events to return. Defaults to 1000. Max 1000."""
+    limit: Int = 1000
+
+    """Number of events to skip. Defaults to 0. Max 10000."""
+    offset: Int = 0
   ): [Event!]
 
   """Query field to get volunteer memberships."""
