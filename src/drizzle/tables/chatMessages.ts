@@ -97,7 +97,7 @@ export const chatMessagesTableRelations = relations(
 		 * One to many relationship from `chat_messages` table to `chat_messages` table.
 		 */
 		chatMessagesWhereParentMessage: many(chatMessagesTable, {
-			relationName: "chat_messages.id:chat_messages.parent_message_id",
+			relationName: "chat_messages.parent_message_id:chat_messages.id",
 		}),
 		/**
 		 * Many to one relationship from `chat_messages` table to `users` table.
@@ -113,7 +113,7 @@ export const chatMessagesTableRelations = relations(
 		parentMessage: one(chatMessagesTable, {
 			fields: [chatMessagesTable.parentMessageId],
 			references: [chatMessagesTable.id],
-			relationName: "chat_messages.id:chat_messages.parent_message_id",
+			relationName: "chat_messages.parent_message_id:chat_messages.id",
 		}),
 	}),
 );

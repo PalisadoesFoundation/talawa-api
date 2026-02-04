@@ -4,9 +4,9 @@
 
 # Function: eventAttendeeEventResolver()
 
-> **eventAttendeeEventResolver**(`parent`, `_args`, `ctx`): `Promise`\<\{ `allDay`: `boolean`; `attachments`: `never`[]; `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `endAt`: `Date`; `id`: `string`; `isInviteOnly`: `boolean`; `isPublic`: `boolean`; `isRecurringEventTemplate`: `boolean`; `isRegisterable`: `boolean`; `location`: `string` \| `null`; `name`: `string`; `organizationId`: `string`; `startAt`: `Date`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \} \| `null`\>
+> **eventAttendeeEventResolver**(`parent`, `_args`, `ctx`): `Promise`\<[`Event`](../../../Event/Event/type-aliases/Event.md) \| `null`\>
 
-Defined in: [src/graphql/types/EventAttendee/event.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventAttendee/event.ts#L18)
+Defined in: [src/graphql/types/EventAttendee/event.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventAttendee/event.ts#L20)
 
 Resolves the event that an event attendee is associated with.
 
@@ -14,7 +14,7 @@ Resolves the event that an event attendee is associated with.
 
 ### parent
 
-The parent EventAttendee object containing the eventId.
+The parent EventAttendee object containing the eventId or recurringEventInstanceId.
 
 #### checkinTime
 
@@ -82,9 +82,9 @@ The GraphQL context containing dataloaders and logging utilities.
 
 ## Returns
 
-`Promise`\<\{ `allDay`: `boolean`; `attachments`: `never`[]; `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `endAt`: `Date`; `id`: `string`; `isInviteOnly`: `boolean`; `isPublic`: `boolean`; `isRecurringEventTemplate`: `boolean`; `isRegisterable`: `boolean`; `location`: `string` \| `null`; `name`: `string`; `organizationId`: `string`; `startAt`: `Date`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \} \| `null`\>
+`Promise`\<[`Event`](../../../Event/Event/type-aliases/Event.md) \| `null`\>
 
-The event the attendee is associated with, or null for recurring instances.
+The event the attendee is associated with.
 
 ## Throws
 
