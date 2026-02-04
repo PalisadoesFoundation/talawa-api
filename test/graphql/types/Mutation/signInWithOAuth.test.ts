@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
+import { print } from "graphql";
 import { uuidv7 } from "uuidv7";
 import {
 	afterEach,
@@ -19,6 +20,7 @@ import {
 } from "~/src/utilities/auth/oauth/errors";
 import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import type { OAuthUserProfile } from "~/src/utilities/auth/oauth/types";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { Query_signIn } from "../documentNodes";
@@ -429,6 +431,79 @@ suite("Mutation signInWithOAuth", () => {
 				sql`DELETE FROM organizations WHERE id = ${organizationId}`,
 			);
 		});
+
+		test("should set HTTP-Only cookies when cookie helper is available", async () => {
+			const testEmail = `cookie-test-${Date.now()}@example.com`;
+
+			// Mock OAuth provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: "google-cookie-test",
+				email: testEmail,
+				name: "Cookie Test User",
+				picture: "https://example.com/cookie.jpg",
+				emailVerified: true,
+			} as OAuthUserProfile);
+
+			// Use server.inject to make direct HTTP request
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: print(Mutation_signInWithOAuth),
+					variables: {
+						input: {
+							provider: "GOOGLE",
+							authorizationCode: "valid-auth-code",
+							redirectUri: "http://localhost:3000/callback",
+						},
+					},
+				},
+			});
+
+			// Assert: HTTP response is successful
+			expect(response.statusCode).toBe(200);
+
+			// Assert: Cookies are set correctly
+			const cookies = response.cookies;
+			expect(cookies).toBeDefined();
+			expect(cookies.length).toBeGreaterThanOrEqual(2);
+
+			const accessTokenCookie = cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const refreshTokenCookie = cookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+
+			expect(accessTokenCookie).toBeDefined();
+			expect(accessTokenCookie?.httpOnly).toBe(true);
+			expect(accessTokenCookie?.path).toBe("/");
+			expect(accessTokenCookie?.sameSite).toBe("Lax");
+
+			expect(refreshTokenCookie).toBeDefined();
+			expect(refreshTokenCookie?.httpOnly).toBe(true);
+			expect(refreshTokenCookie?.path).toBe("/");
+			expect(refreshTokenCookie?.sameSite).toBe("Lax");
+
+			// Parse response to get user info for cleanup
+			const responseData = JSON.parse(response.payload);
+			const userId = responseData.data?.signInWithOAuth?.user?.id;
+
+			if (userId) {
+				// Cleanup: Delete OAuth account and user
+				await server.drizzleClient
+					.delete(oauthAccountsTable)
+					.where(eq(oauthAccountsTable.userId, userId));
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, userId));
+			}
+		});
 	});
 
 	describe("error scenarios", () => {
@@ -687,6 +762,27 @@ suite("Mutation signInWithOAuth", () => {
 			const originalClient = server.drizzleClient;
 
 			try {
+				/*
+				 * FRAGILE MOCK WARNING: This test uses a highly coupled mock that depends on the exact
+				 * query order in the signInWithOAuth resolver's transaction flow:
+				 *
+				 * 1. First SELECT: Query OAuth accounts table by provider + providerId
+				 * 2. Second SELECT: Query users table by user ID from the OAuth account
+				 *
+				 * The selectCallCount sequencing simulates an "orphaned" OAuth account scenario where:
+				 * - Step 1 finds an OAuth account record (returns fake OAuth account with non-existent userId)
+				 * - Step 2 fails to find the referenced user (returns empty array)
+				 *
+				 * This mock WILL BREAK if the resolver implementation changes:
+				 * - Reordering the database queries
+				 * - Combining selects into joins or using different query patterns
+				 * - Changing transaction structure or adding/removing queries
+				 * - Using different Drizzle ORM methods (e.g., switching from separate selects to joins)
+				 *
+				 * If the resolver logic changes, update this mock to match the new query sequence
+				 * or consider using a more robust testing approach (e.g., actual test database with
+				 * orphaned records).
+				 */
 				let selectCallCount = 0;
 				const mockClient = {
 					...originalClient,
@@ -767,7 +863,10 @@ suite("Mutation signInWithOAuth", () => {
 			// Save original drizzleClient
 			const originalClient = server.drizzleClient;
 
-			// Create a mock that simulates empty insert result
+			// Mock server.drizzleClient to force empty insert result edge case for Mutation_signInWithOAuth.
+			// insertCallCount tracks insert calls to return empty array on first user insert, triggering
+			// the error path. DB-level mock required since this edge case is difficult to reproduce with
+			// real database. server.drizzleClient restored in finally to prevent test pollution.
 			let insertCallCount = 0;
 			const mockClient = {
 				...originalClient,
@@ -929,14 +1028,65 @@ suite("Mutation signInWithOAuth", () => {
 			);
 
 			// Cleanup
-			await server.drizzleClient
-				.delete(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.userId, existingUser.id));
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, existingUser.id));
+			if (existingUser) {
+				await server.drizzleClient
+					.delete(oauthAccountsTable)
+					.where(eq(oauthAccountsTable.userId, existingUser.id));
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, existingUser.id));
+			}
 		});
+		test("should not update email verification if user already verified", async () => {
+			const testEmail = `already-verified-${Date.now()}@example.com`;
+			const [existingUser] = await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					emailAddress: testEmail,
+					name: "Already Verified User",
+					passwordHash: "test-hash",
+					role: "regular",
+					isEmailAddressVerified: true, // Already verified
+				})
+				.returning();
 
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: "google-already-verified",
+				email: testEmail,
+				name: "Already Verified User",
+				emailVerified: true, // OAuth also verified
+			} as OAuthUserProfile);
+
+			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
+				variables: {
+					input: {
+						provider: "GOOGLE",
+						authorizationCode: "valid-code",
+						redirectUri: "http://localhost:3000/callback",
+					},
+				},
+			});
+
+			expect(res.errors).toBeUndefined();
+			expect(res.data?.signInWithOAuth?.user?.isEmailAddressVerified).toBe(
+				true,
+			);
+
+			// Cleanup
+			if (existingUser) {
+				await server.drizzleClient
+					.delete(oauthAccountsTable)
+					.where(eq(oauthAccountsTable.userId, existingUser.id));
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, existingUser.id));
+			}
+		});
 		test("should reset failed login attempts on successful OAuth authentication", async () => {
 			const testEmail = `locked-${Date.now()}@example.com`;
 			const futureDate = new Date(Date.now() + 60000); // 1 minute from now
