@@ -102,6 +102,7 @@ suite("Mutation signInWithOAuth", () => {
 				throw new Error("Failed to create test user");
 			}
 
+			const seedLastUsedAt = new Date("2000-01-01T00:00:00.000Z");
 			const [existingOAuthAccount] = await server.drizzleClient
 				.insert(oauthAccountsTable)
 				.values({
@@ -113,6 +114,7 @@ suite("Mutation signInWithOAuth", () => {
 						name: "Existing User",
 						picture: "https://example.com/pic.jpg",
 					},
+					lastUsedAt: seedLastUsedAt,
 				})
 				.returning();
 
@@ -160,8 +162,8 @@ suite("Mutation signInWithOAuth", () => {
 				throw new Error("Failed to find updated OAuth account");
 			}
 
-			expect(updatedOAuthAccount.lastUsedAt.getTime()).toBeGreaterThanOrEqual(
-				existingOAuthAccount.lastUsedAt.getTime(),
+			expect(updatedOAuthAccount.lastUsedAt.getTime()).toBeGreaterThan(
+				seedLastUsedAt.getTime(),
 			);
 
 			// Cleanup
