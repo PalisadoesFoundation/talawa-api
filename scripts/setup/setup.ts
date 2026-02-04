@@ -437,7 +437,7 @@ export async function observabilitySetup(
 					// Trace Exporter Endpoint
 					answers.API_OTEL_TRACE_EXPORTER_ENDPOINT = await promptInput(
 						"API_OTEL_TRACE_EXPORTER_ENDPOINT",
-						"OTLP trace exporter endpoint URL (leave empty to skip):",
+						"OTLP trace exporter endpoint URL:",
 						"",
 						(input: string) => {
 							try {
@@ -452,7 +452,7 @@ export async function observabilitySetup(
 					// Metric Exporter Endpoint
 					answers.API_OTEL_METRIC_EXPORTER_ENDPOINT = await promptInput(
 						"API_OTEL_METRIC_EXPORTER_ENDPOINT",
-						"OTLP metric exporter endpoint URL (leave empty to skip):",
+						"OTLP metric exporter endpoint URL:",
 						"",
 						(input: string) => {
 							try {

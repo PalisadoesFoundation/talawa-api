@@ -35,10 +35,6 @@ vi.mock("@opentelemetry/exporter-metrics-otlp-http", () => ({
 	OTLPMetricExporter: vi.fn(),
 }));
 
-vi.mock("@opentelemetry/auto-instrumentations-node", () => ({
-	getNodeAutoInstrumentations: vi.fn(),
-}));
-
 vi.mock("@opentelemetry/resources", () => ({
 	resourceFromAttributes: vi.fn(),
 }));
