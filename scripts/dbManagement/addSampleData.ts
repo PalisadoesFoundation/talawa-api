@@ -17,6 +17,9 @@ type Collection =
 	| "event_volunteers"
 	| "event_volunteer_memberships"
 	| "action_items"
+	| "tag_folders"
+	| "tags"
+	| "tag_assignments"
 	| "notification_templates";
 
 export async function main(): Promise<void> {
@@ -35,6 +38,9 @@ export async function main(): Promise<void> {
 		"event_volunteers",
 		"event_volunteer_memberships",
 		"action_items",
+		"tag_folders",
+		"tags",
+		"tag_assignments",
 		"notification_templates",
 	];
 
