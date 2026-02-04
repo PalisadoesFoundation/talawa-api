@@ -24,8 +24,6 @@ const Query_userTags = gql(`
       name
       createdAt
       updatedAt
-      organizationId
-      folderId
     }
   }
 `);
@@ -37,8 +35,6 @@ const Mutation_createTag = gql(`
       name
       createdAt
       updatedAt
-      organizationId
-      folderId
     }
   }
 `);
