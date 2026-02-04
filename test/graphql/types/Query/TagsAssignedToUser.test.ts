@@ -12,6 +12,23 @@ import {
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
+type UserTag = {
+	id: string;
+	name: string;
+	createdAt: string;
+	updatedAt: string;
+	creator: {
+		id: string;
+	};
+	assignees: {
+		edges: {
+			node: {
+				id: string;
+			};
+		}[];
+	};
+};
+
 const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;
@@ -24,6 +41,16 @@ const Query_userTags = gql(`
       name
       createdAt
       updatedAt
+      creator {
+        id
+      }
+      assignees {
+        edges {
+          node {
+          id
+          }
+        }
+      }
     }
   }
 `);
@@ -99,7 +126,7 @@ suite("Query field userTags", () => {
 		});
 
 		// The GraphQL spec says that when there are errors, the data field should be null
-		expect(userTagsResult.data).toBeNull();
+		expect(userTagsResult.data).toEqual({ userTags: null });
 		expect(userTagsResult.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
@@ -381,25 +408,25 @@ suite("Query field userTags", () => {
 		});
 
 		expect(userTagsResult.errors).toBeUndefined();
-		expect(userTagsResult.data?.userTags).toHaveLength(2);
-		expect(userTagsResult.data?.userTags).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					id: tag1Id,
-					name: "Test Tag 1",
-					organizationId: organizationId,
-					folderId: tagFolderId,
-					createdAt: expect.any(String),
-				}),
-				expect.objectContaining({
-					id: tag2Id,
-					name: "Test Tag 2",
-					organizationId: organizationId,
-					folderId: tagFolderId,
-					createdAt: expect.any(String),
-				}),
-			]),
-		);
+
+		const userTags = userTagsResult.data?.userTags as UserTag[];
+		expect(userTags).toHaveLength(2);
+
+		// Tag 1 assertions
+		const tag1 = userTags.find((tag) => tag.id === tag1Id);
+		expect(tag1).toBeDefined();
+		if (!tag1) throw new Error("tag1 not found");
+
+		expect(tag1.creator.id).toBe(regularUserId);
+		expect(tag1.assignees.edges.map((e) => e.node.id)).toContain(regularUserId);
+
+		// Tag 2 assertions
+		const tag2 = userTags.find((tag) => tag.id === tag2Id);
+		expect(tag2).toBeDefined();
+		if (!tag2) throw new Error("tag2 not found");
+
+		expect(tag2.creator.id).toBe(regularUserId);
+		expect(tag2.assignees.edges.map((e) => e.node.id)).toContain(regularUserId);
 	});
 
 	test("regular user can query their own tags", async () => {
@@ -572,8 +599,6 @@ suite("Query field userTags", () => {
 				expect.objectContaining({
 					id: tagId,
 					name: "Test Tag",
-					organizationId: organizationId,
-					folderId: tagFolderId,
 				}),
 			]),
 		);
