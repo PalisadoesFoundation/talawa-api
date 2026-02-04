@@ -36,15 +36,17 @@ describe("assertOrganizationAdmin", () => {
 		const currentUser = { role: "user" };
 		const membership = { role: "member" };
 
+		let caught: unknown;
 		try {
 			assertOrganizationAdmin(currentUser, membership, errorMessage);
 		} catch (error) {
-			expect(error).toBeInstanceOf(TalawaGraphQLError);
-			if (error instanceof TalawaGraphQLError) {
-				expect(error.extensions.code).toBe("unauthorized_action");
-				expect(error.extensions.message).toBe(errorMessage);
-			}
+			caught = error;
 		}
+
+		expect(caught).toBeInstanceOf(TalawaGraphQLError);
+		const gqlError = caught as TalawaGraphQLError;
+		expect(gqlError.extensions.code).toBe("unauthorized_action");
+		expect(gqlError.extensions.message).toBe(errorMessage);
 	});
 
 	it("should throw TalawaGraphQLError when currentUser is undefined", () => {
