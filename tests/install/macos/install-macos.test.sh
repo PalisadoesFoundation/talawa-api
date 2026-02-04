@@ -139,7 +139,7 @@ setup_test_repo() {
     # Copy actual scripts to test dir (paths relative to repo root)
     cp "$REPO_ROOT/scripts/install/macos/install-macos.sh" "$TEST_DIR/scripts/install/macos/"
     chmod +x "$TEST_DIR/scripts/install/macos/install-macos.sh"
-    cp "$REPO_ROOT/scripts/install/common/"*.sh "$TEST_DIR/scripts/install/common/"
+    cp -a "$REPO_ROOT/scripts/install/common/." "$TEST_DIR/scripts/install/common/"
     
     # Inject command_exists override into os-detection.sh
     cat >> "$TEST_DIR/scripts/install/common/os-detection.sh" <<'EOF'

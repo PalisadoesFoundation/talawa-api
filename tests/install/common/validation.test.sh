@@ -522,7 +522,7 @@ fi
 
 test_start "validate_repository_root succeeds at repo root"
 (
-    cd "$SCRIPT_DIR/../../.." || exit 1
+    cd "$REPO_ROOT" || exit 1
     if validate_repository_root &>/dev/null; then
         exit 0
     else
