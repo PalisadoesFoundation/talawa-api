@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
@@ -10,6 +11,7 @@ import type {
 	OAuthProviderTokenResponse,
 	OAuthUserProfile,
 } from "~/src/utilities/auth/oauth/types";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
 	generateRefreshToken,
@@ -27,6 +29,7 @@ import { AuthenticationPayload } from "../AuthenticationPayload";
 builder.mutationField("signInWithOAuth", (t) =>
 	t.field({
 		type: AuthenticationPayload,
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
 			"Sign in or sign up using an OAuth provider. Exchanges an authorization code for tokens, creates/links user, and returns AuthenticationPayload.",
 		args: {
@@ -285,9 +288,8 @@ builder.mutationField("signInWithOAuth", (t) =>
 								name: userProfile.name,
 								isEmailAddressVerified: userProfile.emailVerified ?? false,
 								role: "regular",
-								// Set a secure random password hash - user won't use it for OAuth login
-								// but it's required by the schema
-								passwordHash: `oauth_${uuidv7()}`,
+								// Generate a cryptographically random placeholder that cannot be used for login
+								passwordHash: `$oauth$${randomBytes(32).toString("hex")}`,
 							})
 							.returning();
 
@@ -342,6 +344,24 @@ builder.mutationField("signInWithOAuth", (t) =>
 					user.failedLoginAttempts = 0;
 					user.lockedUntil = null;
 					user.lastFailedLoginAt = null;
+				}
+
+				// Check for administrator role upgrade (consistent with password sign-in)
+				if (user.role === "regular") {
+					// Check if the user has administrator role in any organization
+					const adminMemberships =
+						await tx.query.organizationMembershipsTable.findMany({
+							where: (fields, operators) =>
+								and(
+									operators.eq(fields.memberId, user.id),
+									operators.eq(fields.role, "administrator"),
+								),
+						});
+
+					const isAdmin = adminMemberships.length > 0;
+					if (isAdmin) {
+						user.role = "administrator";
+					}
 				}
 
 				// Update authentication context

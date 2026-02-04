@@ -1,5 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
+import { uuidv7 } from "uuidv7";
 import {
 	afterEach,
 	beforeEach,
@@ -38,6 +39,7 @@ const Mutation_signInWithOAuth =
             name
             emailAddress
             isEmailAddressVerified
+            role
         }
     }
 }`);
@@ -317,6 +319,115 @@ suite("Mutation signInWithOAuth", () => {
 			await server.drizzleClient
 				.delete(usersTable)
 				.where(eq(usersTable.id, userId));
+		});
+
+		test("should upgrade user role from regular to administrator when user has admin membership", async () => {
+			// Setup: Create organization using raw SQL with proper UUID
+			const organizationId = uuidv7();
+			const orgName = `Test Organization ${Date.now()}`;
+			await server.drizzleClient.execute(
+				sql`INSERT INTO organizations (id, name, description) VALUES (${organizationId}, ${orgName}, 'Organization for role upgrade test')`,
+			);
+
+			if (!organizationId) {
+				throw new Error("Failed to create test organization");
+			}
+
+			// Setup: Create user with regular role
+			const testEmail = `admin-upgrade-${Date.now()}@example.com`;
+			const uniqueProviderId = `google-admin-${Date.now()}`;
+			const [user] = await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					emailAddress: testEmail,
+					name: "User To Upgrade",
+					passwordHash: "test-hash",
+					role: "regular", // Important: starts as regular
+					isEmailAddressVerified: true,
+				})
+				.returning();
+
+			if (!user) {
+				throw new Error("Failed to create test user");
+			}
+
+			// Setup: Create organization membership with administrator role using raw SQL
+			await server.drizzleClient.execute(
+				sql`INSERT INTO organization_memberships (member_id, organization_id, role, creator_id) VALUES (${user.id}, ${organizationId}, 'administrator', ${user.id})`,
+			);
+
+			// Setup: Create OAuth account for the user
+			const [oauthAccount] = await server.drizzleClient
+				.insert(oauthAccountsTable)
+				.values({
+					userId: user.id,
+					provider: "google",
+					providerId: uniqueProviderId,
+					email: testEmail,
+					profile: {
+						name: "User To Upgrade",
+						picture: "https://example.com/admin.jpg",
+					},
+				})
+				.returning();
+
+			if (!oauthAccount) {
+				throw new Error("Failed to create OAuth account");
+			}
+
+			// Mock OAuth provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: uniqueProviderId,
+				email: testEmail,
+				name: "User To Upgrade",
+				emailVerified: true,
+			} as OAuthUserProfile);
+
+			// Act: Sign in with OAuth
+			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
+				variables: {
+					input: {
+						provider: "GOOGLE",
+						authorizationCode: "valid-auth-code",
+						redirectUri: "http://localhost:3000/callback",
+					},
+				},
+			});
+
+			// Assert: OAuth sign-in succeeded
+			expect(res.errors).toBeUndefined();
+			expect(res.data?.signInWithOAuth).toBeDefined();
+			expect(res.data?.signInWithOAuth?.user?.id).toBe(user.id);
+
+			// Debug: Check if membership exists
+			const membershipCheck = await server.drizzleClient.execute(
+				sql`SELECT role FROM organization_memberships WHERE member_id = ${user.id} AND role = 'administrator'`,
+			);
+			expect(membershipCheck.length).toBeGreaterThan(0); // Verify membership exists
+
+			// Assert: User role was upgraded from regular to administrator
+			// Note: The role upgrade happens in-memory during the transaction,
+			// so we check the response data rather than the database
+			expect(res.data?.signInWithOAuth?.user?.role).toBe("administrator"); // This is the key assertion for the uncovered line
+
+			// Cleanup using raw SQL
+			await server.drizzleClient
+				.delete(oauthAccountsTable)
+				.where(eq(oauthAccountsTable.id, oauthAccount.id));
+			await server.drizzleClient.execute(
+				sql`DELETE FROM organization_memberships WHERE member_id = ${user.id}`,
+			);
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, user.id));
+			await server.drizzleClient.execute(
+				sql`DELETE FROM organizations WHERE id = ${organizationId}`,
+			);
 		});
 	});
 
@@ -648,9 +759,6 @@ suite("Mutation signInWithOAuth", () => {
 			} finally {
 				server.drizzleClient = originalClient;
 			}
-
-			// Restore original client
-			server.drizzleClient = originalClient;
 		});
 
 		test("should handle empty insert result with mock", async () => {
