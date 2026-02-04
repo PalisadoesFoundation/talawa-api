@@ -6,6 +6,7 @@ import type {
 	ExplicitGraphQLContext,
 	GraphQLContext,
 } from "~/src/graphql/context";
+import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import { createDataloaders } from "~/src/utilities/dataloaders";
 import { createMockDrizzleClient } from "../drizzleClientMock";
 import { createMockMinioClient } from "../mockMinioClient";
@@ -84,6 +85,16 @@ export function createMockGraphQLContext(
 			),
 	};
 
+	// Create mock OAuth provider registry
+	const mockOAuthProviderRegistry = {
+		get: vi.fn(),
+		has: vi.fn().mockReturnValue(false),
+		listProviders: vi.fn().mockReturnValue([]),
+		register: vi.fn(),
+		unregister: vi.fn(),
+		clear: vi.fn(),
+	} as unknown as OAuthProviderRegistry;
+
 	// Create the explicit context
 	const explicitContext: ExplicitGraphQLContext = {
 		cache: mockCache,
@@ -112,6 +123,7 @@ export function createMockGraphQLContext(
 		},
 		log: createMockLogger(),
 		minio: mockMinioClient,
+		oauthProviderRegistry: mockOAuthProviderRegistry,
 	};
 
 	// Create the implicit context
@@ -139,6 +151,7 @@ export function createMockGraphQLContext(
 			minioClient: mockMinioClient,
 			pubsub: mockPubSub,
 			jwtSign: mockJwtSign as MockInstance,
+			oauthProviderRegistry: mockOAuthProviderRegistry,
 		},
 	};
 }
