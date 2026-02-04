@@ -341,8 +341,8 @@ validate_internet_connectivity() {
     if declare -F debug >/dev/null; then debug "Checking internet connectivity..."; fi
 
     local hosts=("github.com" "registry.npmjs.org")
-# Soft-fail policy: installation proceeds if at least one required host is reachable
-# to avoid blocking installation due to temporary service outages
+    # Soft-fail policy: installation proceeds if at least one required host is reachable
+    # to avoid blocking installation due to temporary service outages
     local any_ok=0
 
     for host in "${hosts[@]}"; do
@@ -359,7 +359,7 @@ validate_internet_connectivity() {
                     host_ok=1
                 fi
             else
-            # Platform-specific ping timeout handling
+                # Platform-specific ping timeout handling
                 case "$(uname -s)" in
                     Linux*)
                         ping -c 1 -W 3 "$host" >/dev/null 2>&1 && host_ok=1
@@ -370,8 +370,8 @@ validate_internet_connectivity() {
                     *)
                         ping -c 1 "$host" >/dev/null 2>&1 && host_ok=1
                         ;;
-            esac
-        fi
+                esac
+            fi
 
         else
             warn "Neither curl nor ping is available to test connectivity"
