@@ -59,10 +59,7 @@ const Mutation_assignTagToUser = gql(`
     assignUserTag(
       assigneeId: $assigneeId
       tagId: $tagId
-    ) {
-      tagId
-      assigneeId
-    }
+    )
   }
 `);
 
