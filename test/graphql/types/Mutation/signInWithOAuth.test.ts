@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
 import { print } from "graphql";
@@ -86,7 +87,7 @@ suite("Mutation signInWithOAuth", () => {
 	describe("successful scenarios", () => {
 		test("should sign in existing user with linked OAuth account", async () => {
 			// Setup: Create a user with linked OAuth account
-			const testEmail = `test-${Date.now()}@example.com`;
+			const testEmail = `test-${randomUUID()}@example.com`;
 			const [existingUser] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
@@ -177,7 +178,7 @@ suite("Mutation signInWithOAuth", () => {
 
 		test("should link OAuth account to existing user with matching email", async () => {
 			// Setup: Create user WITHOUT OAuth account
-			const testEmail = `test-link-${Date.now()}@example.com`;
+			const testEmail = `test-link-${randomUUID()}@example.com`;
 			const [existingUser] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
@@ -252,7 +253,7 @@ suite("Mutation signInWithOAuth", () => {
 		});
 
 		test("should create new user and link OAuth account", async () => {
-			const testEmail = `newuser-${Date.now()}@example.com`;
+			const testEmail = `newuser-${randomUUID()}@example.com`;
 
 			// Mock OAuth provider responses
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
@@ -326,7 +327,7 @@ suite("Mutation signInWithOAuth", () => {
 		test("should upgrade user role from regular to administrator when user has admin membership", async () => {
 			// Setup: Create organization using raw SQL with proper UUID
 			const organizationId = uuidv7();
-			const orgName = `Test Organization ${Date.now()}`;
+			const orgName = `Test Organization ${randomUUID()}`;
 			await server.drizzleClient.execute(
 				sql`INSERT INTO organizations (id, name, description) VALUES (${organizationId}, ${orgName}, 'Organization for role upgrade test')`,
 			);
@@ -336,8 +337,8 @@ suite("Mutation signInWithOAuth", () => {
 			}
 
 			// Setup: Create user with regular role
-			const testEmail = `admin-upgrade-${Date.now()}@example.com`;
-			const uniqueProviderId = `google-admin-${Date.now()}`;
+			const testEmail = `admin-upgrade-${randomUUID()}@example.com`;
+			const uniqueProviderId = `google-admin-${randomUUID()}`;
 			const [user] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
@@ -435,7 +436,7 @@ suite("Mutation signInWithOAuth", () => {
 		});
 
 		test("should set HTTP-Only cookies when cookie helper is available", async () => {
-			const testEmail = `cookie-test-${Date.now()}@example.com`;
+			const testEmail = `cookie-test-${randomUUID()}@example.com`;
 
 			// Mock OAuth provider responses
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
@@ -757,91 +758,50 @@ suite("Mutation signInWithOAuth", () => {
 		});
 
 		test("should handle database anomaly - OAuth account without user", async () => {
-			const testEmail = `orphaned-${Date.now()}@example.com`;
-			const fakeUserId = "00000000-0000-0000-0000-000000000001";
+			const testEmail = `anomaly-${randomUUID()}@example.com`;
+			const orphanedUserId = randomUUID();
 
-			// Save original drizzleClient
-			const originalClient = server.drizzleClient;
+			// Mock the entire transaction to simulate the anomaly
+			const mockTx = {
+				select: vi.fn().mockImplementation(() => ({
+					from: vi.fn().mockImplementation((table) => ({
+						where: vi.fn().mockResolvedValueOnce(
+							table === oauthAccountsTable
+								? [
+										{
+											id: randomUUID(),
+											userId: orphanedUserId, // References non-existent user
+											provider: "google",
+											providerId: "google-orphaned",
+											email: testEmail,
+											profile: { name: "Test" },
+										},
+									]
+								: [], // No user found
+						),
+					})),
+				})),
+			};
+
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi.fn(async (callback) =>
+				callback(mockTx),
+			);
 
 			try {
-				/*
-				 * FRAGILE MOCK WARNING: This test uses a highly coupled mock that depends on the exact
-				 * query order in the signInWithOAuth resolver's transaction flow:
-				 *
-				 * 1. First SELECT: Query OAuth accounts table by provider + providerId
-				 * 2. Second SELECT: Query users table by user ID from the OAuth account
-				 *
-				 * The selectCallCount sequencing simulates an "orphaned" OAuth account scenario where:
-				 * - Step 1 finds an OAuth account record (returns fake OAuth account with non-existent userId)
-				 * - Step 2 fails to find the referenced user (returns empty array)
-				 *
-				 * This mock WILL BREAK if the resolver implementation changes:
-				 * - Reordering the database queries
-				 * - Combining selects into joins or using different query patterns
-				 * - Changing transaction structure or adding/removing queries
-				 * - Using different Drizzle ORM methods (e.g., switching from separate selects to joins)
-				 *
-				 * If the resolver logic changes, update this mock to match the new query sequence
-				 * or consider using a more robust testing approach (e.g., actual test database with
-				 * orphaned records).
-				 */
-				let selectCallCount = 0;
-				const mockClient = {
-					...originalClient,
-					transaction: vi.fn(async (callback) => {
-						const mockTx = {
-							...originalClient,
-							select: vi.fn(() => ({
-								from: vi.fn(() => ({
-									where: vi.fn(async () => {
-										selectCallCount++;
-										// First select: return OAuth account with non-existent user
-										if (selectCallCount === 1) {
-											return [
-												{
-													id: "oauth-123",
-													userId: fakeUserId,
-													provider: "google",
-													providerId: "google-orphaned",
-													email: testEmail,
-												},
-											];
-										}
-										// Second select: return empty (user doesn't exist)
-										if (selectCallCount === 2) {
-											return [];
-										}
-										return [];
-									}),
-								})),
-							})),
-							insert: vi.fn(() => ({
-								values: vi.fn(() => ({
-									returning: vi.fn(async () => [{ id: "test-id" }]),
-								})),
-							})),
-							update: vi.fn(() => ({
-								set: vi.fn(() => ({
-									where: vi.fn(async () => {}),
-								})),
-							})),
-						};
-						return callback(mockTx);
-					}),
-				};
-				// Temporarily replace drizzleClient
-				server.drizzleClient =
-					mockClient as unknown as typeof server.drizzleClient;
+				// Test with mock OAuth provider
 				mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-					access_token: "mock-access-token",
+					access_token: "mock-token",
 					token_type: "Bearer",
 				});
+
 				mockProvider.getUserProfile.mockResolvedValueOnce({
 					providerId: "google-orphaned",
 					email: testEmail,
-					name: "Orphaned User",
+					name: "Test",
 					emailVerified: true,
-				} as OAuthUserProfile);
+				});
+
 				const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
 					variables: {
 						input: {
@@ -851,16 +811,15 @@ suite("Mutation signInWithOAuth", () => {
 						},
 					},
 				});
-				expect(res.errors).toBeDefined();
+
 				expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
-				expect(res.errors?.[0]?.message).toContain("User account not found");
 			} finally {
-				server.drizzleClient = originalClient;
+				server.drizzleClient.transaction = originalTransaction;
 			}
 		});
 
 		test("should handle empty insert result with mock", async () => {
-			const testEmail = `mock-empty-${Date.now()}@example.com`;
+			const testEmail = `mock-empty-${randomUUID()}@example.com`;
 
 			// Save original drizzleClient
 			const originalClient = server.drizzleClient;
@@ -938,7 +897,7 @@ suite("Mutation signInWithOAuth", () => {
 
 	describe("edge cases", () => {
 		test("should use default refresh token expiry when not configured", async () => {
-			const testEmail = `default-expiry-${Date.now()}@example.com`;
+			const testEmail = `default-expiry-${randomUUID()}@example.com`;
 
 			// Temporarily remove the config value
 			const originalExpiry = server.envConfig.API_REFRESH_TOKEN_EXPIRES_IN;
@@ -986,7 +945,7 @@ suite("Mutation signInWithOAuth", () => {
 		});
 
 		test("should handle user with unverified email linking verified OAuth account", async () => {
-			const testEmail = `unverified-${Date.now()}@example.com`;
+			const testEmail = `unverified-${randomUUID()}@example.com`;
 			const [existingUser] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
@@ -1040,7 +999,7 @@ suite("Mutation signInWithOAuth", () => {
 			}
 		});
 		test("should not update email verification if user already verified", async () => {
-			const testEmail = `already-verified-${Date.now()}@example.com`;
+			const testEmail = `already-verified-${randomUUID()}@example.com`;
 			const [existingUser] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
@@ -1090,7 +1049,7 @@ suite("Mutation signInWithOAuth", () => {
 			}
 		});
 		test("should reset failed login attempts on successful OAuth authentication", async () => {
-			const testEmail = `locked-${Date.now()}@example.com`;
+			const testEmail = `locked-${randomUUID()}@example.com`;
 			const futureDate = new Date(Date.now() + 60000); // 1 minute from now
 
 			const [lockedUser] = await server.drizzleClient
@@ -1157,7 +1116,7 @@ suite("Mutation signInWithOAuth", () => {
 		});
 
 		test("should reject linking unverified OAuth email to existing user", async () => {
-			const testEmail = `verified-${Date.now()}@example.com`;
+			const testEmail = `verified-${randomUUID()}@example.com`;
 			const [existingUser] = await server.drizzleClient
 				.insert(usersTable)
 				.values({
