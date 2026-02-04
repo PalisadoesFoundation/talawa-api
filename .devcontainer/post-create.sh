@@ -30,7 +30,11 @@ fi
 
 # Install dependencies and tools
 # Use explicit version to avoid "default" version errors in CI
-NODE_VERSION=$(cat .nvmrc 2>/dev/null | tr -d '\n' || echo "24.12.0")
+if [ -s .nvmrc ]; then
+  NODE_VERSION=$(tr -d '\r\n' < .nvmrc)
+else
+  NODE_VERSION="24.12.0"
+fi
 fnm install "$NODE_VERSION"
 fnm use "$NODE_VERSION"
 fnm default "$NODE_VERSION"
