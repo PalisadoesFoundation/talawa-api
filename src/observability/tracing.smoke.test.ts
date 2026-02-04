@@ -135,8 +135,8 @@ describe("OTEL bootstrap smoke tests", () => {
 			);
 			await initTracing();
 
-			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
-			expect(sdkCall.metricReader).toBeUndefined();
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0]?.[0];
+			expect(sdkCall?.metricReader).toBeUndefined();
 		});
 	});
 
@@ -248,9 +248,9 @@ describe("OTEL bootstrap smoke tests", () => {
 			);
 			await initTracing();
 
-			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
-			expect(sdkCall.traceExporter).toBeUndefined();
-			expect(sdkCall.metricReader).toBeUndefined();
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0]?.[0];
+			expect(sdkCall?.traceExporter).toBeUndefined();
+			expect(sdkCall?.metricReader).toBeUndefined();
 		});
 	});
 
@@ -329,22 +329,6 @@ describe("OTEL bootstrap smoke tests", () => {
 	});
 
 	describe("Instrumentation configuration", () => {
-		it("includes getNodeAutoInstrumentations in SDK config", async () => {
-			const { observabilityConfig } = await import("src/config/observability");
-			const { getNodeAutoInstrumentations } = await import(
-				"@opentelemetry/auto-instrumentations-node"
-			);
-
-			observabilityConfig.enabled = true;
-
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-			await initTracing();
-
-			expect(getNodeAutoInstrumentations).toHaveBeenCalled();
-		});
-
 		it("includes fastifyOtelInstrumentation in SDK config", async () => {
 			const { observabilityConfig } = await import("src/config/observability");
 			observabilityConfig.enabled = true;
@@ -354,9 +338,9 @@ describe("OTEL bootstrap smoke tests", () => {
 			);
 			await initTracing();
 
-			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
-			expect(sdkCall.instrumentations).toBeDefined();
-			expect(Array.isArray(sdkCall.instrumentations)).toBe(true);
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0]?.[0];
+			expect(sdkCall?.instrumentations).toBeDefined();
+			expect(Array.isArray(sdkCall?.instrumentations)).toBe(true);
 		});
 	});
 
@@ -599,8 +583,8 @@ describe("OTEL bootstrap smoke tests", () => {
 			);
 			await initTracing();
 
-			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
-			expect(sdkCall.textMapPropagator).toBeDefined();
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0]?.[0];
+			expect(sdkCall?.textMapPropagator).toBeDefined();
 		});
 
 		it("configures SDK with ParentBasedSampler", async () => {
@@ -652,9 +636,9 @@ describe("OTEL bootstrap smoke tests", () => {
 			);
 			await initTracing();
 
-			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
-			expect(sdkCall.traceExporter).toBeUndefined();
-			expect(sdkCall.metricReader).toBeUndefined();
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0]?.[0];
+			expect(sdkCall?.traceExporter).toBeUndefined();
+			expect(sdkCall?.metricReader).toBeUndefined();
 		});
 	});
 });

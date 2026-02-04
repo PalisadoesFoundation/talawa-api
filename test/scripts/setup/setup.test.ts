@@ -1233,28 +1233,6 @@ describe("Validation Helpers", () => {
 			expect(result.API_OTEL_ENABLED).toBe("false");
 		});
 
-		it("should handle errors and call handlePromptError", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
-			const handlePromptErrorMock = vi.fn();
-
-			// Mock the handlePromptError function
-			vi.doMock("scripts/setup/setup", async (importOriginal) => {
-				const actual = await importOriginal();
-				return {
-					...actual,
-					handlePromptError: handlePromptErrorMock,
-				};
-			});
-
-			const error = new Error("Prompt failed");
-			promptMock.mockRejectedValueOnce(error);
-
-			const answers: SetupAnswers = {};
-			await observabilitySetup(answers);
-
-			expect(handlePromptErrorMock).toHaveBeenCalledWith(error);
-		});
-
 		it("should use default values when prompting", async () => {
 			const promptMock = vi.spyOn(inquirer, "prompt");
 

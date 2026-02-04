@@ -3,13 +3,12 @@ import { DiagConsoleLogger, DiagLogLevel, diag } from "@opentelemetry/api";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
+import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
-
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import {
 	ConsoleSpanExporter,
 	ParentBasedSampler,
@@ -28,6 +27,8 @@ export async function initTracing(): Promise<void> {
 		console.log("[observability] Tracing is disabled via configuration.");
 		return;
 	}
+
+	diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 	// sampling ratio early Validation
 	const ratio = observabilityConfig.samplingRatio;
@@ -90,7 +91,8 @@ export async function initTracing(): Promise<void> {
 				"service.name": observabilityConfig.serviceName,
 			}),
 			instrumentations: [
-				getNodeAutoInstrumentations(),
+				new HttpInstrumentation(),
+				new FastifyInstrumentation(),
 				fastifyOtelInstrumentation,
 			],
 		});
