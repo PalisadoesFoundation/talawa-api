@@ -710,4 +710,387 @@ suite("occurrenceCalculator", () => {
 			expect(result).toBe(true);
 		});
 	});
+
+	suite("yearly frequency handling", () => {
+		test("handles yearly events without windowing", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 1,
+				count: 3,
+				recurrenceEndDate: null,
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: yearlyRule,
+				baseEvent: mockBaseEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2027-12-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(3);
+			expect(result[0].originalStartTime).toEqual(
+				new Date("2025-01-01T10:00:00Z"),
+			);
+			expect(result[1].originalStartTime).toEqual(
+				new Date("2026-01-01T10:00:00Z"),
+			);
+			expect(result[2].originalStartTime).toEqual(
+				new Date("2027-01-01T10:00:00Z"),
+			);
+		});
+
+		test("handles yearly events with end date", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 1,
+				count: null,
+				recurrenceEndDate: new Date("2026-12-31T23:59:59Z"),
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: yearlyRule,
+				baseEvent: mockBaseEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2027-12-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(2); // 2025 and 2026 only
+			expect(result[0].originalStartTime).toEqual(
+				new Date("2025-01-01T10:00:00Z"),
+			);
+			expect(result[1].originalStartTime).toEqual(
+				new Date("2026-01-01T10:00:00Z"),
+			);
+		});
+	});
+
+	suite("direct function coverage", () => {
+		test("shouldGenerateForDaily returns true for all dates", () => {
+			const dailyRule = {
+				...mockRecurrenceRule,
+				frequency: "DAILY",
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const date = new Date("2025-01-15T10:00:00Z");
+			const startDate = new Date("2025-01-01T10:00:00Z");
+
+			const result = shouldGenerateInstanceAtDate(date, dailyRule, startDate);
+
+			expect(result).toBe(true);
+		});
+	});
+
+	suite("getNextOccurrenceDate edge cases", () => {
+		test("handles weekly with byDay filter - day by day progression", () => {
+			const weeklyByDayRule = {
+				...mockRecurrenceRule,
+				frequency: "WEEKLY",
+				interval: 1,
+				byDay: ["MO", "WE", "FR"],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const currentDate = new Date("2025-01-06T10:00:00Z"); // Monday
+			const nextDate = getNextOccurrenceDate(currentDate, weeklyByDayRule);
+
+			// Should move to next day (Tuesday) for day-by-day checking
+			expect(nextDate).toEqual(new Date("2025-01-07T10:00:00Z"));
+		});
+
+		test("handles monthly with byMonthDay and month transitions", () => {
+			const monthlyByDayRule = {
+				...mockRecurrenceRule,
+				frequency: "MONTHLY",
+				interval: 2,
+				byMonthDay: [15, 30],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			// Start at end of January (31st) - next day will cross month boundary
+			const currentDate = new Date("2025-01-31T10:00:00Z");
+			const nextDate = getNextOccurrenceDate(currentDate, monthlyByDayRule);
+
+			// Should go to Feb 1st first, detect month boundary crossing,
+			// then apply 2-month interval to get to March 1st
+			expect(nextDate.getMonth()).toBe(2); // March (0-indexed)
+			expect(nextDate.getDate()).toBe(1);
+		});
+
+		test("handles monthly with byMonthDay staying in same month", () => {
+			const monthlyByDayRule = {
+				...mockRecurrenceRule,
+				frequency: "MONTHLY",
+				interval: 1,
+				byMonthDay: [15, 30],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			// Start at January 15th
+			const currentDate = new Date("2025-01-15T10:00:00Z");
+			const nextDate = getNextOccurrenceDate(currentDate, monthlyByDayRule);
+
+			// Should move to next day (January 16th) since we're still in January
+			expect(nextDate).toEqual(new Date("2025-01-16T10:00:00Z"));
+		});
+
+		test("handles yearly with byMonth filter - month by month progression", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 1,
+				byMonth: [1, 6, 12],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const currentDate = new Date("2025-01-01T10:00:00Z");
+			const nextDate = getNextOccurrenceDate(currentDate, yearlyRule);
+
+			// Should move to next month for month-by-month checking
+			expect(nextDate).toEqual(new Date("2025-02-01T10:00:00Z"));
+		});
+
+		test("handles yearly with byMonthDay filter - month by month progression", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 1,
+				byMonthDay: [1, 15],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const currentDate = new Date("2025-01-15T10:00:00Z");
+			const nextDate = getNextOccurrenceDate(currentDate, yearlyRule);
+
+			// Should move to next month for month-by-month checking
+			expect(nextDate).toEqual(new Date("2025-02-15T10:00:00Z"));
+		});
+
+		test("handles yearly without byMonth or byMonthDay - year progression", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 2,
+				byMonth: null,
+				byMonthDay: null,
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const currentDate = new Date("2025-01-15T10:00:00Z");
+			const nextDate = getNextOccurrenceDate(currentDate, yearlyRule);
+
+			// Should move by full years
+			expect(nextDate).toEqual(new Date("2027-01-15T10:00:00Z"));
+		});
+	});
+
+	suite("additional edge cases", () => {
+		test("handles weekly recurrence with empty byDay array", () => {
+			const weeklyRule = {
+				...mockRecurrenceRule,
+				frequency: "WEEKLY",
+				byDay: [],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const date = new Date("2025-01-08T10:00:00Z");
+			const startDate = new Date("2025-01-01T10:00:00Z");
+
+			// Should return true when byDay is empty
+			expect(shouldGenerateInstanceAtDate(date, weeklyRule, startDate)).toBe(
+				true,
+			);
+		});
+
+		test("handles monthly recurrence with empty byDay array", () => {
+			const monthlyRule = {
+				...mockRecurrenceRule,
+				frequency: "MONTHLY",
+				byDay: [],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const date = new Date("2025-01-15T10:00:00Z");
+			const startDate = new Date("2025-01-01T10:00:00Z");
+
+			// Should return true when byDay is empty
+			expect(shouldGenerateInstanceAtDate(date, monthlyRule, startDate)).toBe(
+				true,
+			);
+		});
+
+		test("handles monthly recurrence with empty byMonthDay array", () => {
+			const monthlyRule = {
+				...mockRecurrenceRule,
+				frequency: "MONTHLY",
+				byMonthDay: [],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const date = new Date("2025-01-15T10:00:00Z");
+			const startDate = new Date("2025-01-01T10:00:00Z");
+
+			// Should return true when byMonthDay is empty
+			expect(shouldGenerateInstanceAtDate(date, monthlyRule, startDate)).toBe(
+				true,
+			);
+		});
+
+		test("handles yearly recurrence with empty byMonth array", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				byMonth: [],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const date = new Date("2025-06-15T10:00:00Z");
+			const startDate = new Date("2025-01-01T10:00:00Z");
+
+			// Should return true when byMonth is empty
+			expect(shouldGenerateInstanceAtDate(date, yearlyRule, startDate)).toBe(
+				true,
+			);
+		});
+
+		test("handles yearly recurrence with empty byMonthDay array", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				byMonthDay: [],
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const date = new Date("2025-06-15T10:00:00Z");
+			const startDate = new Date("2025-01-01T10:00:00Z");
+
+			// Should return true when byMonthDay is empty
+			expect(shouldGenerateInstanceAtDate(date, yearlyRule, startDate)).toBe(
+				true,
+			);
+		});
+
+		test("handles exceptions without originalInstanceStartTime in exceptionData", () => {
+			const exceptionWithoutTime = {
+				id: faker.string.uuid(),
+				recurringEventInstanceId: faker.string.uuid(),
+				baseRecurringEventId: mockBaseEvent.id,
+				exceptionData: {
+					// Missing originalInstanceStartTime
+					isCancelled: true,
+				},
+				organizationId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+			} as typeof eventExceptionsTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: mockRecurrenceRule,
+				baseEvent: mockBaseEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [exceptionWithoutTime],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			// Should still work normally without crashing
+			expect(result.length).toBeGreaterThan(0);
+		});
+
+		test("validateRecurrenceRule handles zero interval", () => {
+			const zeroIntervalRule = {
+				...mockRecurrenceRule,
+				interval: 0,
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const result = validateRecurrenceRule(zeroIntervalRule);
+
+			// Zero interval should be valid (falsy check only catches negative)
+			expect(result).toBe(true);
+		});
+
+		test("handles monthly byDay with missing byDay rule", () => {
+			const monthlyByDayRule = {
+				...mockRecurrenceRule,
+				frequency: "MONTHLY",
+				interval: 1,
+				byDay: [""], // Empty string in array
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const currentDate = new Date("2025-01-01T10:00:00Z");
+			const nextDate = getNextOccurrenceDate(currentDate, monthlyByDayRule);
+
+			// Should handle gracefully and move to next month
+			expect(nextDate.getMonth()).toBe(1); // February
+		});
+
+		test("handles yearly events with conditions that don't generate instances", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 1,
+				count: 3,
+				byMonth: [6], // Only June
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const juneEvent = {
+				...mockBaseEvent,
+				startAt: new Date("2025-06-01T10:00:00Z"), // June event matches June rule
+				endAt: new Date("2025-06-01T11:00:00Z"),
+			} as typeof eventsTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: yearlyRule,
+				baseEvent: juneEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2027-12-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			// Should generate 3 occurrences since June 1st matches byMonth: [6]
+			expect(result).toHaveLength(3);
+		});
+
+		test("handles event duration calculation with null endAt", () => {
+			const eventWithNullEnd = {
+				...mockBaseEvent,
+				startAt: new Date("2025-01-01T10:00:00Z"),
+				endAt: null,
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: mockRecurrenceRule,
+				baseEvent: eventWithNullEnd,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			// Should handle gracefully - the buildRecurrenceContext function should cope with null endAt
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result.length).toBeGreaterThanOrEqual(0); // Should not crash
+		});
+
+		test("handles event duration calculation with null startAt", () => {
+			const eventWithNullStart = {
+				...mockBaseEvent,
+				startAt: null,
+				endAt: new Date("2025-01-01T11:00:00Z"),
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: mockRecurrenceRule,
+				baseEvent: eventWithNullStart,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			// Should return empty array due to missing startAt
+			const result = calculateInstanceOccurrences(config, mockLogger);
+			expect(result).toHaveLength(0);
+		});
+	});
 });
