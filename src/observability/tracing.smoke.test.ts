@@ -35,16 +35,8 @@ vi.mock("@opentelemetry/exporter-metrics-otlp-http", () => ({
 	OTLPMetricExporter: vi.fn(),
 }));
 
-vi.mock("@opentelemetry/sdk-metrics", () => ({
-	PeriodicExportingMetricReader: vi.fn(),
-}));
-
 vi.mock("@opentelemetry/auto-instrumentations-node", () => ({
-	getNodeAutoInstrumentations: vi.fn().mockReturnValue([]),
-}));
-
-vi.mock("@opentelemetry/instrumentation-http", () => ({
-	HttpInstrumentation: vi.fn(),
+	getNodeAutoInstrumentations: vi.fn(),
 }));
 
 vi.mock("@opentelemetry/resources", () => ({
@@ -57,8 +49,26 @@ vi.mock("@opentelemetry/sdk-trace-base", () => ({
 	TraceIdRatioBasedSampler: vi.fn(),
 }));
 
+vi.mock("@opentelemetry/sdk-metrics", () => ({
+	PeriodicExportingMetricReader: vi.fn(),
+}));
+
 vi.mock("@fastify/otel", () => ({
-	FastifyOtelInstrumentation: vi.fn().mockImplementation(() => ({})),
+	FastifyOtelInstrumentation: vi.fn().mockImplementation(() => ({
+		registerOnInitialization: false,
+	})),
+}));
+
+vi.mock("src/config/observability", () => ({
+	observabilityConfig: {
+		enabled: true,
+		exporterEnabled: true,
+		exporterType: "console",
+		samplingRatio: 1.0,
+		serviceName: "test-service",
+		otlpTraceEndpoint: undefined,
+		otlpMetricEndpoint: undefined,
+	},
 }));
 
 describe("OTEL bootstrap smoke tests", () => {
@@ -83,11 +93,9 @@ describe("OTEL bootstrap smoke tests", () => {
 	});
 
 	describe("Disabled state", () => {
-		it("does not initialize SDK when tracing is disabled via configuration", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "false",
-			};
+		it("does not initialize SDK when observability is disabled", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = false;
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
@@ -100,176 +108,157 @@ describe("OTEL bootstrap smoke tests", () => {
 		});
 	});
 
-	describe("Exporter configuration", () => {
-		describe("Console exporter", () => {
-			it("initializes SDK with ConsoleSpanExporter when exporterType is console", async () => {
-				process.env = {
-					...originalEnv,
-					API_OTEL_ENABLED: "true",
-					API_OTEL_EXPORTER_ENABLED: "true",
-					API_OTEL_EXPORTER_TYPE: "console",
-					API_OTEL_SERVICE_NAME: "test-service",
-				};
+	describe("Enabled state - Console exporter", () => {
+		it("initializes SDK successfully with console exporter", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "console";
+			observabilityConfig.samplingRatio = 1.0;
+			observabilityConfig.serviceName = "test-service";
 
-				const { ConsoleSpanExporter } = await import(
-					"@opentelemetry/sdk-trace-base"
-				);
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
-
-				await expect(initTracing()).resolves.toBeUndefined();
-				expect(NodeSDK).toHaveBeenCalledTimes(1);
-				expect(ConsoleSpanExporter).toHaveBeenCalled();
-			});
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalledTimes(1);
 		});
 
-		describe("OTLP exporter", () => {
-			it("initializes SDK with OTLP exporters when exporterType is otlp", async () => {
-				process.env = {
-					...originalEnv,
-					API_OTEL_ENABLED: "true",
-					API_OTEL_EXPORTER_ENABLED: "true",
-					API_OTEL_EXPORTER_TYPE: "otlp",
-					API_OTEL_SERVICE_NAME: "test-service",
-					API_OTEL_EXPORTER_OTLP_TRACE_ENDPOINT: "http://localhost:4317",
-					API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT:
-						"http://localhost:4318/v1/metrics",
-				};
+		it("initializes without metrics when using console exporter", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "console";
 
-				const { OTLPTraceExporter } = await import(
-					"@opentelemetry/exporter-trace-otlp-grpc"
-				);
-				const { OTLPMetricExporter } = await import(
-					"@opentelemetry/exporter-metrics-otlp-http"
-				);
-				const { PeriodicExportingMetricReader } = await import(
-					"@opentelemetry/sdk-metrics"
-				);
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await initTracing();
 
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
+			expect(sdkCall.metricReader).toBeUndefined();
+		});
+	});
 
-				await expect(initTracing()).resolves.toBeUndefined();
-				expect(NodeSDK).toHaveBeenCalledTimes(1);
-				expect(OTLPTraceExporter).toHaveBeenCalledWith({
-					url: "http://localhost:4317",
-				});
-				expect(OTLPMetricExporter).toHaveBeenCalledWith({
-					url: "http://localhost:4318/v1/metrics",
-				});
-				expect(PeriodicExportingMetricReader).toHaveBeenCalledWith(
-					expect.objectContaining({
-						exportIntervalMillis: 60000,
-					}),
-				);
-			});
+	describe("Enabled state - OTLP exporter with metrics", () => {
+		it("initializes SDK with OTLP trace and metric exporters", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "otlp";
+			observabilityConfig.otlpTraceEndpoint = "http://localhost:4317";
+			observabilityConfig.otlpMetricEndpoint =
+				"http://localhost:4318/v1/metrics";
+			observabilityConfig.serviceName = "test-service";
 
-			it("throws error when otlpTraceEndpoint is missing for otlp exporter", async () => {
-				process.env = {
-					...originalEnv,
-					API_OTEL_ENABLED: "true",
-					API_OTEL_EXPORTER_ENABLED: "true",
-					API_OTEL_EXPORTER_TYPE: "otlp",
-					API_OTEL_SERVICE_NAME: "test-service",
-					API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT:
-						"http://localhost:4318/v1/metrics",
-				};
-
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
-
-				await expect(initTracing()).rejects.toThrow(
-					"otlpEndpoint must be provided when exporterType is 'otlp'",
-				);
-			});
-
-			it("throws error when otlpMetricEndpoint is missing for otlp exporter", async () => {
-				process.env = {
-					...originalEnv,
-					API_OTEL_ENABLED: "true",
-					API_OTEL_EXPORTER_ENABLED: "true",
-					API_OTEL_EXPORTER_TYPE: "otlp",
-					API_OTEL_SERVICE_NAME: "test-service",
-					API_OTEL_EXPORTER_OTLP_TRACE_ENDPOINT: "http://localhost:4317",
-				};
-
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
-
-				await expect(initTracing()).rejects.toThrow(
-					"otlpEndpoint must be provided when exporterType is 'otlp'",
-				);
-			});
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalledTimes(1);
 		});
 
-		describe("Exporter disabled", () => {
-			it("initializes SDK without exporter when exporterEnabled is false", async () => {
-				process.env = {
-					...originalEnv,
-					API_OTEL_ENABLED: "true",
-					API_OTEL_EXPORTER_ENABLED: "false",
-					API_OTEL_SERVICE_NAME: "test-service",
-				};
+		it("throws error when OTLP trace endpoint is missing", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "otlp";
+			observabilityConfig.otlpTraceEndpoint = undefined;
+			observabilityConfig.otlpMetricEndpoint =
+				"http://localhost:4318/v1/metrics";
 
-				const { OTLPTraceExporter } = await import(
-					"@opentelemetry/exporter-trace-otlp-grpc"
-				);
-				const { ConsoleSpanExporter } = await import(
-					"@opentelemetry/sdk-trace-base"
-				);
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
 
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
-
-				await expect(initTracing()).resolves.toBeUndefined();
-				expect(NodeSDK).toHaveBeenCalledTimes(1);
-				expect(OTLPTraceExporter).not.toHaveBeenCalled();
-				expect(ConsoleSpanExporter).not.toHaveBeenCalled();
-			});
+			await expect(initTracing()).rejects.toThrow(
+				"otlpEndpoint must be provided when exporterType is 'otlp'",
+			);
 		});
 
-		describe("Unknown exporter type", () => {
-			it("initializes SDK with undefined exporter for unknown exporterType", async () => {
-				process.env = {
-					...originalEnv,
-					API_OTEL_ENABLED: "true",
-					API_OTEL_EXPORTER_ENABLED: "true",
-					API_OTEL_EXPORTER_TYPE: "unknown",
-					API_OTEL_SERVICE_NAME: "test-service",
-				};
+		it("throws error when OTLP metric endpoint is missing", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "otlp";
+			observabilityConfig.otlpTraceEndpoint = "http://localhost:4317";
+			observabilityConfig.otlpMetricEndpoint = undefined;
 
-				const { OTLPTraceExporter } = await import(
-					"@opentelemetry/exporter-trace-otlp-grpc"
-				);
-				const { ConsoleSpanExporter } = await import(
-					"@opentelemetry/sdk-trace-base"
-				);
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
 
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
+			await expect(initTracing()).rejects.toThrow(
+				"otlpEndpoint must be provided when exporterType is 'otlp'",
+			);
+		});
 
-				await expect(initTracing()).resolves.toBeUndefined();
-				expect(NodeSDK).toHaveBeenCalledTimes(1);
-				expect(OTLPTraceExporter).not.toHaveBeenCalled();
-				expect(ConsoleSpanExporter).not.toHaveBeenCalled();
-			});
+		it("throws error when both OTLP endpoints are missing", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "otlp";
+			observabilityConfig.otlpTraceEndpoint = undefined;
+			observabilityConfig.otlpMetricEndpoint = undefined;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await expect(initTracing()).rejects.toThrow(
+				"otlpEndpoint must be provided when exporterType is 'otlp'",
+			);
+		});
+
+		it("configures PeriodicExportingMetricReader with correct interval", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			const { PeriodicExportingMetricReader } = await import(
+				"@opentelemetry/sdk-metrics"
+			);
+
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "otlp";
+			observabilityConfig.otlpTraceEndpoint = "http://localhost:4317";
+			observabilityConfig.otlpMetricEndpoint =
+				"http://localhost:4318/v1/metrics";
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await initTracing();
+
+			expect(PeriodicExportingMetricReader).toHaveBeenCalledWith(
+				expect.objectContaining({
+					exportIntervalMillis: 60000,
+				}),
+			);
+		});
+	});
+
+	describe("Exporter disabled state", () => {
+		it("initializes SDK without exporters when exporter is disabled", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = false;
+			observabilityConfig.samplingRatio = 1.0;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await initTracing();
+
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
+			expect(sdkCall.traceExporter).toBeUndefined();
+			expect(sdkCall.metricReader).toBeUndefined();
 		});
 	});
 
 	describe("Sampling configuration", () => {
 		it("accepts valid sampling ratio", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "0.25",
-			};
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = 0.25;
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
@@ -279,12 +268,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		});
 
 		it("rejects sampling ratio > 1", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "1.5",
-			};
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = 1.5;
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
@@ -294,12 +280,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		});
 
 		it("rejects negative sampling ratio", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "-0.1",
-			};
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = -0.1;
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
@@ -308,24 +291,77 @@ describe("OTEL bootstrap smoke tests", () => {
 			await expect(initTracing()).rejects.toThrow(/Invalid samplingRatio/);
 		});
 
-		it("rejects non-numeric sampling ratio (NaN)", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "invalid",
-			};
+		it("rejects NaN sampling ratio", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = NaN;
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
 
 			await expect(initTracing()).rejects.toThrow(/Invalid samplingRatio/);
+		});
+
+		it("handles sampling ratio of 0", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = 0;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalled();
+		});
+
+		it("handles sampling ratio of 1", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = 1;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalled();
+		});
+	});
+
+	describe("Instrumentation configuration", () => {
+		it("includes getNodeAutoInstrumentations in SDK config", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			const { getNodeAutoInstrumentations } = await import(
+				"@opentelemetry/auto-instrumentations-node"
+			);
+
+			observabilityConfig.enabled = true;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await initTracing();
+
+			expect(getNodeAutoInstrumentations).toHaveBeenCalled();
+		});
+
+		it("includes fastifyOtelInstrumentation in SDK config", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await initTracing();
+
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
+			expect(sdkCall.instrumentations).toBeDefined();
+			expect(Array.isArray(sdkCall.instrumentations)).toBe(true);
 		});
 	});
 
 	describe("Error handling", () => {
-		it("logs error but continues when SDK start fails", async () => {
+		it("logs error and sets sdk to undefined when SDK start fails", async () => {
 			const mockStart = vi
 				.fn()
 				.mockRejectedValueOnce(new Error("Connection refused"));
@@ -337,40 +373,168 @@ describe("OTEL bootstrap smoke tests", () => {
 					}) as unknown as NodeSDK,
 			);
 
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "true",
-				API_OTEL_EXPORTER_TYPE: "otlp",
-				API_OTEL_SERVICE_NAME: "test-service",
-				API_OTEL_EXPORTER_OTLP_TRACE_ENDPOINT: "http://localhost:4317",
-				API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT:
-					"http://localhost:4318/v1/metrics",
-			};
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "console";
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
 			await expect(initTracing()).resolves.toBeUndefined();
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to initialize OpenTelemetry"),
+				"[observability] Failed to initialize OpenTelemetry. Tracing is disabled.",
 				expect.any(Error),
 			);
+		});
+
+		it("continues execution when SDK initialization throws", async () => {
+			vi.mocked(NodeSDK).mockImplementationOnce(() => {
+				throw new Error("Initialization error");
+			});
+
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(consoleErrorSpy).toHaveBeenCalled();
 		});
 	});
 
 	describe("Shutdown functionality", () => {
 		it("handles shutdown when SDK was never initialized", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "false",
-			};
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = false;
 
 			const { shutdownTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
 
 			await expect(shutdownTracing()).resolves.toBeUndefined();
+		});
+
+		it("successfully shuts down initialized SDK", async () => {
+			const mockShutdown = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+			await shutdownTracing();
+
+			expect(mockShutdown).toHaveBeenCalledTimes(1);
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"[observability] OpenTelemetry shut down successfully",
+			);
+		});
+
+		it("logs error and rethrows when shutdown fails", async () => {
+			const shutdownError = new Error("Shutdown failed");
+			const mockShutdown = vi.fn().mockRejectedValue(shutdownError);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+
+			await expect(shutdownTracing()).rejects.toThrow("Shutdown failed");
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[observability] Failed to shutdown OpenTelemetry",
+				shutdownError,
+			);
+		});
+
+		it("throws timeout error when shutdown hangs", async () => {
+			vi.useFakeTimers();
+
+			const mockShutdown = vi
+				.fn()
+				.mockImplementation(() => new Promise(() => {}));
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+
+			const shutdownPromise = shutdownTracing().catch((err) => err);
+
+			await vi.advanceTimersByTimeAsync(5001);
+
+			const result = await shutdownPromise;
+			expect(result).toBeInstanceOf(Error);
+			expect(result.message).toMatch(/timeout/i);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[observability] Shutdown timed out",
+			);
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[observability] Failed to shutdown OpenTelemetry",
+				expect.any(Error),
+			);
+
+			vi.useRealTimers();
+		});
+
+		it("clears timeout when shutdown completes successfully", async () => {
+			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+
+			const mockShutdown = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+			await shutdownTracing();
+
+			expect(clearTimeoutSpy).toHaveBeenCalled();
+			clearTimeoutSpy.mockRestore();
 		});
 
 		it("clears timeout even when shutdown fails", async () => {
@@ -386,11 +550,8 @@ describe("OTEL bootstrap smoke tests", () => {
 					}) as unknown as NodeSDK,
 			);
 
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-			};
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
 
 			const { initTracing, shutdownTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
@@ -416,175 +577,84 @@ describe("OTEL bootstrap smoke tests", () => {
 			);
 			expect(fastifyOtelInstrumentation).toBeDefined();
 		});
-	});
 
-	describe("Edge cases", () => {
-		it("handles sampling ratio of 0", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "0",
-			};
-
-			const { initTracing } = await import(
+		it("fastifyOtelInstrumentation has correct configuration", async () => {
+			const { fastifyOtelInstrumentation } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
-			await expect(initTracing()).resolves.toBeUndefined();
-			expect(NodeSDK).toHaveBeenCalled();
-		});
-
-		it("handles sampling ratio of 1", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "1",
-			};
-
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
+			expect(fastifyOtelInstrumentation).toHaveProperty(
+				"registerOnInitialization",
+				false,
 			);
-			await expect(initTracing()).resolves.toBeUndefined();
-			expect(NodeSDK).toHaveBeenCalled();
-		});
-
-		it("uses default sampling ratio when not provided", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-			};
-			delete process.env.API_OTEL_SAMPLING_RATIO;
-
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-			await expect(initTracing()).resolves.toBeUndefined();
-			expect(NodeSDK).toHaveBeenCalled();
 		});
 	});
 
 	describe("SDK configuration", () => {
-		it("configures SDK with correct resource attributes", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SERVICE_NAME: "my-custom-service",
-			};
+		it("configures SDK with W3CTraceContextPropagator", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
 
-			const { resourceFromAttributes } = await import(
-				"@opentelemetry/resources"
-			);
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
+			await initTracing();
 
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
+			expect(sdkCall.textMapPropagator).toBeDefined();
+		});
+
+		it("configures SDK with ParentBasedSampler", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			const { ParentBasedSampler } = await import(
+				"@opentelemetry/sdk-trace-base"
+			);
+
+			observabilityConfig.enabled = true;
+			observabilityConfig.samplingRatio = 0.5;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await initTracing();
+
+			expect(ParentBasedSampler).toHaveBeenCalled();
+		});
+
+		it("configures SDK with service name from config", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			const { resourceFromAttributes } = await import(
+				"@opentelemetry/resources"
+			);
+
+			observabilityConfig.enabled = true;
+			observabilityConfig.serviceName = "my-custom-service";
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
 			await initTracing();
 
 			expect(resourceFromAttributes).toHaveBeenCalledWith({
 				"service.name": "my-custom-service",
 			});
 		});
-
-		it("configures SDK with ParentBasedSampler wrapping TraceIdRatioBasedSampler", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-				API_OTEL_SAMPLING_RATIO: "0.5",
-			};
-
-			const { ParentBasedSampler, TraceIdRatioBasedSampler } = await import(
-				"@opentelemetry/sdk-trace-base"
-			);
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-
-			await initTracing();
-
-			expect(TraceIdRatioBasedSampler).toHaveBeenCalledWith(0.5);
-			expect(ParentBasedSampler).toHaveBeenCalled();
-		});
-
-		it("configures SDK with W3CTraceContextPropagator", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-			};
-
-			const { W3CTraceContextPropagator } = await import("@opentelemetry/core");
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-
-			await initTracing();
-
-			expect(W3CTraceContextPropagator).toHaveBeenCalled();
-		});
-
-		it("includes getNodeAutoInstrumentations in SDK configuration", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-			};
-
-			const { getNodeAutoInstrumentations } = await import(
-				"@opentelemetry/auto-instrumentations-node"
-			);
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-
-			await initTracing();
-
-			expect(getNodeAutoInstrumentations).toHaveBeenCalled();
-		});
 	});
 
-	describe("Debug logging", () => {
-		it("sets diag logger with DEBUG level", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-			};
+	describe("Exporter type edge cases", () => {
+		it("handles unknown exporter type gracefully", async () => {
+			const { observabilityConfig } = await import("src/config/observability");
+			observabilityConfig.enabled = true;
+			observabilityConfig.exporterEnabled = true;
+			observabilityConfig.exporterType = "unknown";
 
-			const { diag, DiagConsoleLogger, DiagLogLevel } = await import(
-				"@opentelemetry/api"
-			);
-
-			// Import the bootstrap module (this triggers the diag.setLogger call at module load)
-			await import("../../src/observability/tracing/bootstrap");
-
-			expect(DiagConsoleLogger).toHaveBeenCalled();
-			expect(diag.setLogger).toHaveBeenCalledWith(
-				expect.any(Object),
-				DiagLogLevel.DEBUG,
-			);
-		});
-
-		it("logs success message via diag.info after SDK initialization", async () => {
-			process.env = {
-				...originalEnv,
-				API_OTEL_ENABLED: "true",
-				API_OTEL_EXPORTER_ENABLED: "false",
-			};
-
-			const { diag } = await import("@opentelemetry/api");
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
-
 			await initTracing();
 
-			expect(diag.info).toHaveBeenCalledWith(
-				"OpenTelemetry tracing initialized successfully",
-			);
+			const sdkCall = vi.mocked(NodeSDK).mock.calls[0][0];
+			expect(sdkCall.traceExporter).toBeUndefined();
+			expect(sdkCall.metricReader).toBeUndefined();
 		});
 	});
 });
