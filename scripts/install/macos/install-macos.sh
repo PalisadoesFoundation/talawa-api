@@ -139,21 +139,17 @@ fi
 print_step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 
 if [ "$INSTALL_MODE" = "docker" ]; then
-    if command_exists docker; then
-        success "Docker is already installed: $(docker --version)"
-        # Verify Docker is running
-        if ! docker info >/dev/null 2>&1; then
-            warn "Docker is installed but not running."
-            info "Please launch Docker Desktop from Applications and wait for it to start."
-        else
-            success "Docker is running"
+    if [ "$SKIP_PREREQS" = "true" ]; then
+        # Validate but don't attempt installation
+        if ! check_docker_requirements "docker"; then
+            error "Docker mode requires Docker. Either install/start Docker, or use local mode."
+            exit 1
         fi
-    elif [ "$SKIP_PREREQS" = "true" ]; then
-        warn "Skipping Docker installation (--skip-prereqs)"
+        success "Docker is available (--skip-prereqs)"
     else
-        warn "Docker is required for docker mode but is not installed."
-        info "Please install Docker Desktop and re-run this script."
-        exit 1
+        if ! check_docker_requirements "docker"; then
+            exit 1
+        fi
     fi
 else
     info "Local installation mode - skipping Docker setup"
