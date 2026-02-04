@@ -83,3 +83,12 @@ function cleanupOldEntries(now: number): void {
 export function resetEmailVerificationRateLimit(userId: string): void {
 	EMAIL_VERIFICATION_RATE_LIMITS.delete(userId);
 }
+
+/**
+ * Resets the lastCleanupAt timestamp for testing purposes only.
+ * This allows tests to verify cleanup behavior without waiting for real time.
+ * @internal For testing only
+ */
+export function __resetLastCleanupAtForTests(): void {
+	lastCleanupAt = 0;
+}
