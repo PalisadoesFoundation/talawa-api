@@ -53,7 +53,8 @@ export async function initTracing(): Promise<void> {
 					!observabilityConfig.otlpMetricEndpoint
 				) {
 					throw new Error(
-						"otlpEndpoint must be provided when exporterType is 'otlp'",
+						"Both OTLP endpoint (trace and metric) must be provided when exporterType is 'otlp'. " +
+							"Set API_OTEL_TRACE_EXPORTER_ENDPOINT and API_OTEL_METRIC_EXPORTER_ENDPOINT.",
 					);
 				}
 				exporter = new OTLPTraceExporter({
