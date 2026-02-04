@@ -453,5 +453,7 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ tag: { id: string; organization: { id: string; name: string | null; } | null; } | null; }, { id: string; }, void>;
     "\n  query UserOAuthAccounts($input: QueryUserInput!) {\n    user(input: $input) {\n      oauthAccounts {\n        provider\n        email\n        linkedAt\n        lastUsedAt\n      }\n    }\n  }\n":
       TadaDocumentNode<{ user: { oauthAccounts: { provider: "GOOGLE" | "GITHUB" | null; email: string | null; linkedAt: string | null; lastUsedAt: string | null; }[]; } | null; }, { input: { id: string; }; }, void>;
+    "\n\tquery Query_Typename {\n\t\t__typename\n\t}\n":
+      TadaDocumentNode<{ __typename: "Query"; }, {}, void>;
   }
 }
