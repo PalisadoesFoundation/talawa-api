@@ -342,7 +342,7 @@ validate_internet_connectivity() {
 
     local hosts=("github.com" "registry.npmjs.org")
 # Soft-fail policy: installation proceeds if at least one required host is reachable
-# to avvoid blocking installation due to temporary service outages
+# to avoid blocking installation due to temporary service outages
     local any_ok=0
 
     for host in "${hosts[@]}"; do
