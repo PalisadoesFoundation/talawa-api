@@ -68,8 +68,8 @@ describe("OTEL bootstrap smoke tests", () => {
 
 	beforeEach(() => {
 		originalEnv = { ...process.env };
-		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
-		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.resetModules();
 		vi.clearAllMocks();
 	});
@@ -133,7 +133,8 @@ describe("OTEL bootstrap smoke tests", () => {
 					API_OTEL_EXPORTER_TYPE: "otlp",
 					API_OTEL_SERVICE_NAME: "test-service",
 					API_OTEL_EXPORTER_OTLP_TRACE_ENDPOINT: "http://localhost:4317",
-					API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT: "http://localhost:4318/v1/metrics",
+					API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT:
+						"http://localhost:4318/v1/metrics",
 				};
 
 				const { OTLPTraceExporter } = await import(
@@ -172,7 +173,8 @@ describe("OTEL bootstrap smoke tests", () => {
 					API_OTEL_EXPORTER_ENABLED: "true",
 					API_OTEL_EXPORTER_TYPE: "otlp",
 					API_OTEL_SERVICE_NAME: "test-service",
-					API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT: "http://localhost:4318/v1/metrics",
+					API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT:
+						"http://localhost:4318/v1/metrics",
 				};
 
 				const { initTracing } = await import(
@@ -342,7 +344,8 @@ describe("OTEL bootstrap smoke tests", () => {
 				API_OTEL_EXPORTER_TYPE: "otlp",
 				API_OTEL_SERVICE_NAME: "test-service",
 				API_OTEL_EXPORTER_OTLP_TRACE_ENDPOINT: "http://localhost:4317",
-				API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT: "http://localhost:4318/v1/metrics",
+				API_OTEL_EXPORTER_OTLP_METRIC_ENDPOINT:
+					"http://localhost:4318/v1/metrics",
 			};
 
 			const { initTracing } = await import(
@@ -513,9 +516,7 @@ describe("OTEL bootstrap smoke tests", () => {
 				API_OTEL_EXPORTER_ENABLED: "false",
 			};
 
-			const { W3CTraceContextPropagator } = await import(
-				"@opentelemetry/core"
-			);
+			const { W3CTraceContextPropagator } = await import("@opentelemetry/core");
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
