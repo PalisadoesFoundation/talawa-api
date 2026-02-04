@@ -74,8 +74,7 @@ builder.mutationField("requestPasswordReset", (t) =>
 			// Check rate limit using email address
 			if (!checkPasswordResetRateLimit(parsedArgs.input.emailAddress)) {
 				throw new TalawaGraphQLError({
-					message:
-						"Too many password reset requests. Please try again later.",
+					message: "Too many password reset requests. Please try again later.",
 					extensions: {
 						code: "too_many_requests",
 					},
