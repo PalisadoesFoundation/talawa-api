@@ -202,11 +202,12 @@ describe("gracefulCleanup", () => {
 	});
 
 	it("should be idempotent - calling twice should only execute once", async () => {
-		// Set backupCreated to false for simpler test
-		resetCleanupState({ backupCreated: false, cleaning: false });
+		// Set backupCreated to true to test backup restoration idempotence
+		resetCleanupState({ backupCreated: true, cleaning: false });
 
 		// Mock the functions
 		cleanupTempMock.mockResolvedValue(undefined);
+		atomicRestoreBackupMock.mockResolvedValue(undefined);
 
 		// Create a promise that won't resolve immediately to simulate concurrent calls
 		let resolveCleanup: () => void = () => {};
@@ -232,6 +233,10 @@ describe("gracefulCleanup", () => {
 
 		// Assert cleanupTemp was only called once
 		expect(cleanupTempMock).toHaveBeenCalledTimes(1);
+		// Assert restoreBackup was called exactly once (not by the suppressed second call)
+		expect(atomicRestoreBackupMock).toHaveBeenCalledTimes(1);
+		// Assert process.exit was called at most once (not more than once)
+		expect(processExitSpy.mock.calls.length).toBeLessThanOrEqual(1);
 	});
 
 	it("should log initial message with undefined signal", async () => {
@@ -335,6 +340,17 @@ describe("gracefulCleanup", () => {
 		// Assert console.log was called with the signal-specific message
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\n\n⚠️  Setup interrupted by user (CTRL+C) - SIGINT received. Cleaning up...",
+		);
+
+		// Assert cleanupTemp was called
+		expect(cleanupTempMock).toHaveBeenCalledWith(".env.tmp");
+
+		// Assert atomicRestoreBackup was called (because backupCreated = true)
+		expect(atomicRestoreBackupMock).toHaveBeenCalledWith(".env", ".env.backup");
+
+		// Assert success message was logged
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ Original configuration restored successfully",
 		);
 
 		// Assert process.exit was called with 0 (success)
