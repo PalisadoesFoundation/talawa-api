@@ -920,8 +920,13 @@ suite("Query field getEventVolunteerGroups", () => {
 				},
 			);
 
+			// Assert group creation succeeded before proceeding
+			expect(templateGroupResult.errors).toBeUndefined();
+			expect(templateGroupResult.data?.createEventVolunteerGroup).toBeDefined();
+
 			const templateGroupId =
 				templateGroupResult.data?.createEventVolunteerGroup?.id;
+			expect(templateGroupId).toBeDefined();
 
 			await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -944,6 +949,12 @@ suite("Query field getEventVolunteerGroups", () => {
 			expect(result.data?.getEventVolunteerGroups).toBeDefined();
 			expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
 			expect(result.data?.getEventVolunteerGroups?.length).toBeGreaterThan(0);
+
+			// Verify the created group is in the results
+			const groupIds = result.data?.getEventVolunteerGroups?.map(
+				(g: { id: string | null }) => g.id,
+			);
+			expect(groupIds).toContain(templateGroupId);
 
 			// Cleanup template group
 			if (templateGroupId) {
