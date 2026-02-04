@@ -14,9 +14,9 @@ export const assertOrganizationAdmin = (
 		membership?.role !== "administrator"
 	) {
 		throw new TalawaGraphQLError({
+			message: errorMessage,
 			extensions: {
 				code: "unauthorized_action",
-				message: errorMessage,
 			},
 		});
 	}
