@@ -1,36 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-/* -------------------------------------------------------------------------- */
-/*                                  Mocks                                     */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------ */
+/* Chainable DB mocks                                                  */
+/* ------------------------------------------------------------------ */
+
+const insertValues = vi.fn();
+const updateWhere = vi.fn();
+
+const insert = vi.fn(() => ({
+	values: insertValues,
+}));
+
+const update = vi.fn(() => ({
+	set: vi.fn(() => ({
+		where: updateWhere,
+	})),
+}));
 
 const usersFindFirst = vi.fn();
 const communitiesFindFirst = vi.fn();
-const insert = vi.fn();
-const update = vi.fn();
 
-vi.mock("@node-rs/argon2", () => ({
-	hash: vi.fn().mockResolvedValue("hashed-password"),
-}));
+/* ------------------------------------------------------------------ */
+/* Module mock                                                         */
+/* ------------------------------------------------------------------ */
 
-vi.mock("uuidv7", () => ({
-	uuidv7: vi.fn().mockReturnValue("uuid-123"),
-}));
-
-vi.mock("../helpers", async () => {
-	const actual =
-		await vi.importActual<typeof import("../helpers")>("../helpers");
-
+vi.mock("../helpers", () => {
 	return {
-		...actual, // keep ensureBootstrapData export
 		db: {
 			query: {
-				usersTable: {
-					findFirst: usersFindFirst,
-				},
-				communitiesTable: {
-					findFirst: communitiesFindFirst,
-				},
+				usersTable: { findFirst: usersFindFirst },
+				communitiesTable: { findFirst: communitiesFindFirst },
 			},
 			insert,
 			update,
@@ -54,9 +53,17 @@ vi.mock("../helpers", async () => {
 	};
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                   Tests                                    */
-/* -------------------------------------------------------------------------- */
+vi.mock("uuidv7", () => ({
+	uuidv7: vi.fn(() => "uuid-123"),
+}));
+
+vi.mock("@node-rs/argon2", () => ({
+	hash: vi.fn(async () => "hashed-password"),
+}));
+
+/* ------------------------------------------------------------------ */
+/* Tests                                                              */
+/* ------------------------------------------------------------------ */
 
 describe.concurrent("ensureBootstrapData", () => {
 	let ensureBootstrapData: () => Promise<void>;
@@ -67,44 +74,63 @@ describe.concurrent("ensureBootstrapData", () => {
 		ensureBootstrapData = helpers.ensureBootstrapData;
 	});
 
-	it.concurrent("throws if administrator env vars are missing", async () => {
-		const helpers = await import("../helpers");
+	it("throws if administrator env vars are missing", async () => {
+		vi.resetModules();
 
-		helpers.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = "";
+		vi.doMock("../helpers", () => ({
+			db: {
+				query: {
+					usersTable: { findFirst: vi.fn() },
+					communitiesTable: { findFirst: vi.fn() },
+				},
+				insert,
+				update,
+			},
+			envConfig: {
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "",
+				API_ADMINISTRATOR_USER_NAME: "Admin",
+				API_ADMINISTRATOR_USER_PASSWORD: "password",
+			},
+		}));
+
+		const { ensureBootstrapData } = await import("../helpers");
 
 		await expect(ensureBootstrapData()).rejects.toThrow(
 			"Missing administrator environment variables",
 		);
 	});
 
-	it.concurrent("updates role if admin exists with non-administrator role", async () => {
+	it("updates role if admin exists with non-administrator role", async () => {
 		usersFindFirst.mockResolvedValue({ role: "member" });
 		communitiesFindFirst.mockResolvedValue({ id: "community-id" });
 
 		await ensureBootstrapData();
 
 		expect(update).toHaveBeenCalled();
+		expect(updateWhere).toHaveBeenCalled();
 	});
 
-	it.concurrent("creates admin user if missing", async () => {
+	it("creates admin user if missing", async () => {
 		usersFindFirst.mockResolvedValue(null);
 		communitiesFindFirst.mockResolvedValue({ id: "community-id" });
 
 		await ensureBootstrapData();
 
 		expect(insert).toHaveBeenCalled();
+		expect(insertValues).toHaveBeenCalled();
 	});
 
-	it.concurrent("creates community if missing", async () => {
+	it("creates community if missing", async () => {
 		usersFindFirst.mockResolvedValue({ role: "administrator" });
 		communitiesFindFirst.mockResolvedValue(null);
 
 		await ensureBootstrapData();
 
 		expect(insert).toHaveBeenCalled();
+		expect(insertValues).toHaveBeenCalled();
 	});
 
-	it.concurrent("is idempotent when admin and community already exist", async () => {
+	it("is idempotent when admin and community exist", async () => {
 		usersFindFirst.mockResolvedValue({ role: "administrator" });
 		communitiesFindFirst.mockResolvedValue({ id: "community-id" });
 
