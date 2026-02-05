@@ -1,5 +1,13 @@
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import {
+	organizationsTable,
+	tagAssignmentsTable,
+	tagFoldersTable,
+	tagsTable,
+	usersTable,
+} from "~/src/drizzle/schema";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -12,6 +20,13 @@ import {
 	Query_signIn,
 	Query_userTags,
 } from "../documentNodes";
+
+const createdResources = {
+	organizationIds: [] as string[],
+	userIds: [] as string[],
+	folderIds: [] as string[],
+	tagIds: [] as string[],
+};
 
 type UserTag = {
 	id: string;
@@ -30,7 +45,34 @@ type UserTag = {
 	};
 };
 
-afterEach(() => {
+afterEach(async () => {
+	// Clean DB in reverse dependency order
+	await server.drizzleClient
+		.delete(tagAssignmentsTable)
+		.where(inArray(tagAssignmentsTable.assigneeId, createdResources.userIds));
+
+	await server.drizzleClient
+		.delete(tagsTable)
+		.where(inArray(tagsTable.id, createdResources.tagIds));
+
+	await server.drizzleClient
+		.delete(tagFoldersTable)
+		.where(inArray(tagFoldersTable.id, createdResources.folderIds));
+
+	await server.drizzleClient
+		.delete(usersTable)
+		.where(inArray(usersTable.id, createdResources.userIds));
+
+	await server.drizzleClient
+		.delete(organizationsTable)
+		.where(inArray(organizationsTable.id, createdResources.organizationIds));
+
+	// Reset tracking
+	createdResources.organizationIds.length = 0;
+	createdResources.userIds.length = 0;
+	createdResources.folderIds.length = 0;
+	createdResources.tagIds.length = 0;
+
 	vi.clearAllMocks();
 });
 
@@ -140,6 +182,7 @@ suite("Query field userTags", () => {
 		}
 
 		const regularUserId = regularUserResult.data.createUser.user.id;
+		createdResources.userIds.push(regularUserId);
 
 		// Query tags for user with no tags
 		const userTagsResult = await mercuriusClient.query(Query_userTags, {
@@ -209,6 +252,7 @@ suite("Query field userTags", () => {
 		}
 
 		const organizationId = organizationResult.data.createOrganization.id;
+		createdResources.organizationIds.push(organizationId);
 
 		// Step 3: Create a regular user
 		const regularUserResult = await mercuriusClient.mutate(
@@ -238,6 +282,7 @@ suite("Query field userTags", () => {
 		}
 
 		const regularUserId = regularUserResult.data.createUser.user.id;
+		createdResources.userIds.push(regularUserId);
 
 		// Step 4: Create Tag Folder
 		const tagFolderResult = await mercuriusClient.mutate(
@@ -261,6 +306,7 @@ suite("Query field userTags", () => {
 		}
 
 		const tagFolderId = tagFolderResult.data.createTagFolder.id;
+		createdResources.folderIds.push(tagFolderId);
 
 		// Step 5: Create Tags
 		const tag1Result = await mercuriusClient.mutate(Mutation_createTag, {
@@ -425,6 +471,7 @@ suite("Query field userTags", () => {
 		}
 
 		const organizationId = organizationResult.data.createOrganization.id;
+		createdResources.organizationIds.push(organizationId);
 
 		// Step 3: Create Regular User
 		const regularUserResult = await mercuriusClient.mutate(
@@ -481,6 +528,7 @@ suite("Query field userTags", () => {
 		}
 
 		const tagFolderId = tagFolderResult.data.createTagFolder.id;
+		createdResources.folderIds.push(tagFolderId);
 
 		// Step 5: Create Tag
 		const tagResult = await mercuriusClient.mutate(Mutation_createTag, {
@@ -502,6 +550,7 @@ suite("Query field userTags", () => {
 		}
 
 		const tagId = tagResult.data.createTag.id;
+		createdResources.tagIds.push(tagId);
 
 		// Step 6: Assign tag to user
 		const assignResult = await mercuriusClient.mutate(Mutation_assignUserTag, {
@@ -706,6 +755,7 @@ suite("Query field userTags", () => {
 		}
 
 		const tagId = tagResult.data.createTag.id;
+		createdResources.tagIds.push(tagId);
 
 		// Step 7: Assign tag to user B
 		await mercuriusClient.mutate(Mutation_assignUserTag, {
