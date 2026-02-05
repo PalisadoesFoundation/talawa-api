@@ -215,7 +215,9 @@ async function findOrganizationsNeedingWork(
 }
 
 /**
- * Discovers all recurring events for a given organization that may require EventGeneration.
+ * Discovers all recurring event templates for a given organization that may require
+ * EventGeneration, fetching results in stable, paginated batches and joining each
+ * event to its recurrence rule before returning the aggregated details.
  *
  * @param organizationId - The ID of the organization to discover events for.
  * @param deps - The worker dependencies.
