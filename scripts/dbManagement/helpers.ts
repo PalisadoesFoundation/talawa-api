@@ -2,13 +2,19 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { sql } from "drizzle-orm";
+import { hash } from "@node-rs/argon2";
+import { eq, sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
 import { Client as MinioClient } from "minio";
 import postgres from "postgres";
 import * as schema from "src/drizzle/schema";
+import {
+	communitiesTable,
+	communitiesTableInsertSchema,
+} from "src/drizzle/tables/communities";
+import { usersTable, usersTableInsertSchema } from "src/drizzle/tables/users";
 import {
 	type EnvConfig,
 	envConfigSchema,
@@ -21,13 +27,6 @@ const envConfig = envSchema<EnvConfig>({
 	dotenv: true,
 	schema: envConfigSchema,
 });
-import { hash } from "@node-rs/argon2";
-import { eq } from "drizzle-orm";
-import { usersTable, usersTableInsertSchema } from "src/drizzle/tables/users";
-import {
-	communitiesTable,
-	communitiesTableInsertSchema,
-} from "src/drizzle/tables/communities";
 
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
@@ -212,10 +211,9 @@ export async function ensureBootstrapData(): Promise<void> {
 	}
 
 	// ---- Community ----
-	const existingCommunity =
-		await db.query.communitiesTable.findFirst({
-			columns: { id: true },
-		});
+	const existingCommunity = await db.query.communitiesTable.findFirst({
+		columns: { id: true },
+	});
 
 	if (!existingCommunity) {
 		await db.insert(communitiesTable).values(
@@ -236,7 +234,6 @@ export async function ensureBootstrapData(): Promise<void> {
 		);
 	}
 }
-
 
 /**
  * Check duplicate data
