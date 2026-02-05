@@ -79,26 +79,20 @@ describe("ensureBootstrapData", () => {
 	});
 
 	it("throws if administrator env vars are missing", async () => {
-		vi.resetModules();
+		const { ensureBootstrapData, envConfig } = await import("../helpers");
 
-		vi.doMock("../helpers", async () => {
-			const original =
-				await vi.importActual<typeof import("../helpers")>("../helpers");
+		const originalEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
-			return {
-				...original,
-				envConfig: {
-					...original.envConfig,
-					API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "",
-				},
-			};
-		});
+		try {
+			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = "";
 
-		const { ensureBootstrapData } = await import("../helpers");
-
-		await expect(ensureBootstrapData()).rejects.toThrow(
-			"Missing administrator environment variables",
-		);
+			await expect(ensureBootstrapData()).rejects.toThrow(
+				"Missing administrator environment variables",
+			);
+		} finally {
+			// Always restore shared state
+			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = originalEmail;
+		}
 	});
 
 	it("updates role if admin exists with non-administrator role", async () => {
