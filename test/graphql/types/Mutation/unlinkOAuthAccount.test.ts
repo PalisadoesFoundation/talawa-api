@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
@@ -313,5 +313,177 @@ suite("Mutation unlinkOAuthAccount", () => {
 
 		expect(accounts.length).toBe(1);
 		expect(accounts[0]?.provider).toBe("GITHUB");
+	});
+
+	test("unlinkOAuthAccount throws error when user is not found (database inconsistency)", async () => {
+		// Mock query to simulate user missing from database despite valid token
+		const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
+		const findFirstSpy = vi.spyOn(
+			server.drizzleClient.query.usersTable,
+			"findFirst",
+		);
+
+		// 1. Define types strictly inferred from the source
+		type FindFirstFn = typeof server.drizzleClient.query.usersTable.findFirst;
+		type FindFirstArgs = Parameters<FindFirstFn>[0];
+		type FindFirstReturn = ReturnType<FindFirstFn>;
+
+		// Strategy: Fail the call where passwordHash is requested (Line 61 check)
+		findFirstSpy.mockImplementation((async (args: FindFirstArgs) => {
+			const typedArgs = args as { columns?: { passwordHash?: boolean } };
+			if (typedArgs?.columns?.passwordHash) {
+				return undefined;
+			}
+			return originalFindFirst.call(
+				server.drizzleClient.query.usersTable,
+				args,
+			) as unknown as FindFirstReturn;
+		}) as unknown as FindFirstFn);
+
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id;
+		const userToken = userRes.data?.createUser?.authenticationToken;
+		assertToBeNonNullish(userId);
+
+		cleanupFns.push(async () => {
+			findFirstSpy.mockRestore();
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
+			});
+		});
+
+		// Add OAuth account so we pass the "No linked account" check
+		await server.drizzleClient.insert(oauthAccountsTable).values({
+			userId: userId,
+			provider: "GOOGLE",
+			providerId: faker.string.uuid(),
+			email: faker.internet.email(),
+			linkedAt: new Date(),
+			lastUsedAt: new Date(),
+		});
+
+		const res = await mercuriusClient.mutate(Mutation_unlinkOAuthAccount, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				provider: "GOOGLE",
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("not_found");
+		expect(res.errors?.[0]?.message).toBe("User not found");
+	});
+
+	test("unlinkOAuthAccount throws UNEXPECTED error when updated user is missing", async () => {
+		// Verify ErrorCode.UNEXPECTED at line 108
+		const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
+		const findFirstSpy = vi.spyOn(
+			server.drizzleClient.query.usersTable,
+			"findFirst",
+		);
+
+		// 1. Define types
+		type FindFirstFn = typeof server.drizzleClient.query.usersTable.findFirst;
+		type FindFirstArgs = Parameters<FindFirstFn>[0];
+		type FindFirstReturn = ReturnType<FindFirstFn>;
+
+		// Strategy: Fail the call AFTER the password check (Line 104)
+		let passwordCheckPassed = false;
+		findFirstSpy.mockImplementation((async (args: FindFirstArgs) => {
+			const typedArgs = args as { columns?: { passwordHash?: boolean } };
+			if (typedArgs?.columns?.passwordHash) {
+				passwordCheckPassed = true;
+				return originalFindFirst.call(
+					server.drizzleClient.query.usersTable,
+					args,
+				) as unknown as FindFirstReturn;
+			}
+
+			if (passwordCheckPassed) {
+				// This is the call AFTER password check -> Result Fetch
+				return undefined;
+			}
+
+			// Calls BEFORE password check (Context)
+			return originalFindFirst.call(
+				server.drizzleClient.query.usersTable,
+				args,
+			) as unknown as FindFirstReturn;
+		}) as unknown as FindFirstFn);
+
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id;
+		const userToken = userRes.data?.createUser?.authenticationToken;
+		assertToBeNonNullish(userId);
+
+		cleanupFns.push(async () => {
+			findFirstSpy.mockRestore();
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
+			});
+		});
+
+		await server.drizzleClient.insert(oauthAccountsTable).values({
+			userId: userId,
+			provider: "GOOGLE",
+			providerId: faker.string.uuid(),
+			email: faker.internet.email(),
+			linkedAt: new Date(),
+			lastUsedAt: new Date(),
+		});
+
+		const res = await mercuriusClient.mutate(Mutation_unlinkOAuthAccount, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				provider: "GOOGLE",
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
 	});
 });
