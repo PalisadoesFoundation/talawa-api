@@ -723,18 +723,19 @@ suite("Query field userTags", () => {
 		});
 
 		// Assert per resolver contract: auth error OR empty result
-		if (result.errors) {
-			expect(result.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining({
-						message: expect.any(String),
+		// Assert authorization error
+		expect(result.data?.userTags).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action_on_arguments_associated_resources",
 					}),
-				]),
-			);
-			expect(result.data?.userTags).toBeNull();
-		} else {
-			expect(result.data?.userTags).toEqual([]);
-		}
+					message: expect.any(String),
+					path: ["userTags"],
+				}),
+			]),
+		);
 	});
 
 	test("results in error when unauthenticated user queries tags", async () => {
