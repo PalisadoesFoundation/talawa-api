@@ -323,10 +323,37 @@ suite("Mutation linkOAuthAccount", () => {
 		});
 
 		test("should throw error when authenticated user not found in database", async () => {
-			// Delete the test user from database after getting auth token
+			// Create a separate user that will be deleted for this test
+			const tempEmail = `temp-${faker.string.uuid()}@example.com`;
+			const tempPassword = "tempPassword123";
+			const passwordHash = await hash(tempPassword);
+
+			const [tempUser] = await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					emailAddress: tempEmail,
+					name: "Temp User",
+					passwordHash: passwordHash,
+					role: "regular",
+					isEmailAddressVerified: true,
+				})
+				.returning();
+
+			if (!tempUser) throw new Error("Failed to create temp user");
+
+			// Sign in as temp user
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: { emailAddress: tempEmail, password: tempPassword },
+				},
+			});
+			const tempAuthToken = signInResult.data?.signIn?.authenticationToken;
+			if (!tempAuthToken) throw new Error("Failed to get temp auth token");
+
+			// Delete the temp user
 			await server.drizzleClient
 				.delete(usersTable)
-				.where(eq(usersTable.id, testUser.id));
+				.where(eq(usersTable.id, tempUser.id));
 
 			// Mock successful OAuth responses
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
@@ -343,7 +370,7 @@ suite("Mutation linkOAuthAccount", () => {
 
 			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
 				headers: {
-					authorization: `bearer ${authToken}`,
+					authorization: `bearer ${tempAuthToken}`,
 				},
 				variables: {
 					input: {
@@ -359,23 +386,6 @@ suite("Mutation linkOAuthAccount", () => {
 			expect(res.errors?.[0]?.message).toContain(
 				"User account not found. Please sign in again",
 			);
-
-			// Recreate user for cleanup
-			const [recreatedUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					id: testUser.id,
-					emailAddress: testUser.emailAddress,
-					name: testUser.name,
-					passwordHash: testUser.passwordHash,
-					role: testUser.role,
-					isEmailAddressVerified: testUser.isEmailAddressVerified,
-				})
-				.returning();
-
-			if (recreatedUser) {
-				testUser = recreatedUser;
-			}
 		});
 
 		test("should throw error when authorization code is invalid", async () => {
