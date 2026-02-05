@@ -499,6 +499,20 @@ jobs:
           KCOV_OUT="$(pwd)/coverage/install"
           mkdir -p "$KCOV_OUT"
           kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
+      - name: Prepare install coverage for Codecov
+        if: success()
+        run: |
+          set -e
+          # kcov writes cobertura.xml or cov.xml in a subdir (e.g. coverage/install/bash/cobertura.xml)
+          COB=$(find coverage/install -type f \( -name 'cobertura.xml' -o -name 'cov.xml' \) 2>/dev/null | head -1)
+          if [ -n "$COB" ]; then
+            cp "$COB" coverage/install/codecov-coverage.xml
+            echo "Using coverage file: $COB"
+          else
+            echo "No cobertura/cov.xml found under coverage/install"
+            ls -laR coverage/install || true
+            exit 1
+          fi
       - name: Upload install coverage to Codecov
         if: success()
         uses: codecov/codecov-action@v5
@@ -507,7 +521,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
-          directory: ./coverage/install
+          files: ./coverage/install/codecov-coverage.xml
           flags: install
 
   Run-Tests:
