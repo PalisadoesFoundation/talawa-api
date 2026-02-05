@@ -59,6 +59,30 @@ builder.queryField("userTags", (t) =>
 
 			const { userId } = parsed.data;
 
+			const currentUserId = ctx.currentClient.user.id;
+			const targetUserId = parsed.data.userId;
+
+			// Fetch current user to check role
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				columns: { role: true },
+			});
+
+			// Allow access if:
+			// 1. User is querying their own tags
+			// 2. User is an administrator
+			if (
+				currentUserId !== targetUserId &&
+				currentUser?.role !== "administrator"
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [{ argumentPath: ["userId"] }],
+					},
+				});
+			}
+
 			// ----------------------
 			// Fetch tags assigned to user
 			// ----------------------

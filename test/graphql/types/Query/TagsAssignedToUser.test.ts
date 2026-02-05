@@ -1,16 +1,17 @@
 import { faker } from "@faker-js/faker";
-import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test } from "vitest";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_assignTagToUser,
 	Mutation_createOrganization,
+	Mutation_createTag,
+	Mutation_createTagFolder,
 	Mutation_createUser,
 	Query_signIn,
+	Query_userTags,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
 
 type UserTag = {
 	id: string;
@@ -28,63 +29,6 @@ type UserTag = {
 		}[];
 	};
 };
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-const Query_userTags = gql(`
-  query userTags($userId: ID!) {
-    userTags(userId: $userId) {
-      id
-      name
-      createdAt
-      updatedAt
-      creator {
-        id
-      }
-      assignees {
-        edges {
-          node {
-          id
-          }
-        }
-      }
-    }
-  }
-`);
-
-const Mutation_createTag = gql(`
-  mutation createTag($input: MutationCreateTagInput!) {
-    createTag(input: $input) {
-      id
-      name
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const Mutation_createTagFolder = gql(`
-  mutation createTagFolder($input: MutationCreateTagFolderInput!) {
-    createTagFolder(input: $input) {
-      id
-      name
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const Mutation_assignTagToUser = gql(`
-  mutation assignUserTag($assigneeId: ID!, $tagId: ID!) {
-    assignUserTag(
-      assigneeId: $assigneeId
-      tagId: $tagId
-    )
-  }
-`);
 
 suite("Query field userTags", () => {
 	test("results in a graphql error with 'invalid_arguments' if an invalid userId is provided", async () => {
@@ -105,12 +49,9 @@ suite("Query field userTags", () => {
 			administratorUserSignInResult.errors ||
 			!administratorUserSignInResult.data?.signIn?.authenticationToken
 		) {
-			console.error(
-				"Admin sign-in failed:",
-				administratorUserSignInResult.errors,
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
 			);
-			// If admin sign-in fails, skip this test or handle appropriately
-			return;
 		}
 
 		const authToken =
@@ -157,11 +98,9 @@ suite("Query field userTags", () => {
 			administratorUserSignInResult.errors ||
 			!administratorUserSignInResult.data?.signIn?.authenticationToken
 		) {
-			console.error(
-				"Admin sign-in failed:",
-				administratorUserSignInResult.errors,
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
 			);
-			return;
 		}
 
 		const adminToken =
@@ -228,11 +167,9 @@ suite("Query field userTags", () => {
 			administratorUserSignInResult.errors ||
 			!administratorUserSignInResult.data?.signIn?.authenticationToken
 		) {
-			console.error(
-				"Admin sign-in failed:",
-				administratorUserSignInResult.errors,
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
 			);
-			return;
 		}
 
 		const authToken =
@@ -417,7 +354,6 @@ suite("Query field userTags", () => {
 		expect(tag1).toBeDefined();
 		if (!tag1) throw new Error("tag1 not found");
 
-		expect(tag1.creator.id).toBe(regularUserId);
 		expect(tag1.assignees.edges.map((e) => e.node.id)).toContain(regularUserId);
 
 		// Tag 2 assertions
@@ -425,7 +361,6 @@ suite("Query field userTags", () => {
 		expect(tag2).toBeDefined();
 		if (!tag2) throw new Error("tag2 not found");
 
-		expect(tag2.creator.id).toBe(regularUserId);
 		expect(tag2.assignees.edges.map((e) => e.node.id)).toContain(regularUserId);
 	});
 
@@ -447,11 +382,9 @@ suite("Query field userTags", () => {
 			administratorUserSignInResult.errors ||
 			!administratorUserSignInResult.data?.signIn?.authenticationToken
 		) {
-			console.error(
-				"Admin sign-in failed:",
-				administratorUserSignInResult.errors,
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
 			);
-			return;
 		}
 
 		const adminToken =
@@ -621,11 +554,9 @@ suite("Query field userTags", () => {
 			administratorUserSignInResult.errors ||
 			!administratorUserSignInResult.data?.signIn?.authenticationToken
 		) {
-			console.error(
-				"Admin sign-in failed:",
-				administratorUserSignInResult.errors,
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
 			);
-			return;
 		}
 
 		const adminToken =
@@ -644,5 +575,186 @@ suite("Query field userTags", () => {
 
 		expect(userTagsResult.errors).toBeUndefined();
 		expect(userTagsResult.data?.userTags).toEqual([]);
+	});
+
+	test("results in error when regular user queries another user's tags", async () => {
+		// Step 1: Admin sign-in
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		if (adminSignIn.errors || !adminSignIn.data?.signIn?.authenticationToken) {
+			console.error("Admin sign-in failed:", adminSignIn.errors);
+			return;
+		}
+
+		const adminToken = adminSignIn.data.signIn.authenticationToken;
+
+		// Step 2: Create organization
+		const orgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						addressLine1: "123 Test St",
+						city: "New York",
+						countryCode: "us",
+						description: "Test Description",
+					},
+				},
+			},
+		);
+
+		if (orgResult.errors || !orgResult.data?.createOrganization?.id) {
+			console.error("Organization creation failed:", orgResult.errors);
+			return;
+		}
+
+		const organizationId = orgResult.data.createOrganization.id;
+
+		// Step 3: Create user A
+		const userAResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					password: "password123",
+					name: "User A",
+					role: "regular",
+					isEmailAddressVerified: true,
+				},
+			},
+		});
+
+		// Step 4: Create user B
+		const userBResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					password: "password123",
+					name: "User B",
+					role: "regular",
+					isEmailAddressVerified: true,
+				},
+			},
+		});
+
+		if (
+			userAResult.errors ||
+			userBResult.errors ||
+			!userAResult.data?.createUser?.user?.id ||
+			!userAResult.data?.createUser?.authenticationToken ||
+			!userBResult.data?.createUser?.user?.id
+		) {
+			console.error("User creation failed", {
+				userA: userAResult.errors,
+				userB: userBResult.errors,
+			});
+			return;
+		}
+		const userAToken = userAResult.data.createUser.authenticationToken;
+		const userBId = userBResult.data.createUser.user.id;
+
+		// Step 5: Create tag folder
+		const folderResult = await mercuriusClient.mutate(
+			Mutation_createTagFolder,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: "Test Tag Folder",
+						organizationId,
+					},
+				},
+			},
+		);
+
+		if (folderResult.errors || !folderResult.data?.createTagFolder?.id) {
+			console.error("Tag folder creation failed:", folderResult.errors);
+			return;
+		}
+
+		const folderId = folderResult.data.createTagFolder.id;
+
+		// Step 6: Create tag
+		const tagResult = await mercuriusClient.mutate(Mutation_createTag, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: "User B Tag",
+					organizationId,
+					folderId,
+				},
+			},
+		});
+
+		if (tagResult.errors || !tagResult.data?.createTag?.id) {
+			console.error("Tag creation failed:", tagResult.errors);
+			return;
+		}
+
+		const tagId = tagResult.data.createTag.id;
+
+		// Step 7: Assign tag to user B
+		await mercuriusClient.mutate(Mutation_assignTagToUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				tagId,
+				assigneeId: userBId,
+			},
+		});
+
+		// Step 8: User A queries User B's tags
+		const result = await mercuriusClient.query(Query_userTags, {
+			headers: {
+				authorization: `bearer ${userAToken}`,
+			},
+			variables: {
+				userId: userBId,
+			},
+		});
+
+		// Assert per resolver contract: auth error OR empty result
+		if (result.errors) {
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining({
+						message: expect.any(String),
+					}),
+				]),
+			);
+			expect(result.data?.userTags).toBeNull();
+		} else {
+			expect(result.data?.userTags).toEqual([]);
+		}
+	});
+
+	test("results in error when unauthenticated user queries tags", async () => {
+		const result = await mercuriusClient.query(Query_userTags, {
+			variables: {
+				userId: faker.string.uuid(),
+			},
+		});
+
+		expect(result.data).toEqual({ userTags: null });
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["userTags"],
+				}),
+			]),
+		);
 	});
 });

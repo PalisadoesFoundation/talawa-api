@@ -679,24 +679,25 @@ export const Query_tag = gql(`
   }
 }`);
 
-export const Mutation_createTag = gql(`
-  mutation CreateTag($input:MutationCreateTagInput!) {
-    createTag(input: $input) {
+export const Query_userTags = gql(`
+  query userTags($userId: ID!) {
+    userTags(userId: $userId) {
       id
       name
-      createdAt
-      organization{
-        id
-        name
-        createdAt
-
+      assignees(first: 10){
+        edges {
+          node {
+            id
+          }
         }
+      }
     }
-  }`);
+  }
+`);
 
-export const Mutation_deleteTag = gql(`
-  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {
-    deleteTag(input: $input) {
+export const Mutation_createTag = gql(`
+  mutation createTag($input: MutationCreateTagInput!) {
+    createTag(input: $input) {
       id
       name
       createdAt
@@ -706,8 +707,28 @@ export const Mutation_deleteTag = gql(`
 `);
 
 export const Mutation_createTagFolder = gql(`
-  mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
+  mutation createTagFolder($input: MutationCreateTagFolderInput!) {
     createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_assignTagToUser = gql(`
+  mutation assignUserTag($assigneeId: ID!, $tagId: ID!) {
+    assignUserTag(
+      assigneeId: $assigneeId
+      tagId: $tagId
+    )
+  }
+`);
+
+export const Mutation_deleteTag = gql(`
+  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {
+    deleteTag(input: $input) {
       id
       name
       createdAt
