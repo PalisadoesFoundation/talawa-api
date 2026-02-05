@@ -296,6 +296,8 @@ suite("Venue Resolver - createdAt Field", () => {
 		);
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		const expectedCreatedAt = createVenueResult.data?.createVenue?.createdAt;
+		assertToBeNonNullish(expectedCreatedAt);
 
 		const result = await mercuriusClient.query(Query_venue_createdAt, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -304,8 +306,7 @@ suite("Venue Resolver - createdAt Field", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.venue?.id).toBe(venueId);
-		expect(result.data?.venue?.createdAt).toBeDefined();
-		expect(typeof result.data?.venue?.createdAt).toBe("string");
+		expect(result.data?.venue?.createdAt).toBe(expectedCreatedAt);
 		const createdAt = result.data?.venue?.createdAt as string;
 		expect(() => new Date(createdAt).getTime()).not.toThrow();
 		expect(Number.isNaN(new Date(createdAt).getTime())).toBe(false);

@@ -2925,6 +2925,7 @@ export const Mutation_createVenue = gql(`
       name
       description
       capacity
+      createdAt
     }
   }
 `);
