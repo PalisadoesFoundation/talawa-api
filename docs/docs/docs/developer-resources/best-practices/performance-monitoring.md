@@ -1319,49 +1319,6 @@ API_OTEL_SAMPLING_RATIO=1
 API_OTEL_SERVICE_NAME=talawa-api
 ```
 
-**Usage:**
-
-Start the server and make a request:
-
-**Terminal 1: Start server**
-```bash
-pnpm run dev
-```
-
-**Terminal 2: Make request**
-```bash
-curl http://localhost:4000/graphql \
-  -H "Content-Type: application/json" \
-  -d '{"query":"{ __typename }"}'
-```
-
-**Expected Console Output:**
-```json
-{
-  "traceId": "347cb51fc1fd41662d768bb1142acff1",
-  "parentId": undefined,
-  "id": "fd6b2a8046d8cc77",
-  "name": "POST /graphql",
-  "kind": 1,
-  "timestamp": 1705312456789000,
-  "duration": 19356500,
-  "attributes": {
-    "http.method": "POST",
-    "http.url": "http://localhost:4000/graphql",
-    "http.target": "/graphql",
-    "http.status_code": 200
-  },
-  "status": { "code": 0 }
-}
-```
-
-**Benefits:**
--  No external dependencies
--  Real-time visibility in terminal
--  Easy debugging during development
--  Not suitable for production
--  Spans not persisted
-
 #### External Mode (Production Monitoring)
 
 External mode exports spans to an external OpenTelemetry-compatible dashboard service using OTLP protocol, enabling centralized monitoring and analysis.
