@@ -500,7 +500,7 @@ jobs:
           mkdir -p "$KCOV_OUT"
           kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
       - name: Upload install coverage to Codecov
-        if: success() && hashFiles('coverage/install/**') != ''
+        if: success()
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"
