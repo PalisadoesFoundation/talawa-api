@@ -187,7 +187,7 @@ suite("Venue Resolver - createdAt Field", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "unauthorized_action",
+						code: "unauthorized_action_on_arguments_associated_resources",
 					}),
 					path: ["venue"],
 				}),
@@ -247,14 +247,15 @@ suite("Venue Resolver - createdAt Field", () => {
 			variables: { input: { id: venueId } },
 		});
 
-		expect(result.data?.venue).toBeNull();
+		expect(result.data?.venue?.id).toBe(venueId);
+		expect(result.data?.venue?.createdAt).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "unauthorized_action",
 					}),
-					path: ["venue"],
+					path: ["venue", "createdAt"],
 				}),
 			]),
 		);
