@@ -542,6 +542,52 @@ protected validateConfig(): void
 - **Validates:** `clientId` and `clientSecret` are non-empty
 - **Throws:** `OAuthError` with code `INVALID_CONFIG` if validation fails
 
+## Provider Factory and Registry Initialization
+
+### buildOAuthProviderRegistry
+
+The `buildOAuthProviderRegistry` function initializes the OAuth provider registry by reading configuration and registering enabled providers.
+
+```typescript
+export function buildOAuthProviderRegistry(): OAuthProviderRegistry
+```
+
+#### Behavior
+
+- Reads OAuth configuration via `loadOAuthConfig()`
+- Instantiates and registers Google provider if enabled
+- Instantiates and registers GitHub provider if enabled
+- Clears existing providers for idempotent initialization
+- Returns the singleton registry instance
+
+#### Usage
+
+```typescript
+import { buildOAuthProviderRegistry } from "~/src/utilities/auth/oauth/providerFactory";
+
+// Build and initialize the registry
+const registry = buildOAuthProviderRegistry();
+
+// Registry now contains all enabled providers
+const providers = registry.listProviders(); // ["google", "github"]
+```
+
+### Fastify Plugin Integration
+
+The OAuth provider registry is automatically initialized during server startup via the `oauthProviderRegistry` Fastify plugin. The plugin:
+
+- Calls `buildOAuthProviderRegistry()` to initialize providers from configuration
+- Decorates the Fastify instance with `oauthProviderRegistry` property
+- Logs initialization details (enabled providers)
+- Makes the registry available throughout the application
+
+The registry is then injected into the GraphQL context, making it available to all resolvers:
+
+```typescript
+// In GraphQL resolvers
+const provider = context.oauthProviderRegistry.get("google");
+```
+
 ## OAuthProviderRegistry
 
 The `OAuthProviderRegistry` is a singleton class that manages OAuth provider instances throughout the application lifecycle.
@@ -553,6 +599,7 @@ The `OAuthProviderRegistry` is a singleton class that manages OAuth provider ins
 - **Name Normalization**: Automatic normalization of provider names (trim, lowercase)
 - **Error Handling**: Comprehensive error handling with descriptive messages
 - **Testing Support**: Methods for clearing and unregistering providers
+- **Server Integration**: Automatically initialized and available in GraphQL context
 
 ### Class Definition
 
@@ -574,25 +621,19 @@ export class OAuthProviderRegistry {
 ### Usage Example
 
 ```typescript
-import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
-import { GoogleOAuthProvider } from "~/src/utilities/auth/oauth/providers/GoogleOAuthProvider";
+// The registry is automatically initialized during server startup
+// and available in GraphQL context
 
-// Get singleton instance
-const registry = OAuthProviderRegistry.getInstance();
-
-// Register a provider
-const googleProvider = new GoogleOAuthProvider({
-  clientId: process.env.GOOGLE_CLIENT_ID!,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  redirectUri: process.env.GOOGLE_REDIRECT_URI,
-});
-
-registry.register(googleProvider);
-
-// Retrieve and use a provider
-const provider = registry.get("google");
+// In GraphQL resolvers
+const provider = context.oauthProviderRegistry.get("google");
 const tokenResponse = await provider.exchangeCodeForTokens(code, redirectUri);
 const userProfile = await provider.getUserProfile(tokenResponse.access_token);
+
+// Direct usage (for testing or non-resolver contexts)
+import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
+
+const registry = OAuthProviderRegistry.getInstance();
+const provider = registry.get("google");
 ```
 
 ### Methods

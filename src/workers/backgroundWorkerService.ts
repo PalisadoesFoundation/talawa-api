@@ -366,12 +366,16 @@ export function getBackgroundWorkerStatus(): {
  *
  * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
-export async function healthCheck(): Promise<{
+export async function healthCheck(
+	statusGetter: () => ReturnType<
+		typeof getBackgroundWorkerStatus
+	> = getBackgroundWorkerStatus,
+): Promise<{
 	status: "healthy" | "unhealthy";
 	details: Record<string, unknown>;
 }> {
 	try {
-		const status = getBackgroundWorkerStatus();
+		const status = statusGetter();
 
 		if (!status.isRunning) {
 			return {
