@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { faker } from "@faker-js/faker";
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
@@ -15,7 +15,6 @@ import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { InvalidAuthorizationCodeError } from "~/src/utilities/auth/oauth/errors";
-import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import type { OAuthUserProfile } from "~/src/utilities/auth/oauth/types";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -44,14 +43,10 @@ suite("Mutation linkOAuthAccount", () => {
 		exchangeCodeForTokens: ReturnType<typeof vi.fn>;
 		getUserProfile: ReturnType<typeof vi.fn>;
 	};
-	let originalRegistry: OAuthProviderRegistry;
 	let authToken: string;
 	let testUser: typeof usersTable.$inferSelect;
 
 	beforeEach(async () => {
-		// Save original registry
-		originalRegistry = server.oauthProviderRegistry;
-
 		// Create mock provider
 		mockProvider = {
 			getProviderName: vi.fn().mockReturnValue("google"),
@@ -59,19 +54,24 @@ suite("Mutation linkOAuthAccount", () => {
 			getUserProfile: vi.fn(),
 		};
 
-		// Mock the registry to return our mock provider
-		server.oauthProviderRegistry = {
-			get: vi.fn().mockReturnValue(mockProvider),
-			has: vi.fn().mockReturnValue(true),
-			listProviders: vi.fn().mockReturnValue(["google"]),
-			register: vi.fn(),
-			unregister: vi.fn(),
-			clear: vi.fn(),
-			getInstance: vi.fn(),
-		} as unknown as OAuthProviderRegistry;
+		// Spy on registry methods instead of replacing the entire object
+		vi.spyOn(server.oauthProviderRegistry, "get").mockReturnValue(mockProvider);
+		vi.spyOn(server.oauthProviderRegistry, "has").mockReturnValue(true);
+		vi.spyOn(server.oauthProviderRegistry, "listProviders").mockReturnValue([
+			"google",
+		]);
+		vi.spyOn(server.oauthProviderRegistry, "register").mockImplementation(
+			() => {},
+		);
+		vi.spyOn(server.oauthProviderRegistry, "unregister").mockImplementation(
+			() => {},
+		);
+		vi.spyOn(server.oauthProviderRegistry, "clear").mockImplementation(
+			() => {},
+		);
 
 		// Create a test user and get auth token
-		const testEmail = `linktest-${randomUUID()}@example.com`;
+		const testEmail = `linktest-${faker.string.uuid()}@example.com`;
 		const testPassword = "testPassword123";
 
 		// Use argon2 to hash password properly
@@ -112,9 +112,8 @@ suite("Mutation linkOAuthAccount", () => {
 	});
 
 	afterEach(async () => {
-		// Restore original registry
-		server.oauthProviderRegistry = originalRegistry;
-		vi.clearAllMocks();
+		// Restore all mocks
+		vi.restoreAllMocks();
 
 		// Cleanup test data
 		if (testUser) {
@@ -129,7 +128,7 @@ suite("Mutation linkOAuthAccount", () => {
 
 	describe("successful scenarios", () => {
 		test("should link OAuth account to authenticated user", async () => {
-			const providerId = `google-${randomUUID()}`;
+			const providerId = `google-${faker.string.uuid()}`;
 
 			// Mock OAuth provider responses
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
@@ -171,40 +170,6 @@ suite("Mutation linkOAuthAccount", () => {
 			expect(linkedAccount?.providerId).toBe(providerId);
 			expect(linkedAccount?.provider).toBe("google");
 		});
-
-		test("should link OAuth account when email is different but verified", async () => {
-			const providerId = `google-diff-${randomUUID()}`;
-			const differentEmail = `different-${randomUUID()}@example.com`;
-
-			// Mock OAuth provider responses
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: providerId,
-				email: differentEmail, // Different email
-				name: "Test User",
-				emailVerified: true, // But verified
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.linkOAuthAccount?.id).toBe(testUser.id);
-		});
 	});
 
 	describe("error scenarios", () => {
@@ -225,9 +190,13 @@ suite("Mutation linkOAuthAccount", () => {
 		});
 
 		test("should throw error when OAuth provider registry is not available", async () => {
-			// Temporarily remove registry
-			server.oauthProviderRegistry =
-				undefined as unknown as OAuthProviderRegistry;
+			// Temporarily override the registry property to make it undefined
+			const originalRegistry = server.oauthProviderRegistry;
+			Object.defineProperty(server, "oauthProviderRegistry", {
+				value: undefined,
+				configurable: true,
+				writable: true,
+			});
 
 			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
 				headers: {
@@ -247,11 +216,18 @@ suite("Mutation linkOAuthAccount", () => {
 			expect(res.errors?.[0]?.message).toContain(
 				"OAuth authentication is not available",
 			);
+
+			// Restore the registry
+			Object.defineProperty(server, "oauthProviderRegistry", {
+				value: originalRegistry,
+				configurable: true,
+				writable: true,
+			});
 		});
 
 		test("should throw error when OAuth provider is not enabled", async () => {
-			// Mock registry to throw error when getting provider
-			server.oauthProviderRegistry.get = vi.fn().mockImplementation(() => {
+			// Mock registry.get to throw error when getting provider
+			vi.spyOn(server.oauthProviderRegistry, "get").mockImplementation(() => {
 				throw new Error("Provider not found");
 			});
 
@@ -359,7 +335,7 @@ suite("Mutation linkOAuthAccount", () => {
 			});
 
 			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: `google-${randomUUID()}`,
+				providerId: `google-${faker.string.uuid()}`,
 				email: testUser.emailAddress,
 				name: "Test User",
 				emailVerified: true,
@@ -455,7 +431,7 @@ suite("Mutation linkOAuthAccount", () => {
 			);
 		});
 		test("should throw error when OAuth account is already linked to same user", async () => {
-			const providerId = `google-duplicate-${randomUUID()}`;
+			const providerId = `google-duplicate-${faker.string.uuid()}`;
 
 			// First, create an existing OAuth account for this user
 			await server.drizzleClient.insert(oauthAccountsTable).values({
@@ -504,8 +480,8 @@ suite("Mutation linkOAuthAccount", () => {
 		});
 
 		test("should throw error when OAuth account is already linked to different user", async () => {
-			const providerId = `google-other-${randomUUID()}`;
-			const otherUserEmail = `other-${randomUUID()}@example.com`;
+			const providerId = `google-other-${faker.string.uuid()}`;
+			const otherUserEmail = `other-${faker.string.uuid()}@example.com`;
 
 			// Create another user
 			const [otherUser] = await server.drizzleClient
@@ -574,8 +550,8 @@ suite("Mutation linkOAuthAccount", () => {
 		});
 
 		test("should throw error when email is different and not verified", async () => {
-			const providerId = `google-unverified-${randomUUID()}`;
-			const differentEmail = `different-${randomUUID()}@example.com`;
+			const providerId = `google-unverified-${faker.string.uuid()}`;
+			const differentEmail = `different-${faker.string.uuid()}@example.com`;
 
 			// Mock OAuth provider responses
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({

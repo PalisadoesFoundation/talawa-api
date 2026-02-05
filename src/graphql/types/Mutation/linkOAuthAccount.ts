@@ -209,16 +209,13 @@ builder.mutationField("linkOAuthAccount", (t) =>
 					userProfile.email &&
 					userProfile.email !== currentUser.emailAddress
 				) {
-					// Different email from current user - require email verification for security
-					if (!userProfile.emailVerified) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "forbidden_action",
-							},
-							message:
-								"The email address from your OAuth provider is different from your current account and is not verified. Please verify your email with the OAuth provider first.",
-						});
-					}
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action",
+						},
+						message:
+							"The email address from your OAuth provider is different from your current account.",
+					});
 				}
 
 				// Create the OAuth account link
