@@ -454,161 +454,160 @@ suite("Mutation linkOAuthAccount", () => {
 				"Failed to link OAuth account due to a temporary problem",
 			);
 		});
-	});
+		test("should throw error when OAuth account is already linked to same user", async () => {
+			const providerId = `google-duplicate-${randomUUID()}`;
 
-	test("should throw error when OAuth account is already linked to same user", async () => {
-		const providerId = `google-duplicate-${randomUUID()}`;
+			// First, create an existing OAuth account for this user
+			await server.drizzleClient.insert(oauthAccountsTable).values({
+				userId: testUser.id,
+				provider: "google",
+				providerId: providerId,
+				email: testUser.emailAddress,
+				profile: { name: "Test User" },
+			});
 
-		// First, create an existing OAuth account for this user
-		await server.drizzleClient.insert(oauthAccountsTable).values({
-			userId: testUser.id,
-			provider: "google",
-			providerId: providerId,
-			email: testUser.emailAddress,
-			profile: { name: "Test User" },
-		});
+			// Mock OAuth provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
 
-		// Mock OAuth provider responses
-		mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-			access_token: "mock-access-token",
-			token_type: "Bearer",
-		});
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: providerId, // Same provider ID
+				email: testUser.emailAddress,
+				name: "Test User",
+				emailVerified: true,
+			} as OAuthUserProfile);
 
-		mockProvider.getUserProfile.mockResolvedValueOnce({
-			providerId: providerId, // Same provider ID
-			email: testUser.emailAddress,
-			name: "Test User",
-			emailVerified: true,
-		} as OAuthUserProfile);
-
-		const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					provider: "GOOGLE",
-					authorizationCode: "valid-code",
-					redirectUri: "http://localhost:3000/callback",
+			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+				headers: {
+					authorization: `bearer ${authToken}`,
 				},
-			},
+				variables: {
+					input: {
+						provider: "GOOGLE",
+						authorizationCode: "valid-code",
+						redirectUri: "http://localhost:3000/callback",
+					},
+				},
+			});
+
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			const issues = res.errors?.[0]?.extensions?.issues as
+				| Array<{ argumentPath: string[]; message: string }>
+				| undefined;
+			expect(issues).toBeDefined();
+			expect(issues?.[0]?.message).toContain(
+				"account is already linked to this user",
+			);
 		});
 
-		expect(res.errors).toBeDefined();
-		expect(res.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-		const issues = res.errors?.[0]?.extensions?.issues as
-			| Array<{ argumentPath: string[]; message: string }>
-			| undefined;
-		expect(issues).toBeDefined();
-		expect(issues?.[0]?.message).toContain(
-			"account is already linked to this user",
-		);
-	});
+		test("should throw error when OAuth account is already linked to different user", async () => {
+			const providerId = `google-other-${randomUUID()}`;
+			const otherUserEmail = `other-${randomUUID()}@example.com`;
 
-	test("should throw error when OAuth account is already linked to different user", async () => {
-		const providerId = `google-other-${randomUUID()}`;
-		const otherUserEmail = `other-${randomUUID()}@example.com`;
+			// Create another user
+			const [otherUser] = await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					emailAddress: otherUserEmail,
+					name: "Other User",
+					passwordHash: "other-hash",
+					role: "regular",
+					isEmailAddressVerified: true,
+				})
+				.returning();
 
-		// Create another user
-		const [otherUser] = await server.drizzleClient
-			.insert(usersTable)
-			.values({
-				emailAddress: otherUserEmail,
+			if (!otherUser) {
+				throw new Error("Failed to create other user");
+			}
+
+			// Link OAuth account to the other user
+			await server.drizzleClient.insert(oauthAccountsTable).values({
+				userId: otherUser.id,
+				provider: "google",
+				providerId: providerId,
+				email: otherUserEmail,
+				profile: { name: "Other User" },
+			});
+
+			// Mock OAuth provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: providerId, // Same provider ID as other user
+				email: otherUserEmail,
 				name: "Other User",
-				passwordHash: "other-hash",
-				role: "regular",
-				isEmailAddressVerified: true,
-			})
-			.returning();
+				emailVerified: true,
+			} as OAuthUserProfile);
 
-		if (!otherUser) {
-			throw new Error("Failed to create other user");
-		}
-
-		// Link OAuth account to the other user
-		await server.drizzleClient.insert(oauthAccountsTable).values({
-			userId: otherUser.id,
-			provider: "google",
-			providerId: providerId,
-			email: otherUserEmail,
-			profile: { name: "Other User" },
-		});
-
-		// Mock OAuth provider responses
-		mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-			access_token: "mock-access-token",
-			token_type: "Bearer",
-		});
-
-		mockProvider.getUserProfile.mockResolvedValueOnce({
-			providerId: providerId, // Same provider ID as other user
-			email: otherUserEmail,
-			name: "Other User",
-			emailVerified: true,
-		} as OAuthUserProfile);
-
-		const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					provider: "GOOGLE",
-					authorizationCode: "valid-code",
-					redirectUri: "http://localhost:3000/callback",
+			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+				headers: {
+					authorization: `bearer ${authToken}`,
 				},
-			},
-		});
-
-		expect(res.errors).toBeDefined();
-		expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
-		expect(res.errors?.[0]?.message).toContain(
-			"account is already linked to another user",
-		);
-
-		// Cleanup other user
-		await server.drizzleClient
-			.delete(oauthAccountsTable)
-			.where(eq(oauthAccountsTable.userId, otherUser.id));
-		await server.drizzleClient
-			.delete(usersTable)
-			.where(eq(usersTable.id, otherUser.id));
-	});
-
-	test("should throw error when email is different and not verified", async () => {
-		const providerId = `google-unverified-${randomUUID()}`;
-		const differentEmail = `different-${randomUUID()}@example.com`;
-
-		// Mock OAuth provider responses
-		mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-			access_token: "mock-access-token",
-			token_type: "Bearer",
-		});
-
-		mockProvider.getUserProfile.mockResolvedValueOnce({
-			providerId: providerId,
-			email: differentEmail, // Different email
-			name: "Test User",
-			emailVerified: false, // NOT verified
-		} as OAuthUserProfile);
-
-		const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					provider: "GOOGLE",
-					authorizationCode: "valid-code",
-					redirectUri: "http://localhost:3000/callback",
+				variables: {
+					input: {
+						provider: "GOOGLE",
+						authorizationCode: "valid-code",
+						redirectUri: "http://localhost:3000/callback",
+					},
 				},
-			},
+			});
+
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
+			expect(res.errors?.[0]?.message).toContain(
+				"account is already linked to another user",
+			);
+
+			// Cleanup other user
+			await server.drizzleClient
+				.delete(oauthAccountsTable)
+				.where(eq(oauthAccountsTable.userId, otherUser.id));
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, otherUser.id));
 		});
 
-		expect(res.errors).toBeDefined();
-		expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
-		expect(res.errors?.[0]?.message).toContain(
-			"email address from your OAuth provider is different",
-		);
+		test("should throw error when email is different and not verified", async () => {
+			const providerId = `google-unverified-${randomUUID()}`;
+			const differentEmail = `different-${randomUUID()}@example.com`;
+
+			// Mock OAuth provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: providerId,
+				email: differentEmail, // Different email
+				name: "Test User",
+				emailVerified: false, // NOT verified
+			} as OAuthUserProfile);
+
+			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						provider: "GOOGLE",
+						authorizationCode: "valid-code",
+						redirectUri: "http://localhost:3000/callback",
+					},
+				},
+			});
+
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
+			expect(res.errors?.[0]?.message).toContain(
+				"email address from your OAuth provider is different",
+			);
+		});
 	});
 });
