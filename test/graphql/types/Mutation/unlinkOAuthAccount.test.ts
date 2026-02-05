@@ -84,7 +84,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 		// 2. Add an OAuth account directly to DB
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: userId,
-			provider: "GOOGLE",
+			provider: "google",
 			providerId: faker.string.uuid(),
 			email: faker.internet.email(),
 			linkedAt: new Date(),
@@ -195,7 +195,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 		// Add OAuth account
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: userId,
-			provider: "GOOGLE",
+			provider: "google",
 			providerId: faker.string.uuid(),
 			email: faker.internet.email(),
 			linkedAt: new Date(),
@@ -271,7 +271,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 		await server.drizzleClient.insert(oauthAccountsTable).values([
 			{
 				userId: userId,
-				provider: "GOOGLE",
+				provider: "google",
 				providerId: faker.string.uuid(),
 				email: faker.internet.email(),
 				linkedAt: new Date(),
@@ -279,7 +279,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 			},
 			{
 				userId: userId,
-				provider: "GITHUB",
+				provider: "github",
 				providerId: faker.string.uuid(),
 				email: faker.internet.email(),
 				linkedAt: new Date(),
@@ -312,7 +312,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 			.where(eq(oauthAccountsTable.userId, userId));
 
 		expect(accounts.length).toBe(1);
-		expect(accounts[0]?.provider).toBe("GITHUB");
+		expect(accounts[0]?.provider).toBe("github");
 	});
 
 	test("unlinkOAuthAccount throws error when user is not found (database inconsistency)", async () => {
@@ -377,7 +377,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 		// Add OAuth account so we pass the "No linked account" check
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: userId,
-			provider: "GOOGLE",
+			provider: "google",
 			providerId: faker.string.uuid(),
 			email: faker.internet.email(),
 			linkedAt: new Date(),
@@ -469,7 +469,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: userId,
-			provider: "GOOGLE",
+			provider: "google",
 			providerId: faker.string.uuid(),
 			email: faker.internet.email(),
 			linkedAt: new Date(),

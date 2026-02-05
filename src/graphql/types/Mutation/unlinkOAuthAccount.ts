@@ -37,7 +37,10 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 			const existingAccount =
 				await ctx.drizzleClient.query.oauthAccountsTable.findFirst({
 					where: (accounts, { eq, and }) =>
-						and(eq(accounts.userId, userId), eq(accounts.provider, provider)),
+						and(
+							eq(accounts.userId, userId),
+							eq(accounts.provider, provider.toLowerCase()),
+						),
 				});
 
 			if (!existingAccount) {
@@ -95,7 +98,7 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 					.where(
 						and(
 							eq(oauthAccountsTable.userId, userId),
-							eq(oauthAccountsTable.provider, provider),
+							eq(oauthAccountsTable.provider, provider.toLowerCase()),
 						),
 					);
 			});
