@@ -7,6 +7,26 @@ sidebar_position: 70
 
 This section covers important tests to validate the operation of the API.
 
+## GitHub Actions Merge Conflict Detector
+
+Talawa API now runs an automated merge-conflict detector on every `pull_request_target`
+event and on pushes to `main` or `develop`. The workflow replays each open PR against
+the latest base branch and posts the result as a check run so authors can rebase quickly.
+
+### Local validation
+
+You can dry-run the workflow with [`act`](https://github.com/nektos/act):
+
+```bash
+brew install act # or equivalent installation method
+act pull_request \
+  -W .github/workflows/merge-conflict-detector.yml \
+  -s GITHUB_TOKEN=<personal-access-token-with-repo-scope>
+```
+
+The run prints the same conflict summary you’ll see in CI, which makes it easy to
+confirm fixes before pushing.
+
 ## Introduction
 
 It is important to test our code. If you are a contributor, please follow the guidance on this page.
@@ -23,160 +43,6 @@ The `tests/` directory contains the code for performing api tests against Talawa
 2. Test files must have a `.test.ts` extension.
 
 The rest of this page will assist you in being an active contributor to the code base.
-
-## Quick Start
-
-### Running Tests
-
-**Run all tests:**
-```bash
-pnpm run check_tests
-```
-
-**Run specific test file:**
-```bash
-pnpm run check_tests -- /path/to/test/file
-```
-
-**Run with coverage:**
-```bash
-pnpm run run_tests
-```
-
-**Run with test sharding:**
-```bash
-pnpm run test:shard
-```
-
-### Linting and Formatting
-
-**Fix linting & formatting issues:**
-```bash
-pnpm run format:fix
-```
-
-**Check linting & formatting:**
-```bash
-pnpm run format:check
-```
-
-**Check for sanitization issues:**
-```bash
-pnpm run lint:sanitization
-```
-
-**Check TSDoc comments:**
-```bash
-pnpm run lint:tsdoc
-```
-
-### Type Checking
-
-**Run TypeScript type checker:**
-```bash
-pnpm run typecheck
-```
-
-## Code Coverage Flags
-
-We use Codecov flags to separate and track coverage metrics for different types of tests:
-
-### Unit Flag
-
-The `unit` flag tracks coverage for:
-- `test/unit/`: Unit tests for isolated logic
-- `src/utilities/`: Utility functions
-- `src/services/`: Service layer code
-
-### Integration Flag
-
-The `integration` flag tracks coverage for:
-- `test/drizzle/`: Database integration tests
-- `test/graphql/`: GraphQL API integration tests
-- `test/install/`: Installation and setup tests
-
-These flags allow us to monitor coverage separately on the Codecov dashboard, helping identify gaps in either unit or integration test coverage.
-
-### Codecov Flag Meanings (Dashboard)
-
-The Codecov dashboard may show **four** flags. Only two are actively produced by our current CI workflows. The other two are legacy flags that may still appear if they were uploaded in the past.
-
-| Flag | What it represents | Status in this repo |
-| --- | --- | --- |
-| `unit` | Coverage uploaded from `vitest.unit.config.ts` (unit test suite). | **Active** |
-| `integration` | Coverage uploaded from `vitest.integration.config.ts` (integration test suite). | **Active** |
-| `vitest` | A combined Vitest coverage report from older workflows (pre-split) or ad-hoc uploads. | **Legacy** (not currently uploaded) |
-| `unittests` | An older/renamed flag that no longer receives uploads. | **Legacy** (no report uploaded) |
-
-Notes:
-- The **active** flags are `unit` and `integration`. These are the only flags uploaded by CI today.
-- **Legacy** flags can remain visible on the dashboard even if they are not being uploaded anymore. If you see “No report uploaded,” it’s a stale flag.
-- Admins can delete stale flags from the Codecov UI if needed.
-
-![Codecov flags overview](/img/markdown/docs/codecov-flags-overview.png)
-
-## Linting & Static Analysis
-
-We use [Biome](https://biomejs.dev/) for linting and formatting. In addition to standard rules, we have custom plugins enabled to enforce security best practices.
-
-### Biome Plugins
-
-We have a custom GritQL plugin enabled to detect potential security issues.
-
-#### `require_escapeHTML`
-
-This plugin is designed to enhance security by detecting potential Cross-Site Scripting (XSS) vulnerabilities in Pothos GraphQL resolvers. It checks if `t.string` fields with a `resolve` function are using the `escapeHTML` utility.
-
-**This feature is active and will impact testing results.** If your code triggers this warning, you must address it either by sanitizing the output or by explicitly suppressing the warning if it is a false positive.
-
-##### Why is this important?
-
-When returning user-generated content (like bios, descriptions, comments) in a GraphQL API, it is crucial to sanitize the output to prevent malicious scripts from being executed in the client's browser. The `escapeHTML` function performs this sanitization.
-
-##### What it detects
-
-The plugin looks for `t.string(...)` definitions that:
-
-1.  Have a `resolve` property.
-2.  Do **not** contain a call to `escapeHTML(...)` within the resolver.
-
-**Example that triggers a warning:**
-
-```typescript
-t.string({
-  resolve: (parent) => parent.bio, // Warning: Missing escapeHTML
-});
-```
-
-**Example that passes:**
-
-```typescript
-import { escapeHTML } from "~/src/utilities/sanitizer";
-
-t.string({
-  resolve: (parent) => escapeHTML(parent.bio), // Safe
-});
-```
-
-##### False Positives & Limitations
-
-This pattern is a heuristic and may flag safe code:
-
-1.  **Safe Strings:** IDs, Enums, numbers converted to strings, or hardcoded strings do not need sanitization but will still be flagged if they are in a `t.string` resolver.
-2.  **External Sanitization:** If you sanitize the string _before_ the resolver or in a separate function call that isn't named `escapeHTML`, the plugin will not detect it.
-    ```typescript
-    const safeBio = escapeHTML(user.bio);
-    t.string({ resolve: () => safeBio });  // Warning: Plugin only sees the resolver body
-    ```
-3.  **Pattern Scope:** It currently only matches `t.string(...)`. It does not catch `t.field({ type: 'String', ... })`.
-
-##### How to Suppress
-
-If you are certain a field is safe (e.g., it returns a database ID), you can suppress the warning.
-
-Since this is a custom GritQL plugin, standard `biome-ignore` comments might not work depending on the Biome version and integration.
-
-If `biome-ignore` does not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking).
 
 ## Testing Philosophy
 
@@ -196,6 +62,7 @@ The GraphQL schema cannot be tested without running the graphql server itself be
 
 The end users will be interacting with the graphql schema and not the typescript graphql resolvers. So, the tests should be written in a way that asserts against the runtime behavior of that graphql schema.
 
+This does mean that code coverage is not possible because vitest cannot know what typescript module paths are being traversed inside the tests because at runtime those typescript modules are compiled into node.js(v8) internal implementation of byte code.
 
 #### Integration Testing
 
@@ -1227,96 +1094,3 @@ Sometimes you may want to start all over again from scratch. These steps will re
    ```
 
 Now you can resume your development work.
-
-## Mock Isolation & Cleanup
-
-To ensure reliable test execution, especially in parallel environments, it is critical to properly isolate mocks in your tests.
-
-### The Rule
-If you use `vi.mock()`, `vi.fn()`, or `vi.spyOn()` in a test file, you **MUST** include a cleanup hook to reset the mocks after each test.
-
-### How to Implement
-Add the following `afterEach` hook to your test file:
-
-```typescript
-import { afterEach, vi } from "vitest";
-
-afterEach(() => {
-  vi.clearAllMocks();
-});
-```
-
-### Choosing the Right Cleanup Method
-
-Vitest provides several cleanup methods. Here's when to use each:
-
-| Method | What It Does | When to Use |
-|--------|--------------|-------------|
-| `vi.clearAllMocks()` | Clears call history and results | **Recommended default** - Resets mock state while preserving implementation |
-| `vi.resetAllMocks()` | Clears history + resets implementation to `vi.fn()` | When you need to remove custom mock implementations |
-| `vi.restoreAllMocks()` | Clears history + restores original implementation | Only for `vi.spyOn()` - restores the real function |
-| `vi.resetModules()` | Clears module cache | When module-level state causes issues (rare) |
-
-**Best Practice:** Use `vi.clearAllMocks()` in most cases. It's the safest option that works for all mock types.
-
-### Why?
-Without this cleanup, mocks from one test can leak into others, causing:
-- Flaky tests that fail randomly
-- "Spooky action at a distance" where a change in one file breaks an unrelated test
-- Failures when running tests in parallel (sharding)
-
-### Verification
-We have a script that verifies this rule. You can run it locally:
-
-```bash
-npm run check_mock_isolation
-```
-
-To automatically fix violations:
-
-```bash
-npm run check_mock_isolation -- --fix
-```
-
-### Environment Variables
-
-**`MOCK_ISOLATION_FAIL_ON_ERROR`**
-
-Controls whether the check fails the build or just warns:
-- `true` - Exits with code 1 if violations are found (fails CI)
-- `false` or unset - Exits with code 0 with warnings (default)
-
-Example:
-```bash
-MOCK_ISOLATION_FAIL_ON_ERROR=true npm run check_mock_isolation
-```
-
-### Troubleshooting
-
-**"No problems found" but tests still fail in parallel**
-
-Check for:
-- Global state mutations outside of mocks
-- Database fixtures not properly isolated
-- Shared test data between files
-
-**"Module mocks not being reset"**
-
-Use `vi.resetModules()` in addition to `vi.clearAllMocks()`:
-
-```typescript
-afterEach(() => {
-  vi.clearAllMocks();
-  vi.resetModules();
-});
-```
-
-**"Spy on original implementation still called"**
-
-You're likely using `vi.spyOn()`. Use `vi.restoreAllMocks()` instead:
-
-```typescript
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-```

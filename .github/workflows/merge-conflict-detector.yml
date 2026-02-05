@@ -1,0 +1,237 @@
+name: Merge Conflict Detector
+
+on:
+  workflow_call:
+  
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  push:
+    branches: [main, develop]
+
+
+jobs:
+
+  detect-merge-conflicts:
+    name: Check Open PRs for Conflicts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get open PRs targeting this branch
+        id: get-prs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "[FETCH] ========================================"
+          echo "[FETCH] Fetching open PRs targeting: ${{ github.ref_name }}"
+
+          gh pr list \
+            --base "${{ github.ref_name }}" \
+            --state open \
+            --json number \
+            --jq '.[].number' > pr_numbers.txt
+
+          PR_COUNT=$(wc -l < pr_numbers.txt | tr -d ' ')
+          echo "[FETCH] Found ${PR_COUNT} open PR(s)"
+
+          if [ "${PR_COUNT}" -eq 0 ]; then
+            echo "[FETCH] No open PRs to check"
+            echo "has_prs=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_prs=true" >> $GITHUB_OUTPUT
+            echo "[FETCH] PRs to check:"
+            cat pr_numbers.txt | while read pr; do
+              echo "[FETCH]   - PR #${pr}"
+            done
+          fi
+          echo "[FETCH] ========================================"
+
+      - name: Check single PR for merge conflicts
+        if: github.event_name == 'pull_request_target'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "[CHECK] ========================================"
+          echo "[CHECK] Checking PR #${{ github.event.pull_request.number }}"
+
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          echo "[CHECK] Fetching latest base branch: ${BASE_REF}"
+          git fetch origin "${BASE_REF}"
+
+          BASE_SHA=$(git rev-parse "origin/${BASE_REF}")
+          echo "[CHECK] Latest base SHA: ${BASE_SHA}"
+
+          PR_DATA=$(gh pr view "$PR_NUMBER" --json headRefName,headRefOid,title)
+
+          PR_HEAD_REF=$(echo "$PR_DATA" | jq -r '.headRefName')
+          PR_HEAD_SHA=$(echo "$PR_DATA" | jq -r '.headRefOid')
+          PR_TITLE=$(echo "$PR_DATA" | jq -r '.title')
+
+          echo "[CHECK] Latest PR head: ${PR_HEAD_REF} @ ${PR_HEAD_SHA}"
+
+          # Fetch PR commit directly (works for forks)
+          git fetch origin "${PR_HEAD_SHA}"
+
+          echo "[CHECK] Fetching changed files in PR"
+          gh pr view "$PR_NUMBER" --json files --jq '.files[].path' > pr_files.txt
+
+          FILE_COUNT=$(wc -l < pr_files.txt | tr -d ' ')
+          echo "[CHECK] Total files changed: ${FILE_COUNT}"
+
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "[CHECK] No files changed — exiting successfully"
+            exit 0
+          fi
+
+          echo "[CHECK] Changed files:"
+          sed 's/^/[CHECK]   - /' pr_files.txt
+
+          echo "[CHECK] Running merge-tree conflict analysis"
+
+          set +e
+          MERGE_OUTPUT=$(git merge-tree "$BASE_SHA" "$PR_HEAD_SHA" 2>&1)
+          MERGE_EXIT_CODE=$?
+          set -e
+
+          echo "[RESULT] ========================================"
+          echo "[RESULT] CONFLICT DETECTION SUMMARY"
+          echo "[RESULT] ========================================"
+          printf "[RESULT] PR #%s: %s\n" "$PR_NUMBER" "$PR_TITLE"
+          echo "[RESULT] Base: ${BASE_REF} @ ${BASE_SHA}"
+          echo "[RESULT] Head: ${PR_HEAD_REF} @ ${PR_HEAD_SHA}"
+          echo "[RESULT] ----------------------------------------"
+          echo "[RESULT] Total files changed: ${FILE_COUNT}"
+          echo "[RESULT] ========================================"
+
+          # Check for conflicts in merge-tree output
+          if echo "$MERGE_OUTPUT" | grep -q "CONFLICT"; then
+            echo "[RESULT] ❌ STATUS: FAILED"
+            echo "[RESULT] Merge conflicts detected with latest base branch"
+            echo "$MERGE_OUTPUT" | grep "CONFLICT" | sed 's/^/[RESULT]   /'
+            exit 1
+          elif [ "$MERGE_EXIT_CODE" -ne 0 ]; then
+            echo "[RESULT] ⚠️  WARNING: Merge-tree exited with code ${MERGE_EXIT_CODE}"
+            echo "[RESULT] This may indicate a conflict or error"
+            exit 1
+          else
+            echo "[RESULT] ✅ STATUS: PASSED"
+            echo "[RESULT] No merge conflicts detected"
+            exit 0
+          fi
+
+      - name: Check all open PRs for conflicts
+        if: steps.get-prs.outputs.has_prs == 'true' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "[CHECK-ALL] ========================================"
+          echo "[CHECK-ALL] Checking all open PRs after merge to ${{ github.ref_name }}"
+
+          FAILED=false
+          CONFLICT_SUMMARY=""
+
+          while IFS= read -r pr_number; do
+            echo "[CHECK-ALL] ----------------------------------------"
+            echo "[CHECK-ALL] Checking PR #${pr_number}"
+
+            PR_DATA=$(gh pr view ${pr_number} --json headRefName,headRefOid,baseRefName,title)
+            PR_HEAD_REF=$(echo "$PR_DATA" | jq -r '.headRefName')
+            PR_HEAD_SHA=$(echo "$PR_DATA" | jq -r '.headRefOid')
+            PR_BASE_REF=$(echo "$PR_DATA" | jq -r '.baseRefName')
+            PR_TITLE=$(echo "$PR_DATA" | jq -r '.title')
+
+            echo "[CHECK-ALL] PR #${pr_number}: ${PR_TITLE}"
+            echo "[CHECK-ALL] Base: ${PR_BASE_REF}"
+            echo "[CHECK-ALL] Head: ${PR_HEAD_REF} @ ${PR_HEAD_SHA}"
+
+            echo "[CHECK-ALL] Fetching latest branches..."
+            git fetch origin ${PR_BASE_REF} >/dev/null 2>&1
+            
+            # Fetch the PR head commit directly (works for forks)
+            git fetch origin ${PR_HEAD_SHA} >/dev/null 2>&1
+
+            # Get latest base SHA
+            LATEST_BASE_SHA=$(git rev-parse origin/${PR_BASE_REF})
+            echo "[CHECK-ALL] Latest base SHA: ${LATEST_BASE_SHA}"
+            echo "[CHECK-ALL] PR head SHA: ${PR_HEAD_SHA}"
+
+            # Use git merge-tree to check for conflicts
+            echo "[CHECK-ALL] Running merge simulation..."
+            set +e
+            MERGE_OUTPUT=$(git merge-tree ${LATEST_BASE_SHA} ${PR_HEAD_SHA} 2>&1)
+            MERGE_EXIT_CODE=$?
+            set -e
+
+            CHECK_NAME="Merge Conflict Detector"
+            HAS_CONFLICT=false
+
+            # Check for "CONFLICT" in the output (most reliable indicator)
+            if echo "$MERGE_OUTPUT" | grep -q "CONFLICT"; then
+              HAS_CONFLICT=true
+              echo "[CHECK-ALL] ❌ Conflict detected via merge-tree output"
+              echo "$MERGE_OUTPUT" | grep "CONFLICT" | sed 's/^/[CHECK-ALL]   /'
+            # Exit code 1 from merge-tree also indicates conflicts
+            elif [ "$MERGE_EXIT_CODE" -eq 1 ]; then
+              HAS_CONFLICT=true
+              echo "[CHECK-ALL] ❌ Conflict detected via merge-tree exit code"
+            else
+              echo "[CHECK-ALL] ✅ No conflicts detected"
+            fi
+
+            # Post check run status (suppress JSON output)
+            if [ "$HAS_CONFLICT" = true ]; then
+              echo "[CHECK-ALL] ❌ Posting failure status for PR #${pr_number}"
+
+              gh api repos/${{ github.repository }}/check-runs \
+                -X POST \
+                -f name="${CHECK_NAME}" \
+                -f head_sha="${PR_HEAD_SHA}" \
+                -f status="completed" \
+                -f conclusion="failure" \
+                -f "output[title]=Merge conflicts detected" \
+                -f "output[summary]=This PR has merge conflicts with ${PR_BASE_REF}. Please update your branch." \
+                --silent
+
+              FAILED=true
+              CONFLICT_SUMMARY="${CONFLICT_SUMMARY}
+            PR #${pr_number}: ${PR_TITLE}"
+            else
+              echo "[CHECK-ALL] ✅ Posting success status for PR #${pr_number}"
+
+              gh api repos/${{ github.repository }}/check-runs \
+                -X POST \
+                -f name="${CHECK_NAME}" \
+                -f head_sha="${PR_HEAD_SHA}" \
+                -f status="completed" \
+                -f conclusion="success" \
+                -f "output[title]=No merge conflicts" \
+                -f "output[summary]=This PR cleanly merges into ${PR_BASE_REF}" \
+                --silent
+            fi
+
+          done < pr_numbers.txt
+
+          echo "[CHECK-ALL] ========================================"
+          if [ "$FAILED" = true ]; then
+            echo "[CHECK-ALL] ⚠️  CONFLICTS DETECTED"
+            echo "[CHECK-ALL] The following PRs have merge conflicts:"
+            echo "${CONFLICT_SUMMARY}"
+            echo "[CHECK-ALL] ========================================"
+            echo "[CHECK-ALL] Check runs have been posted to each PR"
+            echo "[CHECK-ALL] ========================================"
+            exit 0
+          else
+            echo "[CHECK-ALL] ✅ ALL PRs CLEAN"
+            echo "[CHECK-ALL] All open PRs merge cleanly into ${{ github.ref_name }}"
+            echo "[CHECK-ALL] ========================================"
+            exit 0
+          fi
