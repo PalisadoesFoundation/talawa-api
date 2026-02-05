@@ -241,27 +241,29 @@ suite("Mutation linkOAuthAccount", () => {
 			server.oauthProviderRegistry =
 				undefined as unknown as OAuthProviderRegistry;
 
-			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
+			try {
+				const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+					headers: {
+						authorization: `bearer ${authToken}`,
 					},
-				},
-			});
+					variables: {
+						input: {
+							provider: "GOOGLE",
+							authorizationCode: "valid-auth-code",
+							redirectUri: "http://localhost:3000/callback",
+						},
+					},
+				});
 
-			expect(res.errors).toBeDefined();
-			expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
-			expect(res.errors?.[0]?.message).toContain(
-				"OAuth authentication is not available",
-			);
-
-			// Restore the registry
-			server.oauthProviderRegistry = tempRegistry;
+				expect(res.errors).toBeDefined();
+				expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
+				expect(res.errors?.[0]?.message).toContain(
+					"OAuth authentication is not available",
+				);
+			} finally {
+				// Restore the registry
+				server.oauthProviderRegistry = tempRegistry;
+			}
 		});
 
 		test("should throw error when OAuth provider is not enabled", async () => {
@@ -278,31 +280,33 @@ suite("Mutation linkOAuthAccount", () => {
 				clear: vi.fn(),
 			} as unknown as OAuthProviderRegistry;
 
-			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
+			try {
+				const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+					headers: {
+						authorization: `bearer ${authToken}`,
 					},
-				},
-			});
+					variables: {
+						input: {
+							provider: "GOOGLE",
+							authorizationCode: "valid-auth-code",
+							redirectUri: "http://localhost:3000/callback",
+						},
+					},
+				});
 
-			expect(res.errors).toBeDefined();
-			expect(res.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-			const issues = res.errors?.[0]?.extensions?.issues as
-				| Array<{ argumentPath: string[]; message: string }>
-				| undefined;
-			expect(issues).toBeDefined();
-			expect(issues?.[0]?.message).toContain(
-				'OAuth provider "google" is not enabled or not found.',
-			);
-
-			// Restore the registry
-			server.oauthProviderRegistry = tempRegistry;
+				expect(res.errors).toBeDefined();
+				expect(res.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+				const issues = res.errors?.[0]?.extensions?.issues as
+					| Array<{ argumentPath: string[]; message: string }>
+					| undefined;
+				expect(issues).toBeDefined();
+				expect(issues?.[0]?.message).toContain(
+					'OAuth provider "google" is not enabled or not found.',
+				);
+			} finally {
+				// Restore the registry
+				server.oauthProviderRegistry = tempRegistry;
+			}
 		});
 
 		test("should throw error when getUserProfile fails", async () => {
@@ -739,9 +743,8 @@ suite("Mutation linkOAuthAccount", () => {
 
 			// Mock the transaction to simulate unique constraint violation
 			// First SELECT finds no conflict, then INSERT with conflict returns empty array
-			const originalTransaction = server.drizzleClient.transaction;
-			server.drizzleClient.transaction = vi
-				.fn()
+			const transactionSpy = vi
+				.spyOn(server.drizzleClient, "transaction")
 				.mockImplementation(async (callback) => {
 					const mockTx = {
 						select: vi.fn().mockReturnValue({
@@ -784,22 +787,24 @@ suite("Mutation linkOAuthAccount", () => {
 						}
 					});
 
-					return callback(mockTx);
+					return callback(mockTx as unknown as Parameters<typeof callback>[0]);
 				});
 
-			// Execute mutation
-			const result = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
-				variables: { input },
-				headers: { authorization: `bearer ${authToken}` },
-			});
+			try {
+				// Execute mutation
+				const result = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+					variables: { input },
+					headers: { authorization: `bearer ${authToken}` },
+				});
 
-			// Verify proper error handling
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("forbidden_action");
-			expect(result.errors?.[0]?.message).toContain("already linked");
-
-			// Restore original transaction method
-			server.drizzleClient.transaction = originalTransaction;
+				// Verify proper error handling
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("forbidden_action");
+				expect(result.errors?.[0]?.message).toContain("already linked");
+			} finally {
+				// Restore spy even if test fails
+				transactionSpy.mockRestore();
+			}
 		});
 	});
 });
