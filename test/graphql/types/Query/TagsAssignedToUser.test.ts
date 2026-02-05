@@ -523,7 +523,6 @@ suite("Query field userTags", () => {
 			},
 		});
 
-		expect(userTagsResult.errors).toBeUndefined();
 		expect(userTagsResult.data?.userTags).toHaveLength(1);
 		expect(userTagsResult.data?.userTags).toEqual(
 			expect.arrayContaining([
