@@ -125,7 +125,8 @@ const envFileName = ".env";
 const envBackupFile = ".env.backup";
 export const envTempFile = ".env.tmp";
 export let backupCreated = false;
-let cleaning = false;
+let cleaningUp = false;
+let exitCalled = false;
 
 /**
  * Graceful cleanup handler for interruptions (SIGINT/SIGTERM).
@@ -134,10 +135,11 @@ let cleaning = false;
  * @internal Exported for testing purposes
  */
 export async function gracefulCleanup(signal?: string): Promise<void> {
-	if (cleaning) {
-		return; // Already cleaning up
+	// Atomic check-and-set to prevent race conditions
+	if (cleaningUp) {
+		return; // Already cleaning up, exit silently
 	}
-	cleaning = true;
+	cleaningUp = true;
 
 	console.log(
 		signal === undefined
@@ -162,10 +164,16 @@ export async function gracefulCleanup(signal?: string): Promise<void> {
 			console.log("✓ Cleanup complete. No backup to restore.");
 		}
 
-		process.exit(0);
+		if (!exitCalled) {
+			exitCalled = true;
+			process.exit(0);
+		}
 	} catch (e) {
 		console.error("✗ Cleanup encountered errors:", e);
-		process.exit(1);
+		if (!exitCalled) {
+			exitCalled = true;
+			process.exit(1);
+		}
 	}
 }
 
@@ -178,7 +186,8 @@ export function resetCleanupState(options?: {
 	cleaning?: boolean;
 }): void {
 	backupCreated = options?.backupCreated ?? false;
-	cleaning = options?.cleaning ?? false;
+	cleaningUp = options?.cleaning ?? false;
+	exitCalled = false;
 }
 
 // Signal handlers will be registered in setup() to avoid test pollution
@@ -1107,7 +1116,7 @@ export async function setup(): Promise<SetupAnswers> {
 	// Reset state variables at the start of each setup call
 	// This ensures clean state for tests and multiple setup() calls
 	backupCreated = false;
-	cleaning = false;
+	cleaningUp = false;
 
 	// Register signal handlers for graceful cleanup
 	const sigintHandler = () => gracefulCleanup("SIGINT");
