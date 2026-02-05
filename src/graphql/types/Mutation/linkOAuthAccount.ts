@@ -204,17 +204,21 @@ builder.mutationField("linkOAuthAccount", (t) =>
 					}
 				}
 
-				// Check email verification if OAuth provider returns email
+				if (!userProfile.email) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "forbidden_action" },
+						message:
+							"OAuth provider did not provide email. Cannot link account.",
+					});
+				}
+
 				if (
-					userProfile.email &&
-					userProfile.email !== currentUser.emailAddress
+					userProfile.email.toLowerCase() !==
+					currentUser.emailAddress.toLowerCase()
 				) {
 					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action",
-						},
-						message:
-							"The email address from your OAuth provider is different from your current account.",
+						extensions: { code: "forbidden_action" },
+						message: "OAuth email does not match current user email.",
 					});
 				}
 
