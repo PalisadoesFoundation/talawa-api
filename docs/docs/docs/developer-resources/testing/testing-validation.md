@@ -7,6 +7,26 @@ sidebar_position: 70
 
 This section covers important tests to validate the operation of the API.
 
+## GitHub Actions Merge Conflict Detector
+
+Talawa API now runs an automated merge-conflict detector on every `pull_request_target`
+event and on pushes to `main` or `develop`. The workflow replays each open PR against
+the latest base branch and posts the result as a check run so authors can rebase quickly.
+
+### Local validation
+
+You can dry-run the workflow with [`act`](https://github.com/nektos/act):
+
+```bash
+brew install act # or equivalent installation method
+act pull_request \
+  -W .github/workflows/merge-conflict-detector.yml \
+  -s GITHUB_TOKEN=<personal-access-token-with-repo-scope>
+```
+
+The run prints the same conflict summary you’ll see in CI, which makes it easy to
+confirm fixes before pushing.
+
 ## Introduction
 
 It is important to test our code. If you are a contributor, please follow the guidance on this page.
