@@ -1,4 +1,4 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
@@ -235,42 +235,49 @@ async function discoverRecurringEventsForOrganization(
 	}>
 > {
 	const { drizzleClient } = deps;
-
-	// Get recurring events
-	const recurringEvents = await drizzleClient.query.eventsTable.findMany({
-		where: and(
-			eq(eventsTable.organizationId, organizationId),
-			eq(eventsTable.isRecurringEventTemplate, true),
-		),
-	});
-
-	// Get recurrence rules
-	const recurrenceRules =
-		await drizzleClient.query.recurrenceRulesTable.findMany({
-			where: eq(recurrenceRulesTable.organizationId, organizationId),
-		});
-
-	const ruleMap = new Map(
-		recurrenceRules.map((rule) => [rule.baseRecurringEventId, rule]),
-	);
-
+	const EVENT_BATCH_SIZE = 500;
+	let offset = 0;
 	const eventDetails = [];
+	while (true) {
+		const recurringEvents =
+			(await drizzleClient.query.eventsTable.findMany({
+				where: and(
+					eq(eventsTable.organizationId, organizationId),
+					eq(eventsTable.isRecurringEventTemplate, true),
+				),
+				orderBy: [eventsTable.id], // IMPORTANT (stable pagination)
+				limit: EVENT_BATCH_SIZE,
+				offset,
+			})) ?? [];
 
-	for (const event of recurringEvents) {
-		const rule = ruleMap.get(event.id);
-		if (!rule) continue;
+		if (recurringEvents.length === 0) break;
 
-		const isNeverEnding = !rule.count && !rule.recurrenceEndDate;
-		const estimatedInstances = estimateInstanceCount(rule);
+		const eventIds = recurringEvents.map((e) => e.id);
 
-		eventDetails.push({
-			eventId: event.id,
-			eventName: event.name || "Unnamed Event",
-			ruleId: rule.id,
-			isNeverEnding,
-			estimatedInstances,
-			recurrenceRule: rule,
-		});
+		const recurrenceRules =
+			await drizzleClient.query.recurrenceRulesTable.findMany({
+				where: inArray(recurrenceRulesTable.baseRecurringEventId, eventIds),
+			});
+		const ruleMap = new Map(
+			recurrenceRules.map((rule) => [rule.baseRecurringEventId, rule]),
+		);
+		for (const event of recurringEvents) {
+			const rule = ruleMap.get(event.id);
+			if (!rule) continue;
+
+			const isNeverEnding = !rule.count && !rule.recurrenceEndDate;
+			const estimatedInstances = estimateInstanceCount(rule);
+
+			eventDetails.push({
+				eventId: event.id,
+				eventName: event.name || "Unnamed Event",
+				ruleId: rule.id,
+				isNeverEnding,
+				estimatedInstances,
+				recurrenceRule: rule,
+			});
+		}
+		offset += recurringEvents.length;
 	}
 
 	return eventDetails;
