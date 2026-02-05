@@ -10,6 +10,10 @@ coverage:
         flags:
           - install
 
+# Fix paths from kcov cobertura output (GitHub Actions workspace)
+fixes:
+  - "home/runner/work/talawa-api/talawa-api/::"
+
 
 flags:
   unit:

@@ -540,10 +540,11 @@ jobs:
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
           files: ${{ steps.prepare-install-coverage.outputs.upload_file }}
           flags: install
+          disable_search: true
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
