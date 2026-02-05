@@ -160,9 +160,21 @@ export async function pingDB(): Promise<boolean> {
 
 /**
  * Ensures required bootstrap data (administrator user and community)
- * exists before loading sample data.
+ * exists in the database.
  *
- * This makes the sample data loader fully standalone and deterministic.
+ * This function makes the sample data loader fully standalone and deterministic by:
+ * - Creating or updating the administrator user using environment variables
+ * - Ensuring a default community record exists
+ *
+ * The function is idempotent and safe to call multiple times.
+ *
+ * @throws {Error} If required administrator environment variables are missing
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```ts
+ * await ensureBootstrapData();
+ * ```
  */
 export async function ensureBootstrapData(): Promise<void> {
 	// ---- Administrator user ----
