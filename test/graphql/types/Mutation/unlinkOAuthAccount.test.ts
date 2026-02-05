@@ -306,6 +306,13 @@ suite("Mutation unlinkOAuthAccount", () => {
 			server.drizzleClient.query.usersTable,
 			"findFirst",
 		);
+		// Mock transaction to use the main client so spies work
+		const transactionSpy = vi.spyOn(server.drizzleClient, "transaction");
+		transactionSpy.mockImplementation((async (
+			cb: (tx: typeof server.drizzleClient) => Promise<unknown>,
+		) => {
+			return cb(server.drizzleClient);
+		}) as unknown as typeof server.drizzleClient.transaction);
 
 		// 1. Define types strictly inferred from the source
 		type FindFirstFn = typeof server.drizzleClient.query.usersTable.findFirst;
@@ -351,6 +358,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 		assertToBeNonNullish(userId);
 
 		cleanupFns.push(async () => {
+			transactionSpy.mockRestore();
 			findFirstSpy.mockRestore();
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
@@ -387,6 +395,13 @@ suite("Mutation unlinkOAuthAccount", () => {
 			server.drizzleClient.query.usersTable,
 			"findFirst",
 		);
+		// Mock transaction to use the main client so spies work
+		const transactionSpy = vi.spyOn(server.drizzleClient, "transaction");
+		transactionSpy.mockImplementation((async (
+			cb: (tx: typeof server.drizzleClient) => Promise<unknown>,
+		) => {
+			return cb(server.drizzleClient);
+		}) as unknown as typeof server.drizzleClient.transaction);
 
 		// 1. Define types
 		type FindFirstFn = typeof server.drizzleClient.query.usersTable.findFirst;
@@ -444,6 +459,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 		assertToBeNonNullish(userId);
 
 		cleanupFns.push(async () => {
+			transactionSpy.mockRestore();
 			findFirstSpy.mockRestore();
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },

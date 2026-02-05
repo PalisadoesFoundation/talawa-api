@@ -52,26 +52,25 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 				});
 			}
 
-			// 2. Check if user has a password (this is safe to read outside transaction)
-			const user = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (users, { eq }) => eq(users.id, userId),
-				columns: {
-					id: true,
-					passwordHash: true,
-				},
-			});
-
-			if (!user) {
-				throw new TalawaGraphQLError({
-					extensions: { code: ErrorCode.NOT_FOUND },
-					message: "User not found",
-				});
-			}
-
-			const hasPassword = !!user.passwordHash;
-
-			// 3. Perform atomic count-check-delete transaction
+			// 2. Perform atomic count-check-delete transaction
 			await ctx.drizzleClient.transaction(async (tx) => {
+				// Check if user has a password (MOVED inside transaction for safety)
+				const user = await tx.query.usersTable.findFirst({
+					where: (users, { eq }) => eq(users.id, userId),
+					columns: {
+						id: true,
+						passwordHash: true,
+					},
+				});
+
+				if (!user) {
+					throw new TalawaGraphQLError({
+						extensions: { code: ErrorCode.NOT_FOUND },
+						message: "User not found",
+					});
+				}
+
+				const hasPassword = !!user.passwordHash;
 				// Count total linked OAuth accounts for this user (within transaction)
 				const userOAuthAccounts = await tx
 					.select()
@@ -103,7 +102,7 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 					);
 			});
 
-			// 4. Return the up-to-date user object
+			// 3. Return the up-to-date user object
 			const updatedUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (users, { eq }) => eq(users.id, userId),
 			});
