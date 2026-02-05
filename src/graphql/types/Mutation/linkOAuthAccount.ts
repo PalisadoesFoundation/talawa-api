@@ -223,20 +223,36 @@ builder.mutationField("linkOAuthAccount", (t) =>
 				}
 
 				// Create the OAuth account link
-				await tx.insert(oauthAccountsTable).values({
-					id: uuidv7(),
-					userId: currentUser.id,
-					provider: args.input.provider.toLowerCase(),
-					providerId: userProfile.providerId,
-					email: userProfile.email,
-					profile: {
-						name: userProfile.name,
-						picture: userProfile.picture,
-						emailVerified: userProfile.emailVerified,
-					},
-					linkedAt: new Date(),
-					lastUsedAt: new Date(),
-				});
+				const inserted = await tx
+					.insert(oauthAccountsTable)
+					.values({
+						id: uuidv7(),
+						userId: currentUser.id,
+						provider: args.input.provider.toLowerCase(),
+						providerId: userProfile.providerId,
+						email: userProfile.email,
+						profile: {
+							name: userProfile.name,
+							picture: userProfile.picture,
+							emailVerified: userProfile.emailVerified,
+						},
+						linkedAt: new Date(),
+						lastUsedAt: new Date(),
+					})
+					.onConflictDoNothing({
+						target: [
+							oauthAccountsTable.provider,
+							oauthAccountsTable.providerId,
+						],
+					})
+					.returning({ id: oauthAccountsTable.id });
+
+				if (!inserted.length) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "forbidden_action" },
+						message: "This OAuth account is already linked to another user.",
+					});
+				}
 				ctx.log.info(
 					{
 						userId: currentUser.id,

@@ -716,5 +716,90 @@ suite("Mutation linkOAuthAccount", () => {
 				"OAuth provider did not provide email. Cannot link account.",
 			);
 		});
+
+		test("handles unique constraint violation gracefully when concurrent insert occurs", async () => {
+			const input = {
+				provider: "GOOGLE" as const,
+				authorizationCode: "valid-code",
+				redirectUri: "http://localhost:3000/callback",
+			};
+
+			// Mock provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValue({
+				access_token: "token123",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValue({
+				providerId: "google-12345",
+				email: testUser.emailAddress,
+				name: "Test User",
+				emailVerified: true,
+			});
+
+			// Mock the transaction to simulate unique constraint violation
+			// First SELECT finds no conflict, then INSERT with conflict returns empty array
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						select: vi.fn().mockReturnValue({
+							from: vi.fn().mockReturnValue({
+								where: vi.fn().mockResolvedValue([testUser]), // User exists
+							}),
+						}),
+						// First call - no existing OAuth account found
+						// Second call - simulate constraint violation by returning empty array
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockReturnValue({
+								onConflictDoNothing: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([]), // Empty = conflict occurred
+								}),
+							}),
+						}),
+					};
+
+					// Override the select for oauth accounts to return empty array (no existing account)
+					const mockSelectChain = {
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([]), // No existing OAuth account
+						}),
+					};
+
+					// Set up the transaction mock to handle multiple calls
+					let selectCallCount = 0;
+					mockTx.select = vi.fn().mockImplementation(() => {
+						selectCallCount++;
+						if (selectCallCount === 1) {
+							// First call - get current user
+							return {
+								from: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([testUser]),
+								}),
+							};
+						} else {
+							// Second call - check for existing OAuth account
+							return mockSelectChain;
+						}
+					});
+
+					return callback(mockTx);
+				});
+
+			// Execute mutation
+			const result = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+				variables: { input },
+				headers: { authorization: `bearer ${authToken}` },
+			});
+
+			// Verify proper error handling
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("forbidden_action");
+			expect(result.errors?.[0]?.message).toContain("already linked");
+
+			// Restore original transaction method
+			server.drizzleClient.transaction = originalTransaction;
+		});
 	});
 });
