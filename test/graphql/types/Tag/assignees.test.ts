@@ -1,6 +1,6 @@
-import { initGraphQLTada } from "gql.tada";
+import { faker } from "@faker-js/faker";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import "~/src/graphql/types/Tag/assignees";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
@@ -9,36 +9,12 @@ import { tagsTable } from "~/src/drizzle/tables/tags";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-const Query_tag_assignees = gql(`
-  query TagAssignees($id: String!, $after: String) {
-    tag(input: { id: $id }) {
-      id
-      assignees(first: 10, after: $after) {
-        edges {
-          cursor
-          node {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-`);
+import { Query_signIn, Query_tag_assignees } from "../documentNodes";
 
 describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 	let adminToken = "";
 	let tagId = "";
 	let userId = "";
-	let ghostUserId = "";
 	let orgId = "";
 	let adminUserId = "";
 
@@ -78,7 +54,7 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 		const [org] = await server.drizzleClient
 			.insert(organizationsTable)
 			.values({
-				name: `Test Org ${Date.now()}`,
+				name: `Test Org ${faker.string.uuid()}`,
 				description: "Test org for ghost cursor test",
 			})
 			.returning();
@@ -92,7 +68,7 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 		const [user] = await server.drizzleClient
 			.insert(usersTable)
 			.values({
-				emailAddress: `user-${Date.now()}@test.com`,
+				emailAddress: `user-${faker.string.uuid()}@test.com`,
 				name: "Test User",
 				passwordHash: "hash123",
 				role: "USER",
@@ -112,28 +88,11 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 			role: "ADMIN",
 		});
 
-		// Create a ghost user via DB
-		const [ghostUser] = await server.drizzleClient
-			.insert(usersTable)
-			.values({
-				emailAddress: `ghost-${Date.now()}@test.com`,
-				name: "Ghost User",
-				passwordHash: "hash123",
-				role: "USER",
-				isEmailAddressVerified: true,
-			})
-			.returning();
-
-		if (!ghostUser) {
-			throw new Error("Failed to create ghost user");
-		}
-		ghostUserId = ghostUser.id;
-
 		// Create tag via DB
 		const [tag] = await server.drizzleClient
 			.insert(tagsTable)
 			.values({
-				name: `Test Tag ${Date.now()}`,
+				name: `Test Tag ${faker.string.uuid()}`,
 				organizationId: orgId,
 			})
 			.returning();
@@ -155,7 +114,7 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 		// Cleanup is handled by test database reset
 	});
 
-	it("should throw 'arguments_associated_resources_not_found' for ghost cursor", async () => {
+	it("should throw 'arguments_associated_resources_not_found' for stale cursor", async () => {
 		// Step 1: Get a valid cursor from the real assignment
 		const validResult = await mercuriusClient.query(Query_tag_assignees, {
 			variables: { id: tagId },
@@ -169,36 +128,30 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 			throw new Error("Failed to fetch initial valid cursor");
 		}
 
-		// Step 2: Decode the cursor to understand its structure
-		const cursorData = JSON.parse(
-			Buffer.from(validCursor, "base64url").toString("utf-8"),
-		);
+		// Step 2: Delete the assignment to make the cursor stale
+		// This removes the underlying data that the cursor references
+		await server.drizzleClient
+			.delete(tagAssignmentsTable)
+			.where(
+				and(
+					eq(tagAssignmentsTable.tagId, tagId),
+					eq(tagAssignmentsTable.assigneeId, userId),
+				),
+			);
 
-		// Step 3: Create a ghost cursor with the ghost user ID
-		// The ghost user exists in the DB but is NOT assigned to this tag
-		const ghostCursorData = {
-			...cursorData,
-			assigneeId: ghostUserId,
-		};
-
-		const ghostCursor = Buffer.from(JSON.stringify(ghostCursorData)).toString(
-			"base64url",
-		);
-
-		// Step 4: Query with ghost cursor - should fail because the cursor
-		// references an assignment that doesn't exist
-		const ghostResult = await mercuriusClient.query(Query_tag_assignees, {
+		// Step 3: Query with the now-stale cursor - should fail because the cursor
+		// references an assignment that no longer exists
+		const staleResult = await mercuriusClient.query(Query_tag_assignees, {
 			variables: {
 				id: tagId,
-				after: ghostCursor,
+				after: validCursor,
 			},
 			headers: { authorization: `Bearer ${adminToken}` },
 		});
 
-		// Step 5: Verify the error matches the expected code
-		expect(ghostResult.errors).toBeDefined();
-		// Fixed: Used optional chaining instead of non-null assertion
-		expect(ghostResult.errors?.[0]?.extensions?.code).toBe(
+		// Step 4: Verify the error matches the expected code
+		expect(staleResult.errors).toBeDefined();
+		expect(staleResult.errors?.[0]?.extensions?.code).toBe(
 			"arguments_associated_resources_not_found",
 		);
 	});

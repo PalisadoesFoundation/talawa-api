@@ -2967,3 +2967,19 @@ export const Query_eventVenuesWithAttachments = gql(`
     }
   }
 `);
+export const Query_tag_assignees = gql(`
+  query TagAssignees($id: String!, $after: String) {
+    tag(input: { id: $id }) {
+      id
+      assignees(first: 10, after: $after) {
+        edges {
+          cursor
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+`);
