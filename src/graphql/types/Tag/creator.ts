@@ -63,11 +63,7 @@ export const tagCreatorResolver = async (
 			(currentUserOrganizationMembership === undefined ||
 				currentUserOrganizationMembership.role !== "administrator")
 		) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			});
+			return null;
 		}
 
 		if (parent.creatorId === null) {
