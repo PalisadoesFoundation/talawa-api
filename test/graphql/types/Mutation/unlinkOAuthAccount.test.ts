@@ -17,6 +17,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
+		vi.restoreAllMocks();
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
