@@ -13,6 +13,7 @@ import {
 	getPasswordResetEmailText,
 } from "~/src/utilities/emailTemplates";
 import envConfig from "~/src/utilities/graphqLimits";
+import { checkPasswordResetRateLimit } from "~/src/utilities/passwordResetRateLimit";
 import {
 	DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
@@ -66,6 +67,16 @@ builder.mutationField("requestPasswordReset", (t) =>
 							argumentPath: issue.path,
 							message: issue.message,
 						})),
+					},
+				});
+			}
+
+			// Check rate limit using email address
+			if (!checkPasswordResetRateLimit(parsedArgs.input.emailAddress)) {
+				throw new TalawaGraphQLError({
+					message: "Too many password reset requests. Please try again later.",
+					extensions: {
+						code: "too_many_requests",
 					},
 				});
 			}

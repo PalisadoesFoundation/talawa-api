@@ -29,7 +29,14 @@ the container user has write access.
 fi
 
 # Install dependencies and tools
-fnm install
-fnm use
+# Use explicit version to avoid "default" version errors in CI
+if [ -s .nvmrc ]; then
+  NODE_VERSION=$(tr -d '\r\n' < .nvmrc)
+else
+  NODE_VERSION="24.12.0"
+fi
+fnm install "$NODE_VERSION"
+fnm use "$NODE_VERSION"
+fnm default "$NODE_VERSION"
 corepack enable
 pnpm install
