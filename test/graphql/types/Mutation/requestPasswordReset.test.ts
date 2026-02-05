@@ -4,11 +4,13 @@ import {
 	afterAll,
 	afterEach,
 	beforeAll,
+	beforeEach,
 	expect,
 	suite,
 	test,
 	vi,
 } from "vitest";
+import { PASSWORD_RESET_RATE_LIMITS } from "~/src/utilities/passwordResetRateLimit";
 import type {
 	ForbiddenActionExtensions,
 	TalawaGraphQLFormattedError,
@@ -79,6 +81,11 @@ suite("Mutation field requestPasswordReset", () => {
 				},
 			},
 		});
+	});
+
+	beforeEach(() => {
+		// Clear rate limit state between tests to ensure isolation
+		PASSWORD_RESET_RATE_LIMITS.clear();
 	});
 
 	afterEach(() => {
@@ -421,6 +428,44 @@ suite("Mutation field requestPasswordReset", () => {
 					server.envConfig as Record<string, unknown>
 				).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = originalValue;
 			}
+		});
+	});
+
+	suite("Rate limiting", () => {
+		test("fails when rate limit is exceeded", async () => {
+			// Mock the rate limiter to return false
+			const passwordResetRateLimit = await import(
+				"~/src/utilities/passwordResetRateLimit"
+			);
+			const rateLimitSpy = vi
+				.spyOn(passwordResetRateLimit, "checkPasswordResetRateLimit")
+				.mockReturnValue(false);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_requestPasswordReset,
+				{
+					variables: {
+						input: {
+							emailAddress: "spam@example.com",
+						},
+					},
+				},
+			);
+
+			expect(result.data.requestPasswordReset).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({
+							code: "too_many_requests",
+						}),
+						message: expect.any(String),
+						path: ["requestPasswordReset"],
+					}),
+				]),
+			);
+
+			rateLimitSpy.mockRestore();
 		});
 	});
 });
