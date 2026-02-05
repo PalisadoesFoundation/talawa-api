@@ -2929,6 +2929,15 @@ export const Mutation_createVenue = gql(`
   }
 `);
 
+export const Query_venue_createdAt = gql(`
+  query Query_venue_createdAt($input: QueryVenueInput!) {
+    venue(input: $input) {
+      id
+      createdAt
+    }
+  }
+`);
+
 export const Mutation_createVenueBooking = gql(`
   mutation Mutation_createVenueBooking($input: MutationCreateVenueBookingInput!) {
     createVenueBooking(input: $input) {

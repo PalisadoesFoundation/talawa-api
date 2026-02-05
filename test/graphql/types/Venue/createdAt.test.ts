@@ -1,137 +1,456 @@
 import { faker } from "@faker-js/faker";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { resolveCreatedAt } from "~/src/graphql/types/Venue/createdAt";
-import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import {
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createVenue,
+	Query_signIn,
+	Query_venue_createdAt,
+} from "../documentNodes";
 
-describe("Venue Resolver - createdAt Field", () => {
-	let ctx: GraphQLContext;
-	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
-	let mockVenue: VenueType;
-	let userId: string;
+let authToken: string;
 
-	beforeEach(() => {
-		const venueId = faker.string.uuid();
-		const organizationId = faker.string.uuid();
-		userId = faker.string.uuid();
-		mockVenue = {
-			id: venueId,
-			organizationId,
-			name: "Test Venue",
-			description: "Test Venue Description",
-			capacity: 100,
-			creatorId: faker.string.uuid(),
-			updaterId: null,
-			createdAt: new Date("2024-01-01T09:00:00Z"),
-			updatedAt: new Date("2024-01-01T10:00:00Z"),
-			attachments: null,
-		};
-
-		const result = createMockGraphQLContext(true, userId);
-		ctx = result.context;
-		mocks = result.mocks;
-		vi.clearAllMocks();
+beforeAll(async () => {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
 	});
+	expect(signInResult.errors).toBeUndefined();
+	assertToBeNonNullish(signInResult.data?.signIn);
+	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
+	authToken = signInResult.data.signIn.authenticationToken;
+});
 
-	it("throws unauthenticated when client is not authenticated", async () => {
-		const unauth = createMockGraphQLContext(false, faker.string.uuid());
+afterEach(() => {
+	vi.restoreAllMocks();
+});
 
-		await expect(
-			resolveCreatedAt(mockVenue, {}, unauth.context),
-		).rejects.toMatchObject({
-			extensions: { code: "unauthenticated" },
-		});
+suite("Venue Resolver - createdAt Field", () => {
+	test("throws unauthenticated when client is not authenticated", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt Test Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt unauthenticated",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-		expect(
-			unauth.mocks.drizzleClient.query.usersTable.findFirst,
-		).not.toHaveBeenCalled();
-	});
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for createdAt",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
 
-	it("throws unauthenticated when current user is not found", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			undefined,
+		const findFirstSpy = vi.spyOn(
+			server.drizzleClient.query.usersTable,
+			"findFirst",
 		);
 
-		await expect(resolveCreatedAt(mockVenue, {}, ctx)).rejects.toMatchObject({
-			extensions: { code: "unauthenticated" },
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			variables: { input: { id: venueId } },
 		});
+
+		expect(findFirstSpy).not.toHaveBeenCalled();
+		expect(result.data?.venue).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 
-	it("throws unauthorized_action when user is regular and has no org membership", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: userId,
-			role: "regular",
-			organizationMembershipsWhereMember: [],
-		} as never);
+	test("throws unauthenticated when current user is not found", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt Missing User Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt missing user",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-		await expect(resolveCreatedAt(mockVenue, {}, ctx)).rejects.toMatchObject({
-			extensions: { code: "unauthorized_action" },
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for missing user",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		const findFirstSpy = vi
+			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+			.mockResolvedValueOnce(undefined);
+
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: venueId } },
 		});
+
+		expect(findFirstSpy).toHaveBeenCalled();
+		expect(result.data?.venue).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 
-	it("throws unauthorized_action when user is regular and org member but not admin", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: userId,
-			role: "regular",
-			organizationMembershipsWhereMember: [{ role: "regular" }],
-		} as never);
+	test("throws unauthorized_action when user is regular and has no org membership", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt No Membership Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt no membership",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-		await expect(resolveCreatedAt(mockVenue, {}, ctx)).rejects.toMatchObject({
-			extensions: { code: "unauthorized_action" },
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for no membership",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		const { authToken: regularToken } = await createRegularUserUsingAdmin();
+
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${regularToken}` },
+			variables: { input: { id: venueId } },
 		});
+
+		expect(result.data?.venue).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action",
+					}),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 
-	it("returns parent.createdAt when user is system administrator", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: userId,
-			role: "administrator",
-			organizationMembershipsWhereMember: [],
-		} as never);
+	test("throws unauthorized_action when user is regular and org member but not admin", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt Regular Member Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt regular member",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-		const result = await resolveCreatedAt(mockVenue, {}, ctx);
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for regular member",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
 
-		expect(result).toEqual(mockVenue.createdAt);
-		expect(result).toBe(mockVenue.createdAt);
+		const { authToken: memberToken, userId: memberUserId } =
+			await createRegularUserUsingAdmin();
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: memberUserId,
+					role: "regular",
+				},
+			},
+		});
+
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${memberToken}` },
+			variables: { input: { id: venueId } },
+		});
+
+		expect(result.data?.venue).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action",
+					}),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 
-	it("returns parent.createdAt when user is organization administrator", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: userId,
-			role: "regular",
-			organizationMembershipsWhereMember: [{ role: "administrator" }],
-		} as never);
+	test("returns parent.createdAt when user is system administrator", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt System Admin Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt system admin",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-		const result = await resolveCreatedAt(mockVenue, {}, ctx);
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for system admin",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
 
-		expect(result).toEqual(mockVenue.createdAt);
-		expect(result).toBe(mockVenue.createdAt);
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: venueId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.venue?.id).toBe(venueId);
+		expect(result.data?.venue?.createdAt).toBeDefined();
+		expect(typeof result.data?.venue?.createdAt).toBe("string");
 	});
 
-	it("returns correct createdAt value for successful resolution", async () => {
-		const createdAt = new Date("2023-06-15T14:30:00Z");
-		const venueWithCustomDate: VenueType = {
-			...mockVenue,
-			id: faker.string.uuid(),
-			organizationId: faker.string.uuid(),
-			createdAt,
-		};
+	test("returns parent.createdAt when user is organization administrator", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt Org Admin Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt org admin",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: userId,
-			role: "administrator",
-			organizationMembershipsWhereMember: [],
-		} as never);
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for org admin",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
 
-		const result = await resolveCreatedAt(venueWithCustomDate, {}, ctx);
+		const { authToken: orgAdminToken, userId: orgAdminUserId } =
+			await createRegularUserUsingAdmin();
 
-		expect(result).toEqual(createdAt);
-		expect(result).toBe(createdAt);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: orgAdminUserId,
+					role: "administrator",
+				},
+			},
+		});
+
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${orgAdminToken}` },
+			variables: { input: { id: venueId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.venue?.id).toBe(venueId);
+		expect(result.data?.venue?.createdAt).toBeDefined();
+		expect(typeof result.data?.venue?.createdAt).toBe("string");
 	});
 
-	it("registers createdAt field on Venue type", () => {
-		// Venue.implement runs when this file loads (import at top); this test ensures that path is exercised.
-		expect(resolveCreatedAt).toBeDefined();
-		expect(typeof resolveCreatedAt).toBe("function");
+	test("returns correct createdAt value for successful resolution", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt Value Org ${faker.string.uuid()}`,
+						description: "Org to test venue createdAt value",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for createdAt value",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: venueId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.venue?.id).toBe(venueId);
+		const createdAt = result.data?.venue?.createdAt;
+		expect(createdAt).toBeDefined();
+		expect(typeof createdAt).toBe("string");
+		expect(() => new Date(createdAt as string).getTime()).not.toThrow();
+		expect(Number.isNaN(new Date(createdAt as string).getTime())).toBe(false);
+	});
+
+	test("registers createdAt field on Venue type", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Venue createdAt Field Org ${faker.string.uuid()}`,
+						description: "Org to verify createdAt field exists",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for field registration",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		const result = await mercuriusClient.query(Query_venue_createdAt, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: venueId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.venue).toMatchObject({
+			id: venueId,
+			createdAt: expect.any(String),
+		});
 	});
 });
