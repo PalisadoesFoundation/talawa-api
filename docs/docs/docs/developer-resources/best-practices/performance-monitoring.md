@@ -1372,8 +1372,8 @@ External mode exports spans to an external OpenTelemetry-compatible dashboard se
 API_OTEL_ENABLED=true
 API_OTEL_EXPORTER_TYPE=otlp
 API_OTEL_EXPORTER_ENABLED=true
-API_OTEL_TRACE_EXPORTER_ENDPOINT=http://localhost:4317
-API_OTEL_METRIC_EXPORTER_ENDPOINT=http://localhost:4317
+API_OTEL_TRACE_EXPORTER_ENDPOINT=your-service-endpoint
+API_OTEL_METRIC_EXPORTER_ENDPOINT=your-service-endpoint
 API_OTEL_SAMPLING_RATIO=0.5
 API_OTEL_SERVICE_NAME=talawa-api
 ```
