@@ -21,6 +21,13 @@ const envConfig = envSchema<EnvConfig>({
 	dotenv: true,
 	schema: envConfigSchema,
 });
+import { hash } from "@node-rs/argon2";
+import { eq } from "drizzle-orm";
+import { usersTable, usersTableInsertSchema } from "src/drizzle/tables/users";
+import {
+	communitiesTable,
+	communitiesTableInsertSchema,
+} from "src/drizzle/tables/communities";
 
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
@@ -151,6 +158,85 @@ export async function pingDB(): Promise<boolean> {
 	}
 	return true;
 }
+
+/**
+ * Ensures required bootstrap data (administrator user and community)
+ * exists before loading sample data.
+ *
+ * This makes the sample data loader fully standalone and deterministic.
+ */
+export async function ensureBootstrapData(): Promise<void> {
+	// ---- Administrator user ----
+	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+	const adminName = envConfig.API_ADMINISTRATOR_USER_NAME;
+	const adminPassword = envConfig.API_ADMINISTRATOR_USER_PASSWORD;
+
+	if (!adminEmail || !adminName || !adminPassword) {
+		throw new Error(
+			"Missing administrator environment variables. Cannot bootstrap sample data.",
+		);
+	}
+
+	const existingAdmin = await db.query.usersTable.findFirst({
+		columns: { role: true },
+		where: (fields, operators) => operators.eq(fields.emailAddress, adminEmail),
+	});
+
+	if (existingAdmin) {
+		if (existingAdmin.role !== "administrator") {
+			await db
+				.update(usersTable)
+				.set({ role: "administrator" })
+				.where(eq(usersTable.emailAddress, adminEmail));
+		}
+	} else {
+		const adminId = uuidv7();
+		await db.insert(usersTable).values(
+			usersTableInsertSchema.parse({
+				id: adminId,
+				emailAddress: adminEmail,
+				name: adminName,
+				passwordHash: await hash(adminPassword),
+				isEmailAddressVerified: true,
+				role: "administrator",
+				creatorId: adminId,
+				addressLine1: null,
+				addressLine2: null,
+				avatarName: null,
+				city: null,
+				description: null,
+				postalCode: null,
+				state: null,
+			}),
+		);
+	}
+
+	// ---- Community ----
+	const existingCommunity =
+		await db.query.communitiesTable.findFirst({
+			columns: { id: true },
+		});
+
+	if (!existingCommunity) {
+		await db.insert(communitiesTable).values(
+			communitiesTableInsertSchema.parse({
+				name: envConfig.API_COMMUNITY_NAME,
+				facebookURL: envConfig.API_COMMUNITY_FACEBOOK_URL,
+				githubURL: envConfig.API_COMMUNITY_GITHUB_URL,
+				instagramURL: envConfig.API_COMMUNITY_INSTAGRAM_URL,
+				linkedinURL: envConfig.API_COMMUNITY_LINKEDIN_URL,
+				redditURL: envConfig.API_COMMUNITY_REDDIT_URL,
+				slackURL: envConfig.API_COMMUNITY_SLACK_URL,
+				websiteURL: envConfig.API_COMMUNITY_WEBSITE_URL,
+				xURL: envConfig.API_COMMUNITY_X_URL,
+				youtubeURL: envConfig.API_COMMUNITY_YOUTUBE_URL,
+				inactivityTimeoutDuration:
+					envConfig.API_COMMUNITY_INACTIVITY_TIMEOUT_DURATION,
+			}),
+		);
+	}
+}
+
 
 /**
  * Check duplicate data

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { disconnect, insertCollections, pingDB } from "./helpers";
+import { disconnect, insertCollections, pingDB, ensureBootstrapData } from "./helpers";
 
 type Collection =
 	| "users"
@@ -51,6 +51,17 @@ export async function main(): Promise<void> {
 		console.error("Error: ", error);
 		throw new Error("Error adding sample data");
 	}
+	try {
+	await pingDB();
+	console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
+
+	await ensureBootstrapData();
+	console.log(
+		"\n\x1b[32mSuccess:\x1b[0m Bootstrap data validated successfully\n",
+	);
+} catch (error: unknown) {
+	throw new Error(`Database connection or bootstrap failed: ${error}`);
+}
 
 	return;
 }
