@@ -481,11 +481,19 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
+      - name: Cache kcov build
+        id: cache-kcov
+        uses: actions/cache@v4
+        with:
+          path: kcov-src
+          key: kcov-v43-${{ runner.os }}
       - name: Install kcov build dependencies
+        if: steps.cache-kcov.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y binutils-dev build-essential cmake libssl-dev libcurl4-openssl-dev libelf-dev libstdc++-12-dev zlib1g-dev libdw-dev libiberty-dev
       - name: Build and install kcov
+        if: steps.cache-kcov.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git kcov-src
           cd kcov-src
@@ -493,35 +501,48 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
           make -j"$(nproc)"
           sudo make install
-          kcov --version
+      - name: Install kcov from cache
+        if: steps.cache-kcov.outputs.cache-hit == 'true'
+        run: |
+          cd kcov-src/build
+          sudo make install
+      - name: Verify kcov installation
+        run: kcov --version
       - name: Run install script tests with coverage
         run: |
           KCOV_OUT="$(pwd)/coverage/install"
           mkdir -p "$KCOV_OUT"
-          kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
+          # --cobertura-only ensures cov.xml is produced directly in outdir for Codecov
+          kcov --include-path=scripts/install --exclude-path=tests --cobertura-only "$KCOV_OUT" bash tests/install/run-all.sh
+          echo "=== kcov output ==="
+          ls -la "$KCOV_OUT" || true
       - name: Prepare install coverage for Codecov
+        id: prepare-install-coverage
         if: success()
         run: |
           set -e
-          # kcov writes cobertura.xml or cov.xml in a subdir (e.g. coverage/install/bash/cobertura.xml)
-          COB=$(find coverage/install -type f \( -name 'cobertura.xml' -o -name 'cov.xml' \) 2>/dev/null | head -1)
-          if [ -n "$COB" ]; then
-            cp "$COB" coverage/install/codecov-coverage.xml
-            echo "Using coverage file: $COB"
+          echo "=== Files under coverage/install ==="
+          find coverage/install -type f 2>/dev/null || true
+          
+          # With --cobertura-only, kcov writes cov.xml directly to output dir
+          if [ -f "coverage/install/cov.xml" ]; then
+            cp coverage/install/cov.xml coverage/install/upload-report.xml
+            echo "upload_file=./coverage/install/upload-report.xml" >> "$GITHUB_OUTPUT"
+            echo "Using: coverage/install/cov.xml"
           else
-            echo "No cobertura/cov.xml found under coverage/install"
+            echo "ERROR: coverage/install/cov.xml not found"
             ls -laR coverage/install || true
             exit 1
           fi
       - name: Upload install coverage to Codecov
-        if: success()
+        if: success() && steps.prepare-install-coverage.outputs.upload_file != ''
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
-          files: ./coverage/install/codecov-coverage.xml
+          files: ${{ steps.prepare-install-coverage.outputs.upload_file }}
           flags: install
 
   Run-Tests:
