@@ -684,6 +684,9 @@ export const Query_userTags = gql(`
     userTags(userId: $userId) {
       id
       name
+      creator {
+        id
+      }
       assignees(first: 10){
         edges {
           node {

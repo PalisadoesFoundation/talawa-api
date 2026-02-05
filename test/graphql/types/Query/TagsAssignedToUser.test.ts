@@ -356,6 +356,13 @@ suite("Query field userTags", () => {
 		if (!tag2) throw new Error("tag2 not found");
 
 		expect(tag2.assignees.edges.map((e) => e.node.id)).toContain(regularUserId);
+
+		// Capture admin ID after sign-in
+		const adminUserId = administratorUserSignInResult.data.signIn.user?.id;
+
+		// In assertions:
+		expect(tag1.creator.id).toBe(adminUserId); // Tags created by admin
+		expect(tag2.creator.id).toBe(adminUserId);
 	});
 
 	test("regular user can query their own tags", async () => {
