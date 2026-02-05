@@ -118,7 +118,7 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 		// Step 1: Get a valid cursor from the real assignment
 		const validResult = await mercuriusClient.query(Query_tag_assignees, {
 			variables: { id: tagId },
-			headers: { authorization: `Bearer ${adminToken}` },
+			headers: { authorization: `bearer ${adminToken}` },
 		});
 
 		expect(validResult.errors).toBeUndefined();
@@ -146,13 +146,18 @@ describe("GraphQL: Tag Assignees Ghost Cursor", () => {
 				id: tagId,
 				after: validCursor,
 			},
-			headers: { authorization: `Bearer ${adminToken}` },
+			headers: { authorization: `bearer ${adminToken}` },
 		});
 
 		// Step 4: Verify the error matches the expected code
-		expect(staleResult.errors).toBeDefined();
-		expect(staleResult.errors?.[0]?.extensions?.code).toBe(
-			"arguments_associated_resources_not_found",
+		expect(staleResult.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+				}),
+			]),
 		);
 	});
 });
