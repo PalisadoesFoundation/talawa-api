@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -29,6 +29,10 @@ type UserTag = {
 		}[];
 	};
 };
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 suite("Query field userTags", () => {
 	test("results in a graphql error with 'invalid_arguments' if an invalid userId is provided", async () => {
