@@ -4,7 +4,7 @@ import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLE
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
-	Mutation_assignTagToUser,
+	Mutation_assignUserTag,
 	Mutation_createOrganization,
 	Mutation_createTag,
 	Mutation_createTagFolder,
@@ -298,36 +298,30 @@ suite("Query field userTags", () => {
 		const tag2Id = tag2Result.data.createTag.id;
 
 		// Step 6: Assign tags to user
-		const assign1Result = await mercuriusClient.mutate(
-			Mutation_assignTagToUser,
-			{
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					tagId: tag1Id,
-					assigneeId: regularUserId,
-				},
+		const assign1Result = await mercuriusClient.mutate(Mutation_assignUserTag, {
+			headers: {
+				authorization: `bearer ${authToken}`,
 			},
-		);
+			variables: {
+				tagId: tag1Id,
+				assigneeId: regularUserId,
+			},
+		});
 
 		if (assign1Result.errors) {
 			console.error("Tag assignment 1 failed:", assign1Result.errors);
 			return;
 		}
 
-		const assign2Result = await mercuriusClient.mutate(
-			Mutation_assignTagToUser,
-			{
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					tagId: tag2Id,
-					assigneeId: regularUserId,
-				},
+		const assign2Result = await mercuriusClient.mutate(Mutation_assignUserTag, {
+			headers: {
+				authorization: `bearer ${authToken}`,
 			},
-		);
+			variables: {
+				tagId: tag2Id,
+				assigneeId: regularUserId,
+			},
+		});
 
 		if (assign2Result.errors) {
 			console.error("Tag assignment 2 failed:", assign2Result.errors);
@@ -497,18 +491,15 @@ suite("Query field userTags", () => {
 		const tagId = tagResult.data.createTag.id;
 
 		// Step 6: Assign tag to user
-		const assignResult = await mercuriusClient.mutate(
-			Mutation_assignTagToUser,
-			{
-				headers: {
-					authorization: `bearer ${adminToken}`,
-				},
-				variables: {
-					tagId: tagId,
-					assigneeId: regularUserId,
-				},
+		const assignResult = await mercuriusClient.mutate(Mutation_assignUserTag, {
+			headers: {
+				authorization: `bearer ${adminToken}`,
 			},
-		);
+			variables: {
+				tagId: tagId,
+				assigneeId: regularUserId,
+			},
+		});
 
 		if (assignResult.errors) {
 			console.error("Tag assignment failed:", assignResult.errors);
@@ -704,7 +695,7 @@ suite("Query field userTags", () => {
 		const tagId = tagResult.data.createTag.id;
 
 		// Step 7: Assign tag to user B
-		await mercuriusClient.mutate(Mutation_assignTagToUser, {
+		await mercuriusClient.mutate(Mutation_assignUserTag, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				tagId,

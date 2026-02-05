@@ -717,7 +717,7 @@ export const Mutation_createTagFolder = gql(`
   }
 `);
 
-export const Mutation_assignTagToUser = gql(`
+export const Mutation_assignUserTag = gql(`
   mutation assignUserTag($assigneeId: ID!, $tagId: ID!) {
     assignUserTag(
       assigneeId: $assigneeId
