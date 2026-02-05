@@ -1,33 +1,17 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
+	Mutation_unlinkOAuthAccount,
 	Query_signIn,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-export const Mutation_unlinkOAuthAccount =
-	gql(`mutation Mutation_unlinkOAuthAccount($provider: OAuthProvider!) {
-    unlinkOAuthAccount(provider: $provider) {
-        id
-        name
-        emailAddress
-    }
-}`);
 
 suite("Mutation unlinkOAuthAccount", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
