@@ -24,8 +24,12 @@ const communitiesFindFirst = vi.fn();
 /* Module mock                                                         */
 /* ------------------------------------------------------------------ */
 
-vi.mock("../helpers", () => {
+vi.mock("../helpers", async () => {
+	const original =
+		await vi.importActual<typeof import("../helpers")>("../helpers");
+
 	return {
+		...original,
 		db: {
 			query: {
 				usersTable: { findFirst: usersFindFirst },
@@ -65,7 +69,7 @@ vi.mock("@node-rs/argon2", () => ({
 /* Tests                                                              */
 /* ------------------------------------------------------------------ */
 
-describe.concurrent("ensureBootstrapData", () => {
+describe("ensureBootstrapData", () => {
 	let ensureBootstrapData: () => Promise<void>;
 
 	beforeEach(async () => {
@@ -77,21 +81,18 @@ describe.concurrent("ensureBootstrapData", () => {
 	it("throws if administrator env vars are missing", async () => {
 		vi.resetModules();
 
-		vi.doMock("../helpers", () => ({
-			db: {
-				query: {
-					usersTable: { findFirst: vi.fn() },
-					communitiesTable: { findFirst: vi.fn() },
+		vi.doMock("../helpers", async () => {
+			const original =
+				await vi.importActual<typeof import("../helpers")>("../helpers");
+
+			return {
+				...original,
+				envConfig: {
+					...original.envConfig,
+					API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "",
 				},
-				insert,
-				update,
-			},
-			envConfig: {
-				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "",
-				API_ADMINISTRATOR_USER_NAME: "Admin",
-				API_ADMINISTRATOR_USER_PASSWORD: "password",
-			},
-		}));
+			};
+		});
 
 		const { ensureBootstrapData } = await import("../helpers");
 
