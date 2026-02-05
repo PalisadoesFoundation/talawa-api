@@ -85,8 +85,8 @@ suite("Mutation unlinkOAuthAccount", () => {
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: userId,
 			provider: "GOOGLE",
-			providerId: "google-123",
-			email: "google@test.com",
+			providerId: faker.string.uuid(),
+			email: faker.internet.email(),
 			linkedAt: new Date(),
 			lastUsedAt: new Date(),
 		});
@@ -154,6 +154,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 
 		expect(res.errors).toBeDefined();
 		expect(res.errors?.[0]?.extensions?.code).toBe("not_found");
+		expect(res.errors?.[0]?.message).toContain("No linked account found");
 	});
 
 	test("unlinkOAuthAccount throws error if unlinking last auth method", async () => {
@@ -195,8 +196,8 @@ suite("Mutation unlinkOAuthAccount", () => {
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: userId,
 			provider: "GOOGLE",
-			providerId: "google-123",
-			email: "google@test.com",
+			providerId: faker.string.uuid(),
+			email: faker.internet.email(),
 			linkedAt: new Date(),
 			lastUsedAt: new Date(),
 		});
@@ -271,16 +272,16 @@ suite("Mutation unlinkOAuthAccount", () => {
 			{
 				userId: userId,
 				provider: "GOOGLE",
-				providerId: "google-123",
-				email: "google@test.com",
+				providerId: faker.string.uuid(),
+				email: faker.internet.email(),
 				linkedAt: new Date(),
 				lastUsedAt: new Date(),
 			},
 			{
 				userId: userId,
 				provider: "GITHUB",
-				providerId: "github-456",
-				email: "github@test.com",
+				providerId: faker.string.uuid(),
+				email: faker.internet.email(),
 				linkedAt: new Date(),
 				lastUsedAt: new Date(),
 			},

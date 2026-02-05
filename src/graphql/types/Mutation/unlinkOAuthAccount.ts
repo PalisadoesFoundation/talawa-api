@@ -27,6 +27,7 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 					extensions: {
 						code: ErrorCode.UNAUTHENTICATED,
 					},
+					message: "You must be authenticated to perform this action.",
 				});
 			}
 
@@ -48,15 +49,7 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 				});
 			}
 
-			// 2. Count total linked OAuth accounts for this user
-			const userOAuthAccounts = await ctx.drizzleClient
-				.select()
-				.from(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.userId, userId));
-
-			const oauthCount = userOAuthAccounts.length;
-
-			// 3. Check if user has a password (assuming non-empty passwordHash means valid password)
+			// 2. Check if user has a password (this is safe to read outside transaction)
 			const user = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (users, { eq }) => eq(users.id, userId),
 				columns: {
@@ -72,31 +65,42 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 				});
 			}
 
-			// 4. Validate safety constraint
 			const hasPassword = !!user.passwordHash;
-			const remainingOAuth = oauthCount - 1;
 
-			if (!hasPassword && remainingOAuth < 1) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: ErrorCode.FORBIDDEN_ACTION,
-					},
-					message:
-						"Cannot unlink the last authentication method. Please set a password or link another provider first.",
-				});
-			}
+			// 3. Perform atomic count-check-delete transaction
+			await ctx.drizzleClient.transaction(async (tx) => {
+				// Count total linked OAuth accounts for this user (within transaction)
+				const userOAuthAccounts = await tx
+					.select()
+					.from(oauthAccountsTable)
+					.where(eq(oauthAccountsTable.userId, userId));
 
-			// 5. Perform Unlink
-			await ctx.drizzleClient
-				.delete(oauthAccountsTable)
-				.where(
-					and(
-						eq(oauthAccountsTable.userId, userId),
-						eq(oauthAccountsTable.provider, provider),
-					),
-				);
+				const oauthCount = userOAuthAccounts.length;
+				const remainingOAuth = oauthCount - 1;
 
-			// 6. Return the up-to-date user object
+				// Validate safety constraint
+				if (!hasPassword && remainingOAuth < 1) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: ErrorCode.FORBIDDEN_ACTION,
+						},
+						message:
+							"Cannot unlink the last authentication method. Please set a password or link another provider first.",
+					});
+				}
+
+				// Perform Unlink
+				await tx
+					.delete(oauthAccountsTable)
+					.where(
+						and(
+							eq(oauthAccountsTable.userId, userId),
+							eq(oauthAccountsTable.provider, provider),
+						),
+					);
+			});
+
+			// 4. Return the up-to-date user object
 			const updatedUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (users, { eq }) => eq(users.id, userId),
 			});
