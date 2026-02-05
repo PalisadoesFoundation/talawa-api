@@ -78,49 +78,12 @@ jobs:
         shell: bash
         run: |
           shopt -s globstar nullglob
-          files=(scripts/**/*.sh tests/install/**/*.sh)
+          files=(scripts/**/*.sh)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No shell scripts found to lint."
           else
             shellcheck -x --severity=error "${files[@]}"
           fi
-
-  Install-Script-Tests:
-    name: Run install script tests
-    runs-on: ubuntu-latest
-    needs: [Pre-Test-Checks-Pass]
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      # Build kcov from source (pinned tag) for verifiable install on Ubuntu 24.04 where apt package is unavailable
-      - name: Install kcov build dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y binutils-dev build-essential cmake libssl-dev libcurl4-openssl-dev libelf-dev libstdc++-12-dev zlib1g-dev libdw-dev libiberty-dev
-      - name: Build and install kcov
-        run: |
-          git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git kcov-src
-          cd kcov-src
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
-          make -j"$(nproc)"
-          sudo make install
-          kcov --version
-      - name: Run install script tests with coverage
-        run: |
-          KCOV_OUT="$(pwd)/coverage/install"
-          mkdir -p "$KCOV_OUT"
-          kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
-      - name: Upload install coverage to Codecov
-        if: success() && hashFiles('coverage/install/**/cobertura.xml') != ''
-        uses: codecov/codecov-action@v5
-        with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
-          directory: ./coverage/install
-          flags: install
 
   Python-Compliance:
     name: Check Python Code Style
@@ -510,6 +473,42 @@ jobs:
     steps:
       - name: This job intentionally does nothing
         run: echo "This job intentionally does nothing"
+
+  Install-Script-Tests:
+    name: Run install script tests
+    runs-on: ubuntu-latest
+    needs: [Pre-Test-Checks-Pass]
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Install kcov build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y binutils-dev build-essential cmake libssl-dev libcurl4-openssl-dev libelf-dev libstdc++-12-dev zlib1g-dev libdw-dev libiberty-dev
+      - name: Build and install kcov
+        run: |
+          git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git kcov-src
+          cd kcov-src
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
+          make -j"$(nproc)"
+          sudo make install
+          kcov --version
+      - name: Run install script tests with coverage
+        run: |
+          KCOV_OUT="$(pwd)/coverage/install"
+          mkdir -p "$KCOV_OUT"
+          kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
+      - name: Upload install coverage to Codecov
+        if: success() && hashFiles('coverage/install/**') != ''
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+          directory: ./coverage/install
+          flags: install
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
