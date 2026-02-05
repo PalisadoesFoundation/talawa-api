@@ -190,13 +190,12 @@ suite("Mutation linkOAuthAccount", () => {
 		});
 
 		test("should throw error when OAuth provider registry is not available", async () => {
-			// Temporarily override the registry property to make it undefined
-			const originalRegistry = server.oauthProviderRegistry;
-			Object.defineProperty(server, "oauthProviderRegistry", {
-				value: undefined,
-				configurable: true,
-				writable: true,
-			});
+			// Mock getter to return undefined for this test only
+			const registrySpy = vi
+				.spyOn(server, "oauthProviderRegistry", "get")
+				.mockReturnValue(
+					undefined as unknown as typeof server.oauthProviderRegistry,
+				);
 
 			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
 				headers: {
@@ -217,12 +216,7 @@ suite("Mutation linkOAuthAccount", () => {
 				"OAuth authentication is not available",
 			);
 
-			// Restore the registry
-			Object.defineProperty(server, "oauthProviderRegistry", {
-				value: originalRegistry,
-				configurable: true,
-				writable: true,
-			});
+			registrySpy.mockRestore();
 		});
 
 		test("should throw error when OAuth provider is not enabled", async () => {
@@ -363,7 +357,7 @@ suite("Mutation linkOAuthAccount", () => {
 
 			mockProvider.getUserProfile.mockResolvedValueOnce({
 				providerId: `google-${faker.string.uuid()}`,
-				email: testUser.emailAddress,
+				email: tempEmail,
 				name: "Test User",
 				emailVerified: true,
 			} as OAuthUserProfile);
@@ -499,7 +493,7 @@ suite("Mutation linkOAuthAccount", () => {
 				.values({
 					emailAddress: otherUserEmail,
 					name: "Other User",
-					passwordHash: "other-hash",
+					passwordHash: await hash("somePassword"),
 					role: "regular",
 					isEmailAddressVerified: true,
 				})
@@ -574,6 +568,43 @@ suite("Mutation linkOAuthAccount", () => {
 				email: differentEmail, // Different email
 				name: "Test User",
 				emailVerified: false, // NOT verified
+			} as OAuthUserProfile);
+
+			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						provider: "GOOGLE",
+						authorizationCode: "valid-code",
+						redirectUri: "http://localhost:3000/callback",
+					},
+				},
+			});
+
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
+			expect(res.errors?.[0]?.message).toContain(
+				"email address from your OAuth provider is different",
+			);
+		});
+
+		test("should throw error when email is different even if verified", async () => {
+			const providerId = `google-verified-${faker.string.uuid()}`;
+			const differentEmail = `different-verified-${faker.string.uuid()}@example.com`;
+
+			// Mock OAuth provider responses
+			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+				access_token: "mock-access-token",
+				token_type: "Bearer",
+			});
+
+			mockProvider.getUserProfile.mockResolvedValueOnce({
+				providerId: providerId,
+				email: differentEmail, // Different email
+				name: "Test User",
+				emailVerified: true, // Verified but still different
 			} as OAuthUserProfile);
 
 			const res = await mercuriusClient.mutate(Mutation_linkOAuthAccount, {
