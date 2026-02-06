@@ -145,7 +145,9 @@ export async function clearMailpitMessages(): Promise<void> {
 			method: "DELETE",
 		});
 	} catch {
-		// Ignore errors if mailpit is not running
+		console.error(
+			"Failed to clear mailpit messages. Is the Mailpit API running?",
+		);
 	}
 }
 
@@ -219,8 +221,8 @@ export async function waitForEmail(
 			);
 		}
 
-		if (matchingMessages.length > 0) {
-			return matchingMessages[0]!;
+		if (matchingMessages && matchingMessages[0]) {
+			return matchingMessages[0];
 		}
 
 		await new Promise((resolve) => setTimeout(resolve, intervalMs));
