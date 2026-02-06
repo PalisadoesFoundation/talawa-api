@@ -80,7 +80,7 @@ export async function run(): Promise<number> {
 		);
 		return 0;
 	} catch (error: unknown) {
-		console.error("Error: Cannot disconnect", error);
+		console.error("Error running sample data script:", error);
 		return 1;
 	}
 }

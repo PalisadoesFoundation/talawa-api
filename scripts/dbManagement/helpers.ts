@@ -104,7 +104,8 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 
 		return true;
-	} catch (_error) {
+	} catch (error: unknown) {
+		console.error("Error formatting database:", error);
 		return false;
 	}
 }

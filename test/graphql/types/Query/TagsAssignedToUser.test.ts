@@ -26,7 +26,6 @@ const createdResources = {
 	userIds: [] as string[],
 	folderIds: [] as string[],
 	tagIds: [] as string[],
-	assignmentIds: [] as string[],
 };
 
 type UserTag = {
@@ -720,6 +719,8 @@ suite("Query field userTags", () => {
 		}
 		const userAToken = userAResult.data.createUser.authenticationToken;
 		const userBId = userBResult.data.createUser.user.id;
+		const userAId = userAResult.data.createUser.user.id;
+		createdResources.userIds.push(userAId, userBId);
 
 		// Step 5: Create tag folder
 		const folderResult = await mercuriusClient.mutate(
@@ -736,11 +737,13 @@ suite("Query field userTags", () => {
 		);
 
 		if (folderResult.errors || !folderResult.data?.createTagFolder?.id) {
-			console.error("Tag folder creation failed:", folderResult.errors);
-			return;
+			throw new Error(
+				`Tag folder creation failed: ${JSON.stringify(folderResult.errors)}`,
+			);
 		}
 
 		const folderId = folderResult.data.createTagFolder.id;
+		createdResources.folderIds.push(folderId);
 
 		// Step 6: Create tag
 		const tagResult = await mercuriusClient.mutate(Mutation_createTag, {
@@ -781,7 +784,6 @@ suite("Query field userTags", () => {
 			},
 		});
 
-		// Assert per resolver contract: auth error OR empty result
 		// Assert authorization error
 		expect(result.data?.userTags).toBeNull();
 		expect(result.errors).toEqual(
