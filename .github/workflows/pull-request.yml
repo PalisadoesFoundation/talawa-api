@@ -510,8 +510,8 @@ jobs:
         run: |
           KCOV_OUT="$(pwd)/coverage/install"
           mkdir -p "$KCOV_OUT"
-          # Run kcov without --cobertura-only (which breaks bash coverage)
-          kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
+          # Use absolute path for include-path and remove exclude to debug
+          kcov --include-path="$(pwd)/scripts/install" "$KCOV_OUT" bash tests/install/run-all.sh
           echo "=== kcov output ==="
           ls -laR "$KCOV_OUT" | head -50
       - name: Prepare install coverage for Codecov
