@@ -9,10 +9,11 @@ describe("ensureBootstrapData", () => {
 	let updateWhere: ReturnType<typeof vi.fn>;
 
 	beforeEach(async () => {
+		// Strong isolation for sharded / threaded CI
 		vi.resetModules();
 		vi.clearAllMocks();
 
-		// Fresh mocks per test (critical for sharded CI)
+		// Fresh mocks per test
 		usersFindFirst = vi.fn();
 		communitiesFindFirst = vi.fn();
 		insertValues = vi.fn();
@@ -64,21 +65,39 @@ describe("ensureBootstrapData", () => {
 		vi.resetModules();
 	});
 
-	it("throws if administrator env vars are missing", async () => {
+	/* ------------------------------------------------------------------ */
+	/* Env validation                                                      */
+	/* ------------------------------------------------------------------ */
+
+	it.each([
+		"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
+		"API_ADMINISTRATOR_USER_NAME",
+		"API_ADMINISTRATOR_USER_PASSWORD",
+	] as const)("throws if %s is missing", async (missingKey) => {
 		const { envConfig } = await import("../helpers");
 
-		const originalEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+		// Explicitly narrow to string env vars only
+		type AdminEnvKey =
+			| "API_ADMINISTRATOR_USER_EMAIL_ADDRESS"
+			| "API_ADMINISTRATOR_USER_NAME"
+			| "API_ADMINISTRATOR_USER_PASSWORD";
+
+		const key = missingKey as AdminEnvKey;
+		const originalValue = envConfig[key];
 
 		try {
-			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = "";
-
+			envConfig[key] = "";
 			await expect(ensureBootstrapData()).rejects.toThrow(
 				"Missing administrator environment variables",
 			);
 		} finally {
-			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = originalEmail;
+			envConfig[key] = originalValue;
 		}
 	});
+
+	/* ------------------------------------------------------------------ */
+	/* Admin bootstrap                                                     */
+	/* ------------------------------------------------------------------ */
 
 	it("updates role if admin exists with non-administrator role", async () => {
 		usersFindFirst.mockResolvedValue({ role: "member" });
@@ -98,6 +117,10 @@ describe("ensureBootstrapData", () => {
 		expect(insertValues).toHaveBeenCalled();
 	});
 
+	/* ------------------------------------------------------------------ */
+	/* Community bootstrap                                                 */
+	/* ------------------------------------------------------------------ */
+
 	it("creates community if missing", async () => {
 		usersFindFirst.mockResolvedValue({ role: "administrator" });
 		communitiesFindFirst.mockResolvedValue(null);
@@ -107,7 +130,21 @@ describe("ensureBootstrapData", () => {
 		expect(insertValues).toHaveBeenCalled();
 	});
 
-	it("is idempotent when admin and community exist", async () => {
+	it("creates admin and community when both are missing", async () => {
+		usersFindFirst.mockResolvedValue(null);
+		communitiesFindFirst.mockResolvedValue(null);
+
+		await ensureBootstrapData();
+
+		// One insert for admin, one for community
+		expect(insertValues).toHaveBeenCalledTimes(2);
+	});
+
+	/* ------------------------------------------------------------------ */
+	/* Idempotency                                                         */
+	/* ------------------------------------------------------------------ */
+
+	it("is idempotent when admin and community already exist", async () => {
 		usersFindFirst.mockResolvedValue({ role: "administrator" });
 		communitiesFindFirst.mockResolvedValue({ id: "community-id" });
 
