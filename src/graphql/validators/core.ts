@@ -62,7 +62,9 @@ export const isoDateString = z
 
 /**
  * ISO 8601 datetime string in UTC (with Z suffix).
- * Format: YYYY-MM-DDTHH:mm:ss.sssZ
+ * Format: YYYY-MM-DDTHH:mm:ssZ (milliseconds optional)
+ *
+ * Uses `z.iso.datetime` internally, which accepts varying fractional-second precision.
  */
 export const isoDateTimeString = z
 	.string()
@@ -180,38 +182,3 @@ export const eventIdArg = z.object({ id: eventId });
  * Common pattern for queries/mutations that accept a post ID.
  */
 export const postIdArg = z.object({ id: postId });
-
-// ============================================================================
-// Example Input Schemas
-// ============================================================================
-
-/**
- * Example: Create post input schema.
- * Demonstrates how to compose shared validators into domain-specific schemas.
- *
- * @remarks This is an ILLUSTRATIVE EXAMPLE only. Do not use in production code.
- * Create your own domain-specific validators for actual use cases.
- */
-// @ts-expect-error - This is an intentional example that demonstrates validator composition
-const _createPostInput = z.object({
-	organizationId: orgId,
-	title: nonEmptyString.max(200, "Title too long"),
-	body: z.string().trim().max(10_000, "Body too long").optional().default(""),
-	tags: z.array(nonEmptyString.max(32)).max(20).optional().default([]),
-	visibility: z.enum(["public", "private"]).default("public"),
-});
-
-/**
- * Example: Event range filter input.
- * Demonstrates date validation and optional filters.
- *
- * @remarks This is an ILLUSTRATIVE EXAMPLE only. Do not use in production code.
- * Create your own domain-specific validators for actual use cases.
- */
-// @ts-expect-error - This is an intentional example that demonstrates date validation patterns
-const _eventRangeInput = z.object({
-	organizationId: orgId,
-	from: isoDateTimeString.optional(),
-	to: isoDateTimeString.optional(),
-	onlyPublic: z.boolean().optional().default(false),
-});

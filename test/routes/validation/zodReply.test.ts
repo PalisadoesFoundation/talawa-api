@@ -312,6 +312,17 @@ describe("zReplyParsed", () => {
 
 			expect(result?.optional).toBeUndefined();
 		});
+
+		it("handles non-object input by returning formErrors", async () => {
+			const result = await zReplyParsed(mockReply, testSchema, null);
+
+			expect(result).toBeUndefined();
+			expect(mockReply.status).toHaveBeenCalledWith(400);
+			expect(mockReply.send).toHaveBeenCalled();
+
+			const sendCall = mockReply.send.mock.calls[0]?.[0];
+			expect(sendCall?.error.details.formErrors.length).toBeGreaterThan(0);
+		});
 	});
 
 	describe("TypeScript type inference", () => {

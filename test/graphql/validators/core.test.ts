@@ -3,6 +3,7 @@ import {
 	coerceDate,
 	email,
 	eventId,
+	eventIdArg,
 	id,
 	isoDateString,
 	isoDateTimeString,
@@ -11,12 +12,14 @@ import {
 	orgId,
 	pagination,
 	postId,
+	postIdArg,
 	postSort,
 	sortOrder,
 	trimmedString,
 	ulid,
 	url,
 	userId,
+	userIdArg,
 	uuid,
 } from "~/src/graphql/validators/core";
 
@@ -185,6 +188,13 @@ describe("Date/Time Validators", () => {
 			expect(result).toBe("2024-01-15T10:30:00.123Z");
 		});
 
+		it("trims whitespace from ISO datetime strings", async () => {
+			const result = await isoDateTimeString.parseAsync(
+				" 2024-01-15T10:30:00Z ",
+			);
+			expect(result).toBe("2024-01-15T10:30:00Z");
+		});
+
 		it("rejects datetime without Z suffix", async () => {
 			await expect(
 				isoDateTimeString.parseAsync("2024-01-15T10:30:00"),
@@ -255,6 +265,10 @@ describe("ID Validators", () => {
 			const result = await userId.parseAsync(validUuid);
 			expect(result).toBe(validUuid);
 		});
+
+		it("rejects invalid UUIDs", async () => {
+			await expect(userId.parseAsync("not-a-uuid")).rejects.toThrow();
+		});
 	});
 
 	describe("eventId", () => {
@@ -263,6 +277,10 @@ describe("ID Validators", () => {
 			const result = await eventId.parseAsync(validUuid);
 			expect(result).toBe(validUuid);
 		});
+
+		it("rejects invalid UUIDs", async () => {
+			await expect(eventId.parseAsync("not-a-uuid")).rejects.toThrow();
+		});
 	});
 
 	describe("postId", () => {
@@ -270,6 +288,10 @@ describe("ID Validators", () => {
 			const validUuid = "550e8400-e29b-41d4-a716-446655440000";
 			const result = await postId.parseAsync(validUuid);
 			expect(result).toBe(validUuid);
+		});
+
+		it("rejects invalid UUIDs", async () => {
+			await expect(postId.parseAsync("not-a-uuid")).rejects.toThrow();
 		});
 	});
 });
@@ -366,6 +388,48 @@ describe("Common Input Shapes", () => {
 		it("rejects invalid UUID", async () => {
 			await expect(
 				organizationIdArg.parseAsync({ id: "not-a-uuid" }),
+			).rejects.toThrow();
+		});
+	});
+
+	describe("userIdArg", () => {
+		it("accepts valid UUID as id", async () => {
+			const validUuid = "550e8400-e29b-41d4-a716-446655440000";
+			const result = await userIdArg.parseAsync({ id: validUuid });
+			expect(result.id).toBe(validUuid);
+		});
+
+		it("rejects invalid UUID", async () => {
+			await expect(
+				userIdArg.parseAsync({ id: "not-a-uuid" }),
+			).rejects.toThrow();
+		});
+	});
+
+	describe("eventIdArg", () => {
+		it("accepts valid UUID as id", async () => {
+			const validUuid = "550e8400-e29b-41d4-a716-446655440000";
+			const result = await eventIdArg.parseAsync({ id: validUuid });
+			expect(result.id).toBe(validUuid);
+		});
+
+		it("rejects invalid UUID", async () => {
+			await expect(
+				eventIdArg.parseAsync({ id: "not-a-uuid" }),
+			).rejects.toThrow();
+		});
+	});
+
+	describe("postIdArg", () => {
+		it("accepts valid UUID as id", async () => {
+			const validUuid = "550e8400-e29b-41d4-a716-446655440000";
+			const result = await postIdArg.parseAsync({ id: validUuid });
+			expect(result.id).toBe(validUuid);
+		});
+
+		it("rejects invalid UUID", async () => {
+			await expect(
+				postIdArg.parseAsync({ id: "not-a-uuid" }),
 			).rejects.toThrow();
 		});
 	});
