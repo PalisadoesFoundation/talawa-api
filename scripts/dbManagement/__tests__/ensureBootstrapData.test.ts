@@ -1,85 +1,71 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-/* ------------------------------------------------------------------ */
-/* Chainable DB mocks                                                  */
-/* ------------------------------------------------------------------ */
-
-const insertValues = vi.fn();
-const updateWhere = vi.fn();
-
-const insert = vi.fn(() => ({
-	values: insertValues,
-}));
-
-const update = vi.fn(() => ({
-	set: vi.fn(() => ({
-		where: updateWhere,
-	})),
-}));
-
-const usersFindFirst = vi.fn();
-const communitiesFindFirst = vi.fn();
-
-/* ------------------------------------------------------------------ */
-/* Module mock                                                         */
-/* ------------------------------------------------------------------ */
-
-vi.mock("../helpers", async () => {
-	const original =
-		await vi.importActual<typeof import("../helpers")>("../helpers");
-
-	return {
-		...original,
-		db: {
-			query: {
-				usersTable: { findFirst: usersFindFirst },
-				communitiesTable: { findFirst: communitiesFindFirst },
-			},
-			insert,
-			update,
-		},
-		envConfig: {
-			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@test.com",
-			API_ADMINISTRATOR_USER_NAME: "Admin",
-			API_ADMINISTRATOR_USER_PASSWORD: "password",
-			API_COMMUNITY_NAME: "Test Community",
-			API_COMMUNITY_FACEBOOK_URL: null,
-			API_COMMUNITY_GITHUB_URL: null,
-			API_COMMUNITY_INSTAGRAM_URL: null,
-			API_COMMUNITY_LINKEDIN_URL: null,
-			API_COMMUNITY_REDDIT_URL: null,
-			API_COMMUNITY_SLACK_URL: null,
-			API_COMMUNITY_WEBSITE_URL: null,
-			API_COMMUNITY_X_URL: null,
-			API_COMMUNITY_YOUTUBE_URL: null,
-			API_COMMUNITY_INACTIVITY_TIMEOUT_DURATION: 30,
-		},
-	};
-});
-
-vi.mock("uuidv7", () => ({
-	uuidv7: vi.fn(() => "uuid-123"),
-}));
-
-vi.mock("@node-rs/argon2", () => ({
-	hash: vi.fn(async () => "hashed-password"),
-}));
-
-/* ------------------------------------------------------------------ */
-/* Tests                                                              */
-/* ------------------------------------------------------------------ */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("ensureBootstrapData", () => {
 	let ensureBootstrapData: () => Promise<void>;
 
+	let usersFindFirst: ReturnType<typeof vi.fn>;
+	let communitiesFindFirst: ReturnType<typeof vi.fn>;
+	let insertValues: ReturnType<typeof vi.fn>;
+	let updateWhere: ReturnType<typeof vi.fn>;
+
 	beforeEach(async () => {
+		vi.resetModules();
 		vi.clearAllMocks();
+
+		// Fresh mocks per test (critical for sharded CI)
+		usersFindFirst = vi.fn();
+		communitiesFindFirst = vi.fn();
+		insertValues = vi.fn();
+		updateWhere = vi.fn();
+
+		vi.doMock("../helpers", async () => {
+			const original =
+				await vi.importActual<typeof import("../helpers")>("../helpers");
+
+			return {
+				...original,
+				db: {
+					query: {
+						usersTable: { findFirst: usersFindFirst },
+						communitiesTable: { findFirst: communitiesFindFirst },
+					},
+					insert: vi.fn(() => ({
+						values: insertValues,
+					})),
+					update: vi.fn(() => ({
+						set: vi.fn(() => ({
+							where: updateWhere,
+						})),
+					})),
+				},
+				envConfig: {
+					...original.envConfig,
+					API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "admin@test.com",
+					API_ADMINISTRATOR_USER_NAME: "Admin",
+					API_ADMINISTRATOR_USER_PASSWORD: "password",
+					API_COMMUNITY_NAME: "Test Community",
+				},
+			};
+		});
+
+		vi.doMock("uuidv7", () => ({
+			uuidv7: vi.fn(() => "uuid-123"),
+		}));
+
+		vi.doMock("@node-rs/argon2", () => ({
+			hash: vi.fn(async () => "hashed-password"),
+		}));
+
 		const helpers = await import("../helpers");
 		ensureBootstrapData = helpers.ensureBootstrapData;
 	});
 
+	afterEach(() => {
+		vi.resetModules();
+	});
+
 	it("throws if administrator env vars are missing", async () => {
-		const { ensureBootstrapData, envConfig } = await import("../helpers");
+		const { envConfig } = await import("../helpers");
 
 		const originalEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
@@ -90,7 +76,6 @@ describe("ensureBootstrapData", () => {
 				"Missing administrator environment variables",
 			);
 		} finally {
-			// Always restore shared state
 			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = originalEmail;
 		}
 	});
@@ -101,7 +86,6 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
-		expect(update).toHaveBeenCalled();
 		expect(updateWhere).toHaveBeenCalled();
 	});
 
@@ -111,7 +95,6 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
-		expect(insert).toHaveBeenCalled();
 		expect(insertValues).toHaveBeenCalled();
 	});
 
@@ -121,7 +104,6 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
-		expect(insert).toHaveBeenCalled();
 		expect(insertValues).toHaveBeenCalled();
 	});
 
@@ -131,7 +113,7 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
-		expect(insert).not.toHaveBeenCalled();
-		expect(update).not.toHaveBeenCalled();
+		expect(insertValues).not.toHaveBeenCalled();
+		expect(updateWhere).not.toHaveBeenCalled();
 	});
 });
