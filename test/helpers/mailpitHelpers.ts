@@ -221,7 +221,7 @@ export async function waitForEmail(
 			);
 		}
 
-		if (matchingMessages && matchingMessages[0]) {
+		if (matchingMessages?.[0]) {
 			return matchingMessages[0];
 		}
 
