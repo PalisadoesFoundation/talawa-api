@@ -481,16 +481,19 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      - name: Cache kcov build
+      - name: Cache kcov binary
         id: cache-kcov
         uses: actions/cache@v4
         with:
-          path: kcov-src
+          path: /usr/local/bin/kcov
           key: kcov-v43-${{ runner.os }}
+      - name: Install kcov runtime dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libcurl4 libdw1 libelf1 zlib1g
       - name: Install kcov build dependencies
         if: steps.cache-kcov.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get update -qq
           sudo apt-get install -y binutils-dev build-essential cmake libssl-dev libcurl4-openssl-dev libelf-dev libstdc++-12-dev zlib1g-dev libdw-dev libiberty-dev
       - name: Build and install kcov
         if: steps.cache-kcov.outputs.cache-hit != 'true'
@@ -500,11 +503,6 @@ jobs:
           mkdir build && cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
           make -j"$(nproc)"
-          sudo make install
-      - name: Install kcov from cache
-        if: steps.cache-kcov.outputs.cache-hit == 'true'
-        run: |
-          cd kcov-src/build
           sudo make install
       - name: Verify kcov installation
         run: kcov --version
