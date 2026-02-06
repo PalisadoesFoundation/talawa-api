@@ -524,6 +524,10 @@ jobs:
           
           # With --cobertura-only, kcov writes cov.xml directly to output dir
           if [ -f "coverage/install/cov.xml" ]; then
+            echo "=== Coverage file content (first 50 lines) ==="
+            head -50 coverage/install/cov.xml
+            echo "=== Source file paths in coverage ==="
+            grep -o 'filename="[^"]*"' coverage/install/cov.xml | head -20 || true
             cp coverage/install/cov.xml coverage/install/upload-report.xml
             echo "upload_file=./coverage/install/upload-report.xml" >> "$GITHUB_OUTPUT"
             echo "Using: coverage/install/cov.xml"
