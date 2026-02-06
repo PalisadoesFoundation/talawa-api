@@ -31,7 +31,7 @@ export const signInBody = z.object({
  * This is deliberate; do not tighten the schema so that both sources remain supported.
  */
 export const refreshBody = z.object({
-	refreshToken: z.string().optional(),
+	refreshToken: z.string().min(1).optional(),
 });
 
 export type SignUpBody = z.infer<typeof signUpBody>;

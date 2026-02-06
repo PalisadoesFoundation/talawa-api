@@ -188,6 +188,27 @@ describe("signInBody", () => {
 		}
 	});
 
+	it("accepts minimum-length password (1 character)", () => {
+		const input = { email: valid.email, password: "a" };
+		const result = signInBody.safeParse(input);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data).toEqual(input);
+		}
+	});
+
+	it("accepts maximum-length password", () => {
+		const input = {
+			email: valid.email,
+			password: "a".repeat(PASSWORD_MAX_LENGTH),
+		};
+		const result = signInBody.safeParse(input);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data).toEqual(input);
+		}
+	});
+
 	it("rejects missing email", () => {
 		const result = signInBody.safeParse({
 			password: valid.password,
@@ -261,6 +282,16 @@ describe("refreshBody", () => {
 
 	it("rejects non-string refreshToken", () => {
 		const result = refreshBody.safeParse({ refreshToken: 123 });
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(
+				result.error.issues.some((i) => i.path.includes("refreshToken")),
+			).toBe(true);
+		}
+	});
+
+	it("rejects empty string refreshToken", () => {
+		const result = refreshBody.safeParse({ refreshToken: "" });
 		expect(result.success).toBe(false);
 		if (!result.success) {
 			expect(
