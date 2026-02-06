@@ -37,6 +37,19 @@ describe("signUpBody", () => {
 		}
 	});
 
+	it("rejects missing password", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			password: undefined,
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues.some((i) => i.path.includes("password"))).toBe(
+				true,
+			);
+		}
+	});
+
 	it("rejects invalid email", () => {
 		const result = signUpBody.safeParse({
 			...valid,
