@@ -655,10 +655,16 @@ describe("jobDiscovery", () => {
 				.mockResolvedValueOnce([]); // stop loop
 
 			const batch1Rules = batch1.map((e) =>
-				createMockRecurrenceRule({ baseRecurringEventId: e.id }),
+				createMockRecurrenceRule({
+					baseRecurringEventId: e.id,
+					id: `${e.id}-rule1`, // Generate unique rule ID
+				}),
 			);
 			const batch2Rules = batch2.map((e) =>
-				createMockRecurrenceRule({ baseRecurringEventId: e.id }),
+				createMockRecurrenceRule({
+					baseRecurringEventId: e.id,
+					id: `${e.id}-rule2`, // Generate unique rule ID
+				}),
 			);
 
 			vi.mocked(mockDrizzleClient.query.recurrenceRulesTable.findMany)
@@ -672,13 +678,12 @@ describe("jobDiscovery", () => {
 			expect(result[0]?.recurringEvents).toHaveLength(502);
 
 			expect(findManySpy).toHaveBeenCalledTimes(3);
-
-			if (findManySpy?.mock?.calls[0]?.[0]) {
-				expect(findManySpy.mock.calls[0][0].offset).toBe(0);
-			}
-			if (findManySpy?.mock?.calls[1]?.[0]) {
-				expect(findManySpy.mock.calls[1][0].offset).toBe(500);
-			}
+			expect(findManySpy.mock.calls[0]?.[0]).toEqual(
+				expect.objectContaining({ offset: 0 }),
+			);
+			expect(findManySpy.mock.calls[1]?.[0]).toEqual(
+				expect.objectContaining({ offset: 500 }),
+			);
 		});
 	});
 });

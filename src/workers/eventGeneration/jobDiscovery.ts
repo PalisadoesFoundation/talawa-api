@@ -241,16 +241,15 @@ async function discoverRecurringEventsForOrganization(
 	let offset = 0;
 	const eventDetails = [];
 	while (true) {
-		const recurringEvents =
-			(await drizzleClient.query.eventsTable.findMany({
-				where: and(
-					eq(eventsTable.organizationId, organizationId),
-					eq(eventsTable.isRecurringEventTemplate, true),
-				),
-				orderBy: [eventsTable.id], // IMPORTANT (stable pagination)
-				limit: EVENT_BATCH_SIZE,
-				offset,
-			})) ?? [];
+		const recurringEvents = await drizzleClient.query.eventsTable.findMany({
+			where: and(
+				eq(eventsTable.organizationId, organizationId),
+				eq(eventsTable.isRecurringEventTemplate, true),
+			),
+			orderBy: [eventsTable.id], // IMPORTANT (stable pagination)
+			limit: EVENT_BATCH_SIZE,
+			offset,
+		});
 
 		if (recurringEvents.length === 0) break;
 
