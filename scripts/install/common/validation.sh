@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##############################################################################
 # Talawa API - Common Validation Functions
-# 
+#
 # This file contains shared validation functions used by installation scripts
 # across different platforms (Linux, macOS, etc.)
 #
@@ -11,50 +11,32 @@
 #
 # REQUIREMENTS:
 #   The sourcing script MUST define these functions before sourcing this file:
-#   - info()  : For informational messages (blue output)
-#   - warn()  : For warning messages (yellow output)
-#   - error() : For error messages (red output)
-#
-#   Example definitions:
-#     info() { echo -e "${BLUE}ℹ${NC} $1"; }
-#     warn() { echo -e "${YELLOW}⚠${NC} $1"; }
-#     error() { echo -e "${RED}✗${NC} $1"; }
+#   - info()    : For informational messages (blue output)
+#   - warn()    : For warning messages (yellow output)
+#   - error()   : For error messages (red output)
+#   - success() : For success messages (green output)
 ##############################################################################
 
 ##############################################################################
 # Guard: Verify required functions are defined
-# 
-# This library depends on info(), warn(), and error() functions being defined
-# by the calling script. Fail early with a clear message if they are missing.
 ##############################################################################
-if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1; then
-    echo "ERROR: validation.sh requires info(), warn(), and error() functions to be defined." >&2
+if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1 || ! declare -F success >/dev/null 2>&1; then
+    echo "ERROR: validation.sh requires info(), warn(), error(), and success() functions to be defined." >&2
     echo "" >&2
     echo "Please ensure your script defines these functions before sourcing validation.sh:" >&2
     echo "  info() { echo -e \"\${BLUE}ℹ\${NC} \$1\"; }" >&2
     echo "  warn() { echo -e \"\${YELLOW}⚠\${NC} \$1\"; }" >&2
     echo "  error() { echo -e \"\${RED}✗\${NC} \$1\"; }" >&2
+    echo "  success() { echo -e \"\${GREEN}✓\${NC} \$1\"; }" >&2
     echo "" >&2
     exit 1
 fi
 
 ##############################################################################
-# Validate version strings to prevent command injection
-# 
-# This function validates version strings from package.json to prevent:
-# - Command injection via malicious version strings (e.g., "18.0.0; rm -rf /")
-# - Word splitting from spaces in version strings
-# - Glob expansion from special characters
+# validate_version_string - Validate version strings to prevent command injection
 #
 # Allowed characters: alphanumeric, dots, hyphens, carets, tildes, equals,
 #                     greater than, less than, forward slash (covers semver patterns)
-#
-# Test cases (for regression testing):
-#   Should PASS: "18.0.0", "^18.0.0", ">=18.0.0", "~18.0.0", "lts", "lts/latest"
-#   Should FAIL: "18.0.0; rm -rf /", "18.0.0$(whoami)", "18.0.0 && malicious"
-#
-# Usage: validate_version_string "version" "field_name"
-# Returns: 0 if valid, 1 if invalid
 ##############################################################################
 validate_version_string() {
     local version="$1"
@@ -66,7 +48,7 @@ validate_version_string() {
         return 1
     fi
     
-    # Reject versions starting with dash to prevent option injection (e.g., "-18.0.0" parsed as flag)
+    # Reject versions starting with dash to prevent option injection
     if [[ "$version" =~ ^- ]]; then
         error "Invalid $field_name: '$version' (version cannot start with dash)"
         echo ""
@@ -76,8 +58,6 @@ validate_version_string() {
     fi
     
     # Allow only: alphanumeric, dots, hyphens, carets, tildes, equals, greater/less than, forward slash
-    # This covers semver patterns like: 18.0.0, ^18.0.0, ~18.0.0, >=18.0.0, lts, lts/latest
-    # Pattern stored in variable to avoid shell interpretation issues
     local pattern='^[a-zA-Z0-9./~^=<>-]+$'
     if [[ ! "$version" =~ $pattern ]]; then
         error "Invalid $field_name: '$version'"
@@ -115,13 +95,10 @@ validate_version_string() {
 }
 
 ##############################################################################
-# Safe jq parsing helper function
-# 
-# This function provides robust jq parsing with:
-# - Verification that jq is installed
-# - Error handling for malformed JSON
-# - Null/empty result handling with defaults
-# - Clear error messages for debugging
+# parse_package_json - Safe jq parsing helper
+#
+# Provides robust jq parsing with verification that jq is installed.
+# Usage: parse_package_json "jq_query" "default_value" "field_name" [is_required]
 ##############################################################################
 parse_package_json() {
     local jq_query="$1"
@@ -156,8 +133,6 @@ parse_package_json() {
     local result
     
     # Attempt to parse with jq, coalescing null to empty string
-    # Using '// empty' ensures null values become empty strings rather than literal "null"
-    # Wrapped in if-statement to be errexit-safe (set -e won't abort before error handling)
     if ! result=$(jq -r "($jq_query) // empty" package.json 2>&1); then
         error "Failed to parse $field_name from package.json"
         echo ""
@@ -185,7 +160,7 @@ parse_package_json() {
         exit 1
     fi
     
-    # Check for empty results (null values are coalesced to empty by jq)
+    # Check for empty results
     if [ -z "$result" ]; then
         if [ "$is_required" = "true" ]; then
             error "$field_name not found in package.json (required field)"
@@ -221,16 +196,7 @@ parse_package_json() {
 }
 
 ##############################################################################
-# Validation error handler for version strings
-# 
-# This function provides standardized error output when version validation fails.
-# Used to avoid code duplication across Linux and macOS installation scripts.
-#
-# Usage: handle_version_validation_error "field_name" "current_value" ["jq_path"]
-# Arguments:
-#   field_name:    Descriptive name shown to user (e.g., "Node.js version (engines.node)")
-#   current_value: The invalid value that failed validation
-#   jq_path:       (Optional) Valid jq path for the field (e.g., ".engines.node")
+# handle_version_validation_error - Validation error handler for version strings
 ##############################################################################
 handle_version_validation_error() {
     local field_name="$1"
@@ -266,13 +232,7 @@ handle_version_validation_error() {
 }
 
 ##############################################################################
-# Retry command with exponential backoff
-# 
-# This function retries a command multiple times with exponential backoff
-# to handle transient network failures gracefully.
-#
-# Usage: retry_command max_attempts command [args...]
-# Returns: 0 on success, last exit code on failure after all attempts
+# retry_command - Retry command with exponential backoff
 ##############################################################################
 retry_command() {
     local max_attempts="$1"
@@ -300,4 +260,208 @@ retry_command() {
     
     error "Command failed after $max_attempts attempts: $*"
     return "$exit_code"
+}
+
+##############################################################################
+# NEW: Repository Root Validation
+#
+# Ensures the script is executed from the project root.
+##############################################################################
+validate_repository_root() {
+    # Check if debug function exists, otherwise ignore
+    if declare -F debug >/dev/null; then debug "Validating repository root..."; fi
+
+    if [ -e ".git" ] && [ -f "package.json" ]; then
+        success "Repository root validated"
+        return 0
+    fi
+
+    error "Not at repository root (.git and package.json required)"
+    return 1
+}
+
+##############################################################################
+# NEW: Disk Space Validation
+#
+# Checks that sufficient disk space is available.
+# Usage: validate_disk_space <min_mb> (Default: 2000 MB)
+##############################################################################
+validate_disk_space() {
+    local min_mb="${1:-2000}"
+    if declare -F debug >/dev/null; then debug "Checking for at least ${min_mb}MB free disk space..."; fi
+
+    local avail_kb
+    avail_kb="$(df -Pk . 2>/dev/null | awk 'NR==2 {print $4}')"
+
+    # Guard against empty or non-numeric output
+    if [ -z "$avail_kb" ] || ! [[ "$avail_kb" =~ ^[0-9]+$ ]]; then
+        error "Unable to determine available disk space"
+        return 1
+    fi
+
+    local avail_mb=$((avail_kb / 1024))
+
+    if [ "$avail_mb" -ge "$min_mb" ]; then
+        success "Disk space OK: ${avail_mb}MB available (Required: ${min_mb}MB)"
+        return 0
+    fi
+
+    error "Insufficient disk space: ${avail_mb}MB available (Minimum: ${min_mb}MB)"
+    return 1
+}
+
+##############################################################################
+# Secure validators
+#
+# Stricter validators for version strings (x.y or x.y.z only) and paths.
+##############################################################################
+
+##############################################################################
+# validate_version_string_secure - Strict version string (x.y or x.y.z only)
+##############################################################################
+validate_version_string_secure() {
+    local v="${1:-}"
+
+    local pattern='^[0-9]+(\.[0-9]+){1,2}$'
+    if [[ "$v" =~ $pattern ]]; then
+        success "Version OK: $v"
+        return 0
+    fi
+
+    error "Invalid version: $v (expected x.y or x.y.z)"
+    return 1
+}
+
+##############################################################################
+# NEW: Internet Connectivity Validation
+#
+# Verifies connectivity to required external services.
+##############################################################################
+validate_internet_connectivity() {
+    if declare -F debug >/dev/null; then debug "Checking internet connectivity..."; fi
+
+    local hosts=("github.com" "registry.npmjs.org")
+    # Soft-fail policy: installation proceeds if at least one required host is reachable
+    # to avoid blocking installation due to temporary service outages
+    local any_ok=0
+
+    for host in "${hosts[@]}"; do
+        local host_ok=0
+
+        if command -v curl >/dev/null 2>&1; then
+            if curl -sSf --max-time 5 "https://${host}" >/dev/null 2>&1; then
+                host_ok=1
+            fi
+        
+        elif command -v ping >/dev/null 2>&1; then
+            if command -v timeout >/dev/null 2>&1; then
+                if timeout 5s ping -c 1 "$host" >/dev/null 2>&1; then
+                    host_ok=1
+                fi
+            else
+                # Platform-specific ping timeout handling
+                case "$(uname -s)" in
+                    Linux*)
+                        ping -c 1 -W 3 "$host" >/dev/null 2>&1 && host_ok=1
+                        ;;
+                    Darwin*|FreeBSD*)
+                        ping -c 1 -W 3000 "$host" >/dev/null 2>&1 && host_ok=1
+                        ;;
+                    *)
+                        ping -c 1 "$host" >/dev/null 2>&1 && host_ok=1
+                        ;;
+                esac
+            fi
+
+        else
+            warn "Neither curl nor ping is available to test connectivity"
+        fi
+
+        if [ "$host_ok" -eq 1 ]; then
+            success "Connection to ${host} verified"
+            any_ok=1
+        else
+            warn "Unable to reach ${host}"
+        fi
+    done
+
+    if [ "$any_ok" -eq 1 ]; then
+        return 0
+    fi
+
+    error "Internet connectivity check failed"
+    return 1
+}
+
+##############################################################################
+# NEW: Aggregate Prerequisite Validation
+#
+# Runs all system pre-flight checks and aggregates results.
+##############################################################################
+validate_prerequisites() {
+    info "Running system pre-flight checks..."
+    local rc=0
+
+    validate_repository_root || rc=1
+    validate_disk_space 2000 || rc=1
+    validate_internet_connectivity || rc=1
+
+    if [ "$rc" -eq 0 ]; then
+        success "All prerequisites met"
+    else
+        error "Prerequisites check failed"
+    fi
+
+    return "$rc"
+}
+
+##############################################################################
+# validate_path - Absolute path with no traversal or unsafe characters
+##############################################################################
+validate_path() {
+    local p="${1:-}"
+
+    case "$p" in
+        /*) ;;
+        *)
+            error "Path must be absolute: $p"
+            return 1
+            ;;
+    esac
+
+    # Reject root "/" — operations on root are risky; require at least one path component
+    if [[ "$p" = "/" ]]; then
+        error "Root path not allowed: $p"
+        return 1
+    fi
+
+    # Only reject ".." as a path component (e.g. /tmp/../etc)
+    local traversal_pattern='(^|/)\.\.($|/)'
+    if [[ "$p" =~ $traversal_pattern ]]; then
+        error "Path traversal not allowed: $p"
+        return 1
+    fi
+
+    # Require at least one path component; reject shell metacharacters
+    local safe_path_pattern='^/[a-zA-Z0-9/._-]+$'
+    if [[ ! "$p" =~ $safe_path_pattern ]]; then
+        error "Path contains unsafe characters: $p"
+        return 1
+    fi
+
+    success "Path OK: $p"
+    return 0
+}
+
+##############################################################################
+# run_cmd - Safe command execution with dry-run support
+##############################################################################
+DRY_RUN="${DRY_RUN:-0}"
+
+run_cmd() {
+    if [ "$DRY_RUN" = "1" ]; then
+        printf "[INFO] (dry-run) %s\n" "$*"
+        return 0
+    fi
+    "$@"
 }

@@ -1,0 +1,26 @@
+[
+	{
+		"assigneeId": "67378abd-8500-4f17-9cf2-990d00000005",
+		"createdAt": "2026-02-02T13:20:00Z",
+		"creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"tagId": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e48"
+	},
+	{
+		"assigneeId": "67378abd-8500-4f17-9cf2-990d00000006",
+		"createdAt": "2026-02-02T13:21:00Z",
+		"creatorId": "65378abd-8500-4f17-9cf2-990d00000002",
+		"tagId": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e47"
+	},
+	{
+		"assigneeId": "67378abd-8500-4f17-9cf2-990d00000007",
+		"createdAt": "2026-02-02T13:22:00Z",
+		"creatorId": "658938a6-2caa-4d8d-a908-74880000000d",
+		"tagId": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e46"
+	},
+	{
+		"assigneeId": "658930fd-2caa-4d8d-a908-745c00000008",
+		"createdAt": "2026-02-02T13:23:00Z",
+		"creatorId": "66378abd-8500-4f17-9cf2-990d00000003",
+		"tagId": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e45"
+	}
+]

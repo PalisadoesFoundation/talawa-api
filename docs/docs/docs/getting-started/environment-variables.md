@@ -232,13 +232,24 @@ This environment variable is used to configure the ssl mode on the connection be
 
 - Takes values as `true` or `false` to enable and disable OTEL logging,
 
-#### API_OTEL_ENVIRONMENT
+#### API_OTEL_EXPORTER_ENABLED
 
-- set `local` for development environment and `production` for production environment.
+This environment variable is used to enable or disable OpenTelemetry metric and trace exporting. When disabled, telemetry data is collected but not exported. Takes values as `true` or `false`.
 
-#### API_OTEL_EXPORTER_OTLP_ENDPOINT
+#### API_OTEL_EXPORTER_TYPE
 
-- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
+This environment variable is used to configure the type of OpenTelemetry exporter to use. Supports the following values:
+
+- `otlp`: Exports telemetry data to an external OpenTelemetry Protocol (OTLP) compatible backend or vendor service for dashboard visualization and analysis.
+- `console`: Exports spans and metrics directly to the terminal/console for local development and debugging purposes.
+
+#### API_OTEL_TRACE_EXPORTER_ENDPOINT
+
+Use this environment variable only when exporting trace data to an external OpenTelemetry-compatible backend (such as a managed observability platform or a self-hosted OpenTelemetry Collector). It specifies the complete endpoint URL where application traces will be sent. If no external trace exporter is configured, this variable is not required. Ensure the URL is valid and reachable to prevent trace export failures.
+
+#### API_OTEL_METRIC_EXPORTER_ENDPOINT
+
+Use this environment variable only when exporting metric data to an external OpenTelemetry-compatible backend. It defines the full endpoint URL where application metrics will be pushed for monitoring and analysis. If metrics are not being exported to an external system, this variable can be omitted. Make sure the endpoint URL is correctly formatted and accessible to avoid metric export issues.
 
 #### API_OTEL_SAMPLING_RATIO
 
@@ -705,4 +716,32 @@ This environment variable is used to configure the prefix for identifiers of all
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_project_name) link.
 
+## OAuth Configuration
 
+### GOOGLE_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for Google authentication.
+
+### GOOGLE_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for Google authentication.
+
+### GOOGLE_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for Google authentication.
+
+### GITHUB_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for GitHub authentication.
+
+### GITHUB_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for GitHub authentication.
+
+### GITHUB_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for GitHub authentication.
+
+### API_OAUTH_REQUEST_TIMEOUT_MS
+
+This environment variable is used to configure the request timeout in milliseconds for OAuth provider API calls. Default value is `10000` milliseconds (10 seconds).
