@@ -24,6 +24,21 @@ describe("signUpBody", () => {
 		}
 	});
 
+	it("normalizes email to lowercase", () => {
+		const mixedCaseEmail = "User@Example.COM";
+		const result = signUpBody.safeParse({
+			...valid,
+			email: mixedCaseEmail,
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.email).toBe("user@example.com");
+			expect(result.data.firstName).toBe(valid.firstName);
+			expect(result.data.lastName).toBe(valid.lastName);
+			expect(result.data.password).toBe(valid.password);
+		}
+	});
+
 	it("rejects missing email", () => {
 		const result = signUpBody.safeParse({
 			...valid,
@@ -211,6 +226,19 @@ describe("signInBody", () => {
 		expect(result.success).toBe(true);
 		if (result.success) {
 			expect(result.data).toEqual(valid);
+		}
+	});
+
+	it("normalizes email to lowercase", () => {
+		const mixedCaseEmail = "User@Example.COM";
+		const result = signInBody.safeParse({
+			email: mixedCaseEmail,
+			password: valid.password,
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.email).toBe("user@example.com");
+			expect(result.data.password).toBe(valid.password);
 		}
 	});
 
