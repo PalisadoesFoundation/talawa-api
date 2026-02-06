@@ -4,10 +4,10 @@ dotenv.config();
 
 export const observabilityConfig = {
 	enabled: process.env.API_OTEL_ENABLED === "true",
-	environment: process.env.API_OTEL_ENVIRONMENT ?? "local",
 	serviceName: process.env.API_OTEL_SERVICE_NAME ?? "talawa-api",
 	samplingRatio: Number(process.env.API_OTEL_SAMPLING_RATIO ?? "1"),
-	otlpEndpoint:
-		process.env.API_OTEL_EXPORTER_OTLP_ENDPOINT ??
-		"http://localhost:4318/v1/traces",
+	exporterEnabled: process.env.API_OTEL_EXPORTER_ENABLED === "true",
+	exporterType: process.env.API_OTEL_EXPORTER_TYPE ?? "otlp",
+	otlpTraceEndpoint: process.env.API_OTEL_TRACE_EXPORTER_ENDPOINT,
+	otlpMetricEndpoint: process.env.API_OTEL_METRIC_EXPORTER_ENDPOINT,
 };
