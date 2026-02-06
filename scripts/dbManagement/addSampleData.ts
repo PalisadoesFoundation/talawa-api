@@ -70,9 +70,11 @@ export async function main(): Promise<void> {
 export async function run(): Promise<number> {
 	try {
 		await main();
-	} catch (_error: unknown) {
+	} catch (error: unknown) {
+		console.error("Error running sample data script:", error);
 		return 1;
 	}
+
 	try {
 		await disconnect();
 		console.log(
