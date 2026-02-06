@@ -113,11 +113,27 @@ reviews:
         - Include authentication/authorization checks
         - No redundant or duplicate test cases
 
-        **Flaky Test Prevention:**
+        **Mock Accuracy & Correctness:**
+        - Mocks accurately simulate production behavior they replace
+        - Mocked functions verify correct arguments are passed (e.g., verify inArray receives correct IDs per batch)
+        - Sequential mocks (mockResolvedValueOnce) return batch-specific data, not all data on every call
+        - Mock return values match the actual API/function signature and data structure
+
+        **Test Cleanup & Hygiene:**
+        - Proper beforeEach/afterEach hooks for all state management (timers, mocks, global state)
+        - vi.useFakeTimers() is paired with vi.useRealTimers() in afterEach, not inline
+        - No floating-point arithmetic in test expectations without proper precision handling
+        - Mock state is properly reset between tests (vi.clearAllMocks() in beforeEach)
+        - No test pollution - each test can run independently in any order
         - Use faker.string.uuid() for unique test data to enable concurrent execution
-        - Proper mock cleanup between tests
         - Avoid hardcoded timeouts; handle variable CI response times
-        - Don't rely on specific execution order
+        - Proper mock cleanup between tests
+
+        **Mock Verification Depth:**
+        - When testing batch processing, verify each batch receives/processes correct subset of data
+        - When testing filtering logic (WHERE, inArray, etc.), verify filters receive correct parameters
+        - Spy on function calls and assert on arguments, not just return values
+        - Mock call order matters for sequential operations - verify with mock.calls[] inspection
 
         **Test Structure:**
         - Sign in as admin using Query_signIn when authentication required
