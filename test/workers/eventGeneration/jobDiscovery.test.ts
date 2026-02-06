@@ -1,6 +1,14 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import {
 	createDefaultJobDiscoveryConfig,
@@ -112,7 +120,8 @@ describe("jobDiscovery", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2024-06-01"));
 		mockLogger = {
 			info: vi.fn(),
 			warn: vi.fn(),
@@ -139,7 +148,9 @@ describe("jobDiscovery", () => {
 			logger: mockLogger,
 		};
 	});
-
+	afterEach(() => {
+		vi.useRealTimers();
+	});
 	describe("discoverEventGenerationWorkloads", () => {
 		it("should discover workloads successfully", async () => {
 			const config: JobDiscoveryConfig = {
@@ -630,15 +641,6 @@ describe("jobDiscovery", () => {
 				createMockEvent({ id: "event-501", organizationId: "org1" }),
 			];
 
-			const allRules = [...batch1, ...batch2].map((e) =>
-				createMockRecurrenceRule({
-					baseRecurringEventId: e.id,
-					organizationId: "org1",
-					count: null,
-					recurrenceEndDate: null,
-				}),
-			);
-
 			vi.mocked(
 				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue([windowConfig]);
@@ -652,9 +654,16 @@ describe("jobDiscovery", () => {
 				.mockResolvedValueOnce(batch2) // offset 500
 				.mockResolvedValueOnce([]); // stop loop
 
-			vi.mocked(
-				mockDrizzleClient.query.recurrenceRulesTable.findMany,
-			).mockResolvedValue(allRules);
+			const batch1Rules = batch1.map((e) =>
+				createMockRecurrenceRule({ baseRecurringEventId: e.id }),
+			);
+			const batch2Rules = batch2.map((e) =>
+				createMockRecurrenceRule({ baseRecurringEventId: e.id }),
+			);
+
+			vi.mocked(mockDrizzleClient.query.recurrenceRulesTable.findMany)
+				.mockResolvedValueOnce(batch1Rules) // First batch
+				.mockResolvedValueOnce(batch2Rules); // Second batch
 
 			vi.mocked(estimateInstanceCount).mockReturnValue(1);
 
