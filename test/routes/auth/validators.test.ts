@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+	NAME_MAX_LENGTH,
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
 	refreshBody,
 	signInBody,
 	signUpBody,
@@ -47,6 +50,22 @@ describe("signUpBody", () => {
 		}
 	});
 
+	it("accepts password with exactly 8 characters", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			password: "a".repeat(PASSWORD_MIN_LENGTH),
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts password with exactly 64 characters", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			password: "a".repeat(PASSWORD_MAX_LENGTH),
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects password shorter than 8 characters", () => {
 		const result = signUpBody.safeParse({
 			...valid,
@@ -55,14 +74,14 @@ describe("signUpBody", () => {
 		expect(result.success).toBe(false);
 		if (!result.success) {
 			const msg = result.error.issues[0]?.message ?? "";
-			expect(msg).toContain("8");
+			expect(msg).toContain(String(PASSWORD_MIN_LENGTH));
 		}
 	});
 
 	it("rejects password longer than 64 characters", () => {
 		const result = signUpBody.safeParse({
 			...valid,
-			password: "a".repeat(65),
+			password: "a".repeat(PASSWORD_MAX_LENGTH + 1),
 		});
 		expect(result.success).toBe(false);
 	});
@@ -88,6 +107,14 @@ describe("signUpBody", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("rejects firstName with only whitespace", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			firstName: "   ",
+		});
+		expect(result.success).toBe(false);
+	});
+
 	it("rejects missing lastName", () => {
 		const result = signUpBody.safeParse({
 			...valid,
@@ -109,10 +136,34 @@ describe("signUpBody", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("rejects lastName with only whitespace", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			lastName: "   ",
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts firstName with exactly 50 characters", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			firstName: "a".repeat(NAME_MAX_LENGTH),
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts lastName with exactly 50 characters", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			lastName: "a".repeat(NAME_MAX_LENGTH),
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects firstName longer than 50 characters", () => {
 		const result = signUpBody.safeParse({
 			...valid,
-			firstName: "a".repeat(51),
+			firstName: "a".repeat(NAME_MAX_LENGTH + 1),
 		});
 		expect(result.success).toBe(false);
 	});
@@ -120,7 +171,7 @@ describe("signUpBody", () => {
 	it("rejects lastName longer than 50 characters", () => {
 		const result = signUpBody.safeParse({
 			...valid,
-			lastName: "a".repeat(51),
+			lastName: "a".repeat(NAME_MAX_LENGTH + 1),
 		});
 		expect(result.success).toBe(false);
 	});

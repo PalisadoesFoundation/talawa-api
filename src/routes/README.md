@@ -8,7 +8,7 @@ An `index.ts` file must be present in this directory exporting a fastify plugin 
 
 Other than that there aren't any strict directory structure requirements.
 
-For REST validation, use the helper in `routes/validation/zodReply.ts` (`zReplyParsed`). Auth request body schemas (signup, signin, refresh) live in `routes/auth/validators.ts`.
+For REST validation, use the helper in `src/routes/validation/zodReply.ts` (`zReplyParsed`). Auth request body schemas (signup, signin, refresh) live in `src/routes/auth/validators.ts`.
 
 # Example
 

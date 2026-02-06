@@ -10,10 +10,10 @@ type MockReply = FastifyReply & {
 };
 
 function createMockReply(
-	requestOverride: { id?: string | number } = { id: "test-id" },
+	requestOverride: { id?: string | number } | null = { id: "test-id" },
 ): MockReply {
 	const reply = {
-		request: requestOverride,
+		...(requestOverride !== null && { request: requestOverride }),
 		statusCode: 0,
 		sentPayload: undefined as unknown,
 		status(code: number) {
@@ -85,6 +85,18 @@ describe("zReplyParsed", () => {
 
 	it("sends 400 without correlationId when reply.request.id is not a string", () => {
 		const reply = createMockReply({ id: 123 });
+		const result = zReplyParsed(reply, numberSchema, null);
+		expect(result).toBeUndefined();
+		expect(reply.statusCode).toBe(400);
+		const payload = reply.sentPayload as {
+			error: { code: string; correlationId?: string };
+		};
+		expect(payload.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+		expect(payload.error.correlationId).toBeUndefined();
+	});
+
+	it("sends 400 without correlationId when reply.request is missing", () => {
+		const reply = createMockReply(null);
 		const result = zReplyParsed(reply, numberSchema, null);
 		expect(result).toBeUndefined();
 		expect(reply.statusCode).toBe(400);

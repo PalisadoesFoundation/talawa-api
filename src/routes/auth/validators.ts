@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-const PASSWORD_MIN_LENGTH = 8;
-const PASSWORD_MAX_LENGTH = 64;
-const NAME_MAX_LENGTH = 50;
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 64;
+export const NAME_MAX_LENGTH = 50;
 
 /** Zod schema for REST sign-up request body. Aligns with MutationSignUpInput password length. */
 export const signUpBody = z.object({
@@ -11,8 +11,8 @@ export const signUpBody = z.object({
 		.string()
 		.min(PASSWORD_MIN_LENGTH, "Password must be at least 8 characters")
 		.max(PASSWORD_MAX_LENGTH),
-	firstName: z.string().min(1).max(NAME_MAX_LENGTH),
-	lastName: z.string().min(1).max(NAME_MAX_LENGTH),
+	firstName: z.string().trim().min(1).max(NAME_MAX_LENGTH),
+	lastName: z.string().trim().min(1).max(NAME_MAX_LENGTH),
 });
 
 /** Zod schema for REST sign-in request body. */
@@ -21,7 +21,12 @@ export const signInBody = z.object({
 	password: z.string().min(1),
 });
 
-/** Zod schema for REST refresh-token request body. */
+/**
+ * Zod schema for REST refresh-token request body.
+ * In {@link refreshBody}, `refreshToken` is intentionally optional because the token may be
+ * supplied either in the JSON body or via the HttpOnly cookie (e.g. `talawa_refresh_token`).
+ * This is deliberate; do not tighten the schema so that both sources remain supported.
+ */
 export const refreshBody = z.object({
 	refreshToken: z.string().optional(),
 });

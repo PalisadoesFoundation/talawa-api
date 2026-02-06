@@ -1,5 +1,5 @@
 import type { FastifyReply } from "fastify";
-import * as z from "zod";
+import { z } from "zod";
 import type { StandardErrorPayload } from "~/src/utilities/errors/errorCodes";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
