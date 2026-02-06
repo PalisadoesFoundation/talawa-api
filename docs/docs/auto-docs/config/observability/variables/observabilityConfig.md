@@ -14,13 +14,21 @@ Defined in: [src/config/observability.ts:5](https://github.com/PalisadoesFoundat
 
 > **enabled**: `boolean`
 
-### environment
+### exporterEnabled
 
-> **environment**: `string`
+> **exporterEnabled**: `boolean`
 
-### otlpEndpoint
+### exporterType
 
-> **otlpEndpoint**: `string`
+> **exporterType**: `string`
+
+### otlpMetricEndpoint
+
+> **otlpMetricEndpoint**: `string` \| `undefined` = `process.env.API_OTEL_METRIC_EXPORTER_ENDPOINT`
+
+### otlpTraceEndpoint
+
+> **otlpTraceEndpoint**: `string` \| `undefined` = `process.env.API_OTEL_TRACE_EXPORTER_ENDPOINT`
 
 ### samplingRatio
 
