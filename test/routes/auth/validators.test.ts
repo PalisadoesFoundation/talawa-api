@@ -157,6 +157,19 @@ describe("signUpBody", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("trims leading and trailing whitespace from firstName and lastName", () => {
+		const result = signUpBody.safeParse({
+			...valid,
+			firstName: " Jane ",
+			lastName: " Doe ",
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.firstName).toBe("Jane");
+			expect(result.data.lastName).toBe("Doe");
+		}
+	});
+
 	it("accepts firstName with exactly 50 characters", () => {
 		const result = signUpBody.safeParse({
 			...valid,
