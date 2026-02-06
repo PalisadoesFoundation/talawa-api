@@ -242,6 +242,13 @@ describe("zReplyParsed", () => {
 			// Zod's flatten() creates nested structure: { user: [errors...] }
 			expect(fieldErrors?.user).toBeDefined();
 			expect(Array.isArray(fieldErrors?.user)).toBe(true);
+			// Assert error array contains entries and expected message text
+			expect(fieldErrors?.user?.length).toBeGreaterThan(0);
+			expect(
+				fieldErrors?.user?.some((msg: string) =>
+					msg.toLowerCase().includes("string"),
+				),
+			).toBe(true);
 		});
 
 		it("handles array validation errors", async () => {
@@ -261,6 +268,13 @@ describe("zReplyParsed", () => {
 			// Zod's flatten() creates: { items: [errors...] }
 			expect(fieldErrors?.items).toBeDefined();
 			expect(Array.isArray(fieldErrors?.items)).toBe(true);
+			// Assert error array contains entries and expected message text
+			expect(fieldErrors?.items?.length).toBeGreaterThan(0);
+			expect(
+				fieldErrors?.items?.some((msg: string) =>
+					msg.toLowerCase().includes("string"),
+				),
+			).toBe(true);
 		});
 	});
 

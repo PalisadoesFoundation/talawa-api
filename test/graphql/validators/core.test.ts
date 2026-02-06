@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
 	coerceDate,
-	createPostInput,
 	email,
 	eventId,
-	eventRangeInput,
 	id,
 	isoDateString,
 	isoDateTimeString,
@@ -95,6 +93,12 @@ describe("Basic Scalars", () => {
 			expect(result).toBe(validUuid);
 		});
 
+		it("trims whitespace from UUIDs", async () => {
+			const validUuid = "550e8400-e29b-41d4-a716-446655440000";
+			const result = await uuid.parseAsync(`  ${validUuid}  `);
+			expect(result).toBe(validUuid);
+		});
+
 		it("rejects invalid UUIDs", async () => {
 			await expect(uuid.parseAsync("not-a-uuid")).rejects.toThrow(
 				"Must be a valid UUID",
@@ -110,6 +114,12 @@ describe("Basic Scalars", () => {
 		it("accepts valid ULIDs", async () => {
 			const validUlid = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
 			const result = await ulid.parseAsync(validUlid);
+			expect(result).toBe(validUlid);
+		});
+
+		it("trims whitespace from ULIDs", async () => {
+			const validUlid = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
+			const result = await ulid.parseAsync(`\n\t ${validUlid} \t\n`);
 			expect(result).toBe(validUlid);
 		});
 
@@ -135,6 +145,11 @@ describe("Date/Time Validators", () => {
 	describe("isoDateString", () => {
 		it("accepts valid ISO date strings", async () => {
 			const result = await isoDateString.parseAsync("2024-01-15");
+			expect(result).toBe("2024-01-15");
+		});
+
+		it("trims whitespace from ISO date strings", async () => {
+			const result = await isoDateString.parseAsync(" 2024-01-15 ");
 			expect(result).toBe("2024-01-15");
 		});
 
@@ -351,102 +366,6 @@ describe("Common Input Shapes", () => {
 		it("rejects invalid UUID", async () => {
 			await expect(
 				organizationIdArg.parseAsync({ id: "not-a-uuid" }),
-			).rejects.toThrow();
-		});
-	});
-});
-
-describe("Example Input Schemas", () => {
-	describe("createPostInput", () => {
-		it("accepts valid post data", async () => {
-			const validData = {
-				organizationId: "550e8400-e29b-41d4-a716-446655440000",
-				title: "Test Post",
-			};
-			const result = await createPostInput.parseAsync(validData);
-			expect(result.organizationId).toBe(validData.organizationId);
-			expect(result.title).toBe("Test Post");
-			expect(result.body).toBe(""); // default
-			expect(result.tags).toEqual([]); // default
-			expect(result.visibility).toBe("public"); // default
-		});
-
-		it("accepts optional fields", async () => {
-			const validData = {
-				organizationId: "550e8400-e29b-41d4-a716-446655440000",
-				title: "Test Post",
-				body: "Post body",
-				tags: ["tag1", "tag2"],
-				visibility: "private" as const,
-			};
-			const result = await createPostInput.parseAsync(validData);
-			expect(result.body).toBe("Post body");
-			expect(result.tags).toEqual(["tag1", "tag2"]);
-			expect(result.visibility).toBe("private");
-		});
-
-		it("rejects title exceeding max length", async () => {
-			const longTitle = "a".repeat(201);
-			await expect(
-				createPostInput.parseAsync({
-					organizationId: "550e8400-e29b-41d4-a716-446655440000",
-					title: longTitle,
-				}),
-			).rejects.toThrow("Title too long");
-		});
-
-		it("rejects body exceeding max length", async () => {
-			const longBody = "a".repeat(10_001);
-			await expect(
-				createPostInput.parseAsync({
-					organizationId: "550e8400-e29b-41d4-a716-446655440000",
-					title: "Test",
-					body: longBody,
-				}),
-			).rejects.toThrow("Body too long");
-		});
-
-		it("rejects too many tags", async () => {
-			const tooManyTags = Array.from({ length: 21 }, (_, i) => `tag${i}`);
-			await expect(
-				createPostInput.parseAsync({
-					organizationId: "550e8400-e29b-41d4-a716-446655440000",
-					title: "Test",
-					tags: tooManyTags,
-				}),
-			).rejects.toThrow();
-		});
-	});
-
-	describe("eventRangeInput", () => {
-		it("accepts valid event range data", async () => {
-			const validData = {
-				organizationId: "550e8400-e29b-41d4-a716-446655440000",
-			};
-			const result = await eventRangeInput.parseAsync(validData);
-			expect(result.organizationId).toBe(validData.organizationId);
-			expect(result.onlyPublic).toBe(false); // default
-		});
-
-		it("accepts optional date filters", async () => {
-			const validData = {
-				organizationId: "550e8400-e29b-41d4-a716-446655440000",
-				from: "2024-01-15T10:30:00Z",
-				to: "2024-01-20T10:30:00Z",
-				onlyPublic: true,
-			};
-			const result = await eventRangeInput.parseAsync(validData);
-			expect(result.from).toBe("2024-01-15T10:30:00Z");
-			expect(result.to).toBe("2024-01-20T10:30:00Z");
-			expect(result.onlyPublic).toBe(true);
-		});
-
-		it("rejects invalid datetime format", async () => {
-			await expect(
-				eventRangeInput.parseAsync({
-					organizationId: "550e8400-e29b-41d4-a716-446655440000",
-					from: "2024-01-15", // date only, not datetime
-				}),
 			).rejects.toThrow();
 		});
 	});

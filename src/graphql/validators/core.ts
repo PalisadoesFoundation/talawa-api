@@ -192,7 +192,8 @@ export const postIdArg = z.object({ id: postId });
  * @remarks This is an ILLUSTRATIVE EXAMPLE only. Do not use in production code.
  * Create your own domain-specific validators for actual use cases.
  */
-export const createPostInput = z.object({
+// @ts-expect-error - This is an intentional example that demonstrates validator composition
+const _createPostInput = z.object({
 	organizationId: orgId,
 	title: nonEmptyString.max(200, "Title too long"),
 	body: z.string().trim().max(10_000, "Body too long").optional().default(""),
@@ -207,7 +208,8 @@ export const createPostInput = z.object({
  * @remarks This is an ILLUSTRATIVE EXAMPLE only. Do not use in production code.
  * Create your own domain-specific validators for actual use cases.
  */
-export const eventRangeInput = z.object({
+// @ts-expect-error - This is an intentional example that demonstrates date validation patterns
+const _eventRangeInput = z.object({
 	organizationId: orgId,
 	from: isoDateTimeString.optional(),
 	to: isoDateTimeString.optional(),
