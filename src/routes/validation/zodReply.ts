@@ -81,14 +81,15 @@ export async function zReplyParsed<TSchema extends z.ZodTypeAny>(
 ): Promise<z.infer<TSchema> | undefined> {
 	const parsed = await schema.safeParseAsync(data);
 	if (!parsed.success) {
-		return reply.status(400).send({
+		reply.status(400).send({
 			error: {
 				code: ErrorCode.INVALID_ARGUMENTS,
 				message: "Invalid request body",
 				details: parsed.error.flatten(),
 				correlationId: reply.request.id,
 			},
-		}) as unknown as undefined;
+		});
+		return undefined;
 	}
 	return parsed.data;
 }

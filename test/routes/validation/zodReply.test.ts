@@ -98,10 +98,10 @@ describe("zReplyParsed", () => {
 				email: "not-an-email",
 			};
 
-			// The function sends error and returns the reply object cast to undefined
-			// We verify by checking that status and send were called
-			void (await zReplyParsed(mockReply, testSchema, invalidData));
+			// The function sends error and returns undefined
+			const result = await zReplyParsed(mockReply, testSchema, invalidData);
 
+			expect(result).toBeUndefined();
 			expect(mockReply.status).toHaveBeenCalledWith(400);
 			expect(mockReply.send).toHaveBeenCalled();
 		});

@@ -54,22 +54,13 @@ export const ulid = z
 /**
  * ISO date string in YYYY-MM-DD format.
  */
-export const isoDateString = z
-	.string()
-	.trim()
-	.regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD");
+export const isoDateString = z.string().trim().pipe(z.iso.date());
 
 /**
  * ISO 8601 datetime string in UTC (with Z suffix).
  * Format: YYYY-MM-DDTHH:mm:ss.sssZ
  */
-export const isoDateTimeString = z
-	.string()
-	.trim()
-	.regex(
-		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
-		"Must be ISO-8601 UTC datetime (Z)",
-	);
+export const isoDateTimeString = z.string().trim().pipe(z.iso.datetime());
 
 /**
  * Coerce input to a Date object.

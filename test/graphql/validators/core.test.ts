@@ -140,7 +140,7 @@ describe("Date/Time Validators", () => {
 
 		it("rejects invalid date formats", async () => {
 			await expect(isoDateString.parseAsync("01/15/2024")).rejects.toThrow(
-				"Must be YYYY-MM-DD",
+				"Invalid ISO date",
 			);
 		});
 
@@ -148,6 +148,12 @@ describe("Date/Time Validators", () => {
 			await expect(
 				isoDateString.parseAsync("2024-01-15T10:30:00Z"),
 			).rejects.toThrow();
+		});
+
+		it("rejects semantically invalid dates (e.g., 2024-99-99)", async () => {
+			await expect(isoDateString.parseAsync("2024-99-99")).rejects.toThrow(
+				"Invalid ISO date",
+			);
 		});
 	});
 
@@ -167,7 +173,7 @@ describe("Date/Time Validators", () => {
 		it("rejects datetime without Z suffix", async () => {
 			await expect(
 				isoDateTimeString.parseAsync("2024-01-15T10:30:00"),
-			).rejects.toThrow("Must be ISO-8601 UTC datetime (Z)");
+			).rejects.toThrow("Invalid ISO datetime");
 		});
 
 		it("rejects date-only strings", async () => {

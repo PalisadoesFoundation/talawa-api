@@ -4,7 +4,7 @@
 
 # Variable: isoDateString
 
-> `const` **isoDateString**: `ZodString`
+> `const` **isoDateString**: `ZodPipe`\<`ZodString`, `ZodISODate`\>
 
 Defined in: [src/graphql/validators/core.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/validators/core.ts#L57)
 
