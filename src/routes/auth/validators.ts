@@ -9,7 +9,10 @@ export const signUpBody = z.object({
 	email: z.string().email(),
 	password: z
 		.string()
-		.min(PASSWORD_MIN_LENGTH, "Password must be at least 8 characters")
+		.min(
+			PASSWORD_MIN_LENGTH,
+			`Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+		)
 		.max(PASSWORD_MAX_LENGTH),
 	firstName: z.string().trim().min(1).max(NAME_MAX_LENGTH),
 	lastName: z.string().trim().min(1).max(NAME_MAX_LENGTH),
