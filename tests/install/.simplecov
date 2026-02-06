@@ -4,15 +4,16 @@ require 'simplecov'
 require 'simplecov-cobertura'
 
 SimpleCov.start do
-  # Output Cobertura XML for Codecov
-  formatter SimpleCov::Formatter::CoberturaFormatter
+  # Output both HTML and Cobertura XML for Codecov
+  formatter SimpleCov::Formatter::MultiFormatter.new([
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::CoberturaFormatter
+  ])
 
-  # Track coverage for install scripts (relative to tests/install)
-  track_files '../../scripts/install/**/*.sh'
-
-  # Set coverage directory
+  # Set coverage directory (relative to working directory)
   coverage_dir 'coverage'
 
   # Add filter to exclude test files from coverage
-  add_filter '/tests/'
+  add_filter %r{\.test\.sh$}
+  add_filter %r{/tests/}
 end
