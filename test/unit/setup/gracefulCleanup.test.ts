@@ -77,13 +77,18 @@ describe("gracefulCleanup", () => {
 			// Call gracefulCleanup with SIGTERM
 			await gracefulCleanup("SIGTERM");
 		} catch (error) {
-			// Expect process.exit to have been called
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.log was called with the signal-specific message
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\n\n⚠️  Setup interrupted by user (CTRL+C) - SIGTERM received. Cleaning up...",
+			"\n\n⚠️  Setup interrupted by signal SIGTERM. Cleaning up...",
 		);
 
 		// Assert cleanupTemp was called
@@ -116,8 +121,13 @@ describe("gracefulCleanup", () => {
 			// Call gracefulCleanup
 			await gracefulCleanup(undefined);
 		} catch (error) {
-			// Process.exit throws, which is expected
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.warn was called with the temp error message
@@ -149,7 +159,13 @@ describe("gracefulCleanup", () => {
 			// Call gracefulCleanup with undefined signal
 			await gracefulCleanup(undefined);
 		} catch (error) {
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.log shows the no backup message
@@ -182,7 +198,13 @@ describe("gracefulCleanup", () => {
 			// Call gracefulCleanup
 			await gracefulCleanup(undefined);
 		} catch (error) {
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert cleanupTemp was called
@@ -249,7 +271,13 @@ describe("gracefulCleanup", () => {
 		try {
 			await gracefulCleanup(undefined);
 		} catch (error) {
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.log was called with message for undefined signal
@@ -272,7 +300,13 @@ describe("gracefulCleanup", () => {
 		try {
 			await gracefulCleanup(undefined);
 		} catch (error) {
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.warn was called (inner try-catch intercepts the error)
@@ -303,7 +337,13 @@ describe("gracefulCleanup", () => {
 		try {
 			await gracefulCleanup(undefined);
 		} catch (error) {
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.warn was called for temp error
@@ -334,12 +374,18 @@ describe("gracefulCleanup", () => {
 			// Call gracefulCleanup with SIGINT
 			await gracefulCleanup("SIGINT");
 		} catch (error) {
-			expect((error as Error).message).toBe("process.exit called");
+			// Expected: mocked process.exit throws to prevent actual exit
+			if (
+				!(error instanceof Error) ||
+				error.message !== "process.exit called"
+			) {
+				throw error; // Re-throw unexpected errors
+			}
 		}
 
 		// Assert console.log was called with the signal-specific message
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\n\n⚠️  Setup interrupted by user (CTRL+C) - SIGINT received. Cleaning up...",
+			"\n\n⚠️  Setup interrupted by signal SIGINT. Cleaning up...",
 		);
 
 		// Assert cleanupTemp was called

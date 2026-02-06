@@ -144,7 +144,7 @@ export async function gracefulCleanup(signal?: string): Promise<void> {
 	console.log(
 		signal === undefined
 			? "\n\n⚠️  Setup interrupted by user (CTRL+C)"
-			: `\n\n⚠️  Setup interrupted by user (CTRL+C) - ${signal} received. Cleaning up...`,
+			: `\n\n⚠️  Setup interrupted by signal ${signal}. Cleaning up...`,
 	);
 
 	try {
@@ -1117,6 +1117,7 @@ export async function setup(): Promise<SetupAnswers> {
 	// This ensures clean state for tests and multiple setup() calls
 	backupCreated = false;
 	cleaningUp = false;
+	exitCalled = false;
 
 	// Register signal handlers for graceful cleanup
 	const sigintHandler = () => gracefulCleanup("SIGINT");
