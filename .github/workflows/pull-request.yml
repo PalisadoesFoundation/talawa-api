@@ -510,30 +510,29 @@ jobs:
         run: |
           KCOV_OUT="$(pwd)/coverage/install"
           mkdir -p "$KCOV_OUT"
-          # --cobertura-only ensures cov.xml is produced directly in outdir for Codecov
-          kcov --include-path=scripts/install --exclude-path=tests --cobertura-only "$KCOV_OUT" bash tests/install/run-all.sh
+          # Run kcov without --cobertura-only (which breaks bash coverage)
+          kcov --include-path=scripts/install --exclude-path=tests "$KCOV_OUT" bash tests/install/run-all.sh
           echo "=== kcov output ==="
-          ls -la "$KCOV_OUT" || true
+          ls -laR "$KCOV_OUT" | head -50
       - name: Prepare install coverage for Codecov
         id: prepare-install-coverage
         if: success()
         run: |
           set -e
-          echo "=== Files under coverage/install ==="
-          find coverage/install -type f 2>/dev/null || true
-          
-          # With --cobertura-only, kcov writes cov.xml directly to output dir
-          if [ -f "coverage/install/cov.xml" ]; then
+          echo "=== Looking for cobertura.xml ==="
+          # kcov creates output in subdirectory named after the executable (bash/)
+          COB=$(find coverage/install -name 'cobertura.xml' -type f | head -1)
+          if [ -n "$COB" ]; then
+            echo "Found: $COB"
             echo "=== Coverage file content (first 50 lines) ==="
-            head -50 coverage/install/cov.xml
+            head -50 "$COB"
             echo "=== Source file paths in coverage ==="
-            grep -o 'filename="[^"]*"' coverage/install/cov.xml | head -20 || true
-            cp coverage/install/cov.xml coverage/install/upload-report.xml
+            grep -o 'filename="[^"]*"' "$COB" | head -20 || true
+            cp "$COB" coverage/install/upload-report.xml
             echo "upload_file=./coverage/install/upload-report.xml" >> "$GITHUB_OUTPUT"
-            echo "Using: coverage/install/cov.xml"
           else
-            echo "ERROR: coverage/install/cov.xml not found"
-            ls -laR coverage/install || true
+            echo "ERROR: No cobertura.xml found"
+            find coverage/install -type f
             exit 1
           fi
       - name: Upload install coverage to Codecov
