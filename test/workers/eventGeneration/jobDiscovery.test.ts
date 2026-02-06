@@ -450,9 +450,6 @@ describe("jobDiscovery", () => {
 			// Since org2 has a never-ending event and higher base priority, it should come first
 			expect(result[0]?.organizationId).toBe("org2"); // Higher priority should come first
 			expect(result[1]?.organizationId).toBe("org1");
-
-			// Clean up system time
-			vi.useRealTimers();
 		});
 
 		describe("createEventGenerationJobs", () => {
@@ -596,9 +593,7 @@ describe("jobDiscovery", () => {
 				const result = createEventGenerationJobs(mockWorkloads);
 
 				expect(result).toHaveLength(1);
-				if (result[0]) {
-					expect(result[0].windowEndDate).toBeInstanceOf(Date);
-				}
+				expect(result[0]?.windowEndDate).toBeInstanceOf(Date);
 			});
 		});
 
