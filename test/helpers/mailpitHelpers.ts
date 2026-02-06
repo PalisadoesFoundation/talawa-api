@@ -247,7 +247,10 @@ export async function isMailpitRunning(): Promise<boolean> {
 		});
 		return response.ok;
 	} catch (error) {
-		rootLogger.debug({ error }, "JSON validation failed for env var");
+		rootLogger.debug(
+			{ error },
+			"Mailpit health check failed - service may not be running",
+		);
 		return false;
 	}
 }
