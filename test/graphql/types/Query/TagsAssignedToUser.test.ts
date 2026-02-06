@@ -26,6 +26,7 @@ const createdResources = {
 	userIds: [] as string[],
 	folderIds: [] as string[],
 	tagIds: [] as string[],
+	assignmentIds: [] as string[],
 };
 
 type UserTag = {
@@ -328,6 +329,7 @@ suite("Query field userTags", () => {
 		}
 
 		const tag1Id = tag1Result.data.createTag.id;
+		createdResources.tagIds.push(tag1Id);
 
 		const tag2Result = await mercuriusClient.mutate(Mutation_createTag, {
 			headers: {
@@ -348,6 +350,7 @@ suite("Query field userTags", () => {
 		}
 
 		const tag2Id = tag2Result.data.createTag.id;
+		createdResources.tagIds.push(tag2Id);
 
 		// Step 6: Assign tags to user
 		const assign1Result = await mercuriusClient.mutate(Mutation_assignUserTag, {
@@ -505,6 +508,7 @@ suite("Query field userTags", () => {
 			console.error("Regular user ID or token missing");
 			return;
 		}
+		createdResources.userIds.push(regularUserId);
 
 		// Step 4: Create Tag Folder
 		const tagFolderResult = await mercuriusClient.mutate(
@@ -671,6 +675,7 @@ suite("Query field userTags", () => {
 		}
 
 		const organizationId = orgResult.data.createOrganization.id;
+		createdResources.organizationIds.push(organizationId);
 
 		// Step 3: Create user A
 		const userAResult = await mercuriusClient.mutate(Mutation_createUser, {
