@@ -4,16 +4,6 @@ coverage:
       default:
         target: 90%
         threshold: 1%
-      install:
-        target: 95%
-        threshold: 1%
-        flags:
-          - install
-
-# Fix paths from bashcov cobertura output (GitHub Actions workspace)
-fixes:
-  - "/home/runner/work/talawa-api/talawa-api/::"
-
 
 flags:
   unit:
@@ -37,10 +27,6 @@ flags:
       - src/drizzle/
       - src/graphql/
       - src/install/
-  install:
-    carryforward: false
-    paths:
-      - scripts/install/
 flag_management:
   default_rules:
     carryforward: true

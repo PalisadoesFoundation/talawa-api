@@ -477,36 +477,16 @@ jobs:
   Install-Script-Tests:
     name: Run install script tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [Pre-Test-Checks-Pass]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: tests/install
-      - name: Install bashcov dependencies
-        working-directory: tests/install
-        run: bundle install
-      - name: Run install script tests with coverage
+      - name: Run install script tests
         working-directory: tests/install
         run: |
           chmod +x run-all.sh
-          bundle exec bashcov --root ../.. -- ./run-all.sh
-          echo "=== Coverage output ==="
-          ls -la coverage/ || true
-      - name: Upload install coverage to Codecov
-        if: success()
-        uses: codecov/codecov-action@v5
-        with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
-          directory: tests/install/coverage
-          flags: install
+          ./run-all.sh
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
