@@ -1,4 +1,6 @@
 import type { EmailEnvConfig } from "../../config/emailConfig";
+import { ErrorCode } from "../../utilities/errors/errorCodes";
+import { TalawaRestError } from "../../utilities/errors/TalawaRestError";
 import { SESProvider } from "./providers/SESProvider";
 import { SMTPProvider } from "./providers/SMTPProvider";
 import type { IEmailProvider, NonEmptyString } from "./types";
@@ -24,7 +26,10 @@ export const EmailProviderFactory = {
 			case "ses": {
 				const region = config.AWS_SES_REGION;
 				if (!region) {
-					throw new Error("AWS_SES_REGION is required when using SES provider");
+					throw new TalawaRestError({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "AWS_SES_REGION is required when using SES provider",
+					});
 				}
 				return new SESProvider({
 					region: region as NonEmptyString,
@@ -38,10 +43,16 @@ export const EmailProviderFactory = {
 				const host = config.SMTP_HOST;
 				const port = config.SMTP_PORT;
 				if (!host) {
-					throw new Error("SMTP_HOST is required when using SMTP provider");
+					throw new TalawaRestError({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "SMTP_HOST is required when using SMTP provider",
+					});
 				}
 				if (!port) {
-					throw new Error("SMTP_PORT is required when using SMTP provider");
+					throw new TalawaRestError({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "SMTP_PORT is required when using SMTP provider",
+					});
 				}
 				return new SMTPProvider({
 					host: host as NonEmptyString,
@@ -72,9 +83,10 @@ export const EmailProviderFactory = {
 			}
 			default:
 				// Throw for unsupported email providers
-				throw new Error(
-					`Unsupported email provider: ${config.API_EMAIL_PROVIDER}`,
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: `Unsupported email provider: ${config.API_EMAIL_PROVIDER}`,
+				});
 		}
 	},
 };

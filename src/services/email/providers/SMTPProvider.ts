@@ -1,3 +1,6 @@
+import { ErrorCode } from "../../../utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../utilities/errors/TalawaRestError";
+import { rootLogger } from "../../../utilities/logging/logger";
 import type {
 	EmailJob,
 	EmailResult,
@@ -69,12 +72,18 @@ export class SMTPProvider implements IEmailProvider {
 
 			// Validate host
 			if (!this.config.host) {
-				throw new Error("SMTP_HOST must be a non-empty string");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "SMTP_HOST must be a non-empty string",
+				});
 			}
 
 			// Validate port
 			if (!this.config.port) {
-				throw new Error("SMTP_PORT must be provided");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "SMTP_PORT must be provided",
+				});
 			}
 
 			// Validate port is a finite integer in the range 1-65535
@@ -83,16 +92,21 @@ export class SMTPProvider implements IEmailProvider {
 				this.config.port < 1 ||
 				this.config.port > 65535
 			) {
-				throw new Error("SMTP_PORT must be an integer between 1 and 65535");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "SMTP_PORT must be an integer between 1 and 65535",
+				});
 			}
 
 			// Validate that either both user and password are provided or neither
 			const hasUser = Boolean(this.config.user);
 			const hasPassword = Boolean(this.config.password);
 			if (hasUser !== hasPassword) {
-				throw new Error(
-					"Both user and password must be provided together, or neither should be set",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Both user and password must be provided together, or neither should be set",
+				});
 			}
 
 			this.transporter = nodemailer.createTransport({
@@ -129,9 +143,11 @@ export class SMTPProvider implements IEmailProvider {
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
 			if (!this.config.fromEmail) {
-				throw new Error(
-					"Email service not configured. Please set SMTP_FROM_EMAIL (and optionally SMTP_FROM_NAME) or run 'npm run setup' to configure SMTP.",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Email service not configured. Please set SMTP_FROM_EMAIL (and optionally SMTP_FROM_NAME) or run 'npm run setup' to configure SMTP.",
+				});
 			}
 
 			const transporter = await this.getTransporter();
@@ -145,16 +161,20 @@ export class SMTPProvider implements IEmailProvider {
 			// Validate that the recipient email is not empty/invalid
 			// We explicitly check for CR/LF in the original input to prevent injection
 			if (!safeTo || !safeTo.trim() || /[\r\n]/.test(job.email)) {
-				throw new Error(
-					"Recipient email is invalid or contains forbidden characters (CR/LF)",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Recipient email is invalid or contains forbidden characters (CR/LF)",
+				});
 			}
 
 			// Validate that the sender email is not empty/invalid after sanitization
 			if (!safeFromEmail) {
-				throw new Error(
-					"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+				});
 			}
 
 			const fromAddress = safeFromName
@@ -172,6 +192,7 @@ export class SMTPProvider implements IEmailProvider {
 			const response = await transporter.sendMail(mailOptions);
 			return { id: job.id, success: true, messageId: response.messageId };
 		} catch (error) {
+			rootLogger.error({ error, jobId: job.id }, "Failed to send email");
 			return {
 				id: job.id,
 				success: false,
