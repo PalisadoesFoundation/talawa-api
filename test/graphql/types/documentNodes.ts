@@ -2925,6 +2925,16 @@ export const Mutation_createVenue = gql(`
       name
       description
       capacity
+      createdAt
+    }
+  }
+`);
+
+export const Query_venue_createdAt = gql(`
+  query Query_venue_createdAt($input: QueryVenueInput!) {
+    venue(input: $input) {
+      id
+      createdAt
     }
   }
 `);
