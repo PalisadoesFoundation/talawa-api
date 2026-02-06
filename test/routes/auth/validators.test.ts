@@ -325,4 +325,14 @@ describe("refreshBody", () => {
 			).toBe(true);
 		}
 	});
+
+	it("rejects null refreshToken", () => {
+		const result = refreshBody.safeParse({ refreshToken: null });
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(
+				result.error.issues.some((i) => i.path.includes("refreshToken")),
+			).toBe(true);
+		}
+	});
 });
