@@ -51,7 +51,6 @@ describe("SMTPProvider", () => {
 		fromName: "Talawa Test",
 	};
 	let smtpProvider: SMTPProvider;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let mockLoggerErrorSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(async () => {

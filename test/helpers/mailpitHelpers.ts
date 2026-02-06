@@ -18,6 +18,8 @@
  * ```
  */
 
+import { rootLogger } from "~/src/utilities/logging/logger";
+
 const MAILPIT_BASE_URL = "http://localhost:8025/api/v1";
 
 /**
@@ -244,7 +246,8 @@ export async function isMailpitRunning(): Promise<boolean> {
 			method: "GET",
 		});
 		return response.ok;
-	} catch {
+	} catch (error) {
+		rootLogger.debug({ error }, "JSON validation failed for env var");
 		return false;
 	}
 }
