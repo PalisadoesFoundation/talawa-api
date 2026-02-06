@@ -19,11 +19,10 @@ describe("ensureBootstrapData", () => {
 		insertValues = vi.fn();
 		updateWhere = vi.fn();
 
-		vi.doMock("../helpers", async () => {
-			const original =
-				await vi.importActual<
-					typeof import("../../../scripts/dbManagement/helpers")
-				>("../helpers");
+		vi.doMock("scripts/dbManagement/helpers", async () => {
+			const original = await vi.importActual<
+				typeof import("scripts/dbManagement/helpers")
+			>("scripts/dbManagement/helpers");
 
 			return {
 				...original,
@@ -59,7 +58,7 @@ describe("ensureBootstrapData", () => {
 			hash: vi.fn(async () => "hashed-password"),
 		}));
 
-		const helpers = await import("../../../scripts/dbManagement/helpers");
+		const helpers = await import("scripts/dbManagement/helpers");
 		ensureBootstrapData = helpers.ensureBootstrapData;
 	});
 
@@ -76,9 +75,8 @@ describe("ensureBootstrapData", () => {
 		"API_ADMINISTRATOR_USER_NAME",
 		"API_ADMINISTRATOR_USER_PASSWORD",
 	] as const)("throws if %s is missing", async (missingKey) => {
-		const { envConfig } = await import("../../../scripts/dbManagement/helpers");
+		const { envConfig } = await import("scripts/dbManagement/helpers");
 
-		// Explicitly narrow to string env vars only
 		type AdminEnvKey =
 			| "API_ADMINISTRATOR_USER_EMAIL_ADDRESS"
 			| "API_ADMINISTRATOR_USER_NAME"
@@ -138,7 +136,6 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
-		// One insert for admin, one for community
 		expect(insertValues).toHaveBeenCalledTimes(2);
 	});
 
