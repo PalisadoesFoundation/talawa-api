@@ -6,6 +6,7 @@ describe("ensureBootstrapData", () => {
 	let usersFindFirst: ReturnType<typeof vi.fn>;
 	let communitiesFindFirst: ReturnType<typeof vi.fn>;
 	let insertValues: ReturnType<typeof vi.fn>;
+	let updateSet: ReturnType<typeof vi.fn>;
 	let updateWhere: ReturnType<typeof vi.fn>;
 
 	beforeEach(async () => {
@@ -18,6 +19,11 @@ describe("ensureBootstrapData", () => {
 		communitiesFindFirst = vi.fn();
 		insertValues = vi.fn();
 		updateWhere = vi.fn();
+
+		// Hoisted set() mock so payload can be asserted
+		updateSet = vi.fn(() => ({
+			where: updateWhere,
+		}));
 
 		vi.doMock("scripts/dbManagement/helpers", async () => {
 			const original = await vi.importActual<
@@ -35,9 +41,7 @@ describe("ensureBootstrapData", () => {
 						values: insertValues,
 					})),
 					update: vi.fn(() => ({
-						set: vi.fn(() => ({
-							where: updateWhere,
-						})),
+						set: updateSet,
 					})),
 				},
 				envConfig: {
@@ -105,6 +109,7 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
+		expect(updateSet).toHaveBeenCalledWith({ role: "administrator" });
 		expect(updateWhere).toHaveBeenCalled();
 	});
 
@@ -136,6 +141,7 @@ describe("ensureBootstrapData", () => {
 
 		await ensureBootstrapData();
 
+		// One insert for admin, one for community
 		expect(insertValues).toHaveBeenCalledTimes(2);
 	});
 
@@ -150,6 +156,7 @@ describe("ensureBootstrapData", () => {
 		await ensureBootstrapData();
 
 		expect(insertValues).not.toHaveBeenCalled();
+		expect(updateSet).not.toHaveBeenCalled();
 		expect(updateWhere).not.toHaveBeenCalled();
 	});
 });
