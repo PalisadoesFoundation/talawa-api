@@ -82,7 +82,7 @@ describe("signUpBody", () => {
 	it("rejects password shorter than 8 characters", () => {
 		const result = signUpBody.safeParse({
 			...valid,
-			password: "short",
+			password: "a".repeat(PASSWORD_MIN_LENGTH - 1),
 		});
 		expect(result.success).toBe(false);
 		if (!result.success) {

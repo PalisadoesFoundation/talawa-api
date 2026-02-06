@@ -6,4 +6,4 @@
 
 > **SignInBody** = `z.infer`\<*typeof* [`signInBody`](../variables/signInBody.md)\>
 
-Defined in: [src/routes/auth/validators.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/auth/validators.ts#L38)
+Defined in: [src/routes/auth/validators.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/auth/validators.ts#L44)

@@ -6,7 +6,10 @@ export const NAME_MAX_LENGTH = 50;
 
 /** Zod schema for REST sign-up request body. Aligns with MutationSignUpInput password length. */
 export const signUpBody = z.object({
-	email: z.string().email(),
+	email: z
+		.string()
+		.email()
+		.transform((e) => e.toLowerCase()),
 	password: z
 		.string()
 		.min(
@@ -20,7 +23,10 @@ export const signUpBody = z.object({
 
 /** Zod schema for REST sign-in request body. */
 export const signInBody = z.object({
-	email: z.string().email(),
+	email: z
+		.string()
+		.email()
+		.transform((e) => e.toLowerCase()),
 	password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
 });
 

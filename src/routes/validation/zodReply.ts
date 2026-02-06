@@ -31,7 +31,9 @@ function firstZodMessage(err: z.ZodError): string {
 
 /**
  * Validates `body` against a Zod schema and either returns the parsed value or sends a 400 response.
- * Does not throw; route handlers can use `if (!body) return;` after calling this.
+ * Does not throw. Callers should check strictly for undefined, e.g. `if (body === undefined) return;`,
+ * so that valid falsy values (e.g. 0 from z.number(), false from z.boolean()) are not treated as
+ * failure.
  *
  * @param reply - Fastify reply instance for sending 400 on validation failure
  * @param schema - Zod schema to validate against

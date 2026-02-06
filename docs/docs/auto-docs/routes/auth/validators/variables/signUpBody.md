@@ -4,7 +4,7 @@
 
 # Variable: signUpBody
 
-> `const` **signUpBody**: `ZodObject`\<\{ `email`: `ZodString`; `firstName`: `ZodString`; `lastName`: `ZodString`; `password`: `ZodString`; \}, `$strip`\>
+> `const` **signUpBody**: `ZodObject`\<\{ `email`: `ZodPipe`\<`ZodString`, `ZodTransform`\<`string`, `string`\>\>; `firstName`: `ZodString`; `lastName`: `ZodString`; `password`: `ZodString`; \}, `$strip`\>
 
 Defined in: [src/routes/auth/validators.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/auth/validators.ts#L8)
 
