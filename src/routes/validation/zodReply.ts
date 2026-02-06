@@ -1,95 +1,64 @@
 import type { FastifyReply } from "fastify";
-import type { z } from "zod";
+import * as z from "zod";
+import type { StandardErrorPayload } from "~/src/utilities/errors/errorCodes";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
-/**
- * REST API validation helpers that integrate Zod with Fastify reply handling.
- */
+const DEFAULT_VALIDATION_MESSAGE = "Validation failed";
+
+function buildErrorPayload(
+	code: ErrorCode,
+	message: string,
+	details: unknown,
+	correlationId: string | undefined,
+): StandardErrorPayload {
+	const error: StandardErrorPayload["error"] = {
+		code,
+		message,
+	};
+	if (details !== undefined) {
+		error.details = details;
+	}
+	if (correlationId !== undefined) {
+		error.correlationId = correlationId;
+	}
+	return { error };
+}
+
+function firstZodMessage(err: z.ZodError): string {
+	const first = err.issues[0];
+	return first?.message ?? DEFAULT_VALIDATION_MESSAGE;
+}
 
 /**
- * Validates data against a Zod schema and sends a 400 error response if validation fails.
+ * Validates `body` against a Zod schema and either returns the parsed value or sends a 400 response.
+ * Does not throw; route handlers can use `if (!body) return;` after calling this.
  *
- * This helper provides unified validation for REST routes by:
- * 1. Running async validation with Zod's safeParseAsync
- * 2. Sending a 400 Bad Request response with unified error format on failure
- * 3. Including flattened error details and correlation ID for debugging
- * 4. Returning parsed data on success or undefined on failure
- *
- * The function integrates with the unified error handling system by using ErrorCode.INVALID_ARGUMENTS
- * and providing a consistent error shape across REST and GraphQL endpoints.
- *
- * @param reply - The Fastify reply object
- * @param schema - The Zod schema to validate against
- * @param data - The data to validate (typically request body, params, or query)
- * @returns The parsed and validated data, or undefined if validation failed (response already sent)
- *
- * @example
- * ```ts
- * // In a Fastify route
- * import { zReplyParsed } from "~/src/routes/validation/zodReply";
- * import { uuid, pagination } from "~/src/graphql/validators/core";
- *
- * const listArgs = z.object({
- *   q: z.string().optional().default(""),
- *   page: pagination.optional().default({ limit: 20, cursor: null }),
- * });
- *
- * app.get("/organizations", async (req, reply) => {
- *   const parsed = await zReplyParsed(reply, listArgs, req.query);
- *   if (!parsed) return; // Error response already sent
- *
- *   const { q, page } = parsed;
- *   // ...rest of route handler
- * });
- * ```
- *
- * @example
- * ```ts
- * // Validating route params
- * const paramsSchema = z.object({ id: uuid });
- *
- * app.get("/organizations/:id", async (req, reply) => {
- *   const params = await zReplyParsed(reply, paramsSchema, req.params);
- *   if (!params) return;
- *
- *   // params.id is a validated UUID
- * });
- * ```
- *
- * @example
- * ```ts
- * // Error response format
- * // {
- * //   "error": {
- * //     "code": "invalid_arguments",
- * //     "message": "Invalid request body",
- * //     "details": {
- * //       "fieldErrors": {
- * //         "id": ["Must be a valid UUID"]
- * //       },
- * //       "formErrors": []
- * //     },
- * //     "correlationId": "req-abc123"
- * //   }
- * // }
- * ```
+ * @param reply - Fastify reply instance for sending 400 on validation failure
+ * @param schema - Zod schema to validate against
+ * @param body - Raw request body (unknown)
+ * @returns Parsed value of type T on success, or undefined after sending 400 on failure
  */
-export async function zReplyParsed<TSchema extends z.ZodTypeAny>(
+export function zReplyParsed<T>(
 	reply: FastifyReply,
-	schema: TSchema,
-	data: unknown,
-): Promise<z.infer<TSchema> | undefined> {
-	const parsed = await schema.safeParseAsync(data);
-	if (!parsed.success) {
-		reply.status(400).send({
-			error: {
-				code: ErrorCode.INVALID_ARGUMENTS,
-				message: "Invalid request body",
-				details: parsed.error.flatten(),
-				correlationId: reply.request.id,
-			},
-		});
-		return undefined;
+	schema: z.ZodType<T>,
+	body: unknown,
+): T | undefined {
+	const result = schema.safeParse(body);
+
+	if (result.success) {
+		return result.data;
 	}
-	return parsed.data;
+
+	const correlationId =
+		typeof reply.request?.id === "string" ? reply.request.id : undefined;
+	const message = firstZodMessage(result.error);
+	const details = z.treeifyError(result.error);
+	const payload = buildErrorPayload(
+		ErrorCode.INVALID_ARGUMENTS,
+		message,
+		details,
+		correlationId,
+	);
+	reply.status(400).send(payload);
+	return undefined;
 }
