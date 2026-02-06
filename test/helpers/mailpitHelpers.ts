@@ -185,31 +185,50 @@ export function findMessagesBySubject(
 /**
  * Waits for an email to arrive in mailpit
  * @param recipientEmail - Email address to wait for
- * @param timeoutMs - Maximum time to wait in milliseconds (default: 5000)
+ * @param timeoutMs - Maximum time to wait in milliseconds (default: 15000 in CI, 5000 local)
  * @param intervalMs - Polling interval in milliseconds (default: 500)
+ * @param subject - Optional subject text to filter by for more specificity
  * @returns The message when found
  * @throws Error if timeout exceeded
  */
 export async function waitForEmail(
 	recipientEmail: string,
-	timeoutMs = 5000,
+	timeoutMs?: number,
 	intervalMs = 500,
+	subject?: string,
 ): Promise<MailpitMessage> {
+	const defaultTimeout = process.env.CI === "true" ? 15000 : 5000;
+	const actualTimeout = timeoutMs ?? defaultTimeout;
 	const startTime = Date.now();
 
-	while (Date.now() - startTime < timeoutMs) {
+	while (Date.now() - startTime < actualTimeout) {
 		const messages = await getMailpitMessages();
-		const message = findMessageByRecipient(messages, recipientEmail);
 
-		if (message) {
-			return message;
+		// Filter by recipient
+		let matchingMessages = messages.filter((msg) =>
+			msg.To.some(
+				(recipient) =>
+					recipient.Address.toLowerCase() === recipientEmail.toLowerCase(),
+			),
+		);
+
+		// Filter by subject if specified for more specificity
+		if (subject) {
+			matchingMessages = matchingMessages.filter((msg) =>
+				msg.Subject.toLowerCase().includes(subject.toLowerCase()),
+			);
+		}
+
+		if (matchingMessages.length > 0) {
+			return matchingMessages[0]!;
 		}
 
 		await new Promise((resolve) => setTimeout(resolve, intervalMs));
 	}
 
+	const subjectHint = subject ? ` with subject "${subject}"` : "";
 	throw new Error(
-		`Timeout waiting for email to ${recipientEmail} after ${timeoutMs}ms`,
+		`Timeout waiting for email to ${recipientEmail}${subjectHint} after ${actualTimeout}ms`,
 	);
 }
 
