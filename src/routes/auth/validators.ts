@@ -21,7 +21,7 @@ export const signUpBody = z.object({
 /** Zod schema for REST sign-in request body. */
 export const signInBody = z.object({
 	email: z.string().email(),
-	password: z.string().min(1),
+	password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
 });
 
 /**

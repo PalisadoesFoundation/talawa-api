@@ -227,6 +227,14 @@ describe("signInBody", () => {
 		});
 		expect(result.success).toBe(false);
 	});
+
+	it("rejects password longer than PASSWORD_MAX_LENGTH characters", () => {
+		const result = signInBody.safeParse({
+			...valid,
+			password: "a".repeat(PASSWORD_MAX_LENGTH + 1),
+		});
+		expect(result.success).toBe(false);
+	});
 });
 
 describe("refreshBody", () => {
