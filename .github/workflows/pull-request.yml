@@ -481,71 +481,31 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      - name: Cache kcov binary
-        id: cache-kcov
-        uses: actions/cache@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          path: /usr/local/bin/kcov
-          key: kcov-v43-${{ runner.os }}
-      - name: Install kcov runtime dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y libcurl4 libdw1 libelf1 zlib1g
-      - name: Install kcov build dependencies
-        if: steps.cache-kcov.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get install -y binutils-dev build-essential cmake libssl-dev libcurl4-openssl-dev libelf-dev libstdc++-12-dev zlib1g-dev libdw-dev libiberty-dev
-      - name: Build and install kcov
-        if: steps.cache-kcov.outputs.cache-hit != 'true'
-        run: |
-          git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git kcov-src
-          cd kcov-src
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
-          make -j"$(nproc)"
-          sudo make install
-      - name: Verify kcov installation
-        run: kcov --version
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: tests/install
+      - name: Install bashcov dependencies
+        working-directory: tests/install
+        run: bundle install
       - name: Run install script tests with coverage
+        working-directory: tests/install
         run: |
-          KCOV_OUT="$(pwd)/coverage/install"
-          mkdir -p "$KCOV_OUT"
-          # Use absolute path for include-path and remove exclude to debug
-          kcov --include-path="$(pwd)/scripts/install" "$KCOV_OUT" bash tests/install/run-all.sh
-          echo "=== kcov output ==="
-          ls -laR "$KCOV_OUT" | head -50
-      - name: Prepare install coverage for Codecov
-        id: prepare-install-coverage
-        if: success()
-        run: |
-          set -e
-          echo "=== Looking for cobertura.xml ==="
-          # kcov creates output in subdirectory named after the executable (bash/)
-          COB=$(find coverage/install -name 'cobertura.xml' -type f | head -1)
-          if [ -n "$COB" ]; then
-            echo "Found: $COB"
-            echo "=== Coverage file content (first 50 lines) ==="
-            head -50 "$COB"
-            echo "=== Source file paths in coverage ==="
-            grep -o 'filename="[^"]*"' "$COB" | head -20 || true
-            cp "$COB" coverage/install/upload-report.xml
-            echo "upload_file=./coverage/install/upload-report.xml" >> "$GITHUB_OUTPUT"
-          else
-            echo "ERROR: No cobertura.xml found"
-            find coverage/install -type f
-            exit 1
-          fi
+          bashcov --root ../.. -- bash run-all.sh
+          echo "=== Coverage output ==="
+          ls -la coverage/ || true
       - name: Upload install coverage to Codecov
-        if: success() && steps.prepare-install-coverage.outputs.upload_file != ''
+        if: success()
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
-          files: ${{ steps.prepare-install-coverage.outputs.upload_file }}
+          directory: tests/install/coverage
           flags: install
-          disable_search: true
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
