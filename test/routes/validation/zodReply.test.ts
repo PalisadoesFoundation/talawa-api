@@ -323,13 +323,13 @@ describe("zReplyParsed", () => {
 
 		it("returns undefined type on validation failure", async () => {
 			// Type should be inferred type | undefined
-			// Verify error was sent instead of checking return value
-			void (await zReplyParsed(mockReply, testSchema, {
+			const result = await zReplyParsed(mockReply, testSchema, {
 				name: "",
 				age: 15,
 				email: "invalid",
-			}));
+			});
 
+			expect(result).toBeUndefined();
 			expect(mockReply.status).toHaveBeenCalledWith(400);
 			expect(mockReply.send).toHaveBeenCalled();
 		});

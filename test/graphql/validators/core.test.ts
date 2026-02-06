@@ -201,6 +201,12 @@ describe("Date/Time Validators", () => {
 			const result = await coerceDate.parseAsync(timestamp);
 			expect(result).toBeInstanceOf(Date);
 		});
+
+		it("rejects invalid date inputs", async () => {
+			await expect(coerceDate.parseAsync("not-a-date")).rejects.toThrow();
+			await expect(coerceDate.parseAsync(Number.NaN)).rejects.toThrow();
+			await expect(coerceDate.parseAsync({})).rejects.toThrow();
+		});
 	});
 });
 

@@ -37,7 +37,7 @@ export const url = z.string().trim().url("Must be a valid URL");
  * UUID v4 or v7 validator.
  * Ensures IDs are valid UUIDs.
  */
-export const uuid = z.string().uuid("Must be a valid UUID");
+export const uuid = z.string().trim().uuid("Must be a valid UUID");
 
 /**
  * ULID validator.
@@ -45,6 +45,7 @@ export const uuid = z.string().uuid("Must be a valid UUID");
  */
 export const ulid = z
 	.string()
+	.trim()
 	.regex(/^[0-9A-HJKMNP-TV-Z]{26}$/, "Must be a valid ULID");
 
 // ============================================================================
@@ -54,13 +55,19 @@ export const ulid = z
 /**
  * ISO date string in YYYY-MM-DD format.
  */
-export const isoDateString = z.string().trim().pipe(z.iso.date());
+export const isoDateString = z
+	.string()
+	.trim()
+	.pipe(z.iso.date({ error: "Invalid ISO date" }));
 
 /**
  * ISO 8601 datetime string in UTC (with Z suffix).
  * Format: YYYY-MM-DDTHH:mm:ss.sssZ
  */
-export const isoDateTimeString = z.string().trim().pipe(z.iso.datetime());
+export const isoDateTimeString = z
+	.string()
+	.trim()
+	.pipe(z.iso.datetime({ error: "Invalid ISO datetime" }));
 
 /**
  * Coerce input to a Date object.
@@ -181,6 +188,9 @@ export const postIdArg = z.object({ id: postId });
 /**
  * Example: Create post input schema.
  * Demonstrates how to compose shared validators into domain-specific schemas.
+ *
+ * @remarks This is an ILLUSTRATIVE EXAMPLE only. Do not use in production code.
+ * Create your own domain-specific validators for actual use cases.
  */
 export const createPostInput = z.object({
 	organizationId: orgId,
@@ -193,6 +203,9 @@ export const createPostInput = z.object({
 /**
  * Example: Event range filter input.
  * Demonstrates date validation and optional filters.
+ *
+ * @remarks This is an ILLUSTRATIVE EXAMPLE only. Do not use in production code.
+ * Create your own domain-specific validators for actual use cases.
  */
 export const eventRangeInput = z.object({
 	organizationId: orgId,
