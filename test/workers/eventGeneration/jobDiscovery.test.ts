@@ -27,6 +27,7 @@ vi.mock("drizzle-orm", async () => {
 		and: vi.fn(),
 		eq: vi.fn(),
 		lt: vi.fn(),
+		inArray: vi.fn(),
 	};
 });
 
@@ -684,6 +685,17 @@ describe("jobDiscovery", () => {
 			expect(findManySpy.mock.calls[1]?.[0]).toEqual(
 				expect.objectContaining({ offset: 500 }),
 			);
+
+			const { inArray } = await import("drizzle-orm");
+			const inArrayMock = vi.mocked(inArray);
+
+			// Verify batch 1 inArray call received all 500 event IDs
+			const batch1Ids = batch1.map((e) => e.id);
+			expect(inArrayMock.mock.calls[0]?.[1]).toEqual(batch1Ids);
+
+			// Verify batch 2 inArray call received the 2 event IDs
+			const batch2Ids = batch2.map((e) => e.id);
+			expect(inArrayMock.mock.calls[1]?.[1]).toEqual(batch2Ids);
 		});
 	});
 });
