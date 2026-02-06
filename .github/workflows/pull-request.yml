@@ -493,7 +493,8 @@ jobs:
       - name: Run install script tests with coverage
         working-directory: tests/install
         run: |
-          bundle exec bashcov --root ../.. -- bash run-all.sh
+          chmod +x run-all.sh
+          bundle exec bashcov --root ../.. -- ./run-all.sh
           echo "=== Coverage output ==="
           ls -la coverage/ || true
       - name: Upload install coverage to Codecov
