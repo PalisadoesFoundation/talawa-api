@@ -1,3 +1,4 @@
+import { uuidv7 } from "uuidv7";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -241,6 +242,7 @@ function createOccurrenceFromDate(
 	}
 
 	return {
+		recurringEventInstanceId: uuidv7(),
 		originalStartTime,
 		actualStartTime,
 		actualEndTime,

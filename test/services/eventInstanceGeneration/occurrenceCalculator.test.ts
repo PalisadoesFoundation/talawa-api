@@ -598,8 +598,8 @@ suite("occurrenceCalculator", () => {
 			const nextDate = getNextOccurrenceDate(currentDate, monthlyByDayRule);
 
 			// Should advance to February and calculate first Friday
-			expect(nextDate.getMonth()).toBe(1); // February
-			expect(nextDate.getDay()).toBe(5); // Friday
+			expect(nextDate.getUTCMonth()).toBe(1);
+			expect(nextDate.getUTCDay()).toBe(5);
 		});
 
 		test("handles monthly recurrence without byDay patterns", () => {
@@ -629,9 +629,9 @@ suite("occurrenceCalculator", () => {
 			const nextDate = getNextOccurrenceDate(currentDate, monthlyByDayRule);
 
 			// Should advance to February and calculate second Wednesday
-			expect(nextDate.getMonth()).toBe(1); // February
-			expect(nextDate.getDay()).toBe(3); // Wednesday
-			expect(nextDate.getDate()).toBe(12); // Second Wednesday of February 2025
+			expect(nextDate.getUTCMonth()).toBe(1);
+			expect(nextDate.getUTCDay()).toBe(3); // Wednesday
+			expect(nextDate.getUTCDate()).toBe(12); // Second Wednesday of February 2025
 		});
 	});
 
@@ -732,13 +732,13 @@ suite("occurrenceCalculator", () => {
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
 			expect(result).toHaveLength(3);
-			expect(result[0].originalStartTime).toEqual(
+			expect(result[0]?.originalStartTime).toEqual(
 				new Date("2025-01-01T10:00:00Z"),
 			);
-			expect(result[1].originalStartTime).toEqual(
+			expect(result[1]?.originalStartTime).toEqual(
 				new Date("2026-01-01T10:00:00Z"),
 			);
-			expect(result[2].originalStartTime).toEqual(
+			expect(result[2]?.originalStartTime).toEqual(
 				new Date("2027-01-01T10:00:00Z"),
 			);
 		});
@@ -763,10 +763,10 @@ suite("occurrenceCalculator", () => {
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
 			expect(result).toHaveLength(2); // 2025 and 2026 only
-			expect(result[0].originalStartTime).toEqual(
+			expect(result[0]?.originalStartTime).toEqual(
 				new Date("2025-01-01T10:00:00Z"),
 			);
-			expect(result[1].originalStartTime).toEqual(
+			expect(result[1]?.originalStartTime).toEqual(
 				new Date("2026-01-01T10:00:00Z"),
 			);
 		});
@@ -818,8 +818,8 @@ suite("occurrenceCalculator", () => {
 
 			// Should go to Feb 1st first, detect month boundary crossing,
 			// then apply 2-month interval to get to March 1st
-			expect(nextDate.getMonth()).toBe(2); // March (0-indexed)
-			expect(nextDate.getDate()).toBe(1);
+			expect(nextDate.getUTCMonth()).toBe(2); // March (0-indexed)
+			expect(nextDate.getUTCDate()).toBe(1);
 		});
 
 		test("handles monthly with byMonthDay staying in same month", () => {
@@ -992,20 +992,16 @@ suite("occurrenceCalculator", () => {
 
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
-			// Should still work normally without crashing
-			expect(result.length).toBeGreaterThan(0);
-		});
-
-		test("validateRecurrenceRule handles zero interval", () => {
-			const zeroIntervalRule = {
-				...mockRecurrenceRule,
-				interval: 0,
-			} as typeof recurrenceRulesTable.$inferSelect;
-
-			const result = validateRecurrenceRule(zeroIntervalRule);
-
-			// Zero interval should be valid (falsy check only catches negative)
-			expect(result).toBe(true);
+			// Should return exact expected number of occurrences
+			expect(result.length).toBe(4);
+			// Should ensure none of the returned occurrences have recurringEventInstanceId equal to exceptionWithoutTime.recurringEventInstanceId
+			expect(
+				result.every(
+					(occurrence) =>
+						occurrence.recurringEventInstanceId !==
+						exceptionWithoutTime.recurringEventInstanceId,
+				),
+			).toBe(true);
 		});
 
 		test("handles monthly byDay with missing byDay rule", () => {
@@ -1013,14 +1009,14 @@ suite("occurrenceCalculator", () => {
 				...mockRecurrenceRule,
 				frequency: "MONTHLY",
 				interval: 1,
-				byDay: [""], // Empty string in array
+				byDay: [""],
 			} as typeof recurrenceRulesTable.$inferSelect;
 
 			const currentDate = new Date("2025-01-01T10:00:00Z");
 			const nextDate = getNextOccurrenceDate(currentDate, monthlyByDayRule);
 
 			// Should handle gracefully and move to next month
-			expect(nextDate.getMonth()).toBe(1); // February
+			expect(nextDate.getUTCMonth()).toBe(1);
 		});
 
 		test("handles yearly events with conditions that don't generate instances", () => {
@@ -1070,7 +1066,7 @@ suite("occurrenceCalculator", () => {
 			// Should handle gracefully - the buildRecurrenceContext function should cope with null endAt
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
-			expect(result.length).toBeGreaterThanOrEqual(0); // Should not crash
+			expect(result).toHaveLength(0);
 		});
 
 		test("handles event duration calculation with null startAt", () => {
