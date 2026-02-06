@@ -21,7 +21,9 @@ describe("ensureBootstrapData", () => {
 
 		vi.doMock("../helpers", async () => {
 			const original =
-				await vi.importActual<typeof import("../helpers")>("../helpers");
+				await vi.importActual<
+					typeof import("../../../scripts/dbManagement/helpers")
+				>("../helpers");
 
 			return {
 				...original,
@@ -57,7 +59,7 @@ describe("ensureBootstrapData", () => {
 			hash: vi.fn(async () => "hashed-password"),
 		}));
 
-		const helpers = await import("../helpers");
+		const helpers = await import("../../../scripts/dbManagement/helpers");
 		ensureBootstrapData = helpers.ensureBootstrapData;
 	});
 
@@ -74,7 +76,7 @@ describe("ensureBootstrapData", () => {
 		"API_ADMINISTRATOR_USER_NAME",
 		"API_ADMINISTRATOR_USER_PASSWORD",
 	] as const)("throws if %s is missing", async (missingKey) => {
-		const { envConfig } = await import("../helpers");
+		const { envConfig } = await import("../../../scripts/dbManagement/helpers");
 
 		// Explicitly narrow to string env vars only
 		type AdminEnvKey =
