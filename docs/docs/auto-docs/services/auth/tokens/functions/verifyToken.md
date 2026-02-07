@@ -6,7 +6,7 @@
 
 > **verifyToken**\<`T`\>(`jwt`): `Promise`\<`T`\>
 
-Defined in: [src/services/auth/tokens.ts:127](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L127)
+Defined in: [src/services/auth/tokens.ts:130](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L130)
 
 Verifies a JWT and returns the payload. Throws on expired, wrong secret, or wrong issuer.
 
@@ -34,3 +34,9 @@ Decoded payload (typed by generic T).
 
 The returned payload is not runtime-validated for `typ` (access vs refresh).
 Callers must validate `payload.typ` themselves when distinguishing AccessClaims from RefreshClaims.
+
+## Todo
+
+Add an expectedTyp parameter and runtime payload.typ check (e.g. verifyToken(jwt, "access"))
+to enforce access vs refresh token usage in route/middleware integration; validate payload.typ
+before returning to avoid token-type confusion. Track: jwtVerify -> payload as T.

@@ -82,11 +82,11 @@ export async function signAccessToken(user: {
 	email: string;
 }): Promise<string> {
 	return new SignJWT({
-		sub: user.id,
 		email: user.email,
 		typ: "access",
 		ver: 1,
-	} satisfies AccessClaims)
+	})
+		.setSubject(user.id)
 		.setProtectedHeader({ alg: "HS256" })
 		.setIssuer(ISSUER)
 		.setIssuedAt()
@@ -105,11 +105,11 @@ export async function signRefreshToken(
 	jti: string,
 ): Promise<string> {
 	return new SignJWT({
-		sub: userId,
 		typ: "refresh",
 		ver: 1,
-		jti,
-	} satisfies RefreshClaims)
+	})
+		.setSubject(userId)
+		.setJti(jti)
 		.setProtectedHeader({ alg: "HS256" })
 		.setIssuer(ISSUER)
 		.setIssuedAt()
@@ -123,6 +123,9 @@ export async function signRefreshToken(
  * @returns Decoded payload (typed by generic T).
  * @remarks The returned payload is not runtime-validated for `typ` (access vs refresh).
  * Callers must validate `payload.typ` themselves when distinguishing AccessClaims from RefreshClaims.
+ * @todo Add an expectedTyp parameter and runtime payload.typ check (e.g. verifyToken(jwt, "access"))
+ * to enforce access vs refresh token usage in route/middleware integration; validate payload.typ
+ * before returning to avoid token-type confusion. Track: jwtVerify -> payload as T.
  */
 export async function verifyToken<T = AccessClaims | RefreshClaims>(
 	jwt: string,

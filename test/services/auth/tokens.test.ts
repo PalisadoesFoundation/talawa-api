@@ -46,31 +46,27 @@ describe("auth/tokens", () => {
 		return import("~/src/services/auth");
 	}
 
-	describe("signAccessToken / verifyToken", () => {
-		it("signs access token with sub, email, typ, ver and verify returns payload", async () => {
-			const { signAccessToken: sign, verifyToken: verify } = await getTokens();
+	describe("sign and verify round-trip", () => {
+		it("access token: signAccessToken and verifyToken return expected claims (sub, email, typ, ver)", async () => {
+			const { signAccessToken, verifyToken } = await getTokens();
 			const user = { id: "user-1", email: "u@example.com" };
-			const token = await sign(user);
+			const token = await signAccessToken(user);
 			expect(token).toBeTruthy();
 			expect(typeof token).toBe("string");
-
-			const payload = await verify<AccessClaims>(token);
+			const payload = await verifyToken<AccessClaims>(token);
 			expect(payload.sub).toBe(user.id);
 			expect(payload.email).toBe(user.email);
 			expect(payload.typ).toBe("access");
 			expect(payload.ver).toBe(1);
 		});
-	});
 
-	describe("signRefreshToken / verifyToken", () => {
-		it("signs refresh token with sub, typ, ver, jti and verify returns payload", async () => {
-			const { signRefreshToken: sign, verifyToken: verify } = await getTokens();
+		it("refresh token: signRefreshToken and verifyToken return expected claims (sub, typ, ver, jti)", async () => {
+			const { signRefreshToken, verifyToken } = await getTokens();
 			const userId = "user-1";
 			const jti = "refresh-jti-123";
-			const token = await sign(userId, jti);
+			const token = await signRefreshToken(userId, jti);
 			expect(token).toBeTruthy();
-
-			const payload = await verify<RefreshClaims>(token);
+			const payload = await verifyToken<RefreshClaims>(token);
 			expect(payload.sub).toBe(userId);
 			expect(payload.typ).toBe("refresh");
 			expect(payload.ver).toBe(1);
@@ -79,24 +75,6 @@ describe("auth/tokens", () => {
 	});
 
 	describe("verifyToken", () => {
-		it("decodes valid access token with correct typ", async () => {
-			const { signAccessToken: sign, verifyToken: verify } = await getTokens();
-			const token = await sign({ id: "u1", email: "a@b.co" });
-			const payload = await verify<AccessClaims>(token);
-			expect(payload.typ).toBe("access");
-			expect(payload.sub).toBe("u1");
-			expect(payload.email).toBe("a@b.co");
-		});
-
-		it("decodes valid refresh token with correct typ", async () => {
-			const { signRefreshToken: sign, verifyToken: verify } = await getTokens();
-			const token = await sign("u1", "jti-1");
-			const payload = await verify<RefreshClaims>(token);
-			expect(payload.typ).toBe("refresh");
-			expect(payload.sub).toBe("u1");
-			expect(payload.jti).toBe("jti-1");
-		});
-
 		it("throws on wrong secret", async () => {
 			const { signAccessToken } = await getTokens();
 			const token = await signAccessToken({ id: "u1", email: "a@b.co" });
@@ -199,19 +177,29 @@ describe("auth/tokens", () => {
 				email: "a@b.co",
 			});
 			const refreshToken = await signRefreshToken("u1", "jti-1");
-			await expect(
-				verifyToken<AccessClaims>(accessToken),
-			).resolves.toMatchObject({
-				sub: "u1",
-				typ: "access",
-			});
-			await expect(
-				verifyToken<RefreshClaims>(refreshToken),
-			).resolves.toMatchObject({
+			const accessPayload = await verifyToken<AccessClaims>(accessToken);
+			const refreshPayload = await verifyToken<RefreshClaims>(refreshToken);
+			expect(accessPayload).toMatchObject({ sub: "u1", typ: "access" });
+			expect(refreshPayload).toMatchObject({
 				sub: "u1",
 				typ: "refresh",
 				jti: "jti-1",
 			});
+			// Default TTLs when env is invalid: access 900s, refresh 2592000s (jose adds exp/iat to payload)
+			const accessWithExpIat = accessPayload as AccessClaims & {
+				exp?: number;
+				iat?: number;
+			};
+			const refreshWithExpIat = refreshPayload as RefreshClaims & {
+				exp?: number;
+				iat?: number;
+			};
+			expect(
+				Number(refreshWithExpIat.exp) - Number(refreshWithExpIat.iat),
+			).toBe(2592000);
+			expect(Number(accessWithExpIat.exp) - Number(accessWithExpIat.iat)).toBe(
+				900,
+			);
 		});
 	});
 });
