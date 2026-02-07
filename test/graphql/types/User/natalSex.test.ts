@@ -225,6 +225,19 @@ suite("User field natalSex", () => {
 						}),
 					]),
 				);
+
+				// Cleanup: delete the created user
+				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 		},
 	);
@@ -329,6 +342,18 @@ suite("User field natalSex", () => {
 
 				expect(userNatalSexResult.errors).toBeUndefined();
 				expect(userNatalSexResult.data.user).toBeDefined();
+
+				// Cleanup: delete the created user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 
 			test(`"data.user.natalSex" returns the correct natalSex value when admin accesses another user's data.`, async () => {
@@ -403,6 +428,18 @@ suite("User field natalSex", () => {
 
 				expect(userNatalSexResult.errors).toBeUndefined();
 				expect(userNatalSexResult.data.user?.natalSex).toEqual("female");
+
+				// Cleanup: delete the created user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 
 			test(`"data.user.natalSex" returns null when natalSex is not set.`, async () => {
@@ -459,6 +496,18 @@ suite("User field natalSex", () => {
 
 				expect(userNatalSexResult.errors).toBeUndefined();
 				expect(userNatalSexResult.data.user?.natalSex).toBeNull();
+
+				// Cleanup: delete the created user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 
 			test(`"data.user.natalSex" returns correct value for male natalSex.`, async () => {
@@ -516,6 +565,18 @@ suite("User field natalSex", () => {
 
 				expect(userNatalSexResult.errors).toBeUndefined();
 				expect(userNatalSexResult.data.user?.natalSex).toEqual("male");
+
+				// Cleanup: delete the created user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 
 			test(`"data.user.natalSex" returns correct value for other natalSex.`, async () => {
@@ -573,6 +634,18 @@ suite("User field natalSex", () => {
 
 				expect(userNatalSexResult.errors).toBeUndefined();
 				expect(userNatalSexResult.data.user?.natalSex).toEqual("intersex");
+
+				// Cleanup: delete the created user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 		},
 	);
