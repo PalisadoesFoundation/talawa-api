@@ -6,7 +6,7 @@
 
 > **signRefreshToken**(`userId`, `jti`): `Promise`\<`string`\>
 
-Defined in: [src/services/auth/tokens.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L98)
+Defined in: [src/services/auth/tokens.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L103)
 
 Signs a refresh JWT for a user with a unique token id.
 

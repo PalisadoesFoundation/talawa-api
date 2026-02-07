@@ -1,3 +1,8 @@
+/**
+ * REST auth JWT (jose): This module uses the "jose" library for signing and verifying
+ * access/refresh tokens used by REST auth (src/services/auth). The "@fastify/jwt" dependency
+ * is used elsewhere for GraphQL auth (src/routes/graphql). Both are kept; no migration planned.
+ */
 import { jwtVerify, SignJWT } from "jose";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";

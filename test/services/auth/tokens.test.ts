@@ -174,6 +174,18 @@ describe("auth/tokens", () => {
 		});
 	});
 
+	describe("production guard when AUTH_JWT_SECRET unset", () => {
+		it("throws TalawaRestError when NODE_ENV is production and AUTH_JWT_SECRET is unset", async () => {
+			process.env.NODE_ENV = "production";
+			delete process.env.AUTH_JWT_SECRET;
+			vi.resetModules();
+			await expect(import("~/src/services/auth")).rejects.toMatchObject({
+				name: "TalawaRestError",
+				message: "AUTH_JWT_SECRET must be set in production",
+			});
+		});
+	});
+
 	describe("TTL env parsing", () => {
 		it("uses default TTL when env is invalid or non-positive", async () => {
 			process.env.ACCESS_TOKEN_TTL = "invalid";

@@ -6,7 +6,7 @@
 
 > **RefreshClaims** = `object`
 
-Defined in: [src/services/auth/tokens.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L63)
+Defined in: [src/services/auth/tokens.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L68)
 
 Payload shape for refresh tokens.
 
@@ -16,7 +16,7 @@ Payload shape for refresh tokens.
 
 > **jti**: `string`
 
-Defined in: [src/services/auth/tokens.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L67)
+Defined in: [src/services/auth/tokens.ts:72](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L72)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/services/auth/tokens.ts:67](https://github.com/PalisadoesFounda
 
 > **sub**: `string`
 
-Defined in: [src/services/auth/tokens.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L64)
+Defined in: [src/services/auth/tokens.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L69)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/services/auth/tokens.ts:64](https://github.com/PalisadoesFounda
 
 > **typ**: `"refresh"`
 
-Defined in: [src/services/auth/tokens.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L65)
+Defined in: [src/services/auth/tokens.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L70)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [src/services/auth/tokens.ts:65](https://github.com/PalisadoesFounda
 
 > **ver**: `1`
 
-Defined in: [src/services/auth/tokens.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L66)
+Defined in: [src/services/auth/tokens.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L71)

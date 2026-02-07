@@ -2,6 +2,13 @@ import { cpus } from "node:os";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { configDefaults, defineConfig } from "vitest/config";
 
+// Ensure auth module (tokens.ts) can load when any unit test imports ~/src/services/auth.
+// Workers inherit this env; avoids TalawaRestError when CI sets NODE_ENV=production.
+process.env.NODE_ENV = process.env.NODE_ENV ?? "test";
+if (!process.env.AUTH_JWT_SECRET) {
+	process.env.AUTH_JWT_SECRET = "unit-test-secret";
+}
+
 const isCI = !!process.env.CI;
 const cpuCount = cpus().length;
 
