@@ -5220,7 +5220,7 @@ type Query {
   userTags(
     """User ID to fetch assigned tags for"""
     userId: ID!
-  ): [Tag!]
+  ): [Tag!]!
 
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]

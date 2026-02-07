@@ -785,7 +785,7 @@ suite("Query field userTags", () => {
 		});
 
 		// Assert authorization error
-		expect(result.data?.userTags).toBeNull();
+		expect(result.data?.userTags).toBeUndefined();
 		expect(result.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining({
@@ -806,7 +806,8 @@ suite("Query field userTags", () => {
 			},
 		});
 
-		expect(result.data).toEqual({ userTags: null });
+		// With nullable: false, when an error occurs, data becomes null
+		expect(result.data).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining({

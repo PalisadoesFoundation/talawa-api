@@ -94,7 +94,7 @@ declare module 'gql.tada' {
     "\n    query tag($input:QueryTagInput!) {\n  tag(input: $input) {\n    id\n    name\n    organization {\n      id\n    }\n    createdAt\n  }\n}":
       TadaDocumentNode<{ tag: { id: string; name: string | null; organization: { id: string; } | null; createdAt: string | null; } | null; }, { input: { id: string; }; }, void>;
     "\n  query userTags($userId: ID!) {\n    userTags(userId: $userId) {\n      id\n      name\n      creator {\n        id\n      }\n      assignees(first: 10){\n        edges {\n          node {\n            id\n          }\n        }\n      }\n    }\n  }\n":
-      TadaDocumentNode<{ userTags: { id: string; name: string | null; creator: { id: string; } | null; assignees: { edges: ({ node: { id: string; } | null; } | null)[] | null; } | null; }[] | null; }, { userId: string; }, void>;
+      TadaDocumentNode<{ userTags: { id: string; name: string | null; creator: { id: string; } | null; assignees: { edges: ({ node: { id: string; } | null; } | null)[] | null; } | null; }[]; }, { userId: string; }, void>;
     "\n  mutation createTag($input: MutationCreateTagInput!) {\n    createTag(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
       TadaDocumentNode<{ createTag: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { organizationId: string; name: string; folderId?: string | null | undefined; }; }, void>;
     "\n  mutation createTagFolder($input: MutationCreateTagFolderInput!) {\n    createTagFolder(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
