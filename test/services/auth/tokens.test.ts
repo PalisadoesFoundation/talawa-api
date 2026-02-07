@@ -1,3 +1,4 @@
+import { JWSSignatureVerificationFailed } from "jose/errors";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AccessClaims, RefreshClaims } from "~/src/services/auth";
 
@@ -102,7 +103,9 @@ describe("auth/tokens", () => {
 			process.env.AUTH_JWT_SECRET = "different-secret";
 			vi.resetModules();
 			const { verifyToken } = await getTokens();
-			await expect(verifyToken(token)).rejects.toThrow();
+			await expect(verifyToken(token)).rejects.toThrow(
+				JWSSignatureVerificationFailed,
+			);
 		});
 
 		it("throws on expired token", async () => {

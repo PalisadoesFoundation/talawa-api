@@ -1,4 +1,7 @@
 import { jwtVerify, SignJWT } from "jose";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+import { rootLogger } from "~/src/utilities/logging/logger";
 
 const encoder = new TextEncoder();
 const ISSUER = "talawa-api";
@@ -33,10 +36,12 @@ function getSecret(): Uint8Array {
 	const raw = process.env.AUTH_JWT_SECRET;
 	if (!raw) {
 		if (process.env.NODE_ENV === "production") {
-			throw new Error("AUTH_JWT_SECRET must be set in production");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "AUTH_JWT_SECRET must be set in production",
+			});
 		}
-		// biome-ignore lint/suspicious/noConsole: dev-only startup warning when secret unset
-		console.warn(
+		rootLogger.warn(
 			"AUTH_JWT_SECRET is unset; using dev default. Set AUTH_JWT_SECRET in production.",
 		);
 		return encoder.encode("dev-secret-change-me");

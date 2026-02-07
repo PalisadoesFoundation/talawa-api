@@ -270,20 +270,10 @@ export function validatePortNumbers(answers: SetupAnswers): void {
 		);
 	}
 }
-const SAMPLING_RATIO_ERROR = "Please enter valid sampling ratio (0-1).";
-
 export function validateSamplingRatio(input: string): true | string {
-	const trimmed = input.trim();
-	if (trimmed === "") {
-		return SAMPLING_RATIO_ERROR;
-	}
-	// Reject trailing non-numeric characters (e.g. "0.5a"); allow digits and one optional decimal
-	if (!/^\d+(\.\d*)?$/.test(trimmed)) {
-		return SAMPLING_RATIO_ERROR;
-	}
-	const ratio = Number.parseFloat(trimmed);
+	const ratio = Number.parseFloat(input);
 	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
-		return SAMPLING_RATIO_ERROR;
+		return "Please enter valid sampling ratio (0-1).";
 	}
 	return true;
 }

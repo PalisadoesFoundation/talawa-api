@@ -6,7 +6,7 @@
 
 > **signAccessToken**(`user`): `Promise`\<`string`\>
 
-Defined in: [src/services/auth/tokens.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L70)
+Defined in: [src/services/auth/tokens.ts:75](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L75)
 
 Signs an access JWT for a user.
 

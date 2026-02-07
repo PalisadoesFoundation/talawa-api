@@ -6,7 +6,7 @@
 
 > **verifyPassword**(`hashStr`, `plain`): `Promise`\<`boolean`\>
 
-Defined in: [src/services/auth/password.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/password.ts#L33)
+Defined in: [src/services/auth/password.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/password.ts#L34)
 
 Verifies a plain-text password against an argon2id hash.
 
