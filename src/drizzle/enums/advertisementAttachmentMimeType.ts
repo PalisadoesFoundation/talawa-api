@@ -5,7 +5,7 @@ import { videoMimeTypeEnum } from "./videoMimeType";
 /**
  * Possible variants of the type of an attachement of an advertisement.
  */
-export const advertisementAttachmentMimeTypeEnum = z.enum([
+export const advertisementAttachmentMimeTypeZodEnum = z.enum([
 	...imageMimeTypeEnum.options,
 	...videoMimeTypeEnum.options,
 ]);
