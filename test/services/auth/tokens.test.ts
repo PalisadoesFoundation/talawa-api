@@ -1,4 +1,8 @@
-import { JWSSignatureVerificationFailed } from "jose/errors";
+import {
+	JWSSignatureVerificationFailed,
+	JWTClaimValidationFailed,
+	JWTExpired,
+} from "jose/errors";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AccessClaims, RefreshClaims } from "~/src/services/auth";
 
@@ -90,7 +94,7 @@ describe("auth/tokens", () => {
 			const { SignJWT } = await import("jose");
 			const encoder = new TextEncoder();
 			const secret = encoder.encode(FIXED_SECRET);
-			const pastExp = Math.floor(Date.now() / 1000) - 10;
+			const pastExp = 1_000_000; // Fixed timestamp so test is deterministic
 			const expired = await new SignJWT({
 				sub: "u1",
 				email: "a@b.co",
@@ -104,7 +108,7 @@ describe("auth/tokens", () => {
 				.sign(secret);
 
 			const { verifyToken } = await getTokens();
-			await expect(verifyToken(expired)).rejects.toThrow();
+			await expect(verifyToken(expired)).rejects.toThrow(JWTExpired);
 		});
 
 		it("throws on wrong issuer", async () => {
@@ -124,7 +128,9 @@ describe("auth/tokens", () => {
 				.sign(secret);
 
 			const { verifyToken } = await getTokens();
-			await expect(verifyToken(wrongIssuer)).rejects.toThrow();
+			await expect(verifyToken(wrongIssuer)).rejects.toThrow(
+				JWTClaimValidationFailed,
+			);
 		});
 
 		it("throws on malformed JWT string", async () => {
@@ -190,6 +196,26 @@ describe("auth/tokens", () => {
 				2592000,
 			);
 			expect(Number(accessPayload.exp) - Number(accessPayload.iat)).toBe(900);
+		});
+
+		it("uses custom TTL when env is valid numeric string", async () => {
+			process.env.ACCESS_TOKEN_TTL = "60";
+			process.env.REFRESH_TOKEN_TTL = "3600";
+			vi.resetModules();
+			const { signAccessToken, signRefreshToken, verifyToken } = await import(
+				"~/src/services/auth"
+			);
+			const accessToken = await signAccessToken({
+				id: "u1",
+				email: "a@b.co",
+			});
+			const refreshToken = await signRefreshToken("u1", "jti-1");
+			const accessPayload = await verifyToken<AccessClaims>(accessToken);
+			const refreshPayload = await verifyToken<RefreshClaims>(refreshToken);
+			expect(Number(accessPayload.exp) - Number(accessPayload.iat)).toBe(60);
+			expect(Number(refreshPayload.exp) - Number(refreshPayload.iat)).toBe(
+				3600,
+			);
 		});
 	});
 });
