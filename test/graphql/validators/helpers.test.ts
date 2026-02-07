@@ -61,6 +61,8 @@ describe("zParseOrThrow", () => {
 	});
 
 	describe("validation failures", () => {
+		type ParseIssue = { argumentPath: unknown[]; message: string };
+
 		it("throws TalawaGraphQLError when validation fails", async () => {
 			const invalidData = {
 				name: "",
@@ -82,8 +84,7 @@ describe("zParseOrThrow", () => {
 
 			try {
 				await zParseOrThrow(testSchema, invalidData);
-				// Should not reach here
-				expect(true).toBe(false);
+				throw new Error("Unreachable: expected zParseOrThrow to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				const gqlError = error as TalawaGraphQLError;
@@ -100,15 +101,12 @@ describe("zParseOrThrow", () => {
 
 			try {
 				await zParseOrThrow(testSchema, invalidData);
-				expect(true).toBe(false);
+				throw new Error("Unreachable: expected zParseOrThrow to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				const gqlError = error as TalawaGraphQLError;
 				expect(gqlError.extensions.code).toBe("invalid_arguments");
-				const issues = gqlError.extensions.issues as {
-					argumentPath: unknown[];
-					message: string;
-				}[];
+				const issues = gqlError.extensions.issues as ParseIssue[];
 				expect(issues).toBeDefined();
 				expect(issues.length).toBeGreaterThan(0);
 				expect(issues[0]).toHaveProperty("argumentPath");
@@ -125,14 +123,11 @@ describe("zParseOrThrow", () => {
 
 			try {
 				await zParseOrThrow(testSchema, invalidData);
-				expect(true).toBe(false);
+				throw new Error("Unreachable: expected zParseOrThrow to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				const gqlError = error as TalawaGraphQLError;
-				const issues = gqlError.extensions.issues as {
-					argumentPath: unknown[];
-					message: string;
-				}[];
+				const issues = gqlError.extensions.issues as ParseIssue[];
 				expect(issues[0]).toHaveProperty("message");
 				expect(issues[0]?.message).toBe("Must be at least 18");
 			}
@@ -147,14 +142,11 @@ describe("zParseOrThrow", () => {
 
 			try {
 				await zParseOrThrow(testSchema, invalidData);
-				expect(true).toBe(false);
+				throw new Error("Unreachable: expected zParseOrThrow to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				const gqlError = error as TalawaGraphQLError;
-				const issues = gqlError.extensions.issues as {
-					argumentPath: unknown[];
-					message: string;
-				}[];
+				const issues = gqlError.extensions.issues as ParseIssue[];
 				expect(issues.length).toBe(3);
 
 				// Check that all fields are reported
@@ -184,14 +176,11 @@ describe("zParseOrThrow", () => {
 
 			try {
 				await zParseOrThrow(nestedSchema, invalidData);
-				expect(true).toBe(false);
+				throw new Error("Unreachable: expected zParseOrThrow to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				const gqlError = error as TalawaGraphQLError;
-				const issues = gqlError.extensions.issues as {
-					argumentPath: unknown[];
-					message: string;
-				}[];
+				const issues = gqlError.extensions.issues as ParseIssue[];
 				expect(issues[0]?.argumentPath).toEqual(["input", "user", "age"]);
 			}
 		});
@@ -207,14 +196,11 @@ describe("zParseOrThrow", () => {
 
 			try {
 				await zParseOrThrow(arraySchema, invalidData);
-				expect(true).toBe(false);
+				throw new Error("Unreachable: expected zParseOrThrow to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				const gqlError = error as TalawaGraphQLError;
-				const issues = gqlError.extensions.issues as {
-					argumentPath: unknown[];
-					message: string;
-				}[];
+				const issues = gqlError.extensions.issues as ParseIssue[];
 				expect(issues[0]?.argumentPath).toEqual(["items", 1]);
 			}
 		});

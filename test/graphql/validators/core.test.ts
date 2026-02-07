@@ -363,6 +363,16 @@ describe("Pagination", () => {
 		expect(result.cursor).toBeNull();
 	});
 
+	it("accepts explicit null cursor", async () => {
+		const result = await pagination.parseAsync({ cursor: null });
+		expect(result.cursor).toBeNull();
+	});
+
+	it("trims whitespace from cursor", async () => {
+		const result = await pagination.parseAsync({ cursor: "  abc123  " });
+		expect(result.cursor).toBe("abc123");
+	});
+
 	it("rejects limit below minimum (1)", async () => {
 		await expect(pagination.parseAsync({ limit: 0 })).rejects.toThrow(
 			"limit must be >= 1",

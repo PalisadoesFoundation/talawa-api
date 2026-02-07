@@ -93,12 +93,16 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ sendEventInvitations: { id: string | null; inviteeEmail: string | null; inviteeName: string | null; invitationToken: string | null; status: string | null; expiresAt: string | null; createdAt: string | null; }[] | null; }, { input: { recurringEventInstanceId?: string | null | undefined; recipients?: { name?: string | null | undefined; email: string; }[] | null | undefined; message?: string | null | undefined; expiresInDays?: number | null | undefined; eventId?: string | null | undefined; emails?: string[] | null | undefined; }; }, void>;
     "\n    query tag($input:QueryTagInput!) {\n  tag(input: $input) {\n    id\n    name\n    organization {\n      id\n    }\n    createdAt\n  }\n}":
       TadaDocumentNode<{ tag: { id: string; name: string | null; organization: { id: string; } | null; createdAt: string | null; } | null; }, { input: { id: string; }; }, void>;
-    "\n  mutation CreateTag($input:MutationCreateTagInput!) {\n    createTag(input: $input) {\n      id\n      name\n      createdAt\n      organization{\n        id\n        name\n        createdAt\n\n        }\n    }\n  }":
-      TadaDocumentNode<{ createTag: { id: string; name: string | null; createdAt: string | null; organization: { id: string; name: string | null; createdAt: string | null; } | null; } | null; }, { input: { organizationId: string; name: string; folderId?: string | null | undefined; }; }, void>;
+    "\n  query userTags($userId: ID!) {\n    userTags(userId: $userId) {\n      id\n      name\n      creator {\n        id\n      }\n      assignees(first: 10){\n        edges {\n          node {\n            id\n          }\n        }\n      }\n    }\n  }\n":
+      TadaDocumentNode<{ userTags: { id: string; name: string | null; creator: { id: string; } | null; assignees: { edges: ({ node: { id: string; } | null; } | null)[] | null; } | null; }[] | null; }, { userId: string; }, void>;
+    "\n  mutation createTag($input: MutationCreateTagInput!) {\n    createTag(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
+      TadaDocumentNode<{ createTag: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { organizationId: string; name: string; folderId?: string | null | undefined; }; }, void>;
+    "\n  mutation createTagFolder($input: MutationCreateTagFolderInput!) {\n    createTagFolder(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
+      TadaDocumentNode<{ createTagFolder: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { parentFolderId?: string | null | undefined; organizationId: string; name: string; }; }, void>;
+    "\n  mutation assignUserTag($assigneeId: ID!, $tagId: ID!) {\n    assignUserTag(\n      assigneeId: $assigneeId\n      tagId: $tagId\n    )\n  }\n":
+      TadaDocumentNode<{ assignUserTag: boolean | null; }, { tagId: string; assigneeId: string; }, void>;
     "\n  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {\n    deleteTag(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
       TadaDocumentNode<{ deleteTag: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { id: string; }; }, void>;
-    "\n  mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {\n    createTagFolder(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
-      TadaDocumentNode<{ createTagFolder: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { parentFolderId?: string | null | undefined; organizationId: string; name: string; }; }, void>;
     "\n  mutation Mutation_updateTagFolder($input: MutationUpdateTagFolderInput!) {\n    updateTagFolder(input: $input) {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n":
       TadaDocumentNode<{ updateTagFolder: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { parentFolderId?: string | null | undefined; name?: string | null | undefined; id: string; }; }, void>;
     "\n  mutation Mutation_deleteTagFolder($input: MutationDeleteTagFolderInput!) {\n    deleteTagFolder(input: $input) {\n      id\n      name\n    }\n  }\n":
@@ -145,8 +149,6 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ blockUser: boolean | null; }, { userId: string; organizationId: string; }, void>;
     "mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {\n    unblockUser(organizationId: $organizationId, userId: $userId)\n}":
       TadaDocumentNode<{ unblockUser: boolean | null; }, { userId: string; organizationId: string; }, void>;
-    "\n      mutation AssignUserTag($assigneeId: ID!, $tagId: ID!) {\n        assignUserTag(assigneeId: $assigneeId, tagId: $tagId)\n      }\n":
-      TadaDocumentNode<{ assignUserTag: boolean | null; }, { tagId: string; assigneeId: string; }, void>;
     "\n      mutation UnassignUserTag($assigneeId: ID!, $tagId: ID!) {\n        unassignUserTag(assigneeId: $assigneeId, tagId: $tagId)\n      }\n":
       TadaDocumentNode<{ unassignUserTag: boolean | null; }, { tagId: string; assigneeId: string; }, void>;
     "\n  mutation Mutation_updatePost($input: MutationUpdatePostInput!) {\n    updatePost(input: $input) {\n      id\n      pinnedAt\n      caption\n      attachments {\n        mimeType\n        fileHash\n        name\n        objectName\n        id\n      }\n    }\n  }\n":
