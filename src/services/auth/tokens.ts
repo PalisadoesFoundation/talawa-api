@@ -123,7 +123,7 @@ export async function signRefreshToken(
  * @returns Decoded payload (typed by generic T).
  * @remarks The returned payload is not runtime-validated for `typ` (access vs refresh).
  * Callers must validate `payload.typ` themselves when distinguishing AccessClaims from RefreshClaims.
- * @todo Add an expectedTyp parameter and runtime payload.typ check (e.g. verifyToken(jwt, "access"))
+ * TODO: Add an expectedTyp parameter and runtime payload.typ check (e.g. verifyToken(jwt, "access"))
  * to enforce access vs refresh token usage in route/middleware integration; validate payload.typ
  * before returning to avoid token-type confusion. Track: jwtVerify -> payload as T.
  */
