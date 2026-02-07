@@ -1,0 +1,36 @@
+id: no-local-timezone-in-tests
+language: TypeScript
+severity: error
+message: |
+  Avoid using local timezone date methods in tests. Use UTC methods instead:
+  - Use .getUTCDate() instead of .getDate()
+  - Use .getUTCMonth() instead of .getMonth()
+  - Use .getUTCDay() instead of .getDay()
+  - Use .getUTCHours() instead of .getHours()
+  - Use .getUTCMinutes() instead of .getMinutes()
+  - Use .getUTCSeconds() instead of .getSeconds()
+
+  These local timezone methods cause flakiness in sharded CI environments
+  where machines may have different timezone configurations.
+
+note: "Timezone-dependent test assertion detected"
+
+rule:
+  any:
+    - pattern: $DATE.getDate()
+    - pattern: $DATE.getMonth()
+    - pattern: $DATE.getDay()
+    - pattern: $DATE.getHours()
+    - pattern: $DATE.getMinutes()
+    - pattern: $DATE.getSeconds()
+    - pattern: $DATE.getFullYear()
+
+files:
+  - "test/**/*.test.ts"
+  - "test/**/*.spec.ts"
+
+fix: |
+  # Manual fix required - replace with UTC equivalent:
+  # .getDate() → .getUTCDate()
+  # .getMonth() → .getUTCMonth()
+  # .getDay() → .getUTCDay()
