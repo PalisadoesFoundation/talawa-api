@@ -14,7 +14,7 @@ import { advertisementsTable } from "./advertisements";
 import { usersTable } from "./users";
 
 /**
- * PostgreSQL enum for event attachment MIME types.
+ * PostgreSQL enum for advertisement attachment MIME types.
  * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm
  */
 export const advertisementAttachmentMimeTypePgEnum = pgEnum(
