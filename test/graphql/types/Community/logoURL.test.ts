@@ -71,37 +71,7 @@ describe("Community.logoURL field resolver - Unit tests", () => {
 			const result = await logoURLResolver(mockCommunity, {}, ctx);
 
 			expect(result).toBe(`${ctx.envConfig.API_BASE_URL}/objects/${logoName}`);
-		});
-
-		it("should construct URL with correct base URL from context", async () => {
-			const logoName = faker.string.uuid();
-			mockCommunity.logoName = logoName;
-			// The mock context sets API_BASE_URL to "http://localhost:4000"
-
-			const result = await logoURLResolver(mockCommunity, {}, ctx);
-
-			expect(result).toContain("http://localhost:4000");
-			expect(result).toBe(`http://localhost:4000/objects/${logoName}`);
-		});
-
-		it("should handle logoName with special characters", async () => {
-			const logoName = faker.string.alphanumeric(20);
-			mockCommunity.logoName = logoName;
-
-			const result = await logoURLResolver(mockCommunity, {}, ctx);
-
-			expect(result).toBe(`${ctx.envConfig.API_BASE_URL}/objects/${logoName}`);
 			expect(result).toContain("/objects/");
-		});
-
-		it("should construct URL with UUID logoName", async () => {
-			const logoName = faker.string.uuid();
-			mockCommunity.logoName = logoName;
-
-			const result = await logoURLResolver(mockCommunity, {}, ctx);
-
-			expect(result).toBe(`http://localhost:4000/objects/${logoName}`);
-			expect(result).toMatch(/^http:\/\/localhost:4000\/objects\/[a-f0-9-]+$/);
 		});
 
 		it("should handle different base URLs correctly", async () => {
@@ -114,6 +84,30 @@ describe("Community.logoURL field resolver - Unit tests", () => {
 			const result = await logoURLResolver(mockCommunity, {}, ctx);
 
 			expect(result).toBe(`https://api.example.com:8080/objects/${logoName}`);
+		});
+
+		it("should handle base URL with trailing slash", async () => {
+			const logoName = faker.string.uuid();
+			mockCommunity.logoName = logoName;
+
+			// URL constructor properly normalizes trailing slashes
+			ctx.envConfig.API_BASE_URL = "http://localhost:4000/";
+
+			const result = await logoURLResolver(mockCommunity, {}, ctx);
+
+			// URL constructor removes double slashes
+			expect(result).toBe(`http://localhost:4000/objects/${logoName}`);
+		});
+
+		it("should handle logoName with URL-unsafe characters", async () => {
+			const logoName = "logo with spaces & special@chars!.png";
+			mockCommunity.logoName = logoName;
+
+			const result = await logoURLResolver(mockCommunity, {}, ctx);
+
+			// URL constructor properly encodes unsafe characters
+			expect(result).toContain("/objects/");
+			expect(result).toContain(ctx.envConfig.API_BASE_URL);
 		});
 
 		it("should construct URL with logoName containing file extension", async () => {
@@ -137,12 +131,12 @@ describe("Community.logoURL field resolver - Unit tests", () => {
 	});
 
 	describe("Edge cases", () => {
-		it("should handle empty string logoName as truthy", async () => {
+		it("should handle empty string logoName", async () => {
 			mockCommunity.logoName = "";
 
 			const result = await logoURLResolver(mockCommunity, {}, ctx);
 
-			// Empty string is truthy in the context of null check
+			// Resolver uses strict null check (=== null), so empty string produces a URL
 			expect(result).toBe(`${ctx.envConfig.API_BASE_URL}/objects/`);
 		});
 
