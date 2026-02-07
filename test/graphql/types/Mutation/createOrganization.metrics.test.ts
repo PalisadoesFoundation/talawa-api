@@ -413,7 +413,11 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const invalidAvatarInput = {
 				objectName: faker.string.uuid(),
 				mimeType: "text/plain", // Invalid mime type
-				fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+				fileHash: faker.string.hexadecimal({
+					length: 64,
+					casing: "lower",
+					prefix: "",
+				}),
 				name: "avatar.txt",
 			};
 
@@ -463,7 +467,11 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const validAvatarInput = {
 				objectName: faker.string.uuid(),
 				mimeType: "image/png",
-				fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+				fileHash: faker.string.hexadecimal({
+					length: 64,
+					casing: "lower",
+					prefix: "",
+				}),
 				name: "avatar.png",
 			};
 
@@ -609,7 +617,11 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				const validAvatarInput = {
 					objectName: faker.string.uuid(),
 					mimeType: "image/png",
-					fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+					fileHash: faker.string.hexadecimal({
+						length: 64,
+						casing: "lower",
+						prefix: "",
+					}),
 					name: "avatar.png",
 				};
 
@@ -710,7 +722,11 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 					const validAvatarInput = {
 						objectName: faker.string.uuid(),
 						mimeType: mimeType,
-						fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+						fileHash: faker.string.hexadecimal({
+							length: 64,
+							casing: "lower",
+							prefix: "",
+						}),
 						name: `avatar.${mimeType.split("/")[1]}`,
 					};
 

@@ -1049,7 +1049,11 @@ suite("Mutation field updateVenue", () => {
 						{
 							objectName: faker.string.ulid(),
 							mimeType: "application/x-msdownload" as never,
-							fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
 							name: "test.exe",
 						},
 					],
@@ -1163,7 +1167,11 @@ suite("Mutation field updateVenue", () => {
 						{
 							objectName: objectName,
 							mimeType: "image/jpeg",
-							fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
 							name: "venue-photo.jpg",
 						},
 					],

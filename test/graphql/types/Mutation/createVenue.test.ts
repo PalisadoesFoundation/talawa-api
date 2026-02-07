@@ -1826,7 +1826,11 @@ suite("Mutation field createVenue", () => {
 								{
 									objectName: faker.string.ulid(),
 									mimeType: "application/x-msdownload" as never,
-									fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
 									name: "test.exe",
 								},
 							],
@@ -1926,7 +1930,11 @@ suite("Mutation field createVenue", () => {
 								{
 									objectName: objectName,
 									mimeType: "image/jpeg",
-									fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
 									name: "venue-photo.jpg",
 								},
 							],
@@ -2010,7 +2018,11 @@ suite("Mutation field createVenue", () => {
 								{
 									objectName: "non-existent-file-object",
 									mimeType: "image/jpeg",
-									fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
 									name: "missing.jpg",
 								},
 							],
