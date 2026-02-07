@@ -146,10 +146,7 @@ builder.mutationField("updateCommunity", (t) =>
 				if (isNotNullish(parsedArgs.input.logo) && logoName) {
 					// Verify the file exists in MinIO (uploaded via presigned URL)
 					try {
-						await ctx.minio.client.statObject(
-							ctx.minio.bucketName,
-							logoName,
-						);
+						await ctx.minio.client.statObject(ctx.minio.bucketName, logoName);
 					} catch {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -157,7 +154,8 @@ builder.mutationField("updateCommunity", (t) =>
 								issues: [
 									{
 										argumentPath: ["input", "logo", "objectName"],
-										message: "File not found in storage. Please upload the file first using the presigned URL.",
+										message:
+											"File not found in storage. Please upload the file first using the presigned URL.",
 									},
 								],
 							},
@@ -165,7 +163,10 @@ builder.mutationField("updateCommunity", (t) =>
 					}
 
 					// Remove old logo if it exists and has a different name
-					if (existingCommunity.logoName !== null && existingCommunity.logoName !== logoName) {
+					if (
+						existingCommunity.logoName !== null &&
+						existingCommunity.logoName !== logoName
+					) {
 						try {
 							await ctx.minio.client.removeObject(
 								ctx.minio.bucketName,

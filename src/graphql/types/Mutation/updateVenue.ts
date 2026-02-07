@@ -186,7 +186,10 @@ builder.mutationField("updateVenue", (t) =>
 				}
 
 				// Handle attachment updates
-				if (parsedArgs.input.attachments !== undefined && parsedArgs.input.attachments.length > 0) {
+				if (
+					parsedArgs.input.attachments !== undefined &&
+					parsedArgs.input.attachments.length > 0
+				) {
 					const attachments = parsedArgs.input.attachments;
 
 					// Verify all files exist in MinIO before proceeding
@@ -205,7 +208,8 @@ builder.mutationField("updateVenue", (t) =>
 										issues: [
 											{
 												argumentPath: ["input", "attachments", i, "objectName"],
-												message: "File not found in storage. Please upload the file first using the presigned URL.",
+												message:
+													"File not found in storage. Please upload the file first using the presigned URL.",
 											},
 										],
 									},

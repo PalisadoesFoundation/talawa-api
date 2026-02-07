@@ -160,7 +160,8 @@ builder.mutationField("createOrganization", (t) =>
 									issues: [
 										{
 											argumentPath: ["input", "avatar", "objectName"],
-											message: "File not found in storage. Please upload the file first using the presigned URL.",
+											message:
+												"File not found in storage. Please upload the file first using the presigned URL.",
 										},
 									],
 								},
