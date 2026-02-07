@@ -82,6 +82,11 @@ describe("Basic Scalars", () => {
 			expect(result).toBe("https://example.com");
 		});
 
+		it("trims whitespace", async () => {
+			const result = await url.parseAsync("  https://example.com  ");
+			expect(result).toBe("https://example.com");
+		});
+
 		it("rejects invalid URLs", async () => {
 			await expect(url.parseAsync("not-a-url")).rejects.toThrow(
 				"Must be a valid URL",

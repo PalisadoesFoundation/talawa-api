@@ -86,9 +86,8 @@ describe("zParseOrThrow", () => {
 				expect(true).toBe(false);
 			} catch (error) {
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				if (error instanceof TalawaGraphQLError) {
-					expect(error.extensions.code).toBe("invalid_arguments");
-				}
+				const gqlError = error as TalawaGraphQLError;
+				expect(gqlError.extensions.code).toBe("invalid_arguments");
 			}
 		});
 
@@ -103,18 +102,17 @@ describe("zParseOrThrow", () => {
 				await zParseOrThrow(testSchema, invalidData);
 				expect(true).toBe(false);
 			} catch (error) {
-				if (error instanceof TalawaGraphQLError) {
-					expect(error.extensions.code).toBe("invalid_arguments");
-					const issues = error.extensions.issues as
-						| { argumentPath: unknown[]; message: string }[]
-						| undefined;
-					expect(issues).toBeDefined();
-					expect(issues?.length).toBeGreaterThan(0);
-					if (issues?.[0]) {
-						expect(issues[0]).toHaveProperty("argumentPath");
-						expect(issues[0].argumentPath).toEqual(["age"]);
-					}
-				}
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const gqlError = error as TalawaGraphQLError;
+				expect(gqlError.extensions.code).toBe("invalid_arguments");
+				const issues = gqlError.extensions.issues as {
+					argumentPath: unknown[];
+					message: string;
+				}[];
+				expect(issues).toBeDefined();
+				expect(issues.length).toBeGreaterThan(0);
+				expect(issues[0]).toHaveProperty("argumentPath");
+				expect(issues[0]?.argumentPath).toEqual(["age"]);
 			}
 		});
 
@@ -129,15 +127,14 @@ describe("zParseOrThrow", () => {
 				await zParseOrThrow(testSchema, invalidData);
 				expect(true).toBe(false);
 			} catch (error) {
-				if (error instanceof TalawaGraphQLError) {
-					const issues = error.extensions.issues as
-						| { argumentPath: unknown[]; message: string }[]
-						| undefined;
-					if (issues?.[0]) {
-						expect(issues[0]).toHaveProperty("message");
-						expect(issues[0].message).toBe("Must be at least 18");
-					}
-				}
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const gqlError = error as TalawaGraphQLError;
+				const issues = gqlError.extensions.issues as {
+					argumentPath: unknown[];
+					message: string;
+				}[];
+				expect(issues[0]).toHaveProperty("message");
+				expect(issues[0]?.message).toBe("Must be at least 18");
 			}
 		});
 
@@ -152,18 +149,19 @@ describe("zParseOrThrow", () => {
 				await zParseOrThrow(testSchema, invalidData);
 				expect(true).toBe(false);
 			} catch (error) {
-				if (error instanceof TalawaGraphQLError) {
-					const issues = error.extensions.issues as
-						| { argumentPath: unknown[]; message: string }[]
-						| undefined;
-					expect(issues?.length).toBe(3);
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const gqlError = error as TalawaGraphQLError;
+				const issues = gqlError.extensions.issues as {
+					argumentPath: unknown[];
+					message: string;
+				}[];
+				expect(issues.length).toBe(3);
 
-					// Check that all fields are reported
-					const paths = issues?.map((issue) => issue.argumentPath.join("."));
-					expect(paths).toContain("name");
-					expect(paths).toContain("age");
-					expect(paths).toContain("email");
-				}
+				// Check that all fields are reported
+				const paths = issues.map((issue) => issue.argumentPath.join("."));
+				expect(paths).toContain("name");
+				expect(paths).toContain("age");
+				expect(paths).toContain("email");
 			}
 		});
 
@@ -188,14 +186,13 @@ describe("zParseOrThrow", () => {
 				await zParseOrThrow(nestedSchema, invalidData);
 				expect(true).toBe(false);
 			} catch (error) {
-				if (error instanceof TalawaGraphQLError) {
-					const issues = error.extensions.issues as
-						| { argumentPath: unknown[]; message: string }[]
-						| undefined;
-					if (issues?.[0]) {
-						expect(issues[0].argumentPath).toEqual(["input", "user", "age"]);
-					}
-				}
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const gqlError = error as TalawaGraphQLError;
+				const issues = gqlError.extensions.issues as {
+					argumentPath: unknown[];
+					message: string;
+				}[];
+				expect(issues[0]?.argumentPath).toEqual(["input", "user", "age"]);
 			}
 		});
 
@@ -212,14 +209,13 @@ describe("zParseOrThrow", () => {
 				await zParseOrThrow(arraySchema, invalidData);
 				expect(true).toBe(false);
 			} catch (error) {
-				if (error instanceof TalawaGraphQLError) {
-					const issues = error.extensions.issues as
-						| { argumentPath: unknown[]; message: string }[]
-						| undefined;
-					if (issues?.[0]) {
-						expect(issues[0].argumentPath).toEqual(["items", 1]);
-					}
-				}
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const gqlError = error as TalawaGraphQLError;
+				const issues = gqlError.extensions.issues as {
+					argumentPath: unknown[];
+					message: string;
+				}[];
+				expect(issues[0]?.argumentPath).toEqual(["items", 1]);
 			}
 		});
 	});
