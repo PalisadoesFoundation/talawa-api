@@ -106,8 +106,13 @@ describe("Community.logoURL field resolver - Unit tests", () => {
 			const result = await logoURLResolver(mockCommunity, {}, ctx);
 
 			// URL constructor properly encodes unsafe characters
-			expect(result).toContain("/objects/");
-			expect(result).toContain(ctx.envConfig.API_BASE_URL);
+			const expectedURL = new URL(
+				`/objects/${logoName}`,
+				ctx.envConfig.API_BASE_URL,
+			).toString();
+			expect(result).toBe(expectedURL);
+			// Verify encoding happened: spaces become %20
+			expect(result).toContain("logo%20with%20spaces");
 		});
 
 		it("should construct URL with logoName containing file extension", async () => {
