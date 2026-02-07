@@ -1,11 +1,9 @@
-import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { mutationCreateAdvertisementInputSchema } from "~/src/graphql/inputs/MutationCreateAdvertisementInput";
-import { mutationCreateAdvertisementArgumentsSchema } from "~/src/graphql/types/Mutation/createAdvertisement";
 
 /**
- * Tests for advertisement attachment file upload validation.
- * Tests both array limits (input schema) and MIME type validation (arguments schema).
+ * Tests for advertisement attachment file metadata validation.
+ * Tests both array limits and MIME type validation.
  */
 describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 	const validInput = {
@@ -17,28 +15,17 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 		type: "banner" as const,
 	};
 
-	// Helper to create FileUpload-like objects with proper createReadStream
-	function createMockFileUpload(filename: string, mimetype: string) {
-		return Promise.resolve({
-			filename,
-			mimetype,
-			encoding: "7bit",
-			createReadStream: () => Readable.from(Buffer.from("test content")),
-		});
+	// Helper to create FileMetadataInput objects
+	function createFileMetadata(name: string, mimeType: string) {
+		return {
+			objectName: `test-objects/${name}`,
+			mimeType: mimeType,
+			fileHash: "a".repeat(64), // Valid 64-char hex hash
+			name: name,
+		};
 	}
 
-	describe("attachments array limits (input schema)", () => {
-		it("should reject when attachments is empty array", () => {
-			const result = mutationCreateAdvertisementInputSchema.safeParse({
-				...validInput,
-				attachments: [],
-			});
-			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues.length > 0) {
-				expect(result.error.issues[0]?.message).toContain("Too small");
-			}
-		});
-
+	describe("attachments array limits", () => {
 		it("should accept advertisement without attachments field", () => {
 			const result = mutationCreateAdvertisementInputSchema.safeParse({
 				...validInput,
@@ -49,30 +36,28 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			}
 		});
 
-		it("should accept exactly 1 attachment (lower boundary)", async () => {
-			const result =
-				await mutationCreateAdvertisementInputSchema.safeParseAsync({
-					...validInput,
-					attachments: [createMockFileUpload("test.jpg", "image/jpeg")],
-				});
+		it("should accept exactly 1 attachment (lower boundary)", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.jpg", "image/jpeg")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept exactly 20 attachments (upper boundary)", async () => {
+		it("should accept exactly 20 attachments (upper boundary)", () => {
 			const attachments = Array.from({ length: 20 }, (_, i) =>
-				createMockFileUpload(`test${i}.jpg`, "image/jpeg"),
+				createFileMetadata(`test${i}.jpg`, "image/jpeg"),
 			);
-			const result =
-				await mutationCreateAdvertisementInputSchema.safeParseAsync({
-					...validInput,
-					attachments,
-				});
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments,
+			});
 			expect(result.success).toBe(true);
 		});
 
 		it("should reject when attachments exceed max (21 attachments)", () => {
 			const attachments = Array.from({ length: 21 }, (_, i) =>
-				createMockFileUpload(`test${i}.jpg`, "image/jpeg"),
+				createFileMetadata(`test${i}.jpg`, "image/jpeg"),
 			);
 			const result = mutationCreateAdvertisementInputSchema.safeParse({
 				...validInput,
@@ -80,169 +65,189 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success && result.error.issues.length > 0) {
-				expect(result.error.issues[0]?.message).toContain("Too big");
+				expect(result.error.issues[0]?.message).toContain("too_big");
 			}
 		});
 	});
 
-	describe("MIME type validation (arguments schema transform)", () => {
-		it("should accept valid image/png", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.png", "image/png")],
-					},
-				});
+	describe("MIME type validation", () => {
+		it("should accept valid image/png", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.png", "image/png")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid image/jpeg", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.jpg", "image/jpeg")],
-					},
-				});
+		it("should accept valid image/jpeg", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.jpg", "image/jpeg")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid image/webp", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.webp", "image/webp")],
-					},
-				});
+		it("should accept valid image/webp", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.webp", "image/webp")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid image/avif", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.avif", "image/avif")],
-					},
-				});
+		it("should accept valid image/avif", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.avif", "image/avif")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid video/mp4", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.mp4", "video/mp4")],
-					},
-				});
+		it("should accept valid video/mp4", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.mp4", "video/mp4")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid video/webm", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.webm", "video/webm")],
-					},
-				});
+		it("should accept valid video/webm", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.webm", "video/webm")],
+			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should reject invalid MIME type text/plain", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.txt", "text/plain")],
-					},
-				});
+		it("should reject invalid MIME type text/plain", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.txt", "text/plain")],
+			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
 				expect(result.error.issues).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
-							path: ["input", "attachments", 0],
-							message: 'Mime type "text/plain" is not allowed.',
+							path: ["attachments", 0, "mimeType"],
+							code: "invalid_enum_value",
 						}),
 					]),
 				);
 			}
 		});
 
-		it("should reject invalid MIME type application/pdf", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [createMockFileUpload("test.pdf", "application/pdf")],
-					},
-				});
+		it("should reject invalid MIME type application/pdf", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("test.pdf", "application/pdf")],
+			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
 				expect(result.error.issues).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
-							path: ["input", "attachments", 0],
-							message: 'Mime type "application/pdf" is not allowed.',
+							path: ["attachments", 0, "mimeType"],
+							code: "invalid_enum_value",
 						}),
 					]),
 				);
 			}
 		});
 
-		it("should handle mixed valid and invalid MIME types", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [
-							createMockFileUpload("valid.png", "image/png"),
-							createMockFileUpload("invalid.txt", "text/plain"),
-							createMockFileUpload("valid2.mp4", "video/mp4"),
-						],
-					},
-				});
+		it("should handle mixed valid and invalid MIME types", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					createFileMetadata("valid.png", "image/png"),
+					createFileMetadata("invalid.txt", "text/plain"),
+					createFileMetadata("valid2.mp4", "video/mp4"),
+				],
+			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
 				expect(result.error.issues).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
-							path: ["input", "attachments", 1],
-							message: 'Mime type "text/plain" is not allowed.',
+							path: ["attachments", 1, "mimeType"],
+							code: "invalid_enum_value",
 						}),
 					]),
 				);
 			}
 		});
 
-		it("should reject multiple invalid MIME types with correct paths", async () => {
-			const result =
-				await mutationCreateAdvertisementArgumentsSchema.safeParseAsync({
-					input: {
-						...validInput,
-						attachments: [
-							createMockFileUpload("invalid1.txt", "text/plain"),
-							createMockFileUpload("valid.png", "image/png"),
-							createMockFileUpload("invalid2.pdf", "application/pdf"),
-						],
-					},
-				});
+		it("should reject multiple invalid MIME types with correct paths", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					createFileMetadata("invalid1.txt", "text/plain"),
+					createFileMetadata("valid.png", "image/png"),
+					createFileMetadata("invalid2.pdf", "application/pdf"),
+				],
+			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
 				expect(result.error.issues.length).toBeGreaterThanOrEqual(2);
 				expect(result.error.issues).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
-							path: ["input", "attachments", 0],
-							message: 'Mime type "text/plain" is not allowed.',
+							path: ["attachments", 0, "mimeType"],
+							code: "invalid_enum_value",
 						}),
 						expect.objectContaining({
-							path: ["input", "attachments", 2],
-							message: 'Mime type "application/pdf" is not allowed.',
+							path: ["attachments", 2, "mimeType"],
+							code: "invalid_enum_value",
+						}),
+					]),
+				);
+			}
+		});
+	});
+
+	describe("FileMetadataInput field validation", () => {
+		it("should reject missing objectName", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					{
+						mimeType: "image/png",
+						fileHash: "a".repeat(64),
+						name: "test.png",
+						// objectName missing
+					},
+				],
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							path: ["attachments", 0, "objectName"],
+						}),
+					]),
+				);
+			}
+		});
+
+		it("should reject invalid fileHash (not 64 hex chars)", () => {
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					{
+						objectName: "test-object",
+						mimeType: "image/png",
+						fileHash: "invalid",
+						name: "test.png",
+					},
+				],
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							path: ["attachments", 0, "fileHash"],
 						}),
 					]),
 				);

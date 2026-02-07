@@ -18,7 +18,7 @@ export const mutationCreateAdvertisementInputSchema =
 			type: true,
 		})
 		.extend({
-			attachments: z.array(fileMetadataInputSchema).max(20).optional(),
+			attachments: z.array(fileMetadataInputSchema).min(1).max(20).optional(),
 		})
 		.superRefine((arg, ctx) => {
 			if (arg.endAt <= arg.startAt) {

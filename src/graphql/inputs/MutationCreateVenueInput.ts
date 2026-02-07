@@ -14,7 +14,7 @@ export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: z.array(fileMetadataInputSchema).max(20).optional(),
+		attachments: z.array(fileMetadataInputSchema).min(1).max(20).optional(),
 	});
 
 export const MutationCreateVenueInput = builder

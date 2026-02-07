@@ -242,7 +242,7 @@ suite("Mutation field updateCommunity", () => {
 							logo: {
 								objectName: faker.string.ulid(),
 								mimeType: "text/plain" as never,
-								fileHash: faker.string.alphanumeric(64),
+								fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
 								name: "test.txt",
 							},
 						},
@@ -368,10 +368,11 @@ suite("Mutation field updateCommunity", () => {
 					},
 					variables: {
 						input: {
+							name: `Community_${faker.string.ulid()}`,
 							logo: {
 								objectName: objectName,
 								mimeType: "image/png",
-								fileHash: faker.string.alphanumeric(64),
+								fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
 								name: "logo.png",
 							},
 						},
@@ -401,10 +402,11 @@ suite("Mutation field updateCommunity", () => {
 					},
 					variables: {
 						input: {
+							name: `Community_${faker.string.ulid()}`,
 							logo: {
 								objectName: initialObjectName,
 								mimeType: "image/jpeg",
-								fileHash: faker.string.alphanumeric(64),
+								fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
 								name: "initial.jpg",
 							},
 						},
@@ -429,10 +431,11 @@ suite("Mutation field updateCommunity", () => {
 					},
 					variables: {
 						input: {
+							name: `Community_${faker.string.ulid()}`,
 							logo: {
 								objectName: newObjectName,
 								mimeType: "image/webp",
-								fileHash: faker.string.alphanumeric(64),
+								fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
 								name: "new-logo.webp",
 							},
 						},
@@ -469,7 +472,7 @@ suite("Mutation field updateCommunity", () => {
 								logo: {
 									objectName: objectName,
 									mimeType: "image/png",
-									fileHash: faker.string.alphanumeric(64),
+									fileHash: faker.string.hexadecimal({ length: 64, casing: "lower", prefix: "" }),
 									name: "logo.png",
 								},
 							},

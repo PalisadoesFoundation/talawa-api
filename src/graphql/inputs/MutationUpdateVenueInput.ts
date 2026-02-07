@@ -15,7 +15,7 @@ export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 		description: sanitizedStringSchema.min(1).max(2048).optional(),
 		id: venuesTableInsertSchema.shape.id.unwrap(),
 		name: sanitizedStringSchema.min(1).max(256).optional(),
-		attachments: z.array(fileMetadataInputSchema).max(20).optional(),
+		attachments: z.array(fileMetadataInputSchema).min(1).max(20).optional(),
 	})
 
 	.refine(
