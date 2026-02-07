@@ -409,12 +409,13 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			const { context } = createMockGraphQLContext(true, "admin-user");
 			context.perf = perf;
 
-			// Create mock avatar with invalid mime type
-			const invalidAvatar = Promise.resolve({
-				filename: "avatar.txt",
-				mimetype: "text/plain", // Invalid mime type
-				createReadStream: vi.fn(),
-			});
+			// Invalid avatar input (invalid mime type)
+			const invalidAvatarInput = {
+				objectName: faker.string.uuid(),
+				mimeType: "text/plain", // Invalid mime type
+				fileHash: faker.string.alphanumeric(64),
+				name: "avatar.txt",
+			};
 
 			await vi.runAllTimersAsync();
 			try {
@@ -424,7 +425,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 						input: {
 							name: `Test Org ${faker.string.ulid()}`,
 							description: "Test Description",
-							avatar: invalidAvatar,
+							avatar: invalidAvatarInput,
 						},
 					},
 					context,
@@ -458,15 +459,13 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				avatarName: faker.string.uuid(),
 			};
 
-			// Create mock avatar with valid mime type
-			const validAvatar = Promise.resolve({
-				filename: "avatar.png",
-				mimetype: "image/png",
-				createReadStream: vi.fn().mockReturnValue({
-					pipe: vi.fn(),
-					on: vi.fn(),
-				}),
-			});
+			// Create mock avatar input
+			const validAvatarInput = {
+				objectName: faker.string.uuid(),
+				mimeType: "image/png",
+				fileHash: faker.string.alphanumeric(64),
+				name: "avatar.png",
+			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockAdminUser,
@@ -497,11 +496,13 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 					},
 				);
 
-			// Mock MinIO client (putObject is already mocked, but we can verify it's called)
-			const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
-			putObjectSpy.mockResolvedValue({
+			// Mock MinIO statObject
+			const statObjectSpy = vi.spyOn(mocks.minioClient.client, "statObject");
+			statObjectSpy.mockResolvedValue({
+				size: 1024,
 				etag: "mock-etag",
-				versionId: null,
+				lastModified: new Date(),
+				metaData: {},
 			});
 
 			const resultPromise = createOrganizationMutationResolver(
@@ -510,7 +511,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 					input: {
 						name: orgName,
 						description: "Test Description",
-						avatar: validAvatar,
+						avatar: validAvatarInput,
 					},
 				},
 				context,
@@ -524,8 +525,8 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				description: "Test Description",
 			});
 
-			// Verify MinIO putObject was called for avatar upload
-			expect(putObjectSpy).toHaveBeenCalled();
+			// Verify MinIO statObject was called
+			expect(statObjectSpy).toHaveBeenCalled();
 
 			const snapshot = perf.snapshot();
 			const op = snapshot.ops["mutation:createOrganization"];
@@ -588,7 +589,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 
-		it("should track mutation execution time when avatar upload fails", async () => {
+		it("should track mutation execution time when avatar upload verification fails", async () => {
 			// Use real timers to avoid infinite loop from runAllTimersAsync (mocks/context can schedule recurring timers)
 			vi.useRealTimers();
 			try {
@@ -604,15 +605,13 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 					avatarName: faker.string.uuid(),
 				};
 
-				// Create mock avatar with valid mime type
-				const validAvatar = Promise.resolve({
-					filename: "avatar.png",
-					mimetype: "image/png",
-					createReadStream: vi.fn().mockReturnValue({
-						pipe: vi.fn(),
-						on: vi.fn(),
-					}),
-				});
+				// Valid avatar input
+				const validAvatarInput = {
+					objectName: faker.string.uuid(),
+					mimeType: "image/png",
+					fileHash: faker.string.alphanumeric(64),
+					name: "avatar.png",
+				};
 
 				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 					mockAdminUser,
@@ -643,9 +642,9 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 						},
 					);
 
-				// Mock MinIO putObject to fail
-				const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
-				putObjectSpy.mockRejectedValue(new Error("Avatar upload failed"));
+				// Mock MinIO statObject to fail (file not found)
+				const statObjectSpy = vi.spyOn(mocks.minioClient.client, "statObject");
+				statObjectSpy.mockRejectedValue(new Error("File not found"));
 
 				try {
 					await createOrganizationMutationResolver(
@@ -654,15 +653,19 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 							input: {
 								name: orgName,
 								description: "Test Description",
-								avatar: validAvatar,
+								avatar: validAvatarInput,
 							},
 						},
 						context,
 					);
 					expect.fail("Expected error to be thrown");
 				} catch (error) {
-					expect(error).toBeInstanceOf(Error);
-					expect((error as Error).message).toContain("Avatar upload failed");
+					expect(error).toBeInstanceOf(TalawaGraphQLError);
+					// Expect invaid_arguments because resolver catches error and throws generic error or specific error
+					// In our implementation we catch and throw invalid_arguments
+					expect((error as TalawaGraphQLError).extensions?.code).toBe(
+						"invalid_arguments",
+					);
 				}
 
 				// Verify performance tracker recorded the failure path
@@ -703,14 +706,13 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 						avatarName: faker.string.uuid(),
 					};
 
-					const validAvatar = Promise.resolve({
-						filename: `avatar.${mimeType.split("/")[1]}`,
-						mimetype: mimeType,
-						createReadStream: vi.fn().mockReturnValue({
-							pipe: vi.fn(),
-							on: vi.fn(),
-						}),
-					});
+					// Valid avatar input
+					const validAvatarInput = {
+						objectName: faker.string.uuid(),
+						mimeType: mimeType,
+						fileHash: faker.string.alphanumeric(64),
+						name: `avatar.${mimeType.split("/")[1]}`,
+					};
 
 					mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 						mockAdminUser,
@@ -740,10 +742,15 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 							},
 						);
 
-					const putObjectSpy = vi.spyOn(mocks.minioClient.client, "putObject");
-					putObjectSpy.mockResolvedValue({
+					const statObjectSpy = vi.spyOn(
+						mocks.minioClient.client,
+						"statObject",
+					);
+					statObjectSpy.mockResolvedValue({
+						size: 1024,
 						etag: "mock-etag",
-						versionId: null,
+						lastModified: new Date(),
+						metaData: {},
 					});
 
 					const result = await createOrganizationMutationResolver(
@@ -752,14 +759,14 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 							input: {
 								name: orgName,
 								description: "Test Description",
-								avatar: validAvatar,
+								avatar: validAvatarInput,
 							},
 						},
 						context,
 					);
 
 					expect(result).toBeDefined();
-					expect(putObjectSpy).toHaveBeenCalled();
+					expect(statObjectSpy).toHaveBeenCalled();
 
 					const snapshot = perf.snapshot();
 					const op = snapshot.ops["mutation:createOrganization"];

@@ -1,8 +1,5 @@
 import { eq } from "drizzle-orm";
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { z } from "zod";
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venuesTable } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
@@ -16,43 +13,7 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateVenueArgumentsSchema = z.object({
-	input: mutationUpdateVenueInputSchema.transform(async (arg, ctx) => {
-		let attachments:
-			| (FileUpload & {
-					mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>;
-			  })[]
-			| undefined;
-
-		if (arg.attachments !== undefined) {
-			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = venueAttachmentMimeTypeEnum
-				.array()
-				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
-
-			if (!success) {
-				for (const issue of error.issues) {
-					if (typeof issue.path[0] === "number") {
-						ctx.addIssue({
-							code: "custom",
-							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
-						});
-					}
-				}
-			} else {
-				attachments = rawAttachments.map((attachment, index) =>
-					Object.assign(attachment, {
-						mimetype: data[index],
-					}),
-				);
-			}
-		}
-
-		return {
-			...arg,
-			attachments,
-		};
-	}),
+	input: mutationUpdateVenueInputSchema,
 });
 
 builder.mutationField("updateVenue", (t) =>
@@ -225,10 +186,35 @@ builder.mutationField("updateVenue", (t) =>
 				}
 
 				// Handle attachment updates
-				if (parsedArgs.input.attachments !== undefined) {
+				if (parsedArgs.input.attachments !== undefined && parsedArgs.input.attachments.length > 0) {
 					const attachments = parsedArgs.input.attachments;
 
-					// Delete existing attachment records (files will be removed after commit)
+					// Verify all files exist in MinIO before proceeding
+					for (let i = 0; i < attachments.length; i++) {
+						const attachment = attachments[i];
+						if (attachment) {
+							try {
+								await ctx.minio.client.statObject(
+									ctx.minio.bucketName,
+									attachment.objectName,
+								);
+							} catch {
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "invalid_arguments",
+										issues: [
+											{
+												argumentPath: ["input", "attachments", i, "objectName"],
+												message: "File not found in storage. Please upload the file first using the presigned URL.",
+											},
+										],
+									},
+								});
+							}
+						}
+					}
+
+					// Delete existing attachment records
 					const existingAttachments = existingVenue.attachmentsWhereVenue;
 					if (existingAttachments.length > 0) {
 						await tx
@@ -236,53 +222,18 @@ builder.mutationField("updateVenue", (t) =>
 							.where(eq(venueAttachmentsTable.venueId, parsedArgs.input.id));
 					}
 
-					// Create new attachments
+					// Create new attachment records using objectName from FileMetadataInput
 					const createdVenueAttachments = await tx
 						.insert(venueAttachmentsTable)
 						.values(
 							attachments.map((attachment) => ({
 								creatorId: currentUserId,
-								mimeType: attachment.mimetype,
-								name: ulid(),
+								mimeType: attachment.mimeType,
+								name: attachment.objectName,
 								venueId: updatedVenue.id,
 							})),
 						)
 						.returning();
-
-					// Upload new files to MinIO
-					const uploaded: string[] = [];
-					try {
-						await Promise.all(
-							createdVenueAttachments.map(async (attachment, index) => {
-								const file = attachments[index];
-								if (file) {
-									await ctx.minio.client.putObject(
-										ctx.minio.bucketName,
-										attachment.name,
-										file.createReadStream(),
-										undefined,
-										{ "content-type": attachment.mimeType },
-									);
-									uploaded.push(attachment.name);
-								}
-							}),
-						);
-					} catch (e) {
-						// Best-effort cleanup of partially uploaded files
-						await Promise.all(
-							uploaded.map((name) =>
-								ctx.minio.client.removeObject(ctx.minio.bucketName, name),
-							),
-						);
-						if (e instanceof TalawaGraphQLError) {
-							throw e;
-						}
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
 
 					return Object.assign(updatedVenue, {
 						attachments: createdVenueAttachments,

@@ -1,7 +1,4 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { z } from "zod";
-import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -15,38 +12,7 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateOrganizationArgumentsSchema = z.object({
-	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
-		let avatar:
-			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
-			| null
-			| undefined;
-
-		if (isNotNullish(arg.avatar)) {
-			const rawAvatar = await arg.avatar;
-			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
-
-			if (!success) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["avatar"],
-					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
-				});
-			} else {
-				avatar = Object.assign(rawAvatar, {
-					mimetype: data,
-				});
-			}
-		} else if (arg.avatar !== undefined) {
-			avatar = null;
-		}
-
-		return {
-			...arg,
-			avatar,
-		};
-	}),
+	input: mutationCreateOrganizationInputSchema,
 });
 
 builder.mutationField("createOrganization", (t) =>
@@ -140,8 +106,8 @@ builder.mutationField("createOrganization", (t) =>
 
 				const avatarMeta = isNotNullish(parsedArgs.input.avatar)
 					? {
-							avatarName: ulid(),
-							avatarMimeType: parsedArgs.input.avatar.mimetype,
+							avatarName: parsedArgs.input.avatar.objectName,
+							avatarMimeType: parsedArgs.input.avatar.mimeType,
 						}
 					: {};
 
@@ -181,15 +147,25 @@ builder.mutationField("createOrganization", (t) =>
 						isNotNullish(parsedArgs.input.avatar) &&
 						createdOrganization.avatarName
 					) {
-						await ctx.minio.client.putObject(
-							ctx.minio.bucketName,
-							createdOrganization.avatarName,
-							parsedArgs.input.avatar.createReadStream(),
-							undefined,
-							{
-								"content-type": parsedArgs.input.avatar.mimetype,
-							},
-						);
+						// Verify the file exists in MinIO (uploaded via presigned URL)
+						try {
+							await ctx.minio.client.statObject(
+								ctx.minio.bucketName,
+								createdOrganization.avatarName,
+							);
+						} catch {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "invalid_arguments",
+									issues: [
+										{
+											argumentPath: ["input", "avatar", "objectName"],
+											message: "File not found in storage. Please upload the file first using the presigned URL.",
+										},
+									],
+								},
+							});
+						}
 					}
 
 					return createdOrganization;

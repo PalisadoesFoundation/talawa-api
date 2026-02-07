@@ -1,7 +1,10 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { venuesTableInsertSchema } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 
 export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 	.pick({
@@ -11,12 +14,7 @@ export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: z
-			.custom<Promise<FileUpload>>()
-			.array()
-			.min(1)
-			.max(20)
-			.optional(),
+		attachments: z.array(fileMetadataInputSchema).max(20).optional(),
 	});
 
 export const MutationCreateVenueInput = builder
@@ -30,10 +28,10 @@ export const MutationCreateVenueInput = builder
 				description: "Capacity of the venue.",
 			}),
 			attachments: t.field({
-				description: "Attachments of the venue.",
-				type: t.listRef("Upload", { required: true }),
-				// Keep the list optional...
+				description:
+					"File metadata for attachments uploaded via MinIO presigned URLs.",
 				required: false,
+				type: [FileMetadataInput],
 			}),
 			description: t.string({
 				description: "Custom information about the venue.",

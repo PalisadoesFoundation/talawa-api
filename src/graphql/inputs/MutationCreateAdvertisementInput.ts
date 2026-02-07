@@ -1,8 +1,11 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 
 export const mutationCreateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
@@ -15,12 +18,7 @@ export const mutationCreateAdvertisementInputSchema =
 			type: true,
 		})
 		.extend({
-			attachments: z
-				.custom<Promise<FileUpload>>()
-				.array()
-				.min(1)
-				.max(20)
-				.optional(),
+			attachments: z.array(fileMetadataInputSchema).max(20).optional(),
 		})
 		.superRefine((arg, ctx) => {
 			if (arg.endAt <= arg.startAt) {
@@ -40,10 +38,10 @@ export const MutationCreateAdvertisementInput = builder
 		description: "",
 		fields: (t) => ({
 			attachments: t.field({
-				description: "Attachments of the advertisement.",
-				type: t.listRef("Upload", { required: true }),
-				// Keep the list optional...
+				description:
+					"File metadata for attachments uploaded via MinIO presigned URLs.",
 				required: false,
+				type: [FileMetadataInput],
 			}),
 			description: t.string({
 				description: "Custom information about the advertisement.",

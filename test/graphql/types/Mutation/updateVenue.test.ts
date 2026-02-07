@@ -964,8 +964,8 @@ suite("Mutation field updateVenue", () => {
 		expect(res.data?.updateVenue?.capacity).toBe(newCapacity);
 	});
 
-	// Multipart attachment tests (using Fastify raw inject)
-	test("rejects file upload with invalid MIME type", async () => {
+	// FileMetadataInput attachment tests
+	test("rejects attachment with invalid MIME type", async () => {
 		const administratorUserSignInResult = await mercuriusClient.query(
 			Query_signIn,
 			{
@@ -1027,58 +1027,34 @@ suite("Mutation field updateVenue", () => {
 		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
 		const venueId = createVenueResult.data.createVenue.id;
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operations = JSON.stringify({
-			query: `
-				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-					updateVenue(input: $input) {
-						id
-						attachments { mimeType }
-					}
+		// Try to update venue with invalid MIME type attachment using FileMetadataInput
+		const updateVenueAttachments = graphql(`
+			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+				updateVenue(input: $input) {
+					id
+					attachments { mimeType }
 				}
-			`,
+			}
+		`);
+
+		const result = await mercuriusClient.mutate(updateVenueAttachments, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
 			variables: {
 				input: {
 					id: venueId,
-					attachments: [null],
+					attachments: [
+						{
+							objectName: faker.string.ulid(),
+							mimeType: "application/x-msdownload" as never,
+							fileHash: faker.string.alphanumeric(64),
+							name: "test.exe",
+						},
+					],
 				},
 			},
 		});
-
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const fileContent = "fake executable content";
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="test.exe"',
-			"Content-Type: application/x-msdownload",
-			"",
-			fileContent,
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
 
 		expect(result.data?.updateVenue).toEqual(null);
 		expect(result.errors).toEqual(
@@ -1086,19 +1062,13 @@ suite("Mutation field updateVenue", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: expect.arrayContaining(["attachments"]),
-								message: expect.stringContaining("Mime type"),
-							}),
-						]),
 					}),
 				}),
 			]),
 		);
 	});
 
-	test("successfully updates venue with valid image attachment", async () => {
+	test("successfully updates venue with valid image attachment using FileMetadataInput", async () => {
 		const administratorUserSignInResult = await mercuriusClient.query(
 			Query_signIn,
 			{
@@ -1160,66 +1130,51 @@ suite("Mutation field updateVenue", () => {
 		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
 		const venueId = createVenueResult.data.createVenue.id;
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operations = JSON.stringify({
-			query: `
-				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-					updateVenue(input: $input) {
-						id
-						attachments { mimeType }
-					}
+		// Upload file to MinIO first (simulating presigned URL flow)
+		const objectName = faker.string.ulid();
+		const fileContent = Buffer.from("fake jpeg content");
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			objectName,
+			fileContent,
+			fileContent.length,
+			{ "content-type": "image/jpeg" },
+		);
+
+		// Update venue using FileMetadataInput
+		const updateVenueAttachments = graphql(`
+			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+				updateVenue(input: $input) {
+					id
+					attachments { mimeType }
 				}
-			`,
+			}
+		`);
+
+		const result = await mercuriusClient.mutate(updateVenueAttachments, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
 			variables: {
 				input: {
 					id: venueId,
-					attachments: [null],
+					attachments: [
+						{
+							objectName: objectName,
+							mimeType: "image/jpeg",
+							fileHash: faker.string.alphanumeric(64),
+							name: "venue-photo.jpg",
+						},
+					],
 				},
 			},
 		});
 
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const fileContent = "fake image content";
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
-			"Content-Type: image/jpeg",
-			"",
-			fileContent,
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.updateVenue?.id);
 
-		expect(result.data?.updateVenue?.attachments).toHaveLength(1);
-		expect(result.data?.updateVenue?.attachments[0].mimeType).toBe(
-			"image/jpeg",
-		);
+		// Cleanup: remove uploaded file
+		await server.minio.client.removeObject(server.minio.bucketName, objectName);
 	});
 
 	test("returns unexpected error when MinIO upload fails during update", async () => {

@@ -1,7 +1,4 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { z } from "zod";
-import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { communitiesTable } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -14,41 +11,7 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateCommunityArgumentsSchema = z.object({
-	input: mutationUpdateCommunityInputSchema.transform(async (arg, ctx) => {
-		let logo:
-			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
-			| null
-			| undefined;
-
-		if (isNotNullish(arg.logo)) {
-			const rawAvatar = await arg.logo;
-			const result = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
-
-			if (!result.success) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["logo"],
-					message: `Mime type ${rawAvatar.mimetype} not allowed for this file upload.`,
-				});
-			} else {
-				logo = Object.assign(rawAvatar, {
-					mimetype: result.data,
-				});
-			}
-
-			return {
-				...arg,
-				logo,
-			};
-		}
-
-		return {
-			...arg,
-			logo: arg.logo,
-		};
-	}),
+	input: mutationUpdateCommunityInputSchema,
 });
 
 builder.mutationField("updateCommunity", (t) =>
@@ -134,15 +97,13 @@ builder.mutationField("updateCommunity", (t) =>
 				});
 			}
 
-			let logoMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let logoName: string;
+			let logoMimeType: string | undefined;
+			let logoName: string | undefined;
 
 			if (isNotNullish(parsedArgs.input.logo)) {
-				logoName =
-					existingCommunity.logoName === null
-						? ulid()
-						: existingCommunity.logoName;
-				logoMimeType = parsedArgs.input.logo.mimetype;
+				// Use the objectName from the presigned URL upload
+				logoName = parsedArgs.input.logo.objectName;
+				logoMimeType = parsedArgs.input.logo.mimeType;
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
@@ -182,20 +143,43 @@ builder.mutationField("updateCommunity", (t) =>
 					});
 				}
 
-				if (isNotNullish(parsedArgs.input.logo)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						logoName,
-						parsedArgs.input.logo.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.logo.mimetype,
-						},
-					);
+				if (isNotNullish(parsedArgs.input.logo) && logoName) {
+					// Verify the file exists in MinIO (uploaded via presigned URL)
+					try {
+						await ctx.minio.client.statObject(
+							ctx.minio.bucketName,
+							logoName,
+						);
+					} catch {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input", "logo", "objectName"],
+										message: "File not found in storage. Please upload the file first using the presigned URL.",
+									},
+								],
+							},
+						});
+					}
+
+					// Remove old logo if it exists and has a different name
+					if (existingCommunity.logoName !== null && existingCommunity.logoName !== logoName) {
+						try {
+							await ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								existingCommunity.logoName,
+							);
+						} catch {
+							// Ignore errors when removing old file
+						}
+					}
 				} else if (
 					parsedArgs.input.logo !== undefined &&
 					existingCommunity.logoName !== null
 				) {
+					// Logo was explicitly set to null, remove old logo
 					await ctx.minio.client.removeObject(
 						ctx.minio.bucketName,
 						existingCommunity.logoName,
