@@ -948,7 +948,9 @@ type EventAttendee {
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
-  """The event the attendee is associated with."""
+  """
+  The event the attendee is associated with. Supports both standalone events and recurring event instances.
+  """
   event: Event
 
   """Indicates if the attendee has submitted feedback for the event."""
@@ -5213,6 +5215,12 @@ type Query {
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+
+  """Query field to fetch tags assigned to a user."""
+  userTags(
+    """ID of the user whose tags are fetched"""
+    userId: ID!
+  ): [Tag!]!
 
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]

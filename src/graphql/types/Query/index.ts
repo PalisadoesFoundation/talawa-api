@@ -23,6 +23,7 @@ import "./renewAuthenticationToken";
 import "./signIn";
 import "./tag";
 import "./tagFolder";
+import "./TagsAssignedToUser";
 import "./user";
 import "./venue";
 import "./allUsers";

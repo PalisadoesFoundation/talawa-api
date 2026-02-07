@@ -1266,7 +1266,7 @@ Talawa API uses OpenTelemetry to provide end-to-end visibility into incoming req
 - Configurable sampling
 - Zero-overhead when disabled
 - Console-based tracing for local development
-- OTLP-based exporting for production
+- OTLP-based exporting for production/development
 
 ### Configuration
 
@@ -1275,10 +1275,12 @@ Tracing behavior is controlled through environment variables:
 | Variable | Required | Description | Default |
 |----------|----------|-------------|---------|
 | `API_OTEL_ENABLED` | Yes | Enable/disable tracing | `false` |
-| `API_OTEL_ENVIRONMENT` | Yes | Runtime environment | `local` |
-| `API_OTEL_EXPORTER_OTLP_ENDPOINT` | No* | OTLP HTTP endpoint | `http://localhost:4318/v1/traces` |
+| `API_OTEL_EXPORTER_TYPE` | Yes | Runtime environment (`console` or `otlp`) | `console` |
+| `API_OTEL_TRACE_EXPORTER_ENDPOINT` | No | OTLP HTTP endpoint for traces | |
+| `API_OTEL_METRIC_EXPORTER_ENDPOINT` | No | OTLP HTTP endpoint for metrics | |
 | `API_OTEL_SAMPLING_RATIO` | No | Trace sampling ratio (0-1) | `1` |
 | `API_OTEL_SERVICE_NAME` | No | Service identifier | `talawa-api` |
+| `API_OTEL_EXPORTER_ENABLED` | Yes | Enable spans exporting | `false` |
 
 **Recommended Settings by Environment:**
 
@@ -1299,16 +1301,58 @@ API_OTEL_SAMPLING_RATIO=0.1
 - Child spans automatically inherit the parent's sampling decision
 - This allows high-volume production systems to reduce telemetry cost without losing trace continuity
 
-### Local Development Setup
+### Tracing Modes
 
-Follow these steps to enable and test OpenTelemetry tracing in your local development environment.
-**Example `.env`:**
+Talawa API supports two distinct tracing modes: **Console Mode** for local development and debugging, and **External Mode** for production monitoring with external dashboard services.
+
+#### Console Mode (Local Development)
+
+Console mode outputs spans directly to stdout, ideal for local development and debugging without external dependencies.
+
+**Configuration:**
+
 ```bash
 API_OTEL_ENABLED=true
-API_OTEL_ENVIRONMENT=local
-API_OTEL_SERVICE_NAME=talawa-api
+API_OTEL_EXPORTER_TYPE=console
+API_OTEL_EXPORTER_ENABLED=true
 API_OTEL_SAMPLING_RATIO=1
+API_OTEL_SERVICE_NAME=talawa-api
 ```
+
+#### External Mode (Production Monitoring)
+
+External mode exports spans to an external OpenTelemetry-compatible dashboard service using OTLP protocol, enabling centralized monitoring and analysis.
+
+**Configuration:**
+
+```bash
+API_OTEL_ENABLED=true
+API_OTEL_EXPORTER_TYPE=otlp
+API_OTEL_EXPORTER_ENABLED=true
+API_OTEL_TRACE_EXPORTER_ENDPOINT=your-service-endpoint
+API_OTEL_METRIC_EXPORTER_ENDPOINT=your-service-endpoint
+API_OTEL_SAMPLING_RATIO=0.5
+API_OTEL_SERVICE_NAME=talawa-api
+```
+### W3C Trace Context Propagation
+
+Talawa API supports distributed tracing by automatically propagating trace context across service boundaries using the W3C standard format.
+
+Talawa API automatically propagates trace context using the `traceparent` header:
+
+### Disabling Tracing
+
+To completely disable OpenTelemetry tracing with zero runtime overhead, set the following environment variable:
+
+```bash
+API_OTEL_ENABLED=false
+```
+
+When disabled:
+
+- SDK is not initialized
+- No instrumentation is registered
+- No performance impact is introduced
 
 **Start the server and make a request:**
 
