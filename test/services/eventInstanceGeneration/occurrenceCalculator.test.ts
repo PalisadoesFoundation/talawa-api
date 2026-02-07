@@ -994,14 +994,8 @@ suite("occurrenceCalculator", () => {
 
 			// Should return exact expected number of occurrences
 			expect(result.length).toBe(4);
-			// Should ensure none of the returned occurrences have recurringEventInstanceId equal to exceptionWithoutTime.recurringEventInstanceId
-			expect(
-				result.every(
-					(occurrence) =>
-						occurrence.recurringEventInstanceId !==
-						exceptionWithoutTime.recurringEventInstanceId,
-				),
-			).toBe(true);
+			// Should ensure no occurrence is marked cancelled and that the exceptionWithoutTime didn't remove an occurrence by mistake
+			expect(result.every((o) => o.isCancelled !== true)).toBe(true);
 		});
 
 		test("handles monthly byDay with missing byDay rule", () => {
@@ -1046,6 +1040,35 @@ suite("occurrenceCalculator", () => {
 
 			// Should generate 3 occurrences since June 1st matches byMonth: [6]
 			expect(result).toHaveLength(3);
+		});
+
+		test("handles yearly events with mismatched month to prevent infinite loops", () => {
+			const yearlyRule = {
+				...mockRecurrenceRule,
+				frequency: "YEARLY",
+				interval: 1,
+				count: 3,
+				byMonth: [6], // Only June
+			} as typeof recurrenceRulesTable.$inferSelect;
+
+			const januaryEvent = {
+				...mockBaseEvent,
+				startAt: new Date("2025-01-01T10:00:00Z"), // January event but rule requires June
+				endAt: new Date("2025-01-01T11:00:00Z"),
+			} as typeof eventsTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: yearlyRule,
+				baseEvent: januaryEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2027-12-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			// Should terminate loop gracefully and return empty array since January never matches byMonth: [6]
+			expect(result).toHaveLength(0);
 		});
 
 		test("handles event duration calculation with null endAt", () => {

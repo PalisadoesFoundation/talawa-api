@@ -59,10 +59,13 @@ export function calculateInstanceOccurrences(
 	// For yearly events, create instances immediately without windowing
 	if (recurrenceRule.frequency === "YEARLY") {
 		while (
-			recurrenceRule.recurrenceEndDate
+			(recurrenceRule.recurrenceEndDate
 				? currentDate <= recurrenceRule.recurrenceEndDate
-				: sequenceNumber <= (context.totalCount || 1)
+				: sequenceNumber <= (context.totalCount || 1)) &&
+			iterationCount < context.maxIterations
 		) {
+			iterationCount++;
+
 			if (
 				shouldGenerateInstanceAtDate(
 					currentDate,
@@ -76,8 +79,10 @@ export function calculateInstanceOccurrences(
 					sequenceNumber,
 				);
 				occurrences.push(occurrence);
-				sequenceNumber++;
 			}
+
+			// Always increment sequenceNumber to avoid infinite loops
+			sequenceNumber++;
 			currentDate.setFullYear(
 				currentDate.getFullYear() + (recurrenceRule.interval || 1),
 			);
