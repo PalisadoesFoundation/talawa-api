@@ -3750,6 +3750,9 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+
+  """Notes of the agenda item."""
+  notes: String
   url: [UpdateAgendaItemUrlInput!]
 }
 
@@ -5220,7 +5223,7 @@ type Query {
   userTags(
     """User ID to fetch assigned tags for"""
     userId: ID!
-  ): [Tag!]!
+  ): [Tag!]
 
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]

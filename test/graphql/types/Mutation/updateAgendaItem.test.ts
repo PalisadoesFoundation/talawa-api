@@ -593,4 +593,107 @@ suite("Mutation field updateAgendaItem", () => {
 		expect(urlsAfter).toHaveLength(2);
 		expect(urlsAfter.map((u) => u.url).sort()).toEqual(initialUrls.sort());
 	});
+
+	test("should update notes successfully", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+			input: {
+				id: agendaItemId,
+				notes: "These are updated notes",
+			},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaItem).toEqual(
+			expect.objectContaining({
+			id: agendaItemId,
+			notes: "These are updated notes",
+			}),
+		);
+
+		const itemInDb = await server.drizzleClient.query.agendaItemsTable.findFirst({
+			columns: { notes: true },
+			where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+		});
+
+		assertToBeNonNullish(itemInDb);
+		expect(itemInDb.notes).toBe("These are updated notes");
+		});
+
+		test("should set notes to null when explicitly provided as null", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		// first set notes
+		await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+			input: {
+				id: agendaItemId,
+				notes: "Initial notes",
+			},
+			},
+		});
+
+		// now clear notes
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+			input: {
+				id: agendaItemId,
+				notes: null,
+			},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaItem?.notes).toBeNull();
+
+		const itemInDb = await server.drizzleClient.query.agendaItemsTable.findFirst({
+			columns: { notes: true },
+			where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+		});
+
+		assertToBeNonNullish(itemInDb);
+		expect(itemInDb.notes).toBeNull();
+		});
+
+		test("should not modify notes when notes field is omitted", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		// set initial notes
+		await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+			input: {
+				id: agendaItemId,
+				notes: "Keep this note",
+			},
+			},
+		});
+
+		// update something else
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+			input: {
+				id: agendaItemId,
+				name: "Updated name only",
+			},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+
+		const itemInDb = await server.drizzleClient.query.agendaItemsTable.findFirst({
+			columns: { notes: true },
+			where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+		});
+
+		assertToBeNonNullish(itemInDb);
+		expect(itemInDb.notes).toBe("Keep this note");
+		});
 });

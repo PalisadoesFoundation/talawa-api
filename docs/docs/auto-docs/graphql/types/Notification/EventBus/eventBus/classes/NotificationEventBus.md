@@ -16,7 +16,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:9](https://gith
 
 > **new NotificationEventBus**(`options?`): `NotificationEventBus`
 
-Defined in: node\_modules/.pnpm/@types+node@22.19.9/node\_modules/@types/node/events.d.ts:101
+Defined in: node\_modules/.pnpm/@types+node@22.19.3/node\_modules/@types/node/events.d.ts:101
 
 #### Parameters
 

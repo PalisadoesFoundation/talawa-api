@@ -283,6 +283,9 @@ builder.mutationField("updateAgendaItem", (t) =>
 				if (parsedArgs.input.description !== undefined) {
 					updates.description = parsedArgs.input.description;
 				}
+				if (parsedArgs.input.notes !== undefined) {
+					updates.notes = parsedArgs.input.notes;
+				}
 				if (parsedArgs.input.duration !== undefined) {
 					updates.duration = parsedArgs.input.duration;
 				}
