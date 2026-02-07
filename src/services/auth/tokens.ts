@@ -3,7 +3,7 @@
  * access/refresh tokens used by REST auth (src/services/auth). The "@fastify/jwt" dependency
  * is used elsewhere for GraphQL auth (src/routes/graphql). Both are kept; no migration planned.
  */
-import { jwtVerify, SignJWT } from "jose";
+import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import { rootLogger } from "~/src/utilities/logging/logger";
@@ -56,16 +56,16 @@ function getSecret(): Uint8Array {
 
 const SECRET = getSecret();
 
-/** Payload shape for access tokens. */
-export type AccessClaims = {
+/** Payload shape for access tokens. Extends jose JWTPayload so callers see iss, iat, exp. */
+export type AccessClaims = JWTPayload & {
 	sub: string;
 	email: string;
 	typ: "access";
 	ver: 1;
 };
 
-/** Payload shape for refresh tokens. */
-export type RefreshClaims = {
+/** Payload shape for refresh tokens. Extends jose JWTPayload so callers see iss, iat, exp, jti. */
+export type RefreshClaims = JWTPayload & {
 	sub: string;
 	typ: "refresh";
 	ver: 1;

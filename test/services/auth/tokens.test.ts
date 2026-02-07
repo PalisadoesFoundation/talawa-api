@@ -186,20 +186,10 @@ describe("auth/tokens", () => {
 				jti: "jti-1",
 			});
 			// Default TTLs when env is invalid: access 900s, refresh 2592000s (jose adds exp/iat to payload)
-			const accessWithExpIat = accessPayload as AccessClaims & {
-				exp?: number;
-				iat?: number;
-			};
-			const refreshWithExpIat = refreshPayload as RefreshClaims & {
-				exp?: number;
-				iat?: number;
-			};
-			expect(
-				Number(refreshWithExpIat.exp) - Number(refreshWithExpIat.iat),
-			).toBe(2592000);
-			expect(Number(accessWithExpIat.exp) - Number(accessWithExpIat.iat)).toBe(
-				900,
+			expect(Number(refreshPayload.exp) - Number(refreshPayload.iat)).toBe(
+				2592000,
 			);
+			expect(Number(accessPayload.exp) - Number(accessPayload.iat)).toBe(900);
 		});
 	});
 });
