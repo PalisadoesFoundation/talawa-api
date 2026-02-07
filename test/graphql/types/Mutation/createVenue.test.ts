@@ -97,6 +97,7 @@ suite("Mutation field createVenue", () => {
 					});
 				} catch (_error) {
 					// User might already be deleted, continue
+					console.debug("Cleanup: User deletion skipped", _error);
 				}
 			}
 
@@ -109,6 +110,7 @@ suite("Mutation field createVenue", () => {
 					});
 				} catch (_error) {
 					// Organization might already be deleted, continue
+					console.debug("Cleanup: Organization deletion skipped", _error);
 				}
 			}
 		}

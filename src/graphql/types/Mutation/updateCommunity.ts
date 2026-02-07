@@ -172,8 +172,11 @@ builder.mutationField("updateCommunity", (t) =>
 								ctx.minio.bucketName,
 								existingCommunity.logoName,
 							);
-						} catch {
-							// Ignore errors when removing old file
+						} catch (error) {
+							// Log but don't throw - old file cleanup is non-critical
+							ctx.log.warn(
+								`Failed to remove old logo ${existingCommunity.logoName}: ${error}`,
+							);
 						}
 					}
 				} else if (

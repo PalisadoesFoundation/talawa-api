@@ -96,6 +96,7 @@ suite("Mutation field updateVenue", () => {
 					);
 				} catch (_error) {
 					// Venue might already be deleted
+					console.debug("Cleanup: Venue deletion skipped", _error);
 				}
 			}
 		}
