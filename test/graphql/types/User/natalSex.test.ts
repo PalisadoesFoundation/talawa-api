@@ -272,6 +272,65 @@ suite("User field natalSex", () => {
 				expect(userNatalSexResult.data.user).toBeDefined();
 			});
 
+			test(`"data.user.natalSex" returns the natalSex value when a regular user accesses their own data.`, async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createUserResult.data.createUser?.authenticationToken,
+				);
+				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+
+				const userNatalSexResult = await mercuriusClient.query(
+					Query_user_natalSex,
+					{
+						headers: {
+							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: createUserResult.data.createUser.user.id,
+							},
+						},
+					},
+				);
+
+				expect(userNatalSexResult.errors).toBeUndefined();
+				expect(userNatalSexResult.data.user).toBeDefined();
+			});
+
 			test(`"data.user.natalSex" returns the correct natalSex value when admin accesses another user's data.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
@@ -490,7 +549,7 @@ suite("User field natalSex", () => {
 								name: "name",
 								password: "password",
 								role: "regular",
-								natalSex: "other",
+								natalSex: "intersex",
 							},
 						},
 					},
@@ -513,7 +572,7 @@ suite("User field natalSex", () => {
 				);
 
 				expect(userNatalSexResult.errors).toBeUndefined();
-				expect(userNatalSexResult.data.user?.natalSex).toEqual("other");
+				expect(userNatalSexResult.data.user?.natalSex).toEqual("intersex");
 			});
 		},
 	);
