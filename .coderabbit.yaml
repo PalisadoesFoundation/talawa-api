@@ -31,9 +31,9 @@ reviews:
     - "!*.md"
     - "!*.svg"
   tools:
-    ast_grep:
+    ast-grep:
       enabled: true
-      rules_dirs:
+      rule_dirs:
         - .coderabbit/ast-grep-rules
       essential_rules: true
 
