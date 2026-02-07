@@ -216,6 +216,15 @@ describe("signUpBody", () => {
 		});
 		expect(result.success).toBe(false);
 	});
+
+	it("strips unknown properties from parsed output", () => {
+		const result = signUpBody.safeParse({ ...valid, extraField: "x" });
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data).not.toHaveProperty("extraField");
+			expect(result.data).toEqual(valid);
+		}
+	});
 });
 
 describe("signInBody", () => {
