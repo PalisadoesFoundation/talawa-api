@@ -34,3 +34,7 @@ fix: |
   # .getDate() → .getUTCDate()
   # .getMonth() → .getUTCMonth()
   # .getDay() → .getUTCDay()
+  # .getHours() → .getUTCDate()
+  # .getMinutes() → .getUTCMinutes()
+  # .getSeconds() → .getUTCSeconds()
+  # .getFullYear() → .getUTCFullYear()
