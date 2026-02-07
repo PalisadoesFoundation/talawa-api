@@ -679,24 +679,28 @@ export const Query_tag = gql(`
   }
 }`);
 
-export const Mutation_createTag = gql(`
-  mutation CreateTag($input:MutationCreateTagInput!) {
-    createTag(input: $input) {
+export const Query_userTags = gql(`
+  query userTags($userId: ID!) {
+    userTags(userId: $userId) {
       id
       name
-      createdAt
-      organization{
+      creator {
         id
-        name
-        createdAt
-
+      }
+      assignees(first: 10){
+        edges {
+          node {
+            id
+          }
         }
+      }
     }
-  }`);
+  }
+`);
 
-export const Mutation_deleteTag = gql(`
-  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {
-    deleteTag(input: $input) {
+export const Mutation_createTag = gql(`
+  mutation createTag($input: MutationCreateTagInput!) {
+    createTag(input: $input) {
       id
       name
       createdAt
@@ -706,8 +710,28 @@ export const Mutation_deleteTag = gql(`
 `);
 
 export const Mutation_createTagFolder = gql(`
-  mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
+  mutation createTagFolder($input: MutationCreateTagFolderInput!) {
     createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_assignUserTag = gql(`
+  mutation assignUserTag($assigneeId: ID!, $tagId: ID!) {
+    assignUserTag(
+      assigneeId: $assigneeId
+      tagId: $tagId
+    )
+  }
+`);
+
+export const Mutation_deleteTag = gql(`
+  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {
+    deleteTag(input: $input) {
       id
       name
       createdAt
@@ -1081,12 +1105,6 @@ export const Mutation_unblockUser =
 	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
-
-export const Mutation_assignUserTag = gql(`
-      mutation AssignUserTag($assigneeId: ID!, $tagId: ID!) {
-        assignUserTag(assigneeId: $assigneeId, tagId: $tagId)
-      }
-`);
 
 export const Mutation_unassignUserTag = gql(`
       mutation UnassignUserTag($assigneeId: ID!, $tagId: ID!) {

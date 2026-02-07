@@ -47,10 +47,10 @@ jobs:
             echo "changed_files=" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Get the base branch ref
           BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          
+
           # Get all changed files
           CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')
           echo "changed_files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
@@ -310,6 +310,7 @@ jobs:
           # Define sensitive files patterns as a bash array
           SENSITIVE_PATTERNS=(
             '.coderabbit.yaml$'
+            '^.coderabbit/.*'            
             'Caddyfile$'
             'codegen.ts$'
             '^Dockerfile.*'
@@ -685,30 +686,30 @@ jobs:
           echo "Merging ALL coverage for local check..."
           mkdir -p .nyc_output_all
           mkdir -p ./coverage/vitest
-          
+
           find coverage-shards -name "coverage-final.json" -type f > json-files-all.txt
-          
+
           SHARD_NUM=0
           while IFS= read -r file; do
              cp "$file" ".nyc_output_all/coverage-shard-${SHARD_NUM}.json"
              SHARD_NUM=$((SHARD_NUM + 1))
           done < json-files-all.txt
-          
+
           pnpm exec nyc merge .nyc_output_all ./coverage/vitest/coverage-final.json
-          
+
           # Path rewrite
           DOCKER_PATH="/home/talawa/api"
           RUNNER_PATH="$GITHUB_WORKSPACE"
           sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
-          
+
           # Report
           rm -rf .nyc_output
           mkdir -p .nyc_output
           cp ./coverage/vitest/coverage-final.json .nyc_output/coverage-final.json
           pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
-          
+
           rm -rf .nyc_output_all .nyc_output
-          
+
       - name: Calculate merge base for Codecov
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         id: get-merge-base

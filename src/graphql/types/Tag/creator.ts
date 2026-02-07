@@ -63,11 +63,7 @@ export const tagCreatorResolver = async (
 			(currentUserOrganizationMembership === undefined ||
 				currentUserOrganizationMembership.role !== "administrator")
 		) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			});
+			return null;
 		}
 
 		if (parent.creatorId === null) {
@@ -114,6 +110,7 @@ Tag.implement({
 		creator: t.field({
 			description: "User who created the tag.",
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			nullable: true,
 			resolve: tagCreatorResolver,
 			type: User,
 		}),

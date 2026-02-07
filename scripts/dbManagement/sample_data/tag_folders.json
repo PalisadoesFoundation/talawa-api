@@ -1,0 +1,32 @@
+[
+	{
+		"id": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e91",
+		"name": "Community Engagement",
+		"organizationId": "01960b81-bfed-7369-ae96-689dbd4281ba",
+		"creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"updaterId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e92",
+		"name": "Volunteer Programs",
+		"organizationId": "01960b81-bfed-7524-bc73-c1a67449d746",
+		"creatorId": "65378abd-8500-4f17-9cf2-990d00000002",
+		"updaterId": "65378abd-8500-4f17-9cf2-990d00000002",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e62",
+		"name": "Fundraising",
+		"organizationId": "01960b81-bfed-751e-a6e6-eca1c98fc585",
+		"creatorId": "66378abd-8500-4f17-9cf2-990d00000003",
+		"updaterId": "66378abd-8500-4f17-9cf2-990d00000003",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	}
+]

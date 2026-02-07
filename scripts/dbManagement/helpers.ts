@@ -104,7 +104,8 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 
 		return true;
-	} catch (_error) {
+	} catch (error: unknown) {
+		console.error("Error formatting database:", error);
 		return false;
 	}
 }
@@ -214,10 +215,20 @@ export async function insertCollections(
 						(user: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
+							birthDate: string | number | Date;
+							lockedUntil: string | number | Date | null;
+							lastFailedLoginAt?: string | number | Date | null;
 						}) => ({
 							...user,
-							createdAt: parseDate(user.createdAt),
-							updatedAt: parseDate(user.updatedAt),
+							createdAt: user.createdAt ? parseDate(user.createdAt) : null,
+							updatedAt: user.updatedAt ? parseDate(user.updatedAt) : null,
+							birthDate: user.birthDate ? parseDate(user.birthDate) : null,
+							lockedUntil: user.lockedUntil
+								? parseDate(user.lockedUntil)
+								: null,
+							lastFailedLoginAt: user.lastFailedLoginAt
+								? parseDate(user.lastFailedLoginAt)
+								: null,
 						}),
 					) as (typeof schema.usersTable.$inferInsert)[];
 
@@ -352,6 +363,81 @@ export async function insertCollections(
 					);
 					break;
 				}
+
+				case "tag_folders": {
+					const tag_folders = JSON.parse(fileContent).map(
+						(tag_folders: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...tag_folders,
+							createdAt: parseDate(tag_folders.createdAt),
+							updatedAt: parseDate(tag_folders.updatedAt),
+						}),
+					) as (typeof schema.tagFoldersTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.tagFoldersTable,
+						tag_folders,
+						schema.tagFoldersTable.id,
+						100,
+					);
+					console.log(
+						"\x1b[35mAdded: Tag Folders Table Data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "tag_assignments": {
+					const tag_assignments = JSON.parse(fileContent).map(
+						(assignment: {
+							tagId: string;
+							assigneeId: string;
+							creatorId: string;
+							createdAt: string | number | Date;
+						}) => ({
+							tagId: assignment.tagId,
+							assigneeId: assignment.assigneeId,
+							creatorId: assignment.creatorId,
+							createdAt: parseDate(assignment.createdAt),
+						}),
+					) as (typeof schema.tagAssignmentsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.tagAssignmentsTable,
+						tag_assignments,
+						[
+							schema.tagAssignmentsTable.assigneeId,
+							schema.tagAssignmentsTable.tagId,
+						],
+						100,
+					);
+					console.log(
+						"\x1b[35mAdded: Tag Assignments Table Data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "tags": {
+					const tags = JSON.parse(fileContent).map(
+						(tags: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...tags,
+							createdAt: parseDate(tags.createdAt),
+							updatedAt: parseDate(tags.updatedAt),
+						}),
+					) as (typeof schema.tagsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.tagsTable,
+						tags,
+						schema.tagsTable.id,
+						100,
+					);
+					console.log(
+						"\x1b[35mAdded: Tags Table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				case "membership_requests": {
 					const membership_requests = JSON.parse(fileContent).map(
 						(membership_request: { createdAt: string | number | Date }) => ({
@@ -813,6 +899,9 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 				table: schema.organizationMembershipsTable,
 			},
 			{ name: "posts", table: schema.postsTable },
+			{ name: "tag_folders", table: schema.tagFoldersTable },
+			{ name: "tags", table: schema.tagsTable },
+			{ name: "tag_assignments", table: schema.tagAssignmentsTable },
 			{ name: "post_votes", table: schema.postVotesTable },
 			{ name: "post_attachments", table: schema.postAttachmentsTable },
 			{ name: "comments", table: schema.commentsTable },
