@@ -36,7 +36,14 @@ export async function verifyPassword(
 ): Promise<boolean> {
 	try {
 		return await verify(hashStr, plain);
-	} catch {
+	} catch (error) {
+		// verifyPassword API contract: return false on any verify(hashStr, plain) error (invalid hash or wrong password); do not throw.
+		// validate_error_handling requires catch to log or rethrow: approved suppression — debug log only, then return false.
+		// biome-ignore lint/suspicious/noConsole: required by validate_error_handling for proper catch logging
+		console.debug(
+			"Password verification failed",
+			error instanceof Error ? error.message : String(error),
+		);
 		return false;
 	}
 }

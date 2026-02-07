@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AccessClaims, RefreshClaims } from "~/src/services/auth/tokens";
+import type { AccessClaims, RefreshClaims } from "~/src/services/auth";
 
 const FIXED_SECRET = "test-secret-for-unit-tests";
 
@@ -7,11 +7,13 @@ describe("auth/tokens", () => {
 	const originalSecret = process.env.AUTH_JWT_SECRET;
 	const originalAccessTtl = process.env.ACCESS_TOKEN_TTL;
 	const originalRefreshTtl = process.env.REFRESH_TOKEN_TTL;
+	const originalNodeEnv = process.env.NODE_ENV;
 
 	beforeEach(() => {
 		process.env.AUTH_JWT_SECRET = FIXED_SECRET;
 		delete process.env.ACCESS_TOKEN_TTL;
 		delete process.env.REFRESH_TOKEN_TTL;
+		process.env.NODE_ENV = "test";
 		vi.resetModules();
 	});
 
@@ -31,11 +33,16 @@ describe("auth/tokens", () => {
 		} else {
 			delete process.env.REFRESH_TOKEN_TTL;
 		}
+		if (originalNodeEnv !== undefined) {
+			process.env.NODE_ENV = originalNodeEnv;
+		} else {
+			delete process.env.NODE_ENV;
+		}
 		vi.resetModules();
 	});
 
 	async function getTokens() {
-		return import("~/src/services/auth/tokens");
+		return import("~/src/services/auth");
 	}
 
 	describe("signAccessToken / verifyToken", () => {
@@ -102,6 +109,7 @@ describe("auth/tokens", () => {
 			const { SignJWT } = await import("jose");
 			const encoder = new TextEncoder();
 			const secret = encoder.encode(FIXED_SECRET);
+			const pastExp = Math.floor(Date.now() / 1000) - 10;
 			const expired = await new SignJWT({
 				sub: "u1",
 				email: "a@b.co",
@@ -111,7 +119,7 @@ describe("auth/tokens", () => {
 				.setProtectedHeader({ alg: "HS256" })
 				.setIssuer("talawa-api")
 				.setIssuedAt()
-				.setExpirationTime("0s")
+				.setExpirationTime(pastExp)
 				.sign(secret);
 
 			const { verifyToken } = await getTokens();
@@ -147,10 +155,11 @@ describe("auth/tokens", () => {
 
 	describe("default secret when AUTH_JWT_SECRET unset", () => {
 		it("uses default secret and can sign and verify", async () => {
+			process.env.NODE_ENV = "test";
 			delete process.env.AUTH_JWT_SECRET;
 			vi.resetModules();
 			const { signAccessToken, verifyToken } = await import(
-				"~/src/services/auth/tokens"
+				"~/src/services/auth"
 			);
 			const token = await signAccessToken({
 				id: "u1",
@@ -168,7 +177,7 @@ describe("auth/tokens", () => {
 			process.env.REFRESH_TOKEN_TTL = "0";
 			vi.resetModules();
 			const { signAccessToken, signRefreshToken, verifyToken } = await import(
-				"~/src/services/auth/tokens"
+				"~/src/services/auth"
 			);
 			const accessToken = await signAccessToken({
 				id: "u1",

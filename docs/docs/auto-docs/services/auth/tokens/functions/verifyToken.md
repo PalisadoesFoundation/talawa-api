@@ -6,7 +6,7 @@
 
 > **verifyToken**\<`T`\>(`jwt`): `Promise`\<`T`\>
 
-Defined in: [src/services/auth/tokens.ts:95](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L95)
+Defined in: [src/services/auth/tokens.ts:117](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L117)
 
 Verifies a JWT and returns the payload. Throws on expired, wrong secret, or wrong issuer.
 
@@ -29,3 +29,8 @@ Raw JWT string.
 `Promise`\<`T`\>
 
 Decoded payload (typed by generic T).
+
+## Remarks
+
+The returned payload is not runtime-validated for `typ` (access vs refresh).
+Callers must validate `payload.typ` themselves when distinguishing AccessClaims from RefreshClaims.

@@ -6,7 +6,7 @@
 
 > **AccessClaims** = `object`
 
-Defined in: [src/services/auth/tokens.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L30)
+Defined in: [src/services/auth/tokens.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L50)
 
 Payload shape for access tokens.
 
@@ -16,7 +16,7 @@ Payload shape for access tokens.
 
 > **email**: `string`
 
-Defined in: [src/services/auth/tokens.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L32)
+Defined in: [src/services/auth/tokens.ts:52](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L52)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/services/auth/tokens.ts:32](https://github.com/PalisadoesFounda
 
 > **sub**: `string`
 
-Defined in: [src/services/auth/tokens.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L31)
+Defined in: [src/services/auth/tokens.ts:51](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L51)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/services/auth/tokens.ts:31](https://github.com/PalisadoesFounda
 
 > **typ**: `"access"`
 
-Defined in: [src/services/auth/tokens.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L33)
+Defined in: [src/services/auth/tokens.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L53)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [src/services/auth/tokens.ts:33](https://github.com/PalisadoesFounda
 
 > **ver**: `1`
 
-Defined in: [src/services/auth/tokens.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L34)
+Defined in: [src/services/auth/tokens.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L54)

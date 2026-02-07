@@ -3,6 +3,12 @@ import { jwtVerify, SignJWT } from "jose";
 const encoder = new TextEncoder();
 const ISSUER = "talawa-api";
 
+/**
+ * ACCESS_TTL_SEC, REFRESH_TTL_SEC, and SECRET are read from process.env once at module load
+ * and are immutable for the process lifetime. Changes to environment variables after import
+ * have no effect. For runtime configurability, re-import the module or read env inside functions.
+ */
+
 const DEFAULT_ACCESS_TTL_SEC = 15 * 60;
 const DEFAULT_REFRESH_TTL_SEC = 30 * 24 * 3600;
 
@@ -22,9 +28,23 @@ const REFRESH_TTL_SEC = parsePositiveSeconds(
 	process.env.REFRESH_TOKEN_TTL,
 	DEFAULT_REFRESH_TTL_SEC,
 );
-const SECRET = encoder.encode(
-	process.env.AUTH_JWT_SECRET ?? "dev-secret-change-me",
-);
+
+function getSecret(): Uint8Array {
+	const raw = process.env.AUTH_JWT_SECRET;
+	if (!raw) {
+		if (process.env.NODE_ENV === "production") {
+			throw new Error("AUTH_JWT_SECRET must be set in production");
+		}
+		// biome-ignore lint/suspicious/noConsole: dev-only startup warning when secret unset
+		console.warn(
+			"AUTH_JWT_SECRET is unset; using dev default. Set AUTH_JWT_SECRET in production.",
+		);
+		return encoder.encode("dev-secret-change-me");
+	}
+	return encoder.encode(raw);
+}
+
+const SECRET = getSecret();
 
 /** Payload shape for access tokens. */
 export type AccessClaims = {
@@ -91,6 +111,8 @@ export async function signRefreshToken(
  * Verifies a JWT and returns the payload. Throws on expired, wrong secret, or wrong issuer.
  * @param jwt - Raw JWT string.
  * @returns Decoded payload (typed by generic T).
+ * @remarks The returned payload is not runtime-validated for `typ` (access vs refresh).
+ * Callers must validate `payload.typ` themselves when distinguishing AccessClaims from RefreshClaims.
  */
 export async function verifyToken<T = AccessClaims | RefreshClaims>(
 	jwt: string,
