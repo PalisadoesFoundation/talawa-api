@@ -42,7 +42,6 @@
     "graphql-upload-minimal": "^1.6.1",
     "inquirer": "^12.9.0",
     "jose": "^5.9.6",
-    "// jose and @fastify/jwt": "jose: REST auth tokens (src/services/auth). @fastify/jwt: GraphQL auth (src/routes/graphql). Both kept; no migration planned.",
     "mercurius": "^16.2.0",
     "mercurius-upload": "^8.0.0",
     "minio": "^8.0.5",
@@ -57,6 +56,7 @@
     "zod": "^4.3.4"
   },
   "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
+  "_jwtLibrariesNote": "jose: REST auth tokens (src/services/auth). @fastify/jwt: GraphQL auth (src/routes/graphql). Both kept; no migration planned.",
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
     "@faker-js/faker": "^10.1.0",
