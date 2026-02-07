@@ -43,6 +43,7 @@ export interface OccurrenceCalculationConfig {
  * Result of occurrence calculation
  */
 export interface CalculatedOccurrence {
+	recurringEventInstanceId: string;
 	originalStartTime: Date;
 	actualStartTime: Date;
 	actualEndTime: Date;

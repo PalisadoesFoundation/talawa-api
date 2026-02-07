@@ -23,6 +23,7 @@ const userTagsArgsSchema = z.object({
 builder.queryField("userTags", (t) =>
 	t.field({
 		type: [Tag],
+		nullable: false,
 		args: {
 			userId: t.arg.id({
 				required: true,

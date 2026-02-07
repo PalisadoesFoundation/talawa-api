@@ -4,7 +4,7 @@
 
 # Interface: ResolveInstanceInput
 
-Defined in: [src/services/eventGeneration/types.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L64)
+Defined in: [src/services/eventGeneration/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L65)
 
 Input for resolving instance with inheritance
 
@@ -14,7 +14,7 @@ Input for resolving instance with inheritance
 
 > **baseTemplate**: [`EventTemplateWithAttachments`](../type-aliases/EventTemplateWithAttachments.md)
 
-Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L66)
+Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L67)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/Palisa
 
 > `optional` **exception**: `object`
 
-Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L67)
+Defined in: [src/services/eventGeneration/types.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L68)
 
 #### createdAt
 
@@ -62,7 +62,7 @@ Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/Palisa
 
 > **generatedInstance**: `object`
 
-Defined in: [src/services/eventGeneration/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L65)
+Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L66)
 
 #### actualEndTime
 

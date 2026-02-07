@@ -5216,9 +5216,9 @@ type Query {
   """Query field to read a user."""
   user(input: QueryUserInput!): User
 
-  """Query field to fetch tags assigned to a user."""
+  """Fetch tags assigned to a specific user"""
   userTags(
-    """ID of the user whose tags are fetched"""
+    """User ID to fetch assigned tags for"""
     userId: ID!
   ): [Tag!]!
 
