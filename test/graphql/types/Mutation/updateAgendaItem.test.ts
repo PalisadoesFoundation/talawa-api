@@ -1,6 +1,13 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
+import {
+	agendaCategoriesTable,
+	agendaFoldersTable,
+	eventsTable,
+	organizationMembershipsTable,
+	organizationsTable,
+} from "~/src/drizzle/schema";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -18,10 +25,11 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-let authToken: string;
-let adminUser: { id: string };
+let cachedAdminAuth: { token: string; userId: string } | null = null;
 
-beforeAll(async () => {
+async function getAdminAuth() {
+	if (cachedAdminAuth) return cachedAdminAuth;
+
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -31,30 +39,40 @@ beforeAll(async () => {
 		},
 	});
 
-	assertToBeNonNullish(signInResult.data?.signIn);
+	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(signInResult.data?.signIn?.user?.id);
 
-	const token = signInResult.data.signIn.authenticationToken;
-	assertToBeNonNullish(token);
-	authToken = token;
+	cachedAdminAuth = {
+		token: signInResult.data.signIn.authenticationToken,
+		userId: signInResult.data.signIn.user.id,
+	};
 
-	assertToBeNonNullish(signInResult.data.signIn.user);
-	adminUser = signInResult.data.signIn.user;
-});
+	return cachedAdminAuth;
+}
+
+async function getAdminUserId() {
+	const auth = await getAdminAuth();
+	return auth.userId;
+}
 
 async function insertAgendaItemUrls(agendaItemId: string, urls: string[]) {
+	const adminUserId = await getAdminUserId();
+
 	await server.drizzleClient.insert(agendaItemUrlTable).values(
 		urls.map((url) => ({
 			agendaItemId,
 			url,
-			creatorId: adminUser.id,
-			updaterId: adminUser.id,
+			creatorId: adminUserId,
+			updaterId: adminUserId,
 		})),
 	);
 }
 
 async function createOrganizationAndEvent() {
+	const { token, userId } = await getAdminAuth();
+
 	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
-		headers: { authorization: `bearer ${authToken}` },
+		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
 				name: `Org ${faker.string.uuid()}`,
@@ -62,22 +80,23 @@ async function createOrganizationAndEvent() {
 			},
 		},
 	});
+
 	const orgId = orgRes.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
-	assertToBeNonNullish(adminUser);
+
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${authToken}` },
+		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
 				organizationId: orgId,
-				memberId: adminUser.id,
+				memberId: userId,
 				role: "administrator",
 			},
 		},
 	});
 
 	const eventRes = await mercuriusClient.mutate(Mutation_createEvent, {
-		headers: { authorization: `bearer ${authToken}` },
+		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
 				organizationId: orgId,
@@ -97,13 +116,13 @@ async function createOrganizationAndEvent() {
 }
 
 async function createCategoryFolderAgendaItem() {
+	const { token } = await getAdminAuth();
 	const { orgId, eventId } = await createOrganizationAndEvent();
-	assertToBeNonNullish(adminUser);
 
 	const categoryRes = await mercuriusClient.mutate(
 		Mutation_createAgendaCategory,
 		{
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					eventId,
@@ -118,7 +137,7 @@ async function createCategoryFolderAgendaItem() {
 	assertToBeNonNullish(categoryId);
 
 	const folderRes = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-		headers: { authorization: `bearer ${authToken}` },
+		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
 				eventId,
@@ -135,7 +154,7 @@ async function createCategoryFolderAgendaItem() {
 	const agendaItemRes = await mercuriusClient.mutate(
 		Mutation_createAgendaItem,
 		{
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					name: "Agenda Item",
@@ -152,19 +171,69 @@ async function createCategoryFolderAgendaItem() {
 	const agendaItemId = agendaItemRes.data?.createAgendaItem?.id;
 	assertToBeNonNullish(agendaItemId);
 
-	return { orgId, eventId, folderId, categoryId, agendaItemId };
+	return {
+		orgId,
+		eventId,
+		folderId,
+		categoryId,
+		agendaItemId,
+		cleanup: async () => {
+			await server.drizzleClient
+				.delete(agendaItemUrlTable)
+				.where(eq(agendaItemUrlTable.agendaItemId, agendaItemId));
+
+			await server.drizzleClient
+				.delete(agendaItemsTable)
+				.where(eq(agendaItemsTable.id, agendaItemId));
+
+			await server.drizzleClient
+				.delete(agendaFoldersTable)
+				.where(eq(agendaFoldersTable.id, folderId));
+
+			await server.drizzleClient
+				.delete(agendaCategoriesTable)
+				.where(eq(agendaCategoriesTable.id, categoryId));
+
+			await server.drizzleClient
+				.delete(eventsTable)
+				.where(eq(eventsTable.id, eventId));
+
+			await server.drizzleClient
+				.delete(organizationMembershipsTable)
+				.where(eq(organizationMembershipsTable.organizationId, orgId));
+
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, orgId));
+		},
+	};
 }
 
 suite("Mutation field updateAgendaItem", () => {
-	afterEach(() => {
+	const cleanupFns: Array<() => Promise<void>> = [];
+	afterEach(async () => {
 		vi.restoreAllMocks();
+
+		for (const fn of [...cleanupFns].reverse()) {
+			try {
+				await fn();
+			} catch (e) {
+				console.error("Cleanup failed:", e);
+			}
+		}
+
+		cleanupFns.length = 0;
+		cachedAdminAuth = null;
 	});
 
 	test("should update agenda item successfully", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
 
+		const agendaItemId = env.agendaItemId;
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -197,8 +266,9 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw invalid_arguments error for invalid input", async () => {
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: "invalid-id",
@@ -211,8 +281,9 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw not found error when agenda item does not exist", async () => {
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: faker.string.uuid(),
@@ -227,16 +298,19 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw forbidden error when updating note type with duration", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
 
 		// Force type to "note" directly
 		await server.drizzleClient
 			.update(agendaItemsTable)
 			.set({ type: "note" })
 			.where(eq(agendaItemsTable.id, agendaItemId));
-
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -251,10 +325,13 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw unauthorized error for non-admin user", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
 
+		const agendaItemId = env.agendaItemId;
+		const { token } = await getAdminAuth();
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					emailAddress: `user${faker.string.ulid()}@x.com`,
@@ -285,10 +362,13 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should replace attachments when provided", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
 
+		const agendaItemId = env.agendaItemId;
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -317,14 +397,16 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should update categoryId from one category to another", async () => {
-		const { eventId, categoryId, agendaItemId } =
-			await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
 
+		const { eventId, categoryId, agendaItemId } = env;
+		const { token } = await getAdminAuth();
 		// Create a second category in the same event
 		const secondCategoryRes = await mercuriusClient.mutate(
 			Mutation_createAgendaCategory,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${token}` },
 				variables: {
 					input: {
 						eventId,
@@ -347,10 +429,9 @@ suite("Mutation field updateAgendaItem", () => {
 
 		assertToBeNonNullish(beforeUpdate);
 		expect(beforeUpdate.categoryId).toBe(categoryId);
-
 		// Update agenda item → change category
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -381,12 +462,15 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw not found error when categoryId does not exist", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
 
 		const nonExistentCategoryId = faker.string.uuid();
-
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -413,17 +497,18 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw forbidden error when category belongs to a different event", async () => {
-		const { agendaItemId, eventId: itemEventId } =
-			await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
 
+		const { agendaItemId, eventId: itemEventId } = env;
 		// Create another organization + event
 		const otherOrgEvent = await createOrganizationAndEvent();
-
+		const { token } = await getAdminAuth();
 		// Create category in DIFFERENT event
 		const foreignCategoryRes = await mercuriusClient.mutate(
 			Mutation_createAgendaCategory,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${token}` },
 				variables: {
 					input: {
 						eventId: otherOrgEvent.eventId,
@@ -439,9 +524,8 @@ suite("Mutation field updateAgendaItem", () => {
 
 		// Sanity check (events differ)
 		expect(otherOrgEvent.eventId).not.toBe(itemEventId);
-
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -471,7 +555,10 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should throw unexpected error when update returns nothing", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
 
 		// Mock required: This edge case (update returning empty array) cannot be
 		// reproduced with real DB constraints. The mock ensures branch coverage
@@ -493,8 +580,9 @@ suite("Mutation field updateAgendaItem", () => {
 				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
 			});
 
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -508,15 +596,18 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should delete all URLs when url is provided as empty array", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
 
 		await insertAgendaItemUrls(agendaItemId, [
 			"https://example.com/1",
 			"https://example.com/2",
 		]);
-
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -536,7 +627,10 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should replace URLs when non-empty url array is provided", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
 
 		await insertAgendaItemUrls(agendaItemId, [
 			"https://old.com/1",
@@ -544,9 +638,9 @@ suite("Mutation field updateAgendaItem", () => {
 		]);
 
 		const newUrls = ["https://new.com/a", "https://new.com/b"];
-
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -567,14 +661,17 @@ suite("Mutation field updateAgendaItem", () => {
 	});
 
 	test("should not modify URLs when url input is omitted", async () => {
-		const { agendaItemId } = await createCategoryFolderAgendaItem();
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
 
 		const initialUrls = ["https://keep.com/1", "https://keep.com/2"];
 
 		await insertAgendaItemUrls(agendaItemId, initialUrls);
-
+		const { token } = await getAdminAuth();
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
 					id: agendaItemId,
@@ -592,5 +689,118 @@ suite("Mutation field updateAgendaItem", () => {
 
 		expect(urlsAfter).toHaveLength(2);
 		expect(urlsAfter.map((u) => u.url).sort()).toEqual(initialUrls.sort());
+	});
+
+	test("should update notes successfully", async () => {
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
+		const { token } = await getAdminAuth();
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					notes: "These are updated notes",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaItem).toEqual(
+			expect.objectContaining({
+				id: agendaItemId,
+				notes: "These are updated notes",
+			}),
+		);
+
+		const itemInDb =
+			await server.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { notes: true },
+				where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+			});
+
+		assertToBeNonNullish(itemInDb);
+		expect(itemInDb.notes).toBe("These are updated notes");
+	});
+
+	test("should set notes to null when explicitly provided as null", async () => {
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
+		const { token } = await getAdminAuth();
+		// first set notes
+		await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					notes: "Initial notes",
+				},
+			},
+		});
+		// now clear notes
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					notes: null,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaItem?.notes).toBeNull();
+
+		const itemInDb =
+			await server.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { notes: true },
+				where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+			});
+
+		assertToBeNonNullish(itemInDb);
+		expect(itemInDb.notes).toBeNull();
+	});
+
+	test("should not modify notes when notes field is omitted", async () => {
+		const env = await createCategoryFolderAgendaItem();
+		cleanupFns.push(env.cleanup);
+
+		const agendaItemId = env.agendaItemId;
+		const { token } = await getAdminAuth();
+		// set initial notes
+		await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					notes: "Keep this note",
+				},
+			},
+		});
+		// update something else
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					name: "Updated name only",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+
+		const itemInDb =
+			await server.drizzleClient.query.agendaItemsTable.findFirst({
+				columns: { notes: true },
+				where: (fields, operators) => operators.eq(fields.id, agendaItemId),
+			});
+
+		assertToBeNonNullish(itemInDb);
+		expect(itemInDb.notes).toBe("Keep this note");
 	});
 });

@@ -41,9 +41,9 @@ jobs:
       - name: Build Talawa API compose testing environment
         run: docker compose build
 
-      # Start test services (postgres-test, minio-test, redis-test)
+      # Start test services (postgres-test, minio-test, redis-test, mailpit)
       - name: Start test services
-        run: docker compose up -d postgres-test minio-test redis-test
+        run: docker compose up -d postgres-test minio-test redis-test mailpit
 
       # Wait for test services to be healthy
       - name: Wait for test services to be ready
@@ -93,7 +93,40 @@ jobs:
             echo "Redis is ready."
           fi
 
+          # Wait for mailpit health check
+          echo "Waiting for Mailpit service..."
+          timeout=60
+          until curl -f http://localhost:8025/api/v1/info >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Mailpit not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Mailpit health check timed out, continuing anyway"
+          else
+            echo "Mailpit is ready."
+          fi
+
           echo "All test services are ready."
+
+      - name: Test Mailpit email service
+        run: |
+          echo "Testing Mailpit email service..."
+          
+          # Test Mailpit API is responding
+          MAILPIT_INFO=$(curl -s http://localhost:8025/api/v1/info 2>/dev/null || echo '{}')
+          echo "Mailpit info: $MAILPIT_INFO"
+          
+          # Check if Mailpit API is responding with valid data
+          if echo "$MAILPIT_INFO" | grep -q '"version"'; then
+            echo "SUCCESS: Mailpit API is responding correctly"
+            echo "SUCCESS: Mailpit is ready to capture emails"
+          else
+            echo "::warning::Mailpit API may not be responding properly"
+          fi
+          
+          # Note: Email functionality will be tested during the actual test suite execution
+          # The API container will use Mailpit as configured in .env.ci
 
       # Run tests with sharding
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})

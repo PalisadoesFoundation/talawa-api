@@ -3750,6 +3750,9 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+
+  """Notes of the agenda item."""
+  notes: String
   url: [UpdateAgendaItemUrlInput!]
 }
 
