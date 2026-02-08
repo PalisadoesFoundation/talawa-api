@@ -12,7 +12,7 @@ Defined in: [src/config/emailConfig.ts:25](https://github.com/PalisadoesFoundati
 
 ### API\_EMAIL\_PROVIDER?
 
-> `optional` **API\_EMAIL\_PROVIDER**: `"ses"` \| `"smtp"`
+> `optional` **API\_EMAIL\_PROVIDER**: `"ses"` \| `"smtp"` \| `"mailpit"`
 
 ### AWS\_ACCESS\_KEY\_ID?
 

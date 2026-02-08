@@ -378,6 +378,13 @@ export const Query_user_natalSex =
     user(input: $input) {
         natalSex
     }
+  }`);
+
+export const Query_user_emailAddress =
+	gql(`query Query_user_emailAddress($input: QueryUserInput!) {
+    user(input: $input) {
+        emailAddress    
+    }
 }`);
 
 export const Query_user_updater =

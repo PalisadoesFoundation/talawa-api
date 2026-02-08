@@ -103,6 +103,9 @@ export type SetupKey =
 	| "AWS_SECRET_ACCESS_KEY"
 	| "AWS_SES_FROM_EMAIL"
 	| "AWS_SES_FROM_NAME"
+	| "MAILPIT_MAPPED_HOST_IP"
+	| "MAILPIT_WEB_MAPPED_PORT"
+	| "MAILPIT_SMTP_MAPPED_PORT"
 	| "GOOGLE_CLIENT_ID"
 	| "GOOGLE_CLIENT_SECRET"
 	| "GOOGLE_REDIRECT_URI"
@@ -559,7 +562,7 @@ export async function administratorEmail(
 	try {
 		answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = await promptInput(
 			"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
-			"Enter email:",
+			"Enter administrator user email address:",
 			"administrator@email.com",
 			validateEmail,
 		);
