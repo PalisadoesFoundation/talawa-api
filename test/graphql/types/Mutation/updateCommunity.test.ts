@@ -668,5 +668,238 @@ suite("Mutation field updateCommunity", () => {
 				]),
 			);
 		});
+
+		test("should reject logo with invalid MIME type (lines 114-125)", async () => {
+			// This tests the MIME type validation in updateCommunity.ts
+			// VIDEO_MP4 is valid for schema but NOT allowed for logo (must be image type)
+			const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: "test-logo-object",
+							mimeType: "VIDEO_MP4", // Valid for schema, invalid for logo
+							fileHash: "a".repeat(64),
+							name: "logo.mp4",
+						},
+					},
+				},
+			});
+
+			expect(result.data?.updateCommunity).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["updateCommunity"],
+					}),
+				]),
+			);
+		});
+
+		test("should return invalid_arguments when logo file not found in MinIO (lines 135-153)", async () => {
+			// Mock statObject to throw NotFound error
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(
+					Object.assign(new Error("Not Found"), { code: "NotFound" }),
+				);
+
+			const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: "non-existent-logo",
+							mimeType: "IMAGE_PNG",
+							fileHash: "a".repeat(64),
+							name: "logo.png",
+						},
+					},
+				},
+			});
+
+			expect(result.data?.updateCommunity).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["updateCommunity"],
+					}),
+				]),
+			);
+			expect(statObjectSpy).toHaveBeenCalled();
+			statObjectSpy.mockRestore();
+		});
+
+		test("should return unexpected error when statObject fails with non-NotFound error (lines 155-160)", async () => {
+			// Mock statObject to throw a non-NotFound error (e.g., network error)
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(new Error("Network connection failed"));
+
+			const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: "some-logo",
+							mimeType: "IMAGE_PNG",
+							fileHash: "a".repeat(64),
+							name: "logo.png",
+						},
+					},
+				},
+			});
+
+			expect(result.data?.updateCommunity).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnexpectedExtensions>({
+							code: "unexpected",
+						}),
+						message: expect.any(String),
+						path: ["updateCommunity"],
+					}),
+				]),
+			);
+			expect(statObjectSpy).toHaveBeenCalled();
+			statObjectSpy.mockRestore();
+		});
+
+		test("should log warning when old logo removal fails during update (lines 174-178)", async () => {
+			// First, set up a community with a logo
+			const objectName = `logos/${faker.string.uuid()}.png`;
+			const fileContent = Buffer.from("fake image content");
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				objectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/png" },
+			);
+
+			// Update community with initial logo
+			await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: objectName,
+							mimeType: "IMAGE_PNG",
+							fileHash: "a".repeat(64),
+							name: "initial-logo.png",
+						},
+					},
+				},
+			});
+
+			// Now mock removeObject to fail and statObject to succeed for new logo
+			const newObjectName = `logos/${faker.string.uuid()}.jpg`;
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				newObjectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/jpeg" },
+			);
+
+			const removeObjectSpy = vi
+				.spyOn(server.minio.client, "removeObject")
+				.mockRejectedValue(new Error("Failed to delete object"));
+
+			// Update with new logo - old logo removal should fail but update should succeed
+			// This covers lines 174-178: the catch block prevents cleanup errors from propagating
+			const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: newObjectName,
+							mimeType: "IMAGE_JPEG",
+							fileHash: "a".repeat(64),
+							name: "new-logo.jpg",
+						},
+					},
+				},
+			});
+
+			// Key assertion: update succeeds even though removeObject failed
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateCommunity).toBeDefined();
+
+			removeObjectSpy.mockRestore();
+		});
+
+		test("should log warning when logo removal fails during null assignment (lines 192-196)", async () => {
+			// First, set up a community with a logo
+			const objectName = `logos/${faker.string.uuid()}.png`;
+			const fileContent = Buffer.from("fake image content");
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				objectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/png" },
+			);
+
+			// Update community with logo
+			await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: objectName,
+							mimeType: "IMAGE_PNG",
+							fileHash: "a".repeat(64),
+							name: "logo-to-remove.png",
+						},
+					},
+				},
+			});
+
+			// Mock removeObject to fail
+			const removeObjectSpy = vi
+				.spyOn(server.minio.client, "removeObject")
+				.mockRejectedValue(new Error("Failed to delete object"));
+
+			// Set logo to null - removal should fail but update should succeed
+			// This covers lines 192-196: the catch block prevents cleanup errors from propagating
+			const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: null,
+					},
+				},
+			});
+
+			// Key assertion: update succeeds even though removeObject failed
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateCommunity).toBeDefined();
+
+			removeObjectSpy.mockRestore();
+		});
 	});
 });

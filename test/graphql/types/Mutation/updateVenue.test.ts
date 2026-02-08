@@ -1771,4 +1771,167 @@ suite("Mutation field updateVenue", () => {
 			server.drizzleClient.transaction = originalTransaction;
 		}
 	});
+
+	test("should succeed even when old attachment removal fails during update (lines 252-255)", async () => {
+		// Get auth token
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
+		const adminToken =
+			administratorUserSignInResult.data.signIn.authenticationToken;
+
+		// Create organization
+		const createOrganizationResult = await mercuriusClient.mutate(
+			graphql(`
+			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+				createOrganization(input: $input) {
+				  id
+				}
+			  }
+			`),
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+						countryCode: "us",
+						state: faker.location.state(),
+						city: faker.location.city(),
+						postalCode: faker.location.zipCode(),
+						addressLine1: faker.location.streetAddress(),
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const orgId = createOrganizationResult.data.createOrganization.id;
+
+		// Create venue WITHOUT attachments first
+		const createVenueResult = await mercuriusClient.mutate(
+			graphql(`
+			  mutation CreateVenue($input: MutationCreateVenueInput!) {
+				createVenue(input: $input) {
+				  id
+				}
+			  }
+			`),
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: faker.lorem.words(2),
+						capacity: 100,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+		const venueId = createVenueResult.data.createVenue.id;
+
+		// Put first file in MinIO
+		const objectName1 = `attachments/${faker.string.uuid()}.jpg`;
+		const fileContent = Buffer.from("fake image content");
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			objectName1,
+			fileContent,
+			fileContent.length,
+			{ "content-type": "image/jpeg" },
+		);
+
+		// Add attachments via update
+		const addAttachmentResult = await mercuriusClient.mutate(
+			Mutation_updateVenue,
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						id: venueId,
+						attachments: [
+							{
+								objectName: objectName1,
+								mimeType: "IMAGE_JPEG",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "initial-photo.jpg",
+							},
+						],
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(addAttachmentResult.data?.updateVenue);
+
+		// Put a new file in MinIO
+		const objectName2 = `attachments/${faker.string.uuid()}.png`;
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			objectName2,
+			fileContent,
+			fileContent.length,
+			{ "content-type": "image/png" },
+		);
+
+		// Mock removeObject to fail (simulating cleanup failure)
+		const removeObjectSpy = vi
+			.spyOn(server.minio.client, "removeObject")
+			.mockRejectedValue(new Error("Failed to delete object"));
+
+		// Update venue with new attachments - this should succeed even if cleanup fails
+		// This covers lines 252-255: the catch block prevents cleanup errors from propagating
+		const updateResult = await mercuriusClient.mutate(Mutation_updateVenue, {
+			headers: {
+				authorization: `bearer ${adminToken}`,
+			},
+			variables: {
+				input: {
+					id: venueId,
+					attachments: [
+						{
+							objectName: objectName2,
+							mimeType: "IMAGE_PNG",
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
+							name: "new-photo.png",
+						},
+					],
+				},
+			},
+		});
+
+		// Key assertion: update succeeds even though removeObject failed
+		expect(updateResult.errors).toBeUndefined();
+		expect(updateResult.data?.updateVenue).toBeDefined();
+
+		removeObjectSpy.mockRestore();
+	});
 });
