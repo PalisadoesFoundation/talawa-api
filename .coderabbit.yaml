@@ -179,7 +179,6 @@ reviews:
         - Avoid hardcoded timeouts; handle variable CI response times
         - Proper mock cleanup between tests
         - Check for potential race conditions in parallel test execution
-        - If a test takes >1 second to execute (based on code complexity), suggest optimization or question if E2E is necessary
 
         **Mock Verification Depth:**
         - When testing batch processing, verify each batch receives/processes correct subset of data
@@ -251,7 +250,7 @@ reviews:
            - Check for corresponding delete mutations in the same test or afterEach/afterAll hooks
            - Flag missing cleanup as a flakiness risk
 
-        3. ✅ Verify tests use `faker.string.ulid()` or similar for unique identifiers to avoid conflicts in parallel execution
+        3. ✅ Verify tests use `faker.string.uuid()` or similar for unique identifiers to avoid conflicts in parallel execution
 
         **Pattern to encourage:**
         ```typescript
