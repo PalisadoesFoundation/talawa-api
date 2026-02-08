@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -30,6 +30,10 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+vi.mock("~/src/utilities/leakyBucket", () => ({
+	complexityLeakyBucket: vi.fn().mockResolvedValue(true),
+}));
+
 suite("Query field getEventVolunteerGroups", () => {
 	let adminAuthToken: string;
 	let adminUserId: string;
@@ -42,7 +46,6 @@ suite("Query field getEventVolunteerGroups", () => {
 	// Minimal setup to reduce rate limiting
 	beforeAll(async () => {
 		// Add delay to avoid rate limiting
-		await new Promise((resolve) => setTimeout(resolve, 100));
 
 		// Sign in as admin
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
@@ -60,7 +63,6 @@ suite("Query field getEventVolunteerGroups", () => {
 		adminUserId = adminSignInResult.data.signIn.user.id;
 
 		// Add delay between requests
-		await new Promise((resolve) => setTimeout(resolve, 200));
 
 		// Create organization
 		const orgResult = await mercuriusClient.mutate(
@@ -81,8 +83,6 @@ suite("Query field getEventVolunteerGroups", () => {
 		assertToBeNonNullish(orgResult.data?.createOrganization);
 		organizationId = orgResult.data.createOrganization.id;
 
-		await new Promise((resolve) => setTimeout(resolve, 200));
-
 		// Create organization membership for admin
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: {
@@ -96,8 +96,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				},
 			},
 		});
-
-		await new Promise((resolve) => setTimeout(resolve, 200));
 
 		// Create event
 		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
@@ -117,8 +115,6 @@ suite("Query field getEventVolunteerGroups", () => {
 
 		assertToBeNonNullish(eventResult.data?.createEvent);
 		eventId = eventResult.data.createEvent.id;
-
-		await new Promise((resolve) => setTimeout(resolve, 200));
 
 		// Create one regular user
 		const regularUserResult = await mercuriusClient.mutate(
@@ -144,8 +140,6 @@ suite("Query field getEventVolunteerGroups", () => {
 		regularUserAuthToken = regularUserResult.data.createUser
 			.authenticationToken as string;
 
-		await new Promise((resolve) => setTimeout(resolve, 200));
-
 		// Create organization membership
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: {
@@ -159,8 +153,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				},
 			},
 		});
-
-		await new Promise((resolve) => setTimeout(resolve, 200));
 
 		// Create volunteer group
 		const volunteerGroupResult = await mercuriusClient.mutate(
@@ -201,7 +193,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				} catch (error) {
 					console.warn(`Failed to delete volunteer group: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			// Delete organization memberships (prevents foreign key issues)
@@ -221,7 +212,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				} catch (error) {
 					console.warn(`Failed to delete regular user membership: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			if (adminUserId && organizationId) {
@@ -240,7 +230,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				} catch (error) {
 					console.warn(`Failed to delete admin membership: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			// Delete regular user
@@ -255,7 +244,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				} catch (error) {
 					console.warn(`Failed to delete regular user: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			// Delete organization last (it may have dependencies)
@@ -436,8 +424,6 @@ suite("Query field getEventVolunteerGroups", () => {
 			const eventVolunteerId = eventVolunteerResult.data.createEventVolunteer
 				.id as string;
 
-			await new Promise((resolve) => setTimeout(resolve, 200));
-
 			// Update volunteer to be accepted
 			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
 				headers: {
@@ -450,8 +436,6 @@ suite("Query field getEventVolunteerGroups", () => {
 					},
 				},
 			});
-
-			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			// Create volunteer membership
 			await mercuriusClient.mutate(Mutation_createVolunteerMembership, {
@@ -467,8 +451,6 @@ suite("Query field getEventVolunteerGroups", () => {
 					},
 				},
 			});
-
-			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			// Test user path query
 			const result = await mercuriusClient.query(
@@ -532,8 +514,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				.authenticationToken as string;
 			const nonMemberUserId = nonMemberResult.data.createUser.user
 				?.id as string;
-
-			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			const result = await mercuriusClient.query(
 				Query_getEventVolunteerGroups,
@@ -673,7 +653,6 @@ suite("Query field getEventVolunteerGroups", () => {
 	suite("Ordering", () => {
 		test("should handle volunteers_ASC ordering", async () => {
 			// Extra long delay since this test runs after many previous tests
-			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			const result = await mercuriusClient.query(
 				Query_getEventVolunteerGroups,
@@ -697,7 +676,6 @@ suite("Query field getEventVolunteerGroups", () => {
 
 		test("should handle volunteers_DESC ordering", async () => {
 			// Extra long delay since this is the last test and rate limits accumulate
-			await new Promise((resolve) => setTimeout(resolve, 1200));
 
 			const result = await mercuriusClient.query(
 				Query_getEventVolunteerGroups,
@@ -749,8 +727,6 @@ suite("Query field getEventVolunteerGroups", () => {
 				const creatorAuthToken = creatorUserResult.data.createUser
 					.authenticationToken as string;
 
-				await new Promise((resolve) => setTimeout(resolve, 200));
-
 				// Add creator as regular member (not admin) of the organization
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: {
@@ -764,8 +740,6 @@ suite("Query field getEventVolunteerGroups", () => {
 						},
 					},
 				});
-
-				await new Promise((resolve) => setTimeout(resolve, 200));
 
 				// Create an event where this user is the creator
 				const creatorEventResult = await mercuriusClient.mutate(
@@ -790,8 +764,6 @@ suite("Query field getEventVolunteerGroups", () => {
 
 				assertToBeNonNullish(creatorEventResult.data?.createEvent);
 				const creatorEventId = creatorEventResult.data.createEvent.id;
-
-				await new Promise((resolve) => setTimeout(resolve, 200));
 
 				// Query volunteer groups as event creator (non-admin)
 				const result = await mercuriusClient.query(
@@ -828,7 +800,6 @@ suite("Query field getEventVolunteerGroups", () => {
 							},
 						},
 					});
-					await new Promise((resolve) => setTimeout(resolve, 100));
 
 					await mercuriusClient.mutate(Mutation_deleteUser, {
 						headers: {
@@ -847,8 +818,6 @@ suite("Query field getEventVolunteerGroups", () => {
 
 	suite("Recurring Event Instance - Coverage for recurring event path", () => {
 		test("should trigger recurring instance lookup when querying with instance ID", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
 			// Create recurring event with instances using helper
 			// This creates entries in recurringEventInstancesTable
 			const { instanceIds } = await createRecurringEventWithInstances(
@@ -862,8 +831,6 @@ suite("Query field getEventVolunteerGroups", () => {
 
 			assertToBeNonNullish(instanceIds[0]);
 			const instanceId = instanceIds[0];
-
-			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			// Query volunteer groups using the recurring instance ID
 			// This triggers the recurring event instance code path (lines 127-148)
@@ -912,8 +879,6 @@ suite("Query field getEventVolunteerGroups", () => {
 		});
 
 		test("should return volunteer groups for recurring event template", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
 			// Create recurring event with instances using helper
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -923,8 +888,6 @@ suite("Query field getEventVolunteerGroups", () => {
 					startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 				},
 			);
-
-			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			// Create a volunteer group on the template
 			const templateGroupResult = await mercuriusClient.mutate(
@@ -952,8 +915,6 @@ suite("Query field getEventVolunteerGroups", () => {
 			const templateGroupId =
 				templateGroupResult.data?.createEventVolunteerGroup?.id;
 			expect(templateGroupId).toBeDefined();
-
-			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			// Query volunteer groups using the template ID (which IS in eventsTable)
 			const result = await mercuriusClient.query(
