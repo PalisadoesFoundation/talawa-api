@@ -452,6 +452,22 @@ describe("/objects/:name route", () => {
 			});
 			expect(res1.statusCode).toBe(400);
 
+			const body1 = JSON.parse(res1.body);
+			expect(body1).toEqual(
+				expect.objectContaining({
+					error: expect.objectContaining({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "Validation failed",
+						details: expect.arrayContaining([
+							expect.objectContaining({
+								instancePath: "/name",
+								message: "must NOT have fewer than 1 characters",
+							}),
+						]),
+					}),
+				}),
+			);
+
 			// Test name exceeding max length (37 characters)
 			const longName = "a".repeat(37);
 			const res2 = await app.inject({
@@ -460,11 +476,20 @@ describe("/objects/:name route", () => {
 			});
 			expect(res2.statusCode).toBe(400);
 
-			const body = JSON.parse(res2.body);
-			expectValidErrorResponse(
-				body,
-				ErrorCode.INVALID_ARGUMENTS,
-				"Validation failed",
+			const body2 = JSON.parse(res2.body);
+			expect(body2).toEqual(
+				expect.objectContaining({
+					error: expect.objectContaining({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "Validation failed",
+						details: expect.arrayContaining([
+							expect.objectContaining({
+								instancePath: "/name",
+								message: "must NOT have more than 36 characters",
+							}),
+						]),
+					}),
+				}),
 			);
 		});
 	});
