@@ -167,16 +167,23 @@ suite("Venue Resolver - updatedAt Field", () => {
 			await createRegularUserUsingAdmin();
 		createdUserIds.push(memberUserId);
 
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
-					memberId: memberUserId,
-					role: "regular",
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: memberUserId,
+						role: "regular",
+					},
 				},
 			},
-		});
+		);
+		expect(membershipResult.errors).toBeUndefined();
+		assertToBeNonNullish(
+			membershipResult.data?.createOrganizationMembership?.id,
+		);
 
 		const result = await mercuriusClient.query(Query_venue_updatedAt, {
 			headers: { authorization: `Bearer ${memberToken}` },
@@ -285,16 +292,23 @@ suite("Venue Resolver - updatedAt Field", () => {
 			await createRegularUserUsingAdmin();
 		createdUserIds.push(orgAdminUserId);
 
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
-					memberId: orgAdminUserId,
-					role: "administrator",
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: orgAdminUserId,
+						role: "administrator",
+					},
 				},
 			},
-		});
+		);
+		expect(membershipResult.errors).toBeUndefined();
+		assertToBeNonNullish(
+			membershipResult.data?.createOrganizationMembership?.id,
+		);
 
 		const result = await mercuriusClient.query(Query_venue_updatedAt, {
 			headers: { authorization: `Bearer ${orgAdminToken}` },
