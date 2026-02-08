@@ -81,7 +81,7 @@
 	},
 	{
 		"id": "b6a3c1e9-7f4a-4b2d-8c5e-9d0f3a2b1c06",
-		"name": "HR Documents",
+		"name": "Musical Instruments",
 		"organizationId": "01960b81-bfed-7e12-b93c-7cc06834a043",
 		"creatorId": "6589386a-2caa-4d8d-a908-748400000009",
 		"updaterId": "6589386a-2caa-4d8d-a908-748400000009",
@@ -91,7 +91,7 @@
 	},
 	{
 		"id": "0f5b8a7d-3c9e-4e21-b1a6-7d8c9e2a4f07",
-		"name": "Client Assets",
+		"name": "Languages",
 		"organizationId": "01960b81-bfed-7bfb-a1b8-0edf00c464bc",
 		"creatorId": "6589387e-2caa-4d8d-a908-74850000000a",
 		"updaterId": "6589387e-2caa-4d8d-a908-74850000000a",
@@ -101,7 +101,7 @@
 	},
 	{
 		"id": "e2c4a9b1-6d8f-4a3c-9b0e-5f7d1a8c2e08",
-		"name": "Archived Files",
+		"name": "Professions",
 		"organizationId": "01960b81-bfed-7c22-95a5-a0a4f6881b94",
 		"creatorId": "6589388b-2caa-4d8d-a908-74860000000b",
 		"updaterId": "6589388b-2caa-4d8d-a908-74860000000b",
