@@ -136,6 +136,40 @@ reviews:
         - Mock return values match the actual API/function signature and data structure
 
         **Test Cleanup & Hygiene:**
+
+        - **Database Cleanup Required:**
+          - ❌ CRITICAL: `afterEach` with ONLY `vi.restoreAllMocks()` is INSUFFICIENT
+          - ✅ REQUIRED: Database cleanup must happen in `afterEach` for all integration tests
+          - Tests creating database entities (orgs, users, events, etc.) MUST clean them up
+          - Options: transaction rollback, explicit cleanup functions, or test database isolation
+          - Flag missing database cleanup as HIGH PRIORITY blocking issue
+
+        - **Resource Creation Patterns:**
+          - ❌ AVOID: Creating shared resources (auth tokens, users) in `beforeAll` for use across multiple tests
+          - ✅ PREFER: Create per-test resources in `beforeEach` or within individual tests
+          - `beforeAll` acceptable only for truly immutable shared setup (e.g., test utilities, constants)
+          - Auth tokens should be created per-test to avoid cascading failures
+
+        - **Test Isolation Verification:**
+          - Each test must be runnable in isolation and in any order
+          - Tests must not depend on data created by previous tests
+          - No database state should leak between tests
+          - Verify tests pass when run with `--shard` and `--isolate` flags
+
+        - **Cleanup Completeness Check:**
+          - For every `create*()` helper call, verify corresponding cleanup exists
+          - For every database write (insert, update), verify cleanup or rollback
+          - Watch for: Organizations, Events, Users, Folders, Categories, Agenda Items, etc.
+          - Example pattern:
+            ```typescript
+            afterEach(async () => {
+              vi.restoreAllMocks();
+              // Clean up test data
+              await db.delete(agendaItems).where(eq(agendaItems.id, testItemId));
+              await db.delete(categories).where(eq(categories.id, testCategoryId));
+              // ... etc
+            });
+            ```       
         - Proper beforeEach/afterEach hooks for all state management (timers, mocks, global state)
         - vi.useFakeTimers() is paired with vi.useRealTimers() in afterEach, not inline
         - No floating-point arithmetic in test expectations without proper precision handling
@@ -144,6 +178,7 @@ reviews:
         - Use faker.string.uuid() for unique test data to enable concurrent execution
         - Avoid hardcoded timeouts; handle variable CI response times
         - Proper mock cleanup between tests
+        - Check for potential race conditions in parallel test execution
 
         **Mock Verification Depth:**
         - When testing batch processing, verify each batch receives/processes correct subset of data
@@ -156,6 +191,82 @@ reviews:
         - Pass auth token via headers: { authorization: `bearer ${authToken}` }
         - Assert both data and errors as appropriate
         - Use expect.objectContaining for flexible error matching
+
+    # 1. Field Resolver Tests (User/, Event/, Organization/, etc.) - Should use unit tests
+    - path: "test/graphql/types/*/!(Mutation|Query|Subscription)/**/*.test.ts"
+      instructions: |
+        ## Testing Pattern for Field Resolvers
+
+        **Required approach:** Use `createMockGraphQLContext()` for unit testing
+
+        **Check for:**
+        1. ❌ If the test imports `mercuriusClient` from `../../testClient/mercuriusClient`, flag this as incorrect:
+           - "Field resolver tests should use `createMockGraphQLContext()` for isolated unit testing, not `mercuriusClient`."
+           - "This approach is 10-100x faster, doesn't require database setup, and avoids cleanup complexity."
+           - "See `test/graphql/types/User/eventsAttended.test.ts` for the correct pattern."
+
+        2. ✅ If the test imports `createMockGraphQLContext` from the mock context creator, verify:
+           - Tests mock database queries using `mocks.drizzleClient.query.*.findFirst.mockResolvedValue()`
+           - Context is properly typed as `GraphQLContext`
+           - No real database operations occur
+
+        3. ⚠️ Rare exception: If this is genuinely testing cross-resolver integration, the test should include a comment explaining why E2E is necessary.
+
+        **Example correct pattern:**
+        ```typescript
+        import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+
+        describe("User field resolver", () => {
+          let ctx: GraphQLContext;
+          let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
+          
+          beforeEach(() => {
+            const { context, mocks: newMocks } = createMockGraphQLContext(true, "user-123");
+            ctx = context;
+            mocks = newMocks;
+          });
+          
+          it("returns data when authorized", async () => {
+            mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({...});
+            // Test resolver logic
+          });
+        });
+        ```
+
+    # 2. Operation Tests (Mutation/, Query/) - E2E is appropriate
+    - path: "test/graphql/types/{Mutation,Query,Subscription}/**/*.test.ts"
+      instructions: |
+        ## Testing Pattern for GraphQL Operations
+
+        **Accepted approach:** `mercuriusClient` (E2E) is appropriate for top-level operations
+
+        **Required cleanup checks:**
+        1. 🔍 For every test that calls `Mutation_createUser`, verify there's a corresponding `Mutation_deleteUser`:
+           - Count `mercuriusClient.mutate(Mutation_createUser` occurrences
+           - Count `mercuriusClient.mutate(Mutation_deleteUser` occurrences
+           - If counts don't match, flag: "Created users must be deleted to prevent orphaned data in sharded CI environments."
+
+        2. 🔍 For any mutation that creates resources (createOrganization, createEvent, etc.), verify cleanup:
+           - Check for corresponding delete mutations in the same test or afterEach/afterAll hooks
+           - Flag missing cleanup as a flakiness risk
+
+        3. ✅ Verify tests use `faker.string.uuid()` or similar for unique identifiers to avoid conflicts in parallel execution
+
+        **Pattern to encourage:**
+        ```typescript
+        it("creates and manages user", async () => {
+          const result = await mercuriusClient.mutate(Mutation_createUser, {...});
+          const userId = result.data.createUser.user.id;
+          
+          // ... perform tests ...
+          
+          // Cleanup: delete the created user
+          await mercuriusClient.mutate(Mutation_deleteUser, {
+            headers: { authorization: `bearer ${token}` },
+            variables: { input: { id: userId } }
+          });
+        });
+        ```
 
     # Universal review instructions for all files
     - path: "**/*"
