@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { eventId, orgId, userId } from "~/src/graphql/validators/core";
+import {
+	eventId,
+	orgId,
+	trimmedString,
+	userId,
+} from "~/src/graphql/validators/core";
 
 /**
  * Zod schema for EventVolunteerGroupWhereInput validation.
@@ -10,8 +15,8 @@ export const eventVolunteerGroupWhereInputSchema = z.object({
 	eventId: eventId.optional(),
 	userId: userId.optional(),
 	orgId: orgId.optional(),
-	leaderName: z.string().optional(),
-	name_contains: z.string().optional(),
+	leaderName: trimmedString.optional(),
+	name_contains: trimmedString.optional(),
 });
 
 /**

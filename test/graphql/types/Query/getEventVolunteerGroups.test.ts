@@ -402,7 +402,7 @@ suite("Query field getEventVolunteerGroups", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["where", "eventId"],
-									message: expect.stringContaining("Invalid UUID"),
+									message: expect.stringContaining("Must be a valid UUID"),
 								}),
 							]),
 						}),
@@ -609,6 +609,31 @@ suite("Query field getEventVolunteerGroups", () => {
 						where: {
 							eventId,
 							leaderName: "Test User", // Part of our leader's name
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getEventVolunteerGroups).toBeDefined();
+			expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
+			expect(result.data?.getEventVolunteerGroups?.length).toBeGreaterThan(0);
+
+			const group = result.data?.getEventVolunteerGroups?.[0];
+			expect(group?.leader?.name).toContain("Test User");
+		});
+
+		test("should filter groups by leader name with whitespace", async () => {
+			const result = await mercuriusClient.query(
+				Query_getEventVolunteerGroups,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						where: {
+							eventId,
+							leaderName: "  Test User  ",
 						},
 					},
 				},

@@ -11,6 +11,14 @@ const objectsParamsSchema = z.object({
 	name: z.string().min(1).max(36),
 });
 
+const objectsParamsJsonSchema = {
+	type: "object",
+	properties: {
+		name: { type: "string", minLength: 1, maxLength: 36 },
+	},
+	required: ["name"],
+} as const;
+
 /**
  * This fastify route plugin is used to initialize a `/objects/:name` endpoint on the fastify server for clients to fetch objects from the minio server.
  */
@@ -19,6 +27,9 @@ export const objects: FastifyPluginAsync = async (fastify) => {
 		"/objects/:name",
 		{
 			preHandler: fastify.rateLimit("normal"),
+			schema: {
+				params: objectsParamsJsonSchema,
+			},
 		},
 		async (request, reply) => {
 			const params = await zReplyParsed(
