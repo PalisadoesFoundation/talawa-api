@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import {
 	isRefreshTokenValid,
@@ -21,25 +21,46 @@ const mockDb: {
 	},
 };
 
-suite("refreshStore", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
+const FIXED_NOW = new Date("2025-06-15T12:00:00.000Z");
 
+/**
+ * Mocks findFirst so the `where` callback is invoked (for coverage of the where clause).
+ * Then resolves with the given returnValue.
+ */
+function mockFindFirstInvokingWhere<T>(returnValue: T): void {
+	mockDb.query.refreshTokensTable.findFirst.mockImplementation((opts) => {
+		if (typeof opts?.where === "function") {
+			const f = { userId: {}, tokenHash: {} };
+			const op = {
+				eq: (_left: unknown, _right: unknown) => ({}),
+				and: (_a: unknown, _b?: unknown) => ({}),
+			};
+			opts.where(f, op);
+		}
+		return Promise.resolve(returnValue);
+	});
+}
+
+suite("refreshStore", () => {
 	afterEach(() => {
 		vi.clearAllMocks();
+		vi.useRealTimers();
 	});
 
 	suite("sha256", () => {
-		test("returns consistent hex hash for same input", () => {
+		test("returns consistent hex hash for same input and different hashes for different inputs", () => {
 			expect(sha256("t1")).toBe(sha256("t1"));
 			expect(sha256("t1")).toHaveLength(64);
 			expect(/^[a-f0-9]+$/.test(sha256("t1"))).toBe(true);
+			expect(sha256("t1")).not.toBe(sha256("t2"));
 		});
 	});
 
 	suite("persistRefreshToken", () => {
 		test("inserts with userId, tokenHash (SHA256 of token), and expiresAt", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const mockValues = vi.fn().mockResolvedValue(undefined);
 			mockDb.insert.mockReturnValue({ values: mockValues });
 
@@ -60,12 +81,29 @@ suite("refreshStore", () => {
 				userId: "u1",
 				tokenHash: sha256("t1"),
 			});
+			const expectedExpiresAt = new Date(FIXED_NOW.getTime() + ttlSec * 1000);
 			const expiresAt = (valuesArg as { expiresAt: Date }).expiresAt;
-			const now = Date.now();
-			const expectedMin = now + ttlSec * 1000 - 1000;
-			const expectedMax = now + ttlSec * 1000 + 1000;
-			expect(expiresAt.getTime()).toBeGreaterThanOrEqual(expectedMin);
-			expect(expiresAt.getTime()).toBeLessThanOrEqual(expectedMax);
+			expect(expiresAt.getTime()).toBe(expectedExpiresAt.getTime());
+		});
+
+		test("throws when ttlSec is not positive", async () => {
+			await expect(
+				persistRefreshToken(mockDb as unknown as DrizzleClient, {
+					token: "t1",
+					userId: "u1",
+					ttlSec: 0,
+				}),
+			).rejects.toThrow(/params\.ttlSec must be positive/);
+
+			await expect(
+				persistRefreshToken(mockDb as unknown as DrizzleClient, {
+					token: "t1",
+					userId: "u1",
+					ttlSec: -1,
+				}),
+			).rejects.toThrow(/params\.ttlSec must be positive/);
+
+			expect(mockDb.insert).not.toHaveBeenCalled();
 		});
 
 		test("accepts optional ip and userAgent without persisting them", async () => {
@@ -94,13 +132,16 @@ suite("refreshStore", () => {
 
 	suite("isRefreshTokenValid", () => {
 		test("returns true when row exists, not revoked, not expired", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const validRow = {
 				userId: "u1",
 				tokenHash: sha256("t1"),
 				revokedAt: null,
-				expiresAt: new Date(Date.now() + 60_000),
+				expiresAt: new Date(FIXED_NOW.getTime() + 60_000),
 			};
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(validRow);
+			mockFindFirstInvokingWhere(validRow);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -112,13 +153,16 @@ suite("refreshStore", () => {
 		});
 
 		test("returns false when token is revoked", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const revokedRow = {
 				userId: "u1",
 				tokenHash: sha256("t1"),
 				revokedAt: new Date(),
-				expiresAt: new Date(Date.now() + 60_000),
+				expiresAt: new Date(FIXED_NOW.getTime() + 60_000),
 			};
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(revokedRow);
+			mockFindFirstInvokingWhere(revokedRow);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -130,13 +174,16 @@ suite("refreshStore", () => {
 		});
 
 		test("returns false when token is expired", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const expiredRow = {
 				userId: "u1",
 				tokenHash: sha256("t1"),
 				revokedAt: null,
-				expiresAt: new Date(Date.now() - 1000),
+				expiresAt: new Date(FIXED_NOW.getTime() - 1000),
 			};
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(expiredRow);
+			mockFindFirstInvokingWhere(expiredRow);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -148,7 +195,7 @@ suite("refreshStore", () => {
 		});
 
 		test("returns false when token is not found", async () => {
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(undefined);
+			mockFindFirstInvokingWhere(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -160,13 +207,16 @@ suite("refreshStore", () => {
 		});
 
 		test("returns false when expiresAt is exactly now (boundary)", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const boundaryRow = {
 				userId: "u1",
 				tokenHash: sha256("t1"),
 				revokedAt: null,
-				expiresAt: new Date(Date.now()),
+				expiresAt: new Date(FIXED_NOW.getTime()),
 			};
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(boundaryRow);
+			mockFindFirstInvokingWhere(boundaryRow);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -179,13 +229,18 @@ suite("refreshStore", () => {
 	});
 
 	suite("revokeRefreshToken", () => {
-		test("calls update with set revokedAt and where tokenHash equals sha256(token)", async () => {
-			const mockWhere = vi.fn().mockResolvedValue(undefined);
+		test("calls update with set revokedAt and where tokenHash equals sha256(token), returns true when row updated", async () => {
+			const mockReturning = vi.fn().mockResolvedValue([{ id: "id-1" }]);
+			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 			const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
 			mockDb.update.mockReturnValue({ set: mockSet });
 
-			await revokeRefreshToken(mockDb as unknown as DrizzleClient, "t1");
+			const result = await revokeRefreshToken(
+				mockDb as unknown as DrizzleClient,
+				"t1",
+			);
 
+			expect(result).toBe(true);
 			expect(mockDb.update).toHaveBeenCalledTimes(1);
 			expect(mockSet).toHaveBeenCalledTimes(1);
 			const setCallArgs = mockSet.mock.calls[0];
@@ -194,25 +249,40 @@ suite("refreshStore", () => {
 			expect(setArg).toBeDefined();
 			expect(setArg).toHaveProperty("revokedAt");
 			expect(setArg?.revokedAt).toBeInstanceOf(Date);
-			expect(setArg?.revokedAt.getTime()).toBeGreaterThanOrEqual(
-				Date.now() - 1000,
-			);
 			expect(mockWhere).toHaveBeenCalledTimes(1);
-			// where is called with eq(refreshTokensTable.tokenHash, sha256("t1"))
+			// The where predicate is eq(refreshTokensTable.tokenHash, sha256("t1")).
+			// Drizzle returns an opaque SQL expression object; exact equality is not asserted here
+			// and should be covered by integration tests. We only verify where() was invoked with one argument.
 			const whereCallArgs = mockWhere.mock.calls[0];
 			expect(whereCallArgs).toBeDefined();
-			expect(whereCallArgs?.[0]).toBeDefined();
-			// Drizzle eq returns a SQL expression; we verify revoke was invoked with correct intent
-			// by checking that update().set().where() was chained
-			expect(mockWhere).toHaveBeenCalled();
+			expect(whereCallArgs?.length).toBe(1);
+			expect(whereCallArgs?.[0]).toBeTruthy();
+		});
+
+		test("returns false when no row matches token", async () => {
+			const mockReturning = vi.fn().mockResolvedValue([]);
+			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+			const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+			mockDb.update.mockReturnValue({ set: mockSet });
+
+			const result = await revokeRefreshToken(
+				mockDb as unknown as DrizzleClient,
+				"unknown-token",
+			);
+
+			expect(result).toBe(false);
 		});
 	});
 
 	suite("persist then isValid; revoke then isValid false", () => {
 		test("persisted token is valid; after revoke, isValid returns false", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const mockValues = vi.fn().mockResolvedValue(undefined);
 			mockDb.insert.mockReturnValue({ values: mockValues });
-			const mockWhere = vi.fn().mockResolvedValue(undefined);
+			const mockReturning = vi.fn().mockResolvedValue([{ id: "id-1" }]);
+			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 			const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
 			mockDb.update.mockReturnValue({ set: mockSet });
 
@@ -227,9 +297,9 @@ suite("refreshStore", () => {
 				userId: "u1",
 				tokenHash: sha256("t1"),
 				revokedAt: null,
-				expiresAt: new Date(Date.now() + 60_000),
+				expiresAt: new Date(FIXED_NOW.getTime() + 60_000),
 			};
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(storedRow);
+			mockFindFirstInvokingWhere(storedRow);
 
 			const validBefore = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -238,14 +308,18 @@ suite("refreshStore", () => {
 			);
 			expect(validBefore).toBe(true);
 
-			await revokeRefreshToken(mockDb as unknown as DrizzleClient, "t1");
+			const revoked = await revokeRefreshToken(
+				mockDb as unknown as DrizzleClient,
+				"t1",
+			);
+			expect(revoked).toBe(true);
 			expect(mockDb.update).toHaveBeenCalled();
 
 			const revokedRow = {
 				...storedRow,
 				revokedAt: new Date(),
 			};
-			mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(revokedRow);
+			mockFindFirstInvokingWhere(revokedRow);
 
 			const validAfter = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,

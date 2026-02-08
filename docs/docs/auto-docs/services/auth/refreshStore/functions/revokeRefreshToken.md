@@ -4,11 +4,12 @@
 
 # Function: revokeRefreshToken()
 
-> **revokeRefreshToken**(`db`, `token`): `Promise`\<`void`\>
+> **revokeRefreshToken**(`db`, `token`): `Promise`\<`boolean`\>
 
-Defined in: [src/services/auth/refreshStore.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L47)
+Defined in: [src/services/auth/refreshStore.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L73)
 
 Revokes a refresh token by setting revokedAt.
+Callers can use the return value to detect whether a row was affected (e.g. token existed).
 
 ## Parameters
 
@@ -16,10 +17,16 @@ Revokes a refresh token by setting revokedAt.
 
 [`DrizzleClient`](../../../../fastifyPlugins/drizzleClient/type-aliases/DrizzleClient.md)
 
+Drizzle client.
+
 ### token
 
 `string`
 
+Raw refresh token (will be hashed for lookup).
+
 ## Returns
 
-`Promise`\<`void`\>
+`Promise`\<`boolean`\>
+
+Promise resolving to true if a row was updated, false if no row matched.

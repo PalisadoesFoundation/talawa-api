@@ -4,20 +4,25 @@
 
 # Interface: PersistRefreshTokenParams
 
-Defined in: [src/services/auth/refreshStore.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L18)
+Defined in: [src/services/auth/refreshStore.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L26)
 
 Parameters for persisting a refresh token.
-ip and userAgent are accepted for future compatibility but not persisted (table has no such columns).
+- token: raw refresh token (hashed before storage).
+- userId: user ID to associate with the token.
+- ttlSec: time-to-live in seconds; must be greater than 0.
+- ip, userAgent: accepted but not persisted (no table columns); deprecated for future use.
 
 ## Properties
 
-### ip?
+### ~~ip?~~
 
 > `optional` **ip**: `string`
 
-Defined in: [src/services/auth/refreshStore.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L22)
+Defined in: [src/services/auth/refreshStore.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L30)
 
-Optional, not persisted in current schema
+#### Deprecated
+
+Not stored; table has no ip column. Kept for API compatibility.
 
 ***
 
@@ -25,7 +30,7 @@ Optional, not persisted in current schema
 
 > **token**: `string`
 
-Defined in: [src/services/auth/refreshStore.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L19)
+Defined in: [src/services/auth/refreshStore.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L27)
 
 ***
 
@@ -33,17 +38,19 @@ Defined in: [src/services/auth/refreshStore.ts:19](https://github.com/Palisadoes
 
 > **ttlSec**: `number`
 
-Defined in: [src/services/auth/refreshStore.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L25)
+Defined in: [src/services/auth/refreshStore.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L33)
 
 ***
 
-### userAgent?
+### ~~userAgent?~~
 
 > `optional` **userAgent**: `string`
 
-Defined in: [src/services/auth/refreshStore.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L24)
+Defined in: [src/services/auth/refreshStore.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L32)
 
-Optional, not persisted in current schema
+#### Deprecated
+
+Not stored; table has no userAgent column. Kept for API compatibility.
 
 ***
 
@@ -51,4 +58,4 @@ Optional, not persisted in current schema
 
 > **userId**: `string`
 
-Defined in: [src/services/auth/refreshStore.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L20)
+Defined in: [src/services/auth/refreshStore.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L28)

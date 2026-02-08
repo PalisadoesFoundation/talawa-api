@@ -6,7 +6,7 @@
 
 > **isRefreshTokenValid**(`db`, `token`, `userId`): `Promise`\<`boolean`\>
 
-Defined in: [src/services/auth/refreshStore.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L61)
+Defined in: [src/services/auth/refreshStore.ts:94](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L94)
 
 Returns true only if a row exists for the given userId and token hash,
 and it is not revoked and not expired.
@@ -17,14 +17,22 @@ and it is not revoked and not expired.
 
 [`DrizzleClient`](../../../../fastifyPlugins/drizzleClient/type-aliases/DrizzleClient.md)
 
+Drizzle client.
+
 ### token
 
 `string`
+
+Raw refresh token (will be hashed for lookup).
 
 ### userId
 
 `string`
 
+User ID to match.
+
 ## Returns
 
 `Promise`\<`boolean`\>
+
+Promise resolving to true when the token is valid and not expired.
