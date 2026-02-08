@@ -54,7 +54,17 @@ This table defines the most important parameters in the file that will be requir
 | `<PROVIDER>_CLIENT_SECRET` | OAuth Client Secret for authentication providers, used for server-side OAuth token exchange with providers. |
 | `<PROVIDER>_REDIRECT_URI` | OAuth Redirect URI for authentication callback, must match the URI registered in provider settings. |
 | `API_OAUTH_REQUEST_TIMEOUT_MS` | Request timeout in milliseconds for OAuth provider API calls, defaults to 10000ms (10 seconds) if not specified. |
-| `API_EMAIL_PROVIDER` | Email provider configuration. Defaults to `mailpit` for development. Use `ses` or `smtp` for production. See [Email Configuration](./email-configuration.md) for details. |
+| `API_EMAIL_PROVIDER` | Email provider configuration. Defaults to `mailpit` for development. Use `ses` or `smtp` for production. |
+
+### Email Providers Overview
+
+Talawa API supports three email providers:
+
+| Provider | Use Case | Default? |
+|----------|----------|----------|
+| **Mailpit** | Local development and testing | ✅ Yes |
+| **AWS SES** | Production deployments | No |
+| **SMTP** | Production with external providers | No |
 
 ## Production Environment Setup
 
@@ -161,7 +171,6 @@ SMTP_FROM_EMAIL=sender@yourdomain.com
 SMTP_FROM_NAME=Your Organization
 ```
 
-See the [Email Configuration Guide](./email-configuration.md) for detailed setup instructions and troubleshooting.
 
 #### Update the Social Media URLs
 
@@ -336,7 +345,49 @@ The development environment automatically configures [Mailpit](https://github.co
 - **Web Interface**: http://localhost:8025
 - **SMTP Port**: 1025 (internal, used by API)
 
-This allows you to test email functionality (verification emails, password resets, etc.) without sending real emails. For more details, see the [Email Configuration Guide](./email-configuration.md).
+This allows you to test email functionality (verification emails, password resets, etc.) without sending real emails.
+
+**Default Configuration:**
+
+When using the default development setup, the following values are automatically configured:
+
+```env
+API_EMAIL_PROVIDER=mailpit
+SMTP_HOST=mailpit
+SMTP_PORT=1025
+SMTP_FROM_EMAIL=test@talawa.local
+SMTP_FROM_NAME=Talawa
+```
+
+**Mailpit Web Interface Features:**
+
+- View all captured emails
+- Inspect email headers and content (HTML/Text)
+- Search and filter emails
+- Download email attachments
+- Clear all messages for testing
+
+**Docker Compose Port Mapping:**
+
+The following environment variables control how Mailpit is exposed on your host machine:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAILPIT_MAPPED_HOST_IP` | `127.0.0.1` | Host IP for Mailpit ports |
+| `MAILPIT_WEB_MAPPED_PORT` | `8025` | Web UI port on host |
+| `MAILPIT_SMTP_MAPPED_PORT` | `1025` | SMTP port on host |
+
+**Troubleshooting Mailpit:**
+
+- **Can't access http://localhost:8025:**
+  - Verify Mailpit container is running: `docker ps | grep mailpit`
+  - Check that ports aren't already in use: `lsof -i :8025`
+  - Review Docker Compose logs: `docker compose logs mailpit`
+
+- **Emails not appearing in Mailpit:**
+  - Verify `API_EMAIL_PROVIDER=mailpit` is set
+  - Check the API logs for SMTP connection errors
+  - Ensure the Mailpit container is on the same Docker network as the API
 
 ### Operating the Development Server
 
