@@ -996,6 +996,7 @@ export const Mutation_updateAgendaItem = gql(`
       name
       description
       duration
+      notes
     	attachments {
         name
         fileHash
