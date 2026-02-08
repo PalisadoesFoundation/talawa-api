@@ -1839,7 +1839,7 @@ suite("Mutation field createVenue", () => {
 				},
 			);
 
-			expect(createVenueResult.data?.createVenue).toEqual(null);
+			expect(createVenueResult.data?.createVenue).toBeUndefined();
 			expect(createVenueResult.errors).toBeDefined();
 			expect(createVenueResult.errors).toEqual(
 				expect.arrayContaining([
@@ -1929,7 +1929,7 @@ suite("Mutation field createVenue", () => {
 							attachments: [
 								{
 									objectName: objectName,
-									mimeType: "image/jpeg",
+									mimeType: "IMAGE_JPEG",
 									fileHash: faker.string.hexadecimal({
 										length: 64,
 										casing: "lower",
@@ -2017,7 +2017,7 @@ suite("Mutation field createVenue", () => {
 							attachments: [
 								{
 									objectName: "non-existent-file-object",
-									mimeType: "image/jpeg",
+									mimeType: "IMAGE_JPEG",
 									fileHash: faker.string.hexadecimal({
 										length: 64,
 										casing: "lower",
@@ -2031,7 +2031,7 @@ suite("Mutation field createVenue", () => {
 				},
 			);
 
-			expect(createVenueResult.data?.createVenue).toEqual(null);
+			expect(createVenueResult.data?.createVenue).toBeNull();
 			expect(createVenueResult.errors).toBeDefined();
 			expect(createVenueResult.errors).toEqual(
 				expect.arrayContaining([

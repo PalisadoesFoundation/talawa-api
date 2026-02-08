@@ -253,14 +253,13 @@ suite("Mutation field updateCommunity", () => {
 					},
 				});
 
-				expect(result.data?.updateCommunity).toBeNull();
+				expect(result.data?.updateCommunity).toBeUndefined();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
 								code: "invalid_arguments",
 							}),
-							path: ["updateCommunity"],
 						}),
 					]),
 				);
@@ -375,7 +374,7 @@ suite("Mutation field updateCommunity", () => {
 							name: `Community_${faker.string.ulid()}`,
 							logo: {
 								objectName: objectName,
-								mimeType: "image/png",
+								mimeType: "IMAGE_PNG",
 								fileHash: faker.string.hexadecimal({
 									length: 64,
 									casing: "lower",
@@ -413,7 +412,7 @@ suite("Mutation field updateCommunity", () => {
 							name: `Community_${faker.string.ulid()}`,
 							logo: {
 								objectName: initialObjectName,
-								mimeType: "image/jpeg",
+								mimeType: "IMAGE_JPEG",
 								fileHash: faker.string.hexadecimal({
 									length: 64,
 									casing: "lower",
@@ -446,7 +445,7 @@ suite("Mutation field updateCommunity", () => {
 							name: `Community_${faker.string.ulid()}`,
 							logo: {
 								objectName: newObjectName,
-								mimeType: "image/webp",
+								mimeType: "IMAGE_WEBP",
 								fileHash: faker.string.hexadecimal({
 									length: 64,
 									casing: "lower",
@@ -487,7 +486,7 @@ suite("Mutation field updateCommunity", () => {
 							input: {
 								logo: {
 									objectName: objectName,
-									mimeType: "image/png",
+									mimeType: "IMAGE_PNG",
 									fileHash: faker.string.hexadecimal({
 										length: 64,
 										casing: "lower",
