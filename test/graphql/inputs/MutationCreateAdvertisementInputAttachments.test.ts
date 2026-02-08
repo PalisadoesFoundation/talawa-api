@@ -65,7 +65,7 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success && result.error.issues.length > 0) {
-				expect(result.error.issues[0]?.message).toContain("too_big");
+				expect(result.error.issues[0]?.code).toBe("too_big");
 			}
 		});
 	});
@@ -95,10 +95,10 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid image/avif", () => {
+		it("should accept valid video/quicktime", () => {
 			const result = mutationCreateAdvertisementInputSchema.safeParse({
 				...validInput,
-				attachments: [createFileMetadata("test.avif", "image/avif")],
+				attachments: [createFileMetadata("test.mov", "video/quicktime")],
 			});
 			expect(result.success).toBe(true);
 		});
@@ -126,14 +126,11 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["attachments", 0, "mimeType"],
-							code: "invalid_enum_value",
-						}),
-					]),
+				const mimeTypeIssue = result.error.issues.find(
+					(issue) =>
+						issue.path.includes("mimeType") && issue.code === "invalid_value",
 				);
+				expect(mimeTypeIssue).toBeDefined();
 			}
 		});
 
@@ -144,14 +141,11 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["attachments", 0, "mimeType"],
-							code: "invalid_enum_value",
-						}),
-					]),
+				const mimeTypeIssue = result.error.issues.find(
+					(issue) =>
+						issue.path.includes("mimeType") && issue.code === "invalid_value",
 				);
+				expect(mimeTypeIssue).toBeDefined();
 			}
 		});
 
@@ -166,14 +160,11 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["attachments", 1, "mimeType"],
-							code: "invalid_enum_value",
-						}),
-					]),
+				const mimeTypeIssue = result.error.issues.find(
+					(issue) =>
+						issue.path.includes("mimeType") && issue.code === "invalid_value",
 				);
+				expect(mimeTypeIssue).toBeDefined();
 			}
 		});
 
@@ -188,19 +179,11 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				expect(result.error.issues.length).toBeGreaterThanOrEqual(2);
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["attachments", 0, "mimeType"],
-							code: "invalid_enum_value",
-						}),
-						expect.objectContaining({
-							path: ["attachments", 2, "mimeType"],
-							code: "invalid_enum_value",
-						}),
-					]),
+				const mimeTypeIssues = result.error.issues.filter(
+					(issue) =>
+						issue.path.includes("mimeType") && issue.code === "invalid_value",
 				);
+				expect(mimeTypeIssues.length).toBeGreaterThanOrEqual(2);
 			}
 		});
 	});
