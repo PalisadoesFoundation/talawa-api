@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
 	AGENDA_ITEM_DESCRIPTION_MAX_LENGTH,
 	AGENDA_ITEM_NAME_MAX_LENGTH,
+	AGENDA_ITEM_NOTES_MAX_LENGTH,
 	agendaItemsTableInsertSchema,
 } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
@@ -22,6 +23,11 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		description: sanitizedStringSchema
 			.min(1)
 			.max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH)
+			.optional(),
+		notes: sanitizedStringSchema
+			.min(1)
+			.max(AGENDA_ITEM_NOTES_MAX_LENGTH)
+			.nullable()
 			.optional(),
 		categoryId: agendaItemsTableInsertSchema.shape.categoryId.optional(),
 		folderId: agendaItemsTableInsertSchema.shape.folderId.optional(),
@@ -92,6 +98,10 @@ export const MutationUpdateAgendaItemInput = builder
 			}),
 			name: t.string({
 				description: "Name of the agenda item.",
+				required: false,
+			}),
+			notes: t.string({
+				description: "Notes of the agenda item.",
 				required: false,
 			}),
 			url: t.field({
