@@ -136,6 +136,40 @@ reviews:
         - Mock return values match the actual API/function signature and data structure
 
         **Test Cleanup & Hygiene:**
+
+        - **Database Cleanup Required:**
+          - ❌ CRITICAL: `afterEach` with ONLY `vi.restoreAllMocks()` is INSUFFICIENT
+          - ✅ REQUIRED: Database cleanup must happen in `afterEach` for all integration tests
+          - Tests creating database entities (orgs, users, events, etc.) MUST clean them up
+          - Options: transaction rollback, explicit cleanup functions, or test database isolation
+          - Flag missing database cleanup as HIGH PRIORITY blocking issue
+
+        - **Resource Creation Patterns:**
+          - ❌ AVOID: Creating shared resources (auth tokens, users) in `beforeAll` for use across multiple tests
+          - ✅ PREFER: Create per-test resources in `beforeEach` or within individual tests
+          - `beforeAll` acceptable only for truly immutable shared setup (e.g., test utilities, constants)
+          - Auth tokens should be created per-test to avoid cascading failures
+
+        - **Test Isolation Verification:**
+          - Each test must be runnable in isolation and in any order
+          - Tests must not depend on data created by previous tests
+          - No database state should leak between tests
+          - Verify tests pass when run with `--shard` and `--isolate` flags
+
+        - **Cleanup Completeness Check:**
+          - For every `create*()` helper call, verify corresponding cleanup exists
+          - For every database write (insert, update), verify cleanup or rollback
+          - Watch for: Organizations, Events, Users, Folders, Categories, Agenda Items, etc.
+          - Example pattern:
+            ```typescript
+            afterEach(async () => {
+              vi.restoreAllMocks();
+              // Clean up test data
+              await db.delete(agendaItems).where(eq(agendaItems.id, testItemId));
+              await db.delete(categories).where(eq(categories.id, testCategoryId));
+              // ... etc
+            });
+            ```       
         - Proper beforeEach/afterEach hooks for all state management (timers, mocks, global state)
         - vi.useFakeTimers() is paired with vi.useRealTimers() in afterEach, not inline
         - No floating-point arithmetic in test expectations without proper precision handling
