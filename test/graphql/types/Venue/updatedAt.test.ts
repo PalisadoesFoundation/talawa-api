@@ -42,29 +42,48 @@ const getAdminToken = async () => {
 };
 
 afterEach(async () => {
-	if (createdVenueIds.length > 0) {
-		await server.drizzleClient
-			.delete(venuesTable)
-			.where(inArray(venuesTable.id, createdVenueIds));
+	// Each step wrapped in try-catch so cleanup continues even if one step fails
+	try {
+		if (createdVenueIds.length > 0) {
+			await server.drizzleClient
+				.delete(venuesTable)
+				.where(inArray(venuesTable.id, createdVenueIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for venues:", error);
+	} finally {
 		createdVenueIds.length = 0;
 	}
-	if (createdOrgIds.length > 0) {
-		for (const orgId of createdOrgIds) {
+
+	try {
+		if (createdOrgIds.length > 0) {
+			for (const orgId of createdOrgIds) {
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(eq(organizationMembershipsTable.organizationId, orgId));
+			}
 			await server.drizzleClient
-				.delete(organizationMembershipsTable)
-				.where(eq(organizationMembershipsTable.organizationId, orgId));
+				.delete(organizationsTable)
+				.where(inArray(organizationsTable.id, createdOrgIds));
 		}
-		await server.drizzleClient
-			.delete(organizationsTable)
-			.where(inArray(organizationsTable.id, createdOrgIds));
+	} catch (error) {
+		console.error("Cleanup failed for organizations:", error);
+	} finally {
 		createdOrgIds.length = 0;
 	}
-	if (createdUserIds.length > 0) {
-		await server.drizzleClient
-			.delete(usersTable)
-			.where(inArray(usersTable.id, createdUserIds));
+
+	try {
+		if (createdUserIds.length > 0) {
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(inArray(usersTable.id, createdUserIds));
+		}
+	} catch (error) {
+		console.error("Cleanup failed for users:", error);
+	} finally {
 		createdUserIds.length = 0;
 	}
+
 	vi.restoreAllMocks();
 });
 
