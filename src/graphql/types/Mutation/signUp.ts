@@ -19,6 +19,8 @@ import {
 	formatExpiryTime,
 	getEmailVerificationEmailHtml,
 	getEmailVerificationEmailText,
+	getOnSpotAttendeeWelcomeEmailHtml,
+	getOnSpotAttendeeWelcomeEmailText,
 } from "~/src/utilities/emailTemplates";
 import {
 	DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS,
@@ -318,43 +320,84 @@ builder.mutationField("signUp", (t) =>
 			// Send email verification token AFTER transaction completes (non-blocking)
 			// This ensures email failures don't abort the signup
 			try {
-				const rawToken = generateEmailVerificationToken();
-				const tokenHash = hashEmailVerificationToken(rawToken);
-				const tokenExpiresInSeconds =
-					ctx.envConfig.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS ??
-					DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS;
-				const expiresAt = new Date(Date.now() + tokenExpiresInSeconds * 1000);
+				// Check if this is an admin on-spot registration
+				if (parsedArgs.input.signupSource === "ADMIN_ONSPOT") {
+					// For admin on-spot registrations, send welcome email with credentials
+					// Note: Password is generated on frontend and sent in the mutation
+					const emailContext = {
+						userName: result.user.name,
+						communityName: ctx.envConfig.API_COMMUNITY_NAME,
+						emailAddress: result.user.emailAddress,
+						temporaryPassword: parsedArgs.input.password,
+						loginLink: `${ctx.envConfig.FRONTEND_URL}/login`,
+					};
 
-				// Use non-transactional DB client to store token
-				await storeEmailVerificationToken(
-					ctx.drizzleClient,
-					result.user.id,
-					tokenHash,
-					expiresAt,
-				);
+					emailService
+						.sendEmail({
+							id: ulid(),
+							email: result.user.emailAddress,
+							subject: `Welcome to ${ctx.envConfig.API_COMMUNITY_NAME} - Your Account is Ready`,
+							htmlBody: getOnSpotAttendeeWelcomeEmailHtml(emailContext),
+							textBody: getOnSpotAttendeeWelcomeEmailText(emailContext),
+							userId: result.user.id,
+						})
+						.catch((err) =>
+							ctx.log.error({ error: err }, "Failed to send on-spot attendee welcome email"),
+						);
 
-				const verificationLink = `${ctx.envConfig.API_FRONTEND_URL}/verify-email?token=${rawToken}`;
-				const emailContext = {
-					userName: result.user.name,
-					communityName: ctx.envConfig.API_COMMUNITY_NAME,
-					verificationLink,
-					expiryText: formatExpiryTime(tokenExpiresInSeconds),
-				};
+					// Automatically verify email for on-spot registrations
+					// This ensures attendees can log in immediately without email verification
+					try {
+						await ctx.drizzleClient
+							.update(usersTable)
+							.set({ isEmailAddressVerified: true })
+							.where(eq(usersTable.id, result.user.id));
 
-				emailService
-					.sendEmail({
-						id: ulid(),
-						email: result.user.emailAddress,
-						subject: `Verify Your Email - ${ctx.envConfig.API_COMMUNITY_NAME}`,
-						htmlBody: getEmailVerificationEmailHtml(emailContext),
-						textBody: getEmailVerificationEmailText(emailContext),
-						userId: result.user.id,
-					})
-					.catch((err) =>
-						ctx.log.error({ error: err }, "Failed to send verification email"),
+						// Update the returned user object to reflect verified status
+						result.user.isEmailAddressVerified = true;
+					} catch (err) {
+						ctx.log.error({ error: err }, "Failed to mark on-spot attendee email as verified");
+					}
+				} else {
+					// Standard email verification flow for regular signups
+					const rawToken = generateEmailVerificationToken();
+					const tokenHash = hashEmailVerificationToken(rawToken);
+					const tokenExpiresInSeconds =
+						ctx.envConfig.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS ??
+						DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS;
+					const expiresAt = new Date(Date.now() + tokenExpiresInSeconds * 1000);
+
+					// Use non-transactional DB client to store token
+					await storeEmailVerificationToken(
+						ctx.drizzleClient,
+						result.user.id,
+						tokenHash,
+						expiresAt,
 					);
+
+					const verificationLink = `${ctx.envConfig.FRONTEND_URL}/verify-email?token=${rawToken}`;
+					const emailContext = {
+						userName: result.user.name,
+						communityName: ctx.envConfig.API_COMMUNITY_NAME,
+						verificationLink,
+						expiryText: formatExpiryTime(tokenExpiresInSeconds),
+					};
+
+					emailService
+						.sendEmail({
+							id: ulid(),
+							email: result.user.emailAddress,
+							subject: `Verify Your Email - ${ctx.envConfig.API_COMMUNITY_NAME}`,
+							htmlBody: getEmailVerificationEmailHtml(emailContext),
+							textBody: getEmailVerificationEmailText(emailContext),
+							userId: result.user.id,
+						})
+						.catch((err) =>
+							ctx.log.error({ error: err }, "Failed to send verification email"),
+						);
+				}
 			} catch (err) {
-				ctx.log.error({ error: err }, "Failed to create verification token");
+				ctx.log.error({ error: err }, "Failed to send signup email");
 			}
 
 			return result;
