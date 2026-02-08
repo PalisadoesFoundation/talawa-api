@@ -2959,6 +2959,7 @@ export const Mutation_createVenue = gql(`
       description
       capacity
       createdAt
+      updatedAt
     }
   }
 `);
@@ -3007,6 +3008,15 @@ export const Query_eventVenuesWithAttachments = gql(`
           endCursor
         }
       }
+    }
+  }
+`);
+
+export const Query_venue_updatedAt = gql(`
+  query Query_venue_updatedAt($input: QueryVenueInput!) {
+    venue(input: $input) {
+      id
+      updatedAt
     }
   }
 `);
