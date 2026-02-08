@@ -14,11 +14,15 @@ const objectsParamsJsonSchema = {
 	required: ["name"],
 } as const;
 
+interface ObjectsParams {
+	name: string;
+}
+
 /**
  * This fastify route plugin is used to initialize a `/objects/:name` endpoint on the fastify server for clients to fetch objects from the minio server.
  */
 export const objects: FastifyPluginAsync = async (fastify) => {
-	fastify.get(
+	fastify.get<{ Params: ObjectsParams }>(
 		"/objects/:name",
 		{
 			preHandler: fastify.rateLimit("normal"),
@@ -27,7 +31,7 @@ export const objects: FastifyPluginAsync = async (fastify) => {
 			},
 		},
 		async (request, reply) => {
-			const { name } = request.params as { name: string };
+			const { name } = request.params;
 
 			let readableStream: Readable;
 			let objectStat: BucketItemStat;
