@@ -2,7 +2,11 @@ id: test-missing-database-cleanup
 language: typescript
 rule:
   kind: call_expression
-  pattern: describe($$$)
+  pattern: afterEach($$$)
+  not:
+    has:
+      kind: identifier
+      regex: (delete|cleanup|rollback|transaction)
   inside:
     kind: source_file
     has:
