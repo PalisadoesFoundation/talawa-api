@@ -24,21 +24,12 @@ const mockDb: {
 const FIXED_NOW = new Date("2025-06-15T12:00:00.000Z");
 
 /**
- * Mocks findFirst so the `where` callback is invoked (for coverage of the where clause).
- * Then resolves with the given returnValue.
+ * Mocks findFirst to resolve with the given returnValue.
+ * Production code passes an SQL expression object (and(...)) for where, not a callback,
+ * so where-clause behavior is not exercised by this mock; these tests document outcomes only.
  */
-function mockFindFirstInvokingWhere<T>(returnValue: T): void {
-	mockDb.query.refreshTokensTable.findFirst.mockImplementation((opts) => {
-		if (typeof opts?.where === "function") {
-			const f = { userId: {}, tokenHash: {} };
-			const op = {
-				eq: (_left: unknown, _right: unknown) => ({}),
-				and: (_a: unknown, _b?: unknown) => ({}),
-			};
-			opts.where(f, op);
-		}
-		return Promise.resolve(returnValue);
-	});
+function mockFindFirst<T>(returnValue: T): void {
+	mockDb.query.refreshTokensTable.findFirst.mockResolvedValue(returnValue);
 }
 
 suite("refreshStore", () => {
@@ -155,7 +146,7 @@ suite("refreshStore", () => {
 				revokedAt: null,
 				expiresAt: new Date(FIXED_NOW.getTime() + 60_000),
 			};
-			mockFindFirstInvokingWhere(validRow);
+			mockFindFirst(validRow);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -170,8 +161,10 @@ suite("refreshStore", () => {
 			vi.useFakeTimers();
 			vi.setSystemTime(FIXED_NOW);
 
-			// Query includes isNull(revokedAt), so DB would return no row for a revoked token.
-			mockFindFirstInvokingWhere(undefined);
+			// Revoked/expired filtering is in the SQL WHERE (isNull(revokedAt), gt(expiresAt, now)),
+			// not in application logic, so we intentionally mock mockFindFirst to return undefined
+			// and exercise the same code path in isRefreshTokenValid; this documents the revoked scenario.
+			mockFindFirst(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -186,8 +179,10 @@ suite("refreshStore", () => {
 			vi.useFakeTimers();
 			vi.setSystemTime(FIXED_NOW);
 
-			// Query includes gt(expiresAt, now), so DB would return no row for an expired token.
-			mockFindFirstInvokingWhere(undefined);
+			// Revoked/expired filtering is in the SQL WHERE (isNull(revokedAt), gt(expiresAt, now)),
+			// not in application logic, so we intentionally mock mockFindFirst to return undefined
+			// and exercise the same code path in isRefreshTokenValid; this documents the expired scenario.
+			mockFindFirst(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -199,7 +194,7 @@ suite("refreshStore", () => {
 		});
 
 		test("returns false when token is not found", async () => {
-			mockFindFirstInvokingWhere(undefined);
+			mockFindFirst(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -215,7 +210,7 @@ suite("refreshStore", () => {
 			vi.setSystemTime(FIXED_NOW);
 
 			// Query uses gt(expiresAt, now), so expiresAt === now returns no row.
-			mockFindFirstInvokingWhere(undefined);
+			mockFindFirst(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -298,7 +293,7 @@ suite("refreshStore", () => {
 				revokedAt: null,
 				expiresAt: new Date(FIXED_NOW.getTime() + 60_000),
 			};
-			mockFindFirstInvokingWhere(storedRow);
+			mockFindFirst(storedRow);
 
 			const validBefore = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -315,7 +310,7 @@ suite("refreshStore", () => {
 			expect(mockDb.update).toHaveBeenCalled();
 
 			// After revoke, query (isNull(revokedAt), gt(expiresAt, now)) returns no row.
-			mockFindFirstInvokingWhere(undefined);
+			mockFindFirst(undefined);
 
 			const validAfter = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
