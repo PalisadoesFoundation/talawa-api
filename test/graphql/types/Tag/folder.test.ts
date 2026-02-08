@@ -443,6 +443,9 @@ describe("Tag.folder resolver - Integration", () => {
 		);
 		createdOrgIds.push(orgId);
 
+		// This mock is minimal and only includes fields required for the authorization checks
+		// in Query.tag and Tag.folder resolvers (id, role, organization memberships).
+		// If these resolvers are updated to read additional user fields, this mock must be updated accordingly.
 		const adminUserMock = {
 			id: adminAuth.userId,
 			role: "administrator" as const,
@@ -508,32 +511,29 @@ describe("Tag.folder resolver - Integration", () => {
 });
 
 describe("Tag.folder resolver - Unit", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 	it("should throw unauthenticated error when context is not authenticated", async () => {
 		let capturedResolver:
 			| ((...args: unknown[]) => Promise<unknown>)
 			| undefined;
-
 		// Reset modules to ensure folder.ts re-executes and calls Tag.implement
 		vi.resetModules();
-
 		// dynamic imports to get fresh module instances
 		const { Tag } = await import("~/src/graphql/types/Tag/Tag");
 		const { TalawaGraphQLError } = await import(
 			"~/src/utilities/TalawaGraphQLError"
 		);
-
 		interface MockFieldConfig {
 			resolve: (...args: unknown[]) => Promise<unknown>;
 		}
-
 		interface MockBuilder {
 			field: (config: MockFieldConfig) => unknown;
 		}
-
 		interface MockConfig {
 			fields: (t: MockBuilder) => unknown;
 		}
-
 		// Spy on Tag.implement
 		const implementSpy = vi
 			.spyOn(Tag, "implement")
@@ -548,44 +548,33 @@ describe("Tag.folder resolver - Unit", () => {
 						return {};
 					},
 				};
-
 				// Execute the fields function
 				// This might return the fields object or triggers t.field calls
 				mockConfig.fields(tMock);
-
 				// Return type for spy mock needs to satisfy the original return type (mostly)
 				// We cast to never to avoid implementing the full PothosRef interface
 				return {} as never;
 			});
-
 		// Dynamic import to trigger the side effect in folder.ts
 		await import("~/src/graphql/types/Tag/folder");
-
 		expect(implementSpy).toHaveBeenCalled();
 		expect(capturedResolver).toBeDefined();
 		expect(typeof capturedResolver).toBe("function");
-
 		// Execute the captured resolver with a mock context
 		const mockCtx = {
 			currentClient: {
 				isAuthenticated: false,
 			},
 		};
-
 		if (!capturedResolver) {
 			throw new Error("Resolver was not captured");
 		}
-
-		await expect(capturedResolver({}, {}, mockCtx)).rejects.toThrow(
-			TalawaGraphQLError,
+		const error = await capturedResolver({}, {}, mockCtx).catch(
+			(e: unknown) => e,
 		);
-
-		try {
-			await capturedResolver({}, {}, mockCtx);
-		} catch (error: unknown) {
-			expect(
-				(error as InstanceType<typeof TalawaGraphQLError>).extensions?.code,
-			).toBe("unauthenticated");
-		}
+		expect(error).toBeInstanceOf(TalawaGraphQLError);
+		expect(
+			(error as InstanceType<typeof TalawaGraphQLError>).extensions?.code,
+		).toBe("unauthenticated");
 	});
 });
