@@ -10,7 +10,7 @@ Defined in: [src/services/auth/refreshStore.ts:46](https://github.com/Palisadoes
 
 Persists a refresh token in the database.
 Stores only userId, tokenHash (SHA-256 of token), and expiresAt.
-Throws if params.ttlSec is not positive (avoids immediately-expired tokens).
+Throws if params.ttlSec is not a finite positive number (avoids NaN, Infinity, and immediately-expired tokens).
 
 ## Parameters
 

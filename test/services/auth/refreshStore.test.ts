@@ -103,10 +103,21 @@ suite("refreshStore", () => {
 				}),
 			).rejects.toThrow(/params\.ttlSec must be positive/);
 
+			await expect(
+				persistRefreshToken(mockDb as unknown as DrizzleClient, {
+					token: "t1",
+					userId: "u1",
+					ttlSec: Number.NaN,
+				}),
+			).rejects.toThrow(/params\.ttlSec must be positive/);
+
 			expect(mockDb.insert).not.toHaveBeenCalled();
 		});
 
 		test("accepts optional ip and userAgent without persisting them", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			const mockValues = vi.fn().mockResolvedValue(undefined);
 			mockDb.insert.mockReturnValue({ values: mockValues });
 
@@ -156,13 +167,8 @@ suite("refreshStore", () => {
 			vi.useFakeTimers();
 			vi.setSystemTime(FIXED_NOW);
 
-			const revokedRow = {
-				userId: "u1",
-				tokenHash: sha256("t1"),
-				revokedAt: new Date(),
-				expiresAt: new Date(FIXED_NOW.getTime() + 60_000),
-			};
-			mockFindFirstInvokingWhere(revokedRow);
+			// Query includes isNull(revokedAt), so DB would return no row for a revoked token.
+			mockFindFirstInvokingWhere(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -177,13 +183,8 @@ suite("refreshStore", () => {
 			vi.useFakeTimers();
 			vi.setSystemTime(FIXED_NOW);
 
-			const expiredRow = {
-				userId: "u1",
-				tokenHash: sha256("t1"),
-				revokedAt: null,
-				expiresAt: new Date(FIXED_NOW.getTime() - 1000),
-			};
-			mockFindFirstInvokingWhere(expiredRow);
+			// Query includes gt(expiresAt, now), so DB would return no row for an expired token.
+			mockFindFirstInvokingWhere(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -210,13 +211,8 @@ suite("refreshStore", () => {
 			vi.useFakeTimers();
 			vi.setSystemTime(FIXED_NOW);
 
-			const boundaryRow = {
-				userId: "u1",
-				tokenHash: sha256("t1"),
-				revokedAt: null,
-				expiresAt: new Date(FIXED_NOW.getTime()),
-			};
-			mockFindFirstInvokingWhere(boundaryRow);
+			// Query uses gt(expiresAt, now), so expiresAt === now returns no row.
+			mockFindFirstInvokingWhere(undefined);
 
 			const result = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,
@@ -315,11 +311,8 @@ suite("refreshStore", () => {
 			expect(revoked).toBe(true);
 			expect(mockDb.update).toHaveBeenCalled();
 
-			const revokedRow = {
-				...storedRow,
-				revokedAt: new Date(),
-			};
-			mockFindFirstInvokingWhere(revokedRow);
+			// After revoke, query (isNull(revokedAt), gt(expiresAt, now)) returns no row.
+			mockFindFirstInvokingWhere(undefined);
 
 			const validAfter = await isRefreshTokenValid(
 				mockDb as unknown as DrizzleClient,

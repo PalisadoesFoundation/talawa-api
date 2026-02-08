@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { refreshTokensTable } from "~/src/drizzle/tables/refreshTokens";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
@@ -36,7 +36,7 @@ export interface PersistRefreshTokenParams {
 /**
  * Persists a refresh token in the database.
  * Stores only userId, tokenHash (SHA-256 of token), and expiresAt.
- * Throws if params.ttlSec is not positive (avoids immediately-expired tokens).
+ * Throws if params.ttlSec is not a finite positive number (avoids NaN, Infinity, and immediately-expired tokens).
  *
  * @param db - Drizzle client.
  * @param params - Token, userId, ttlSec; ip/userAgent accepted but not persisted.
@@ -47,14 +47,15 @@ export async function persistRefreshToken(
 	db: DrizzleClient,
 	params: PersistRefreshTokenParams,
 ): Promise<void> {
-	if (params.ttlSec <= 0) {
+	const ttlSec = Number(params.ttlSec);
+	if (!Number.isFinite(ttlSec) || ttlSec <= 0) {
 		throw new TalawaRestError({
 			code: ErrorCode.INVALID_ARGUMENTS,
 			message: `persistRefreshToken: params.ttlSec must be positive (got ${params.ttlSec}). Check token TTL configuration.`,
 			details: { ttlSec: params.ttlSec },
 		});
 	}
-	const expiresAt = new Date(Date.now() + params.ttlSec * 1000);
+	const expiresAt = new Date(Date.now() + ttlSec * 1000);
 	await db.insert(refreshTokensTable).values({
 		userId: params.userId,
 		tokenHash: sha256(params.token),
@@ -96,11 +97,14 @@ export async function isRefreshTokenValid(
 	token: string,
 	userId: string,
 ): Promise<boolean> {
+	const now = new Date();
 	const row = await db.query.refreshTokensTable.findFirst({
-		where: (f, op) =>
-			op.and(op.eq(f.userId, userId), op.eq(f.tokenHash, sha256(token))),
+		where: and(
+			eq(refreshTokensTable.userId, userId),
+			eq(refreshTokensTable.tokenHash, sha256(token)),
+			isNull(refreshTokensTable.revokedAt),
+			gt(refreshTokensTable.expiresAt, now),
+		),
 	});
-	return (
-		!!row && row.revokedAt === null && row.expiresAt.getTime() > Date.now()
-	);
+	return !!row;
 }

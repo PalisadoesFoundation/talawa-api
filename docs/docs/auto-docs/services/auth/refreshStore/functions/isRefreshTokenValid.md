@@ -6,7 +6,7 @@
 
 > **isRefreshTokenValid**(`db`, `token`, `userId`): `Promise`\<`boolean`\>
 
-Defined in: [src/services/auth/refreshStore.ts:94](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L94)
+Defined in: [src/services/auth/refreshStore.ts:95](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L95)
 
 Returns true only if a row exists for the given userId and token hash,
 and it is not revoked and not expired.
