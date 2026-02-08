@@ -214,11 +214,16 @@ suite("Mutation field updateAgendaItem", () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 
-		for (const cleanup of cleanupFns.reverse()) {
-			await cleanup();
+		for (const fn of [...cleanupFns].reverse()) {
+			try {
+				await fn();
+			} catch (e) {
+				console.error("Cleanup failed:", e);
+			}
 		}
 
 		cleanupFns.length = 0;
+		cachedAdminAuth = null;
 	});
 
 	test("should update agenda item successfully", async () => {
