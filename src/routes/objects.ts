@@ -2,14 +2,9 @@ import type { Readable } from "node:stream";
 
 import type { FastifyPluginAsync } from "fastify";
 import { type BucketItemStat, S3Error } from "minio";
-import { z } from "zod";
+
 import { ErrorCode } from "../utilities/errors/errorCodes";
 import { TalawaRestError } from "../utilities/errors/TalawaRestError";
-import { zReplyParsed } from "./validation/zodReply";
-
-const objectsParamsSchema = z.object({
-	name: z.string().min(1).max(36),
-});
 
 const objectsParamsJsonSchema = {
 	type: "object",
@@ -32,13 +27,7 @@ export const objects: FastifyPluginAsync = async (fastify) => {
 			},
 		},
 		async (request, reply) => {
-			const params = await zReplyParsed(
-				reply,
-				objectsParamsSchema,
-				request.params,
-			);
-			if (!params) return;
-			const { name } = params;
+			const { name } = request.params as { name: string };
 
 			let readableStream: Readable;
 			let objectStat: BucketItemStat;
