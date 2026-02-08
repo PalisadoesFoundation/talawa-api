@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const postAttachmentMimeTypeEnum = z.enum([
+export const postAttachmentTypes = [
 	"image/avif",
 	"image/jpeg",
 	"image/png",
@@ -8,4 +8,6 @@ export const postAttachmentMimeTypeEnum = z.enum([
 	"video/mp4",
 	"video/webm",
 	"video/quicktime",
-]);
+] as const;
+
+export const postAttachmentMimeTypeZodEnum = z.enum(postAttachmentTypes);

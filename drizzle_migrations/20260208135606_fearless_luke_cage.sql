@@ -1,0 +1,4 @@
+CREATE TYPE "public"."agenda_item_attachment_mime_type" AS ENUM('image/avif', 'image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime');--> statement-breakpoint
+CREATE TYPE "public"."post_attachment_mime_type" AS ENUM('image/avif', 'image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime');--> statement-breakpoint
+ALTER TABLE "agenda_item_attachments" ALTER COLUMN "mime_type" SET DATA TYPE "public"."agenda_item_attachment_mime_type" USING "mime_type"::"public"."agenda_item_attachment_mime_type";--> statement-breakpoint
+ALTER TABLE "post_attachments" ALTER COLUMN "mime_type" SET DATA TYPE "public"."post_attachment_mime_type" USING "mime_type"::"public"."post_attachment_mime_type";

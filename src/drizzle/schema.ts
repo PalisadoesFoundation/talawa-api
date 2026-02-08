@@ -30,6 +30,7 @@ export {
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
 export {
+	agendaItemAttachmentMimeTypePgEnum,
 	agendaItemAttachmentsTable,
 	agendaItemAttachmentsTableRelations,
 } from "./tables/agendaItemAttachments";
@@ -160,6 +161,7 @@ export {
 } from "./tables/passwordResetTokens";
 export { pluginsTable } from "./tables/plugins";
 export {
+	postAttachmentMimeTypePgEnum,
 	postAttachmentsTable,
 	postAttachmentsTableRelations,
 } from "./tables/postAttachments";

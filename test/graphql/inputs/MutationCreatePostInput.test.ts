@@ -156,7 +156,7 @@ describe("MutationCreatePostInput Schema", () => {
 		});
 
 		it("should accept attachment with valid mime type", async () => {
-			// Assuming image/jpeg is a valid mime type based on postAttachmentMimeTypeEnum
+			// Assuming image/jpeg is a valid mime type based on postAttachmentMimeTypeZodEnum
 			const validMimeTypeAttachment = Promise.resolve({
 				filename: "test.jpg",
 				mimetype: "image/jpeg", // Valid mime type
