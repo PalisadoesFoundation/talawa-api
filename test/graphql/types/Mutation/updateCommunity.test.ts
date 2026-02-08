@@ -694,6 +694,7 @@ suite("Mutation field updateCommunity", () => {
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
 							code: "invalid_arguments",
+							issues: expect.any(Array),
 						}),
 						message: expect.any(String),
 						path: ["updateCommunity"],
@@ -732,6 +733,7 @@ suite("Mutation field updateCommunity", () => {
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
 							code: "invalid_arguments",
+							issues: expect.any(Array),
 						}),
 						message: expect.any(String),
 						path: ["updateCommunity"],
