@@ -373,6 +373,13 @@ export const Query_user_city =
     }
 }`);
 
+export const Query_user_natalSex =
+	gql(`query Query_user_natalSex($input: QueryUserInput!) {
+    user(input: $input) {
+        natalSex
+    }
+}`);
+
 export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
