@@ -32,6 +32,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 		password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
 		selectedOrganization: orgId,
 		recaptchaToken: z.string().optional(),
+		signupSource: z.string().optional(),
 	});
 
 export const MutationSignUpInput = builder
@@ -121,6 +122,11 @@ export const MutationSignUpInput = builder
 			recaptchaToken: t.string({
 				description:
 					"Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)",
+				required: false,
+			}),
+			signupSource: t.string({
+				description:
+					"Source of signup registration. 'ADMIN_ONSPOT' for admin-registered attendees at events, 'USER_SIGNUP' for regular user signups.",
 				required: false,
 			}),
 		}),
