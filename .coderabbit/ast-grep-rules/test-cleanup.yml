@@ -7,15 +7,6 @@ rule:
     has:
       kind: identifier
       regex: (delete|cleanup|rollback|transaction|clear|remove|destroy)
-  inside:
-    kind: program
-    has:
-      kind: call_expression
-      pattern: afterEach($$$)
-      not:
-        has:
-          kind: identifier
-          regex: (delete|cleanup|rollback|transaction|clear|remove|destroy)
 message: |
   Test file may be missing database cleanup in afterEach hook.
   Integration tests that create database entities must clean them up to prevent:
