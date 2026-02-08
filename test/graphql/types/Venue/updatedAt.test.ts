@@ -105,7 +105,9 @@ suite("Venue Resolver - updatedAt Field", () => {
 		assertToBeNonNullish(venueId);
 		createdVenueIds.push(venueId);
 
-		const { authToken: regularToken } = await createRegularUserUsingAdmin();
+		const { authToken: regularToken, userId: regularUserId } =
+			await createRegularUserUsingAdmin();
+		createdUserIds.push(regularUserId);
 
 		const result = await mercuriusClient.query(Query_venue_updatedAt, {
 			headers: { authorization: `Bearer ${regularToken}` },
@@ -277,6 +279,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
 		createdVenueIds.push(venueId);
+		const expectedUpdatedAt = createVenueResult.data?.createVenue?.updatedAt;
 
 		const { authToken: orgAdminToken, userId: orgAdminUserId } =
 			await createRegularUserUsingAdmin();
@@ -300,7 +303,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.venue?.id).toBe(venueId);
-		expect(result.data?.venue?.updatedAt).toBeDefined();
+		expect(result.data?.venue?.updatedAt).toBe(expectedUpdatedAt);
 	});
 });
 
