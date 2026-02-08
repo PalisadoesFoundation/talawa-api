@@ -8,7 +8,7 @@ rule:
       kind: identifier
       regex: (delete|cleanup|rollback|transaction)
   inside:
-    kind: source_file
+    kind: program
     has:
       kind: call_expression
       pattern: afterEach($$$)
