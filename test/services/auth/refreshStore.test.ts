@@ -87,6 +87,9 @@ suite("refreshStore", () => {
 		});
 
 		test("throws when ttlSec is not positive", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+
 			await expect(
 				persistRefreshToken(mockDb as unknown as DrizzleClient, {
 					token: "t1",
