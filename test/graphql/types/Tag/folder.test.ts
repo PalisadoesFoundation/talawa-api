@@ -1,16 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import "~/src/graphql/types/Tag/folder";
 import type { usersTable } from "~/src/drizzle/tables/users";
-import { builder } from "~/src/graphql/builder";
-import { schemaManager } from "~/src/graphql/schemaManager";
-import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
@@ -21,83 +17,6 @@ import {
 	Mutation_signUp,
 	Query_signIn,
 } from "../documentNodes";
-
-it("should throw unexpected error when schema integrity is compromised (folder missing)", async () => {
-	const adminAuth = await getAdminAuth();
-	const { orgId, tagId } = await createOrgTagAndFolder(
-		adminAuth.token,
-		adminAuth.userId,
-	);
-
-	// Spy on tagFoldersTable query to simulate missing folder despite ID existing
-	const spy = vi
-		.spyOn(server.drizzleClient.query.tagFoldersTable, "findFirst")
-		.mockResolvedValue(undefined);
-
-	// Silent error logs for this test
-	const logSpy = vi.spyOn(server.log, "error").mockImplementation(() => {});
-
-	try {
-		const result = await mercuriusClient.query(Query_tag_folder, {
-			headers: { authorization: `bearer ${adminAuth.token}` },
-			variables: {
-				id: tagId,
-			},
-		});
-
-		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-		expect(result.errors?.[0]?.path).toEqual(["tag", "folder"]);
-	} finally {
-		spy.mockRestore();
-		logSpy.mockRestore();
-		await cleanup(adminAuth.token, {
-			orgId,
-		});
-	}
-});
-
-it("should throw unauthenticated error when accessing tag folder via unprotected query (coverage hack)", async () => {
-	// 1. Extend schema with unprotected query
-	builder.queryField("unprotectedTag", (t) =>
-		t.field({
-			type: Tag,
-			resolve: () => {
-				return {
-					id: "test-tag-id",
-					name: "test-tag",
-					organizationId: "org-1",
-					folderId: "folder-1",
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				} as Tag;
-			},
-		}),
-	);
-
-	// 2. Rebuild schema
-	await schemaManager.rebuildSchema();
-
-	// 3. Query the new field's folder
-	// We use a raw string because gql.tada doesn't know about this runtime field
-	const UnprotectedQuery = `
-            query {
-                unprotectedTag {
-                    folder {
-                        id
-                    }
-                }
-            }
-        `;
-
-	const result = await mercuriusClient.query(UnprotectedQuery);
-
-	// 4. Expect unauthenticated error from Tag.folder resolver
-	expect(result.errors).toBeDefined();
-	expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
-	expect(result.errors?.[0]?.path).toEqual(["unprotectedTag", "folder"]);
-});
-
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -253,39 +172,60 @@ async function createOrgTagAndFolder(
 	return { orgId, tagId, folderId };
 }
 
-async function cleanup(authToken: string, { orgId }: { orgId: string }) {
-	try {
-		await mercuriusClient.mutate(Mutation_deleteOrganization, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: { input: { id: orgId } },
-		});
-	} catch (error) {
-		console.warn(`Cleanup failed for org ${orgId}:`, error);
-	}
-}
-
 describe("Tag.folder resolver - Integration", () => {
+	const createdOrgIds: string[] = [];
+	const createdUserIds: string[] = [];
+
+	afterEach(async () => {
+		vi.restoreAllMocks();
+
+		if (createdOrgIds.length > 0 || createdUserIds.length > 0) {
+			const adminAuth = await getAdminAuth();
+
+			// Cleanup users
+			for (const userId of createdUserIds) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: { authorization: `bearer ${adminAuth.token}` },
+						variables: { input: { id: userId } },
+					});
+				} catch (error) {
+					console.warn(`Cleanup failed for user ${userId}:`, error);
+				}
+			}
+			createdUserIds.length = 0;
+
+			// Cleanup organizations
+			for (const orgId of createdOrgIds) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${adminAuth.token}` },
+						variables: { input: { id: orgId } },
+					});
+				} catch (error) {
+					console.warn(`Cleanup failed for org ${orgId}:`, error);
+				}
+			}
+			createdOrgIds.length = 0;
+		}
+	});
+
 	it("unauthenticated → unauthenticated error", async () => {
 		const adminAuth = await getAdminAuth();
 		const { orgId, tagId } = await createOrgAndTag(
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			variables: {
+				id: tagId,
+			},
+		});
 
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
-		} finally {
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
 	it("admin → folder returned when tag has folder", async () => {
@@ -294,24 +234,19 @@ describe("Tag.folder resolver - Integration", () => {
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: {
+				id: tagId,
+			},
+		});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.tag?.folder).toBeDefined();
-			expect(result.data?.tag?.folder?.id).toBe(folderId);
-			expect(result.data?.tag?.id).toBe(tagId);
-		} finally {
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.tag?.folder).toBeDefined();
+		expect(result.data?.tag?.folder?.id).toBe(folderId);
+		expect(result.data?.tag?.id).toBe(tagId);
 	});
 
 	it("admin → null returned when tag has no folder", async () => {
@@ -320,23 +255,18 @@ describe("Tag.folder resolver - Integration", () => {
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: {
+				id: tagId,
+			},
+		});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.tag?.folder).toBeNull();
-			expect(result.data?.tag?.id).toBe(tagId);
-		} finally {
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.tag?.folder).toBeNull();
+		expect(result.data?.tag?.id).toBe(tagId);
 	});
 
 	it("authenticated non-member → unauthorized error", async () => {
@@ -345,6 +275,7 @@ describe("Tag.folder resolver - Integration", () => {
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
 		// Create a different organization for the non-member user
 		const diffOrgResult = await mercuriusClient.mutate(
@@ -362,6 +293,7 @@ describe("Tag.folder resolver - Integration", () => {
 
 		assertToBeNonNullish(diffOrgResult.data?.createOrganization?.id);
 		const diffOrgId = diffOrgResult.data.createOrganization.id as string;
+		createdOrgIds.push(diffOrgId);
 
 		// Create a user in the different organization (authenticated but not a member of the target org)
 		const nonMemberResult = await mercuriusClient.mutate(Mutation_signUp, {
@@ -380,45 +312,20 @@ describe("Tag.folder resolver - Integration", () => {
 
 		const nonMemberToken = nonMemberResult.data.signUp.authenticationToken;
 		const nonMemberId = nonMemberResult.data.signUp.user.id;
+		createdUserIds.push(nonMemberId);
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${nonMemberToken}` },
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${nonMemberToken}` },
+			variables: {
+				id: tagId,
+			},
+		});
 
-			// Non-member should be denied access
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe(
-				"unauthorized_action_on_arguments_associated_resources",
-			);
-		} finally {
-			try {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `bearer ${adminAuth.token}` },
-					variables: {
-						input: {
-							id: nonMemberId,
-						},
-					},
-				});
-			} catch (error) {
-				console.warn(`Cleanup failed for user ${nonMemberId}:`, error);
-			}
-			try {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuth.token}` },
-					variables: { input: { id: diffOrgId } },
-				});
-			} catch (error) {
-				console.warn(`Cleanup failed for org ${diffOrgId}:`, error);
-			}
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		// Non-member should be denied access
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
 	});
 
 	it("org admin → folder returned", async () => {
@@ -440,11 +347,13 @@ describe("Tag.folder resolver - Integration", () => {
 
 		assertToBeNonNullish(tempOrgResult.data?.createOrganization?.id);
 		const tempOrgId = tempOrgResult.data.createOrganization.id as string;
+		createdOrgIds.push(tempOrgId);
 
 		const { orgId, tagId, folderId } = await createOrgTagAndFolder(
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
 		const orgAdminResult = await mercuriusClient.mutate(Mutation_signUp, {
 			variables: {
@@ -462,6 +371,7 @@ describe("Tag.folder resolver - Integration", () => {
 
 		const orgAdminToken = orgAdminResult.data.signUp.authenticationToken;
 		const orgAdminUserId = orgAdminResult.data.signUp.user.id;
+		createdUserIds.push(orgAdminUserId);
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth.token}` },
@@ -474,43 +384,17 @@ describe("Tag.folder resolver - Integration", () => {
 			},
 		});
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${orgAdminToken}` },
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${orgAdminToken}` },
+			variables: {
+				id: tagId,
+			},
+		});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.tag?.folder).toBeDefined();
-			expect(result.data?.tag?.folder?.id).toBe(folderId);
-			expect(result.data?.tag?.id).toBe(tagId);
-		} finally {
-			try {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `bearer ${adminAuth.token}` },
-					variables: {
-						input: {
-							id: orgAdminUserId,
-						},
-					},
-				});
-			} catch (error) {
-				console.warn(`Cleanup failed for user ${orgAdminUserId}:`, error);
-			}
-			try {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuth.token}` },
-					variables: { input: { id: tempOrgId } },
-				});
-			} catch (error) {
-				console.warn(`Cleanup failed for org ${tempOrgId}:`, error);
-			}
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.tag?.folder).toBeDefined();
+		expect(result.data?.tag?.folder?.id).toBe(folderId);
+		expect(result.data?.tag?.id).toBe(tagId);
 	});
 
 	it("org member (non-admin) → unauthorized_action error", async () => {
@@ -519,6 +403,7 @@ describe("Tag.folder resolver - Integration", () => {
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
 		const regularUserResult = await mercuriusClient.mutate(Mutation_signUp, {
 			variables: {
@@ -536,35 +421,18 @@ describe("Tag.folder resolver - Integration", () => {
 
 		const regularUserToken = regularUserResult.data.signUp.authenticationToken;
 		const regularUserId = regularUserResult.data.signUp.user.id;
+		createdUserIds.push(regularUserId);
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${regularUserToken}` },
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${regularUserToken}` },
+			variables: {
+				id: tagId,
+			},
+		});
 
-			// Regular org member (non-admin) should get unauthorized_action on the folder field
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
-		} finally {
-			try {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `bearer ${adminAuth.token}` },
-					variables: {
-						input: {
-							id: regularUserId,
-						},
-					},
-				});
-			} catch (error) {
-				console.warn(`Cleanup failed for user ${regularUserId}:`, error);
-			}
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		// Regular org member (non-admin) should get unauthorized_action on the folder field
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
 	});
 
 	it("should throw unauthenticated error when user not found in database (simulated race condition)", async () => {
@@ -573,6 +441,7 @@ describe("Tag.folder resolver - Integration", () => {
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
 		const adminUserMock = {
 			id: adminAuth.userId,
@@ -587,33 +456,25 @@ describe("Tag.folder resolver - Integration", () => {
 		// Spy on usersTable.findFirst
 		// Call 1: Query.tag (auth check) -> Return valid user
 		// Call 2: Tag.folder (auth check) -> Return undefined (simulating user deletion or issue)
-		const spy = vi
-			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+		vi.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 			.mockResolvedValueOnce(
 				adminUserMock as unknown as typeof usersTable.$inferSelect,
 			)
 			.mockResolvedValueOnce(undefined);
 
-		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					id: tagId,
-				},
-			});
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: {
+				id: tagId,
+			},
+		});
 
-			expect(result.errors).toBeDefined();
-			// The error code comes from Tag.folder resolver's check
-			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
-			// Verify path to ensure it's the folder field error, not the parent tag error
-			// Note: If parent fails, path is ["tag"]. If child fails, path is ["tag", "folder"]
-			expect(result.errors?.[0]?.path).toEqual(["tag", "folder"]);
-		} finally {
-			spy.mockRestore();
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
-		}
+		expect(result.errors).toBeDefined();
+		// The error code comes from Tag.folder resolver's check
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		// Verify path to ensure it's the folder field error, not the parent tag error
+		// Note: If parent fails, path is ["tag"]. If child fails, path is ["tag", "folder"]
+		expect(result.errors?.[0]?.path).toEqual(["tag", "folder"]);
 	});
 
 	it("should throw unexpected error when schema integrity is compromised (folder missing)", async () => {
@@ -622,32 +483,109 @@ describe("Tag.folder resolver - Integration", () => {
 			adminAuth.token,
 			adminAuth.userId,
 		);
+		createdOrgIds.push(orgId);
 
 		// Spy on tagFoldersTable query to simulate missing folder despite ID existing
-		const spy = vi
-			.spyOn(server.drizzleClient.query.tagFoldersTable, "findFirst")
-			.mockResolvedValue(undefined);
+		vi.spyOn(
+			server.drizzleClient.query.tagFoldersTable,
+			"findFirst",
+		).mockResolvedValue(undefined);
 
 		// Silent error logs for this test
-		const logSpy = vi.spyOn(server.log, "error").mockImplementation(() => {});
+		vi.spyOn(server.log, "error").mockImplementation(() => {});
+
+		const result = await mercuriusClient.query(Query_tag_folder, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: {
+				id: tagId,
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+		expect(result.errors?.[0]?.path).toEqual(["tag", "folder"]);
+	});
+});
+
+describe("Tag.folder resolver - Unit", () => {
+	it("should throw unauthenticated error when context is not authenticated", async () => {
+		let capturedResolver:
+			| ((...args: unknown[]) => Promise<unknown>)
+			| undefined;
+
+		// Reset modules to ensure folder.ts re-executes and calls Tag.implement
+		vi.resetModules();
+
+		// dynamic imports to get fresh module instances
+		const { Tag } = await import("~/src/graphql/types/Tag/Tag");
+		const { TalawaGraphQLError } = await import(
+			"~/src/utilities/TalawaGraphQLError"
+		);
+
+		interface MockFieldConfig {
+			resolve: (...args: unknown[]) => Promise<unknown>;
+		}
+
+		interface MockBuilder {
+			field: (config: MockFieldConfig) => unknown;
+		}
+
+		interface MockConfig {
+			fields: (t: MockBuilder) => unknown;
+		}
+
+		// Spy on Tag.implement
+		const implementSpy = vi
+			.spyOn(Tag, "implement")
+			.mockImplementation((config: unknown) => {
+				const mockConfig = config as MockConfig;
+				// config.fields is a function that returns the fields object
+				// We call it with a mock 't' builder to inspect the field definitions
+				const tMock: MockBuilder = {
+					field: (fieldConfig: MockFieldConfig) => {
+						// Capture the resolve function from the 'folder' field definition
+						capturedResolver = fieldConfig.resolve;
+						return {};
+					},
+				};
+
+				// Execute the fields function
+				// This might return the fields object or triggers t.field calls
+				mockConfig.fields(tMock);
+
+				// Return type for spy mock needs to satisfy the original return type (mostly)
+				// We cast to never to avoid implementing the full PothosRef interface
+				return {} as never;
+			});
+
+		// Dynamic import to trigger the side effect in folder.ts
+		await import("~/src/graphql/types/Tag/folder");
+
+		expect(implementSpy).toHaveBeenCalled();
+		expect(capturedResolver).toBeDefined();
+		expect(typeof capturedResolver).toBe("function");
+
+		// Execute the captured resolver with a mock context
+		const mockCtx = {
+			currentClient: {
+				isAuthenticated: false,
+			},
+		};
+
+		if (!capturedResolver) {
+			throw new Error("Resolver was not captured");
+		}
+
+		await expect(capturedResolver({}, {}, mockCtx)).rejects.toThrow(
+			TalawaGraphQLError,
+		);
 
 		try {
-			const result = await mercuriusClient.query(Query_tag_folder, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					id: tagId,
-				},
-			});
-
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-			expect(result.errors?.[0]?.path).toEqual(["tag", "folder"]);
-		} finally {
-			spy.mockRestore();
-			logSpy.mockRestore();
-			await cleanup(adminAuth.token, {
-				orgId,
-			});
+			await capturedResolver({}, {}, mockCtx);
+		} catch (error: unknown) {
+			expect(
+				(error as InstanceType<typeof TalawaGraphQLError>).extensions?.code,
+			).toBe("unauthenticated");
 		}
 	});
 });
