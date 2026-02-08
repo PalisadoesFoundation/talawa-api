@@ -1,6 +1,13 @@
 import { faker } from "@faker-js/faker";
+import { eq, inArray } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
+import {
+	organizationMembershipsTable,
+	organizationsTable,
+	usersTable,
+	venuesTable,
+} from "~/src/drizzle/schema";
 import { resolveUpdatedAt } from "~/src/graphql/types/Venue/updatedAt";
 import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -15,9 +22,11 @@ import {
 	Query_venue_updatedAt,
 } from "../documentNodes";
 
-let authToken: string;
+const createdOrgIds: string[] = [];
+const createdVenueIds: string[] = [];
+const createdUserIds: string[] = [];
 
-beforeAll(async () => {
+const getAdminToken = async () => {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -29,123 +38,39 @@ beforeAll(async () => {
 	expect(signInResult.errors).toBeUndefined();
 	assertToBeNonNullish(signInResult.data?.signIn);
 	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
-	authToken = signInResult.data.signIn.authenticationToken;
-});
+	return signInResult.data.signIn.authenticationToken;
+};
 
-afterEach(() => {
+afterEach(async () => {
+	if (createdVenueIds.length > 0) {
+		await server.drizzleClient
+			.delete(venuesTable)
+			.where(inArray(venuesTable.id, createdVenueIds));
+		createdVenueIds.length = 0;
+	}
+	if (createdOrgIds.length > 0) {
+		for (const orgId of createdOrgIds) {
+			await server.drizzleClient
+				.delete(organizationMembershipsTable)
+				.where(eq(organizationMembershipsTable.organizationId, orgId));
+		}
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, createdOrgIds));
+		createdOrgIds.length = 0;
+	}
+	if (createdUserIds.length > 0) {
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, createdUserIds));
+		createdUserIds.length = 0;
+	}
 	vi.restoreAllMocks();
 });
 
 suite("Venue Resolver - updatedAt Field", () => {
-	test("throws unauthenticated when client is not authenticated", async () => {
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Venue updatedAt Test Org ${faker.string.uuid()}`,
-						description: "Org to test venue updatedAt unauthenticated",
-					},
-				},
-			},
-		);
-		const orgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(orgId);
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Venue ${faker.string.uuid()}`,
-						description: "Test venue for updatedAt",
-						capacity: 100,
-					},
-				},
-			},
-		);
-		const venueId = createVenueResult.data?.createVenue?.id;
-		assertToBeNonNullish(venueId);
-
-		const findFirstSpy = vi.spyOn(
-			server.drizzleClient.query.usersTable,
-			"findFirst",
-		);
-
-		const result = await mercuriusClient.query(Query_venue_updatedAt, {
-			variables: { input: { id: venueId } },
-		});
-
-		expect(findFirstSpy).not.toHaveBeenCalled();
-		expect(result.data?.venue).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
-					path: ["venue"],
-				}),
-			]),
-		);
-	});
-
-	test("throws unauthenticated when current user is not found", async () => {
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Venue updatedAt Missing User Org ${faker.string.uuid()}`,
-						description: "Org to test venue updatedAt missing user",
-					},
-				},
-			},
-		);
-		const orgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(orgId);
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Test Venue ${faker.string.uuid()}`,
-						description: "Test venue for missing user",
-						capacity: 100,
-					},
-				},
-			},
-		);
-		const venueId = createVenueResult.data?.createVenue?.id;
-		assertToBeNonNullish(venueId);
-
-		const findFirstSpy = vi
-			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
-			.mockResolvedValueOnce(undefined);
-
-		const result = await mercuriusClient.query(Query_venue_updatedAt, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: venueId } },
-		});
-
-		expect(findFirstSpy).toHaveBeenCalled();
-		expect(result.data?.venue).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
-					path: ["venue"],
-				}),
-			]),
-		);
-	});
-
 	test("throws unauthorized_action when user is regular and has no org membership", async () => {
+		const authToken = await getAdminToken();
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -160,6 +85,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+		createdOrgIds.push(orgId);
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
@@ -177,6 +103,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		const { authToken: regularToken } = await createRegularUserUsingAdmin();
 
@@ -199,6 +126,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 	});
 
 	test("throws unauthorized_action when user is regular and org member but not admin", async () => {
+		const authToken = await getAdminToken();
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -213,6 +141,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+		createdOrgIds.push(orgId);
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
@@ -230,9 +159,11 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		const { authToken: memberToken, userId: memberUserId } =
 			await createRegularUserUsingAdmin();
+		createdUserIds.push(memberUserId);
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -265,6 +196,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 	});
 
 	test("returns parent.updatedAt when user is system administrator", async () => {
+		const authToken = await getAdminToken();
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -279,6 +211,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+		createdOrgIds.push(orgId);
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
@@ -296,13 +229,8 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 		const expectedUpdatedAt = createVenueResult.data?.createVenue?.updatedAt;
-		// updatedAt might be null initially if not updated, or same as createdAt depending on implementation.
-		// Wait, Venue type definition implies it exists. Let's check if createVenue returns it.
-		// If it's null, we can't test it easily without updating. But the goal is to test READ permission.
-		// Let's assume for now it returns something or null is valid.
-		// Actually, let's update it to be sure it has a value if possible, or just check that we can read it without error.
-		// For consistency with createdAt test, we just check it is accessible.
 
 		const result = await mercuriusClient.query(Query_venue_updatedAt, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -315,6 +243,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 	});
 
 	test("returns parent.updatedAt when user is organization administrator", async () => {
+		const authToken = await getAdminToken();
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -329,6 +258,7 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+		createdOrgIds.push(orgId);
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
@@ -346,9 +276,11 @@ suite("Venue Resolver - updatedAt Field", () => {
 		);
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
+		createdVenueIds.push(venueId);
 
 		const { authToken: orgAdminToken, userId: orgAdminUserId } =
 			await createRegularUserUsingAdmin();
+		createdUserIds.push(orgAdminUserId);
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -372,6 +304,9 @@ suite("Venue Resolver - updatedAt Field", () => {
 	});
 });
 
+// Direct invocation of resolveUpdatedAt is required because Query.venue
+// rejects unauthenticated requests before the Venue.updatedAt resolver runs,
+// so integration tests cannot reach these branches.
 suite(
 	"Venue resolveUpdatedAt (unit coverage for unauthenticated branches)",
 	() => {

@@ -10,7 +10,7 @@ import { Venue } from "./Venue";
  * @param parent - The parent Venue object containing updatedAt and organizationId.
  * @param _args - GraphQL arguments (unused).
  * @param ctx - The GraphQL context (auth, drizzle, etc.).
- * @returns The venue's updatedAt date.
+ * @returns The venue's updatedAt date, or null if not set.
  * @throws TalawaGraphQLError with code "unauthenticated" if the client is not authenticated or the current user is not found.
  * @throws TalawaGraphQLError with code "unauthorized_action" if the user is not a system or organization administrator.
  */

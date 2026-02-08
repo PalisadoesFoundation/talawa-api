@@ -35,7 +35,7 @@ The GraphQL context (auth, drizzle, etc.).
 
 `Promise`\<`Date` \| `null`\>
 
-The venue's updatedAt date.
+The venue's updatedAt date, or null if not set.
 
 ## Throws
 
