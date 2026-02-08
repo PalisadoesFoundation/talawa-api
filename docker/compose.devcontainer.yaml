@@ -1,6 +1,7 @@
 # https://docs.docker.com/reference/compose-file/networks/
 networks:
   cloudbeaver:
+  mailpit:
 # https://docs.docker.com/reference/compose-file/services
 services:
   api:
@@ -177,6 +178,43 @@ services:
         name: redis
         published: ${REDIS_MAPPED_PORT:?error}
         target: 6379
+  mailpit:
+    # https://github.com/axllent/mailpit
+    # https://hub.docker.com/r/axllent/mailpit
+    image: axllent/mailpit:v1.21
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8025/api/v1/info || exit 1"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - api
+      - mailpit
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${MAILPIT_MAPPED_HOST_IP:?error}
+        name: mailpit_web
+        published: ${MAILPIT_WEB_MAPPED_PORT:?error}
+        target: 8025
+      - host_ip: ${MAILPIT_MAPPED_HOST_IP:?error}
+        name: mailpit_smtp
+        published: ${MAILPIT_SMTP_MAPPED_PORT:?error}
+        target: 1025
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - mailpit
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: mailpit_data
+        target: /data
+        type: volume
 # https://docs.docker.com/reference/compose-file/volumes/
   redis-test:
     ports:
@@ -193,6 +231,7 @@ volumes:
   api_node_modules:
   api_pnpm_store:
   cloudbeaver_data:
+  mailpit_data:
   minio_test_data:
   postgres_data:
   postgres_test_data:

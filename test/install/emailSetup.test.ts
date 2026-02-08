@@ -74,18 +74,22 @@ describe("emailSetup", () => {
 		}
 	});
 
-	it("should skip email configuration if user declines", async () => {
+	it("should auto-configure Mailpit if user declines manual configuration", async () => {
 		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(false);
 
 		const result = await emailSetup(answers);
 
 		expect(promptHelpers.promptConfirm).toHaveBeenCalledWith(
-			"configureEmail",
-			expect.stringContaining("Do you want to configure email"),
-			true,
+			"useManualEmail",
+			"Do you want to manually configure email (AWS SES or SMTP)?",
+			false,
 		);
 		expect(promptHelpers.promptList).not.toHaveBeenCalled();
-		expect(result).toEqual(answers);
+		expect(result.API_EMAIL_PROVIDER).toBe("mailpit");
+		expect(result.SMTP_HOST).toBe("mailpit");
+		expect(result.SMTP_PORT).toBe("1025");
+		expect(result.SMTP_FROM_EMAIL).toBe("test@talawa.local");
+		expect(result.SMTP_FROM_NAME).toBe("Talawa");
 	});
 
 	it("should configure SES and send test email successfully", async () => {
