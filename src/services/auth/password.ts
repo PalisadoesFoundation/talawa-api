@@ -6,7 +6,9 @@ const ARGON2ID = 2;
 
 /**
  * Argon2id options matching existing signIn verification (m=19456, t=2, p=1).
- * Hashes produced here are compatible with GraphQL signIn and future REST signIn.
+ * GraphQL signIn (src/graphql/types/Query/signIn.ts) verifies with the same profile; this module
+ * uses the same options so hashes are interchangeable. Hashes produced here are compatible with
+ * GraphQL signIn and future REST signIn.
  */
 const ARGON2_OPTIONS = {
 	algorithm: ARGON2ID,
