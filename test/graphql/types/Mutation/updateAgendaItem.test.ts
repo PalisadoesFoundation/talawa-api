@@ -1,6 +1,13 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import {
+	agendaCategoriesTable,
+	agendaFoldersTable,
+	eventsTable,
+	organizationMembershipsTable,
+	organizationsTable,
+} from "~/src/drizzle/schema";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -17,190 +24,189 @@ import {
 	Mutation_updateAgendaItem,
 	Query_signIn,
 } from "../documentNodes";
-import { agendaCategoriesTable, agendaFoldersTable, eventsTable, organizationMembershipsTable, organizationsTable } from "~/src/drizzle/schema";
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
 
 async function getAdminAuth() {
-  if (cachedAdminAuth) return cachedAdminAuth;
+	if (cachedAdminAuth) return cachedAdminAuth;
 
-  const signInResult = await mercuriusClient.query(Query_signIn, {
-    variables: {
-      input: {
-        emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-        password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-      },
-    },
-  });
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
 
-  assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
-  assertToBeNonNullish(signInResult.data?.signIn?.user?.id);
+	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(signInResult.data?.signIn?.user?.id);
 
-  cachedAdminAuth = {
-    token: signInResult.data.signIn.authenticationToken,
-    userId: signInResult.data.signIn.user.id,
-  };
+	cachedAdminAuth = {
+		token: signInResult.data.signIn.authenticationToken,
+		userId: signInResult.data.signIn.user.id,
+	};
 
-  return cachedAdminAuth;
+	return cachedAdminAuth;
 }
 
 async function getAdminUserId() {
-  const auth = await getAdminAuth();
-  return auth.userId;
+	const auth = await getAdminAuth();
+	return auth.userId;
 }
 
 async function insertAgendaItemUrls(agendaItemId: string, urls: string[]) {
-  const adminUserId = await getAdminUserId();
+	const adminUserId = await getAdminUserId();
 
-  await server.drizzleClient.insert(agendaItemUrlTable).values(
-    urls.map((url) => ({
-      agendaItemId,
-      url,
-      creatorId: adminUserId,
-      updaterId: adminUserId,
-    })),
-  );
+	await server.drizzleClient.insert(agendaItemUrlTable).values(
+		urls.map((url) => ({
+			agendaItemId,
+			url,
+			creatorId: adminUserId,
+			updaterId: adminUserId,
+		})),
+	);
 }
 
 async function createOrganizationAndEvent() {
-  const { token, userId } = await getAdminAuth();
+	const { token, userId } = await getAdminAuth();
 
-  const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
-    headers: { authorization: `bearer ${token}` },
-    variables: {
-      input: {
-        name: `Org ${faker.string.uuid()}`,
-        countryCode: "us",
-      },
-    },
-  });
+	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				name: `Org ${faker.string.uuid()}`,
+				countryCode: "us",
+			},
+		},
+	});
 
-  const orgId = orgRes.data?.createOrganization?.id;
-  assertToBeNonNullish(orgId);
+	const orgId = orgRes.data?.createOrganization?.id;
+	assertToBeNonNullish(orgId);
 
-  await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-    headers: { authorization: `bearer ${token}` },
-    variables: {
-      input: {
-        organizationId: orgId,
-        memberId: userId,
-        role: "administrator",
-      },
-    },
-  });
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				memberId: userId,
+				role: "administrator",
+			},
+		},
+	});
 
-  const eventRes = await mercuriusClient.mutate(Mutation_createEvent, {
-    headers: { authorization: `bearer ${token}` },
-    variables: {
-      input: {
-        organizationId: orgId,
-        name: "Test Event",
-        description: "Agenda Event",
-        startAt: new Date(Date.now() + 5_000).toISOString(),
-        endAt: new Date(Date.now() + 3_600_000 + 5_000).toISOString(),
-        location: "Test Location",
-      },
-    },
-  });
+	const eventRes = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				name: "Test Event",
+				description: "Agenda Event",
+				startAt: new Date(Date.now() + 5_000).toISOString(),
+				endAt: new Date(Date.now() + 3_600_000 + 5_000).toISOString(),
+				location: "Test Location",
+			},
+		},
+	});
 
-  const eventId = eventRes.data?.createEvent?.id;
-  assertToBeNonNullish(eventId);
+	const eventId = eventRes.data?.createEvent?.id;
+	assertToBeNonNullish(eventId);
 
-  return { orgId, eventId };
+	return { orgId, eventId };
 }
 
 async function createCategoryFolderAgendaItem() {
-  const { token } = await getAdminAuth();
-  const { orgId, eventId } = await createOrganizationAndEvent();
+	const { token } = await getAdminAuth();
+	const { orgId, eventId } = await createOrganizationAndEvent();
 
-  const categoryRes = await mercuriusClient.mutate(
-    Mutation_createAgendaCategory,
-    {
-      headers: { authorization: `bearer ${token}` },
-      variables: {
-        input: {
-          eventId,
-          name: "Category",
-          description: "Agenda Category",
-        },
-      },
-    },
-  );
+	const categoryRes = await mercuriusClient.mutate(
+		Mutation_createAgendaCategory,
+		{
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId,
+					name: "Category",
+					description: "Agenda Category",
+				},
+			},
+		},
+	);
 
-  const categoryId = categoryRes.data?.createAgendaCategory?.id;
-  assertToBeNonNullish(categoryId);
+	const categoryId = categoryRes.data?.createAgendaCategory?.id;
+	assertToBeNonNullish(categoryId);
 
-  const folderRes = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-    headers: { authorization: `bearer ${token}` },
-    variables: {
-      input: {
-        eventId,
-        organizationId: orgId,
-        name: "Folder",
-        sequence: 2,
-      },
-    },
-  });
+	const folderRes = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				eventId,
+				organizationId: orgId,
+				name: "Folder",
+				sequence: 2,
+			},
+		},
+	});
 
-  const folderId = folderRes.data?.createAgendaFolder?.id;
-  assertToBeNonNullish(folderId);
+	const folderId = folderRes.data?.createAgendaFolder?.id;
+	assertToBeNonNullish(folderId);
 
-  const agendaItemRes = await mercuriusClient.mutate(
-    Mutation_createAgendaItem,
-    {
-      headers: { authorization: `bearer ${token}` },
-      variables: {
-        input: {
-          name: "Agenda Item",
-          type: "general",
-          eventId,
-          folderId,
-          categoryId,
-          sequence: 2,
-        },
-      },
-    },
-  );
+	const agendaItemRes = await mercuriusClient.mutate(
+		Mutation_createAgendaItem,
+		{
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					name: "Agenda Item",
+					type: "general",
+					eventId,
+					folderId,
+					categoryId,
+					sequence: 2,
+				},
+			},
+		},
+	);
 
-  const agendaItemId = agendaItemRes.data?.createAgendaItem?.id;
-  assertToBeNonNullish(agendaItemId);
+	const agendaItemId = agendaItemRes.data?.createAgendaItem?.id;
+	assertToBeNonNullish(agendaItemId);
 
-  return {
-    orgId,
-    eventId,
-    folderId,
-    categoryId,
-    agendaItemId,
-    cleanup: async () => {
+	return {
+		orgId,
+		eventId,
+		folderId,
+		categoryId,
+		agendaItemId,
+		cleanup: async () => {
 			await server.drizzleClient
-			.delete(agendaItemUrlTable)
-			.where(eq(agendaItemUrlTable.agendaItemId, agendaItemId));
-
-			await server.drizzleClient
-			.delete(agendaItemsTable)
-			.where(eq(agendaItemsTable.id, agendaItemId));
+				.delete(agendaItemUrlTable)
+				.where(eq(agendaItemUrlTable.agendaItemId, agendaItemId));
 
 			await server.drizzleClient
-			.delete(agendaFoldersTable)
-			.where(eq(agendaFoldersTable.id, folderId));
+				.delete(agendaItemsTable)
+				.where(eq(agendaItemsTable.id, agendaItemId));
 
 			await server.drizzleClient
-			.delete(agendaCategoriesTable)
-			.where(eq(agendaCategoriesTable.id, categoryId));
+				.delete(agendaFoldersTable)
+				.where(eq(agendaFoldersTable.id, folderId));
 
 			await server.drizzleClient
-			.delete(eventsTable)
-			.where(eq(eventsTable.id, eventId));
+				.delete(agendaCategoriesTable)
+				.where(eq(agendaCategoriesTable.id, categoryId));
 
 			await server.drizzleClient
-			.delete(organizationMembershipsTable)
-			.where(eq(organizationMembershipsTable.organizationId, orgId));
+				.delete(eventsTable)
+				.where(eq(eventsTable.id, eventId));
 
 			await server.drizzleClient
-			.delete(organizationsTable)
-			.where(eq(organizationsTable.id, orgId));
-		}
-  };
+				.delete(organizationMembershipsTable)
+				.where(eq(organizationMembershipsTable.organizationId, orgId));
+
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, orgId));
+		},
+	};
 }
 
 suite("Mutation field updateAgendaItem", () => {
