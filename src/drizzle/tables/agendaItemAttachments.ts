@@ -15,7 +15,7 @@ import { usersTable } from "./users";
 
 /**
  * PostgreSQL enum for agendaItem attachment MIME types.
- * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm
+ * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm, video/quicktime
  */
 export const agendaItemAttachmentMimeTypePgEnum = pgEnum(
 	"agenda_item_attachment_mime_type",

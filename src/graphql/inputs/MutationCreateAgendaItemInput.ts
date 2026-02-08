@@ -33,7 +33,7 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.array(
 				z.object({
 					name: z.string().min(1),
-					mimeType: z.enum(postAttachmentMimeTypeZodEnum.options),
+					mimeType: postAttachmentMimeTypeZodEnum,
 					objectName: z.string().min(1),
 					fileHash: z.string().min(1),
 				}),
