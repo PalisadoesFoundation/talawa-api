@@ -673,10 +673,9 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 					expect.fail("Expected error to be thrown");
 				} catch (error) {
 					expect(error).toBeInstanceOf(TalawaGraphQLError);
-					// Expect invalid_arguments because resolver catches error and throws generic error or specific error
-					// In our implementation we catch and throw invalid_arguments
+					// Non-NotFound errors from statObject are thrown as unexpected errors
 					expect((error as TalawaGraphQLError).extensions?.code).toBe(
-						"invalid_arguments",
+						"unexpected",
 					);
 				}
 
