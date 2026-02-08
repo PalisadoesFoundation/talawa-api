@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
+import { uuid } from "~/src/graphql/validators/core";
 
 export const acceptMembershipRequestInputSchema = z.object({
-	membershipRequestId: z
-		.string()
-		.uuid("Membership request ID must be a valid UUID"),
+	membershipRequestId: uuid,
 });
 
 export const MutationAcceptMembershipRequestInput = builder.inputType(
