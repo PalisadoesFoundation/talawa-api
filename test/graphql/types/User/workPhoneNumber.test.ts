@@ -388,7 +388,7 @@ suite("User field workPhoneNumber", () => {
 
 			await expect(
 				workPhoneNumberResolver(parent, {}, context),
-			).rejects.toThrowError(expectedError);
+			).rejects.toThrow(expectedError);
 		});
 
 		test("wraps generic Error in Internal Server Error", async () => {
