@@ -27,6 +27,9 @@ jobs:
       - name: Apply database migrations
         run: devcontainer exec --workspace-folder . pnpm run apply_drizzle_migrations
 
+      - name: Start API (initialize MinIO bucket)
+        run: devcontainer exec --workspace-folder . pnpm run start_development_server & sleep 15
+    
       - name: Load sample data (first run)
         run: devcontainer exec --workspace-folder . pnpm run add:sample_data
 
