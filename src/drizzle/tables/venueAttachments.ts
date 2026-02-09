@@ -1,9 +1,26 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgEnum,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import { imageMimeTypes } from "../enums/imageMimeType";
+import { videoMimeType } from "../enums/videoMimeType";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
+
+/**
+ * PostgreSQL enum for venue attachment MIME types.
+ * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm, video/quicktime
+ */
+export const venueAttachmentMimeTypePgEnum = pgEnum(
+	"venue_attachment_mime_type",
+	[...videoMimeType, ...imageMimeTypes],
+);
 
 /**
  * Drizzle orm postgres table definition for venue attachments.
@@ -31,9 +48,7 @@ export const venueAttachmentsTable = pgTable(
 		/**
 		 * Mime type of the attachment.
 		 */
-		mimeType: text("mime_type", {
-			enum: venueAttachmentMimeTypeEnum.options as [string, ...string[]],
-		}).notNull(),
+		mimeType: venueAttachmentMimeTypePgEnum("mime_type").notNull(),
 		/**
 		 * Identifier name of the attachment.
 		 */

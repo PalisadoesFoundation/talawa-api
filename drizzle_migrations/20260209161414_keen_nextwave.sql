@@ -1,0 +1,2 @@
+CREATE TYPE "public"."venue_attachment_mime_type" AS ENUM('video/mp4', 'video/webm', 'image/avif', 'image/jpeg', 'image/png', 'image/webp');--> statement-breakpoint
+ALTER TABLE "venue_attachments" ALTER COLUMN "mime_type" SET DATA TYPE "public"."venue_attachment_mime_type" USING "mime_type"::"public"."venue_attachment_mime_type";
