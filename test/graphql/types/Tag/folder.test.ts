@@ -3,7 +3,6 @@ import { initGraphQLTada } from "gql.tada";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import "~/src/graphql/types/Tag/folder";
-import type { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -452,14 +451,18 @@ describe("Tag.folder resolver - Integration", () => {
 		);
 
 		// First call check (Query.tag) - return valid user
-		findFirstSpy.mockImplementationOnce(async () => {
-			return adminUserMock as unknown as typeof usersTable.$inferSelect;
-		});
+		findFirstSpy.mockReturnValueOnce(
+			Promise.resolve(adminUserMock) as unknown as ReturnType<
+				typeof server.drizzleClient.query.usersTable.findFirst
+			>,
+		);
 
 		// Second call check (Tag.folder) - return undefined (simulating user deletion or issue)
-		findFirstSpy.mockImplementationOnce(async () => {
-			return undefined;
-		});
+		findFirstSpy.mockReturnValueOnce(
+			Promise.resolve(undefined) as unknown as ReturnType<
+				typeof server.drizzleClient.query.usersTable.findFirst
+			>,
+		);
 
 		const result = await mercuriusClient.query(Query_tag_folder, {
 			headers: { authorization: `bearer ${adminAuth.token}` },
