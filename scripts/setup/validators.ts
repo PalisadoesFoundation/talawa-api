@@ -344,6 +344,8 @@ export function isBooleanString(input: unknown): input is "true" | "false" {
 	return typeof input === "string" && (input === "true" || input === "false");
 }
 export function validateRequiredFields(answers: SetupAnswers): void {
+	// Only these keys are unconditional requirements across all setup flows.
+	// Other SetupKey entries are either prompt-defaulted or required conditionally.
 	const requiredFields: SetupKey[] = [
 		"CI",
 		"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",

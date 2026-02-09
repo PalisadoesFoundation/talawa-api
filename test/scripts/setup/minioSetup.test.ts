@@ -3,10 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("inquirer");
 
 import fs from "node:fs";
-import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { minioSetup } from "scripts/setup/services/minioSetup";
-import { setup } from "scripts/setup/setup";
 
 describe("Setup -> minioSetup", () => {
 	const originalEnv = { ...process.env };
@@ -56,15 +54,7 @@ describe("Setup -> minioSetup", () => {
 	});
 
 	it("should prompt extended Minio config fields when CI=false", async () => {
-		// Mock sequence must match setup() orchestration order:
-		// 1. envReconfigure, 2. CI, 3. useDefaultApi, 4. useDefaultMinio,
-		// 5-11. MinIO fields, 12. useDefaultCloudbeaver, 13. useDefaultPostgres,
-		// 14. useDefaultCaddy, 15. admin email, 16-19. feature toggles
 		const mockResponses = [
-			{ envReconfigure: true },
-			{ CI: "false" },
-			{ useDefaultApi: true },
-			{ useDefaultMinio: false },
 			{ MINIO_BROWSER: "on" },
 			{ MINIO_API_MAPPED_HOST_IP: "1.2.3.4" },
 			{ MINIO_API_MAPPED_PORT: "9000" },
@@ -72,15 +62,6 @@ describe("Setup -> minioSetup", () => {
 			{ MINIO_CONSOLE_MAPPED_PORT: "9001" },
 			{ MINIO_ROOT_PASSWORD: "mocked-password" },
 			{ MINIO_ROOT_USER: "mocked-user" },
-			{ useDefaultCloudbeaver: true },
-			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: true },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-			{ setupReCaptcha: false },
-			{ configureEmail: false },
-			{ setupOAuth: false },
-			{ setupObservability: false },
-			{ setupMetrics: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -88,8 +69,8 @@ describe("Setup -> minioSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		await setup();
-		dotenv.config({ path: ".env" });
+		const answers: Record<string, string> = { CI: "false" };
+		await minioSetup(answers);
 
 		const expectedEnv = {
 			MINIO_BROWSER: "on",
@@ -102,7 +83,7 @@ describe("Setup -> minioSetup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(process.env[key]).toBe(value);
+			expect(answers[key]).toBe(value);
 		}
 	});
 	it("should handle port conflict between API and Console ports by prompting for a new port", async () => {

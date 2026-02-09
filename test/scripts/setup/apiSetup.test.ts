@@ -69,7 +69,6 @@ describe("Setup -> apiSetup", () => {
 		if (process.stdin) {
 			process.stdin.isTTY = originalIsTTY;
 		}
-		vi.resetAllMocks();
 	});
 
 	it("should prompt the user for API configuration and update environment variables", async () => {
@@ -293,7 +292,6 @@ describe("Setup -> apiSetup", () => {
 		delete process.env.MINIO_ROOT_PASSWORD;
 		delete process.env.POSTGRES_PASSWORD;
 
-		// Use mockImplementation to handle the retry loop logic dynamically
 		// Use mockImplementation to handle the retry loop logic dynamically
 		// @ts-expect-error - Mocking inquirer prompt with simplified implementation
 		vi.spyOn(inquirer, "prompt").mockImplementation(async (args: unknown) => {
