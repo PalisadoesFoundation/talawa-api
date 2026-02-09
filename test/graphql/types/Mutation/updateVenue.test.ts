@@ -1046,7 +1046,7 @@ suite("Mutation field updateVenue", () => {
 					id: venueId,
 					attachments: [
 						{
-							objectName: faker.string.ulid(),
+							objectName: `attachments/${faker.string.uuid()}`,
 							mimeType: "application/x-msdownload" as never,
 							fileHash: faker.string.hexadecimal({
 								length: 64,
@@ -1485,86 +1485,92 @@ suite("Mutation field updateVenue", () => {
 				{} as Awaited<ReturnType<typeof server.minio.client.statObject>>,
 			);
 
-		// Add initial attachment using FileMetadataInput
-		const updateVenueWithInitialAttachment = graphql(`
-			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-				updateVenue(input: $input) {
-					id
-					attachments { mimeType }
+		try {
+			// Add initial attachment using FileMetadataInput
+			const updateVenueWithInitialAttachment = graphql(`
+				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+					updateVenue(input: $input) {
+						id
+						attachments { mimeType }
+					}
 				}
-			}
-		`);
+			`);
 
-		const initialAttachmentResult = await mercuriusClient.mutate(
-			updateVenueWithInitialAttachment,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						id: venueId,
-						attachments: [
-							{
-								objectName: faker.string.ulid(),
-								mimeType: "IMAGE_JPEG",
-								fileHash: faker.string.hexadecimal({
-									length: 64,
-									casing: "lower",
-									prefix: "",
-								}),
-								name: "initial-photo.jpg",
-							},
-						],
+			const initialAttachmentResult = await mercuriusClient.mutate(
+				updateVenueWithInitialAttachment,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: venueId,
+							attachments: [
+								{
+									objectName: `attachments/${faker.string.uuid()}`,
+									mimeType: "IMAGE_JPEG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "initial-photo.jpg",
+								},
+							],
+						},
 					},
 				},
-			},
-		);
+			);
 
-		expect(initialAttachmentResult.errors).toBeUndefined();
-		expect(initialAttachmentResult.data?.updateVenue?.attachments).toHaveLength(
-			1,
-		);
+			expect(initialAttachmentResult.errors).toBeUndefined();
+			expect(
+				initialAttachmentResult.data?.updateVenue?.attachments,
+			).toHaveLength(1);
 
-		// Update with a new attachment using FileMetadataInput
-		const updateVenueAttachments = graphql(`
-			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-				updateVenue(input: $input) {
-					id
-					attachments { mimeType }
+			// Update with a new attachment using FileMetadataInput
+			const updateVenueAttachments = graphql(`
+				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+					updateVenue(input: $input) {
+						id
+						attachments { mimeType }
+					}
 				}
-			}
-		`);
+			`);
 
-		const updateResult = await mercuriusClient.mutate(updateVenueAttachments, {
-			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			variables: {
-				input: {
-					id: venueId,
-					attachments: [
-						{
-							objectName: faker.string.ulid(),
-							mimeType: "IMAGE_PNG",
-							fileHash: faker.string.hexadecimal({
-								length: 64,
-								casing: "lower",
-								prefix: "",
-							}),
-							name: "new-photo.png",
+			const updateResult = await mercuriusClient.mutate(
+				updateVenueAttachments,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: venueId,
+							attachments: [
+								{
+									objectName: `attachments/${faker.string.uuid()}`,
+									mimeType: "IMAGE_PNG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "new-photo.png",
+								},
+							],
 						},
-					],
+					},
 				},
-			},
-		});
+			);
 
-		expect(updateResult.errors).toBeUndefined();
-		expect(updateResult.data?.updateVenue?.attachments).toHaveLength(1);
-		expect(updateResult.data?.updateVenue?.attachments?.[0]?.mimeType).toBe(
-			"image/png",
-		);
-		statObjectSpy.mockRestore();
+			expect(updateResult.errors).toBeUndefined();
+			expect(updateResult.data?.updateVenue?.attachments).toHaveLength(1);
+			expect(updateResult.data?.updateVenue?.attachments?.[0]?.mimeType).toBe(
+				"image/png",
+			);
+		} finally {
+			statObjectSpy.mockRestore();
+		}
 	});
 
 	test("throws unauthenticated when current user no longer exists", async () => {
@@ -1807,7 +1813,7 @@ suite("Mutation field updateVenue", () => {
 				},
 				variables: {
 					input: {
-						name: faker.company.name(),
+						name: `${faker.company.name()}-${faker.string.uuid()}`,
 						description: faker.lorem.paragraph(),
 						countryCode: "us",
 						state: faker.location.state(),
@@ -1903,35 +1909,49 @@ suite("Mutation field updateVenue", () => {
 			.spyOn(server.minio.client, "removeObject")
 			.mockRejectedValue(new Error("Failed to delete object"));
 
-		// Update venue with new attachments - this should succeed even if cleanup fails
-		// This covers lines 252-255: the catch block prevents cleanup errors from propagating
-		const updateResult = await mercuriusClient.mutate(Mutation_updateVenue, {
-			headers: {
-				authorization: `bearer ${adminToken}`,
-			},
-			variables: {
-				input: {
-					id: venueId,
-					attachments: [
-						{
-							objectName: objectName2,
-							mimeType: "IMAGE_PNG",
-							fileHash: faker.string.hexadecimal({
-								length: 64,
-								casing: "lower",
-								prefix: "",
-							}),
-							name: "new-photo.png",
-						},
-					],
+		try {
+			// Update venue with new attachments - this should succeed even if cleanup fails
+			const updateResult = await mercuriusClient.mutate(Mutation_updateVenue, {
+				headers: {
+					authorization: `bearer ${adminToken}`,
 				},
-			},
-		});
+				variables: {
+					input: {
+						id: venueId,
+						attachments: [
+							{
+								objectName: objectName2,
+								mimeType: "IMAGE_PNG",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "new-photo.png",
+							},
+						],
+					},
+				},
+			});
 
-		// Key assertion: update succeeds even though removeObject failed
-		expect(updateResult.errors).toBeUndefined();
-		expect(updateResult.data?.updateVenue).toBeDefined();
-
-		removeObjectSpy.mockRestore();
+			// Key assertion: update succeeds even though removeObject failed
+			expect(updateResult.errors).toBeUndefined();
+			expect(updateResult.data?.updateVenue).toBeDefined();
+		} finally {
+			removeObjectSpy.mockRestore();
+			// Cleanup: remove uploaded MinIO objects
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName1,
+				);
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName2,
+				);
+			} catch {
+				// Ignore cleanup errors
+			}
+		}
 	});
 });
