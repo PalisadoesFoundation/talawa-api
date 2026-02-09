@@ -1,9 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import "~/src/graphql/types/Tag/folder";
-import { beforeEach } from "node:test";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
