@@ -47,9 +47,6 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Extract the return type of putObject from the minio Client
-type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
-
 // Get admin auth token at module level
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -235,73 +232,34 @@ suite("Mutation field updateCommunity", () => {
 			});
 
 			test("logo has invalid mime type", async () => {
-				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-				const operations = JSON.stringify({
-					query: `
-					mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
-						updateCommunity(input: $input) {
-							id
-							logoMimeType
-						}
-					}
-					`,
+				// Try to update community with invalid MIME type for logo
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
 					variables: {
 						input: {
-							logo: null,
+							logo: {
+								objectName: faker.string.ulid(),
+								mimeType: "text/plain" as never,
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "test.txt",
+							},
 						},
 					},
 				});
 
-				const map = JSON.stringify({
-					"0": ["variables.input.logo"],
-				});
-
-				const fileContent = "fake content";
-
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					operations,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					map,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="test.txt"',
-					"Content-Type: text/plain",
-					"",
-					fileContent,
-					`--${boundary}--`,
-				].join("\r\n");
-
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: body,
-				});
-
-				const result = JSON.parse(response.body);
-
-				expect(result.data?.updateCommunity).toBeNull();
+				expect(result.data?.updateCommunity).toBeUndefined();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
-							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							extensions: expect.objectContaining({
 								code: "invalid_arguments",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "logo"],
-										message: expect.stringContaining("text/plain"),
-									}),
-								]),
 							}),
-							path: ["updateCommunity"],
 						}),
 					]),
 				);
@@ -394,69 +352,39 @@ suite("Mutation field updateCommunity", () => {
 					},
 					variables: {
 						input: {
-							logo: null,
+							// Need to provide at least one field
+							name: `Community_${faker.string.ulid()}`,
 						},
 					},
 				});
 
-				// Mock minio putObject
-				const putObjectSpy = vi
-					.spyOn(server.minio.client, "putObject")
-					.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+				const objectName = faker.string.ulid();
 
-				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+				// Mock statObject to simulate file exists in MinIO
+				const statObjectSpy = vi
+					.spyOn(server.minio.client, "statObject")
+					.mockResolvedValue({} as Awaited<ReturnType<Client["statObject"]>>);
 
-				const operations = JSON.stringify({
-					query: `
-					mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
-						updateCommunity(input: $input) {
-							id
-							name
-							logoMimeType
-						}
-					}
-					`,
-					variables: {
-						input: {
-							logo: null,
-						},
-					},
-				});
-
-				const map = JSON.stringify({
-					"0": ["variables.input.logo"],
-				});
-
-				const fileContent = "test image content";
-
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					operations,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					map,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="logo.png"',
-					"Content-Type: image/png",
-					"",
-					fileContent,
-					`--${boundary}--`,
-				].join("\r\n");
-
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
 					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
 						authorization: `bearer ${adminAuthToken}`,
 					},
-					payload: body,
+					variables: {
+						input: {
+							name: `Community_${faker.string.ulid()}`,
+							logo: {
+								objectName: objectName,
+								mimeType: "IMAGE_PNG",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "logo.png",
+							},
+						},
+					},
 				});
-
-				const result = JSON.parse(response.body);
 
 				expect(result.errors).toBeUndefined();
 				expect(result.data?.updateCommunity).toEqual(
@@ -465,122 +393,69 @@ suite("Mutation field updateCommunity", () => {
 						logoMimeType: "image/png",
 					}),
 				);
-				expect(putObjectSpy).toHaveBeenCalled();
+				expect(statObjectSpy).toHaveBeenCalled();
 			});
 
-			test("community is updated with a new logo (existing logo present - reuses logoName).", async () => {
-				// First, upload an initial logo
-				const initialPutObjectSpy = vi
-					.spyOn(server.minio.client, "putObject")
-					.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+			test("community is updated with a new logo (existing logo present - uses new objectName).", async () => {
+				// First, set an initial logo
+				const initialObjectName = faker.string.ulid();
+				const statObjectSpy = vi
+					.spyOn(server.minio.client, "statObject")
+					.mockResolvedValue({} as Awaited<ReturnType<Client["statObject"]>>);
 
-				const initialBoundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-				const initialOperations = JSON.stringify({
-					query: `
-					mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
-						updateCommunity(input: $input) {
-							id
-							logoMimeType
-						}
-					}
-					`,
+				await mercuriusClient.mutate(Mutation_updateCommunity, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
 					variables: {
 						input: {
-							logo: null,
+							name: `Community_${faker.string.ulid()}`,
+							logo: {
+								objectName: initialObjectName,
+								mimeType: "IMAGE_JPEG",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "initial.jpg",
+							},
 						},
 					},
 				});
 
-				const initialMap = JSON.stringify({
-					"0": ["variables.input.logo"],
-				});
+				expect(statObjectSpy).toHaveBeenCalled();
+				statObjectSpy.mockRestore();
 
-				const initialBody = [
-					`--${initialBoundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					initialOperations,
-					`--${initialBoundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					initialMap,
-					`--${initialBoundary}`,
-					'Content-Disposition: form-data; name="0"; filename="initial.jpg"',
-					"Content-Type: image/jpeg",
-					"",
-					"initial content",
-					`--${initialBoundary}--`,
-				].join("\r\n");
+				// Now upload a new logo with different objectName
+				const newObjectName = faker.string.ulid();
+				const newStatObjectSpy = vi
+					.spyOn(server.minio.client, "statObject")
+					.mockResolvedValue({} as Awaited<ReturnType<Client["statObject"]>>);
+				const removeObjectSpy = vi
+					.spyOn(server.minio.client, "removeObject")
+					.mockResolvedValue();
 
-				await server.inject({
-					method: "POST",
-					url: "/graphql",
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
 					headers: {
-						"content-type": `multipart/form-data; boundary=${initialBoundary}`,
 						authorization: `bearer ${adminAuthToken}`,
 					},
-					payload: initialBody,
-				});
-
-				expect(initialPutObjectSpy).toHaveBeenCalled();
-				initialPutObjectSpy.mockRestore();
-
-				// Now upload a new logo (should reuse existing logoName)
-				const putObjectSpy = vi
-					.spyOn(server.minio.client, "putObject")
-					.mockResolvedValue({ etag: "mock-etag-2" } as UploadedObjectInfo);
-
-				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-				const operations = JSON.stringify({
-					query: `
-					mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
-						updateCommunity(input: $input) {
-							id
-							logoMimeType
-						}
-					}
-					`,
 					variables: {
 						input: {
-							logo: null,
+							name: `Community_${faker.string.ulid()}`,
+							logo: {
+								objectName: newObjectName,
+								mimeType: "IMAGE_WEBP",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "new-logo.webp",
+							},
 						},
 					},
 				});
-
-				const map = JSON.stringify({
-					"0": ["variables.input.logo"],
-				});
-
-				const body = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					operations,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					map,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="0"; filename="new-logo.webp"',
-					"Content-Type: image/webp",
-					"",
-					"new content",
-					`--${boundary}--`,
-				].join("\r\n");
-
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: body,
-				});
-
-				const result = JSON.parse(response.body);
 
 				expect(result.errors).toBeUndefined();
 				expect(result.data?.updateCommunity).toEqual(
@@ -589,72 +464,49 @@ suite("Mutation field updateCommunity", () => {
 						logoMimeType: "image/webp",
 					}),
 				);
-				expect(putObjectSpy).toHaveBeenCalled();
+				expect(newStatObjectSpy).toHaveBeenCalled();
+				// Old logo should be removed
+				expect(removeObjectSpy).toHaveBeenCalled();
 			});
 
 			test("community logo is removed when logo is set to null (existing logo is removed from minio).", async () => {
-				// First, ensure there's a logo
-				const putObjectSpy = vi
-					.spyOn(server.minio.client, "putObject")
-					.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+				// First, ensure there's a logo by setting one
+				const objectName = faker.string.ulid();
+				const statObjectSpy = vi
+					.spyOn(server.minio.client, "statObject")
+					.mockResolvedValue({} as Awaited<ReturnType<Client["statObject"]>>);
 
-				const uploadBoundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-				const uploadOperations = JSON.stringify({
-					query: `
-					mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
-						updateCommunity(input: $input) {
-							id
-							logoMimeType
-						}
-					}
-					`,
-					variables: {
-						input: {
-							logo: null,
+				const uploadResult = await mercuriusClient.mutate(
+					Mutation_updateCommunity,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								logo: {
+									objectName: objectName,
+									mimeType: "IMAGE_PNG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "logo.png",
+								},
+							},
 						},
 					},
-				});
+				);
 
-				const uploadMap = JSON.stringify({
-					"0": ["variables.input.logo"],
-				});
-
-				const uploadBody = [
-					`--${uploadBoundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					uploadOperations,
-					`--${uploadBoundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					uploadMap,
-					`--${uploadBoundary}`,
-					'Content-Disposition: form-data; name="0"; filename="logo.png"',
-					"Content-Type: image/png",
-					"",
-					"logo content",
-					`--${uploadBoundary}--`,
-				].join("\r\n");
-
-				const uploadResponse = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${uploadBoundary}`,
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					payload: uploadBody,
-				});
-
-				const uploadResult = JSON.parse(uploadResponse.body);
 				expect(uploadResult.errors).toBeUndefined();
 				expect(uploadResult.data?.updateCommunity?.logoMimeType).toBe(
 					"image/png",
 				);
-				expect(putObjectSpy).toHaveBeenCalled();
+				expect(statObjectSpy).toHaveBeenCalled();
+				statObjectSpy.mockRestore();
 
-				// Now remove the logo
+				// Now remove the logo by setting it to null
 				const removeObjectSpy = vi
 					.spyOn(server.minio.client, "removeObject")
 					.mockResolvedValue();
@@ -815,6 +667,276 @@ suite("Mutation field updateCommunity", () => {
 					}),
 				]),
 			);
+		});
+
+		test("should reject logo with invalid MIME type", async () => {
+			// This tests the MIME type validation in updateCommunity.ts
+			// VIDEO_MP4 is valid for schema but NOT allowed for logo (must be image type)
+			const objectName = `test-logo-${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: objectName,
+							mimeType: "VIDEO_MP4", // Valid for schema, invalid for logo
+							fileHash: "a".repeat(64),
+							name: "logo.mp4",
+						},
+					},
+				},
+			});
+
+			expect(result.data?.updateCommunity).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.any(Array),
+						}),
+						message: expect.any(String),
+						path: ["updateCommunity"],
+					}),
+				]),
+			);
+		});
+
+		test("should return invalid_arguments when logo file not found in MinIO", async () => {
+			const objectName = `non-existent-${faker.string.uuid()}`;
+			// Mock statObject to throw NotFound error
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(
+					Object.assign(new Error("Not Found"), { code: "NotFound" }),
+				);
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							logo: {
+								objectName: objectName,
+								mimeType: "IMAGE_PNG",
+								fileHash: "a".repeat(64),
+								name: "logo.png",
+							},
+						},
+					},
+				});
+
+				expect(result.data?.updateCommunity).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.any(Array),
+							}),
+							message: expect.any(String),
+							path: ["updateCommunity"],
+						}),
+					]),
+				);
+				expect(statObjectSpy).toHaveBeenCalled();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("should return unexpected error when statObject fails with non-NotFound error", async () => {
+			const objectName = `some-logo-${faker.string.uuid()}`;
+			// Mock statObject to throw a non-NotFound error (e.g., network error)
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(new Error("Network connection failed"));
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							logo: {
+								objectName: objectName,
+								mimeType: "IMAGE_PNG",
+								fileHash: "a".repeat(64),
+								name: "logo.png",
+							},
+						},
+					},
+				});
+
+				expect(result.data?.updateCommunity).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnexpectedExtensions>({
+								code: "unexpected",
+							}),
+							message: expect.any(String),
+							path: ["updateCommunity"],
+						}),
+					]),
+				);
+				expect(statObjectSpy).toHaveBeenCalled();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("should succeed when old logo removal fails during update", async () => {
+			// First, set up a community with a logo
+			const objectName = `logos/${faker.string.uuid()}.png`;
+			const fileContent = Buffer.from("fake image content");
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				objectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/png" },
+			);
+
+			// Now mock removeObject to fail and statObject to succeed for new logo
+			const newObjectName = `logos/${faker.string.uuid()}.jpg`;
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				newObjectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/jpeg" },
+			);
+
+			// Update community with initial logo
+			await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: objectName,
+							mimeType: "IMAGE_PNG",
+							fileHash: "a".repeat(64),
+							name: "initial-logo.png",
+						},
+					},
+				},
+			});
+
+			const removeObjectSpy = vi
+				.spyOn(server.minio.client, "removeObject")
+				.mockRejectedValue(new Error("Failed to delete object"));
+
+			try {
+				// Update with new logo - old logo removal should fail but update should succeed
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							logo: {
+								objectName: newObjectName,
+								mimeType: "IMAGE_JPEG",
+								fileHash: "a".repeat(64),
+								name: "new-logo.jpg",
+							},
+						},
+					},
+				});
+
+				// Key assertion: update succeeds even though removeObject failed
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateCommunity).toBeDefined();
+			} finally {
+				removeObjectSpy.mockRestore();
+				// Cleanup: remove uploaded MinIO objects
+				try {
+					await server.minio.client.removeObject(
+						server.minio.bucketName,
+						objectName,
+					);
+					await server.minio.client.removeObject(
+						server.minio.bucketName,
+						newObjectName,
+					);
+				} catch {
+					// Intentional: cleanup errors are non-critical and should not fail the test
+					console.debug("MinIO cleanup failed, ignoring");
+				}
+			}
+		});
+
+		test("should succeed when logo removal fails during null assignment", async () => {
+			// First, set up a community with a logo
+			const objectName = `logos/${faker.string.uuid()}.png`;
+			const fileContent = Buffer.from("fake image content");
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				objectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/png" },
+			);
+
+			// Update community with logo
+			await mercuriusClient.mutate(Mutation_updateCommunity, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						logo: {
+							objectName: objectName,
+							mimeType: "IMAGE_PNG",
+							fileHash: "a".repeat(64),
+							name: "logo-to-remove.png",
+						},
+					},
+				},
+			});
+
+			// Mock removeObject to fail
+			const removeObjectSpy = vi
+				.spyOn(server.minio.client, "removeObject")
+				.mockRejectedValue(new Error("Failed to delete object"));
+
+			try {
+				// Set logo to null - removal should fail but update should succeed
+				const result = await mercuriusClient.mutate(Mutation_updateCommunity, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							logo: null,
+						},
+					},
+				});
+
+				// Key assertion: update succeeds even though removeObject failed
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateCommunity).toBeDefined();
+			} finally {
+				removeObjectSpy.mockRestore();
+				// Cleanup: remove uploaded MinIO object
+				try {
+					await server.minio.client.removeObject(
+						server.minio.bucketName,
+						objectName,
+					);
+				} catch {
+					// Intentional: cleanup errors are non-critical and should not fail the test
+					console.debug("MinIO cleanup failed, ignoring");
+				}
+			}
 		});
 	});
 });

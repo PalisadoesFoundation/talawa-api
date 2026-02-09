@@ -1,7 +1,4 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { z } from "zod";
-import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { communitiesTable } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -14,41 +11,7 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateCommunityArgumentsSchema = z.object({
-	input: mutationUpdateCommunityInputSchema.transform(async (arg, ctx) => {
-		let logo:
-			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
-			| null
-			| undefined;
-
-		if (isNotNullish(arg.logo)) {
-			const rawAvatar = await arg.logo;
-			const result = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
-
-			if (!result.success) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["logo"],
-					message: `Mime type ${rawAvatar.mimetype} not allowed for this file upload.`,
-				});
-			} else {
-				logo = Object.assign(rawAvatar, {
-					mimetype: result.data,
-				});
-			}
-
-			return {
-				...arg,
-				logo,
-			};
-		}
-
-		return {
-			...arg,
-			logo: arg.logo,
-		};
-	}),
+	input: mutationUpdateCommunityInputSchema,
 });
 
 builder.mutationField("updateCommunity", (t) =>
@@ -134,15 +97,103 @@ builder.mutationField("updateCommunity", (t) =>
 				});
 			}
 
-			let logoMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let logoName: string;
+			let logoMimeType: string | undefined;
+			let logoName: string | undefined;
+
+			// Allowed image MIME types for logo
+			const allowedLogoMimeTypes = [
+				"image/png",
+				"image/jpeg",
+				"image/webp",
+				"image/gif",
+			];
 
 			if (isNotNullish(parsedArgs.input.logo)) {
-				logoName =
-					existingCommunity.logoName === null
-						? ulid()
-						: existingCommunity.logoName;
-				logoMimeType = parsedArgs.input.logo.mimetype;
+				// Validate mimeType against allowed image types
+				if (!allowedLogoMimeTypes.includes(parsedArgs.input.logo.mimeType)) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "logo", "mimeType"],
+									message: `Invalid MIME type. Allowed types: ${allowedLogoMimeTypes.join(", ")}`,
+								},
+							],
+						},
+					});
+				}
+
+				logoName = parsedArgs.input.logo.objectName;
+				logoMimeType = parsedArgs.input.logo.mimeType;
+
+				// Verify file exists in MinIO BEFORE database update
+				try {
+					await ctx.minio.client.statObject(ctx.minio.bucketName, logoName);
+				} catch (error) {
+					// Only treat NotFound as user error
+					if (
+						error instanceof Error &&
+						(error.name === "NotFound" ||
+							error.message.includes("Not Found") ||
+							(error as { code?: string }).code === "NotFound")
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input", "logo", "objectName"],
+										message:
+											"File not found in storage. Please upload the file first.",
+									},
+								],
+							},
+						});
+					}
+					// For other errors, throw unexpected
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
+
+				// Remove old logo if it exists and has a different name (before DB update)
+				if (
+					existingCommunity.logoName !== null &&
+					existingCommunity.logoName !== logoName
+				) {
+					try {
+						await ctx.minio.client.removeObject(
+							ctx.minio.bucketName,
+							existingCommunity.logoName,
+						);
+					} catch (error) {
+						// Log but don't throw - old file cleanup is non-critical
+						ctx.log.warn(
+							{ err: error, oldLogoName: existingCommunity.logoName },
+							"Failed to remove old logo during update",
+						);
+					}
+				}
+			} else if (
+				parsedArgs.input.logo !== undefined &&
+				existingCommunity.logoName !== null
+			) {
+				// Logo was explicitly set to null, remove old logo before DB update
+				try {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						existingCommunity.logoName,
+					);
+				} catch (error) {
+					// Log but don't throw - cleanup is non-critical
+					ctx.log.warn(
+						{ err: error, oldLogoName: existingCommunity.logoName },
+						"Failed to remove old logo during null assignment",
+					);
+				}
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
@@ -169,7 +220,7 @@ builder.mutationField("updateCommunity", (t) =>
 					})
 					.returning();
 
-				// Updated community not being returned is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Updated community not being returned is a business logic error
 				if (updatedCommunity === undefined) {
 					ctx.log.error(
 						"Postgres update operation returned an empty array for the community.",
@@ -180,26 +231,6 @@ builder.mutationField("updateCommunity", (t) =>
 							code: "unexpected",
 						},
 					});
-				}
-
-				if (isNotNullish(parsedArgs.input.logo)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						logoName,
-						parsedArgs.input.logo.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.logo.mimetype,
-						},
-					);
-				} else if (
-					parsedArgs.input.logo !== undefined &&
-					existingCommunity.logoName !== null
-				) {
-					await ctx.minio.client.removeObject(
-						ctx.minio.bucketName,
-						existingCommunity.logoName,
-					);
 				}
 
 				return updatedCommunity;
