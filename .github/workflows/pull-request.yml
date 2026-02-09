@@ -47,10 +47,10 @@ jobs:
             echo "changed_files=" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Get the base branch ref
           BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          
+
           # Get all changed files
           CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')
           echo "changed_files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
@@ -310,6 +310,7 @@ jobs:
           # Define sensitive files patterns as a bash array
           SENSITIVE_PATTERNS=(
             '.coderabbit.yaml$'
+            '^.coderabbit/.*'            
             'Caddyfile$'
             'codegen.ts$'
             '^Dockerfile.*'
@@ -491,8 +492,8 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
-      - name: Start test services (postgres-test, minio-test, redis-test)
-        run: docker compose up -d postgres-test minio-test redis-test
+      - name: Start test services (postgres-test, minio-test, redis-test, mailpit)
+        run: docker compose up -d postgres-test minio-test redis-test mailpit
       - name: Wait for test services to be ready
         run: |
           set -euo pipefail
@@ -540,7 +541,40 @@ jobs:
             echo "Redis is ready."
           fi
 
+          # Wait for mailpit health check
+          echo "Waiting for Mailpit service..."
+          timeout=60
+          until curl -f http://localhost:8025/api/v1/info >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Mailpit not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Mailpit health check timed out, continuing anyway"
+          else
+            echo "Mailpit is ready."
+          fi
+
           echo "All test services are ready."
+
+      - name: Test Mailpit email service
+        run: |
+          echo "Testing Mailpit email service..."
+          
+          # Test Mailpit API is responding
+          MAILPIT_INFO=$(curl -s http://localhost:8025/api/v1/info 2>/dev/null || echo '{}')
+          echo "Mailpit info: $MAILPIT_INFO"
+          
+          # Check if Mailpit API is responding with valid data
+          if echo "$MAILPIT_INFO" | grep -q '"version"'; then
+            echo "SUCCESS: Mailpit API is responding correctly"
+            echo "SUCCESS: Mailpit is ready to capture emails"
+          else
+            echo "::warning::Mailpit API may not be responding properly"
+          fi
+          
+          # Note: Email functionality will be tested during the actual test suite execution
+          # The API container will use Mailpit as configured in .env.ci
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
         env:
           SHARD_INDEX: ${{ matrix.shard }}
@@ -685,30 +719,30 @@ jobs:
           echo "Merging ALL coverage for local check..."
           mkdir -p .nyc_output_all
           mkdir -p ./coverage/vitest
-          
+
           find coverage-shards -name "coverage-final.json" -type f > json-files-all.txt
-          
+
           SHARD_NUM=0
           while IFS= read -r file; do
              cp "$file" ".nyc_output_all/coverage-shard-${SHARD_NUM}.json"
              SHARD_NUM=$((SHARD_NUM + 1))
           done < json-files-all.txt
-          
+
           pnpm exec nyc merge .nyc_output_all ./coverage/vitest/coverage-final.json
-          
+
           # Path rewrite
           DOCKER_PATH="/home/talawa/api"
           RUNNER_PATH="$GITHUB_WORKSPACE"
           sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
-          
+
           # Report
           rm -rf .nyc_output
           mkdir -p .nyc_output
           cp ./coverage/vitest/coverage-final.json .nyc_output/coverage-final.json
           pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
-          
+
           rm -rf .nyc_output_all .nyc_output
-          
+
       - name: Calculate merge base for Codecov
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         id: get-merge-base

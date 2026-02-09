@@ -1,25 +1,33 @@
 import type { Readable } from "node:stream";
-import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
+
+import type { FastifyPluginAsync } from "fastify";
 import { type BucketItemStat, S3Error } from "minio";
-import { Type } from "typebox";
+
 import { ErrorCode } from "../utilities/errors/errorCodes";
 import { TalawaRestError } from "../utilities/errors/TalawaRestError";
+
+const objectsParamsJsonSchema = {
+	type: "object",
+	properties: {
+		name: { type: "string", minLength: 1, maxLength: 36 },
+	},
+	required: ["name"],
+} as const;
+
+interface ObjectsParams {
+	name: string;
+}
 
 /**
  * This fastify route plugin is used to initialize a `/objects/:name` endpoint on the fastify server for clients to fetch objects from the minio server.
  */
-export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
-	fastify.get(
+export const objects: FastifyPluginAsync = async (fastify) => {
+	fastify.get<{ Params: ObjectsParams }>(
 		"/objects/:name",
 		{
 			preHandler: fastify.rateLimit("normal"),
 			schema: {
-				params: Type.Object({
-					name: Type.String({
-						maxLength: 36,
-						minLength: 1,
-					}),
-				}),
+				params: objectsParamsJsonSchema,
 			},
 		},
 		async (request, reply) => {

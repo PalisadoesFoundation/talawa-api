@@ -1,0 +1,24 @@
+id: test-missing-database-cleanup
+language: typescript
+rule:
+  kind: call_expression
+  pattern: afterEach($$$)
+  not:
+    has:
+      kind: identifier
+      regex: (delete|cleanup|rollback|transaction|clear|remove|destroy)
+message: |
+  Test file may be missing database cleanup in afterEach hook.
+  Integration tests that create database entities must clean them up to prevent:
+  - Test data accumulation in sharded CI environments
+  - Resource exhaustion
+  - Flaky tests due to state pollution
+
+  Add database cleanup to afterEach:
+  ```typescript
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    // Clean up test entities
+    await cleanupTestData();
+  });
+  ```

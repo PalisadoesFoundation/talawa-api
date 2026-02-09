@@ -373,6 +373,20 @@ export const Query_user_city =
     }
 }`);
 
+export const Query_user_natalSex =
+	gql(`query Query_user_natalSex($input: QueryUserInput!) {
+    user(input: $input) {
+        natalSex
+    }
+  }`);
+
+export const Query_user_emailAddress =
+	gql(`query Query_user_emailAddress($input: QueryUserInput!) {
+    user(input: $input) {
+        emailAddress    
+    }
+}`);
+
 export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
@@ -996,6 +1010,7 @@ export const Mutation_updateAgendaItem = gql(`
       name
       description
       duration
+      notes
     	attachments {
         name
         fileHash
@@ -2944,6 +2959,7 @@ export const Mutation_createVenue = gql(`
       description
       capacity
       createdAt
+      updatedAt
     }
   }
 `);
@@ -2992,6 +3008,15 @@ export const Query_eventVenuesWithAttachments = gql(`
           endCursor
         }
       }
+    }
+  }
+`);
+
+export const Query_venue_updatedAt = gql(`
+  query Query_venue_updatedAt($input: QueryVenueInput!) {
+    venue(input: $input) {
+      id
+      updatedAt
     }
   }
 `);
