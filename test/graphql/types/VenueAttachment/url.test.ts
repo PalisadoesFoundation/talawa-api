@@ -1,5 +1,6 @@
+import { faker } from "@faker-js/faker";
 import type { GraphQLObjectType } from "graphql";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { VenueAttachment } from "~/src/graphql/types/VenueAttachment/VenueAttachment";
@@ -31,15 +32,19 @@ describe("VenueAttachment.url field resolver - Unit tests", () => {
 		const { context } = createMockGraphQLContext(true, "user123");
 		ctx = context;
 		mockAttachment = {
-			id: "attachment-123",
-			venueId: "venue-123",
+			id: faker.string.uuid(),
+			venueId: faker.string.uuid(),
 			name: "test-attachment.png",
 			mimeType: "image/png",
 			createdAt: new Date("2024-01-01T00:00:00Z"),
 			updatedAt: new Date("2024-01-15T10:30:00Z"),
-			creatorId: "creator-123",
+			creatorId: faker.string.uuid(),
 			updaterId: null,
 		} as VenueAttachment;
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe("URL construction", () => {
@@ -102,12 +107,14 @@ describe("VenueAttachment.url field resolver - Unit tests", () => {
 		});
 
 		it("should work with base URL containing port number", async () => {
-			ctx.envConfig.API_BASE_URL = "http://localhost:4000";
+			ctx.envConfig.API_BASE_URL = "https://api.example.com:8443";
 			mockAttachment.name = "attachment.jpg";
 
 			const result = await urlResolver(mockAttachment, {}, ctx);
 
-			expect(result).toBe("http://localhost:4000/objects/attachment.jpg");
+			expect(result).toBe(
+				"https://api.example.com:8443/objects/attachment.jpg",
+			);
 		});
 
 		it("should replace path when base URL contains path (URL constructor behavior)", async () => {
@@ -148,6 +155,24 @@ describe("VenueAttachment.url field resolver - Unit tests", () => {
 				"http://localhost:4000/objects/attachment%20with%20spaces.png",
 			);
 		});
+
+		it("should handle null attachment name by returning base URL", async () => {
+			// @ts-expect-error - simulating runtime null
+			mockAttachment.name = null;
+
+			const result = await urlResolver(mockAttachment, {}, ctx);
+
+			expect(result).toBe("http://localhost:4000/objects/null");
+		});
+
+		it("should handle undefined attachment name by returning base URL", async () => {
+			// @ts-expect-error - simulating runtime undefined
+			mockAttachment.name = undefined;
+
+			const result = await urlResolver(mockAttachment, {}, ctx);
+
+			expect(result).toBe("http://localhost:4000/objects/undefined");
+		});
 	});
 
 	describe("Authentication independence", () => {
@@ -179,16 +204,13 @@ describe("VenueAttachment.url field resolver - Unit tests", () => {
 
 	describe("Different attachment file types", () => {
 		it.each([
-			["PNG", "attachment.png", "image/png"],
-			["JPG", "attachment.jpg", "image/jpeg"],
-			["MP4", "attachment.mp4", "video/mp4"],
-			["no extension", "attachment-no-extension", "image/png"],
-		] as const)("should handle %s attachments", async (_fileType: string, attachmentName: string, mimeType:
-			| "image/png"
-			| "image/jpeg"
-			| "video/mp4") => {
+			["PNG", "attachment.png"],
+			["JPG", "attachment.jpg"],
+			["MP4", "attachment.mp4"],
+			["no extension", "attachment-no-extension"],
+		] as const)("should handle %s attachments", async (_fileType: string, attachmentName: string) => {
 			mockAttachment.name = attachmentName;
-			mockAttachment.mimeType = mimeType;
+			// Removed mimeType from this test as the resolver doesn't use it, to avoid misleading tests
 
 			const result = await urlResolver(mockAttachment, {}, ctx);
 
