@@ -1,3 +1,4 @@
+import { type Span, trace } from "@opentelemetry/api";
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
@@ -10,6 +11,7 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import { observabilityConfig } from "../config/observability";
 import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import {
 	COOKIE_NAMES,
@@ -19,7 +21,12 @@ import {
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
-import leakyBucket from "../utilities/leakyBucket";
+import {
+	ERROR_CODE_TO_HTTP_STATUS,
+	ErrorCode,
+} from "../utilities/errors/errorCodes";
+import { normalizeError } from "../utilities/errors/errorTransformer";
+import { complexityLeakyBucket } from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
 import {
 	isPerformanceTracker,
@@ -27,6 +34,53 @@ import {
 } from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
+
+const SPECIFIC_ERROR_ALLOWLIST = [
+	"Minio removal error",
+	"An error occurred while fetching users",
+	"An error occurred while fetching events",
+	"Invalid UUID",
+	"database_error",
+] as const;
+
+export function getPublicErrorMessage(
+	error: { message?: string },
+	defaultMessage: string,
+): string {
+	const msg = error.message;
+	if (!msg) return defaultMessage;
+
+	// Allow SPECIFIC_ERROR_ALLOWLIST messages (exact match only)
+	if (
+		SPECIFIC_ERROR_ALLOWLIST.includes(
+			msg as (typeof SPECIFIC_ERROR_ALLOWLIST)[number],
+		)
+	) {
+		return msg;
+	}
+
+	// Also check for messages that end with a period (resolver error messages)
+	const msgWithoutPeriod = msg.endsWith(".") ? msg.slice(0, -1) : msg;
+	if (
+		SPECIFIC_ERROR_ALLOWLIST.includes(
+			msgWithoutPeriod as (typeof SPECIFIC_ERROR_ALLOWLIST)[number],
+		)
+	) {
+		return msgWithoutPeriod;
+	}
+
+	// Mask sensitive/unsafe messages
+	if (
+		msg.startsWith("Database") ||
+		msg.includes("query:") ||
+		msg.includes("boom")
+	) {
+		return defaultMessage;
+	}
+
+	// Fallback for unknown messages those are not safe to expose
+	return defaultMessage;
+}
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
@@ -193,6 +247,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		cookie: cookieHelper,
 		log: opLogger,
 		minio: fastify.minio,
+		oauthProviderRegistry: fastify.oauthProviderRegistry,
 
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
@@ -221,6 +276,70 @@ export const FILE_UPLOAD_CONFIG = {
 	 */
 	maxFileSize: 10485760,
 } as const;
+
+/**
+ * Helper to extract meaningful messages from Zod error details.
+ * Encapsulates logic for parsing JSON/treeified details and handling specific validation messages like UUID errors.
+ */
+export function extractZodMessage(
+	normalizedDetails: unknown,
+	error: unknown,
+	fallbackMessage: string,
+): string {
+	try {
+		const details =
+			typeof normalizedDetails === "string"
+				? JSON.parse(normalizedDetails)
+				: normalizedDetails;
+
+		// Handle treeified Zod error format
+		if (details && typeof details === "object" && "properties" in details) {
+			const properties = details.properties as Record<
+				string,
+				{ errors: string[] }
+			>;
+			if (properties.id && Array.isArray(properties.id.errors)) {
+				if (properties.id.errors.includes("Invalid UUID")) {
+					return "Invalid uuid";
+				}
+			}
+		}
+		// Handle array format
+		else if (Array.isArray(details) && details.length > 0) {
+			const firstError = details[0];
+			if (
+				firstError &&
+				typeof firstError === "object" &&
+				"message" in firstError
+			) {
+				const zodMessage = String(firstError.message);
+				if (zodMessage === "Invalid UUID" || zodMessage === "Invalid uuid") {
+					return "Invalid uuid";
+				}
+				return zodMessage;
+			}
+		}
+	} catch {
+		// ignore parsing errors
+	}
+
+	// Fallback: Check for Zod patterns in original error messages
+	const castError = error as {
+		message?: string;
+		originalError?: { message?: string };
+	};
+	const errorMessage = castError.message || "";
+	const originalErrorMessage = castError.originalError?.message || "";
+
+	if (
+		errorMessage.includes("Invalid UUID") ||
+		originalErrorMessage.includes("Invalid UUID")
+	) {
+		return "Invalid uuid";
+	}
+
+	return getPublicErrorMessage(castError, fallbackMessage);
+}
 
 /**
  * This fastify route plugin function is initializes mercurius on the fastify instance and directs incoming requests on the `/graphql` route to it.
@@ -252,21 +371,294 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		path: "/graphql",
 		schema: initialSchema,
 		errorFormatter: (execution, context) => {
-			const correlationId = context.reply.request.id;
+			const { errors, data } = execution;
 
-			return {
-				statusCode: 200,
-				response: {
-					data: execution.data ?? null,
-					errors: execution.errors.map((err) => ({
-						message: err.message,
-						locations: err.locations,
-						path: err.path,
+			// Helper to extract correlation ID safely from various context shapes
+			const extractCorrelationId = (ctx: unknown): string => {
+				if (!ctx || typeof ctx !== "object") return "unknown";
+
+				// Check for reply.request.id (HTTP context)
+				if ("reply" in ctx) {
+					const replyCtx = ctx as {
+						reply?: { request?: { id?: string } };
+					};
+					if (replyCtx.reply?.request?.id) return replyCtx.reply.request.id;
+				}
+
+				// Check for correlationId (Subscription context or direct property)
+				if ("correlationId" in ctx) {
+					const correlationCtx = ctx as { correlationId?: string };
+					if (correlationCtx.correlationId) return correlationCtx.correlationId;
+				}
+
+				return "unknown";
+			};
+
+			const correlationId = extractCorrelationId(context);
+
+			// Transform each error to ensure consistent format
+			const formattedErrors = errors.map((error) => {
+				// If it's already a TalawaGraphQLError (or wraps one), preserve its structure
+				const originalError = error.originalError;
+				if (
+					error instanceof TalawaGraphQLError ||
+					originalError instanceof TalawaGraphQLError
+				) {
+					const targetError =
+						error instanceof TalawaGraphQLError
+							? error
+							: (originalError as TalawaGraphQLError);
+
+					const code = targetError.extensions.code as ErrorCode;
+					const httpStatus =
+						targetError.extensions.httpStatus ??
+						ERROR_CODE_TO_HTTP_STATUS[code] ??
+						500;
+
+					return {
+						message: String(targetError.message || "An error occurred"),
+						locations: error.locations,
+						path: error.path,
 						extensions: {
-							...err.extensions,
+							...targetError.extensions,
+							httpStatus,
 							correlationId,
 						},
+					};
+				}
+
+				// Handle GraphQL syntax and validation errors
+				// Check for explicit GraphQL error codes and specific message patterns
+				const isGraphQLValidationError =
+					error.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
+					error.extensions?.code === "BAD_USER_INPUT" ||
+					error.extensions?.code === "GRAPHQL_PARSE_FAILED" ||
+					// Check for Mercurius validation errors
+					(error.originalError &&
+						typeof error.originalError === "object" &&
+						"code" in error.originalError &&
+						error.originalError.code === "MER_ERR_GQL_VALIDATION") ||
+					// Check for specific error messages
+					(error.message &&
+						(error.message.toLowerCase() === "graphql validation error" ||
+							error.message.startsWith("Syntax Error:") ||
+							error.message.startsWith("Cannot query field") ||
+							/^Unknown (query|field)\b/.test(error.message) ||
+							error.message === "Must provide query string." ||
+							error.message.startsWith("Unknown argument") ||
+							error.message.startsWith('Variable "$')));
+
+				if (isGraphQLValidationError) {
+					return {
+						message: String(error.message || "GraphQL validation error"),
+						locations: error.locations,
+						path: error.path,
+						extensions: {
+							code: ErrorCode.INVALID_ARGUMENTS,
+							correlationId,
+							httpStatus: 400,
+						},
+					};
+				}
+
+				// Fallback for all other errors
+				// First check if the error already has a valid ErrorCode in extensions
+				if (
+					error.extensions?.code &&
+					Object.values(ErrorCode).includes(error.extensions.code as ErrorCode)
+				) {
+					const existingCode = error.extensions.code as ErrorCode;
+					const httpStatus = ERROR_CODE_TO_HTTP_STATUS[existingCode] ?? 500;
+
+					// For valid ErrorCode, preserve meaningful messages but use normalizeError for details
+					const normalized = normalizeError(error);
+					const message: string =
+						[error.extensions?.message, error.message, normalized.message].find(
+							(msg): msg is string =>
+								typeof msg === "string" && msg.trim().length > 0,
+						) ?? "An error occurred";
+
+					return {
+						message,
+						locations: error.locations,
+						path: error.path,
+						extensions: {
+							code: existingCode,
+							details: normalized.details,
+							correlationId,
+							httpStatus,
+						},
+					};
+				}
+
+				// Handle errors without extensions using normalized, sanitized output
+				if (!error.extensions) {
+					const normalized = normalizeError(error);
+
+					// For validation errors, trying to extract meaningful message from the details
+					let message = String(normalized.message || "An error occurred");
+
+					// Check if this is a Zod validation error with details
+					if (
+						normalized.code === ErrorCode.INVALID_ARGUMENTS &&
+						normalized.details
+					) {
+						message = extractZodMessage(normalized.details, error, message);
+					} else {
+						// Preserve specific resolver error messages that are safe to expose
+						message = getPublicErrorMessage(error, message);
+					}
+
+					return {
+						message,
+						locations: error.locations,
+						path: error.path,
+						extensions: {
+							code: normalized.code || ErrorCode.INTERNAL_SERVER_ERROR,
+							details: normalized.details,
+							correlationId,
+							httpStatus: normalized.statusCode || 500,
+						},
+					};
+				}
+
+				// For errors with extensions but invalid codes, use normalizeError
+				const normalized = normalizeError(error);
+
+				// Preserve specific resolver error messages that are safe to expose
+				// These are specific error messages that tests and resolvers expect to be preserved
+				let message = String(normalized.message || "An error occurred");
+
+				// Check for ZodError patterns in the original error message (for production mode)
+				const errorMessage = String(error.message || "");
+				if (
+					normalized.code === ErrorCode.INTERNAL_SERVER_ERROR &&
+					errorMessage.includes("Invalid UUID")
+				) {
+					message = "Invalid uuid";
+				}
+				// Special handling for Zod validation errors
+				if (
+					(normalized.code === ErrorCode.INTERNAL_SERVER_ERROR ||
+						normalized.code === ErrorCode.INVALID_ARGUMENTS) &&
+					normalized.details
+				) {
+					message = extractZodMessage(normalized.details, error, message);
+				} else {
+					message = getPublicErrorMessage(error, message);
+				}
+
+				return {
+					message,
+					locations: error.locations,
+					path: error.path,
+					extensions: {
+						code: normalized.code,
+						details: normalized.details,
+						correlationId,
+						httpStatus: normalized.statusCode,
+					},
+				};
+			});
+
+			// Log errors with structured context
+			type Logger = { error: (obj: Record<string, unknown>) => void };
+			const contextWithLogger = context as {
+				reply?: { request?: { log?: Logger } };
+				log?: Logger;
+			};
+			const logger =
+				contextWithLogger.reply?.request?.log || contextWithLogger.log;
+			if (logger?.error) {
+				logger.error({
+					msg: "GraphQL error",
+					correlationId,
+					errors: formattedErrors.map((fe, index) => ({
+						message: fe.message,
+						originalMessage: errors[index]?.message,
+						code: fe.extensions?.code,
+						details: fe.extensions?.details,
+						path: fe.path,
 					})),
+				});
+			}
+
+			// Determine appropriate status code based on error types
+			let statusCode = 200;
+			if (formattedErrors.length > 0) {
+				const errorCodes = formattedErrors.map(
+					(error) => error.extensions?.code as string,
+				);
+
+				// Check for specific error types and set appropriate status codes
+				// Priority ordering ensures that we handle the most specific and critical errors first:
+				// 1. UNAUTHENTICATED: Missing credentials; highest priority to block access immediately.
+				// 2. UNAUTHORIZED: Valid credentials but insufficient permissions; check logic before validation.
+				// 3. INVALID_ARGUMENTS: Application-level validation; processed if auth is successful.
+				// 4. NOT_FOUND: Resource lookup; logically happens after input validation.
+				// 5. RATE_LIMIT_EXCEEDED: Operational safeguard; checked independently but grouped here.
+				// Fallback: Defaults to the first error's httpStatus or 500 if no known code is matched.
+
+				const codeIncludesAny = (
+					targetCodes: ErrorCode[],
+					actualCodes: string[],
+				) => targetCodes.some((code) => actualCodes.includes(code));
+
+				if (
+					codeIncludesAny(
+						[
+							ErrorCode.UNAUTHENTICATED,
+							ErrorCode.TOKEN_EXPIRED,
+							ErrorCode.TOKEN_INVALID,
+						],
+						errorCodes,
+					)
+				) {
+					statusCode = 401;
+				} else if (
+					codeIncludesAny(
+						[
+							ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+							ErrorCode.UNAUTHORIZED,
+							ErrorCode.INSUFFICIENT_PERMISSIONS,
+							ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+							ErrorCode.FORBIDDEN_ACTION,
+						],
+						errorCodes,
+					)
+				) {
+					statusCode = 403;
+				} else if (
+					codeIncludesAny(
+						[ErrorCode.INVALID_ARGUMENTS, ErrorCode.INVALID_INPUT],
+						errorCodes,
+					)
+				) {
+					statusCode = 400;
+				} else if (
+					codeIncludesAny(
+						[
+							ErrorCode.NOT_FOUND,
+							ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+						],
+						errorCodes,
+					)
+				) {
+					statusCode = 404;
+				} else if (errorCodes.includes(ErrorCode.RATE_LIMIT_EXCEEDED)) {
+					statusCode = 429;
+				} else {
+					// Fall back to the first error's httpStatus or 500
+					statusCode =
+						(formattedErrors[0]?.extensions?.httpStatus as number) ?? 500;
+				}
+			}
+
+			return {
+				statusCode,
+				response: {
+					data: data ?? null,
+					errors: formattedErrors,
 				},
 			};
 		},
@@ -313,6 +705,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						},
 						log: fastify.log,
 						minio: fastify.minio,
+						oauthProviderRegistry: fastify.oauthProviderRegistry,
 						notification: new NotificationService(),
 						perf,
 					};
@@ -377,6 +770,52 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			);
 		}
 	});
+
+	// GraphQL operation tracing - create spans for each operation
+	if (observabilityConfig.enabled) {
+		const tracer = trace.getTracer("talawa-api");
+
+		fastify.graphql.addHook(
+			"preExecution",
+			async (_schema, document, context) => {
+				// Extract operation name from the document - avoid logging PII
+				const operationDefinition = document.definitions.find(
+					(def) => def.kind === "OperationDefinition",
+				);
+				const operationName =
+					(operationDefinition &&
+						"name" in operationDefinition &&
+						operationDefinition.name?.value) ||
+					"anonymous";
+				const operationType =
+					(operationDefinition &&
+						"operation" in operationDefinition &&
+						operationDefinition.operation) ||
+					"unknown";
+
+				// Start a span for the GraphQL operation
+				const span = tracer.startSpan(`graphql:${operationName}`);
+				span.setAttribute("graphql.operation.name", operationName);
+				span.setAttribute("graphql.operation.type", operationType);
+
+				// Store span on context for later cleanup
+				(context as { _tracingSpan?: Span })._tracingSpan = span;
+			},
+		);
+
+		fastify.graphql.addHook("onResolution", async (execution, context) => {
+			// End the span created in preExecution
+			const span = (context as { _tracingSpan?: Span })._tracingSpan;
+			if (span) {
+				// Record if there were errors (without logging error details/PII)
+				if (execution.errors && execution.errors.length > 0) {
+					span.setAttribute("graphql.errors.count", execution.errors.length);
+				}
+				span.end();
+			}
+		});
+	}
+
 	fastify.graphql.addHook(
 		"preExecution",
 		async (schema, context, document, variables) => {
@@ -445,7 +884,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// For unauthenticated users, use only IP address
 				key = `rate-limit:ip:${ip}`;
 			}
-			const isRequestAllowed = await leakyBucket(
+			const isRequestAllowed = await complexityLeakyBucket(
 				fastify,
 				key,
 				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,
@@ -457,7 +896,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "too_many_requests" },
+					extensions: { code: ErrorCode.RATE_LIMIT_EXCEEDED },
 				});
 			}
 		},

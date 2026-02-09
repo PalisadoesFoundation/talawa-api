@@ -35,7 +35,7 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success && result.error.issues.length > 0) {
-				expect(result.error.issues[0]?.message).toContain("at least");
+				expect(result.error.issues[0]?.message).toContain("Too small");
 			}
 		});
 
@@ -80,7 +80,7 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success && result.error.issues.length > 0) {
-				expect(result.error.issues[0]?.message).toContain("at most");
+				expect(result.error.issues[0]?.message).toContain("Too big");
 			}
 		});
 	});

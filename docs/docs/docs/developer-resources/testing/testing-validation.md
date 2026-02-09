@@ -15,14 +15,117 @@ It is important to test our code. If you are a contributor, please follow the gu
 
 All our workflows use Linux based commands, therefore if you are a developer who codes in Microsoft Windows then we strongly suggest that you use the Windows Subsystem for Linux (WSL) as your command line interface (CLI).
 
-### The `tests/` Directory
+### The `test/` Directory
 
-The `tests/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
+The `test/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
 
-1. Tests for files in the `src/` directory must only be placed in the equivalent subdirectory under the `tests/` directory.
+1. Tests for files in the `src/` directory must only be placed in the equivalent subdirectory under the `test/` directory.
 2. Test files must have a `.test.ts` extension.
 
 The rest of this page will assist you in being an active contributor to the code base.
+
+## Quick Start
+
+### Running Tests
+
+**Run all tests:**
+```bash
+pnpm run check_tests
+```
+
+**Run specific test file:**
+```bash
+pnpm run check_tests -- /path/to/test/file
+```
+
+**Run with coverage:**
+```bash
+pnpm run run_tests
+```
+
+**Run with test sharding:**
+```bash
+pnpm run test:shard
+```
+
+### Linting and Formatting
+
+**Fix linting & formatting issues:**
+```bash
+pnpm run format:fix
+```
+
+**Check linting & formatting:**
+```bash
+pnpm run format:check
+```
+
+**Check for sanitization issues:**
+```bash
+pnpm run lint:sanitization
+```
+
+**Check TSDoc comments:**
+```bash
+pnpm run lint:tsdoc
+```
+
+### Type Checking
+
+**Run TypeScript type checker:**
+```bash
+pnpm run typecheck
+```
+
+### Error Handling Validation
+
+**Check for error handling violations:**
+```bash
+pnpm run validate:error-handling
+```
+
+**Attempt to auto-fix violations:**
+```bash
+pnpm run validate:error-handling:fix
+```
+
+## Code Coverage Flags
+
+We use Codecov flags to separate and track coverage metrics for different types of tests:
+
+### Unit Flag
+
+The `unit` flag tracks coverage for:
+- `test/unit/`: Unit tests for isolated logic
+- `src/utilities/`: Utility functions
+- `src/services/`: Service layer code
+
+### Integration Flag
+
+The `integration` flag tracks coverage for:
+- `test/drizzle/`: Database integration tests
+- `test/graphql/`: GraphQL API integration tests
+- `test/install/`: Installation and setup tests
+
+These flags allow us to monitor coverage separately on the Codecov dashboard, helping identify gaps in either unit or integration test coverage.
+
+### Codecov Flag Meanings (Dashboard)
+
+The Codecov dashboard may show **four** flags. Only two are actively produced by our current CI workflows. The other two are legacy flags that may still appear if they were uploaded in the past.
+
+| Flag | What it represents | Status in this repo |
+| --- | --- | --- |
+| `unit` | Coverage uploaded from `vitest.unit.config.ts` (unit test suite). | **Active** |
+| `integration` | Coverage uploaded from `vitest.integration.config.ts` (integration test suite). | **Active** |
+| `vitest` | A combined Vitest coverage report from older workflows (pre-split) or ad-hoc uploads. | **Legacy** (not currently uploaded) |
+| `unittests` | An older/renamed flag that no longer receives uploads. | **Legacy** (no report uploaded) |
+
+Notes:
+- The **active** flags are `unit` and `integration`. These are the only flags uploaded by CI today.
+- **Legacy** flags can remain visible on the dashboard even if they are not being uploaded anymore. If you see “No report uploaded,” it’s a stale flag.
+- Admins can delete stale flags from the Codecov UI if needed.
+
+![Codecov flags overview](/img/markdown/docs/codecov-flags-overview.png)
 
 ## Linting & Static Analysis
 
@@ -83,9 +186,41 @@ This pattern is a heuristic and may flag safe code:
 
 If you are certain a field is safe (e.g., it returns a database ID), you can suppress the warning.
 
-Since this is a custom GritQL plugin, standard `// biome-ignore` comments might not work depending on the Biome version and integration.
+Since this is a custom GritQL plugin, standard `biome-ignore` comments might not work depending on the Biome version and integration.
 
-If `// biome-ignore` does not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking).
+If `biome-ignore` does not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking).
+
+
+### Error Handling Validation
+
+We enforce consistent error handling practices across the codebase through automated validation. This prevents regressions and ensures standardized error codes and patterns.
+
+#### Purpose
+
+The validation script enforces:
+- Use of `TalawaRestError` (REST routes) and `TalawaGraphQLError` (GraphQL resolvers) instead of generic `Error`
+- Proper error code usage via the `ErrorCode` enum
+- Structured logging in critical paths (routes, resolvers, workers)
+- Non-empty catch blocks with proper error handling
+- Detection of legacy error patterns
+
+#### Running Validation
+
+**Check for error handling violations:**
+```bash
+pnpm run validate:error-handling
+```
+
+**Attempt to auto-fix violations:**
+```bash
+pnpm run validate:error-handling:fix
+```
+
+#### CI/CD and Git Hooks
+
+- **CI/CD**: This validation runs automatically on every Pull Request via GitHub Actions. The build will fail if violations are detected.
+- **Pre-commit Hook**: A pre-commit hook is configured via Lefthook to run validation before you commit, catching issues early.
+- **Scope**: The validator only scans modified files (not the entire codebase).
 
 ## Testing Philosophy
 
@@ -105,14 +240,13 @@ The GraphQL schema cannot be tested without running the graphql server itself be
 
 The end users will be interacting with the graphql schema and not the typescript graphql resolvers. So, the tests should be written in a way that asserts against the runtime behavior of that graphql schema.
 
-This does mean that code coverage is not possible because vitest cannot know what typescript module paths are being traversed inside the tests because at runtime those typescript modules are compiled into node.js(v8) internal implementation of byte code.
 
 #### Integration Testing
 
 Based on this design, we only do integration testing for GraphQL queries and mutations in these folders.
 
-1. `src/Graphql/mutation`
-1. `src/Graphql/query`
+1. `src/graphql/types/Mutation`
+1. `src/graphql/types/Query`
 
 **NOTE:** No unit testing is done in these folders.
 
@@ -126,7 +260,7 @@ We only do unit testing the return type of the Graphql types resolver in these f
 
 ### Directory Structure
 
-The `tests/server.ts` file exports the Talawa API server instance that can be imported and used in different api tests. This Talawa API server instance is shared between api tests.
+The `test/server.ts` file exports the Talawa API server instance that can be imported and used in different api tests. This Talawa API server instance is shared between api tests.
 
 There aren't any other strict structure requirements for the this directory.
 

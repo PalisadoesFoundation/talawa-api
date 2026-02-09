@@ -7,8 +7,10 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import { traceable } from "~/src/utilities/db/traceableQuery";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
+import { wrapBatchWithTracing } from "./wrapBatchWithTracing";
 
 /**
  * Type representing a user row from the database.
@@ -39,10 +41,12 @@ export function createUserLoader(
 	const batchFn = async (
 		ids: readonly string[],
 	): Promise<(UserRow | null)[]> => {
-		const rows = await db
-			.select()
-			.from(usersTable)
-			.where(inArray(usersTable.id, ids as string[]));
+		const rows = await traceable("users", "batchLoad", async () =>
+			db
+				.select()
+				.from(usersTable)
+				.where(inArray(usersTable.id, ids as string[])),
+		);
 
 		const map = new Map<string, UserRow>(rows.map((r: UserRow) => [r.id, r]));
 
@@ -63,9 +67,12 @@ export function createUserLoader(
 	// Since wrapBatchWithMetrics("users.byId", perf, cacheWrappedBatch) wraps cacheWrappedBatch,
 	// metrics include cache layer time (cache hits/misses) rather than only DB time.
 	// The ordering (cache first, then metrics) causes metrics to measure the full execution path.
-	const wrappedBatch = perf
+	const metricsWrappedBatch = perf
 		? wrapBatchWithMetrics("users.byId", perf, cacheWrappedBatch)
 		: cacheWrappedBatch;
+
+	// Apply tracing wrapper last to create spans for each batch operation
+	const wrappedBatch = wrapBatchWithTracing("users", metricsWrappedBatch);
 
 	return new DataLoader<string, UserRow | null>(wrappedBatch, {
 		// Coalesce loads triggered within the same event loop tick

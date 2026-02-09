@@ -5,7 +5,9 @@ import { builder } from "~/src/graphql/builder";
 export const mutationUpdateAgendaFolderInputSchema =
 	agendaFoldersTableInsertSchema
 		.pick({
-			parentFolderId: true,
+			description: true,
+			name: true,
+			sequence: true,
 		})
 		.extend({
 			id: agendaFoldersTableInsertSchema.shape.id.unwrap(),
@@ -24,8 +26,11 @@ export const MutationUpdateAgendaFolderInput = builder
 		"MutationUpdateAgendaFolderInput",
 	)
 	.implement({
-		description: "",
+		description: "Input type for updating an agenda folder.",
 		fields: (t) => ({
+			description: t.string({
+				description: "Description of the agenda folder.",
+			}),
 			id: t.id({
 				description: "Global identifier of the agenda folder.",
 				required: true,
@@ -33,9 +38,8 @@ export const MutationUpdateAgendaFolderInput = builder
 			name: t.string({
 				description: "Name of the agenda folder.",
 			}),
-			parentFolderId: t.id({
-				description:
-					"Global identifier of the agenda folder the agenda folder is contained within.",
+			sequence: t.int({
+				description: "Sequence number of folder",
 			}),
 		}),
 	});

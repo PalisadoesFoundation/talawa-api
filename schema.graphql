@@ -192,16 +192,14 @@ type AgendaCategory {
 }
 
 type AgendaFolder {
-  """
-  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
-  """
-  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
-
   """Date time at the time the agenda folder was created."""
   createdAt: DateTime
 
   """User who created the agenda folder."""
   creator: User
+
+  """Custom information about the agenda folder."""
+  description: String
 
   """
   Event for which the agenda folder contains agenda items constituting a part of the agenda.
@@ -211,10 +209,8 @@ type AgendaFolder {
   """Global identifier of the agenda folder."""
   id: ID!
 
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
-  """
-  isAgendaItemFolder: Boolean
+  """Boolean to tell if agenda folder is default or not"""
+  isDefaultFolder: Boolean!
 
   """
   GraphQL connection to traverse through the agenda items contained within the agenda folder.
@@ -224,26 +220,17 @@ type AgendaFolder {
   """Name of the agenda folder."""
   name: String
 
-  """Agenda folder that is a parent folder to the agenda folder."""
-  parentFolder: AgendaFolder
+  """Organization which the agenda folder belongs to."""
+  organization: Organization
+
+  """Sequence of agenda folder."""
+  sequence: Int
 
   """Date time at the time the agenda folder was last updated."""
   updatedAt: DateTime
 
   """User who last updated the agenda folder."""
   updater: User
-}
-
-""""""
-type AgendaFolderChildFoldersConnection {
-  edges: [AgendaFolderChildFoldersConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderChildFoldersConnectionEdge {
-  cursor: String!
-  node: AgendaFolder
 }
 
 """"""
@@ -259,7 +246,13 @@ type AgendaFolderItemsConnectionEdge {
 }
 
 type AgendaItem {
-  """Date time at the time the agenda item was last created."""
+  """Attachments for the agenda item"""
+  attachments: [AgendaItemAttachment!]
+
+  """Agenda category"""
+  category: AgendaCategory
+
+  """Date time when the agenda item was created."""
   createdAt: DateTime
 
   """User who created the agenda item."""
@@ -271,8 +264,11 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
+  """Event for which the agenda item constituting a part of the agenda."""
+  event: Event
+
   """Agenda folder within which the agenda item in contained."""
-  event: AgendaFolder
+  folder: AgendaFolder
 
   """Global identifier of the agenda item."""
   id: ID!
@@ -285,6 +281,12 @@ type AgendaItem {
   """Name of the agenda item."""
   name: String
 
+  """Notes for the agenda item."""
+  notes: String
+
+  """Sequence order of the agenda item."""
+  sequence: Int
+
   """Type of the agenda item."""
   type: AgendaItemType
 
@@ -293,6 +295,35 @@ type AgendaItem {
 
   """User who last updated the agenda item."""
   updater: User
+
+  """URLs associated with the agenda item"""
+  url: [AgendaItemUrl!]
+}
+
+"""Attachment of the agenda items."""
+type AgendaItemAttachment {
+  """Unique file hash identifier for the attachment."""
+  fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+}
+
+"""Attachment data for an agenda item"""
+input AgendaItemAttachmentInput {
+  fileHash: String!
+  mimeType: PostAttachmentMimeType!
+  name: String!
+  objectName: String!
 }
 
 """Possible variants of the type of an agenda item."""
@@ -301,6 +332,27 @@ enum AgendaItemType {
   note
   scripture
   song
+}
+
+"""URLs associated with an agenda item."""
+type AgendaItemUrl {
+  """Date time at which the URL was created."""
+  createdAt: DateTime!
+
+  """Global identifier of the agenda item URL."""
+  id: ID!
+
+  """Date time at which the URL was last updated."""
+  updatedAt: DateTime
+
+  """URL associated with the agenda item."""
+  url: String!
+}
+
+"""URL associated with an agenda item"""
+input AgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
 }
 
 """Represents a tag assigned to a user."""
@@ -640,6 +692,21 @@ type Community {
   youtubeURL: String
 }
 
+"""
+Input type for defining a complexity range filter. Both min and max must be non-negative numbers, and min must be less than or equal to max.
+"""
+input ComplexityRangeInput {
+  """
+  Maximum complexity score (inclusive). Must be non-negative and greater than or equal to min.
+  """
+  max: Float!
+
+  """
+  Minimum complexity score (inclusive). Must be non-negative and less than or equal to max.
+  """
+  min: Float!
+}
+
 input CreateActionItemInput {
   assignedAt: String
   categoryId: ID!
@@ -712,7 +779,7 @@ type Event {
   allDay: Boolean
 
   """
-  A list of attachments associated with the event, such as images or documents.
+  A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.
   """
   attachments: [EventAttachment!]
 
@@ -724,6 +791,11 @@ type Event {
 
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
+
+  """
+  The ID of the base recurring event template if this is a generated instance.
+  """
+  baseRecurringEventId: ID
 
   """Date time at the time the event was created."""
   createdAt: DateTime
@@ -750,6 +822,14 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
+
+  """A boolean flag indicating if this instance has been cancelled."""
+  isCancelled: Boolean
+
+  """
+  A boolean flag indicating if this event was generated from a recurrence template.
+  """
+  isGenerated: Boolean
 
   """A boolean flag indicating if the event is invite-only."""
   isInviteOnly: Boolean
@@ -868,7 +948,9 @@ type EventAttendee {
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
-  """The event the attendee is associated with."""
+  """
+  The event the attendee is associated with. Supports both standalone events and recurring event instances.
+  """
   event: Event
 
   """Indicates if the attendee has submitted feedback for the event."""
@@ -2070,6 +2152,60 @@ input MembershipRequestWhereInput {
   user: UserWhereInput
 }
 
+"""
+Input type for advanced metrics filtering. Supports filtering by operation names, slow operations, cache hit rate, and complexity range.
+"""
+input MetricsFilterInput {
+  """
+  Optional complexity range filter. Only metrics with complexity scores within this range will be returned.
+  """
+  complexityRange: ComplexityRangeInput
+
+  """
+  Optional minimum cache hit rate filter (0-1). Only metrics with a cache hit rate greater than or equal to this value will be returned.
+  """
+  minCacheHitRate: Float
+
+  """
+  Optional array of operation names to filter by. If provided, only metrics for these operations will be returned.
+  """
+  operationNames: [String!]
+
+  """
+  If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.
+  """
+  slowOperationsOnly: Boolean! = false
+}
+
+"""
+Input type for querying metrics data. Supports time range filtering, operation type filtering, and duration-based filtering.
+"""
+input MetricsInput {
+  """The end time for the metrics query. Must be after startTime."""
+  endTime: DateTime!
+
+  """
+  Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.
+  """
+  includeCacheMetrics: Boolean! = true
+
+  """
+  Optional maximum duration filter in milliseconds. Must be positive and greater than minDuration if both are provided.
+  """
+  maxDuration: Float
+
+  """
+  Optional minimum duration filter in milliseconds. Must be positive and less than maxDuration if both are provided.
+  """
+  minDuration: Float
+
+  """Optional filter to limit results to a specific operation type."""
+  operationType: String
+
+  """The start time for the metrics query. Must be a valid DateTime."""
+  startTime: DateTime!
+}
+
 type Mutation {
   """
   Accept an event invitation. Links the current user to the invitation, joins the organization if needed and registers the user as an attendee. This is performed atomically.
@@ -2354,6 +2490,12 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """Link an OAuth provider to the current authenticated user."""
+  linkOAuthAccount(
+    """Input containing OAuth provider details and authorization code."""
+    input: OAuthLoginInput!
+  ): User
+
   """
   Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.
   """
@@ -2436,6 +2578,19 @@ type Mutation {
     input: MutationSendMembershipRequestInput!
   ): MembershipRequest
 
+  """
+  Send a verification email to the authenticated user. Returns same response whether email was sent or not.
+  """
+  sendVerificationEmail: SendEmailVerificationPayload
+
+  """
+  Sign in or sign up using an OAuth provider. Exchanges an authorization code for tokens, creates/links user, and returns AuthenticationPayload.
+  """
+  signInWithOAuth(
+    """Input containing OAuth provider details and authorization code."""
+    input: OAuthLoginInput!
+  ): AuthenticationPayload
+
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
@@ -2444,6 +2599,12 @@ type Mutation {
 
   """Mutation field to unblock a user from an organization."""
   unblockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Unlink an OAuth provider from the current authenticated user."""
+  unlinkOAuthAccount(
+    """The OAuth provider to unlink from the user account."""
+    provider: OAuthProvider!
+  ): User
 
   """Mutation field to unregister current user from an event."""
   unregisterForEventByUser(
@@ -2480,6 +2641,12 @@ type Mutation {
 
   """Mutation field to update an agenda item."""
   updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
+
+  """Mutation field to update the sequence of an agenda item."""
+  updateAgendaItemSequence(
+    """Input containing the agenda item ID and new sequence value."""
+    input: MutationUpdateAgendaItemSequenceInput!
+  ): AgendaItem
 
   """Mutation field to update a chat."""
   updateChat(input: MutationUpdateChatInput!): Chat
@@ -2601,6 +2768,14 @@ type Mutation {
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
 
   """
+  Verify a user's email address using the token sent to their email. Returns success even if already verified (idempotent).
+  """
+  verifyEmail(
+    """Input for verifying an email address with a token."""
+    input: MutationVerifyEmailInput!
+  ): VerifyEmailPayload
+
+  """
   Public preview of an event invitation. Returns masked email and minimal event/org info. Rate-limited.
   """
   verifyEventInvitation(input: VerifyEventInvitationInput!): VerifyEventInvitationPreview
@@ -2683,29 +2858,31 @@ input MutationCreateAgendaCategoryInput {
   name: String!
 }
 
-""""""
+"""Input type for creating a new agenda folder."""
 input MutationCreateAgendaFolderInput {
+  """Description of Agenda Folder"""
+  description: String
+
   """Global identifier of the event the agenda folder is associated to."""
   eventId: ID!
-
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
-  """
-  isAgendaItemFolder: Boolean!
 
   """Name of the agenda folder."""
   name: String!
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """ID of the organization this folder belongs to."""
+  organizationId: ID!
+
+  """Sequence of the Agenda Folder."""
+  sequence: Int
 }
 
-""""""
+"""Input type for creating a new agenda item."""
 input MutationCreateAgendaItemInput {
-  """File metadata for attachments uploaded via MinIO presigned URLs."""
-  attachments: [FileMetadataInput!]
+  """Attachments for the agenda items."""
+  attachments: [AgendaItemAttachmentInput!]
+
+  """Category id"""
+  categoryId: ID
 
   """Custom information about the agenda item."""
   description: String
@@ -2713,10 +2890,13 @@ input MutationCreateAgendaItemInput {
   """Duration of the agenda item."""
   duration: String
 
+  """Global identifier of the event the agenda item is associated to."""
+  eventId: ID!
+
   """
   Global identifier of the agenda folder the agenda item is associated to.
   """
-  folderId: ID!
+  folderId: ID
 
   """
   Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
@@ -2726,8 +2906,17 @@ input MutationCreateAgendaItemInput {
   """Name of the agenda item."""
   name: String!
 
+  """Notes for the agenda item"""
+  notes: String
+
+  """Sequence of the AgendaItem."""
+  sequence: Int!
+
   """Type of the agenda item."""
   type: AgendaItemType!
+
+  """URLs associated with the agenda item."""
+  url: [AgendaItemUrlInput!]
 }
 
 """"""
@@ -3519,24 +3708,28 @@ input MutationUpdateAgendaCategoryInput {
   name: String
 }
 
-""""""
+"""Input type for updating an agenda folder."""
 input MutationUpdateAgendaFolderInput {
+  """Description of the agenda folder."""
+  description: String
+
   """Global identifier of the agenda folder."""
   id: ID!
 
   """Name of the agenda folder."""
   name: String
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """Sequence number of folder"""
+  sequence: Int
 }
 
 """"""
 input MutationUpdateAgendaItemInput {
   """File metadata for attachments uploaded via MinIO presigned URLs."""
   attachments: [FileMetadataInput!]
+
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
 
   """Custom information about the agenda item."""
   description: String
@@ -3557,6 +3750,19 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+
+  """Notes of the agenda item."""
+  notes: String
+  url: [UpdateAgendaItemUrlInput!]
+}
+
+""""""
+input MutationUpdateAgendaItemSequenceInput {
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """Sequence of agenda item."""
+  sequence: Int!
 }
 
 """"""
@@ -4085,6 +4291,11 @@ input MutationUpdateVenueInput {
   name: String
 }
 
+input MutationVerifyEmailInput {
+  """The email verification token received in the verification email."""
+  token: String!
+}
+
 """Minimal notification data for user interfaces."""
 type Notification {
   """Notification message body."""
@@ -4110,6 +4321,43 @@ type Notification {
 
   """Notification title for display."""
   title: String!
+}
+
+"""Linked OAuth account info for a user."""
+type OAuthAccountInfo {
+  """Email address associated with the OAuth account."""
+  email: String
+
+  """Date and time when the OAuth account was last used for authentication."""
+  lastUsedAt: DateTime
+
+  """Date and time when the OAuth account was linked."""
+  linkedAt: DateTime
+
+  """The OAuth provider."""
+  provider: OAuthProvider
+}
+
+"""Input for OAuth login and account linking."""
+input OAuthLoginInput {
+  """
+  The authorization code received from the OAuth provider after user authorization.
+  """
+  authorizationCode: String!
+
+  """The OAuth provider to authenticate with."""
+  provider: OAuthProvider!
+
+  """
+  The redirect URI used in the OAuth flow. Must match the URI registered with the provider.
+  """
+  redirectUri: String!
+}
+
+"""OAuth providers supported by the platform."""
+enum OAuthProvider {
+  GITHUB
+  GOOGLE
 }
 
 type Organization {
@@ -4717,8 +4965,11 @@ type Query {
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
 
-  """Query field to read an agenda item."""
-  agendaItem(input: QueryAgendaItemInput!): AgendaItem
+  """Query field to get all Agenda Folders for a specific event."""
+  agendaFoldersByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaFolder!]
 
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
@@ -4753,12 +5004,64 @@ type Query {
   ): Event
 
   """
+  Query field to fetch all events where a user is an administrator (via organization role).
+  """
+  eventsByAdmin(
+    """Number of events to return (Max limit: 100)"""
+    limit: Int = 100
+
+    """Number of events to skip (Max offset: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose admin events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
+  Query field to fetch all events a user is registered for or has attended.
+  """
+  eventsByAttendee(
+    """Number of events to return (max: 100)"""
+    limit: Int = 100
+
+    """Number of events to skip (max: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose attended events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """Query field to fetch all events created by a specific user."""
+  eventsByCreator(
+    """Number of events to return (default: 100, max: 100)"""
+    limit: Int
+
+    """Number of events to skip (default: 0, max: 10000)"""
+    offset: Int
+
+    """ID of the user whose created events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
   Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.
   """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 
   """Fetch all events that belong to a given organization."""
   eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
+
+  """Query field to fetch all events a user is volunteering for."""
+  eventsByVolunteer(
+    """The maximum number of events to return (default: 100, max: 100)"""
+    limit: Int = 100
+
+    """The number of events to skip (default: 0, max: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose volunteer events to fetch"""
+    userId: ID!
+  ): [Event!]!
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
@@ -4849,6 +5152,15 @@ type Query {
   getRecurringEvents(
     """The ID of the base recurring event template"""
     baseRecurringEventId: ID!
+
+    """Whether to include cancelled instances. Defaults to false."""
+    includeCancelled: Boolean = false
+
+    """Number of events to return. Defaults to 1000. Max 1000."""
+    limit: Int = 1000
+
+    """Number of events to skip. Defaults to 0. Max 10000."""
+    offset: Int = 0
   ): [Event!]
 
   """Query field to get volunteer memberships."""
@@ -4906,6 +5218,12 @@ type Query {
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+
+  """Fetch tags assigned to a specific user"""
+  userTags(
+    """User ID to fetch assigned tags for"""
+    userId: ID!
+  ): [Tag!]!
 
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]
@@ -4966,12 +5284,6 @@ input QueryAdvertisementInput {
 """"""
 input QueryAgendaFolderInput {
   """Global id of the agenda folder."""
-  id: String!
-}
-
-""""""
-input QueryAgendaItemInput {
-  """Global id of the agenda item."""
   id: String!
 }
 
@@ -5214,6 +5526,17 @@ type RejectMembershipResponse {
   success: Boolean
 }
 
+"""
+Response payload for sendVerificationEmail mutation. Returns same response whether email was sent or not to prevent email enumeration.
+"""
+type SendEmailVerificationPayload {
+  """User-friendly message about the request."""
+  message: String
+
+  """Indicates if the request was processed successfully."""
+  success: Boolean
+}
+
 input SendEventInvitationsInput {
   emails: [String!]
   eventId: ID
@@ -5348,6 +5671,12 @@ type UnassignUserTag {
   tagId: ID
 }
 
+"""URL associated with an agenda item"""
+input UpdateAgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
+}
+
 """Input for updating an event volunteer group."""
 input UpdateEventVolunteerGroupInput {
   """The updated description of the volunteer group."""
@@ -5479,6 +5808,11 @@ type User {
     """Input for querying notifications"""
     input: QueryNotificationInput
   ): [Notification!]
+
+  """
+  Linked OAuth accounts for this user. Only visible to the authenticated user.
+  """
+  oauthAccounts: [OAuthAccountInfo!]!
 
   """The organization ID where the user requested membership."""
   orgIdWhereMembershipRequested: [String!]!
@@ -5655,6 +5989,17 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+"""Response payload for verifyEmail mutation."""
+type VerifyEmailPayload {
+  """User-friendly message about the verification result."""
+  message: String
+
+  """
+  Indicates if the email was successfully verified. Returns true even if already verified (idempotent).
+  """
+  success: Boolean
 }
 
 input VerifyEventInvitationInput {

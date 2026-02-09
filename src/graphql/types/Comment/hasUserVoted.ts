@@ -116,7 +116,9 @@ Comment.implement({
 				}
 
 				return {
-					voteType: existingCommentVote.type,
+					voteType: existingCommentVote.type as z.infer<
+						typeof commentVoteTypeEnum
+					>,
 					hasVoted: true,
 				};
 			},

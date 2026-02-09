@@ -105,6 +105,30 @@ export function validateCloudBeaverPassword(input: string): true | string {
 }
 
 /**
+ * Validates service password strength for secure deployments.
+ * Enforces security requirements: 8+ characters, uppercase, lowercase, numbers, and special characters.
+ * @param input - The password string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validateSecurePassword(input: string): true | string {
+	if (!input.trim()) return "Password is required";
+	if (input.length < 8) return "Password must be at least 8 characters long";
+	if (!/[A-Z]/.test(input)) {
+		return "Password must contain at least one uppercase letter";
+	}
+	if (!/[a-z]/.test(input)) {
+		return "Password must contain at least one lowercase letter";
+	}
+	if (!/[0-9]/.test(input)) {
+		return "Password must contain at least one number";
+	}
+	if (!/[!@#$%^&*()]/.test(input)) {
+		return "Password must contain at least one special character (!@#$%^&*())";
+	}
+	return true;
+}
+
+/**
  * Validates CloudBeaver server URL format.
  * Checks for HTTP/HTTPS protocol and valid port range (1-65535).
  * @param input - The URL string to validate.
@@ -137,4 +161,128 @@ export function validateCloudBeaverURL(input: string): true | string {
 	} catch {
 		return "Invalid URL format";
 	}
+}
+
+/**
+ * Validates that the input is a positive integer (>= 1).
+ * Only accepts clean integer strings (e.g., "1", "100", not "1abc" or "1.5").
+ * @param input - The string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validatePositiveInteger(input: string): true | string {
+	const trimmed = input.trim();
+	// Strictly verify it matches an unsigned integer pattern
+	if (!/^\d+$/.test(trimmed)) {
+		return "Please enter a valid positive integer.";
+	}
+	const value = Number.parseInt(trimmed, 10);
+	if (value < 1) {
+		return "Please enter a valid positive integer.";
+	}
+	return true;
+}
+
+/**
+ * Validates that the input is a valid cron expression.
+ * Supports standard 5-field cron format: minute hour day-of-month month day-of-week
+ * Each field is validated for correct range values.
+ * @param input - The cron expression string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validateCronExpression(input: string): true | string {
+	const trimmed = input.trim();
+	if (!trimmed) {
+		return "Cron expression cannot be empty.";
+	}
+
+	const errorMessage =
+		"Please enter a valid cron expression (e.g., '*/5 * * * *' for every 5 minutes).";
+
+	// Split into 5 fields
+	const fields = trimmed.split(/\s+/);
+	if (fields.length !== 5) {
+		return errorMessage;
+	}
+
+	// Field ranges: [min, max]
+	const ranges: [number, number][] = [
+		[0, 59], // minute
+		[0, 23], // hour
+		[1, 31], // day of month
+		[1, 12], // month
+		[0, 6], // day of week
+	];
+
+	/**
+	 * Validates a single cron token within a field's range.
+	 */
+	function validateToken(token: string, min: number, max: number): boolean {
+		// * = any value
+		if (token === "*") {
+			return true;
+		}
+
+		// */step = every step
+		if (token.startsWith("*/")) {
+			const step = token.slice(2);
+			if (!/^\d+$/.test(step)) return false;
+			const stepNum = Number.parseInt(step, 10);
+			return stepNum >= 1 && stepNum <= max;
+		}
+
+		// start-end = range
+		if (token.includes("-")) {
+			const parts = token.split("-");
+			if (parts.length !== 2) return false;
+			const startStr = parts[0] ?? "";
+			const endStr = parts[1] ?? "";
+			if (!/^\d+$/.test(startStr) || !/^\d+$/.test(endStr)) return false;
+			const start = Number.parseInt(startStr, 10);
+			const end = Number.parseInt(endStr, 10);
+			// Reject reversed ranges (start > end)
+			if (start > end) return false;
+			return start >= min && start <= max && end >= min && end <= max;
+		}
+
+		// number/step = number with optional step
+		if (token.includes("/")) {
+			const parts = token.split("/");
+			if (parts.length !== 2) return false;
+			const numStr = parts[0] ?? "";
+			const stepStr = parts[1] ?? "";
+			if (!/^\d+$/.test(numStr) || !/^\d+$/.test(stepStr)) return false;
+			const num = Number.parseInt(numStr, 10);
+			const step = Number.parseInt(stepStr, 10);
+			return num >= min && num <= max && step >= 1;
+		}
+
+		// plain number
+		if (!/^\d+$/.test(token)) return false;
+		const num = Number.parseInt(token, 10);
+		return num >= min && num <= max;
+	}
+
+	/**
+	 * Validates a single cron field (may contain comma-separated tokens).
+	 */
+	function validateField(field: string, min: number, max: number): boolean {
+		const tokens = field.split(",");
+		for (const token of tokens) {
+			if (!validateToken(token, min, max)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// Validate each field
+	for (let i = 0; i < 5; i++) {
+		const range = ranges[i];
+		const field = fields[i];
+		if (!range || !field || !validateField(field, range[0], range[1])) {
+			return errorMessage;
+		}
+	}
+
+	return true;
 }

@@ -19,48 +19,43 @@
 
 set -euo pipefail
 
+# Export OS_TYPE for shared libs
+export OS_TYPE="macos"
+
+
 # Arguments
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Source shared libraries
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_DIR="${SCRIPT_DIR%/macos}/common"
 
-# Print functions
-info() { echo -e "${BLUE}ℹ${NC} $1"; }
-success() { echo -e "${GREEN}✓${NC} $1"; }
-warn() { echo -e "${YELLOW}⚠${NC} $1"; }
-error() { echo -e "${RED}✗${NC} $1"; }
-step() { echo -e "${CYAN}[$1/$2]${NC} $3"; }
-print_usage() {
-    error "Usage: $0 [INSTALL_MODE] [SKIP_PREREQS]"
-    error "  INSTALL_MODE : docker (default) | local"
-    error "  SKIP_PREREQS : true | false (default)"
-}
+source "${COMMON_DIR}/logging.sh"
+source "${COMMON_DIR}/os-detection.sh"
+source "${COMMON_DIR}/validation.sh"
+source "${COMMON_DIR}/package-manager.sh"
+source "${COMMON_DIR}/docker-detection.sh"
+source "${COMMON_DIR}/error-handling.sh"
+
+setup_error_handling
+
+print_banner "Talawa API - macOS Install"
 
 # Validate INSTALL_MODE
 if [[ "$INSTALL_MODE" != "docker" ]] && [[ "$INSTALL_MODE" != "local" ]]; then
     error "Invalid INSTALL_MODE: '$INSTALL_MODE'. Must be 'docker' or 'local'."
-    print_usage
     exit 1
 fi
 
 # Validate SKIP_PREREQS
 if [[ "$SKIP_PREREQS" != "true" ]] && [[ "$SKIP_PREREQS" != "false" ]]; then
     error "Invalid SKIP_PREREQS: '$SKIP_PREREQS'. Must be 'true' or 'false'."
-    print_usage
     exit 1
 fi
 
-# Check if command exists
-command_exists() {
-    command -v "$1" &> /dev/null
-}
+# Retry configuration
+readonly MAX_RETRY_ATTEMPTS=3
 
 # Get the repository root directory
 get_repo_root() {
@@ -77,10 +72,15 @@ REPO_ROOT=$(get_repo_root)
 # Ensure we're in the repository root
 cd "$REPO_ROOT"
 
-if [ ! -f "package.json" ]; then
-    error "package.json not found. Please run this script from the talawa-api repository root."
-    exit 1
-fi
+# Local implementation of prerequisites validation (using helpers where possible)
+validate_prerequisites() {
+    if [ ! -f "package.json" ]; then
+        error "package.json not found. Please run this script from the talawa-api repository root."
+        exit 1
+    fi
+}
+# Call validate_prerequisites
+validate_prerequisites
 
 # Total steps for progress tracking
 TOTAL_STEPS=8
@@ -90,7 +90,7 @@ CURRENT_STEP=0
 # Step 1: Install Homebrew
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Checking Homebrew installation..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Checking Homebrew installation..."
 
 if command_exists brew; then
     success "Homebrew is already installed"
@@ -101,15 +101,11 @@ else
     fi
     
     info "Installing Homebrew..."
-    # Security Note: This uses Homebrew's official installer over HTTPS.
-    # Users can review the script first at: https://brew.sh or
-    # https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
     /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    # Add Homebrew to PATH for Apple Silicon Macs
+    # Add Homebrew to PATH
     if [ -f /opt/homebrew/bin/brew ]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
-    # Add Homebrew to PATH for Intel Macs
     elif [ -f /usr/local/bin/brew ]; then
         eval "$(/usr/local/bin/brew shellenv)"
     fi
@@ -121,43 +117,39 @@ fi
 # Step 2: Install system dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing system dependencies..."
 
 if [ "$SKIP_PREREQS" = "true" ]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
 else
-    info "Installing git, jq, curl..."
-    if brew install git jq curl; then
-        success "System dependencies installed"
-    else
-        warn "Some packages may have failed to install. Continuing anyway..."
-    fi
+    update_package_index
+    for p in git curl jq unzip; do
+        if is_package_installed "$p"; then
+            success "$p is already installed"
+        else
+            install_package "$p"
+        fi
+    done
 fi
 
 ##############################################################################
 # Step 3: Install Docker (optional)
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 
 if [ "$INSTALL_MODE" = "docker" ]; then
-    if command_exists docker; then
-        success "Docker is already installed: $(docker --version)"
-        # Verify Docker is running
-        if ! docker info >/dev/null 2>&1; then
-            warn "Docker is installed but not running."
-            info "Please launch Docker Desktop from Applications and wait for it to start."
-        else
-            success "Docker is running"
+    if [ "$SKIP_PREREQS" = "true" ]; then
+        # Validate but don't attempt installation
+        if ! check_docker_requirements "docker"; then
+            error "Docker mode requires Docker. Either install/start Docker, or use local mode."
+            exit 1
         fi
-    elif [ "$SKIP_PREREQS" = "true" ]; then
-        warn "Skipping Docker installation (--skip-prereqs)"
+        success "Docker is available (--skip-prereqs)"
     else
-        info "Installing Docker Desktop..."
-        brew install --cask docker
-        
-        warn "Docker Desktop installed. Please launch it from Applications and complete the setup."
-        warn "You may need to restart this script after Docker is running."
+        if ! check_docker_requirements "docker"; then
+            exit 1
+        fi
     fi
 else
     info "Local installation mode - skipping Docker setup"
@@ -167,7 +159,7 @@ fi
 # Step 4: Install fnm (Fast Node Manager)
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Setting up Node.js version manager (fnm)..."
 
 if command_exists fnm; then
     success "fnm is already installed"
@@ -186,123 +178,92 @@ fi
 # Step 5: Read versions from package.json
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
-# Parse Node.js version from package.json
-NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
-info "Node.js version from package.json: \"$NODE_VERSION\""
+# Extract Node.js version using safe parsing
+# The 'lts' default is used if engines.node is not specified
+NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
 
-# Validate Node.js version format strictly
-# Note: This regex supports simple semver (X.Y.Z), major/minor (X, X.Y), aliases (lts, latest),
-# and simple operators (>=, <=, ~, ^). It does NOT support complex ranges (e.g., ">=18 <22", "18 || 20", "20.x").
-# If complex ranges are needed in the future, this validation logic will need to be updated.
-if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])[0-9]+(\.[0-9]+(\.[0-9]+)?)?|[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
-    error "$(cat <<EOF
-Could not parse Node.js version from package.json: '$NODE_VERSION'
-
-Expected formats:
-  - Semver with operator: '>=20.10.0', '<=20.10.0', etc.
-  - Semver: '20.10.0'
-  - Major.Minor version: '20.10'
-  - Major version: '20'
-  - Aliases: 'lts' or 'latest'
-
-Current value in package.json engines.node: '$NODE_VERSION'
-Please verify package.json is correctly formatted
-EOF
-)"
-    exit 1
+# SECURITY: Validate raw NODE_VERSION before any processing
+# This prevents command injection via malicious package.json
+if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
+    handle_version_validation_error "engines.node" "$NODE_VERSION" ".engines.node"
 fi
 
-# Clean version string (remove >=, ^, ~, and other operators)
-# First try to extract full semver (e.g., 20.10.0)
-CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
-
-# If no full version found, try to extract major.minor version (e.g., 20.10)
-if [ -z "$CLEAN_NODE_VERSION" ]; then
-    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
-fi
-
-# If no major.minor version found, try to extract major version (e.g., 20)
-if [ -z "$CLEAN_NODE_VERSION" ]; then
-    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
-fi
-
-# Validation: If clean version is empty and not an alias, fail
-if [ -z "$CLEAN_NODE_VERSION" ] && [ "$NODE_VERSION" != "lts" ] && [ "$NODE_VERSION" != "latest" ]; then
-    error "Failed to extract version number from: '$NODE_VERSION'"
-    exit 1
-fi
-
-# If version is 'lts' or 'latest', keep it as-is
-if [ "$NODE_VERSION" = "lts" ] || [ "$NODE_VERSION" = "latest" ]; then
+# Clean version string (handle >=, ^, etc.)
+if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
+    # Extract version number after prefix (fnm handles both full semver and major-only)
+    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+    # Fallback to major version only if full semver not found
+    if [ -z "$CLEAN_NODE_VERSION" ]; then
+        CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
+    fi
+else
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
-info "Parsed Node.js version: $CLEAN_NODE_VERSION"
+# Validate CLEAN_NODE_VERSION is not empty
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    error "Could not determine a valid Node.js version from package.json"
+    echo ""
+    info "Found value: '$NODE_VERSION' but could not extract version number"
+    echo ""
+    info "Expected formats:"
+    echo "  • Exact version:  \"18.0.0\""
+    echo "  • Range:          \">=18.0.0\""
+    echo "  • Caret:          \"^18.0.0\""
+    echo "  • Tilde:          \"~18.0.0\""
+    echo ""
+    info "Check package.json engines.node field:"
+    echo "  jq '.engines.node' package.json"
+    echo ""
+    info "Falling back to LTS version"
+    CLEAN_NODE_VERSION="lts"
+fi
 
-# Parse pnpm version from package.json
-# First try packageManager field (preferred)
-PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+# SECURITY: Validate cleaned Node.js version before use in commands
+# This is the final check before the version is passed to fnm
+if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; then
+    handle_version_validation_error "cleaned Node.js version" "$CLEAN_NODE_VERSION" ".engines.node"
+fi
+
+# Extract pnpm version using safe parsing
+PNPM_FULL=$(parse_package_json '.packageManager' "" "pnpm version (packageManager)" "false")
+
+# Validate and extract pnpm version
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
     PNPM_VERSION="${PNPM_FULL#pnpm@}"
     PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
-    info "pnpm version from package.json packageManager: \"$PNPM_VERSION\""
-else
-    # Fallback to engines.pnpm field
-    PNPM_VERSION=$(jq -r '.engines.pnpm // "latest"' package.json)
-    info "pnpm version from package.json engines.pnpm: \"$PNPM_VERSION\""
-fi
-
-# Accept specific versions (e.g., 9.1.0) or aliases (latest)
-if echo "$PNPM_VERSION" | grep -E -q '^(latest|([><]=?|[~^=])?[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
-    if [ "$PNPM_VERSION" = "latest" ]; then
-        CLEAN_PNPM_VERSION="latest"
-    else
-        # Strip leading operator using numeric extraction
-        # Try full semver
-        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
-        
-        # If no full version, try major.minor
-        if [ -z "$CLEAN_PNPM_VERSION" ]; then
-            CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
-        fi
-        
-        # If still no version, try major only
-        if [ -z "$CLEAN_PNPM_VERSION" ]; then
-            CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+' | head -1 || true)
-        fi
-
-        # Validation: If clean version is empty, fail
-        if [ -z "$CLEAN_PNPM_VERSION" ]; then
-             error "Failed to extract numeric pnpm version from: '$PNPM_VERSION'"
-             exit 1
-        fi
+    
+    # Validate extracted pnpm version is not empty
+    if [ -z "$PNPM_VERSION" ]; then
+        warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
+        PNPM_VERSION="latest"
     fi
+    
+    # SECURITY: Validate pnpm version before use in commands
+    if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+        handle_version_validation_error "packageManager" "$PNPM_VERSION" ".packageManager"
+    fi
+elif [ -n "$PNPM_FULL" ]; then
+    # packageManager field exists but doesn't match expected pnpm format
+    warn "packageManager field '$PNPM_FULL' is not in expected format 'pnpm@version'"
+    info "Using latest pnpm version instead"
+    PNPM_VERSION="latest"
 else
-    error "$(cat <<EOF
-Could not parse pnpm version from package.json: '$PNPM_VERSION'
-
-Expected formats:
-  - Semver with operator: '>=9.1.0' or '~9.1.0'
-  - Semver: '9.1.0' or '9.1'
-  - Major version: '9'
-  - Alias: 'latest'
-
-Current value in package.json: '$PNPM_VERSION'
-Please verify package.json is correctly formatted
-EOF
-)"
-    exit 1
+    # No packageManager field specified
+    info "No packageManager specified in package.json, using latest pnpm"
+    PNPM_VERSION="latest"
 fi
 
-info "Using pnpm version: $CLEAN_PNPM_VERSION"
+info "Target Node.js version: $CLEAN_NODE_VERSION"
+info "Target pnpm version: $PNPM_VERSION"
 
 ##############################################################################
 # Step 6: Install Node.js
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
@@ -416,7 +377,7 @@ success "Node.js installed: $(node --version)"
 # Step 7: Install pnpm
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$CLEAN_PNPM_VERSION..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 # Verify npm is available before installing pnpm
 if ! command_exists npm; then
@@ -454,13 +415,13 @@ if command_exists pnpm; then
 
     # Normalize current version to same precision as target
     CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
-    if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
+    if [[ "$PNPM_VERSION" =~ ^[0-9]+$ ]]; then
         # Target is major-only, extract major from current
         EXTRACTED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || true)
         if [ -n "$EXTRACTED" ]; then
             CURRENT_PNPM_NORMALIZED="$EXTRACTED"
         fi
-    elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    elif [[ "$PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
         # Target is major.minor, extract major.minor from current
         EXTRACTED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || true)
         if [ -n "$EXTRACTED" ]; then
@@ -469,25 +430,25 @@ if command_exists pnpm; then
     fi
 
     # Skip version comparison if target is "latest" - always update to ensure we have latest
-    if [ "$CLEAN_PNPM_VERSION" = "latest" ]; then
+    if [ "$PNPM_VERSION" = "latest" ]; then
         info "Updating pnpm to latest version..."
-        if ! npm install -g "pnpm@latest"; then
-            error "Failed to update pnpm to latest version"
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
+            error "Failed to update pnpm to latest version after $MAX_RETRY_ATTEMPTS attempts"
             exit 1
         fi
-    elif [ "$CURRENT_PNPM_NORMALIZED" = "$CLEAN_PNPM_VERSION" ]; then
+    elif [ "$CURRENT_PNPM_NORMALIZED" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
-        info "Updating pnpm from v$CURRENT_PNPM to v$CLEAN_PNPM_VERSION..."
-        if ! npm install -g "pnpm@$CLEAN_PNPM_VERSION"; then
-            error "Failed to update pnpm to v$CLEAN_PNPM_VERSION"
+        info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+            error "Failed to update pnpm to v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
             exit 1
         fi
     fi
 else
     info "Installing pnpm..."
-    if ! npm install -g "pnpm@$CLEAN_PNPM_VERSION"; then
-        error "Failed to install pnpm v$CLEAN_PNPM_VERSION"
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+        error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
         exit 1
     fi
 fi
@@ -505,24 +466,67 @@ success "pnpm installed: v$(pnpm --version)"
 # Step 8: Install project dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
+print_step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-# Run pnpm install non-interactively (only set CI=true if in CI to allow local interaction if needed)
-if [ "${CI:-}" = "true" ] || [ -n "${GITHUB_ACTIONS:-}" ]; then
-    CI=true pnpm install
+# Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
+LOCKFILE_HASH_CACHE=".git/.talawa-pnpm-lock-hash"
+NEEDS_INSTALL=true
+
+if [ -f "pnpm-lock.yaml" ]; then
+    CURRENT_LOCKFILE_HASH=$(shasum -a 256 pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+    if [ -z "$CURRENT_LOCKFILE_HASH" ]; then
+        warn "Failed to compute lockfile hash, proceeding with install"
+        CURRENT_LOCKFILE_HASH="unknown"
+    fi    
+
+    if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
+        CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
+        if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
+            NEEDS_INSTALL=false
+            success "Dependencies already up-to-date (lockfile unchanged)"
+        fi
+    fi
+    
+    if [ "$NEEDS_INSTALL" = true ]; then
+        info "Installing dependencies..."
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+             error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+             info "Possible causes:"
+             info "  - Network connectivity issues"
+             info "  - Package registry temporarily unavailable"
+             info "  - Corrupted pnpm cache (try: pnpm store prune)"
+             exit 1
+        fi
+        # Cache the lockfile hash after successful install
+        if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
+            echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+        success "Project dependencies installed"
+    fi
 else
-    pnpm install
+    # No lockfile exists, run install to generate it
+    info "No pnpm-lock.yaml found, running fresh install..."
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+         error "Failed to install dependencies."
+         exit 1
+    fi
+    # Cache the new lockfile hash
+    if [ -f "pnpm-lock.yaml" ]; then
+        NEW_HASH=$(shasum -a 256 pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+        if [ -n "$NEW_HASH" ]; then
+            echo "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+    fi
+    success "Project dependencies installed"
 fi
-
-success "Project dependencies installed"
 
 ##############################################################################
 # Complete
 ##############################################################################
 echo ""
-echo -e "${GREEN}════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  Installation completed successfully!${NC}"
-echo -e "${GREEN}════════════════════════════════════════════════════════${NC}"
+echo "========================================"
+echo "✓ Installation completed successfully!"
+echo "========================================"
 echo ""
 info "Installed versions:"
 echo "  Node.js: $(node --version)"

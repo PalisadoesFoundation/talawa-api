@@ -13,6 +13,15 @@ vi.mock("../../../src/plugin/utils", () => ({
 	safeRequire: vi.fn(),
 }));
 
+vi.mock("../../../src/utilities/logging/logger", () => ({
+	rootLogger: {
+		info: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}));
+
 import { safeRequire } from "../../../src/plugin/utils";
 
 describe("ExtensionLoader basic", () => {
@@ -310,7 +319,9 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).resolves.toBeUndefined(); // Should return early without error
+		).rejects.toThrow(
+			"Failed to load extension points: Plugin non-existent not found in loaded plugins",
+		);
 	});
 
 	it("should initialize databaseTables if not present", async () => {
@@ -426,7 +437,9 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).resolves.toBeUndefined(); // Should return early without error
+		).rejects.toThrow(
+			"Failed to load extension points: Plugin non-existent not found in loaded plugins",
+		);
 	});
 
 	it("should initialize hooks if not present", async () => {
@@ -1299,7 +1312,7 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).resolves.toBeUndefined(); // Should return early without error
+		).rejects.toThrow(/Failed to load GraphQL builder extension/);
 	});
 
 	describe("Webhook Extensions", () => {
@@ -1449,7 +1462,9 @@ describe("ExtensionLoader basic", () => {
 					manifest,
 					pluginModule,
 				),
-			).resolves.toBeUndefined(); // Should return early without error
+			).rejects.toThrow(
+				"Failed to load extension points: Plugin non-existent not found in loaded plugins",
+			);
 		});
 
 		it("should initialize webhooks if not present", async () => {

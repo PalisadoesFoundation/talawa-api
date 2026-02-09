@@ -10,6 +10,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { zParseOrThrow } from "~/src/graphql/validators/helpers";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -39,23 +40,10 @@ builder.mutationField("createPost", (t) =>
 				});
 			}
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = await mutationCreatePostArgumentsSchema.safeParseAsync(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
+			const parsedArgs = await zParseOrThrow(
+				mutationCreatePostArgumentsSchema,
+				args,
+			);
 
 			const currentUserId = ctx.currentClient.user.id;
 

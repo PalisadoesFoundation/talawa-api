@@ -24,6 +24,7 @@ In an environment where one capability is needed but the other is not, using a s
 
 Environment variables should be named using uppercase letters, numbers, and underscores. They should also be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example `API_BASE_URL` and `API_PORT`.
 
+
 ## talawa api (standalone)
 
 At runtime, talawa api requires certain environment variables to be defined in its execution context. Some of these environment variables must be provided by you and some are optional to be provided because they might be using a default value or their requirement is dependent on the environment in which talawa api is running.
@@ -104,7 +105,21 @@ When talawa api debugger is run within a container environment this variable mus
 
 ### API_EMAIL_PROVIDER
 
-This environment variable is used to configure the email provider to be used by the talawa api. Currently supports `ses` and `smtp` (future). The default value is `ses`.
+This environment variable is used to configure the email provider to be used by the talawa api. Supported values are:
+
+- **`mailpit`** (default) - Used for local development and testing. Emails are captured by Mailpit and can be viewed in a web interface at http://localhost:8025.
+- **`ses`** - Amazon Simple Email Service for production environments.
+- **`smtp`** - Generic SMTP provider for production or testing with external email services.
+
+When running the setup script or using development containers, `mailpit` is automatically configured as the default. For production deployments, you should configure either `ses` or a custom `smtp` provider.
+
+### API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS
+
+This environment variable is used to configure the time in seconds for which an email verification token remains valid. The default value is `86400` (24 hours).
+
+### API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET
+
+This environment variable is used to configure the secret key for hashing email verification tokens. Used for defense-in-depth; tokens already have 256 bits of entropy. Should be at least 32 characters for security best practices. Defaults to a static value if not provided.
 
 ### API_HOST
 
@@ -151,9 +166,41 @@ This environment variable is used to configure the [log level](https://github.co
 
 - More information can be found at [this](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) link.
 
-### API_SLOW_REQUEST_MS
+### API_METRICS_ENABLED
 
-This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes.
+This environment variable is used as a master switch to enable or disable metrics collection and aggregation in talawa api. When disabled, metrics collection is skipped entirely. Default value is `true`.
+
+### API_METRICS_SLOW_OPERATION_MS
+
+This environment variable is used to configure the threshold in milliseconds for considering an operation as slow. Operations exceeding this threshold will be tracked in slow operations metrics. Default value is `200` milliseconds.
+
+### API_METRICS_SLOW_REQUEST_MS
+
+This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes. Default value is `500` milliseconds.
+
+### API_METRICS_CACHE_TTL_SECONDS
+
+This environment variable is used to configure the time-to-live in seconds for cached aggregated metrics. Determines how long metrics remain in cache before expiration. Default value is `300` seconds (5 minutes).
+
+### API_METRICS_AGGREGATION_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for the metrics aggregation worker. The worker periodically aggregates in-memory performance snapshots into meaningful statistics. Default value is `*/5 * * * *` (every 5 minutes).
+
+### API_METRICS_AGGREGATION_ENABLED
+
+This environment variable is used to enable or disable the metrics aggregation background worker. When enabled, performance snapshots are aggregated on a schedule defined by `API_METRICS_AGGREGATION_CRON_SCHEDULE`. Default value is `true`.
+
+### API_METRICS_AGGREGATION_WINDOW_MINUTES
+
+This environment variable is used to configure the time window in minutes for metrics aggregation. The worker will aggregate snapshots from this time window. Default value is `5` minutes.
+
+### API_METRICS_SNAPSHOT_RETENTION_COUNT
+
+This environment variable is used to configure the maximum number of performance snapshots to retain in memory. When the limit is reached, older snapshots are automatically removed. Default value is `1000`.
+
+### API_METRICS_API_KEY
+
+This environment variable is used to configure the API key for protecting the `/metrics/perf` endpoint. When set, requests to this endpoint must include a valid `Authorization: Bearer <API_KEY>` header. If not set, the endpoint is unprotected.
 
 ### API_MINIO_ACCESS_KEY
 
@@ -191,13 +238,24 @@ This environment variable is used to configure the ssl mode on the connection be
 
 - Takes values as `true` or `false` to enable and disable OTEL logging,
 
-#### API_OTEL_ENVIRONMENT
+#### API_OTEL_EXPORTER_ENABLED
 
-- set `local` for development environment and `production` for production environment.
+This environment variable is used to enable or disable OpenTelemetry metric and trace exporting. When disabled, telemetry data is collected but not exported. Takes values as `true` or `false`.
 
-#### API_OTEL_EXPORTER_OTLP_ENDPOINT
+#### API_OTEL_EXPORTER_TYPE
 
-- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
+This environment variable is used to configure the type of OpenTelemetry exporter to use. Supports the following values:
+
+- `otlp`: Exports telemetry data to an external OpenTelemetry Protocol (OTLP) compatible backend or vendor service for dashboard visualization and analysis.
+- `console`: Exports spans and metrics directly to the terminal/console for local development and debugging purposes.
+
+#### API_OTEL_TRACE_EXPORTER_ENDPOINT
+
+Use this environment variable only when exporting trace data to an external OpenTelemetry-compatible backend (such as a managed observability platform or a self-hosted OpenTelemetry Collector). It specifies the complete endpoint URL where application traces will be sent. If no external trace exporter is configured, this variable is not required. Ensure the URL is valid and reachable to prevent trace export failures.
+
+#### API_OTEL_METRIC_EXPORTER_ENDPOINT
+
+Use this environment variable only when exporting metric data to an external OpenTelemetry-compatible backend. It defines the full endpoint URL where application metrics will be pushed for monitoring and analysis. If metrics are not being exported to an external system, this variable can be omitted. Make sure the endpoint URL is correctly formatted and accessible to avoid metric export issues.
 
 #### API_OTEL_SAMPLING_RATIO
 
@@ -302,6 +360,73 @@ This environment variable is used to configure the name that will be displayed a
 #### AWS_SES_REGION
 
 This environment variable is used to configure the AWS region where your SES instance is located.
+
+### SMTP
+
+Listed below are the environment variables for configuring a generic SMTP email provider. These are used when `API_EMAIL_PROVIDER` is set to `smtp`.
+
+#### SMTP_HOST
+
+This environment variable is used to configure the SMTP server hostname (e.g., `smtp.gmail.com`, `smtp.mailgun.org`).
+
+#### SMTP_PORT
+
+This environment variable is used to configure the SMTP server port. Common values:
+- `587` - Standard TLS port (recommended)
+- `465` - SSL port (legacy)
+- `25` - Unsecured port (not recommended)
+
+#### SMTP_USER
+
+This environment variable is used to configure the username for SMTP authentication. Optional - only required if your SMTP server requires authentication.
+
+#### SMTP_PASSWORD
+
+This environment variable is used to configure the password for SMTP authentication. Optional - only required if your SMTP server requires authentication.
+
+#### SMTP_SECURE
+
+This environment variable is used to configure whether to use SSL/TLS for the SMTP connection. Set to `true` for port 465, `false` for port 587.
+
+#### SMTP_FROM_EMAIL
+
+This environment variable is used to configure the email address that will be used as the sender for emails sent from the talawa api. This email must be authorized by your SMTP provider.
+
+#### SMTP_FROM_NAME
+
+This environment variable is used to configure the display name that will appear as the sender for emails sent from the talawa api. Defaults to `Talawa`.
+
+#### SMTP_NAME
+
+This environment variable is used to configure the client hostname sent during the SMTP handshake (HELO/EHLO command). Defaults to the machine hostname.
+
+#### SMTP_LOCAL_ADDRESS
+
+This environment variable is used to configure the local IP address to bind to for outgoing SMTP connections. Optional - useful when your server has multiple network interfaces.
+
+### Mailpit (Development Email Testing)
+
+Listed below are the environment variables for configuring Mailpit, which is used for local email testing and development. These are automatically configured when using the devcontainer setup and should not need to be manually set unless customizing your development environment.
+
+#### MAILPIT_MAPPED_HOST_IP
+
+This environment variable is used to configure the host IP address that Mailpit's ports are mapped to in Docker Compose. Default is `127.0.0.1` (localhost).
+
+**Note:** This is used only by Docker Compose for port mapping and is automatically set in development environments.
+
+#### MAILPIT_WEB_MAPPED_PORT
+
+This environment variable is used to configure the host port that Mailpit's web UI is mapped to in Docker Compose. Default is `8025`.
+
+The Mailpit web interface can be accessed at `http://localhost:8025` when using the default configuration.
+
+**Note:** This is used only by Docker Compose for port mapping and is automatically set in development environments.
+
+#### MAILPIT_SMTP_MAPPED_PORT
+
+This environment variable is used to configure the host port that Mailpit's SMTP server is mapped to in Docker Compose. Default is `1025`.
+
+**Note:** This is used only by Docker Compose for port mapping and is automatically set in development environments. The talawa api connects to Mailpit internally via Docker networking.
 
 ### CACHE_ENTITY_TTLS
 
@@ -664,4 +789,32 @@ This environment variable is used to configure the prefix for identifiers of all
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_project_name) link.
 
+## OAuth Configuration
 
+### GOOGLE_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for Google authentication.
+
+### GOOGLE_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for Google authentication.
+
+### GOOGLE_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for Google authentication.
+
+### GITHUB_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for GitHub authentication.
+
+### GITHUB_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for GitHub authentication.
+
+### GITHUB_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for GitHub authentication.
+
+### API_OAUTH_REQUEST_TIMEOUT_MS
+
+This environment variable is used to configure the request timeout in milliseconds for OAuth provider API calls. Default value is `10000` milliseconds (10 seconds).

@@ -1,3 +1,4 @@
+import { rootLogger } from "~/src/utilities/logging/logger";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 interface RecaptchaVerificationResponse {
@@ -33,7 +34,7 @@ export async function verifyRecaptchaToken(
 		return data.success === true;
 	} catch (error) {
 		// Log the original error for debugging
-		console.error("reCAPTCHA verification error:", error);
+		rootLogger.error({ err: error }, "reCAPTCHA verification error");
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",

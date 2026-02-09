@@ -54,6 +54,17 @@ This table defines the most important parameters in the file that will be requir
 | `<PROVIDER>_CLIENT_SECRET` | OAuth Client Secret for authentication providers, used for server-side OAuth token exchange with providers. |
 | `<PROVIDER>_REDIRECT_URI` | OAuth Redirect URI for authentication callback, must match the URI registered in provider settings. |
 | `API_OAUTH_REQUEST_TIMEOUT_MS` | Request timeout in milliseconds for OAuth provider API calls, defaults to 10000ms (10 seconds) if not specified. |
+| `API_EMAIL_PROVIDER` | Email provider configuration. Defaults to `mailpit` for development. Use `ses` or `smtp` for production. |
+
+### Email Providers Overview
+
+Talawa API supports three email providers:
+
+| Provider | Use Case | Default? |
+|----------|----------|----------|
+| **Mailpit** | Local development and testing | ✅ Yes |
+| **AWS SES** | Production deployments | No |
+| **SMTP** | Production with external providers | No |
 
 ## Production Environment Setup
 
@@ -124,6 +135,42 @@ You will need to update the `.env` file with the following information. This val
 
 1. `CADDY_TALAWA_API_DOMAIN_NAME` can be set to `localhost`
 2. `CADDY_TALAWA_API_EMAIL` can be set to a suitable email address
+
+#### Configure Email Provider
+
+For production environments, you must configure an email provider to send transactional emails (verification, password reset, etc.). The default `mailpit` provider only works for local development.
+
+Choose one of the following options:
+
+**Option 1: AWS SES (Recommended for Production)**
+
+Update the `.env` file with:
+
+```env
+API_EMAIL_PROVIDER=ses
+AWS_SES_REGION=your-region
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_SES_FROM_EMAIL=verified@yourdomain.com
+AWS_SES_FROM_NAME=Your Organization
+```
+
+Note: You must verify your domain or email address in AWS SES console before sending emails.
+
+**Option 2: SMTP Provider**
+
+For providers like Gmail, SendGrid, or Mailgun, update the `.env` file with:
+
+```env
+API_EMAIL_PROVIDER=smtp
+SMTP_HOST=smtp.yourprovider.com
+SMTP_PORT=587
+SMTP_USER=your-username
+SMTP_PASSWORD=your-password
+SMTP_FROM_EMAIL=sender@yourdomain.com
+SMTP_FROM_NAME=Your Organization
+```
+
 
 #### Update the Social Media URLs
 
@@ -242,6 +289,19 @@ You will need to update the `.env` file with the following information.
 5. `AWS_SES_FROM_EMAIL` - The email address you have verified in SES
 6. `AWS_SES_FROM_NAME` - (Optional) The name to display as the sender (default: "Talawa")
 
+**Alternatively, for SMTP Provider:**
+
+1. `API_EMAIL_PROVIDER` - Set to `smtp`
+2. `SMTP_HOST` - SMTP server hostname (required)
+3. `SMTP_PORT` - SMTP server port (required, e.g., 587 or 465)
+4. `SMTP_USER` - SMTP username (optional)
+5. `SMTP_PASSWORD` - SMTP password (optional)
+6. `SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
+7. `SMTP_FROM_EMAIL` - Sender email address (required)
+8. `SMTP_FROM_NAME` - Sender display name (optional)
+9. `SMTP_NAME` - Client hostname for HELO/EHLO (optional)
+10. `SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
+
 **Required IAM Permissions:**
 Your AWS IAM user needs the following permissions:
 - `ses:SendEmail`
@@ -277,6 +337,57 @@ Most of these steps are specific to Linux. You will need to modify them accordin
     ```bash
     cp envFiles/.env.devcontainer .env
     ```
+
+#### Email Testing in Development
+
+The development environment automatically configures [Mailpit](https://github.com/axllent/mailpit) for email testing. All emails sent by the API are captured by Mailpit and can be viewed at:
+
+- **Web Interface**: http://localhost:8025
+- **SMTP Port**: 1025 (internal, used by API)
+
+This allows you to test email functionality (verification emails, password resets, etc.) without sending real emails.
+
+**Default Configuration:**
+
+When using the default development setup, the following values are automatically configured:
+
+```env
+API_EMAIL_PROVIDER=mailpit
+SMTP_HOST=mailpit
+SMTP_PORT=1025
+SMTP_FROM_EMAIL=test@talawa.local
+SMTP_FROM_NAME=Talawa
+```
+
+**Mailpit Web Interface Features:**
+
+- View all captured emails
+- Inspect email headers and content (HTML/Text)
+- Search and filter emails
+- Download email attachments
+- Clear all messages for testing
+
+**Docker Compose Port Mapping:**
+
+The following environment variables control how Mailpit is exposed on your host machine:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAILPIT_MAPPED_HOST_IP` | `127.0.0.1` | Host IP for Mailpit ports |
+| `MAILPIT_WEB_MAPPED_PORT` | `8025` | Web UI port on host |
+| `MAILPIT_SMTP_MAPPED_PORT` | `1025` | SMTP port on host |
+
+**Troubleshooting Mailpit:**
+
+- **Can't access http://localhost:8025:**
+  - Verify Mailpit container is running: `docker ps | grep mailpit`
+  - Check that ports aren't already in use: `lsof -i :8025`
+  - Review Docker Compose logs: `docker compose logs mailpit`
+
+- **Emails not appearing in Mailpit:**
+  - Verify `API_EMAIL_PROVIDER=mailpit` is set
+  - Check the API logs for SMTP connection errors
+  - Ensure the Mailpit container is on the same Docker network as the API
 
 ### Operating the Development Server
 
