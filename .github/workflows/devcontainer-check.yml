@@ -53,4 +53,4 @@ jobs:
 
       - name: Devcontainer cleanup
         if: always()
-        run: devcontainer down --workspace-folder .
+        run: docker compose down -v
