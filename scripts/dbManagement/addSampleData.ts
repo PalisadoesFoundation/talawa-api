@@ -54,26 +54,16 @@ export async function main(): Promise<void> {
 	try {
 		await pingDB();
 		console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
-	} catch (error: unknown) {
-		throw new Error(`Database connection failed: ${error}`);
-	}
-	try {
-		await insertCollections(collections);
-		console.log("\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database");
-	} catch (error: unknown) {
-		console.error("Error: ", error);
-		throw new Error("Error adding sample data");
-	}
-	try {
-		await pingDB();
-		console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
 
 		await ensureBootstrapData();
 		console.log(
 			"\n\x1b[32mSuccess:\x1b[0m Bootstrap data validated successfully\n",
 		);
+
+		await insertCollections(collections);
+		console.log("\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database");
 	} catch (error: unknown) {
-		throw new Error(`Database connection or bootstrap failed: ${error}`);
+		throw new Error(`Database bootstrap or sample data load failed: ${error}`);
 	}
 
 	return;
