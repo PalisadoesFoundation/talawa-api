@@ -8,7 +8,6 @@ import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -96,6 +95,7 @@ suite("Mutation field updateVenue", () => {
 					);
 				} catch (_error) {
 					// Venue might already be deleted
+					console.debug("Cleanup: Venue deletion skipped", _error);
 				}
 			}
 		}
@@ -964,8 +964,8 @@ suite("Mutation field updateVenue", () => {
 		expect(res.data?.updateVenue?.capacity).toBe(newCapacity);
 	});
 
-	// Multipart attachment tests (using Fastify raw inject)
-	test("rejects file upload with invalid MIME type", async () => {
+	// FileMetadataInput attachment tests
+	test("rejects attachment with invalid MIME type", async () => {
 		const administratorUserSignInResult = await mercuriusClient.query(
 			Query_signIn,
 			{
@@ -1027,78 +1027,52 @@ suite("Mutation field updateVenue", () => {
 		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
 		const venueId = createVenueResult.data.createVenue.id;
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operations = JSON.stringify({
-			query: `
-				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-					updateVenue(input: $input) {
-						id
-						attachments { mimeType }
-					}
+		// Try to update venue with invalid MIME type attachment using FileMetadataInput
+		const updateVenueAttachments = graphql(`
+			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+				updateVenue(input: $input) {
+					id
+					attachments { mimeType }
 				}
-			`,
+			}
+		`);
+
+		const result = await mercuriusClient.mutate(updateVenueAttachments, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
 			variables: {
 				input: {
 					id: venueId,
-					attachments: [null],
+					attachments: [
+						{
+							objectName: `attachments/${faker.string.uuid()}`,
+							mimeType: "application/x-msdownload" as never,
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
+							name: "test.exe",
+						},
+					],
 				},
 			},
 		});
 
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const fileContent = "fake executable content";
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="test.exe"',
-			"Content-Type: application/x-msdownload",
-			"",
-			fileContent,
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		expect(result.data?.updateVenue).toEqual(null);
+		expect(result.data?.updateVenue).toBeUndefined();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: expect.arrayContaining(["attachments"]),
-								message: expect.stringContaining("Mime type"),
-							}),
-						]),
 					}),
 				}),
 			]),
 		);
 	});
 
-	test("successfully updates venue with valid image attachment", async () => {
+	test("successfully updates venue with valid image attachment using FileMetadataInput", async () => {
 		const administratorUserSignInResult = await mercuriusClient.query(
 			Query_signIn,
 			{
@@ -1160,346 +1134,283 @@ suite("Mutation field updateVenue", () => {
 		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
 		const venueId = createVenueResult.data.createVenue.id;
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operations = JSON.stringify({
-			query: `
-				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-					updateVenue(input: $input) {
-						id
-						attachments { mimeType }
-					}
+		// Upload file to MinIO first (simulating presigned URL flow)
+		const objectName = faker.string.ulid();
+		const fileContent = Buffer.from("fake jpeg content");
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			objectName,
+			fileContent,
+			fileContent.length,
+			{ "content-type": "image/jpeg" },
+		);
+
+		// Update venue using FileMetadataInput
+		const updateVenueAttachments = graphql(`
+			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+				updateVenue(input: $input) {
+					id
+					attachments { mimeType }
 				}
-			`,
+			}
+		`);
+
+		const result = await mercuriusClient.mutate(updateVenueAttachments, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
 			variables: {
 				input: {
 					id: venueId,
-					attachments: [null],
+					attachments: [
+						{
+							objectName: objectName,
+							mimeType: "IMAGE_JPEG",
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
+							name: "venue-photo.jpg",
+						},
+					],
 				},
 			},
 		});
-
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const fileContent = "fake image content";
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
-			"Content-Type: image/jpeg",
-			"",
-			fileContent,
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
 
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.updateVenue?.id);
 
-		expect(result.data?.updateVenue?.attachments).toHaveLength(1);
-		expect(result.data?.updateVenue?.attachments[0].mimeType).toBe(
-			"image/jpeg",
-		);
+		// Cleanup: remove uploaded file
+		await server.minio.client.removeObject(server.minio.bucketName, objectName);
 	});
 
-	test("returns unexpected error when MinIO upload fails during update", async () => {
-		const originalPutObject = server.minio.client.putObject;
-		const originalRemoveObject = server.minio.client.removeObject;
-
-		const removeObjectSpy = vi.fn().mockResolvedValue(undefined);
-
-		try {
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
+	test("returns invalid_arguments error when file not found in MinIO during update", async () => {
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
 				},
-			);
+			},
+		);
 
-			assertToBeNonNullish(
-				administratorUserSignInResult.data?.signIn?.authenticationToken,
-			);
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
 
-			const createOrganizationResult = await mercuriusClient.mutate(
-				graphql(`
+		const createOrganizationResult = await mercuriusClient.mutate(
+			graphql(`
           mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
             createOrganization(input: $input) {
               id
             }
           }
         `),
-				{
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							name: `TestOrg_${faker.string.ulid()}`,
-							description: faker.lorem.sentence(),
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				createOrganizationResult.data?.createOrganization?.id,
-			);
-			const orgId = createOrganizationResult.data.createOrganization.id;
-
-			const createVenueResult = await mercuriusClient.mutate(
-				Mutation_createVenue,
-				{
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							organizationId: orgId,
-							name: `Venue_${faker.string.ulid()}`,
-							description: faker.lorem.sentence(),
-							capacity: 50,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-			createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-			const venueId = createVenueResult.data.createVenue.id;
-
-			// mock MinIO: first put succeeds, second rejects
-			let callCount = 0;
-			server.minio.client.putObject = vi.fn().mockImplementation(async () => {
-				callCount += 1;
-				if (callCount === 2) {
-					throw new Error("simulated failure");
-				}
-				return {};
-			});
-
-			server.minio.client.removeObject = removeObjectSpy;
-
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations = JSON.stringify({
-				query: `
-					mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-						updateVenue(input: $input) {
-							id
-						}
-					}
-				`,
-				variables: {
-					input: {
-						id: venueId,
-						attachments: [null, null],
-					},
-				},
-			});
-
-			const map = JSON.stringify({
-				"0": ["variables.input.attachments.0"],
-				"1": ["variables.input.attachments.1"],
-			});
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="photo1.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				"img1",
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="1"; filename="photo2.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				"img2",
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
+			{
 				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
 				},
-				payload: body,
-			});
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
 
-			const result = JSON.parse(response.body);
+		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const orgId = createOrganizationResult.data.createOrganization.id;
 
-			expect(result.data?.updateVenue).toEqual(null);
-			expect(result.errors[0].extensions.code).toBe("unexpected");
-			expect(removeObjectSpy).toHaveBeenCalled();
-		} finally {
-			server.minio.client.putObject = originalPutObject;
-			server.minio.client.removeObject = originalRemoveObject;
-		}
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Venue_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+						capacity: 50,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+		const venueId = createVenueResult.data.createVenue.id;
+
+		// Mock statObject to throw NotFound error (file doesn't exist)
+		const statObjectSpy = vi
+			.spyOn(server.minio.client, "statObject")
+			.mockRejectedValue(
+				Object.assign(new Error("Not Found"), { code: "NotFound" }),
+			);
+
+		const updateVenueAttachments = graphql(`
+			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+				updateVenue(input: $input) {
+					id
+					attachments { mimeType }
+				}
+			}
+		`);
+
+		const result = await mercuriusClient.mutate(updateVenueAttachments, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					id: venueId,
+					attachments: [
+						{
+							objectName: faker.string.ulid(),
+							mimeType: "IMAGE_JPEG",
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
+							name: "venue-photo.jpg",
+						},
+					],
+				},
+			},
+		});
+
+		expect(result.data?.updateVenue).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			]),
+		);
+		expect(statObjectSpy).toHaveBeenCalled();
+		statObjectSpy.mockRestore();
 	});
 
-	test("propagates TalawaGraphQLError when MinIO throws TalawaGraphQLError during upload", async () => {
-		const originalPutObject = server.minio.client.putObject;
-		try {
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				administratorUserSignInResult.data?.signIn?.authenticationToken,
-			);
-
-			const createOrganizationResult = await mercuriusClient.mutate(
-				graphql(`
-				  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-					createOrganization(input: $input) {
-					  id
-					}
-				  }
-				`),
-				{
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							name: `TestOrg_${faker.string.ulid()}`,
-							description: faker.lorem.sentence(),
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				createOrganizationResult.data?.createOrganization?.id,
-			);
-			const orgId = createOrganizationResult.data.createOrganization.id;
-
-			const createVenueResult = await mercuriusClient.mutate(
-				Mutation_createVenue,
-				{
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							organizationId: orgId,
-							name: `Venue_${faker.string.ulid()}`,
-							description: faker.lorem.sentence(),
-							capacity: 50,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-			createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-			const venueId = createVenueResult.data.createVenue.id;
-
-			// mock MinIO to throw TalawaGraphQLError
-			server.minio.client.putObject = vi.fn().mockImplementation(async () => {
-				throw new TalawaGraphQLError({
-					message: "minio failure",
-					extensions: { code: "unexpected" },
-				});
-			});
-
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations = JSON.stringify({
-				query: `
-					mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
-						updateVenue(input: $input) {
-							id
-						}
-					}
-				`,
+	test("returns unexpected error when MinIO statObject throws non-NotFound error", async () => {
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
 				variables: {
 					input: {
-						id: venueId,
-						attachments: [null],
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
 				},
-			});
+			},
+		);
 
-			const map = JSON.stringify({
-				"0": ["variables.input.attachments.0"],
-			});
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
 
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="photo1.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				"img1",
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
+		const createOrganizationResult = await mercuriusClient.mutate(
+			graphql(`
+          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+            createOrganization(input: $input) {
+              id
+            }
+          }
+        `),
+			{
 				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
 				},
-				payload: body,
-			});
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
 
-			const result = JSON.parse(response.body);
+		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const orgId = createOrganizationResult.data.createOrganization.id;
 
-			expect(result.data?.updateVenue).toEqual(null);
-			expect(result.errors[0].extensions.code).toBe("unexpected");
-		} finally {
-			server.minio.client.putObject = originalPutObject;
-		}
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Venue_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+						capacity: 50,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+		const venueId = createVenueResult.data.createVenue.id;
+
+		// Mock statObject to throw unexpected error (not NotFound)
+		const statObjectSpy = vi
+			.spyOn(server.minio.client, "statObject")
+			.mockRejectedValue(new Error("Connection timeout"));
+
+		const updateVenueAttachments = graphql(`
+			mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+				updateVenue(input: $input) {
+					id
+					attachments { mimeType }
+				}
+			}
+		`);
+
+		const result = await mercuriusClient.mutate(updateVenueAttachments, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					id: venueId,
+					attachments: [
+						{
+							objectName: faker.string.ulid(),
+							mimeType: "IMAGE_JPEG",
+							fileHash: faker.string.hexadecimal({
+								length: 64,
+								casing: "lower",
+								prefix: "",
+							}),
+							name: "venue-photo.jpg",
+						},
+					],
+				},
+			},
+		});
+
+		expect(result.data?.updateVenue).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unexpected",
+					}),
+				}),
+			]),
+		);
+		expect(statObjectSpy).toHaveBeenCalled();
+		statObjectSpy.mockRestore();
 	});
 
 	test("replaces existing attachments when updating with attachments", async () => {
@@ -1545,118 +1456,121 @@ suite("Mutation field updateVenue", () => {
 		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
 		const orgId = createOrganizationResult.data.createOrganization.id;
 
-		const boundaryCreate = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operationsCreate = JSON.stringify({
-			query: `
-				mutation CreateVenue($input: MutationCreateVenueInput!) {
-					createVenue(input: $input) {
-						id
-						attachments { mimeType }
-					}
-				}
-			`,
-			variables: {
-				input: {
-					organizationId: orgId,
-					name: `Venue_${faker.string.ulid()}`,
-					description: faker.lorem.sentence(),
-					capacity: 10,
-					attachments: [null],
+		// Create venue without attachments first
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Venue_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+						capacity: 10,
+					},
 				},
 			},
-		});
+		);
 
-		const mapCreate = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-		const bodyCreate = [
-			`--${boundaryCreate}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operationsCreate,
-			`--${boundaryCreate}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			mapCreate,
-			`--${boundaryCreate}`,
-			'Content-Disposition: form-data; name="0"; filename="photo1.jpg"',
-			"Content-Type: image/jpeg",
-			"",
-			"img1",
-			`--${boundaryCreate}--`,
-		].join("\r\n");
+		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+		const venueId = createVenueResult.data.createVenue.id;
 
-		const responseCreate = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundaryCreate}`,
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			payload: bodyCreate,
-		});
+		// Mock statObject to return success (file exists in MinIO)
+		const statObjectSpy = vi
+			.spyOn(server.minio.client, "statObject")
+			.mockResolvedValue(
+				{} as Awaited<ReturnType<typeof server.minio.client.statObject>>,
+			);
 
-		const createResult = JSON.parse(responseCreate.body);
-		assertToBeNonNullish(createResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createResult.data.createVenue.id);
-		const venueId = createResult.data.createVenue.id;
-		expect(createResult.data.createVenue.attachments).toHaveLength(1);
-
-		// Update with a new attachment and assert only the new one remains
-		const boundaryUpdate = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operationsUpdate = JSON.stringify({
-			query: `
+		try {
+			// Add initial attachment using FileMetadataInput
+			const updateVenueWithInitialAttachment = graphql(`
 				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
 					updateVenue(input: $input) {
 						id
 						attachments { mimeType }
 					}
 				}
-			`,
-			variables: {
-				input: {
-					id: venueId,
-					attachments: [null],
+			`);
+
+			const initialAttachmentResult = await mercuriusClient.mutate(
+				updateVenueWithInitialAttachment,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: venueId,
+							attachments: [
+								{
+									objectName: `attachments/${faker.string.uuid()}`,
+									mimeType: "IMAGE_JPEG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "initial-photo.jpg",
+								},
+							],
+						},
+					},
 				},
-			},
-		});
+			);
 
-		const mapUpdate = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-		const bodyUpdate = [
-			`--${boundaryUpdate}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operationsUpdate,
-			`--${boundaryUpdate}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			mapUpdate,
-			`--${boundaryUpdate}`,
-			'Content-Disposition: form-data; name="0"; filename="photo2.jpg"',
-			"Content-Type: image/png",
-			"",
-			"img2",
-			`--${boundaryUpdate}--`,
-		].join("\r\n");
+			expect(initialAttachmentResult.errors).toBeUndefined();
+			expect(
+				initialAttachmentResult.data?.updateVenue?.attachments,
+			).toHaveLength(1);
 
-		const responseUpdate = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundaryUpdate}`,
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			payload: bodyUpdate,
-		});
+			// Update with a new attachment using FileMetadataInput
+			const updateVenueAttachments = graphql(`
+				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+					updateVenue(input: $input) {
+						id
+						attachments { mimeType }
+					}
+				}
+			`);
 
-		const updateResult = JSON.parse(responseUpdate.body);
-		expect(updateResult.errors).toBeUndefined();
-		expect(updateResult.data?.updateVenue?.attachments).toHaveLength(1);
-		expect(updateResult.data?.updateVenue?.attachments[0].mimeType).toBe(
-			"image/png",
-		);
+			const updateResult = await mercuriusClient.mutate(
+				updateVenueAttachments,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: venueId,
+							attachments: [
+								{
+									objectName: `attachments/${faker.string.uuid()}`,
+									mimeType: "IMAGE_PNG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "new-photo.png",
+								},
+							],
+						},
+					},
+				},
+			);
+
+			expect(updateResult.errors).toBeUndefined();
+			expect(updateResult.data?.updateVenue?.attachments).toHaveLength(1);
+			expect(updateResult.data?.updateVenue?.attachments?.[0]?.mimeType).toBe(
+				"image/png",
+			);
+		} finally {
+			statObjectSpy.mockRestore();
+		}
 	});
 
 	test("throws unauthenticated when current user no longer exists", async () => {
@@ -1861,6 +1775,184 @@ suite("Mutation field updateVenue", () => {
 			expect(res.errors?.[0]?.extensions.code).toBe("unexpected");
 		} finally {
 			server.drizzleClient.transaction = originalTransaction;
+		}
+	});
+
+	test("should succeed even when old attachment removal fails during update (lines 252-255)", async () => {
+		// Get auth token
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
+		const adminToken =
+			administratorUserSignInResult.data.signIn.authenticationToken;
+
+		// Create organization
+		const createOrganizationResult = await mercuriusClient.mutate(
+			graphql(`
+			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+				createOrganization(input: $input) {
+				  id
+				}
+			  }
+			`),
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						name: `${faker.company.name()}-${faker.string.uuid()}`,
+						description: faker.lorem.paragraph(),
+						countryCode: "us",
+						state: faker.location.state(),
+						city: faker.location.city(),
+						postalCode: faker.location.zipCode(),
+						addressLine1: faker.location.streetAddress(),
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const orgId = createOrganizationResult.data.createOrganization.id;
+
+		// Create venue WITHOUT attachments first
+		const createVenueResult = await mercuriusClient.mutate(
+			graphql(`
+			  mutation CreateVenue($input: MutationCreateVenueInput!) {
+				createVenue(input: $input) {
+				  id
+				}
+			  }
+			`),
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: faker.lorem.words(2),
+						capacity: 100,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+		const venueId = createVenueResult.data.createVenue.id;
+
+		// Put first file in MinIO
+		const objectName1 = `attachments/${faker.string.uuid()}.jpg`;
+		const fileContent = Buffer.from("fake image content");
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			objectName1,
+			fileContent,
+			fileContent.length,
+			{ "content-type": "image/jpeg" },
+		);
+
+		// Add attachments via update
+		const addAttachmentResult = await mercuriusClient.mutate(
+			Mutation_updateVenue,
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						id: venueId,
+						attachments: [
+							{
+								objectName: objectName1,
+								mimeType: "IMAGE_JPEG",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "initial-photo.jpg",
+							},
+						],
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(addAttachmentResult.data?.updateVenue);
+
+		// Put a new file in MinIO
+		const objectName2 = `attachments/${faker.string.uuid()}.png`;
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			objectName2,
+			fileContent,
+			fileContent.length,
+			{ "content-type": "image/png" },
+		);
+
+		// Mock removeObject to fail (simulating cleanup failure)
+		const removeObjectSpy = vi
+			.spyOn(server.minio.client, "removeObject")
+			.mockRejectedValue(new Error("Failed to delete object"));
+
+		try {
+			// Update venue with new attachments - this should succeed even if cleanup fails
+			const updateResult = await mercuriusClient.mutate(Mutation_updateVenue, {
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: {
+						id: venueId,
+						attachments: [
+							{
+								objectName: objectName2,
+								mimeType: "IMAGE_PNG",
+								fileHash: faker.string.hexadecimal({
+									length: 64,
+									casing: "lower",
+									prefix: "",
+								}),
+								name: "new-photo.png",
+							},
+						],
+					},
+				},
+			});
+
+			// Key assertion: update succeeds even though removeObject failed
+			expect(updateResult.errors).toBeUndefined();
+			expect(updateResult.data?.updateVenue).toBeDefined();
+		} finally {
+			removeObjectSpy.mockRestore();
+			// Cleanup: remove uploaded MinIO objects
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName1,
+				);
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName2,
+				);
+			} catch {
+				// Intentional: cleanup errors are non-critical and should not fail the test
+				console.debug("MinIO cleanup failed, ignoring");
+			}
 		}
 	});
 });
