@@ -1,6 +1,7 @@
 import "./Mutation";
 import "./adminUpdateUserPassword";
 import "./acceptMembershipRequest";
+import "./adminCreateOnSpotAttendee";
 import "./blockUser";
 import "./unblockUser";
 import "./assignUserTag";
