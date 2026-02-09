@@ -1951,7 +1951,7 @@ suite("Mutation field updateVenue", () => {
 				);
 			} catch {
 				// Intentional: cleanup errors are non-critical and should not fail the test
-				void 0;
+				console.debug("MinIO cleanup failed, ignoring");
 			}
 		}
 	});
