@@ -2,21 +2,36 @@ name: Devcontainer lifecycle check
 
 on:
   pull_request:
+    paths:
+      - ".devcontainer/**"
+      - "docker/**"
+      - "compose.yaml"
+      - "scripts/dbManagement/**"
+      - ".github/workflows/devcontainer-check.yml"
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
+    paths:
+      - ".devcontainer/**"
+      - "docker/**"
+      - "compose.yaml"
+      - "scripts/dbManagement/**"
+      - ".github/workflows/devcontainer-check.yml"
+
+concurrency:
+  group: devcontainer-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   devcontainer-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install devcontainer CLI
-        run: npm install -g @devcontainers/cli
+      - name: Install devcontainer CLI (pinned)
+        run: npm install -g @devcontainers/cli@0.81.1
 
       - name: Devcontainer up (must be non-interactive)
         run: devcontainer up --workspace-folder .
@@ -27,13 +42,15 @@ jobs:
       - name: Apply database migrations
         run: devcontainer exec --workspace-folder . pnpm run apply_drizzle_migrations
 
-      - name: Start API (initialize MinIO bucket)
-        run: devcontainer exec --workspace-folder . pnpm run start_development_server & sleep 15
-    
+      - name: Start API once to initialize infrastructure (MinIO bucket)
+        run: devcontainer exec --workspace-folder . pnpm run start_development_server & sleep 25
+
       - name: Load sample data (first run)
         run: devcontainer exec --workspace-folder . pnpm run add:sample_data
 
       - name: Load sample data again (verify idempotency)
         run: devcontainer exec --workspace-folder . pnpm run add:sample_data
 
-      
+      - name: Devcontainer cleanup
+        if: always()
+        run: devcontainer down --workspace-folder .
