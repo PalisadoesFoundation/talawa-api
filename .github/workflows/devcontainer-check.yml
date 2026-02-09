@@ -1,0 +1,25 @@
+name: Devcontainer lifecycle check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  devcontainer-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install devcontainer CLI
+        run: npm install -g @devcontainers/cli
+
+      - name: Devcontainer up (must be non-interactive)
+        run: devcontainer up --workspace-folder .
+
+      - name: Verify pnpm via corepack
+        run: devcontainer exec --workspace-folder . pnpm --version
