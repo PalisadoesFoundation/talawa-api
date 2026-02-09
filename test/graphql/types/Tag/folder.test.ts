@@ -3,6 +3,7 @@ import { initGraphQLTada } from "gql.tada";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import "~/src/graphql/types/Tag/folder";
+import { beforeEach } from "node:test";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -515,7 +516,7 @@ describe("Tag.folder resolver - Integration", () => {
 });
 
 describe("Tag.folder resolver - Unit", () => {
-	afterEach(() => {
+	beforeEach(() => {
 		vi.restoreAllMocks();
 	});
 	it("should throw unauthenticated error when context is not authenticated", async () => {
