@@ -36,7 +36,12 @@ suite("User field workPhoneNumber", () => {
 				});
 				const token = adminSignIn.data.signIn?.authenticationToken;
 
-				if (token) {
+				if (!token) {
+					console.error(
+						"afterEach cleanup: admin sign-in failed, cannot delete test users:",
+						createdUserIds,
+					);
+				} else {
 					for (const id of createdUserIds) {
 						try {
 							await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -47,8 +52,8 @@ suite("User field workPhoneNumber", () => {
 							console.warn(`Failed to delete user ${id} in cleanup`, error);
 						}
 					}
+					createdUserIds.length = 0;
 				}
-				createdUserIds.length = 0;
 			}
 			vi.restoreAllMocks();
 		});
