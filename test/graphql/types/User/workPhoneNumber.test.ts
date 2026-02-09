@@ -1,13 +1,13 @@
 import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type { User as UserType } from "~/src/graphql/types/User/User";
 import { workPhoneNumberResolver } from "~/src/graphql/types/User/workPhoneNumber";
-import type {
-	// removed unused import
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-	UnauthorizedActionExtensions,
+import {
+	TalawaGraphQLError,
+	type TalawaGraphQLFormattedError,
+	type UnauthenticatedExtensions,
+	type UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -21,6 +21,38 @@ import {
 
 suite("User field workPhoneNumber", () => {
 	suite("Integration Tests", () => {
+		const createdUserIds: string[] = [];
+
+		afterEach(async () => {
+			if (createdUserIds.length > 0) {
+				const adminSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
+				const token = adminSignIn.data.signIn?.authenticationToken;
+
+				if (token) {
+					for (const id of createdUserIds) {
+						try {
+							await mercuriusClient.mutate(Mutation_deleteUser, {
+								headers: { authorization: `bearer ${token}` },
+								variables: { input: { id } },
+							});
+						} catch (error) {
+							console.warn(`Failed to delete user ${id} in cleanup`, error);
+						}
+					}
+				}
+				createdUserIds.length = 0;
+			}
+			vi.restoreAllMocks();
+		});
+
 		test('results in a graphql error with "unauthenticated" extensions code when client is not authenticated', async () => {
 			// 1. Sign in as admin to create a target user
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {
@@ -48,6 +80,7 @@ suite("User field workPhoneNumber", () => {
 			});
 			assertToBeNonNullish(createUser.data.createUser?.user?.id);
 			const targetUserId = createUser.data.createUser.user.id;
+			createdUserIds.push(targetUserId);
 
 			// 2. Query without auth
 			const result = await mercuriusClient.query(Query_user_workPhoneNumber, {
@@ -70,12 +103,6 @@ suite("User field workPhoneNumber", () => {
 					}),
 				]),
 			);
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: targetUserId } },
-			});
 		});
 
 		test('results in a graphql error with "unauthenticated" extension code when authenticated user does not exist', async () => {
@@ -107,6 +134,7 @@ suite("User field workPhoneNumber", () => {
 			assertToBeNonNullish(userA.data.createUser?.user?.id);
 			assertToBeNonNullish(userA.data.createUser.authenticationToken);
 			const userAId = userA.data.createUser.user.id;
+			createdUserIds.push(userAId);
 			const userAToken = userA.data.createUser.authenticationToken;
 
 			// 3. Create User B (target)
@@ -124,12 +152,15 @@ suite("User field workPhoneNumber", () => {
 			});
 			assertToBeNonNullish(userB.data.createUser?.user?.id);
 			const userBId = userB.data.createUser.user.id;
+			createdUserIds.push(userBId);
 
-			// 4. Delete User A
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${token}` },
 				variables: { input: { id: userAId } },
 			});
+			// Remove userA from cleanup list since we just deleted it
+			const indexA = createdUserIds.indexOf(userAId);
+			if (indexA > -1) createdUserIds.splice(indexA, 1);
 
 			// 5. Try to query User B with User A's token
 			const result = await mercuriusClient.query(Query_user_workPhoneNumber, {
@@ -149,12 +180,6 @@ suite("User field workPhoneNumber", () => {
 					}),
 				]),
 			);
-
-			// Cleanup User B
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: userBId } },
-			});
 		});
 
 		test('results in "unauthorized_action" error when non-admin accesses another user\'s workPhoneNumber', async () => {
@@ -184,6 +209,7 @@ suite("User field workPhoneNumber", () => {
 				},
 			});
 			assertToBeNonNullish(userA.data.createUser?.user?.id);
+			createdUserIds.push(userA.data.createUser.user.id);
 			assertToBeNonNullish(userA.data.createUser.authenticationToken);
 
 			// 3. Create User B (the target)
@@ -200,6 +226,7 @@ suite("User field workPhoneNumber", () => {
 				},
 			});
 			assertToBeNonNullish(userB.data.createUser?.user?.id);
+			createdUserIds.push(userB.data.createUser.user.id);
 
 			// 4. User A tries to query User B's workPhoneNumber
 			const result = await mercuriusClient.query(Query_user_workPhoneNumber, {
@@ -221,16 +248,6 @@ suite("User field workPhoneNumber", () => {
 					}),
 				]),
 			);
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: userA.data.createUser.user.id } },
-			});
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: userB.data.createUser.user.id } },
-			});
 		});
 
 		test("returns workPhoneNumber when user accesses their own data", async () => {
@@ -261,6 +278,7 @@ suite("User field workPhoneNumber", () => {
 				},
 			});
 			assertToBeNonNullish(userRes.data.createUser?.user?.id);
+			createdUserIds.push(userRes.data.createUser.user.id);
 			assertToBeNonNullish(userRes.data.createUser.authenticationToken);
 
 			// 3. User queries own data
@@ -273,12 +291,6 @@ suite("User field workPhoneNumber", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data.user?.workPhoneNumber).toBe("123-456-7890");
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: userRes.data.createUser.user.id } },
-			});
 		});
 
 		test("returns workPhoneNumber when administrator accesses another user's data", async () => {
@@ -309,6 +321,7 @@ suite("User field workPhoneNumber", () => {
 				},
 			});
 			assertToBeNonNullish(userRes.data.createUser?.user?.id);
+			createdUserIds.push(userRes.data.createUser.user.id);
 
 			// 3. Admin queries user data
 			const result = await mercuriusClient.query(Query_user_workPhoneNumber, {
@@ -318,34 +331,28 @@ suite("User field workPhoneNumber", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data.user?.workPhoneNumber).toBe("987-654-3210");
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: userRes.data.createUser.user.id } },
-			});
 		});
 	});
 
 	suite("Unit Tests", () => {
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
 		test("handles null or empty workPhoneNumber correctly", async () => {
 			const _userId = faker.string.uuid();
 			const { context, mocks } = createMockGraphQLContext(true, _userId);
 
-			const parent: UserType = {
+			const parent = {
 				id: _userId,
 				name: "Test User",
-				workPhoneNumber: null, // Test null case
-				role: "regular",
-				createdAt: new Date(),
-				updatedAt: null,
-				creatorId: "creator-1",
-				updaterId: null,
+				workPhoneNumber: null,
 			} as unknown as UserType;
 
 			// Mock finding the user (self-access allowed)
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				role: "regular",
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 			});
 
 			const result = await workPhoneNumberResolver(parent, {}, context);
@@ -357,6 +364,51 @@ suite("User field workPhoneNumber", () => {
 
 			expect(result).toBeNull();
 			expect(emptyResult).toBe("");
+		});
+
+		test("rethrows TalawaGraphQLError when findFirst fails with one", async () => {
+			const _userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, _userId);
+
+			const parent = {
+				id: _userId,
+				name: "Test User",
+				workPhoneNumber: "123-456-7890",
+			} as unknown as UserType;
+
+			const expectedError = new TalawaGraphQLError({
+				message: "Test Error",
+				extensions: {
+					code: "unexpected",
+				},
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				expectedError,
+			);
+
+			await expect(
+				workPhoneNumberResolver(parent, {}, context),
+			).rejects.toThrowError(expectedError);
+		});
+
+		test("wraps generic Error in Internal Server Error", async () => {
+			const _userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, _userId);
+
+			const parent = {
+				id: _userId,
+				name: "Test User",
+				workPhoneNumber: "123-456-7890",
+			} as unknown as UserType;
+
+			const genericError = new Error("Something went wrong");
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				genericError,
+			);
+
+			await expect(
+				workPhoneNumberResolver(parent, {}, context),
+			).rejects.toThrow("Internal server error");
 		});
 	});
 });
