@@ -247,6 +247,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		cookie: cookieHelper,
 		log: opLogger,
 		minio: fastify.minio,
+		oauthProviderRegistry: fastify.oauthProviderRegistry,
 
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
@@ -704,6 +705,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						},
 						log: fastify.log,
 						minio: fastify.minio,
+						oauthProviderRegistry: fastify.oauthProviderRegistry,
 						notification: new NotificationService(),
 						perf,
 					};

@@ -37,10 +37,25 @@ describe("Setup -> setCI", () => {
 		if (!firstCall) throw new Error("Prompt was not called");
 
 		const callArgs = firstCall[0];
-		// @ts-expect-error
-		// biome-ignore lint/suspicious/noExplicitAny: Mocking inquirer
-		const ciPrompt = callArgs.find((q: any) => q.name === "CI");
+		const questions = Array.isArray(callArgs) ? callArgs : [callArgs];
+		const ciPrompt = questions.find(
+			(question): question is { name?: string; default?: string } =>
+				typeof question === "object" && question !== null,
+		);
+		const ciPromptConfig = questions.find(
+			(
+				question,
+			): question is {
+				name?: string;
+				default?: string;
+			} =>
+				typeof question === "object" &&
+				question !== null &&
+				"name" in question &&
+				question.name === "CI",
+		);
 		expect(ciPrompt).toBeDefined();
-		expect(ciPrompt?.default).toBe("false");
+		expect(ciPromptConfig).toBeDefined();
+		expect(ciPromptConfig?.default).toBe("false");
 	});
 });

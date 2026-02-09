@@ -146,8 +146,7 @@ describe("Setup -> minioSetup", () => {
 			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
 
 		// Initial answers with mismatched API_MINIO_SECRET_KEY
-		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
-		const answers: any = {
+		const answers: Record<string, string | undefined> = {
 			CI: "true",
 			API_MINIO_SECRET_KEY: "old-password",
 		};
@@ -169,8 +168,7 @@ describe("Setup -> minioSetup", () => {
 			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" })
 			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
 
-		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
-		const answers: any = {
+		const answers: Record<string, string | undefined> = {
 			CI: "true",
 			API_MINIO_SECRET_KEY: "password",
 		};
@@ -191,8 +189,7 @@ describe("Setup -> minioSetup", () => {
 			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "SecurePass123!" })
 			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" });
 
-		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
-		const answers: any = {
+		const answers: Record<string, string | undefined> = {
 			CI: "true",
 			// API_MINIO_SECRET_KEY is undefined
 		};

@@ -514,6 +514,219 @@ else
 fi
 
 ##############################################################################
+# Test: validate_repository_root()
+##############################################################################
+
+test_start "validate_repository_root succeeds at repo root"
+(
+    cd "$SCRIPT_DIR/../../.." || exit 1
+    if validate_repository_root &>/dev/null; then
+        exit 0
+    else
+        exit 1
+    fi
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_repository_root to succeed at repo root"
+fi
+
+
+test_start "validate_repository_root fails outside repo root"
+(
+    temp_dir=$(mktemp -d)
+    trap 'rm -rf "$temp_dir"' EXIT
+    cd "$temp_dir" || exit 1
+    
+    if validate_repository_root &>/dev/null; then
+        rc=1
+    else
+        rc=0
+    fi
+    
+    cd / || true
+    rm -rf "$temp_dir"
+    exit "$rc"
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_repository_root to fail outside repo root"
+fi
+
+##############################################################################
+# Test: validate_disk_space()
+##############################################################################
+
+test_start "validate_disk_space succeeds with low minimum"
+if validate_disk_space 1 &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected validate_disk_space to succeed with low threshold"
+fi
+
+test_start "validate_disk_space fails with unrealistic requirement"
+if validate_disk_space 99999999 &>/dev/null; then
+    test_fail "Expected validate_disk_space to fail with high threshold"
+else
+    test_pass
+fi
+
+##############################################################################
+# Test: validate_disk_space() with mocked df output
+##############################################################################
+
+test_start "validate_disk_space succeeds when df reports enough space"
+(
+    df() {
+        echo -e "Filesystem 1024-blocks Used Available Capacity Mounted\n/dev 10000000 1 5000000 1% /"
+    }
+    export -f df
+
+    validate_disk_space 4000 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected success when available space >= min_mb"
+
+
+test_start "validate_disk_space succeeds when available space equals min_mb (boundary)"
+(
+    df() {
+        echo -e "Filesystem 1024-blocks Used Available Capacity Mounted\n/dev 10000000 1 2048000 1% /"
+    }
+    export -f df
+
+    validate_disk_space 2000 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected success at boundary"
+
+
+test_start "validate_disk_space fails when df reports insufficient space"
+(
+    df() {
+        echo -e "Filesystem 1024-blocks Used Available Capacity Mounted\n/dev 10000000 1 1000 1% /"
+    }
+    export -f df
+
+    ! validate_disk_space 4000 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when space insufficient"
+
+
+test_start "validate_disk_space fails when df output is non-numeric"
+(
+    df() { echo "nonsense output"; }
+    export -f df
+
+    ! validate_disk_space 1 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure on non-numeric df output"
+
+##############################################################################
+# Test: validate_internet_connectivity()
+##############################################################################
+
+test_start "validate_internet_connectivity succeeds when curl succeeds"
+(
+    curl() { return 0; }
+    ping() { return 1; }
+    export -f curl ping
+
+    validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected connectivity success"
+
+
+test_start "validate_internet_connectivity fails when curl fails"
+(
+    curl() { return 1; }
+    ping() { return 1; }
+    export -f curl ping
+
+    ! validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected connectivity failure"
+
+
+test_start "validate_internet_connectivity succeeds when curl missing but ping succeeds"
+(
+    unset -f curl 2>/dev/null || true
+    ping() { return 0; }
+    export -f ping
+
+    validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected success via ping"
+
+
+test_start "validate_internet_connectivity fails when neither curl nor ping available"
+(
+    unset -f curl ping 2>/dev/null || true
+
+    command() {
+        if [ "$2" = "curl" ] || [ "$2" = "ping" ]; then
+            return 1
+        fi
+        /usr/bin/command "$@"
+    }
+    export -f command
+
+    ! validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure without network tools"
+
+##############################################################################
+# Test: validate_prerequisites()
+##############################################################################
+
+test_start "validate_prerequisites succeeds when all checks pass"
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 0; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected prerequisites to succeed"
+
+
+test_start "validate_prerequisites fails when disk space fails"
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 1; }
+    validate_internet_connectivity() { return 0; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    ! validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when disk fails"
+
+
+test_start "validate_prerequisites fails when repository validation fails"
+(
+    validate_repository_root() { return 1; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 0; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    ! validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when repo check fails"
+
+
+test_start "validate_prerequisites fails when internet validation fails"
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 1; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    ! validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when internet fails"
+
+##############################################################################
 # Test summary
 ##############################################################################
 
@@ -526,12 +739,10 @@ echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
 echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
 echo ""
 
-if [ $TESTS_FAILED -eq 0 ]; then
+if [ "$TESTS_FAILED" -eq 0 ]; then
     echo -e "${GREEN}✓ All tests passed!${NC}"
-    echo ""
     exit 0
 else
     echo -e "${RED}✗ Some tests failed${NC}"
-    echo ""
     exit 1
 fi

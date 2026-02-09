@@ -499,7 +499,7 @@ describe("Error handling without backup", () => {
 		vi.clearAllMocks();
 	});
 
-	it.skip("should handle SIGINT when backup doesn't exist", async () => {
+	it("should handle SIGINT when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);

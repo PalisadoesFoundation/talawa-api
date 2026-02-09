@@ -2,6 +2,15 @@ import { cpus } from "node:os";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { configDefaults, defineConfig } from "vitest/config";
 
+// Allow auth module (src/services/auth, tokens.ts) to load when any unit test imports it.
+// NODE_ENV: only set when unset (?? "test"); does not override CI's NODE_ENV=production.
+// AUTH_JWT_SECRET: when unset, this fallback prevents getSecret() from throwing TalawaRestError
+// ("AUTH_JWT_SECRET must be set in production") so password.test.ts and other files can static-import auth.
+process.env.NODE_ENV = process.env.NODE_ENV ?? "test";
+if (!process.env.AUTH_JWT_SECRET) {
+	process.env.AUTH_JWT_SECRET = "unit-test-secret";
+}
+
 const isCI = !!process.env.CI;
 const cpuCount = cpus().length;
 

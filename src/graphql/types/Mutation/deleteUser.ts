@@ -7,6 +7,7 @@ import {
 	mutationDeleteUserInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { zParseOrThrow } from "~/src/graphql/validators/helpers";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -34,23 +35,10 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = mutationDeleteUserArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
+			const parsedArgs = await zParseOrThrow(
+				mutationDeleteUserArgumentsSchema,
+				args,
+			);
 
 			const currentUserId = ctx.currentClient.user.id;
 

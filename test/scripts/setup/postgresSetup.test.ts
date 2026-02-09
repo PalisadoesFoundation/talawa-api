@@ -104,8 +104,7 @@ describe("Setup -> postgresSetup", () => {
 			.mockResolvedValueOnce({ POSTGRES_USER: "talawa" });
 
 		// Initial answers with mismatched API_POSTGRES_PASSWORD
-		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
-		const answers: any = {
+		const answers: Record<string, string | undefined> = {
 			CI: "true",
 			API_POSTGRES_PASSWORD: "old-password",
 		};
@@ -127,8 +126,7 @@ describe("Setup -> postgresSetup", () => {
 			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "password" })
 			.mockResolvedValueOnce({ POSTGRES_USER: "talawa" });
 
-		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
-		const answers: any = {
+		const answers: Record<string, string | undefined> = {
 			CI: "true",
 			API_POSTGRES_PASSWORD: "password",
 		};
@@ -149,8 +147,7 @@ describe("Setup -> postgresSetup", () => {
 			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "SecurePass456!" })
 			.mockResolvedValueOnce({ POSTGRES_USER: "talawa" });
 
-		// biome-ignore lint/suspicious/noExplicitAny: Partial answers for testing
-		const answers: any = {
+		const answers: Record<string, string | undefined> = {
 			CI: "true",
 			// API_POSTGRES_PASSWORD is undefined
 		};
