@@ -23,3 +23,14 @@ jobs:
 
       - name: Verify pnpm via corepack
         run: devcontainer exec --workspace-folder . pnpm --version
+
+      - name: Apply database migrations
+        run: devcontainer exec --workspace-folder . pnpm run apply_drizzle_migrations
+
+      - name: Load sample data (first run)
+        run: devcontainer exec --workspace-folder . pnpm run add:sample_data
+
+      - name: Load sample data again (verify idempotency)
+        run: devcontainer exec --workspace-folder . pnpm run add:sample_data
+
+      
