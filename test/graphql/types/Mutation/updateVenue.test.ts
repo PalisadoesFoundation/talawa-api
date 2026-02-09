@@ -1950,7 +1950,8 @@ suite("Mutation field updateVenue", () => {
 					objectName2,
 				);
 			} catch {
-				// Ignore cleanup errors
+				// Intentional: cleanup errors are non-critical and should not fail the test
+				void 0;
 			}
 		}
 	});

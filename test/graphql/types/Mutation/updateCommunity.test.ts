@@ -868,7 +868,8 @@ suite("Mutation field updateCommunity", () => {
 						newObjectName,
 					);
 				} catch {
-					// Ignore cleanup errors
+					// Intentional: cleanup errors are non-critical and should not fail the test
+					void 0;
 				}
 			}
 		});
@@ -932,7 +933,8 @@ suite("Mutation field updateCommunity", () => {
 						objectName,
 					);
 				} catch {
-					// Ignore cleanup errors
+					// Intentional: cleanup errors are non-critical and should not fail the test
+					void 0;
 				}
 			}
 		});
