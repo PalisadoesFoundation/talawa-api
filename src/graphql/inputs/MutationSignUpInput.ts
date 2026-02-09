@@ -8,6 +8,7 @@ import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
 import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
+import { orgId } from "~/src/graphql/validators/core";
 
 export const mutationSignUpInputSchema = usersTableInsertSchema
 	.omit({
@@ -25,7 +26,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 	.extend({
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
 		password: z.string().min(1).max(64),
-		selectedOrganization: z.string().uuid(),
+		selectedOrganization: orgId,
 		recaptchaToken: z.string().optional(),
 	});
 

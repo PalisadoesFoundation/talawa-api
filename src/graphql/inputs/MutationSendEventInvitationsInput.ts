@@ -1,20 +1,21 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
+import { email, eventId } from "~/src/graphql/validators/core";
 
 // Backwards-compatible input: accept either `emails: [String]` (existing) or
 // `recipients: [{ email, name? }]` (new). At least one recipient/email must be
 // provided.
 export const recipientSchema = z.object({
-	email: z.string().email(),
+	email,
 	name: z.string().optional(),
 });
 
 export const sendEventInvitationsInputSchema = z
 	.object({
-		eventId: z.string().uuid().nullable().optional(),
-		recurringEventInstanceId: z.string().uuid().nullable().optional(),
+		eventId: eventId.nullable().optional(),
+		recurringEventInstanceId: eventId.nullable().optional(),
 		// legacy array of email strings
-		emails: z.array(z.string().email()).optional(),
+		emails: z.array(email).optional(),
 		// new recipients array with optional name
 		recipients: z.array(recipientSchema).optional(),
 		message: z.string().optional(),
