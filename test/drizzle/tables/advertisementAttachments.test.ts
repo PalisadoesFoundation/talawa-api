@@ -804,5 +804,23 @@ describe("src/drizzle/tables/advertisementAttachments", () => {
 				).toBe(true);
 			}
 		});
+
+		it("should reject invalid enum values at the database layer", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const advertisementId = await createTestAdvertisement();
+			const name = faker.system.fileName();
+			const invalidMimeType = "not/a/real-type";
+			const createdAt = faker.date.recent();
+
+			await expect(
+				server.drizzleClient.insert(advertisementAttachmentsTable).values({
+					name,
+					creatorId: userId,
+					mimeType: invalidMimeType as "image/png",
+					advertisementId,
+					createdAt: createdAt,
+				}),
+			).rejects.toThrow();
+		});
 	});
 });

@@ -1,9 +1,26 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgEnum,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { advertisementAttachmentMimeTypeEnum } from "~/src/drizzle/enums/advertisementAttachmentMimeType";
+import { imageMimeTypes } from "../enums/imageMimeType";
+import { videoMimeTypes } from "../enums/videoMimeType";
 import { advertisementsTable } from "./advertisements";
 import { usersTable } from "./users";
+
+/**
+ * PostgreSQL enum for advertisement attachment MIME types.
+ * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm
+ */
+export const advertisementAttachmentMimeTypePgEnum = pgEnum(
+	"advertisement_attachment_mime_type",
+	[...imageMimeTypes, ...videoMimeTypes],
+);
 
 /**
  * Drizzle orm postgres table definition for advertisement attachments.
@@ -40,12 +57,7 @@ export const advertisementAttachmentsTable = pgTable(
 		/**
 		 * Mime type of the attachment.
 		 */
-		mimeType: text("mime_type", {
-			enum: advertisementAttachmentMimeTypeEnum.options as [
-				string,
-				...string[],
-			],
-		}).notNull(),
+		mimeType: advertisementAttachmentMimeTypePgEnum("mime_type").notNull(),
 		/**
 		 * Identifier name of the attachment.
 		 */

@@ -1,7 +1,7 @@
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { z } from "zod";
-import { advertisementAttachmentMimeTypeEnum } from "~/src/drizzle/enums/advertisementAttachmentMimeType";
+import { advertisementAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/advertisementAttachmentMimeType";
 import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
 import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
@@ -17,13 +17,13 @@ export const mutationCreateAdvertisementArgumentsSchema = z.object({
 	input: mutationCreateAdvertisementInputSchema.transform(async (arg, ctx) => {
 		let attachments:
 			| (FileUpload & {
-					mimetype: z.infer<typeof advertisementAttachmentMimeTypeEnum>;
+					mimetype: z.infer<typeof advertisementAttachmentMimeTypeZodEnum>;
 			  })[]
 			| undefined;
 
 		if (arg.attachments !== undefined) {
 			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = advertisementAttachmentMimeTypeEnum
+			const { data, error, success } = advertisementAttachmentMimeTypeZodEnum
 				.array()
 				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
 

@@ -14,6 +14,7 @@ export {
 	actionItemsTableRelations,
 } from "./tables/actionItems";
 export {
+	advertisementAttachmentMimeTypePgEnum,
 	advertisementAttachmentsTable,
 	advertisementAttachmentsTableRelations,
 } from "./tables/advertisementAttachments";
