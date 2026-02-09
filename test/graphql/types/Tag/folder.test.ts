@@ -179,34 +179,35 @@ describe("Tag.folder resolver - Integration", () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 
-		if (createdOrgIds.length > 0 || createdUserIds.length > 0) {
-			const adminAuth = await getAdminAuth();
+		try {
+			if (createdOrgIds.length > 0 || createdUserIds.length > 0) {
+				const adminAuth = await getAdminAuth();
 
-			// Cleanup users
-			for (const userId of createdUserIds) {
-				try {
-					await mercuriusClient.mutate(Mutation_deleteUser, {
-						headers: { authorization: `bearer ${adminAuth.token}` },
-						variables: { input: { id: userId } },
-					});
-				} catch (error) {
-					console.warn(`Cleanup failed for user ${userId}:`, error);
+				for (const userId of createdUserIds) {
+					try {
+						await mercuriusClient.mutate(Mutation_deleteUser, {
+							headers: { authorization: `bearer ${adminAuth.token}` },
+							variables: { input: { id: userId } },
+						});
+					} catch (error) {
+						console.warn(`Cleanup failed for user ${userId}:`, error);
+					}
+				}
+
+				for (const orgId of createdOrgIds) {
+					try {
+						await mercuriusClient.mutate(Mutation_deleteOrganization, {
+							headers: { authorization: `bearer ${adminAuth.token}` },
+							variables: { input: { id: orgId } },
+						});
+					} catch (error) {
+						console.warn(`Cleanup failed for org ${orgId}:`, error);
+					}
 				}
 			}
-			createdUserIds.length = 0;
-
-			// Cleanup organizations
-			for (const orgId of createdOrgIds) {
-				try {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${adminAuth.token}` },
-						variables: { input: { id: orgId } },
-					});
-				} catch (error) {
-					console.warn(`Cleanup failed for org ${orgId}:`, error);
-				}
-			}
+		} finally {
 			createdOrgIds.length = 0;
+			createdUserIds.length = 0;
 		}
 	});
 
@@ -473,6 +474,9 @@ describe("Tag.folder resolver - Integration", () => {
 		});
 
 		expect(result.errors).toBeDefined();
+		expect(
+			server.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(2);
 		// The error code comes from Tag.folder resolver's check
 		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 		// Verify path to ensure it's the folder field error, not the parent tag error
