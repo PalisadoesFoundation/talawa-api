@@ -156,7 +156,7 @@ describe("VenueAttachment.url field resolver - Unit tests", () => {
 			);
 		});
 
-		it("should handle null attachment name by returning base URL", async () => {
+		it("should coerce null attachment name to the string 'null' in the URL", async () => {
 			// @ts-expect-error - simulating runtime null
 			mockAttachment.name = null;
 
@@ -165,7 +165,7 @@ describe("VenueAttachment.url field resolver - Unit tests", () => {
 			expect(result).toBe("http://localhost:4000/objects/null");
 		});
 
-		it("should handle undefined attachment name by returning base URL", async () => {
+		it("should coerce undefined attachment name to the string 'undefined' in the URL", async () => {
 			// @ts-expect-error - simulating runtime undefined
 			mockAttachment.name = undefined;
 
