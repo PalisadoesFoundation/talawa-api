@@ -900,12 +900,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
           }
-        `),
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -987,12 +987,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
           }
-        `),
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -1120,12 +1120,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
           }
-        `),
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -1244,12 +1244,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
           }
-        `),
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -1302,7 +1302,7 @@ suite("Mutation field updateVenue", () => {
 
 		const removeObjectSpy = vi
 			.spyOn(server.minio.client, "removeObject")
-			.mockResolvedValue(undefined as unknown as undefined);
+			.mockResolvedValue(undefined);
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 		const operations = JSON.stringify({
@@ -1388,12 +1388,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-				  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) {
-				  id
-				}
-				  }
-				`),
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
+          }
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -1520,12 +1520,12 @@ suite("Mutation field updateVenue", () => {
 		// create organization for venue
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) {
-				  id
-				}
-			  }
-			`),
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
+          }
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -1676,12 +1676,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) {
-				  id
-				}
-			  }
-			`),
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
+          }
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -1786,10 +1786,12 @@ suite("Mutation field updateVenue", () => {
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) { id }
-			  }
-			`),
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
+          }
+        }
+      `),
 			{
 				headers: {
 					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
