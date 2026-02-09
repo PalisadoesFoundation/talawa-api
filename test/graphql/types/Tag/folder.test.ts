@@ -168,6 +168,7 @@ describe("Tag.folder resolver - Integration", () => {
 			});
 		} catch (error) {
 			console.warn(`Cleanup failed for org ${orgId}:`, error);
+			throw error;
 		}
 	}
 
@@ -180,6 +181,7 @@ describe("Tag.folder resolver - Integration", () => {
 			});
 		} catch (error) {
 			console.warn(`Cleanup failed for user ${userId}:`, error);
+			throw error;
 		}
 	}
 
@@ -450,19 +452,22 @@ describe("Tag.folder resolver - Integration", () => {
 			"findFirst",
 		);
 
-		// First call check (Query.tag) - return valid user
-		findFirstSpy.mockReturnValueOnce(
-			Promise.resolve(adminUserMock) as unknown as ReturnType<
+		// Use mockImplementation with call counter for explicit, order-aware mocking.
+		// This is clearer than mockReturnValueOnce and allows adding debug assertions.
+		let callCount = 0;
+		findFirstSpy.mockImplementation(() => {
+			callCount++;
+			if (callCount === 1) {
+				// First call: Query.tag resolver auth check - return valid user
+				return Promise.resolve(adminUserMock) as unknown as ReturnType<
+					typeof server.drizzleClient.query.usersTable.findFirst
+				>;
+			}
+			// Second call: Tag.folder resolver auth check - simulate user not found (race condition)
+			return Promise.resolve(undefined) as unknown as ReturnType<
 				typeof server.drizzleClient.query.usersTable.findFirst
-			>,
-		);
-
-		// Second call check (Tag.folder) - return undefined (simulating user deletion or issue)
-		findFirstSpy.mockReturnValueOnce(
-			Promise.resolve(undefined) as unknown as ReturnType<
-				typeof server.drizzleClient.query.usersTable.findFirst
-			>,
-		);
+			>;
+		});
 
 		const result = await mercuriusClient.query(Query_tag_folder, {
 			headers: { authorization: `bearer ${adminAuth.token}` },
