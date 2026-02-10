@@ -9,7 +9,7 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { orgId } from "~/src/graphql/validators/core";
-import { PASSWORD_MAX_LENGTH } from "~/src/routes/auth/validators";
+import { PASSWORD_MAX_LENGTH } from "~/src/utilities/auth/constants";
 
 export const mutationSignUpInputSchema = usersTableInsertSchema
 	.omit({

@@ -1,8 +1,11 @@
 import { z } from "zod";
+import {
+	NAME_MAX_LENGTH,
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+} from "~/src/utilities/auth/constants";
 
-export const PASSWORD_MIN_LENGTH = 8;
-export const PASSWORD_MAX_LENGTH = 64;
-export const NAME_MAX_LENGTH = 50;
+export { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH };
 
 /** Zod schema for REST sign-up request body. Aligns with MutationSignUpInput password length. */
 export const signUpBody = z.object({
