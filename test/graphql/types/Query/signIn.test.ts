@@ -1064,7 +1064,7 @@ suite("Query field signIn", () => {
 							>([
 								{
 									argumentPath: ["input", "recaptchaToken"],
-									message: "Invalid reCAPTCHA token.",
+									message: "reCAPTCHA verification failed. Please try again.",
 								},
 							]),
 						}),
@@ -1216,7 +1216,7 @@ suite("Query field signIn", () => {
 							>([
 								{
 									argumentPath: ["input", "recaptchaToken"],
-									message: "Invalid reCAPTCHA token.",
+									message: "reCAPTCHA verification failed. Please try again.",
 								},
 							]),
 						}),

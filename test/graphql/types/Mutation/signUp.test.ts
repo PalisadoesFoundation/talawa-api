@@ -1017,7 +1017,7 @@ suite("Mutation field signUp", () => {
 							>([
 								{
 									argumentPath: ["input", "recaptchaToken"],
-									message: "Invalid reCAPTCHA token.",
+									message: "reCAPTCHA verification failed. Please try again.",
 								},
 							]),
 						}),
@@ -1178,7 +1178,7 @@ suite("Mutation field signUp", () => {
 							>([
 								{
 									argumentPath: ["input", "recaptchaToken"],
-									message: "Invalid reCAPTCHA token.",
+									message: "reCAPTCHA verification failed. Please try again.",
 								},
 							]),
 						}),
