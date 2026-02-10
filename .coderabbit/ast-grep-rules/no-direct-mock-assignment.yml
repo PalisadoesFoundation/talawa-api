@@ -1,0 +1,17 @@
+id: no-direct-mock-assignment
+language: typescript
+rule:
+  any:
+    - pattern: $OBJ.$PROP = vi.fn($$$)
+    - pattern: $OBJ.$NESTED.$PROP = vi.fn($$$)
+    - pattern: $OBJ.$A.$B.$PROP = vi.fn($$$)
+message: |
+  Avoid direct assignment when mocking object methods. Use vi.spyOn() instead.
+
+  ❌ BAD:  server.minio.client.putObject = vi.fn()
+  ✅ GOOD: vi.spyOn(server.minio.client, 'putObject')
+
+  Direct assignments bypass vitest's mock tracking, so vi.restoreAllMocks() 
+  won't clean them up, causing test pollution in sharded CI environments.
+severity: error
+note: "This pattern caused flaky tests in PR `#5180` (issue `#5169`)"
