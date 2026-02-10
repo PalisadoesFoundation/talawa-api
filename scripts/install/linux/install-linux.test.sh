@@ -815,7 +815,7 @@ setup_debian_system
 rm -f "$TEST_DIR/package.json"
 
 set +e
-OUTPUT=$(run_test_script local false 2>&1)
+OUTPUT=$(run_test_script local 2>&1)
 EXIT_CODE=$?
 set -e
 
@@ -840,7 +840,7 @@ cat > "$TEST_DIR/package.json" <<EOF
 EOF
 
 set +e
-OUTPUT=$(run_test_script local false 2>&1)
+OUTPUT=$(run_test_script local 2>&1)
 EXIT_CODE=$?
 set -e
 
@@ -1061,7 +1061,7 @@ create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
 
 set +e
-OUTPUT=$(run_test_script --skip-prereqs false 2>&1)
+OUTPUT=$(run_test_script --skip-prereqs 2>&1)
 EXIT_CODE=$?
 set -e
 

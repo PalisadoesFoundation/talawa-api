@@ -141,6 +141,9 @@ for arg in "$@"; do
     --skip-prereqs|true)
       SKIP_PREREQS="true"
       ;;
+    false)
+      # Ignore literal 'false' for backward compatibility with test harness
+      ;;
     *)
       echo "Unknown argument: $arg"
       echo "Usage: $0 [docker|local] [--skip-prereqs]"
@@ -348,7 +351,7 @@ check_docker_running() {
 validate_package_json_fields() {
     # Verify this is the talawa-api repository
     local pkg_name
-    pkg_name=$(jq -r '.name // empty' package.json)
+    pkg_name=$(jq -r '.name // empty' package.json 2>/dev/null)
     if [ "$pkg_name" != "talawa-api" ]; then
         error "This script must be run from the talawa-api repository."
         info "  Found package name: '$pkg_name'"
@@ -408,7 +411,7 @@ JQ_AVAILABLE=false
 if command_exists jq; then
     JQ_AVAILABLE=true
 else
-    if [ "$SKIP_PREREQS" = "true" ] || [ "$SKIP_PREREQS" = "--skip-prereqs" ]; then
+    if [ "$SKIP_PREREQS" = "true" ]; then
         # User explicitly skipped prereqs but jq is missing - this is an error
         error "jq is required but not installed."
         info ""
@@ -485,7 +488,7 @@ info "Detected distribution: $DISTRO (family: $DISTRO_FAMILY, version: $OS_VERSI
 CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step "$CURRENT_STEP" "$TOTAL_STEPS" "Installing system dependencies..."
 
-if [ "$SKIP_PREREQS" = "true" ] || [ "$SKIP_PREREQS" = "--skip-prereqs" ]; then
+if [ "$SKIP_PREREQS" = "true" ]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
 else
     INSTALLED_PREREQS=false
@@ -566,7 +569,7 @@ print_step "$CURRENT_STEP" "$TOTAL_STEPS" "Checking Docker installation..."
 if [ "$INSTALL_MODE" = "docker" ]; then
     if command_exists docker; then
         success "Docker is already installed: $(docker --version)"
-    elif [ "$SKIP_PREREQS" = "true" ] || [ "$SKIP_PREREQS" = "--skip-prereqs" ]; then
+    elif [ "$SKIP_PREREQS" = "true" ]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
         # Check for WSL with Docker Desktop recommendation
