@@ -75,7 +75,7 @@ describe("User.state resolver", () => {
 		const currentUserId = faker.string.uuid();
 		const { context, mocks } = createMockGraphQLContext(true, currentUserId);
 		// Different ID, but admin role allows access
-		const parent = { id: faker.string.uuid(), state: faker.location.state() };
+		const parent = { id: faker.string.uuid(), state: "California" };
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
@@ -88,7 +88,7 @@ describe("User.state resolver", () => {
 	it("should return state if user accesses their own data", async () => {
 		const currentUserId = faker.string.uuid();
 		const { context, mocks } = createMockGraphQLContext(true, currentUserId);
-		const parent = { id: currentUserId, state: faker.location.state() }; // Same ID
+		const parent = { id: currentUserId, state: "Texas" }; // Same ID
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "regular",
