@@ -6,11 +6,19 @@
 
 > **UserStateResolver**(`parent`, `_args`, `ctx`): `Promise`\<[`HTMLSafeString`](../../../../../utilities/sanitizer/type-aliases/HTMLSafeString.md) \| `null`\>
 
-Defined in: [src/graphql/types/User/state.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/state.ts#L8)
+Defined in: [src/graphql/types/User/state.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/state.ts#L21)
+
+Resolver for the `state` field of the `User` type.
+
+This function retrieves the state of a user. It enforces authorization rules:
+- The user must be authenticated.
+- The user must be the same as the parent user or an administrator.
 
 ## Parameters
 
 ### parent
+
+The parent `User` object.
 
 #### addressLine1
 
@@ -140,10 +148,20 @@ Defined in: [src/graphql/types/User/state.ts:8](https://github.com/PalisadoesFou
 
 `unknown`
 
+The arguments for the field (unused).
+
 ### ctx
 
 [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md)
 
+The GraphQL context containing the current client and Drizzle client.
+
 ## Returns
 
 `Promise`\<[`HTMLSafeString`](../../../../../utilities/sanitizer/type-aliases/HTMLSafeString.md) \| `null`\>
+
+The escaped state string of the user.
+
+## Throws
+
+if the user is unauthenticated or unauthorized.

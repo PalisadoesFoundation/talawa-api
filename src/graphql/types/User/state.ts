@@ -5,6 +5,19 @@ import type { GraphQLContext } from "../../context";
 import type { User as UserType } from "./User";
 import { User } from "./User";
 
+/**
+ * Resolver for the `state` field of the `User` type.
+ *
+ * This function retrieves the state of a user. It enforces authorization rules:
+ * - The user must be authenticated.
+ * - The user must be the same as the parent user or an administrator.
+ *
+ * @param parent - The parent `User` object.
+ * @param _args - The arguments for the field (unused).
+ * @param ctx - The GraphQL context containing the current client and Drizzle client.
+ * @returns The escaped state string of the user.
+ * @throws {TalawaGraphQLError} if the user is unauthenticated or unauthorized.
+ */
 export const UserStateResolver = async (
 	parent: UserType,
 	_args: unknown,
