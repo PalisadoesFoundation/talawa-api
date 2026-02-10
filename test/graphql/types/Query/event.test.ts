@@ -337,6 +337,37 @@ suite("Query field event", () => {
 				expect(error?.path).toEqual(["event"]);
 			});
 
+			test("results in invalid_arguments error when input validation fails", async () => {
+				const authToken = await getAdminToken();
+
+				// Pass invalid input that fails Zod validation
+				const result = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: "", // empty id as invalid argument
+						},
+					},
+				});
+
+				expect(result.data.event).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.any(Array),
+							}),
+							message: expect.any(String),
+							path: ["event"],
+						}),
+					]),
+				);
+			});
+
 			test("fails with ULID containing invalid characters", async () => {
 				const authToken = await getAdminToken();
 				const result = await mercuriusClient.query(Query_event, {
