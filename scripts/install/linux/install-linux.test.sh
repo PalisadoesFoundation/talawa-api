@@ -606,6 +606,61 @@ else
 fi
 
 
+##############################################################################
+# jq Deferred Install - ensure jq is installed during prerequisites
+##############################################################################
+
+test_start "jq Deferred Install - Prereqs install jq"
+setup_debian_system
+
+# Ensure jq is absent at start (hidden)
+touch "$MOCK_BIN/jq.hidden"
+rm -f "$MOCK_BIN/jq"
+
+# Mock apt-get to simulate installing jq during prerequisites
+create_mock "apt-get" '
+    if [ "$1" = "update" ]; then echo "Updating package lists..."; exit 0; fi
+    if [ "$1" = "install" ]; then
+        # Simulate installing jq: remove hidden marker and create real mock
+        rm -f "$MOCK_BIN/jq.hidden" 2>/dev/null || true
+        cat > "$MOCK_BIN/jq" <<JQBIN
+#!/bin/bash
+if [ "\$1" = "--version" ]; then echo "jq-1.6"; exit 0; fi
+if [ "\$1" = "-r" ]; then
+    # Minimal behavior for package.json parsing
+    if [ -f package.json ]; then
+        node -e "const p=require('./package.json'); console.log(p.name||'')"
+    fi
+    exit 0
+fi
+exit 0
+JQBIN
+        chmod +x "$MOCK_BIN/jq"
+        echo "Mock apt-get installed ${*:4}"
+        exit 0
+    fi
+    exit 0
+'
+
+# Provide other basic mocks so installer proceeds
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+
+set +e
+OUTPUT=$(run_test_script local true 2>&1)
+EXIT_CODE=$?
+set -e
+
+# Assert installer succeeded and jq is now present (hidden removed)
+if [ $EXIT_CODE -eq 0 ] && [ ! -f "$MOCK_BIN/jq.hidden" ] && [ -x "$MOCK_BIN/jq" ]; then
+    test_pass
+else
+    test_fail "Expected jq to be installed during prerequisites.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
+fi
+
+
 test_start "Node.js Installation - Version from package.json"
 setup_debian_system
 
@@ -1109,9 +1164,8 @@ fi
 
 
 ##############################################################################
-# Cleanup
+# Cleanup is handled by the EXIT trap via cleanup()
 ##############################################################################
-rm -rf "$TEST_DIR"
 
 ##############################################################################
 # Summary

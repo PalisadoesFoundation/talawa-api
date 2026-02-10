@@ -595,7 +595,7 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         
         info "Installing Docker..."
         docker_installer="$(mktemp /tmp/get-docker.XXXXXX.sh)"
-        register_cleanup_task "rm -f $docker_installer"
+        register_cleanup_task "rm -f \"$docker_installer\""
         
         info "Downloading Docker installation script from https://get.docker.com..."
         if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
@@ -672,7 +672,7 @@ if command_exists fnm; then
 else
     info "Installing fnm (Fast Node Manager)..."
     fnm_installer="$(mktemp /tmp/fnm-install.XXXXXX.sh)"
-    register_cleanup_task "rm -f $fnm_installer"
+    register_cleanup_task "rm -f \"$fnm_installer\""
     
     info "Downloading fnm installation script..."
     if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
