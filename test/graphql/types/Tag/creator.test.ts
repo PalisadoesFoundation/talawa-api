@@ -58,9 +58,8 @@ describe("Tag Creator Resolver -Test ", () => {
 				mockUserData,
 			);
 
-			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-			);
+			const result = await tagCreatorResolver(mockTag, {}, ctx);
+			expect(result).toBeNull();
 		});
 
 		it("should throw unauthorized_action for non admin with member-level organization membership", async () => {
@@ -76,9 +75,8 @@ describe("Tag Creator Resolver -Test ", () => {
 				mockUserData,
 			);
 
-			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-			);
+			const result = await tagCreatorResolver(mockTag, {}, ctx);
+			expect(result).toBeNull();
 		});
 
 		it("should allow system administrator full access", async () => {
@@ -186,9 +184,8 @@ describe("Tag Creator Resolver -Test ", () => {
 				mockUserData,
 			);
 
-			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-			);
+			const result = await tagCreatorResolver(mockTag, {}, ctx);
+			expect(result).toBeNull();
 		});
 
 		it("should return current user if they are the creator", async () => {

@@ -256,6 +256,12 @@ describe("GraphQL Error Formatting Integration", () => {
 		});
 		await rateLimitServer.ready();
 
+		// Clear any existing rate limit buckets to ensure clean test state
+		const keys = await rateLimitServer.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await rateLimitServer.redis.del(...keys);
+		}
+
 		try {
 			const query = `
 				query {

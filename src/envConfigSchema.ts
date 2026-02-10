@@ -1,6 +1,7 @@
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
 import { type Static, Type } from "typebox";
+import { rootLogger } from "./utilities/logging/logger";
 
 /**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.
@@ -138,11 +139,14 @@ export const envConfigSchema = Type.Object({
 	),
 	/**
 	 * Email provider selection.
-	 * Supported values: 'ses' (Amazon SES) and 'smtp'.
-	 * Defaults to 'ses' if not specified.
+	 * Supported values: 'ses' (Amazon SES), 'smtp', and 'mailpit' (local testing).
+	 * Defaults to 'mailpit' if not specified.
 	 */
 	API_EMAIL_PROVIDER: Type.Optional(
-		Type.Union([Type.Literal("ses"), Type.Literal("smtp")], { default: "ses" }),
+		Type.Union(
+			[Type.Literal("ses"), Type.Literal("smtp"), Type.Literal("mailpit")],
+			{ default: "mailpit" },
+		),
 	),
 	/**
 	 * AWS access key ID for SES email service.
@@ -791,7 +795,8 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 						typeof parsed === "object" &&
 						!Array.isArray(parsed)
 					);
-				} catch {
+				} catch (error) {
+					rootLogger.debug({ error }, "JSON validation failed for env var");
 					return false;
 				}
 			},

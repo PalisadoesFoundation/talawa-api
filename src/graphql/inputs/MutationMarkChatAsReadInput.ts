@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
+import { uuid } from "~/src/graphql/validators/core";
 
 export const mutationMarkChatAsReadInputSchema = z.object({
-	chatId: z.string().uuid(),
-	messageId: z.string().uuid(),
+	chatId: uuid,
+	messageId: uuid,
 });
 
 export const MutationMarkChatAsReadInput = builder
