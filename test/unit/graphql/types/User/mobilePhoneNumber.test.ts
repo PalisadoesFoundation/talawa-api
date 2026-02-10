@@ -23,11 +23,10 @@ suite("User field mobilePhoneNumber", () => {
 			);
 
 			// Invoke the callback to cover the lines
-			const call = (
-				User.implement as unknown as {
-					mock: { calls: Array<[{ fields: (t: unknown) => void }]> };
-				}
-			).mock.calls.find((args) => args[0].fields);
+			// @ts-expect-error - inspecting mock calls
+			const call = User.implement.mock.calls.find((args) => args[0].fields);
+
+			expect(call).toBeDefined();
 			if (!call) {
 				throw new Error("Expected implement call not found");
 			}
@@ -57,11 +56,11 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("throws unauthenticated error when client is not authenticated", async () => {
-			const _userId = faker.string.uuid();
-			const { context } = createMockGraphQLContext(false, _userId); // Not authenticated
+			const userId = faker.string.uuid();
+			const { context } = createMockGraphQLContext(false, userId); // Not authenticated
 
 			const parent = {
-				id: _userId,
+				id: userId,
 			} as unknown as UserType;
 
 			await expect(
@@ -76,11 +75,11 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("throws unauthenticated error when user is not found in database", async () => {
-			const _userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, _userId);
+			const userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, userId);
 
 			const parent = {
-				id: _userId,
+				id: userId,
 			} as unknown as UserType;
 
 			// Mock findFirst to return undefined (user not found)
@@ -125,12 +124,12 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns mobilePhoneNumber when user accesses their own data", async () => {
-			const _userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, _userId);
+			const userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, userId);
 
 			const expectedPhoneNumber = faker.phone.number();
 			const parent = {
-				id: _userId, // Accessing own data
+				id: userId, // Accessing own data
 				mobilePhoneNumber: expectedPhoneNumber,
 			} as unknown as UserType;
 
@@ -164,23 +163,21 @@ suite("User field mobilePhoneNumber", () => {
 
 			// Invoke the where callback for coverage
 			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
-			const findFirstMock = mocks.drizzleClient.query.usersTable
-				.findFirst as unknown as {
-				mock: {
-					calls: Array<
-						[
-							{
-								where: (fields: unknown, operators: unknown) => void;
-							},
-						]
-					>;
-				};
-			};
+			const findFirstMock = mocks.drizzleClient.query.usersTable.findFirst;
+
 			const findFirstCall = findFirstMock.mock.calls[0];
+
 			if (!findFirstCall) {
 				throw new Error("Expected findFirst call not found");
 			}
-			const whereCallback = findFirstCall[0].where;
+			const args = (
+				findFirstCall as unknown as [
+					{
+						where: (fields: unknown, operators: unknown) => void;
+					},
+				]
+			)[0];
+			const whereCallback = args.where;
 
 			const operators = { eq: vi.fn() };
 			const fields = { id: "test-id" };
@@ -189,16 +186,16 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("handles null or empty mobilePhoneNumber correctly", async () => {
-			const _userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, _userId);
+			const userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, userId);
 
 			const parentNull = {
-				id: _userId,
+				id: userId,
 				mobilePhoneNumber: null,
 			} as unknown as UserType;
 
 			const parentEmpty = {
-				id: _userId,
+				id: userId,
 				mobilePhoneNumber: "",
 			} as unknown as UserType;
 
@@ -223,11 +220,11 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("wraps generic Error in Internal Server Error", async () => {
-			const _userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, _userId);
+			const userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, userId);
 
 			const parent = {
-				id: _userId,
+				id: userId,
 			} as unknown as UserType;
 
 			const genericError = new Error("Something went wrong");
@@ -241,11 +238,11 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("rethrows TalawaGraphQLError as is", async () => {
-			const _userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, _userId);
+			const userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, userId);
 
 			const parent = {
-				id: _userId,
+				id: userId,
 			} as unknown as UserType;
 
 			const talawaError = new TalawaGraphQLError({
