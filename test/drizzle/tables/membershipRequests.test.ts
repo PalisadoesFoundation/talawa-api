@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { eq, getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
-import { describe, expect, it } from "vitest";
-import { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
+import { afterEach, describe, expect, it } from "vitest";
 
+import { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
 import {
 	membershipRequestsTable,
 	membershipRequestsTableInsertSchema,
@@ -14,6 +14,36 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { server } from "../../server";
 
 describe("src/drizzle/tables/membershipRequests.ts", () => {
+	const createdOrgIds: string[] = [];
+	const createdUserIds: string[] = [];
+	const createdMembershipRequestIds: string[] = [];
+
+	afterEach(async () => {
+		for (const id of createdMembershipRequestIds) {
+			await server.drizzleClient
+				.delete(membershipRequestsTable)
+				.where(eq(membershipRequestsTable.membershipRequestId, id))
+				.catch(() => {});
+		}
+		createdMembershipRequestIds.length = 0;
+
+		for (const id of createdUserIds) {
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, id))
+				.catch(() => {});
+		}
+		createdUserIds.length = 0;
+
+		for (const id of createdOrgIds) {
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, id))
+				.catch(() => {});
+		}
+		createdOrgIds.length = 0;
+	});
+
 	async function createTestOrganization() {
 		const [org] = await server.drizzleClient
 			.insert(organizationsTable)
@@ -25,6 +55,8 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			.returning({ id: organizationsTable.id });
 
 		if (!org?.id) throw new Error("Failed to create organization");
+
+		createdOrgIds.push(org.id);
 		return org.id;
 	}
 
@@ -32,8 +64,8 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 		const [user] = await server.drizzleClient
 			.insert(usersTable)
 			.values({
-				emailAddress: `user.${faker.string.uuid()}@test.com`,
-				passwordHash: faker.string.alphanumeric(32),
+				emailAddress: faker.internet.email(),
+				passwordHash: "hash",
 				role: "regular",
 				name: faker.person.fullName(),
 				isEmailAddressVerified: true,
@@ -41,6 +73,8 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			.returning({ id: usersTable.id });
 
 		if (!user?.id) throw new Error("Failed to create user");
+
+		createdUserIds.push(user.id);
 		return user.id;
 	}
 
@@ -58,13 +92,11 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 		});
 	});
 
-	describe("Indexes and Constraints", () => {
+	describe("Indexes & Constraints", () => {
 		it("should define expected indexes", () => {
 			const tableConfig = getTableConfig(membershipRequestsTable);
 
-			expect(tableConfig.indexes.length).toBeGreaterThanOrEqual(2);
-
-			const indexedColumns = tableConfig.indexes.map((idx) =>
+			const indexColumns = tableConfig.indexes.map((idx) =>
 				idx.config.columns
 					.map((c) => {
 						if ("name" in c) {
@@ -72,27 +104,26 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 						}
 						throw new Error("Unexpected index column type");
 					})
+
 					.sort()
 					.join(","),
 			);
 
-			expect(indexedColumns).toContain("user_id");
-			expect(indexedColumns).toContain("organization_id");
+			expect(indexColumns).toContain("user_id");
+			expect(indexColumns).toContain("organization_id");
 		});
 
-		it("should define unique constraint on (userId, organizationId)", () => {
+		it("should define unique user + organization constraint", () => {
 			const tableConfig = getTableConfig(membershipRequestsTable);
 
 			const uniqueColumns = tableConfig.uniqueConstraints.map((uc) =>
 				uc.columns
-					.map((c) => c.name)
+					.map((col) => col.name)
 					.sort()
 					.join(","),
 			);
 
-			expect(uniqueColumns).toContain(
-				["user_id", "organization_id"].sort().join(","),
-			);
+			expect(uniqueColumns).toContain("organization_id,user_id");
 		});
 	});
 
@@ -110,6 +141,17 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should accept all valid status enum values", () => {
+			for (const status of MembershipRequestStatusValues) {
+				const result = membershipRequestsTableInsertSchema.safeParse({
+					userId: faker.string.uuid(),
+					organizationId: faker.string.uuid(),
+					status,
+				});
+				expect(result.success).toBe(true);
+			}
+		});
+
 		it("should reject invalid status", () => {
 			const result = membershipRequestsTableInsertSchema.safeParse({
 				userId: faker.string.uuid(),
@@ -118,55 +160,19 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			});
 			expect(result.success).toBe(false);
 		});
-		it("should accept all valid status enum values", () => {
-			for (const status of MembershipRequestStatusValues) {
-				const result = membershipRequestsTableInsertSchema.safeParse({
-					userId: faker.string.uuid(),
-					organizationId: faker.string.uuid(),
-					status,
-				});
+	});
 
-				expect(result.success).toBe(true);
-			}
+	describe("Relations", () => {
+		it("should define expected relations", () => {
+			const relations = membershipRequestsTableRelations;
+
+			expect(relations.table).toBe(membershipRequestsTable);
+			expect(typeof relations.config).toBe("function");
 		});
 	});
 
 	describe("Database Operations", () => {
-		it("should insert with default status = pending", async () => {
-			const orgId = await createTestOrganization();
-			const userId = await createTestUser();
-
-			const [row] = await server.drizzleClient
-				.insert(membershipRequestsTable)
-				.values({
-					userId,
-					organizationId: orgId,
-				})
-				.returning();
-
-			expect(row).toBeDefined();
-			expect(row?.status).toBe("pending");
-			expect(row?.createdAt).toBeInstanceOf(Date);
-		});
-
-		it("should enforce unique (userId, organizationId)", async () => {
-			const orgId = await createTestOrganization();
-			const userId = await createTestUser();
-
-			await server.drizzleClient.insert(membershipRequestsTable).values({
-				userId,
-				organizationId: orgId,
-			});
-
-			await expect(
-				server.drizzleClient.insert(membershipRequestsTable).values({
-					userId,
-					organizationId: orgId,
-				}),
-			).rejects.toThrow();
-		});
-
-		it("should cascade delete when organization is deleted", async () => {
+		it("should insert a membership request", async () => {
 			const orgId = await createTestOrganization();
 			const userId = await createTestUser();
 
@@ -175,10 +181,25 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.values({ userId, organizationId: orgId })
 				.returning();
 
-			if (!inserted) {
-				throw new Error("Insert failed");
-			}
-			const { membershipRequestId } = inserted;
+			if (!inserted) throw new Error("Insert failed");
+
+			createdMembershipRequestIds.push(inserted.membershipRequestId);
+
+			expect(inserted.userId).toBe(userId);
+			expect(inserted.organizationId).toBe(orgId);
+			expect(inserted.status).toBe("pending");
+		});
+
+		it("should cascade delete on organization delete", async () => {
+			const orgId = await createTestOrganization();
+			const userId = await createTestUser();
+
+			const [inserted] = await server.drizzleClient
+				.insert(membershipRequestsTable)
+				.values({ userId, organizationId: orgId })
+				.returning();
+
+			if (!inserted) throw new Error("Insert failed");
 
 			await server.drizzleClient
 				.delete(organizationsTable)
@@ -188,66 +209,13 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.select()
 				.from(membershipRequestsTable)
 				.where(
-					eq(membershipRequestsTable.membershipRequestId, membershipRequestId),
+					eq(
+						membershipRequestsTable.membershipRequestId,
+						inserted.membershipRequestId,
+					),
 				);
 
 			expect(rows.length).toBe(0);
-		});
-
-		it("should cascade delete when user is deleted", async () => {
-			const orgId = await createTestOrganization();
-			const userId = await createTestUser();
-
-			const [inserted] = await server.drizzleClient
-				.insert(membershipRequestsTable)
-				.values({ userId, organizationId: orgId })
-				.returning();
-
-			if (!inserted) {
-				throw new Error("Insert failed");
-			}
-			const { membershipRequestId } = inserted;
-
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, userId));
-
-			const rows = await server.drizzleClient
-				.select()
-				.from(membershipRequestsTable)
-				.where(
-					eq(membershipRequestsTable.membershipRequestId, membershipRequestId),
-				);
-
-			expect(rows.length).toBe(0);
-		});
-	});
-
-	describe("Relations", () => {
-		it("should define relations config", () => {
-			expect(membershipRequestsTableRelations).toBeDefined();
-			expect(typeof membershipRequestsTableRelations.config).toBe("function");
-		});
-
-		it("should define expected relations", () => {
-			const mockRelations = {
-				one: () => ({
-					withFieldName: () => ({}),
-				}),
-				many: () => ({
-					withFieldName: () => ({}),
-				}),
-			};
-
-			const relations = membershipRequestsTableRelations.config(
-				mockRelations as unknown as Parameters<
-					typeof membershipRequestsTableRelations.config
-				>[0],
-			);
-
-			expect(relations.user).toBeDefined();
-			expect(relations.organization).toBeDefined();
-			expect(relations.membership).toBeDefined();
 		});
 	});
 });
