@@ -3,6 +3,6 @@ import { z } from "zod";
 /**
  * Possible variants of the type of a video.
  */
-export const videoMimeType = ["video/mp4", "video/webm"] as const;
+export const videoMimeTypes = ["video/mp4", "video/webm"] as const;
 
-export const videoMimeTypeEnum = z.enum(videoMimeType);
+export const videoMimeTypeEnum = z.enum(videoMimeTypes);

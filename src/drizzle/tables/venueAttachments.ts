@@ -9,17 +9,17 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { imageMimeTypes } from "../enums/imageMimeType";
-import { videoMimeType } from "../enums/videoMimeType";
+import { videoMimeTypes } from "../enums/videoMimeType";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
 
 /**
  * PostgreSQL enum for venue attachment MIME types.
- * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm, video/quicktime
+ * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm
  */
 export const venueAttachmentMimeTypePgEnum = pgEnum(
 	"venue_attachment_mime_type",
-	[...videoMimeType, ...imageMimeTypes],
+	[...videoMimeTypes, ...imageMimeTypes],
 );
 
 /**

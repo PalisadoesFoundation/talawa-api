@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { getTableColumns, getTableName } from "drizzle-orm";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
@@ -34,7 +35,7 @@ async function createTestOrganization(): Promise<string> {
 		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
-				name: `Org-${Date.now()}`,
+				name: `Org-${faker.string.ulid()}`,
 				countryCode: "us",
 				isUserRegistrationRequired: true,
 			},
@@ -55,7 +56,7 @@ async function createTestOrganization(): Promise<string> {
 
 async function createTestVenue(): Promise<string> {
 	const { userId } = await createRegularUserUsingAdmin();
-	const postResult = await server.drizzleClient
+	const VenueResult = await server.drizzleClient
 		.insert(venuesTable)
 		.values({
 			name: "test",
@@ -63,9 +64,9 @@ async function createTestVenue(): Promise<string> {
 			organizationId: await createTestOrganization(),
 		})
 		.returning({ id: venuesTable.id });
-	const postId = postResult[0]?.id;
-	assertToBeNonNullish(postId, "Post ID is missing from creation response");
-	return postId;
+	const venueId = VenueResult[0]?.id;
+	assertToBeNonNullish(venueId, "Venue ID is missing from creation response");
+	return venueId;
 }
 // Mock drizzle-orm itself to handle relations
 vi.mock("drizzle-orm", async (importOriginal) => {
@@ -548,7 +549,7 @@ describe("venueAttachments.ts", () => {
 		});
 	});
 
-	describe("Enum test", () => {
+	describe("DB Level Enum enforced test", () => {
 		it("should reject invalid enum values at the database layer", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const venueId = await createTestVenue();
