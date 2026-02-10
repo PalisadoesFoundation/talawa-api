@@ -135,6 +135,40 @@ reviews:
         - Sequential mocks (mockResolvedValueOnce) return batch-specific data, not all data on every call
         - Mock return values match the actual API/function signature and data structure
 
+        **Mock Isolation Anti-Patterns (CRITICAL for Sharded CI):**
+        - **Direct Mock Assignment Detection:**
+          - ❌ CRITICAL: Flag ANY occurrence of direct assignment to mock object methods:
+            ```typescript
+            // These bypass vitest mock tracking and cause test pollution:
+            server.minio.client.putObject = vi.fn()
+            server.drizzleClient.transaction = vi.fn()
+            context.someService.someMethod = vi.fn()
+            obj.prop = vi.fn()
+            ```
+          - ✅ REQUIRE: Use vi.spyOn() for all method mocking:
+            ```typescript
+            const spy = vi.spyOn(server.minio.client, 'putObject');
+            const txSpy = vi.spyOn(server.drizzleClient, 'transaction');
+            ```
+          
+        - **Why This Matters:**
+          - Direct assignment bypasses vitest's mock registry
+          - vi.restoreAllMocks() will NOT restore these mocks
+          - Causes test pollution and flaky failures in sharded CI
+          - Root cause of issue `#5169` (MinIO test flakiness)
+
+        - **Detection Patterns:**
+          - Search for: `= vi.fn(` in test files
+          - Check if left-hand side is a property access (obj.prop)
+          - If found, require refactor to vi.spyOn()
+          - Even with try/finally cleanup, prefer vi.spyOn() for safety
+
+        - **Common Offenders:**
+          - server.minio.client.* methods
+          - server.drizzleClient.* methods
+          - Any context.* property assignments
+          - Any obj.nested.prop = vi.fn() patterns
+
         **Test Cleanup & Hygiene:**
 
         - **Database Cleanup Required:**
@@ -280,6 +314,12 @@ reviews:
         - All previous review comments addressed
         - Proper title, description, and issue linkage
         - Target branch is correct (typically `develop`)
+
+        **Test File Specific Checks:**
+        - In test files (test/**/*.test.ts), watch for direct mock assignments
+        - Pattern: `object.property = vi.fn()` indicates mock isolation risk
+        - These bypass vi.restoreAllMocks() and cause CI flakiness
+        - Reference: Issue `#5169`, PR `#5180`
 
         **CI/CD Pipeline Compatibility:**
         - Validate changes won't break any of the 26 CI jobs across 11 workflows
