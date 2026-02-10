@@ -1,7 +1,4 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { z } from "zod";
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venuesTable } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
@@ -14,44 +11,7 @@ import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateVenueArgumentsSchema = z.object({
-	input: mutationCreateVenueInputSchema.transform(async (arg, ctx) => {
-		let attachments:
-			| (FileUpload & {
-					mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>;
-			  })[]
-			| undefined;
-
-		if (arg.attachments !== undefined) {
-			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = venueAttachmentMimeTypeEnum
-				.array()
-				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
-
-			if (!success) {
-				for (const issue of error.issues) {
-					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
-					if (typeof issue.path[0] === "number") {
-						ctx.addIssue({
-							code: "custom",
-							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
-						});
-					}
-				}
-			} else {
-				attachments = rawAttachments.map((attachment, index) =>
-					Object.assign(attachment, {
-						mimetype: data[index],
-					}),
-				);
-			}
-		}
-
-		return {
-			...arg,
-			attachments,
-		};
-	}),
+	input: mutationCreateVenueInputSchema,
 });
 
 builder.mutationField("createVenue", (t) =>
@@ -209,37 +169,68 @@ builder.mutationField("createVenue", (t) =>
 					});
 				}
 
-				if (parsedArgs.input.attachments !== undefined) {
+				if (parsedArgs.input.attachments?.length) {
 					const attachments = parsedArgs.input.attachments;
 
+					// Verify all files exist in MinIO in parallel before creating database records
+					await Promise.all(
+						attachments.map(async (attachment, i) => {
+							try {
+								await ctx.minio.client.statObject(
+									ctx.minio.bucketName,
+									attachment.objectName,
+								);
+							} catch (error) {
+								// Only treat NotFound as user error
+								if (
+									error instanceof Error &&
+									(error.name === "NotFound" ||
+										error.message.includes("Not Found") ||
+										(error as { code?: string }).code === "NotFound")
+								) {
+									throw new TalawaGraphQLError({
+										extensions: {
+											code: "invalid_arguments",
+											issues: [
+												{
+													argumentPath: [
+														"input",
+														"attachments",
+														i,
+														"objectName",
+													],
+													message:
+														"File not found in storage. Please upload the file first.",
+												},
+											],
+										},
+									});
+								}
+								// For other errors, throw unexpected
+								ctx.log.error(
+									`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
+								);
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "unexpected",
+									},
+								});
+							}
+						}),
+					);
+
+					// Create attachment records using name from FileMetadataInput (original filename)
 					const createdVenueAttachments = await tx
 						.insert(venueAttachmentsTable)
 						.values(
 							attachments.map((attachment) => ({
 								creatorId: currentUserId,
-								mimeType: attachment.mimetype,
-								name: ulid(),
+								mimeType: attachment.mimeType,
+								name: attachment.name,
 								venueId: createdVenue.id,
 							})),
 						)
 						.returning();
-
-					await Promise.all(
-						createdVenueAttachments.map((attachment, index) => {
-							if (attachments[index] !== undefined) {
-								return ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									attachments[index].createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
-								);
-							}
-							return undefined;
-						}),
-					);
 
 					return Object.assign(createdVenue, {
 						attachments: createdVenueAttachments,

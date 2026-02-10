@@ -2824,8 +2824,8 @@ input MutationCreateActionItemCategoryInput {
 
 """"""
 input MutationCreateAdvertisementInput {
-  """Attachments of the advertisement."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Custom information about the advertisement."""
   description: String
@@ -3092,7 +3092,7 @@ input MutationCreateOrganizationInput {
   addressLine2: String
 
   """Avatar of the organization."""
-  avatar: Upload
+  avatar: FileMetadataInput
 
   """Name of the city where the organization resides in."""
   city: String
@@ -3282,8 +3282,8 @@ input MutationCreateVenueBookingInput {
 
 """"""
 input MutationCreateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -3838,8 +3838,8 @@ input MutationUpdateCommunityInput {
   """URL to the linkedin account of the community."""
   linkedinURL: String
 
-  """Mime type of the logo of the community."""
-  logo: Upload
+  """Logo of the community."""
+  logo: FileMetadataInput
 
   """Name of the community."""
   name: String
@@ -4275,8 +4275,8 @@ input MutationUpdateUserInput {
 
 """"""
 input MutationUpdateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int

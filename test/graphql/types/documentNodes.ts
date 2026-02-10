@@ -279,6 +279,13 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     }
 }`);
 
+export const Query_user_workPhoneNumber =
+	gql(`query Query_user_workPhoneNumber($input: QueryUserInput!) {
+    user(input: $input) {
+        workPhoneNumber
+    }
+}`);
+
 export const Query_allUsers = gql(`
   query Query_allUsers(
     $first: Int,

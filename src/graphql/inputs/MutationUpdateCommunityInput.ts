@@ -1,8 +1,11 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { z } from "zod";
+import type { z } from "zod";
 import { communitiesTableInsertSchema } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
 import { url } from "~/src/graphql/validators/core";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 
 export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 	.omit({
@@ -19,7 +22,7 @@ export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 		githubURL: url.nullable().optional(),
 		instagramURL: url.nullable().optional(),
 		linkedinURL: url.nullable().optional(),
-		logo: z.custom<Promise<FileUpload>>().nullish(),
+		logo: fileMetadataInputSchema.nullish(),
 		name: communitiesTableInsertSchema.shape.name.trim().optional(),
 		redditURL: url.nullable().optional(),
 		slackURL: url.nullable().optional(),
@@ -59,9 +62,9 @@ export const MutationUpdateCommunityInput = builder
 				required: false,
 			}),
 			logo: t.field({
-				description: "Mime type of the logo of the community.",
+				description: "Logo of the community.",
 				required: false,
-				type: "Upload",
+				type: FileMetadataInput,
 			}),
 			name: t.string({
 				description: "Name of the community.",
