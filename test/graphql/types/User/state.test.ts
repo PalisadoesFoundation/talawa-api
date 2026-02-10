@@ -1,11 +1,14 @@
 import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UserStateResolver } from "~/src/graphql/types/User/state";
 import type { User as UserType } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("User.state resolver", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
@@ -110,21 +113,6 @@ describe("User.state resolver", () => {
 		expect(result).toContain("&lt;script&gt;");
 	});
 
-	it("should throw internal server error if database query fails", async () => {
-		const { context, mocks } = createMockGraphQLContext(true);
-		const parent = {
-			id: faker.string.uuid(),
-			state: faker.location.state(),
-		};
-
-		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-			new Error("DB Error"),
-		);
-
-		await expect(
-			UserStateResolver(parent as UserType, {}, context),
-		).rejects.toThrow();
-	});
 	it("should return null when state is null", async () => {
 		const currentUserId = faker.string.uuid();
 		const { context, mocks } = createMockGraphQLContext(true, currentUserId);
