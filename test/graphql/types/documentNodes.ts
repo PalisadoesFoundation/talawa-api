@@ -105,14 +105,9 @@ export const Mutation_signUp =
     }
 }`);
 
-/**
- * ADD THIS TO YOUR documentNodes.ts FILE
- * 
- * This GraphQL document node is required for the adminCreateOnSpotAttendee tests
- */
 
 export const Mutation_adminCreateOnSpotAttendee = gql(`
-  mutation AdminCreateOnSpotAttendee($input: MutationSignUpInput!) {
+  mutation Mutation_adminCreateOnSpotAttendee($input: MutationSignUpInput!) {
     adminCreateOnSpotAttendee(input: $input) {
       user {
         id
