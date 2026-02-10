@@ -704,9 +704,9 @@ suite("Mutation field updateVenue", () => {
 			res.errors?.some(
 				(e: GraphQLError) =>
 					e.extensions?.code ===
-					"forbidden_action_on_arguments_associated_resources" &&
+						"forbidden_action_on_arguments_associated_resources" &&
 					(e.extensions?.issues as Array<{ message: string }>)?.[0]?.message ===
-					"This name is not available.",
+						"This name is not available.",
 			),
 		).toBe(true);
 	});
