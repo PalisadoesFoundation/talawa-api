@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, afterEach, afterAll } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -8,6 +8,9 @@ import {
 	Mutation_adminCreateOnSpotAttendee,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Mutation_deleteOrganization,
+
+	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -25,7 +28,73 @@ const adminUserId = signInResult.data.signIn.user?.id;
 assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
 
+/**
+ * Tracking arrays for cleanup - prevents DB entity leaks in tests
+ */
+const trackedEntityIds = {
+	organizationIds: [] as string[],
+	userIds: [] as string[],
+	membershipIds: [] as string[],
+};
+
+/**
+ * Helper function to cleanup tracked entities
+ * Deletes organizations (which cascades memberships), then remaining users
+ */
+async function cleanupTrackedEntities(): Promise<void> {
+	// Delete organizations first (cascades to memberships)
+	for (const orgId of trackedEntityIds.organizationIds) {
+		try {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { id: orgId },
+				},
+			});
+		} catch (error) {
+			// Silently ignore errors - organization may already be deleted
+			console.log(`Failed to delete organization ${orgId}:`, (error as Error).message);
+		}
+	}
+
+	// Delete users individually if not already cascade-deleted
+	for (const userId of trackedEntityIds.userIds) {
+		try {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { id: userId },
+				},
+			});
+		} catch (error) {
+			// Silently ignore errors - user may already be deleted
+			console.log(`Failed to delete user ${userId}:`, (error as Error).message);
+		}
+	}
+
+	// Clear tracking arrays
+	trackedEntityIds.organizationIds = [];
+	trackedEntityIds.userIds = [];
+	trackedEntityIds.membershipIds = [];
+}
+
 suite("Mutation field adminCreateOnSpotAttendee", () => {
+	/**
+	 * Cleanup hook: runs after each test to prevent DB entity leaks
+	 * Deletes all tracked organizations and users created during the test
+	 */
+	afterEach(async () => {
+		await cleanupTrackedEntities();
+	});
+
+	/**
+	 * Fallback cleanup hook: runs after all tests in this suite
+	 * Ensures any remaining entities are cleaned up to prevent test pollution
+	 */
+	afterAll(async () => {
+		await cleanupTrackedEntities();
+	});
+
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
 			const result = await mercuriusClient.mutate(
@@ -112,22 +181,31 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member with administrator role
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
 				},
-			});
+			);
+			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			// Create a regular user with a known email
 			const { userId: existingUserId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(existingUserId);
+			trackedEntityIds.userIds.push(existingUserId);
+			trackedEntityIds.userIds.push(existingUserId);
 
 			// Fetch the user from database to get their email
 			const existingUser =
@@ -197,24 +275,31 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Create a regular user (non-admin)
 			const { userId: regularUserId, authToken: regularUserToken } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserId);
 			assertToBeNonNullish(regularUserToken);
+			trackedEntityIds.userIds.push(regularUserId);
 
 			// Add regular user as a regular member (NOT admin) of the organization
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: regularUserId,
-						organizationId: orgId,
-						role: "regular", // Regular role, not admin
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: regularUserId,
+							organizationId: orgId,
+							role: "regular", // Regular role, not admin
+						},
 					},
 				},
-			});
+			);
+			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			// Try to create on-spot attendee as regular user (should fail)
 			const result = await mercuriusClient.mutate(
@@ -271,12 +356,14 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Create a regular user with NO membership in the organization
 			const { userId: regularUserId, authToken: regularUserToken } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserId);
 			assertToBeNonNullish(regularUserToken);
+			trackedEntityIds.userIds.push(regularUserId);
 
 			// Try to create on-spot attendee (should fail - no membership)
 			const result = await mercuriusClient.mutate(
@@ -333,18 +420,24 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member with administrator role
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
 				},
-			});
+			);
+			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			const attendeeEmail = faker.internet.email();
 			const attendeeName = faker.person.fullName();
@@ -367,8 +460,12 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			const createdAttendee = result.data?.adminCreateOnSpotAttendee;
+			const createdAttendee = result.data?.adminCreateOnSpotAttendee as any;
 			expect(createdAttendee).toBeDefined();
+
+			// Track the created user ID
+			const createdUserId = createdAttendee?.user?.id;
+			if (createdUserId) trackedEntityIds.userIds.push(createdUserId);
 
 			// Verify user properties
 			expect(createdAttendee?.user?.name).toBe(attendeeName);
@@ -425,25 +522,31 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							postalCode: "90001",
 							addressLine1: "123 Sunset Blvd",
 							addressLine2: "Suite 200",
-							userRegistrationRequired: true, // REQUIRES APPROVAL
+							isUserRegistrationRequired: true, // REQUIRES APPROVAL
 						},
 					},
 				},
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member with administrator role
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
 				},
-			});
+			);
+			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			const attendeeEmail = faker.internet.email();
 
@@ -464,8 +567,12 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			const createdAttendee = result.data?.adminCreateOnSpotAttendee;
+			const createdAttendee = result.data?.adminCreateOnSpotAttendee as any;
 			expect(createdAttendee).toBeDefined();
+
+			// Track the created user ID
+			const createdUserId = createdAttendee?.user?.id;
+			if (createdUserId) trackedEntityIds.userIds.push(createdUserId);
 
 			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
@@ -484,7 +591,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							),
 					},
 				);
-			expect(dbMembership).toBeNull(); // No direct membership
+			expect(dbMembership).toBeUndefined(); // No direct membership
 
 			// Check membership request exists
 			const dbRequest =
@@ -516,16 +623,17 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							postalCode: "90001",
 							addressLine1: "123 Sunset Blvd",
 							addressLine2: "Suite 200",
-							userRegistrationRequired: false, // DIRECT MEMBERSHIP
+							isUserRegistrationRequired: false, // DIRECT MEMBERSHIP
 						},
 					},
 				},
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member with administrator role
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			const membershipResult = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
@@ -535,6 +643,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				},
 			});
+			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			const attendeeEmail = faker.internet.email();
 
@@ -561,6 +671,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					operators.eq(fields.emailAddress, attendeeEmail),
 			});
 			assertToBeNonNullish(dbUser);
+			if (dbUser.id) trackedEntityIds.userIds.push(dbUser.id);
 
 			// Should have DIRECT membership
 			const dbMembership =
@@ -585,7 +696,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							operators.eq(fields.organizationId, orgId),
 						),
 				});
-			expect(dbRequest).toBeNull();
+			expect(dbRequest).toBeUndefined();
 		});
 	});
 
@@ -612,9 +723,10 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			const membershipResult = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
@@ -624,6 +736,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				},
 			});
+			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			// Try to create with invalid email
 			const result = await mercuriusClient.mutate(
