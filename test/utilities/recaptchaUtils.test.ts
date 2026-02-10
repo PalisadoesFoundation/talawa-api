@@ -5,17 +5,14 @@ import {
 } from "../../src/utilities/recaptchaUtils";
 
 const mockFetch = vi.fn<typeof fetch>();
-let originalFetch: typeof global.fetch;
 
 describe("validateRecaptchaIfRequired", () => {
 	beforeEach(() => {
-		originalFetch = global.fetch;
-		global.fetch = mockFetch;
+		vi.spyOn(globalThis, "fetch").mockImplementation(mockFetch);
 		vi.clearAllMocks();
 	});
 
 	afterEach(() => {
-		global.fetch = originalFetch;
 		vi.restoreAllMocks();
 	});
 
@@ -69,7 +66,7 @@ describe("validateRecaptchaIfRequired", () => {
 				issues: [
 					{
 						argumentPath: ["input", "recaptchaToken"],
-						message: "Invalid reCAPTCHA token.",
+						message: "reCAPTCHA verification failed. Please try again.",
 					},
 				],
 			},
@@ -94,7 +91,7 @@ describe("validateRecaptchaIfRequired", () => {
 				issues: [
 					{
 						argumentPath: ["input", "recaptchaToken"],
-						message: "reCAPTCHA score too low (0.3). Please try again.",
+						message: "reCAPTCHA verification failed. Please try again.",
 					},
 				],
 			},
@@ -119,8 +116,7 @@ describe("validateRecaptchaIfRequired", () => {
 				issues: [
 					{
 						argumentPath: ["input", "recaptchaToken"],
-						message:
-							"reCAPTCHA action mismatch. Expected 'login', got 'signup'.",
+						message: "reCAPTCHA verification failed. Please try again.",
 					},
 				],
 			},
@@ -167,13 +163,12 @@ describe("validateRecaptchaIfRequired", () => {
 
 describe("verifyRecaptchaToken", () => {
 	beforeEach(() => {
-		originalFetch = global.fetch;
-		global.fetch = mockFetch;
+		vi.spyOn(globalThis, "fetch").mockImplementation(mockFetch);
+
 		vi.clearAllMocks();
 	});
 
 	afterEach(() => {
-		global.fetch = originalFetch;
 		vi.restoreAllMocks();
 	});
 
@@ -264,6 +259,24 @@ describe("verifyRecaptchaToken", () => {
 			success: true,
 			score: undefined,
 			action: undefined,
+		});
+	});
+	test("returns success true when score equals threshold exactly", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ success: true, score: 0.5, action: "login" }),
+		} as Response);
+
+		const result = await verifyRecaptchaToken(
+			"valid-token",
+			"secret-key",
+			"login",
+			0.5,
+		);
+		expect(result).toEqual({
+			success: true,
+			score: 0.5,
+			action: "login",
 		});
 	});
 });

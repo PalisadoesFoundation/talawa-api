@@ -6,7 +6,7 @@
 
 > **verifyRecaptchaToken**(`token`, `secretKey`, `expectedAction?`, `scoreThreshold?`): `Promise`\<\{ `action?`: `string`; `score?`: `number`; `success`: `boolean`; \}\>
 
-Defined in: [src/utilities/recaptchaUtils.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recaptchaUtils.ts#L21)
+Defined in: [src/utilities/recaptchaUtils.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recaptchaUtils.ts#L22)
 
 Verifies a Google reCAPTCHA v3 token by making a request to Google's verification API.
 
@@ -39,3 +39,5 @@ Minimum score threshold (0.0-1.0, default 0.5)
 ## Returns
 
 `Promise`\<\{ `action?`: `string`; `score?`: `number`; `success`: `boolean`; \}\>
+
+A promise resolving to an object with success status, and optional score and action fields

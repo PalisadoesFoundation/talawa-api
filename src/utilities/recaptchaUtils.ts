@@ -17,6 +17,7 @@ interface RecaptchaVerificationResponse {
  * @param secretKey - The secret key for verification
  * @param expectedAction - The expected action name (optional, for additional validation)
  * @param scoreThreshold - Minimum score threshold (0.0-1.0, default 0.5)
+ * @returns A promise resolving to an object with success status, and optional score and action fields
  */
 export async function verifyRecaptchaToken(
 	token: string,
@@ -118,16 +119,19 @@ export async function validateRecaptchaIfRequired(
 	);
 
 	if (!result.success) {
-		let message = "Invalid reCAPTCHA token.";
+		// Log detailed failure info server-side only
+		rootLogger.warn(
+			{
+				score: result.score,
+				expectedAction: action,
+				actualAction: result.action,
+				scoreThreshold,
+			},
+			"reCAPTCHA verification failed",
+		);
 
-		// Provide more specific error messages for v3
-		if (result.score !== undefined) {
-			if (result.score < scoreThreshold) {
-				message = `reCAPTCHA score too low (${result.score}). Please try again.`;
-			} else if (action && result.action !== action) {
-				message = `reCAPTCHA action mismatch. Expected '${action}', got '${result.action}'.`;
-			}
-		}
+		// Return a generic message to the client to avoid leaking score/action details
+		const message = "reCAPTCHA verification failed. Please try again.";
 
 		throw new TalawaGraphQLError({
 			extensions: {
