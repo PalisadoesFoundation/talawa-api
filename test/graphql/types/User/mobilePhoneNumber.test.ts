@@ -270,8 +270,7 @@ suite("User field mobilePhoneNumber", () => {
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
-						emailAddress:
-							server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
 				},
@@ -299,17 +298,14 @@ suite("User field mobilePhoneNumber", () => {
 			createdUserIds.push(userId);
 
 			// 3. User queries own data
-			const result = await mercuriusClient.query(
-				Query_user_mobilePhoneNumber,
-				{
-					headers: {
-						authorization: `bearer ${userToken}`,
-					},
-					variables: {
-						input: { id: userId },
-					},
+			const result = await mercuriusClient.query(Query_user_mobilePhoneNumber, {
+				headers: {
+					authorization: `bearer ${userToken}`,
 				},
-			);
+				variables: {
+					input: { id: userId },
+				},
+			});
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data.user?.mobilePhoneNumber).toBeNull();
@@ -320,8 +316,7 @@ suite("User field mobilePhoneNumber", () => {
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
-						emailAddress:
-							server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
 				},
@@ -350,17 +345,14 @@ suite("User field mobilePhoneNumber", () => {
 			createdUserIds.push(userId);
 
 			// 3. User queries own data
-			const result = await mercuriusClient.query(
-				Query_user_mobilePhoneNumber,
-				{
-					headers: {
-						authorization: `bearer ${userToken}`,
-					},
-					variables: {
-						input: { id: userId },
-					},
+			const result = await mercuriusClient.query(Query_user_mobilePhoneNumber, {
+				headers: {
+					authorization: `bearer ${userToken}`,
 				},
-			);
+				variables: {
+					input: { id: userId },
+				},
+			});
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data.user?.mobilePhoneNumber).toBe("");
@@ -371,8 +363,7 @@ suite("User field mobilePhoneNumber", () => {
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
-						emailAddress:
-							server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
 				},
@@ -382,19 +373,15 @@ suite("User field mobilePhoneNumber", () => {
 
 			// 2. Query with non-existent user ID
 			const nonExistentId = faker.string.uuid();
-			const result = await mercuriusClient.query(
-				Query_user_mobilePhoneNumber,
-				{
-					headers: { authorization: `bearer ${token}` },
-					variables: {
-						input: { id: nonExistentId },
-					},
+			const result = await mercuriusClient.query(Query_user_mobilePhoneNumber, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: { id: nonExistentId },
 				},
-			);
+			});
 
 			expect(result.data.user).toEqual({ mobilePhoneNumber: null });
 			expect(result.errors).toBeDefined();
 		});
 	});
 });
-
