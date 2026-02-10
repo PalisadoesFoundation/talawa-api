@@ -28,9 +28,10 @@ suite("User field mobilePhoneNumber", () => {
 					mock: { calls: Array<[{ fields: (t: unknown) => void }]> };
 				}
 			).mock.calls.find((args) => args[0].fields);
-			expect(call).toBeDefined();
-			// biome-ignore lint/style/noNonNullAssertion: Test guarantees call exists and check above ensures definition
-			const fieldsCallback = call![0].fields;
+			if (!call) {
+				throw new Error("Expected implement call not found");
+			}
+			const fieldsCallback = call[0].fields;
 
 			const t = {
 				field: vi.fn(),
@@ -165,20 +166,21 @@ suite("User field mobilePhoneNumber", () => {
 			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
 			const findFirstMock = mocks.drizzleClient.query.usersTable
 				.findFirst as unknown as {
-					mock: {
-						calls: Array<
-							[
-								{
-									where: (fields: unknown, operators: unknown) => void;
-								},
-							]
-						>;
-					};
+				mock: {
+					calls: Array<
+						[
+							{
+								where: (fields: unknown, operators: unknown) => void;
+							},
+						]
+					>;
 				};
+			};
 			const findFirstCall = findFirstMock.mock.calls[0];
-			expect(findFirstCall).toBeDefined();
-			// biome-ignore lint/style/noNonNullAssertion: Test guarantees call exists and check above ensures definition
-			const whereCallback = findFirstCall![0].where;
+			if (!findFirstCall) {
+				throw new Error("Expected findFirst call not found");
+			}
+			const whereCallback = findFirstCall[0].where;
 
 			const operators = { eq: vi.fn() };
 			const fields = { id: "test-id" };
