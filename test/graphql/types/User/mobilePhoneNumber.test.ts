@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, expect, suite, test } from "vitest";
-import {
-	type TalawaGraphQLFormattedError,
-	type UnauthenticatedExtensions,
-	type UnauthorizedActionExtensions,
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -14,8 +14,6 @@ import {
 	Query_signIn,
 	Query_user_mobilePhoneNumber,
 } from "../documentNodes";
-
-
 
 suite("User field mobilePhoneNumber", () => {
 	suite("Integration Tests", () => {
@@ -203,7 +201,9 @@ suite("User field mobilePhoneNumber", () => {
 				headers: {
 					authorization: `bearer ${userRes.data.createUser?.authenticationToken}`,
 				},
-				variables: { input: { id: userRes.data.createUser?.user?.id as string } },
+				variables: {
+					input: { id: userRes.data.createUser?.user?.id as string },
+				},
 			});
 
 			expect(result.errors).toBeUndefined();
@@ -244,13 +244,13 @@ suite("User field mobilePhoneNumber", () => {
 			// 3. Admin queries user data
 			const result = await mercuriusClient.query(Query_user_mobilePhoneNumber, {
 				headers: { authorization: `bearer ${token}` },
-				variables: { input: { id: userRes.data.createUser?.user?.id as string } },
+				variables: {
+					input: { id: userRes.data.createUser?.user?.id as string },
+				},
 			});
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data.user?.mobilePhoneNumber).toBe(expectedPhoneNumber);
 		});
 	});
-
-
 });
