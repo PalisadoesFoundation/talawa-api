@@ -895,12 +895,13 @@ suite("Mutation field signUp", () => {
 	);
 
 	suite("reCAPTCHA validation", () => {
+		const mockFetch = vi.fn<typeof fetch>();
 		let testOrg: TestOrganization;
 		let originalRecaptchaSecretKey: string | undefined;
 
 		beforeEach(async () => {
-			// Stub fetch safely (auto-restored)
-			vi.stubGlobal("fetch", vi.fn());
+			vi.spyOn(globalThis, "fetch").mockImplementation(mockFetch);
+			vi.clearAllMocks();
 
 			// Save original value for restoration
 			originalRecaptchaSecretKey = server.envConfig.RECAPTCHA_SECRET_KEY;
@@ -912,11 +913,8 @@ suite("Mutation field signUp", () => {
 		});
 
 		afterEach(async () => {
-			vi.unstubAllGlobals(); // restores fetch safely
-			vi.restoreAllMocks(); // restores spies/mocks
-
-			// Restore original env config
 			server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecretKey;
+			vi.restoreAllMocks();
 
 			await testOrg.cleanup();
 		});
@@ -990,8 +988,9 @@ suite("Mutation field signUp", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to return failed verification
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () => Promise.resolve({ success: false }),
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: false }),
 			} as Response);
 
 			const result = await mercuriusClient.mutate(Mutation_signUp, {
@@ -1031,10 +1030,17 @@ suite("Mutation field signUp", () => {
 		test("should accept valid reCAPTCHA token and proceed with registration", async () => {
 			// Set a mock reCAPTCHA secret key
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+			// Set score threshold to 0.5
+			server.envConfig.RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
-			// Mock fetch to return successful verification
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () => Promise.resolve({ success: true }),
+			// Mock fetch to return successful verification with v3 fields
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					success: true,
+					score: 0.9,
+					action: "signup",
+				}),
 			} as Response);
 
 			const testEmail = `test${faker.string.uuid()}@example.com`;
@@ -1055,7 +1061,7 @@ suite("Mutation field signUp", () => {
 			expect(result.data.signUp?.user?.emailAddress).toBe(testEmail);
 
 			// Verify fetch was called with correct URL and method
-			expect(global.fetch).toHaveBeenCalledWith(
+			expect(mockFetch).toHaveBeenCalledWith(
 				"https://www.google.com/recaptcha/api/siteverify",
 				expect.objectContaining({
 					method: "POST",
@@ -1067,8 +1073,7 @@ suite("Mutation field signUp", () => {
 			);
 
 			// Verify the body contains the correct parameters
-			const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
-				.calls[0];
+			const fetchCall = mockFetch.mock.calls[0];
 			const body = fetchCall?.[1]?.body as URLSearchParams;
 			expect(body.get("secret")).toBe("test-secret-key");
 			expect(body.get("response")).toBe("valid-token");
@@ -1079,7 +1084,7 @@ suite("Mutation field signUp", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to throw network error
-			global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+			mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
 			const result = await mercuriusClient.mutate(Mutation_signUp, {
 				variables: {
@@ -1112,8 +1117,9 @@ suite("Mutation field signUp", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to return malformed response
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () => Promise.resolve(null), // Malformed response
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => null, // Malformed response
 			} as Response);
 
 			const result = await mercuriusClient.mutate(Mutation_signUp, {
@@ -1147,12 +1153,12 @@ suite("Mutation field signUp", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to return response with error codes
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () =>
-					Promise.resolve({
-						success: false,
-						"error-codes": ["timeout-or-duplicate", "invalid-input-response"],
-					}),
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					success: false,
+					"error-codes": ["timeout-or-duplicate", "invalid-input-response"],
+				}),
 			} as Response);
 
 			const result = await mercuriusClient.mutate(Mutation_signUp, {
