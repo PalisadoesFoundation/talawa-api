@@ -38,19 +38,6 @@ describe("validateRecaptchaIfRequired", () => {
 		);
 	});
 
-	test("works with v2 response (backward compatibility)", async () => {
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true }),
-		} as Response);
-		const result = await validateRecaptchaIfRequired(
-			"valid-token",
-			"secret-key",
-			["input", "recaptchaToken"],
-		);
-		expect(result).toBe(true);
-	});
-
 	test("throws TalawaGraphQLError when Google reCaptcha verification fails", async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
@@ -248,7 +235,7 @@ describe("verifyRecaptchaToken", () => {
 		});
 	});
 
-	test("handles v2 response format", async () => {
+	test("should send success: false when score is missing", async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true }),
@@ -256,11 +243,24 @@ describe("verifyRecaptchaToken", () => {
 
 		const result = await verifyRecaptchaToken("valid-token", "secret-key");
 		expect(result).toEqual({
-			success: true,
+			success: false,
 			score: undefined,
 			action: undefined,
 		});
 	});
+
+	test("returns success: false when HTTP returns code other than 2XX", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+		} as Response);
+		const result = await verifyRecaptchaToken("valid-token", "secret-key");
+		expect(result).toEqual({
+			success: false,
+			score: undefined,
+			action: undefined,
+		});
+	});
+
 	test("returns success true when score equals threshold exactly", async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,

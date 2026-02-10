@@ -40,6 +40,13 @@ export async function verifyRecaptchaToken(
 			body: params,
 		});
 
+		if (!response.ok) {
+			rootLogger.error(
+				{ status: response.status, statusText: response.statusText },
+				"reCAPTCHA API returned non-2xx status",
+			);
+			return { success: false, score: undefined, action: undefined };
+		}
 		const data = (await response.json()) as RecaptchaVerificationResponse;
 
 		// Check basic success
@@ -47,17 +54,33 @@ export async function verifyRecaptchaToken(
 			return { success: false, score: data.score, action: data.action };
 		}
 
-		// For v3, also check score and action
-		if (data.score !== undefined) {
-			// Validate score threshold
-			if (data.score < scoreThreshold) {
-				return { success: false, score: data.score, action: data.action };
-			}
+		if (data.score === undefined || data.action === undefined) {
+			rootLogger.error(
+				{
+					hasScore: data.score !== undefined,
+					hasAction: data.action !== undefined,
+				},
+				"reCAPTCHA response missing v3 fields (score/action). Ensure you are using a v3 site key and secret.",
+			);
+			return { success: false, score: undefined, action: undefined };
+		}
 
-			// Validate action if provided
-			if (expectedAction && data.action !== expectedAction) {
-				return { success: false, score: data.score, action: data.action };
-			}
+		// Validate score (always required for v3)
+		if (data.score < scoreThreshold) {
+			rootLogger.warn(
+				{ score: data.score, threshold: scoreThreshold },
+				"reCAPTCHA score below threshold",
+			);
+			return { success: false, score: data.score, action: data.action };
+		}
+
+		// Validate action if expected action is provided
+		if (expectedAction && data.action !== expectedAction) {
+			rootLogger.warn(
+				{ expected: expectedAction, received: data.action },
+				"reCAPTCHA action mismatch",
+			);
+			return { success: false, score: data.score, action: data.action };
 		}
 
 		return { success: true, score: data.score, action: data.action };
@@ -119,17 +142,6 @@ export async function validateRecaptchaIfRequired(
 	);
 
 	if (!result.success) {
-		// Log detailed failure info server-side only
-		rootLogger.warn(
-			{
-				score: result.score,
-				expectedAction: action,
-				actualAction: result.action,
-				scoreThreshold,
-			},
-			"reCAPTCHA verification failed",
-		);
-
 		// Return a generic message to the client to avoid leaking score/action details
 		const message = "reCAPTCHA verification failed. Please try again.";
 
