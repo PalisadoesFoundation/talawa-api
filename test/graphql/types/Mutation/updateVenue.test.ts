@@ -66,6 +66,7 @@ suite("Mutation field updateVenue", () => {
 	};
 
 	afterEach(async () => {
+		vi.restoreAllMocks();
 		// Cleanup: Delete created venues
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -1744,10 +1745,10 @@ suite("Mutation field updateVenue", () => {
 		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
 		const venueId = createVenueResult.data.createVenue.id;
 
+		// Use vi.spyOn for proper mock lifecycle management
 		// Mock transaction to simulate update returning no rows
-		const originalTransaction = server.drizzleClient.transaction;
-		server.drizzleClient.transaction = vi
-			.fn()
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
 			.mockImplementation(async (handler) => {
 				const fakeTx = {
 					update: () => ({
@@ -1774,7 +1775,8 @@ suite("Mutation field updateVenue", () => {
 			expect(res.errors?.length).toBeGreaterThan(0);
 			expect(res.errors?.[0]?.extensions.code).toBe("unexpected");
 		} finally {
-			server.drizzleClient.transaction = originalTransaction;
+			// Restore mock explicitly (also handled by vi.restoreAllMocks in afterEach)
+			transactionSpy.mockRestore();
 		}
 	});
 
