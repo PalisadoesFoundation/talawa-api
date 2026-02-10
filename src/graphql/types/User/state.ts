@@ -33,30 +33,43 @@ export const UserStateResolver = async (
 
 	const currentUserId = ctx.currentClient.user.id;
 
-	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		columns: {
-			role: true,
-		},
-		where: (fields, operators) => operators.eq(fields.id, currentUserId),
-	});
+	try {
+		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			columns: {
+				role: true,
+			},
+			where: (fields, operators) => operators.eq(fields.id, currentUserId),
+		});
 
-	if (currentUser === undefined) {
+		if (currentUser === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			});
+		}
+
+		if (currentUser.role !== "administrator" && parent.id !== currentUserId) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthorized_action",
+				},
+			});
+		}
+
+		return escapeHTML(parent.state);
+	} catch (error) {
+		if (error instanceof TalawaGraphQLError) {
+			throw error;
+		}
+
+		ctx.log.error(error);
 		throw new TalawaGraphQLError({
 			extensions: {
-				code: "unauthenticated",
+				code: "unexpected",
 			},
 		});
 	}
-
-	if (currentUser.role !== "administrator" && parent.id !== currentUserId) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthorized_action",
-			},
-		});
-	}
-
-	return escapeHTML(parent.state);
 };
 
 User.implement({

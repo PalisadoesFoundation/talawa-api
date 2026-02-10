@@ -3,6 +3,7 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { UserStateResolver } from "~/src/graphql/types/User/state";
 import type { User as UserType } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("User.state resolver", () => {
 	afterEach(() => {
@@ -123,5 +124,69 @@ describe("User.state resolver", () => {
 		await expect(
 			UserStateResolver(parent as UserType, {}, context),
 		).rejects.toThrow();
+	});
+	it("should return null when state is null", async () => {
+		const currentUserId = faker.string.uuid();
+		const { context, mocks } = createMockGraphQLContext(true, currentUserId);
+		const parent = { id: currentUserId, state: null };
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "regular",
+		});
+
+		const result = await UserStateResolver(parent as UserType, {}, context);
+		expect(result).toBeNull();
+	});
+
+	it("should return empty string when state is empty", async () => {
+		const currentUserId = faker.string.uuid();
+		const { context, mocks } = createMockGraphQLContext(true, currentUserId);
+		const parent = { id: currentUserId, state: "" };
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "regular",
+		});
+
+		const result = await UserStateResolver(parent as UserType, {}, context);
+		expect(result).toBe("");
+	});
+
+	it("should rethrow TalawaGraphQLError from database layer without logging", async () => {
+		const { context, mocks } = createMockGraphQLContext(true);
+		const parent = { id: faker.string.uuid(), state: faker.location.state() };
+
+		const talawaError = new TalawaGraphQLError({
+			extensions: { code: "unauthenticated" },
+		});
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			talawaError,
+		);
+
+		await expect(
+			UserStateResolver(parent as UserType, {}, context),
+		).rejects.toBe(talawaError);
+		expect(context.log.error).not.toHaveBeenCalled();
+	});
+
+	it("should log and wrap unknown database errors", async () => {
+		const { context, mocks } = createMockGraphQLContext(true);
+		const parent = { id: faker.string.uuid(), state: faker.location.state() };
+
+		const unknownError = new Error("DB crash");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			unknownError,
+		);
+
+		await expect(
+			UserStateResolver(parent as UserType, {}, context),
+		).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unexpected" }),
+			}),
+		);
+
+		expect(context.log.error).toHaveBeenCalledWith(unknownError);
 	});
 });
