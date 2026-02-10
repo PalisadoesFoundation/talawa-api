@@ -21,10 +21,6 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 
 		await expect(
 			mobilePhoneNumberResolver(parent, {}, context),
-		).rejects.toThrow();
-
-		await expect(
-			mobilePhoneNumberResolver(parent, {}, context),
 		).rejects.toMatchObject({
 			extensions: {
 				code: "unauthenticated",
