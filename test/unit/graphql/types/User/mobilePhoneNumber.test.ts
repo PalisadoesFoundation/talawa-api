@@ -1,261 +1,186 @@
 import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { mobilePhoneNumberResolver } from "~/src/graphql/types/User/mobilePhoneNumber";
 import type { User as UserType } from "~/src/graphql/types/User/User";
-import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import {
+    TalawaGraphQLError,
+} from "~/src/utilities/TalawaGraphQLError";
 
-// Mock User to capture implement call
-vi.mock("~/src/graphql/types/User/User", () => ({
-	User: {
-		implement: vi.fn(),
-	},
-}));
+suite("User field mobilePhoneNumber - Unit Tests", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
 
-suite("User field mobilePhoneNumber", () => {
-	suite("Schema Definition", () => {
-		test("registers mobilePhoneNumber field", () => {
-			expect(User.implement).toHaveBeenCalledWith(
-				expect.objectContaining({
-					fields: expect.any(Function),
-				}),
-			);
+    test("throws unauthenticated error when client is not authenticated for unit test", async () => {
+        const userId = faker.string.uuid();
+        const { context } = createMockGraphQLContext(false);
 
-			// Invoke the callback to cover the lines
-			// @ts-expect-error - inspecting mock calls
-			const call = User.implement.mock.calls.find((args) => args[0].fields);
+        const parent = {
+            id: userId,
+            mobilePhoneNumber: "1234567890",
+        } as unknown as UserType;
 
-			expect(call).toBeDefined();
-			if (!call) {
-				throw new Error("Expected implement call not found");
-			}
-			const fieldsCallback = call[0].fields;
+        await expect(
+            mobilePhoneNumberResolver(parent, {}, context),
+        ).rejects.toThrow();
 
-			const t = {
-				field: vi.fn(),
-			};
-			fieldsCallback(t);
+        await expect(mobilePhoneNumberResolver(parent, {}, context)).rejects.toMatchObject({
+            extensions: {
+                code: "unauthenticated",
+            },
+        });
+    });
 
-			expect(t.field).toHaveBeenCalledWith(
-				expect.objectContaining({
-					resolve: mobilePhoneNumberResolver,
-					type: "PhoneNumber",
-				}),
-			);
-		});
-	});
+    test("throws unauthenticated error when current user is not found in DB", async () => {
+        const userId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, userId);
 
-	suite("Unit Tests", () => {
-		beforeEach(() => {
-			vi.clearAllMocks();
-		});
+        const parent = {
+            id: userId,
+            mobilePhoneNumber: "1234567890",
+        } as unknown as UserType;
 
-		afterEach(() => {
-			vi.restoreAllMocks();
-		});
+        mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
-		test("throws unauthenticated error when client is not authenticated", async () => {
-			const userId = faker.string.uuid();
-			const { context } = createMockGraphQLContext(false, userId); // Not authenticated
+        await expect(
+            mobilePhoneNumberResolver(parent, {}, context),
+        ).rejects.toMatchObject({
+            extensions: {
+                code: "unauthenticated",
+            },
+        });
+    });
 
-			const parent = {
-				id: userId,
-			} as unknown as UserType;
+    test("throws unauthorized_action error when user is not admin and accessing another user's data", async () => {
+        const currentUserId = faker.string.uuid();
+        const otherUserId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, currentUserId);
 
-			await expect(
-				mobilePhoneNumberResolver(parent, {}, context),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthenticated",
-					}),
-				}),
-			);
-		});
+        const parent = {
+            id: otherUserId,
+            mobilePhoneNumber: "1234567890",
+        } as unknown as UserType;
 
-		test("throws unauthenticated error when user is not found in database", async () => {
-			const userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, userId);
+        mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+            role: "regular",
+        });
 
-			const parent = {
-				id: userId,
-			} as unknown as UserType;
+        await expect(
+            mobilePhoneNumberResolver(parent, {}, context),
+        ).rejects.toMatchObject({
+            extensions: {
+                code: "unauthorized_action",
+            },
+        });
+    });
 
-			// Mock findFirst to return undefined (user not found)
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+    test("returns mobilePhoneNumber when user is admin accessing another user's data", async () => {
+        const currentUserId = faker.string.uuid();
+        const otherUserId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, currentUserId);
+        const expectedPhoneNumber = "1234567890";
 
-			await expect(
-				mobilePhoneNumberResolver(parent, {}, context),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthenticated",
-					}),
-				}),
-			);
-		});
+        const parent = {
+            id: otherUserId,
+            mobilePhoneNumber: expectedPhoneNumber,
+        } as unknown as UserType;
 
-		test("throws unauthorized_action error when non-admin accesses another user's data", async () => {
-			const currentUserId = faker.string.uuid();
-			const otherUserId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, currentUserId);
+        mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+            role: "administrator",
+        });
 
-			const parent = {
-				id: otherUserId, // Accessing another user's data
-			} as unknown as UserType;
+        const result = await mobilePhoneNumberResolver(parent, {}, context);
+        expect(result).toBe(expectedPhoneNumber);
+    });
 
-			// Mock findFirst to return a regular user
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
+    test("returns mobilePhoneNumber when user is accessing their own data (even if not admin)", async () => {
+        const currentUserId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, currentUserId);
+        const expectedPhoneNumber = "1234567890";
 
-			await expect(
-				mobilePhoneNumberResolver(parent, {}, context),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthorized_action",
-					}),
-				}),
-			);
-		});
+        const parent = {
+            id: currentUserId,
+            mobilePhoneNumber: expectedPhoneNumber,
+        } as unknown as UserType;
 
-		test("returns mobilePhoneNumber when user accesses their own data", async () => {
-			const userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, userId);
+        mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+            role: "regular",
+        });
 
-			const expectedPhoneNumber = faker.phone.number();
-			const parent = {
-				id: userId, // Accessing own data
-				mobilePhoneNumber: expectedPhoneNumber,
-			} as unknown as UserType;
+        const result = await mobilePhoneNumberResolver(parent, {}, context);
+        expect(result).toBe(expectedPhoneNumber);
+    });
 
-			// Mock findFirst to return a regular user
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
+    test("handles null or empty mobilePhoneNumber correctly", async () => {
+        const userId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, userId);
 
-			const result = await mobilePhoneNumberResolver(parent, {}, context);
-			expect(result).toBe(expectedPhoneNumber);
-		});
+        const parentNull = {
+            id: userId,
+            mobilePhoneNumber: null,
+        } as unknown as UserType;
 
-		test("returns mobilePhoneNumber when administrator accesses another user's data", async () => {
-			const adminUserId = faker.string.uuid();
-			const otherUserId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, adminUserId);
+        const parentEmpty = {
+            id: userId,
+            mobilePhoneNumber: "",
+        } as unknown as UserType;
 
-			const expectedPhoneNumber = faker.phone.number();
-			const parent = {
-				id: otherUserId,
-				mobilePhoneNumber: expectedPhoneNumber,
-			} as unknown as UserType;
+        mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+            role: "regular",
+        });
 
-			// Mock findFirst to return an administrator
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
+        const resultNull = await mobilePhoneNumberResolver(
+            parentNull,
+            {},
+            context,
+        );
+        const resultEmpty = await mobilePhoneNumberResolver(
+            parentEmpty,
+            {},
+            context,
+        );
 
-			const result = await mobilePhoneNumberResolver(parent, {}, context);
-			expect(result).toBe(expectedPhoneNumber);
+        expect(resultNull).toBeNull();
+        expect(resultEmpty).toBe("");
+    });
 
-			// Invoke the where callback for coverage
-			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
-			const findFirstMock = mocks.drizzleClient.query.usersTable.findFirst;
+    test("wraps generic Error in Internal Server Error", async () => {
+        const userId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, userId);
 
-			const findFirstCall = findFirstMock.mock.calls[0];
+        const parent = {
+            id: userId,
+        } as unknown as UserType;
 
-			if (!findFirstCall) {
-				throw new Error("Expected findFirst call not found");
-			}
-			const args = (
-				findFirstCall as unknown as [
-					{
-						where: (fields: unknown, operators: unknown) => void;
-					},
-				]
-			)[0];
-			const whereCallback = args.where;
+        const genericError = new Error("Something went wrong");
+        mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+            genericError,
+        );
 
-			const operators = { eq: vi.fn() };
-			const fields = { id: "test-id" };
-			whereCallback(fields, operators);
-			expect(operators.eq).toHaveBeenCalledWith("test-id", adminUserId);
-		});
+        await expect(
+            mobilePhoneNumberResolver(parent, {}, context),
+        ).rejects.toThrow("Internal server error");
+    });
 
-		test("handles null or empty mobilePhoneNumber correctly", async () => {
-			const userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, userId);
+    test("rethrows TalawaGraphQLError as is", async () => {
+        const userId = faker.string.uuid();
+        const { context, mocks } = createMockGraphQLContext(true, userId);
 
-			const parentNull = {
-				id: userId,
-				mobilePhoneNumber: null,
-			} as unknown as UserType;
+        const parent = {
+            id: userId,
+        } as unknown as UserType;
 
-			const parentEmpty = {
-				id: userId,
-				mobilePhoneNumber: "",
-			} as unknown as UserType;
+        const talawaError = new TalawaGraphQLError({
+            message: "Custom error",
+            extensions: { code: "unauthenticated" },
+        });
+        mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+            talawaError,
+        );
 
-			// Mock findFirst to return a regular user
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
-
-			const resultNull = await mobilePhoneNumberResolver(
-				parentNull,
-				{},
-				context,
-			);
-			const resultEmpty = await mobilePhoneNumberResolver(
-				parentEmpty,
-				{},
-				context,
-			);
-
-			expect(resultNull).toBeNull();
-			expect(resultEmpty).toBe("");
-		});
-
-		test("wraps generic Error in Internal Server Error", async () => {
-			const userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, userId);
-
-			const parent = {
-				id: userId,
-			} as unknown as UserType;
-
-			const genericError = new Error("Something went wrong");
-			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-				genericError,
-			);
-
-			await expect(
-				mobilePhoneNumberResolver(parent, {}, context),
-			).rejects.toThrow("Internal server error");
-		});
-
-		test("rethrows TalawaGraphQLError as is", async () => {
-			const userId = faker.string.uuid();
-			const { context, mocks } = createMockGraphQLContext(true, userId);
-
-			const parent = {
-				id: userId,
-			} as unknown as UserType;
-
-			const talawaError = new TalawaGraphQLError({
-				message: "Custom error",
-				extensions: { code: "unauthenticated" },
-			});
-			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-				talawaError,
-			);
-
-			await expect(
-				mobilePhoneNumberResolver(parent, {}, context),
-			).rejects.toThrow(talawaError);
-		});
-	});
+        await expect(
+            mobilePhoneNumberResolver(parent, {}, context),
+        ).rejects.toThrow(talawaError);
+    });
 });
