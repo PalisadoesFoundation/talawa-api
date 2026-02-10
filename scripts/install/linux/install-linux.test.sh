@@ -260,7 +260,24 @@ setup_test_repo
 setup_clean_system() {
     # Create basic mocks
     create_jq_mock
-    create_mock "git" 'if [ "$1" = "--version" ]; then echo "git version 2.0.0"; exit 0; fi; if [ "$1" = "rev-parse" ]; then exit 0; fi; if [ "$1" = "diff-index" ]; then exit 0; fi; exit 0'
+    create_mock "git" '
+        if [ "$1" = "--version" ]; then
+            echo "git version 2.0.0"
+            exit 0
+        fi
+        if [ "$1" = "rev-parse" ]; then
+            # When asked for --git-dir, return .git so GIT_DIR resolves to .git
+            if [ "$2" = "--git-dir" ] || [[ "${*}" == *"--git-dir"* ]]; then
+                echo ".git"
+                exit 0
+            fi
+            exit 0
+        fi
+        if [ "$1" = "diff-index" ]; then
+            exit 0
+        fi
+        exit 0
+    '
     create_mock "curl" 'if [ "$1" = "--version" ]; then echo "curl 8.0.0"; exit 0; fi; exit 0'
     create_mock "unzip" 'if [ "$1" = "-v" ] || [ "$1" = "--version" ]; then echo "UnZip 6.0"; exit 0; fi; exit 0'
     
@@ -604,6 +621,7 @@ if echo "$OUTPUT" | grep -qE "(Installing fnm|fnm installed|fnm is already insta
 else
     test_fail "Expected fnm installation flow.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
+rm -f "$MOCK_BIN/bash" 2>/dev/null || true
 
 
 ##############################################################################
@@ -649,7 +667,7 @@ create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
 
 set +e
-OUTPUT=$(run_test_script local true 2>&1)
+OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
@@ -722,13 +740,13 @@ fi
 test_start "Curl Retry - Network Failure Recovery"
 setup_debian_system
 
-# Create a counter file to track retry attempts
-echo "0" > "$TEST_DIR/.curl_attempts"
+# Create a counter file to track retry attempts (inside MOCK_BIN so it's reachable in the isolated env)
+echo "0" > "$MOCK_BIN/.curl_attempts"
 
 create_mock "curl" '
-    ATTEMPT=$(cat "$TEST_DIR/.curl_attempts" 2>/dev/null || echo 0)
+    ATTEMPT=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || echo 0)
     ATTEMPT=$((ATTEMPT + 1))
-    echo "$ATTEMPT" > "$TEST_DIR/.curl_attempts"
+    echo "$ATTEMPT" > "$MOCK_BIN/.curl_attempts"
     if [ "$ATTEMPT" -lt 3 ]; then
         echo "Network error" >&2
         exit 1
@@ -736,7 +754,8 @@ create_mock "curl" '
     exit 0
 '
 
-create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; exit 0'
+# Ensure fnm remains hidden so installer uses curl (do not expose fnm via mock)
+touch "$MOCK_BIN/fnm.hidden"
 create_mock "node" 'echo "v20.10.0"'
 create_mock "npm" 'echo "10.0.0"'
 create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
@@ -747,7 +766,7 @@ EXIT_CODE=$?
 set -e
 
 # Check if retry logic was exercised
-ATTEMPTS=$(cat "$TEST_DIR/.curl_attempts" 2>/dev/null || echo 0)
+ATTEMPTS=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || echo 0)
 if [ "$ATTEMPTS" -ge 2 ]; then
     test_pass
 else
@@ -992,16 +1011,51 @@ test_start "Docker Mode - Docker Installer Flow"
 setup_debian_system
 touch "$MOCK_BIN/docker.hidden"
 
-# Mock curl to return a fake Docker installer script
+# Mock curl to return a fake Docker installer script and write it to -o/--output
 create_mock "curl" '
+    out=""
+    next_out=0
+    for arg in "$@"; do
+        if [ "$next_out" -eq 1 ]; then
+            out="$arg"
+            next_out=0
+            continue
+        fi
+        case "$arg" in
+            -o)
+                next_out=1
+                ;;
+            --output=*)
+                out="${arg#--output=}"
+                ;;
+        esac
+    done
+
     for arg in "$@"; do
         if [[ "$arg" == *"get.docker.com"* ]] || [[ "$arg" == *"https://get.docker.com"* ]]; then
-            # Return a fake installer that echoes a marker
-            echo "#!/bin/bash"
-            echo "echo DOCKER_INSTALLER_EXECUTED"
-            echo "# Remove the .hidden file to simulate docker being installed"
-            echo "rm -f \$MOCK_BIN/docker.hidden 2>/dev/null || true"
-            exit 0
+            if [ -n "$out" ]; then
+                cat > "$out" <<'DOCKERINST'
+#!/bin/bash
+echo DOCKER_INSTALLER_EXECUTED
+rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
+cat > "$MOCK_BIN/docker" <<'DOCKERSCRIPT'
+#!/bin/bash
+if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+if [ "$1" = "info" ]; then exit 0; fi
+if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
+exit 0
+DOCKERSCRIPT
+chmod +x "$MOCK_BIN/docker"
+DOCKERINST
+                chmod +x "$out"
+                exit 0
+            else
+                # Fallback: print a simple installer to stdout
+                echo "#!/bin/bash"
+                echo "echo DOCKER_INSTALLER_EXECUTED"
+                echo "rm -f \$MOCK_BIN/docker.hidden 2>/dev/null || true"
+                exit 0
+            fi
         fi
     done
     # For other curl calls, just succeed
@@ -1027,6 +1081,25 @@ DOCKERSCRIPT
     fi
     # Pass through to real bash for other commands
     /bin/bash "$@"
+'
+
+# Mock sh to ensure installer executed via sh is handled the same way
+create_mock "sh" '
+    # If executing an installer file path, simulate installer behavior
+    if [ -n "$1" ] && [ -f "$1" ]; then
+        rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
+        cat > "$MOCK_BIN/docker" <<DOCKERSCRIPT
+#!/bin/sh
+if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+if [ "$1" = "info" ]; then exit 0; fi
+if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
+exit 0
+DOCKERSCRIPT
+        chmod +x "$MOCK_BIN/docker"
+        exit 0
+    fi
+    # Pass through to real sh for other invocations
+    /bin/sh "$@"
 '
 
 # Mock sudo to just run the command
