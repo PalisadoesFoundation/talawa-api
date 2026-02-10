@@ -56,7 +56,7 @@ async function createTestOrganization(): Promise<string> {
 
 async function createTestVenue(): Promise<string> {
 	const { userId } = await createRegularUserUsingAdmin();
-	const VenueResult = await server.drizzleClient
+	const venueResult = await server.drizzleClient
 		.insert(venuesTable)
 		.values({
 			name: "test",
@@ -64,7 +64,7 @@ async function createTestVenue(): Promise<string> {
 			organizationId: await createTestOrganization(),
 		})
 		.returning({ id: venuesTable.id });
-	const venueId = VenueResult[0]?.id;
+	const venueId = venueResult[0]?.id;
 	assertToBeNonNullish(venueId, "Venue ID is missing from creation response");
 	return venueId;
 }
@@ -550,6 +550,22 @@ describe("venueAttachments.ts", () => {
 	});
 
 	describe("DB Level Enum enforced test", () => {
+		it("should accept valid enum values at the database layer", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const venueId = await createTestVenue();
+
+			await expect(
+				server.drizzleClient
+					.insert(venueAttachmentsTable)
+					.values({
+						name: "valid enum test",
+						creatorId: userId,
+						venueId,
+						mimeType: "image/png",
+					})
+					.execute(),
+			).rejects.toThrow();
+		});
 		it("should reject invalid enum values at the database layer", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const venueId = await createTestVenue();
