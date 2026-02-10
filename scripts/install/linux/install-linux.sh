@@ -38,7 +38,7 @@
 ##############################################################################
 #   ./scripts/install/linux/install-linux.sh [docker|local] [--skip-prereqs]
 #
-# Arguments:
+# Arguments (can be provided in any order):
 #   docker        - Install with Docker support (default)
 #   local         - Install without Docker (local development mode)
 #   --skip-prereqs - Skip system package installation (use if already installed)
@@ -47,6 +47,8 @@
 #   ./scripts/install/linux/install-linux.sh              # Docker mode
 #   ./scripts/install/linux/install-linux.sh local        # Local mode
 #   ./scripts/install/linux/install-linux.sh docker --skip-prereqs
+#   ./scripts/install/linux/install-linux.sh --skip-prereqs docker  # Same as above
+#   ./scripts/install/linux/install-linux.sh --skip-prereqs         # Docker mode, skip prereqs
 #
 ##############################################################################
 # ENVIRONMENT VARIABLES
@@ -128,9 +130,24 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMON_DIR="${SCRIPT_DIR}/../common"
 
-# Arguments
-INSTALL_MODE="${1:-docker}"
-SKIP_PREREQS="${2:-false}"
+# Parse arguments (position-independent)
+INSTALL_MODE="docker"
+SKIP_PREREQS="false"
+for arg in "$@"; do
+  case "$arg" in
+    docker|local)
+      INSTALL_MODE="$arg"
+      ;;
+    --skip-prereqs|true)
+      SKIP_PREREQS="true"
+      ;;
+    *)
+      echo "Unknown argument: $arg"
+      echo "Usage: $0 [docker|local] [--skip-prereqs]"
+      exit 1
+      ;;
+  esac
+done
 
 ##############################################################################
 # Non-interactive Mode Configuration
@@ -868,7 +885,9 @@ success "pnpm installed: v$(pnpm --version)"
 CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step "$CURRENT_STEP" "$TOTAL_STEPS" "Installing project dependencies..."
 
-LOCKFILE_HASH_CACHE=".git/.talawa-pnpm-lock-hash"
+# Use git-aware path resolution for worktree/submodule compatibility
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo ".git")"
+LOCKFILE_HASH_CACHE="${GIT_DIR}/.talawa-pnpm-lock-hash"
 NEEDS_INSTALL=true
 
 if [ -f "pnpm-lock.yaml" ]; then

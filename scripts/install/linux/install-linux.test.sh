@@ -1051,6 +1051,63 @@ else
 fi
 
 
+test_start "Skip Prerequisites Flag - Flag Only (Default Docker Mode)"
+setup_debian_system
+
+create_mock "docker" 'echo "Docker version 20.10.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+
+set +e
+OUTPUT=$(run_test_script --skip-prereqs false 2>&1)
+EXIT_CODE=$?
+set -e
+
+if echo "$OUTPUT" | grep -q "Skipping prerequisite installation"; then
+    test_pass
+else
+    test_fail "Expected skip prereqs message.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "Skip Prerequisites Flag - Flag Before Mode"
+setup_debian_system
+
+create_mock "docker" 'echo "Docker version 20.10.0"; exit 0'
+create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi; exit 0'
+create_mock "node" 'echo "v20.10.0"'
+create_mock "npm" 'echo "10.0.0"'
+create_mock "pnpm" 'if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi; if [ "$1" = "install" ]; then exit 0; fi'
+
+set +e
+OUTPUT=$(run_test_script --skip-prereqs docker 2>&1)
+EXIT_CODE=$?
+set -e
+
+if echo "$OUTPUT" | grep -q "Skipping prerequisite installation"; then
+    test_pass
+else
+    test_fail "Expected skip prereqs message.\nLogs:\n$OUTPUT"
+fi
+
+
+test_start "Invalid Argument - Should Show Usage"
+setup_debian_system
+
+set +e
+OUTPUT=$(run_test_script invalid-mode false 2>&1)
+EXIT_CODE=$?
+set -e
+
+if echo "$OUTPUT" | grep -q "Unknown argument"; then
+    test_pass
+else
+    test_fail "Expected unknown argument error.\nLogs:\n$OUTPUT"
+fi
+
+
 ##############################################################################
 # Cleanup
 ##############################################################################
