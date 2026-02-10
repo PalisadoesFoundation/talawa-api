@@ -337,37 +337,6 @@ suite("Query field event", () => {
 				expect(error?.path).toEqual(["event"]);
 			});
 
-			test("results in invalid_arguments error when input validation fails", async () => {
-				const authToken = await getAdminToken();
-
-				// Pass invalid input that fails Zod validation
-				const result = await mercuriusClient.query(Query_event, {
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: "", // empty id as invalid argument
-						},
-					},
-				});
-
-				expect(result.data.event).toBeNull();
-				expect(result.errors).toBeDefined();
-				expect(result.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining({
-								code: "invalid_arguments",
-								issues: expect.any(Array),
-							}),
-							message: expect.any(String),
-							path: ["event"],
-						}),
-					]),
-				);
-			});
-
 			test("fails with ULID containing invalid characters", async () => {
 				const authToken = await getAdminToken();
 				const result = await mercuriusClient.query(Query_event, {
@@ -523,6 +492,42 @@ suite("Query field event", () => {
 		expect(queriedEvent.id).toBe(event.id);
 		expect(queryResult.errors).toBeUndefined();
 	});
+
+	suite(
+		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.event" field if`,
+		() => {
+			test("input validation fails", async () => {
+				const authToken = await getAdminToken();
+
+				// Pass invalid input that fails Zod validation
+				const result = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: "", // empty id as invalid argument
+						},
+					},
+				});
+
+				expect(result.data.event).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.any(Array),
+							}),
+							message: expect.any(String),
+							path: ["event"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 
 	// These additional test cases do not improve coverage from the actual files, However -> They help testing the application better
 	suite("Additional event tests", () => {
