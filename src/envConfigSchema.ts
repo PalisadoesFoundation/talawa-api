@@ -588,12 +588,25 @@ export const envConfigSchema = Type.Object({
 	),
 
 	/**
-	 * Secret key for Google reCAPTCHA v2 verification.
+	 * Secret key for Google reCAPTCHA v3 verification.
 	 * Used to verify reCAPTCHA tokens on the server side.
 	 */
 	RECAPTCHA_SECRET_KEY: Type.Optional(
 		Type.String({
 			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Score threshold for Google reCAPTCHA v3 verification.
+	 * Valid range: 0.0-1.0, where 1.0 is very likely human and 0.0 is very likely bot.
+	 * Default: 0.5
+	 */
+	RECAPTCHA_SCORE_THRESHOLD: Type.Optional(
+		Type.Number({
+			minimum: 0.0,
+			maximum: 1.0,
+			default: 0.5,
 		}),
 	),
 
