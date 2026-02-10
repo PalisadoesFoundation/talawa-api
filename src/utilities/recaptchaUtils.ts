@@ -3,18 +3,27 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 interface RecaptchaVerificationResponse {
 	success: boolean;
+	score?: number; // v3 only: 0.0-1.0, higher = more likely human
+	action?: string; // v3 only: action name from the request
 	challenge_ts?: string;
 	hostname?: string;
 	"error-codes"?: string[];
 }
 
 /**
- * Verifies a Google reCAPTCHA v2 token by making a request to Google's verification API.
+ * Verifies a Google reCAPTCHA v3 token by making a request to Google's verification API.
+ *
+ * @param token - The reCAPTCHA token to verify
+ * @param secretKey - The secret key for verification
+ * @param expectedAction - The expected action name (optional, for additional validation)
+ * @param scoreThreshold - Minimum score threshold (0.0-1.0, default 0.5)
  */
 export async function verifyRecaptchaToken(
 	token: string,
 	secretKey: string,
-): Promise<boolean> {
+	expectedAction?: string,
+	scoreThreshold: number = 0.5,
+): Promise<{ success: boolean; score?: number; action?: string }> {
 	try {
 		const verificationUrl = "https://www.google.com/recaptcha/api/siteverify";
 		const params = new URLSearchParams({
@@ -31,7 +40,26 @@ export async function verifyRecaptchaToken(
 		});
 
 		const data = (await response.json()) as RecaptchaVerificationResponse;
-		return data.success === true;
+
+		// Check basic success
+		if (!data.success) {
+			return { success: false, score: data.score, action: data.action };
+		}
+
+		// For v3, also check score and action
+		if (data.score !== undefined) {
+			// Validate score threshold
+			if (data.score < scoreThreshold) {
+				return { success: false, score: data.score, action: data.action };
+			}
+
+			// Validate action if provided
+			if (expectedAction && data.action !== expectedAction) {
+				return { success: false, score: data.score, action: data.action };
+			}
+		}
+
+		return { success: true, score: data.score, action: data.action };
 	} catch (error) {
 		// Log the original error for debugging
 		rootLogger.error({ err: error }, "reCAPTCHA verification error");
@@ -49,6 +77,8 @@ export async function verifyRecaptchaToken(
  * @param recaptchaToken - The reCAPTCHA token to verify (optional)
  * @param recaptchaSecretKey - The secret key from environment config
  * @param argumentPath - The GraphQL argument path for error reporting
+ * @param action - The expected action name for v3 validation
+ * @param scoreThreshold - Minimum score threshold (0.0-1.0, default 0.5)
  * @returns Promise that resolves if verification passes or is not required
  * @throws TalawaGraphQLError if verification fails or is required but missing
  */
@@ -56,6 +86,8 @@ export async function validateRecaptchaIfRequired(
 	recaptchaToken: string | undefined,
 	recaptchaSecretKey: string | undefined,
 	argumentPath: string[],
+	action?: string,
+	scoreThreshold: number = 0.5,
 ): Promise<boolean | undefined> {
 	// If no secret key is configured, skip reCAPTCHA verification
 	if (!recaptchaSecretKey) {
@@ -78,19 +110,32 @@ export async function validateRecaptchaIfRequired(
 	}
 
 	// Verify the reCAPTCHA token
-	const isValid = await verifyRecaptchaToken(
+	const result = await verifyRecaptchaToken(
 		recaptchaToken,
 		recaptchaSecretKey,
+		action,
+		scoreThreshold,
 	);
 
-	if (!isValid) {
+	if (!result.success) {
+		let message = "Invalid reCAPTCHA token.";
+
+		// Provide more specific error messages for v3
+		if (result.score !== undefined) {
+			if (result.score < scoreThreshold) {
+				message = `reCAPTCHA score too low (${result.score}). Please try again.`;
+			} else if (action && result.action !== action) {
+				message = `reCAPTCHA action mismatch. Expected '${action}', got '${result.action}'.`;
+			}
+		}
+
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "invalid_arguments",
 				issues: [
 					{
 						argumentPath,
-						message: "Invalid reCAPTCHA token.",
+						message,
 					},
 				],
 			},
