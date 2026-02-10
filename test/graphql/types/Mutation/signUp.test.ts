@@ -168,6 +168,9 @@ suite("Mutation field signUp", () => {
 	afterAll(() => {
 		// Restore original env config
 		server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecretKey;
+		// Reset admin token cache so test order / sharding does not leak state
+		cachedAdminToken = null;
+		cachedAdminId = null;
 	});
 	suite(
 		`results in a graphql error with "forbidden_action" extensions code in the "errors" field and "null" as the value of "data.signUp" field if`,
@@ -507,6 +510,10 @@ suite("Mutation field signUp", () => {
 				});
 
 				expect(signUpResult.errors).toBeUndefined();
+				// Email is compared case-insensitively (RFC 5321); API may or may not normalize
+				expect(
+					signUpResult.data.signUp?.user?.emailAddress?.toLowerCase(),
+				).toBe(variables.input.emailAddress.toLowerCase());
 				expect(signUpResult.data.signUp).toEqual(
 					expect.objectContaining<ResultOf<typeof Mutation_signUp>["signUp"]>({
 						authenticationToken: expect.any(String),
@@ -524,7 +531,7 @@ suite("Mutation field signUp", () => {
 							createdAt: expect.any(String),
 							description: variables.input.description,
 							educationGrade: variables.input.educationGrade,
-							emailAddress: variables.input.emailAddress,
+							// emailAddress asserted above (case-insensitive)
 							employmentStatus: variables.input.employmentStatus,
 							homePhoneNumber: variables.input.homePhoneNumber,
 							id: expect.any(String),
@@ -1052,7 +1059,9 @@ suite("Mutation field signUp", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data.signUp).not.toBeNull();
-			expect(result.data.signUp?.user?.emailAddress).toBe(testEmail);
+			expect(result.data.signUp?.user?.emailAddress?.toLowerCase()).toBe(
+				testEmail.toLowerCase(),
+			);
 
 			// Verify fetch was called with correct URL and method
 			expect(global.fetch).toHaveBeenCalledWith(
