@@ -38,14 +38,18 @@ const REFRESH_TTL_SEC = parsePositiveSeconds(
 );
 
 /**
- * Returns the access token TTL in seconds (used by authService for cookie maxAge).
+ * Returns the access token TTL in seconds.
+ *
+ * @returns TTL in seconds (number) used for access token expiry and cookie maxAge in authService.
  */
 export function getAccessTtlSec(): number {
 	return ACCESS_TTL_SEC;
 }
 
 /**
- * Returns the refresh token TTL in seconds (used by authService for persistRefreshToken and cookie maxAge).
+ * Returns the refresh token TTL in seconds.
+ *
+ * @returns TTL in seconds (number) used for refresh token expiry, persistRefreshToken, and cookie maxAge in authService.
  */
 export function getRefreshTtlSec(): number {
 	return REFRESH_TTL_SEC;

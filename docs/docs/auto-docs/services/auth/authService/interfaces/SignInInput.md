@@ -4,7 +4,7 @@
 
 # Interface: SignInInput
 
-Defined in: [src/services/auth/authService.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L97)
+Defined in: [src/services/auth/authService.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L103)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/services/auth/authService.ts:97](https://github.com/PalisadoesF
 
 > **email**: `string`
 
-Defined in: [src/services/auth/authService.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L98)
+Defined in: [src/services/auth/authService.ts:104](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L104)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/services/auth/authService.ts:98](https://github.com/PalisadoesF
 
 > `optional` **ip**: `string`
 
-Defined in: [src/services/auth/authService.ts:100](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L100)
+Defined in: [src/services/auth/authService.ts:106](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L106)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/services/auth/authService.ts:100](https://github.com/Palisadoes
 
 > **password**: `string`
 
-Defined in: [src/services/auth/authService.ts:99](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L99)
+Defined in: [src/services/auth/authService.ts:105](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L105)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/services/auth/authService.ts:99](https://github.com/PalisadoesF
 
 > `optional` **userAgent**: `string`
 
-Defined in: [src/services/auth/authService.ts:101](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L101)
+Defined in: [src/services/auth/authService.ts:107](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L107)

@@ -33,6 +33,9 @@ import { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderR
 import { testEnvConfig } from "../envConfigSchema";
 import type { introspection } from "../graphql/types/gql.tada";
 
+/** Satisfies env schema AUTH_JWT_SECRET minLength for createServer in tests. */
+const TEST_AUTH_JWT_SECRET = "12345678901234567890123456789012";
+
 const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;
@@ -101,6 +104,7 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 					API_RATE_LIMIT_REFILL_RATE: 10000,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 			await server.ready();
@@ -163,6 +167,7 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 					API_RATE_LIMIT_REFILL_RATE: 10000,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 			await server.ready();
@@ -241,6 +246,7 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 					API_RATE_LIMIT_REFILL_RATE: 10000,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 			await server.ready();
@@ -304,6 +310,7 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 					API_RATE_LIMIT_REFILL_RATE: 10000,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 			await server.ready();

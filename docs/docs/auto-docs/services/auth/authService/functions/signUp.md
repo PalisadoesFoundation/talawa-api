@@ -6,9 +6,9 @@
 
 > **signUp**(`db`, `_log`, `input`): `Promise`\<[`SignUpResult`](../type-aliases/SignUpResult.md)\>
 
-Defined in: [src/services/auth/authService.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L59)
+Defined in: [src/services/auth/authService.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L65)
 
-Registers a new user. Returns the created user or already_exists if email is taken.
+Registers a new user.
 
 ## Parameters
 
@@ -16,14 +16,22 @@ Registers a new user. Returns the created user or already_exists if email is tak
 
 [`DrizzleClient`](../../../../fastifyPlugins/drizzleClient/type-aliases/DrizzleClient.md)
 
+Drizzle client for database access.
+
 ### \_log
 
 `FastifyBaseLogger`
+
+Logger (unused; reserved for future use).
 
 ### input
 
 [`SignUpInput`](../interfaces/SignUpInput.md)
 
+SignUpInput (email, password, firstName, lastName).
+
 ## Returns
 
 `Promise`\<[`SignUpResult`](../type-aliases/SignUpResult.md)\>
+
+Promise resolving to SignUpResult: either { user } with the created user row, or { error: "already_exists" } if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.

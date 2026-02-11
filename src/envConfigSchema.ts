@@ -337,10 +337,12 @@ export const envConfigSchema = Type.Object({
 	 * REST auth JWT secret for signing and verifying access/refresh tokens (src/services/auth/tokens).
 	 * When unset, tokens.ts falls back to API_JWT_SECRET or a dev default in non-production.
 	 * Should be at least 32 characters. Prefer setting in production when using REST auth.
+	 * Default ensures env validation passes when unset (e.g. in tests or when only API_JWT_SECRET is used).
 	 */
 	AUTH_JWT_SECRET: Type.Optional(
 		Type.String({
 			minLength: 32,
+			default: "00000000000000000000000000000000",
 		}),
 	),
 	/**

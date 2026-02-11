@@ -6,9 +6,9 @@
 
 > **clearAuthCookies**(`reply`, `cookieOptions?`): `void`
 
-Defined in: [src/services/auth/authService.ts:239](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L239)
+Defined in: [src/services/auth/authService.ts:263](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L263)
 
-Clears auth cookies on the reply. Uses same path/domain as setAuthCookies when cookieOptions is omitted.
+Clears auth cookies on the reply.
 
 ## Parameters
 
@@ -16,10 +16,16 @@ Clears auth cookies on the reply. Uses same path/domain as setAuthCookies when c
 
 `FastifyReply`
 
+Fastify reply instance to clear cookies on.
+
 ### cookieOptions?
 
 [`CookieConfigOptions`](../../../../utilities/cookieConfig/interfaces/CookieConfigOptions.md)
 
+Optional CookieConfigOptions; when omitted, built from process.env so path/domain match setAuthCookies.
+
 ## Returns
 
 `void`
+
+void

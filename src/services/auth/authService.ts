@@ -32,6 +32,7 @@ import {
 function getDefaultCookieOptions(): CookieConfigOptions {
 	return {
 		domain: process.env.API_COOKIE_DOMAIN,
+		// Omission of API_IS_SECURE_COOKIES defaults to secure cookies (true); only the literal string "false" disables.
 		isSecure: process.env.API_IS_SECURE_COOKIES !== "false",
 		path: "/",
 	};
@@ -54,7 +55,12 @@ export type SignUpResult =
 	| { error: "already_exists" };
 
 /**
- * Registers a new user. Returns the created user or already_exists if email is taken.
+ * Registers a new user.
+ *
+ * @param db - Drizzle client for database access.
+ * @param _log - Logger (unused; reserved for future use).
+ * @param input - SignUpInput (email, password, firstName, lastName).
+ * @returns Promise resolving to SignUpResult: either { user } with the created user row, or { error: "already_exists" } if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.
  */
 export async function signUp(
 	db: DrizzleClient,
@@ -110,7 +116,12 @@ export type SignInResult =
 	| { error: "invalid_credentials" };
 
 /**
- * Authenticates a user by email and password. Returns user and tokens or invalid_credentials.
+ * Authenticates a user by email and password.
+ *
+ * @param db - Drizzle client for database access.
+ * @param _log - Logger (unused; reserved for future use).
+ * @param input - SignInInput (email, password; optional ip, userAgent).
+ * @returns Promise resolving to SignInResult: either { user, access, refresh } with the user row and JWT strings, or { error: "invalid_credentials" } if the user is not found or the password does not match.
  */
 export async function signIn(
 	db: DrizzleClient,
@@ -152,7 +163,11 @@ export type RotateRefreshResult =
 
 /**
  * Rotates a refresh token: revokes the old one and issues new access and refresh tokens.
- * Returns invalid_refresh if the token is expired, invalid, wrong type, or not found in DB.
+ *
+ * @param db - Drizzle client for database access.
+ * @param log - Logger for debug output (e.g. verification failures).
+ * @param token - Raw refresh JWT string; empty or whitespace-only is rejected without calling verifyToken.
+ * @returns Promise resolving to RotateRefreshResult: either { access, refresh, userId } with new tokens, or { error: "invalid_refresh" } if the token is expired, invalid, wrong typ, not valid in DB, or the user is not found.
  */
 export async function rotateRefresh(
 	db: DrizzleClient,
@@ -210,7 +225,12 @@ export interface SetAuthCookiesTokens {
 }
 
 /**
- * Sets HTTP-only auth cookies on the reply. When cookieOptions is omitted, builds options from process.env.
+ * Sets HTTP-only auth cookies on the reply.
+ *
+ * @param reply - Fastify reply instance to set cookies on.
+ * @param tokens - SetAuthCookiesTokens; may contain access and/or refresh token strings; only present keys are set.
+ * @param cookieOptions - Optional CookieConfigOptions (domain, isSecure, path); when omitted, built from process.env.
+ * @returns void
  */
 export function setAuthCookies(
 	reply: FastifyReply,
@@ -234,7 +254,11 @@ export function setAuthCookies(
 }
 
 /**
- * Clears auth cookies on the reply. Uses same path/domain as setAuthCookies when cookieOptions is omitted.
+ * Clears auth cookies on the reply.
+ *
+ * @param reply - Fastify reply instance to clear cookies on.
+ * @param cookieOptions - Optional CookieConfigOptions; when omitted, built from process.env so path/domain match setAuthCookies.
+ * @returns void
  */
 export function clearAuthCookies(
 	reply: FastifyReply,

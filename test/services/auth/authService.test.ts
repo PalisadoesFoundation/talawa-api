@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import type { CookieConfigOptions } from "~/src/utilities/cookieConfig";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 const mockHashPassword = vi.fn();
 const mockVerifyPassword = vi.fn();
@@ -181,6 +182,26 @@ describe("authService", () => {
 			expect(result).toEqual({ error: "already_exists" });
 			expect(mockDb.insert).not.toHaveBeenCalled();
 		});
+
+		it("throws TalawaRestError when insert returns no row", async () => {
+			const { signUp } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockDb.query.usersTable.findFirst.mockResolvedValue(undefined);
+			mockDb.insertValuesReturning.mockResolvedValue([]);
+			mockHashPassword.mockResolvedValue("hashed");
+
+			const err = await signUp(mockDb as unknown as DrizzleClient, log, {
+				email: "a@b.co",
+				password: "pwd12345",
+				firstName: "A",
+				lastName: "B",
+			}).catch((e: unknown) => e);
+
+			expect(err).toBeInstanceOf(TalawaRestError);
+			expect((err as TalawaRestError).message).toBe(
+				"Insert usersTable returned no row",
+			);
+		});
 	});
 
 	describe("signIn", () => {
@@ -336,6 +357,43 @@ describe("authService", () => {
 
 			expect(result).toEqual({ error: "invalid_refresh" });
 			expect(mockVerifyToken).not.toHaveBeenCalled();
+		});
+
+		it("returns invalid_refresh when token is whitespace-only", async () => {
+			const { rotateRefresh } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+
+			const result = await rotateRefresh(
+				mockDb as unknown as DrizzleClient,
+				log,
+				"   ",
+			);
+
+			expect(result).toEqual({ error: "invalid_refresh" });
+			expect(mockVerifyToken).not.toHaveBeenCalled();
+		});
+
+		it("returns invalid_refresh when user is deleted after revoke (revoke called, persist not called)", async () => {
+			const { rotateRefresh } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockVerifyToken.mockResolvedValue({
+				sub: "deleted-user",
+				typ: "refresh",
+				jti: "jti",
+			});
+			mockIsRefreshTokenValid.mockResolvedValue(true);
+			mockRevokeRefreshToken.mockResolvedValue(true);
+			mockDb.query.usersTable.findFirst.mockResolvedValue(undefined);
+
+			const result = await rotateRefresh(
+				mockDb as unknown as DrizzleClient,
+				log,
+				"refreshJwt",
+			);
+
+			expect(result).toEqual({ error: "invalid_refresh" });
+			expect(mockRevokeRefreshToken).toHaveBeenCalledWith(mockDb, "refreshJwt");
+			expect(mockPersistRefreshToken).not.toHaveBeenCalled();
 		});
 
 		it("returns invalid_refresh when token not valid in DB and does not call revoke or persist", async () => {

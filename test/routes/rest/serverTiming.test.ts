@@ -2,6 +2,9 @@ import { testEnvConfig } from "test/envConfigSchema";
 import { describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
 
+/** Satisfies env schema AUTH_JWT_SECRET minLength for createServer in tests. */
+const TEST_AUTH_JWT_SECRET = "12345678901234567890123456789012";
+
 describe("Server-Timing header", () => {
 	it("includes db, cache, total", async () => {
 		const app = await createServer({
@@ -10,6 +13,7 @@ describe("Server-Timing header", () => {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 
@@ -34,6 +38,7 @@ describe("Server-Timing header", () => {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 
@@ -61,6 +66,7 @@ describe("Server-Timing header", () => {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 
@@ -91,6 +97,7 @@ describe("Server-Timing header", () => {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 
@@ -136,6 +143,7 @@ describe("Server-Timing header", () => {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 
@@ -166,6 +174,7 @@ describe("Server-Timing header", () => {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 
