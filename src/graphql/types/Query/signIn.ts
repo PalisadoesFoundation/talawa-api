@@ -66,6 +66,8 @@ builder.queryField("signIn", (t) =>
 				parsedArgs.input.recaptchaToken,
 				ctx.envConfig.RECAPTCHA_SECRET_KEY,
 				["input", "recaptchaToken"],
+				"login", // v3 action for login
+				ctx.envConfig.RECAPTCHA_SCORE_THRESHOLD ?? 0.5,
 			);
 
 			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({

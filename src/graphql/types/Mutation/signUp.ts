@@ -116,6 +116,8 @@ builder.mutationField("signUp", (t) =>
 				parsedArgs.input.recaptchaToken,
 				ctx.envConfig.RECAPTCHA_SECRET_KEY,
 				["input", "recaptchaToken"],
+				"signup", // v3 action for signup
+				ctx.envConfig.RECAPTCHA_SCORE_THRESHOLD ?? 0.5,
 			);
 
 			const [[existingUserWithEmailAddress], existingOrganization] =

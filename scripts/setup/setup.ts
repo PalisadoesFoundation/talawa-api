@@ -41,6 +41,7 @@ export type SetupKey =
 	| "CI"
 	| "API_ADMINISTRATOR_USER_EMAIL_ADDRESS"
 	| "RECAPTCHA_SECRET_KEY"
+	| "RECAPTCHA_SCORE_THRESHOLD"
 	| "API_BASE_URL"
 	| "API_HOST"
 	| "API_PORT"
@@ -577,11 +578,28 @@ export async function reCaptchaSetup(
 	try {
 		answers.RECAPTCHA_SECRET_KEY = await promptInput(
 			"RECAPTCHA_SECRET_KEY",
-			"Enter Google reCAPTCHA v2 Secret Key:",
+			"Enter Google reCAPTCHA v3 Secret Key:",
 			"",
 			(input: string) => {
 				if (input.trim().length < 1) {
 					return "reCAPTCHA Secret Key cannot be empty.";
+				}
+				return true;
+			},
+		);
+
+		// Configure score threshold for reCAPTCHA v3
+		answers.RECAPTCHA_SCORE_THRESHOLD = await promptInput(
+			"RECAPTCHA_SCORE_THRESHOLD",
+			"Enter reCAPTCHA v3 score threshold (0.0-1.0, higher = more human-like, default: 0.5):",
+			"0.5",
+			(input: string) => {
+				const score = parseFloat(input.trim());
+				if (Number.isNaN(score)) {
+					return "Score threshold must be a valid number.";
+				}
+				if (score < 0.0 || score > 1.0) {
+					return "Score threshold must be between 0.0 and 1.0.";
 				}
 				return true;
 			},
@@ -1309,7 +1327,7 @@ export async function setup(): Promise<SetupAnswers> {
 	answers = await administratorEmail(answers);
 	const setupReCaptcha = await promptConfirm(
 		"setupReCaptcha",
-		"Do you want to set up Google reCAPTCHA v2 now?",
+		"Do you want to set up Google reCAPTCHA v3 now?",
 		false,
 	);
 	if (setupReCaptcha) {
