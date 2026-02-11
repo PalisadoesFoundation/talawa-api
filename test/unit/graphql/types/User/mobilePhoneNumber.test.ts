@@ -3,11 +3,48 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { mobilePhoneNumberResolver } from "~/src/graphql/types/User/mobilePhoneNumber";
 import type { User as UserType } from "~/src/graphql/types/User/User";
+import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+vi.mock("~/src/graphql/types/User/User", () => ({
+	User: {
+		implement: vi.fn(),
+	},
+}));
 
 suite("User field mobilePhoneNumber - Unit Tests", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+	});
+
+	test("registers mobilePhoneNumber field in User schema", () => {
+		expect(User.implement).toHaveBeenCalledWith(
+			expect.objectContaining({
+				fields: expect.any(Function),
+			}),
+		);
+
+		// Extract the fields function and verify it creates the mobilePhoneNumber field
+		const implementation = (
+			User.implement as unknown as ReturnType<typeof vi.fn>
+		).mock.calls[0]?.[0];
+		if (!implementation) {
+			throw new Error("User.implement was not called with arguments");
+		}
+		const fieldsBuilder = {
+			field: vi.fn((config) => config),
+		};
+		const fields = implementation.fields(fieldsBuilder);
+
+		expect(fields.mobilePhoneNumber).toBeDefined();
+		expect(fieldsBuilder.field).toHaveBeenCalledWith(
+			expect.objectContaining({
+				resolve: mobilePhoneNumberResolver,
+				type: "PhoneNumber",
+				description: expect.any(String),
+				complexity: expect.any(Number),
+			}),
+		);
 	});
 
 	test("throws unauthenticated error when client is not authenticated for unit test", async () => {
@@ -58,9 +95,26 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 			mobilePhoneNumber: "1234567890",
 		} as unknown as UserType;
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "regular",
-		});
+		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+			// @ts-expect-error - mockImplementation types are hard to match perfectly with Drizzle
+			async (args: {
+				where: (
+					fields: Record<string, unknown>,
+					operators: Record<string, (a: unknown, b: unknown) => boolean>,
+				) => boolean;
+			}) => {
+				// Execute the where callback to ensure coverage
+				if (args?.where) {
+					args.where(
+						{ id: currentUserId },
+						{ eq: (_a: unknown, _b: unknown) => true },
+					);
+				}
+				return {
+					role: "regular",
+				};
+			},
+		);
 
 		await expect(
 			mobilePhoneNumberResolver(parent, {}, context),
@@ -153,6 +207,8 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 		await expect(
 			mobilePhoneNumberResolver(parent, {}, context),
 		).rejects.toThrow("Internal server error");
+
+		expect(context.log.error).toHaveBeenCalledWith(genericError);
 	});
 
 	test("rethrows TalawaGraphQLError as is", async () => {

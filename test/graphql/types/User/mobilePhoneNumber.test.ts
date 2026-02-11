@@ -335,6 +335,17 @@ suite("User field mobilePhoneNumber", () => {
 
 			expect(result.data.user).toBeNull();
 			expect(result.errors).toBeDefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						message: expect.any(String),
+						path: ["user"],
+						extensions: expect.objectContaining({
+							code: expect.any(String),
+						}),
+					}),
+				]),
+			);
 		});
 	});
 });
