@@ -350,21 +350,43 @@ describe("SESProvider", () => {
 	});
 
 	it("should wait ~100ms between bulk emails", async () => {
-		// Using real timers to avoid race conditions with dynamic imports + fake timers
-		const mockSend = vi.fn().mockResolvedValue({ MessageId: "msg-id" });
-		(SESClient as unknown as Mock).prototype.send = mockSend;
+		// Spy on setTimeout so the test runs instantly
+		const setTimeoutSpy = vi
+			.spyOn(global, "setTimeout")
+			.mockImplementation((callback: () => void, _ms?: number) => {
+				if (typeof callback === "function") {
+					callback();
+				}
+				return {} as unknown as NodeJS.Timeout;
+			});
 
-		const jobs = [
-			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
-			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
-		];
+		// Create exactly 15 jobs to trigger the batch limit (14 per batch)
+		const jobs = Array.from({ length: 15 }, (_, i) => ({
+			id: String(i),
+			email: `test${i}@example.com`,
+			subject: "Batch Test",
+			htmlBody: "Batch Body",
+			userId: "u1",
+		}));
 
-		const start = Date.now();
-		await sesProvider.sendBulkEmails(jobs);
-		const end = Date.now();
+		// We spy directly on the provider's sendEmail method to count how many times it fires
+		// NOTE: If your instance is named 'sesProvider', change 'provider' to 'sesProvider' on these next two lines!
+		const sendEmailSpy = vi.spyOn(sesProvider, "sendEmail").mockResolvedValue({
+			id: "1",
+			success: true,
+			messageId: "msg-batch",
+		});
 
-		expect(mockSend).toHaveBeenCalledTimes(2);
-		// Should be at least 100ms (1 delay)
-		expect(end - start).toBeGreaterThanOrEqual(95); // Allow small margin for timer imprecision
+		await sesProvider.sendBulkEmails(jobs as unknown as EmailJob[]);
+
+		// 15 emails should have been processed
+		expect(sendEmailSpy).toHaveBeenCalledTimes(15);
+
+		// It should have paused exactly once between the first batch (14) and the second batch (1)
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+
+		setTimeoutSpy.mockRestore();
+		sendEmailSpy.mockRestore();
 	});
 });
