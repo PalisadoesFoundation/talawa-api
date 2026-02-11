@@ -496,7 +496,12 @@ suite("Query field event", () => {
 				expect(error?.message).toBe("Internal Server Error");
 				expect(error?.path).toEqual(["event"]);
 			});
+		},
+	);
 
+	suite(
+		"returns arguments_associated_resources_not_found for valid-but-missing IDs",
+		() => {
 			test("returns error when event does not exist for a valid ULID", async () => {
 				const authToken = await getAdminToken();
 				const nonExistentId = uuidv7();
@@ -901,11 +906,11 @@ suite("Query field event", () => {
 			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
 			const baseDate = new Date();
 			baseDate.setMonth(baseDate.getMonth() + 1); // Start event 1 month from now
-			baseDate.setHours(10, 0, 0, 0);
+			baseDate.setUTCHours(10, 0, 0, 0);
 			const startAt = baseDate.toISOString();
 
 			const endDate = new Date(baseDate);
-			endDate.setHours(11, 0, 0, 0);
+			endDate.setUTCHours(11, 0, 0, 0);
 			const endAt = endDate.toISOString();
 
 			// Create never-ending recurring event
@@ -1073,7 +1078,10 @@ suite("Query field event", () => {
 					},
 				});
 
+				// For invite-only events, the resolver returns null without an error
+				// when the user is not creator/admin/invited/registered
 				expect(queryResult.data?.event).toBeNull();
+				expect(queryResult.errors).toBeUndefined();
 			});
 
 			test("event creator can access invite-only event", async () => {
