@@ -190,6 +190,7 @@ export { tagFoldersTable, tagFoldersTableRelations } from "./tables/tagFolders";
 export { tagsTable, tagsTableRelations } from "./tables/tags";
 export { usersTable, usersTableRelations } from "./tables/users";
 export {
+	venueAttachmentMimeTypePgEnum,
 	venueAttachmentsTable,
 	venueAttachmentsTableRelations,
 } from "./tables/venueAttachments";

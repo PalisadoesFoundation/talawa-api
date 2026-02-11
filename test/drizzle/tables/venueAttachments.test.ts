@@ -1,7 +1,73 @@
+import { faker } from "@faker-js/faker";
 import { getTableColumns, getTableName } from "drizzle-orm";
+import { mercuriusClient } from "test/graphql/types/client";
+import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
+import {
+	Mutation_createOrganization,
+	Query_signIn,
+} from "test/graphql/types/documentNodes";
+import { assertToBeNonNullish } from "test/helpers";
+import { server } from "test/server";
 import { describe, expect, it, vi } from "vitest";
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import { venueAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import { venuesTable } from "~/src/drizzle/schema";
 
+async function createTestOrganization(): Promise<string> {
+	// Clear any existing headers to ensure a clean sign-in
+	mercuriusClient.setHeaders({});
+	const signIn = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	if (signIn.errors) {
+		throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
+	}
+	const token = signIn.data?.signIn?.authenticationToken;
+	assertToBeNonNullish(
+		token,
+		"Authentication token is missing from sign-in response",
+	);
+	const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				name: `Org-${faker.string.ulid()}`,
+				countryCode: "us",
+				isUserRegistrationRequired: true,
+			},
+		},
+	});
+	if (org.errors) {
+		throw new Error(
+			`Create organization failed: ${JSON.stringify(org.errors)}`,
+		);
+	}
+	const orgId = org.data?.createOrganization?.id;
+	assertToBeNonNullish(
+		orgId,
+		"Organization ID is missing from creation response",
+	);
+	return orgId;
+}
+
+async function createTestVenue(): Promise<string> {
+	const { userId } = await createRegularUserUsingAdmin();
+	const venueResult = await server.drizzleClient
+		.insert(venuesTable)
+		.values({
+			name: "test",
+			creatorId: userId,
+			organizationId: await createTestOrganization(),
+		})
+		.returning({ id: venuesTable.id });
+	const venueId = venueResult[0]?.id;
+	assertToBeNonNullish(venueId, "Venue ID is missing from creation response");
+	return venueId;
+}
 // Mock drizzle-orm itself to handle relations
 vi.mock("drizzle-orm", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("drizzle-orm")>();
@@ -183,7 +249,7 @@ describe("venueAttachments.ts", () => {
 
 		it("should validate mimeType against enum values", () => {
 			// Test valid mime types
-			const validMimeTypes = venueAttachmentMimeTypeEnum.options;
+			const validMimeTypes = venueAttachmentMimeTypeZodEnum.options;
 
 			validMimeTypes.forEach((mimeType) => {
 				const result = venueAttachmentsTableInsertSchema.safeParse({
@@ -480,6 +546,43 @@ describe("venueAttachments.ts", () => {
 					"venue_attachments.venue_id:venues.id",
 				);
 			});
+		});
+	});
+
+	describe("DB Level Enum enforced test", () => {
+		it("should accept valid enum values at the database layer", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const venueId = await createTestVenue();
+
+			await expect(
+				server.drizzleClient
+					.insert(venueAttachmentsTable)
+					.values({
+						name: "valid enum test",
+						creatorId: userId,
+						venueId,
+						mimeType: "image/png",
+					})
+					.execute(),
+			).rejects.toThrow();
+		});
+		it("should reject invalid enum values at the database layer", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const venueId = await createTestVenue();
+
+			const invalidMimeType = "not/a/real-type";
+
+			await expect(
+				server.drizzleClient
+					.insert(venueAttachmentsTable)
+					.values({
+						name: "Invalid enum test",
+						creatorId: userId,
+						venueId,
+						mimeType: invalidMimeType as "image/png",
+					})
+					.execute(),
+			).rejects.toThrow();
 		});
 	});
 });
