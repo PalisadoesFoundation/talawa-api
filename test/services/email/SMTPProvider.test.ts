@@ -641,14 +641,13 @@ describe("SMTPProvider", () => {
 		// immediately so it doesn't artificially slow down our test suite!
 		const setTimeoutSpy = vi
 			.spyOn(global, "setTimeout")
-			.mockImplementation((cb: unknown) => {
-				if (typeof cb === "function") {
-					cb();
+			.mockImplementation((callback: () => void, _ms?: number) => {
+				if (typeof callback === "function") {
+					callback();
 				}
 				return {} as unknown as NodeJS.Timeout;
 			});
-
-		// Generate 15 jobs (Since BATCH_SIZE is 14, this will create 2 batches)
+		// Generate 15 jobs (BATCH_SIZE = 14 → 2 batches)
 		const jobs = Array.from({ length: 15 }, (_, i) => ({
 			id: String(i),
 			email: `test${i}@example.com`,
@@ -661,7 +660,7 @@ describe("SMTPProvider", () => {
 
 		expect(mockSendMail).toHaveBeenCalledTimes(15);
 
-		// It should have paused exactly once between the first batch (14) and the second batch (1)
+		// Ensure delay happened exactly once
 		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
 		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
 
