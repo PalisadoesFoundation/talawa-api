@@ -1,9 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, expect, suite, test } from "vitest";
-import type {
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-	UnauthorizedActionExtensions,
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import { afterEach, expect, suite, test, vi } from "vitest";
+import { mobilePhoneNumberResolver } from "~/src/graphql/types/User/mobilePhoneNumber";
+import type { User as UserType } from "~/src/graphql/types/User/User";
+import {
+	TalawaGraphQLError,
+	type TalawaGraphQLFormattedError,
+	type UnauthenticatedExtensions,
+	type UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -346,6 +350,84 @@ suite("User field mobilePhoneNumber", () => {
 					}),
 				]),
 			);
+		});
+	});
+
+	suite("Unit Tests", () => {
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		test("handles null or empty mobilePhoneNumber correctly", async () => {
+			const _userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, _userId);
+
+			const parent = {
+				id: _userId,
+				name: "Test User",
+				mobilePhoneNumber: null,
+			} as unknown as UserType;
+
+			// Mock finding the user (self-access allowed)
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+				createdAt: new Date("2020-01-01T00:00:00Z"),
+			});
+
+			const result = await mobilePhoneNumberResolver(parent, {}, context);
+			const emptyResult = await mobilePhoneNumberResolver(
+				{ ...parent, mobilePhoneNumber: "" },
+				{},
+				context,
+			);
+
+			expect(result).toBeNull();
+			expect(emptyResult).toBe("");
+		});
+
+		test("rethrows TalawaGraphQLError when findFirst fails with one", async () => {
+			const _userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, _userId);
+
+			const parent = {
+				id: _userId,
+				name: "Test User",
+				mobilePhoneNumber: "123-456-7890",
+			} as unknown as UserType;
+
+			const expectedError = new TalawaGraphQLError({
+				message: "Test Error",
+				extensions: {
+					code: "unexpected",
+				},
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				expectedError,
+			);
+
+			await expect(
+				mobilePhoneNumberResolver(parent, {}, context),
+			).rejects.toThrow(expectedError);
+		});
+
+		test("wraps generic Error in Internal Server Error", async () => {
+			const _userId = faker.string.uuid();
+			const { context, mocks } = createMockGraphQLContext(true, _userId);
+
+			const parent = {
+				id: _userId,
+				name: "Test User",
+				mobilePhoneNumber: "123-456-7890",
+			} as unknown as UserType;
+
+			const genericError = new Error("Something went wrong");
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				genericError,
+			);
+
+			await expect(
+				mobilePhoneNumberResolver(parent, {}, context),
+			).rejects.toThrow("Internal server error");
 		});
 	});
 });
