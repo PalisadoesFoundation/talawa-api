@@ -14,7 +14,7 @@ Verifies a JWT and returns the payload. Throws on expired, wrong secret, or wron
 
 ### T
 
-`T` = [`AccessClaims`](../type-aliases/AccessClaims.md) \| [`RefreshClaims`](../type-aliases/RefreshClaims.md)
+`T` = `any`
 
 ## Parameters
 
