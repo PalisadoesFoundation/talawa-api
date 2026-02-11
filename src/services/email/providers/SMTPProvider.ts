@@ -200,23 +200,60 @@ export class SMTPProvider implements IEmailProvider {
 			};
 		}
 	}
-
 	/**
-	 * Send multiple emails in bulk with rate limiting.
+	 * Send multiple emails in bulk with rate limiting and concurrent batching.
 	 * Accepts sparse arrays (nullish values are skipped).
 	 */
 	async sendBulkEmails(
 		jobs: (EmailJob | undefined | null)[],
 	): Promise<EmailResult[]> {
+		// 1. Filter out null/undefined jobs to make batching predictable
+		const validJobs = jobs.filter((job): job is EmailJob => job != null);
+
+		const BATCH_SIZE = 14;
+		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
-		for (const [i, job] of jobs.entries()) {
-			if (!job) continue;
-			results.push(await this.sendEmail(job));
-			if (i < jobs.length - 1) {
-				// Rate limiting delay to avoid SMTP throttling
-				await new Promise((r) => setTimeout(r, 100));
+
+		for (let i = 0; i < validJobs.length; i += BATCH_SIZE) {
+			const batch = validJobs.slice(i, i + BATCH_SIZE);
+
+			// 2. Map the batch to an array of Promises
+			const batchPromises = batch.map((job) => this.sendEmail(job));
+
+			// 3. Execute concurrently with Promise.allSettled
+			const batchSettledResults = await Promise.allSettled(batchPromises);
+
+			// 4. Extract the results
+			for (let j = 0; j < batchSettledResults.length; j++) {
+				const settled = batchSettledResults[j];
+				const currentJob = batch[j];
+
+				// SAFETY CHECK: This satisfies TypeScript's strict index checking
+				if (!settled || !currentJob) continue;
+
+				if (settled.status === "fulfilled") {
+					results.push(settled.value);
+				} else {
+					// Fallback in case a promise rejects outside of sendEmail's try/catch
+					results.push({
+						id: currentJob.id,
+						success: false,
+						error:
+							settled.reason instanceof Error
+								? settled.reason.message
+								: String(settled.reason),
+					});
+				}
+			}
+
+			// 5. Apply rate limit delay between batches (skip after the last batch)
+			if (i + BATCH_SIZE < validJobs.length) {
+				await new Promise((resolve) =>
+					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),
+				);
 			}
 		}
+
 		return results;
 	}
 }

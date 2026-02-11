@@ -59,9 +59,9 @@ The SMTP configuration object.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:208](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L208)
+Defined in: [src/services/email/providers/SMTPProvider.ts:207](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L207)
 
-Send multiple emails in bulk with rate limiting.
+Send multiple emails in bulk with rate limiting and concurrent batching.
 Accepts sparse arrays (nullish values are skipped).
 
 #### Parameters
