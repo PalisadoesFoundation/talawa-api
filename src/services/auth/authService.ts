@@ -78,26 +78,43 @@ export async function signUp(
 	const userId = uuidv7();
 	const name = buildName(input.firstName, input.lastName, input.email);
 
-	const [user] = await db
-		.insert(usersTable)
-		.values({
-			creatorId: userId,
-			emailAddress: input.email,
-			id: userId,
-			isEmailAddressVerified: false,
-			name,
-			passwordHash,
-			role: "regular",
-		})
-		.returning();
+	try {
+		const [user] = await db
+			.insert(usersTable)
+			.values({
+				creatorId: userId,
+				emailAddress: input.email,
+				id: userId,
+				isEmailAddressVerified: false,
+				name,
+				passwordHash,
+				role: "regular",
+			})
+			.returning();
 
-	if (!user) {
+		if (!user) {
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Insert usersTable returned no row",
+			});
+		}
+		return { user };
+	} catch (err) {
+		const code =
+			(err as { code?: string }).code ??
+			(err as { cause?: { code?: string } }).cause?.code;
+		if (code === "23505") {
+			return { error: "already_exists" };
+		}
+		if (err instanceof TalawaRestError) {
+			throw err;
+		}
 		throw new TalawaRestError({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: "Insert usersTable returned no row",
+			message: "User registration failed",
+			details: err instanceof Error ? { cause: err.message } : undefined,
 		});
 	}
-	return { user };
 }
 
 export interface SignInInput {
@@ -194,8 +211,6 @@ export async function rotateRefresh(
 		return { error: "invalid_refresh" };
 	}
 
-	await revokeRefreshToken(db, token);
-
 	const user = await db.query.usersTable.findFirst({
 		where: eq(usersTable.id, payload.sub),
 		columns: { id: true, emailAddress: true },
@@ -204,17 +219,28 @@ export async function rotateRefresh(
 		return { error: "invalid_refresh" };
 	}
 
+	// Issue and persist new tokens first so a failure does not leave the user without a valid refresh token.
 	const access = await signAccessToken({
 		id: user.id,
 		email: user.emailAddress,
 	});
 	const jti = randomUUID();
 	const refresh = await signRefreshToken(user.id, jti);
-	await persistRefreshToken(db, {
-		token: refresh,
-		userId: user.id,
-		ttlSec: getRefreshTtlSec(),
-	});
+	try {
+		await persistRefreshToken(db, {
+			token: refresh,
+			userId: user.id,
+			ttlSec: getRefreshTtlSec(),
+		});
+	} catch (err) {
+		log.debug({ err }, "persistRefreshToken failed during rotateRefresh");
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: "Failed to persist new refresh token",
+		});
+	}
+
+	await revokeRefreshToken(db, token);
 
 	return { access, refresh, userId: payload.sub };
 }

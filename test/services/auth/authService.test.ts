@@ -202,6 +202,26 @@ describe("authService", () => {
 				"Insert usersTable returned no row",
 			);
 		});
+
+		it("returns already_exists when insert throws Postgres unique violation (23505) race", async () => {
+			const { signUp } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockDb.query.usersTable.findFirst.mockResolvedValue(undefined);
+			mockHashPassword.mockResolvedValue("hashed");
+			const uniqueError = new Error("duplicate key");
+			(
+				mockDb.insertValuesReturning as ReturnType<typeof vi.fn>
+			).mockRejectedValue(Object.assign(uniqueError, { code: "23505" }));
+
+			const result = await signUp(mockDb as unknown as DrizzleClient, log, {
+				email: "a@b.co",
+				password: "pwd",
+				firstName: "A",
+				lastName: "B",
+			});
+
+			expect(result).toEqual({ error: "already_exists" });
+		});
 	});
 
 	describe("signIn", () => {
@@ -230,6 +250,14 @@ describe("authService", () => {
 			if ("user" in result) {
 				expect(result.user.id).toBe("user-1");
 			}
+			expect(mockSignAccessToken).toHaveBeenCalledWith({
+				id: "user-1",
+				email: "a@b.co",
+			});
+			expect(mockSignRefreshToken).toHaveBeenCalledWith(
+				"user-1",
+				expect.any(String),
+			);
 			expect(mockPersistRefreshToken).toHaveBeenCalledTimes(1);
 			expect(mockPersistRefreshToken).toHaveBeenCalledWith(
 				mockDb,
@@ -373,7 +401,7 @@ describe("authService", () => {
 			expect(mockVerifyToken).not.toHaveBeenCalled();
 		});
 
-		it("returns invalid_refresh when user is deleted after revoke (revoke called, persist not called)", async () => {
+		it("returns invalid_refresh when user is deleted (no revoke or persist; we return early)", async () => {
 			const { rotateRefresh } = await import("~/src/services/auth/authService");
 			const mockDb = createMockDb();
 			mockVerifyToken.mockResolvedValue({
@@ -382,7 +410,6 @@ describe("authService", () => {
 				jti: "jti",
 			});
 			mockIsRefreshTokenValid.mockResolvedValue(true);
-			mockRevokeRefreshToken.mockResolvedValue(true);
 			mockDb.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 			const result = await rotateRefresh(
@@ -392,7 +419,7 @@ describe("authService", () => {
 			);
 
 			expect(result).toEqual({ error: "invalid_refresh" });
-			expect(mockRevokeRefreshToken).toHaveBeenCalledWith(mockDb, "refreshJwt");
+			expect(mockRevokeRefreshToken).not.toHaveBeenCalled();
 			expect(mockPersistRefreshToken).not.toHaveBeenCalled();
 		});
 
@@ -415,6 +442,30 @@ describe("authService", () => {
 			expect(result).toEqual({ error: "invalid_refresh" });
 			expect(mockRevokeRefreshToken).not.toHaveBeenCalled();
 			expect(mockPersistRefreshToken).not.toHaveBeenCalled();
+		});
+
+		it("throws TalawaRestError when persistRefreshToken fails and does not revoke old token", async () => {
+			const { rotateRefresh } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockVerifyToken.mockResolvedValue({
+				sub: "user-1",
+				typ: "refresh",
+				jti: "jti",
+			});
+			mockIsRefreshTokenValid.mockResolvedValue(true);
+			mockDb.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-1",
+				emailAddress: "u@example.com",
+			});
+			mockSignAccessToken.mockResolvedValue("new-access");
+			mockSignRefreshToken.mockResolvedValue("new-refresh");
+			mockPersistRefreshToken.mockRejectedValue(new Error("DB unavailable"));
+
+			await expect(
+				rotateRefresh(mockDb as unknown as DrizzleClient, log, "refreshJwt"),
+			).rejects.toThrow(TalawaRestError);
+
+			expect(mockRevokeRefreshToken).not.toHaveBeenCalled();
 		});
 	});
 

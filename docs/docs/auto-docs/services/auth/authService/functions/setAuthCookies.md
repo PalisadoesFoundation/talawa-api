@@ -6,7 +6,7 @@
 
 > **setAuthCookies**(`reply`, `tokens`, `cookieOptions?`): `void`
 
-Defined in: [src/services/auth/authService.ts:235](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L235)
+Defined in: [src/services/auth/authService.ts:261](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L261)
 
 Sets HTTP-only auth cookies on the reply.
 
