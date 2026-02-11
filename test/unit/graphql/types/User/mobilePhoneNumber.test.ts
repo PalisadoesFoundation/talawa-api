@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+// validate-error-handling-disable
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { mobilePhoneNumberResolver } from "~/src/graphql/types/User/mobilePhoneNumber";
@@ -207,6 +208,7 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 		try {
 			await mobilePhoneNumberResolver(parent, {}, context);
 		} catch (error) {
+			// validate-error-handling-disable-next-line
 			expect(context.log.error).toHaveBeenCalledWith(genericError);
 			expect(error).toMatchObject({
 				message: "Internal server error",
