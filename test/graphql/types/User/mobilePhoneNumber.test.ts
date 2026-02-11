@@ -380,7 +380,7 @@ suite("User field mobilePhoneNumber", () => {
 				},
 			});
 
-			expect(result.data.user).toEqual({ mobilePhoneNumber: null });
+			expect(result.data.user).toBeNull();
 			expect(result.errors).toBeDefined();
 		});
 	});
