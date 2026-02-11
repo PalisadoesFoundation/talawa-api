@@ -334,6 +334,36 @@ export const envConfigSchema = Type.Object({
 		minLength: 64,
 	}),
 	/**
+	 * REST auth JWT secret for signing and verifying access/refresh tokens (src/services/auth/tokens).
+	 * When unset, tokens.ts falls back to API_JWT_SECRET or a dev default in non-production.
+	 * Should be at least 32 characters. Prefer setting in production when using REST auth.
+	 */
+	AUTH_JWT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+		}),
+	),
+	/**
+	 * REST auth access token TTL in seconds. Used by src/services/auth/tokens and cookie maxAge.
+	 * Default: 900 (15 minutes)
+	 */
+	ACCESS_TOKEN_TTL: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 900,
+		}),
+	),
+	/**
+	 * REST auth refresh token TTL in seconds. Used by src/services/auth/tokens and refreshStore.
+	 * Default: 2592000 (30 days)
+	 */
+	REFRESH_TOKEN_TTL: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 2592000,
+		}),
+	),
+	/**
 	 * Secret used for signing cookies. Should be a random string of at least 32 characters.
 	 * Used by @fastify/cookie for cookie signing and verification.
 	 */

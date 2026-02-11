@@ -194,6 +194,18 @@ This environment variable is used to configure the secret used for signing and v
 
 This environment variable is used to configure the time in milliseconds it takes for a refresh token issued by talawa api to expire. Refresh tokens are long-lived tokens used to obtain new short-lived access tokens without requiring users to re-authenticate. Recommended value is 7 days (604800000 milliseconds).
 
+### AUTH_JWT_SECRET (REST auth)
+
+Optional. REST auth JWT secret for signing and verifying access/refresh tokens (see `src/services/auth/tokens`). When unset, tokens fall back to a dev default in non-production. Set to at least 32 characters when using REST auth in production.
+
+### ACCESS_TOKEN_TTL (REST auth)
+
+Optional. REST auth access token TTL in seconds; used for JWT expiry and cookie maxAge. Default: 900 (15 minutes).
+
+### REFRESH_TOKEN_TTL (REST auth)
+
+Optional. REST auth refresh token TTL in seconds; used for refresh JWT and cookie maxAge. Default: 2592000 (30 days).
+
 ### API_LOG_LEVEL
 
 This environment variable is used to configure the [log level](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) for talawa api's [pino.js](https://github.com/pinojs/pino) logger. Possible values are `debug`, `error`, `fatal`, `info`, `trace` and `warn`.

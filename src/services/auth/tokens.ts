@@ -37,6 +37,20 @@ const REFRESH_TTL_SEC = parsePositiveSeconds(
 	DEFAULT_REFRESH_TTL_SEC,
 );
 
+/**
+ * Returns the access token TTL in seconds (used by authService for cookie maxAge).
+ */
+export function getAccessTtlSec(): number {
+	return ACCESS_TTL_SEC;
+}
+
+/**
+ * Returns the refresh token TTL in seconds (used by authService for persistRefreshToken and cookie maxAge).
+ */
+export function getRefreshTtlSec(): number {
+	return REFRESH_TTL_SEC;
+}
+
 function getSecret(): Uint8Array {
 	const raw = process.env.AUTH_JWT_SECRET;
 	if (!raw) {

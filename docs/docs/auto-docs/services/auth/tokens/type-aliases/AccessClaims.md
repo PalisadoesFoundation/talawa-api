@@ -6,7 +6,7 @@
 
 > **AccessClaims** = `JWTPayload` & `object`
 
-Defined in: [src/services/auth/tokens.ts:60](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L60)
+Defined in: [src/services/auth/tokens.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/tokens.ts#L74)
 
 Payload shape for access tokens. Extends jose JWTPayload so callers see iss, iat, exp.
 
