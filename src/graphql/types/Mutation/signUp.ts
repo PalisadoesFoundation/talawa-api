@@ -318,7 +318,6 @@ builder.mutationField("signUp", (t) =>
 			// Send email verification token AFTER transaction completes (non-blocking)
 			// This ensures email failures don't abort the signup
 			try {
-				// Standard email verification flow for all signups
 				const rawToken = generateEmailVerificationToken();
 				const tokenHash = hashEmailVerificationToken(rawToken);
 				const tokenExpiresInSeconds =

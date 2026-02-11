@@ -105,7 +105,6 @@ export const Mutation_signUp =
     }
 }`);
 
-
 export const Mutation_adminCreateOnSpotAttendee = gql(`
   mutation Mutation_adminCreateOnSpotAttendee($input: MutationSignUpInput!) {
     adminCreateOnSpotAttendee(input: $input) {

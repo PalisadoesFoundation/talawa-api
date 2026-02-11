@@ -148,7 +148,6 @@ This is an automated message. Please do not reply to this email.`;
  */
 export function getEmailVerificationEmailHtml(
 	ctx: EmailVerificationContext,
-  
 ): string {
 	return `<!DOCTYPE html>
 <html lang="en">

@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, afterEach, afterAll } from "vitest";
+import { afterAll, afterEach, expect, suite, test, vi } from "vitest";
+import { emailService } from "~/src/services/email/emailServiceInstance";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -9,10 +10,23 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_deleteOrganization,
-
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+
+interface AdminOnSpotUser {
+	id: string;
+	name: string;
+	emailAddress: string;
+	isEmailAddressVerified: boolean;
+	role: string;
+}
+
+interface AdminCreateOnSpotAttendeePayload {
+	user: AdminOnSpotUser;
+	authenticationToken: string;
+	refreshToken: string;
+}
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -53,7 +67,10 @@ async function cleanupTrackedEntities(): Promise<void> {
 			});
 		} catch (error) {
 			// Silently ignore errors - organization may already be deleted
-			console.log(`Failed to delete organization ${orgId}:`, (error as Error).message);
+			console.log(
+				`Failed·to·delete·organization·${orgId}:`,
+				(error as Error).message,
+			);
 		}
 	}
 
@@ -82,9 +99,11 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 	/**
 	 * Cleanup hook: runs after each test to prevent DB entity leaks
 	 * Deletes all tracked organizations and users created during the test
+	 * Restore any mocked functions after each test to prevent cross-test pollution
 	 */
 	afterEach(async () => {
 		await cleanupTrackedEntities();
+		vi.restoreAllMocks();
 	});
 
 	/**
@@ -182,7 +201,6 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 			trackedEntityIds.organizationIds.push(orgId);
-			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member with administrator role
 			const membershipResult = await mercuriusClient.mutate(
@@ -198,20 +216,19 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				},
 			);
-			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			// Create a regular user with a known email
 			const { userId: existingUserId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(existingUserId);
 			trackedEntityIds.userIds.push(existingUserId);
-			trackedEntityIds.userIds.push(existingUserId);
 
 			// Fetch the user from database to get their email
 			const existingUser =
 				await server.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, existingUserId),
+					where: (fields, operators) => operators.eq(fields.id, existingUserId),
 				});
 			assertToBeNonNullish(existingUser);
 			const emailAddress = existingUser.emailAddress;
@@ -298,7 +315,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				},
 			);
-			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			// Try to create on-spot attendee as regular user (should fail)
@@ -400,6 +418,9 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 	suite("when creating on-spot attendee successfully", () => {
 		test("should create user with isEmailAddressVerified: true and return authentication tokens", async () => {
 			// Create organization
+			const sendEmailSpy = vi
+				.spyOn(emailService, "sendEmail")
+				.mockResolvedValue(undefined);
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -407,7 +428,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					variables: {
 						input: {
 							name: `Success Test Org ${faker.string.ulid()}`,
-							description: "Organization for successful on-spot attendee creation",
+							description:
+								"Organization for successful on-spot attendee creation",
 							countryCode: "us",
 							state: "CA",
 							city: "Los Angeles",
@@ -436,7 +458,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				},
 			);
-			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			const attendeeEmail = faker.internet.email();
@@ -460,7 +483,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			const createdAttendee = result.data?.adminCreateOnSpotAttendee as any;
+			const createdAttendee = result.data
+				?.adminCreateOnSpotAttendee as AdminCreateOnSpotAttendeePayload;
 			expect(createdAttendee).toBeDefined();
 
 			// Track the created user ID
@@ -495,13 +519,26 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					{
 						where: (fields, operators) =>
 							operators.and(
-								operators.eq(fields.memberId, dbUser!.id),
+								operators.eq(fields.memberId, dbUser?.id),
 								operators.eq(fields.organizationId, orgId),
 							),
 					},
 				);
 			expect(dbMembership).toBeDefined();
 			expect(dbMembership?.role).toBe("regular");
+
+			expect(sendEmailSpy).toHaveBeenCalledTimes(1);
+
+			expect(sendEmailSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					to: attendeeEmail,
+					template: expect.any(String),
+					variables: expect.objectContaining({
+						emailAddress: attendeeEmail,
+						password: tempPassword,
+					}),
+				}),
+			);
 		});
 	});
 
@@ -545,7 +582,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				},
 			);
-			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			const attendeeEmail = faker.internet.email();
@@ -567,7 +605,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			const createdAttendee = result.data?.adminCreateOnSpotAttendee as any;
+			const createdAttendee = result.data
+				?.adminCreateOnSpotAttendee as AdminCreateOnSpotAttendeePayload;
 			expect(createdAttendee).toBeDefined();
 
 			// Track the created user ID
@@ -633,17 +672,21 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member with administrator role
-			const membershipResult = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
 				},
-			});
-			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			);
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			const attendeeEmail = faker.internet.email();
@@ -700,6 +743,86 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 		});
 	});
 
+	suite("when email sending fails", () => {
+		test("should still create on-spot attendee even if email fails", async () => {
+			const sendEmailSpy = vi
+				.spyOn(emailService, "sendEmail")
+				.mockRejectedValueOnce(new Error("SMTP service down"));
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Direct Membership Org ${faker.string.ulid()}`,
+							description: "Organization with direct membership",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Sunset Blvd",
+							addressLine2: "Suite 200",
+							isUserRegistrationRequired: false, // DIRECT MEMBERSHIP
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
+
+			// Add admin as organization member with administrator role
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
+					},
+				},
+			);
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
+			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
+
+			const attendeeEmail = faker.internet.email();
+
+			const result = await mercuriusClient.mutate(
+				Mutation_adminCreateOnSpotAttendee,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.person.fullName(),
+							emailAddress: attendeeEmail,
+							password: "TempPass123!@#",
+							selectedOrganization: orgId,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.adminCreateOnSpotAttendee).toBeDefined();
+
+			expect(sendEmailSpy).toHaveBeenCalledOnce();
+
+			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
+				where: (fields, operators) =>
+					operators.eq(
+						fields.emailAddress,
+						result.data?.adminCreateOnSpotAttendee.user.emailAddress,
+					),
+			});
+			expect(dbUser).toBeDefined();
+		});
+	});
+
 	suite("when input validation fails", () => {
 		test("should return an error with invalid_arguments code for invalid email format", async () => {
 			// Create organization
@@ -726,17 +849,21 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			trackedEntityIds.organizationIds.push(orgId);
 
 			// Add admin as organization member
-			const membershipResult = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
 				},
-			});
-			const membershipId = membershipResult.data?.createOrganizationMembership?.id;
+			);
+			const membershipId =
+				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
 			// Try to create with invalid email
