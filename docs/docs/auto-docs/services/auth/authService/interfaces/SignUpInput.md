@@ -4,7 +4,7 @@
 
 # Interface: SignUpInput
 
-Defined in: [src/services/auth/authService.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L43)
+Defined in: [src/services/auth/authService.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L45)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/services/auth/authService.ts:43](https://github.com/PalisadoesF
 
 > **email**: `string`
 
-Defined in: [src/services/auth/authService.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L44)
+Defined in: [src/services/auth/authService.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L46)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/services/auth/authService.ts:44](https://github.com/PalisadoesF
 
 > **firstName**: `string`
 
-Defined in: [src/services/auth/authService.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L46)
+Defined in: [src/services/auth/authService.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L48)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/services/auth/authService.ts:46](https://github.com/PalisadoesF
 
 > **lastName**: `string`
 
-Defined in: [src/services/auth/authService.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L47)
+Defined in: [src/services/auth/authService.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L49)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/services/auth/authService.ts:47](https://github.com/PalisadoesF
 
 > **password**: `string`
 
-Defined in: [src/services/auth/authService.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L45)
+Defined in: [src/services/auth/authService.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L47)

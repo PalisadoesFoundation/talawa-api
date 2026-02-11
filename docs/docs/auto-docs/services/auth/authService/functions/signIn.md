@@ -6,7 +6,7 @@
 
 > **signIn**(`db`, `_log`, `input`): `Promise`\<[`SignInResult`](../type-aliases/SignInResult.md)\>
 
-Defined in: [src/services/auth/authService.ts:110](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L110)
+Defined in: [src/services/auth/authService.ts:115](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L115)
 
 Authenticates a user by email and password. Returns user and tokens or invalid_credentials.
 

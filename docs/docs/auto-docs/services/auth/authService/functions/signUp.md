@@ -6,7 +6,7 @@
 
 > **signUp**(`db`, `_log`, `input`): `Promise`\<[`SignUpResult`](../type-aliases/SignUpResult.md)\>
 
-Defined in: [src/services/auth/authService.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L57)
+Defined in: [src/services/auth/authService.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L59)
 
 Registers a new user. Returns the created user or already_exists if email is taken.
 

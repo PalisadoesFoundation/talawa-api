@@ -6,7 +6,7 @@
 
 > **clearAuthCookies**(`reply`, `cookieOptions?`): `void`
 
-Defined in: [src/services/auth/authService.ts:233](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L233)
+Defined in: [src/services/auth/authService.ts:239](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L239)
 
 Clears auth cookies on the reply. Uses same path/domain as setAuthCookies when cookieOptions is omitted.
 
