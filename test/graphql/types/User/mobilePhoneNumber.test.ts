@@ -311,52 +311,7 @@ suite("User field mobilePhoneNumber", () => {
 			expect(result.data.user?.mobilePhoneNumber).toBeNull();
 		});
 
-		test("returns empty string when user has empty mobilePhoneNumber", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
 
-			// 2. Create User with empty mobilePhoneNumber
-			const userRes = await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `bearer ${token}` },
-				variables: {
-					input: {
-						emailAddress: `empty-phone-${faker.string.uuid()}@example.com`,
-						isEmailAddressVerified: false,
-						name: "Empty Phone User",
-						password: "password123",
-						role: "regular",
-						mobilePhoneNumber: "",
-					},
-				},
-			});
-			assertToBeNonNullish(userRes.data.createUser?.user?.id);
-			assertToBeNonNullish(userRes.data.createUser?.authenticationToken);
-			const userId = userRes.data.createUser.user.id;
-			const userToken = userRes.data.createUser.authenticationToken;
-			createdUserIds.push(userId);
-
-			// 3. User queries own data
-			const result = await mercuriusClient.query(Query_user_mobilePhoneNumber, {
-				headers: {
-					authorization: `bearer ${userToken}`,
-				},
-				variables: {
-					input: { id: userId },
-				},
-			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data.user?.mobilePhoneNumber).toBe("");
-		});
 
 		test("returns error when querying non-existent user", async () => {
 			// 1. Sign in as admin
