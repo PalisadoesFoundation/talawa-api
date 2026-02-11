@@ -1,3 +1,6 @@
+import { ErrorCode } from "../../../utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../utilities/errors/TalawaRestError";
+import { rootLogger } from "../../../utilities/logging/logger";
 import type {
 	EmailJob,
 	EmailResult,
@@ -21,8 +24,6 @@ export interface SESProviderConfig {
 	fromName?: string;
 }
 
-// TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
-// This would improve throughput for high-volume scenarios.
 /**
  * AWS SES implementation of IEmailProvider.
  *
@@ -53,16 +54,21 @@ export class SESProvider implements IEmailProvider {
 
 			// Validate region
 			if (!this.config.region) {
-				throw new Error("AWS_SES_REGION must be a non-empty string");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "AWS_SES_REGION must be a non-empty string",
+				});
 			}
 
 			// Validate that either both credentials are provided or neither
 			const hasAccessKey = Boolean(this.config.accessKeyId);
 			const hasSecretKey = Boolean(this.config.secretAccessKey);
 			if (hasAccessKey !== hasSecretKey) {
-				throw new Error(
-					"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
+				});
 			}
 
 			this.sesClient = new mod.SESClient({
@@ -103,9 +109,11 @@ export class SESProvider implements IEmailProvider {
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
 			if (!this.config.fromEmail) {
-				throw new Error(
-					"Email service not configured. Please set AWS_SES_FROM_EMAIL (and optionally AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Email service not configured. Please set AWS_SES_FROM_EMAIL (and optionally AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
+				});
 			}
 
 			const { client, SendEmailCommand } = await this.getSesArtifacts();
@@ -131,6 +139,7 @@ export class SESProvider implements IEmailProvider {
 			const response = await client.send(command);
 			return { id: job.id, success: true, messageId: response.MessageId };
 		} catch (error) {
+			rootLogger.error({ error, jobId: job.id }, "Failed to send email");
 			return {
 				id: job.id,
 				success: false,
@@ -140,19 +149,21 @@ export class SESProvider implements IEmailProvider {
 	}
 
 	/**
-	 * Send multiple emails in bulk with rate limiting and concurrent batching.
-	 * AWS SES sandbox defaults to 14 messages per second.
+	 * Executes the sendBulkEmails operation to process multiple email requests concurrently in batches.
+	 * This method ensures compliance with AWS SES rate limits (defaults to 14 messages per second)
+	 * while maximizing network throughput.
+	 *
+	 * @param jobs - An array of EmailJob objects to be sent.
+	 * @returns A Promise that resolves to an array of EmailResult objects, providing the success status, message ID, or error details for each processed email.
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
-		// 1. Filter out null/undefined jobs to make batching predictable
-		const validJobs = jobs.filter((job): job is EmailJob => job != null);
-
 		const BATCH_SIZE = 14;
 		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
 
-		for (let i = 0; i < validJobs.length; i += BATCH_SIZE) {
-			const batch = validJobs.slice(i, i + BATCH_SIZE);
+		// Replaced validJobs with the interface-guaranteed jobs array
+		for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+			const batch = jobs.slice(i, i + BATCH_SIZE);
 
 			// 2. Map the batch to an array of Promises
 			const batchPromises = batch.map((job) => this.sendEmail(job));
@@ -184,7 +195,7 @@ export class SESProvider implements IEmailProvider {
 			}
 
 			// 5. Apply rate limit delay between batches (skip after the last batch)
-			if (i + BATCH_SIZE < validJobs.length) {
+			if (i + BATCH_SIZE < jobs.length) {
 				await new Promise((resolve) =>
 					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),
 				);

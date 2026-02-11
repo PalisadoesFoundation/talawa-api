@@ -4,7 +4,7 @@
 
 # Class: SESProvider
 
-Defined in: [src/services/email/providers/SESProvider.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L32)
+Defined in: [src/services/email/providers/SESProvider.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L33)
 
 AWS SES implementation of IEmailProvider.
 
@@ -21,7 +21,7 @@ It lazily initializes the SESClient and Command constructors on first use.
 
 > **new SESProvider**(`config`): `SESProvider`
 
-Defined in: [src/services/email/providers/SESProvider.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L43)
+Defined in: [src/services/email/providers/SESProvider.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L44)
 
 Creates an instance of SESProvider.
 
@@ -43,10 +43,11 @@ The SES configuration object containing region and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:146](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L146)
+Defined in: [src/services/email/providers/SESProvider.ts:159](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L159)
 
-Send multiple emails in bulk with rate limiting and concurrent batching.
-AWS SES sandbox defaults to 14 messages per second.
+Executes the sendBulkEmails operation to process multiple email requests concurrently in batches.
+This method ensures compliance with AWS SES rate limits (defaults to 14 messages per second)
+while maximizing network throughput.
 
 #### Parameters
 
@@ -54,9 +55,13 @@ AWS SES sandbox defaults to 14 messages per second.
 
 [`EmailJob`](../../../types/interfaces/EmailJob.md)[]
 
+An array of EmailJob objects to be sent.
+
 #### Returns
 
 `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
+
+A Promise that resolves to an array of EmailResult objects, providing the success status, message ID, or error details for each processed email.
 
 #### Implementation of
 
@@ -68,7 +73,7 @@ AWS SES sandbox defaults to 14 messages per second.
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L103)
+Defined in: [src/services/email/providers/SESProvider.ts:109](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L109)
 
 Send a single email using AWS SES
 

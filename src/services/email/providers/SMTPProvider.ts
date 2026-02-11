@@ -202,20 +202,17 @@ export class SMTPProvider implements IEmailProvider {
 	}
 	/**
 	 * Send multiple emails in bulk with rate limiting and concurrent batching.
-	 * Accepts sparse arrays (nullish values are skipped).
+	 *
+	 * @param jobs - An array of EmailJob objects to be sent.
+	 * @returns A Promise that resolves to an array of EmailResult objects.
 	 */
-	async sendBulkEmails(
-		jobs: (EmailJob | undefined | null)[],
-	): Promise<EmailResult[]> {
-		// 1. Filter out null/undefined jobs to make batching predictable
-		const validJobs = jobs.filter((job): job is EmailJob => job != null);
-
+	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
 		const BATCH_SIZE = 14;
 		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
 
-		for (let i = 0; i < validJobs.length; i += BATCH_SIZE) {
-			const batch = validJobs.slice(i, i + BATCH_SIZE);
+		for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+			const batch = jobs.slice(i, i + BATCH_SIZE);
 
 			// 2. Map the batch to an array of Promises
 			const batchPromises = batch.map((job) => this.sendEmail(job));
@@ -247,7 +244,7 @@ export class SMTPProvider implements IEmailProvider {
 			}
 
 			// 5. Apply rate limit delay between batches (skip after the last batch)
-			if (i + BATCH_SIZE < validJobs.length) {
+			if (i + BATCH_SIZE < jobs.length) {
 				await new Promise((resolve) =>
 					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),
 				);
