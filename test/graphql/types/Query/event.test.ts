@@ -4,6 +4,7 @@ import { uuidv7 } from "uuidv7";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type {
+	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
@@ -138,7 +139,7 @@ suite("Query field event", () => {
 	) {
 		const {
 			durationInHours = 24,
-			// Default to 24 hours in future because createEvent rejects past startAt
+			// Offset from the far-future base date (in ms); default shifts start by 24h
 			startOffset = 24 * 60 * 60 * 1000,
 			description = "Test Event",
 			name = "Test Event",
@@ -494,6 +495,48 @@ suite("Query field event", () => {
 				expect(error).toBeDefined();
 				expect(error?.message).toBe("Internal Server Error");
 				expect(error?.path).toEqual(["event"]);
+			});
+
+			test("returns error when event does not exist for a valid ULID", async () => {
+				const authToken = await getAdminToken();
+				const nonExistentId = uuidv7();
+				const result = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: nonExistentId,
+						},
+					},
+				});
+
+				expect(result.data.event).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors).toHaveLength(1);
+				// Validate error structure safely
+				const error = result.errors?.[0];
+				expect(error).toBeDefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+									{
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining([
+											expect.objectContaining({
+												argumentPath: ["input", "id"],
+											}),
+										]),
+									},
+								),
+							message:
+								"No associated resources found for the provided arguments.",
+							path: ["event"],
+						}),
+					]),
+				);
 			});
 		},
 	);
@@ -854,8 +897,16 @@ suite("Query field event", () => {
 				});
 			});
 
-			const startAt = "2099-03-01T10:00:00Z";
-			const endAt = "2099-03-01T11:00:00Z";
+			// Calculate dates within the materialization window
+			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
+			const baseDate = new Date();
+			baseDate.setMonth(baseDate.getMonth() + 1); // Start event 1 month from now
+			baseDate.setHours(10, 0, 0, 0);
+			const startAt = baseDate.toISOString();
+
+			const endDate = new Date(baseDate);
+			endDate.setHours(11, 0, 0, 0);
+			const endAt = endDate.toISOString();
 
 			// Create never-ending recurring event
 			const createEventResult = await mercuriusClient.mutate(
