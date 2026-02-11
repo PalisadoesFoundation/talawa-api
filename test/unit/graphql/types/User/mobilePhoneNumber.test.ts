@@ -96,12 +96,13 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 		} as unknown as UserType;
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-			async (args: {
-				where: (
-					fields: Record<string, unknown>,
-					operators: Record<string, (a: unknown, b: unknown) => boolean>,
-				) => boolean;
-			}) => {
+			async (...funcArgs: unknown[]) => {
+				const args = funcArgs[0] as {
+					where?: (
+						fields: Record<string, unknown>,
+						operators: Record<string, (a: unknown, b: unknown) => boolean>,
+					) => boolean;
+				};
 				// Execute the where callback to ensure coverage
 				if (args?.where) {
 					args.where(
