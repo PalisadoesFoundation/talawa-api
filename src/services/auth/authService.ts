@@ -60,7 +60,7 @@ export type SignUpResult =
  * @param db - Drizzle client for database access.
  * @param log - Logger for error reporting (e.g. registration failures).
  * @param input - SignUpInput (email, password, firstName, lastName).
- * @returns Promise resolving to SignUpResult: either { user } with the created user row, or { error: "already_exists" } if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.
+ * @returns Promise resolving to SignUpResult: either `{ user }` with the created user row, or `{ error: "already_exists" }` if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.
  */
 export async function signUp(
 	db: DrizzleClient,
@@ -138,7 +138,7 @@ export type SignInResult =
  * @param db - Drizzle client for database access.
  * @param log - Logger for error reporting (e.g. persist failures).
  * @param input - SignInInput (email, password; optional ip, userAgent).
- * @returns Promise resolving to SignInResult: either { user, access, refresh } with the user row and JWT strings, or { error: "invalid_credentials" } if the user is not found or the password does not match.
+ * @returns Promise resolving to SignInResult: either `{ user, access, refresh }` with the user row and JWT strings, or `{ error: "invalid_credentials" }` if the user is not found or the password does not match.
  */
 export async function signIn(
 	db: DrizzleClient,
@@ -192,7 +192,7 @@ export type RotateRefreshResult =
  * @param db - Drizzle client for database access.
  * @param log - Logger for debug output (e.g. verification failures).
  * @param token - Raw refresh JWT string; empty or whitespace-only is rejected without calling verifyToken.
- * @returns Promise resolving to RotateRefreshResult: either { access, refresh, userId } with new tokens, or { error: "invalid_refresh" } if the token is expired, invalid, wrong typ, not valid in DB, or the user is not found.
+ * @returns Promise resolving to RotateRefreshResult: either `{ access, refresh, userId }` with new tokens, or `{ error: "invalid_refresh" }` if the token is expired, invalid, wrong typ, not valid in DB, or the user is not found.
  */
 export async function rotateRefresh(
 	db: DrizzleClient,

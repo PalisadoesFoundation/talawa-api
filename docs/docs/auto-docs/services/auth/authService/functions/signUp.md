@@ -34,4 +34,4 @@ SignUpInput (email, password, firstName, lastName).
 
 `Promise`\<[`SignUpResult`](../type-aliases/SignUpResult.md)\>
 
-Promise resolving to SignUpResult: either { user } with the created user row, or { error: "already_exists" } if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.
+Promise resolving to SignUpResult: either `{ user }` with the created user row, or `{ error: "already_exists" }` if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.
