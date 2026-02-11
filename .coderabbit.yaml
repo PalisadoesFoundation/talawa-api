@@ -198,7 +198,9 @@ reviews:
 
         - **Transaction Isolation (Preferred):**
           - Prefer transaction-based isolation: `drizzleClient.transaction(async (tx) => {...})`
-          - Transactions auto-rollback on completion, eliminating cleanup needs
+          - Transactions COMMIT on success; to force rollback for test isolation, throw an error
+          - Example: Wrap transaction in expect().rejects.toThrow() to force rollback
+          - Otherwise, use explicit afterEach cleanup even with transactions
           - If transactions are NOT used, explicit afterEach/afterAll is REQUIRED
           - Flag any test that modifies database state outside transactions without cleanup
 
