@@ -1,5 +1,20 @@
 import { expect, suite, test, vi } from "vitest";
 
+interface MockFieldBuilder {
+	field: ReturnType<typeof vi.fn>;
+}
+
+interface FieldConfig {
+	type: string;
+	description: string;
+	complexity: number;
+	resolve: (...args: unknown[]) => unknown;
+}
+
+interface ImplementConfig {
+	fields: (builder: MockFieldBuilder) => Record<string, FieldConfig>;
+}
+
 /**
  * Separate test file to verify schema registration without mocking.
  * This ensures lines 70-81 in mobilePhoneNumber.ts are covered.
@@ -18,11 +33,11 @@ suite("User.mobilePhoneNumber - Schema Registration", () => {
 
 		// Find the call that registered mobilePhoneNumber
 		const registrationCall = implementSpy.mock.calls.find((call) => {
-			// biome-ignore lint/suspicious/noExplicitAny: Dynamic import makes type inference difficult
-			const config = call[0] as any;
+			const config = call[0] as ImplementConfig;
 			if (typeof config?.fields === "function") {
-				// biome-ignore lint/suspicious/noExplicitAny: Mock builder needs to match ObjectFieldBuilder interface
-				const mockBuilder = { field: vi.fn((cfg) => cfg) } as any;
+				const mockBuilder: MockFieldBuilder = {
+					field: vi.fn((cfg) => cfg),
+				};
 				const fields = config.fields(mockBuilder);
 				return "mobilePhoneNumber" in fields;
 			}
@@ -33,11 +48,11 @@ suite("User.mobilePhoneNumber - Schema Registration", () => {
 
 		// Verify the field configuration
 		if (registrationCall) {
-			// biome-ignore lint/suspicious/noExplicitAny: Dynamic import makes type inference difficult
-			const config = registrationCall[0] as any;
+			const config = registrationCall[0] as ImplementConfig;
 			if (config?.fields) {
-				// biome-ignore lint/suspicious/noExplicitAny: Mock builder needs to match ObjectFieldBuilder interface
-				const mockBuilder = { field: vi.fn((cfg) => cfg) } as any;
+				const mockBuilder: MockFieldBuilder = {
+					field: vi.fn((cfg) => cfg),
+				};
 				const fields = config.fields(mockBuilder);
 
 				expect(fields.mobilePhoneNumber).toBeDefined();
