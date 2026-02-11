@@ -170,6 +170,24 @@ describe("auth/tokens", () => {
 		});
 	});
 
+	describe("getAccessTtlSec and getRefreshTtlSec", () => {
+		it("getAccessTtlSec returns access TTL in seconds", async () => {
+			const { getAccessTtlSec } = await getTokens();
+			const ttl = getAccessTtlSec();
+			expect(typeof ttl).toBe("number");
+			expect(ttl).toBeGreaterThan(0);
+			expect(Number.isInteger(ttl)).toBe(true);
+		});
+
+		it("getRefreshTtlSec returns refresh TTL in seconds", async () => {
+			const { getRefreshTtlSec } = await getTokens();
+			const ttl = getRefreshTtlSec();
+			expect(typeof ttl).toBe("number");
+			expect(ttl).toBeGreaterThan(0);
+			expect(Number.isInteger(ttl)).toBe(true);
+		});
+	});
+
 	describe("TTL env parsing", () => {
 		it("uses default TTL when env is invalid or non-positive", async () => {
 			process.env.ACCESS_TOKEN_TTL = "invalid";

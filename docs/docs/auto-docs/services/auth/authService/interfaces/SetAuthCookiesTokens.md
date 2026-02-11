@@ -4,7 +4,7 @@
 
 # Interface: SetAuthCookiesTokens
 
-Defined in: [src/services/auth/authService.ts:255](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L255)
+Defined in: [src/services/auth/authService.ts:263](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L263)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/services/auth/authService.ts:255](https://github.com/Palisadoes
 
 > `optional` **access**: `string`
 
-Defined in: [src/services/auth/authService.ts:256](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L256)
+Defined in: [src/services/auth/authService.ts:264](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L264)
 
 ***
 
@@ -20,4 +20,4 @@ Defined in: [src/services/auth/authService.ts:256](https://github.com/Palisadoes
 
 > `optional` **refresh**: `string`
 
-Defined in: [src/services/auth/authService.ts:257](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L257)
+Defined in: [src/services/auth/authService.ts:265](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L265)

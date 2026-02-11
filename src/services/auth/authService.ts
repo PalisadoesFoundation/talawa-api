@@ -136,13 +136,13 @@ export type SignInResult =
  * Authenticates a user by email and password.
  *
  * @param db - Drizzle client for database access.
- * @param _log - Logger (unused; reserved for future use).
+ * @param log - Logger for error reporting (e.g. persist failures).
  * @param input - SignInInput (email, password; optional ip, userAgent).
  * @returns Promise resolving to SignInResult: either { user, access, refresh } with the user row and JWT strings, or { error: "invalid_credentials" } if the user is not found or the password does not match.
  */
 export async function signIn(
 	db: DrizzleClient,
-	_log: FastifyBaseLogger,
+	log: FastifyBaseLogger,
 	input: SignInInput,
 ): Promise<SignInResult> {
 	const user = await db.query.usersTable.findFirst({
@@ -163,13 +163,21 @@ export async function signIn(
 	});
 	const jti = randomUUID();
 	const refresh = await signRefreshToken(user.id, jti);
-	await persistRefreshToken(db, {
-		token: refresh,
-		userId: user.id,
-		ip: input.ip,
-		userAgent: input.userAgent,
-		ttlSec: getRefreshTtlSec(),
-	});
+	try {
+		await persistRefreshToken(db, {
+			token: refresh,
+			userId: user.id,
+			ip: input.ip,
+			userAgent: input.userAgent,
+			ttlSec: getRefreshTtlSec(),
+		});
+	} catch (err) {
+		log.debug({ err }, "persistRefreshToken failed during signIn");
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: "Failed to persist new refresh token",
+		});
+	}
 
 	return { user, access, refresh };
 }

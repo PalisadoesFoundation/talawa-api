@@ -222,6 +222,26 @@ describe("authService", () => {
 
 			expect(result).toEqual({ error: "already_exists" });
 		});
+
+		it("throws TalawaRestError when insert fails with non-unique error", async () => {
+			const { signUp } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockDb.query.usersTable.findFirst.mockResolvedValue(undefined);
+			mockHashPassword.mockResolvedValue("hashed");
+			(
+				mockDb.insertValuesReturning as ReturnType<typeof vi.fn>
+			).mockRejectedValue(new Error("connection refused"));
+
+			const err = await signUp(mockDb as unknown as DrizzleClient, log, {
+				email: "a@b.co",
+				password: "pwd",
+				firstName: "A",
+				lastName: "B",
+			}).catch((e: unknown) => e);
+
+			expect(err).toBeInstanceOf(TalawaRestError);
+			expect((err as TalawaRestError).message).toBe("User registration failed");
+		});
 	});
 
 	describe("signIn", () => {
@@ -250,6 +270,7 @@ describe("authService", () => {
 			if ("user" in result) {
 				expect(result.user.id).toBe("user-1");
 			}
+			expect(mockVerifyPassword).toHaveBeenCalledWith("stored-hash", "pwd");
 			expect(mockSignAccessToken).toHaveBeenCalledWith({
 				id: "user-1",
 				email: "a@b.co",
@@ -485,6 +506,36 @@ describe("authService", () => {
 
 			expect(mockRevokeRefreshToken).not.toHaveBeenCalled();
 		});
+
+		it("returns new tokens when revokeRefreshToken fails after persist succeeds", async () => {
+			const { rotateRefresh } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockVerifyToken.mockResolvedValue({
+				sub: "user-1",
+				typ: "refresh",
+				jti: "jti",
+			});
+			mockIsRefreshTokenValid.mockResolvedValue(true);
+			mockDb.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-1",
+				emailAddress: "u@example.com",
+			});
+			mockSignAccessToken.mockResolvedValue("new-access");
+			mockSignRefreshToken.mockResolvedValue("new-refresh");
+			mockPersistRefreshToken.mockResolvedValue(undefined);
+			mockRevokeRefreshToken.mockRejectedValue(new Error("revoke failed"));
+
+			const result = await rotateRefresh(
+				mockDb as unknown as DrizzleClient,
+				log,
+				"refreshJwt",
+			);
+
+			expect(result).toHaveProperty("access", "new-access");
+			expect(result).toHaveProperty("refresh", "new-refresh");
+			expect(result).toHaveProperty("userId", "user-1");
+			expect(mockRevokeRefreshToken).toHaveBeenCalledWith(mockDb, "refreshJwt");
+		});
 	});
 
 	describe("setAuthCookies and clearAuthCookies", () => {
@@ -573,6 +624,28 @@ describe("authService", () => {
 					path: "/",
 					domain: "test.example.com",
 					maxAge: 0,
+				}),
+			);
+		});
+
+		it("setAuthCookies uses getDefaultCookieOptions when cookieOptions omitted", async () => {
+			const { setAuthCookies } = await import(
+				"~/src/services/auth/authService"
+			);
+			const setCookie = vi.fn();
+			const reply = { setCookie } as unknown as Parameters<
+				typeof setAuthCookies
+			>[0];
+
+			setAuthCookies(reply, { access: "at" });
+
+			expect(setCookie).toHaveBeenCalledTimes(1);
+			expect(setCookie).toHaveBeenCalledWith(
+				COOKIE_NAMES.ACCESS_TOKEN,
+				"at",
+				expect.objectContaining({
+					path: "/",
+					httpOnly: true,
 				}),
 			);
 		});

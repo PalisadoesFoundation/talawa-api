@@ -4,7 +4,7 @@
 
 # Function: signIn()
 
-> **signIn**(`db`, `_log`, `input`): `Promise`\<[`SignInResult`](../type-aliases/SignInResult.md)\>
+> **signIn**(`db`, `log`, `input`): `Promise`\<[`SignInResult`](../type-aliases/SignInResult.md)\>
 
 Defined in: [src/services/auth/authService.ts:143](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L143)
 
@@ -18,11 +18,11 @@ Authenticates a user by email and password.
 
 Drizzle client for database access.
 
-### \_log
+### log
 
 `FastifyBaseLogger`
 
-Logger (unused; reserved for future use).
+Logger for error reporting (e.g. persist failures).
 
 ### input
 
