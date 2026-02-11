@@ -58,13 +58,13 @@ export type SignUpResult =
  * Registers a new user.
  *
  * @param db - Drizzle client for database access.
- * @param _log - Logger (unused; reserved for future use).
+ * @param log - Logger for error reporting (e.g. registration failures).
  * @param input - SignUpInput (email, password, firstName, lastName).
  * @returns Promise resolving to SignUpResult: either { user } with the created user row, or { error: "already_exists" } if the email is already registered. Throws TalawaRestError (INTERNAL_SERVER_ERROR) if insert returns no row.
  */
 export async function signUp(
 	db: DrizzleClient,
-	_log: FastifyBaseLogger,
+	log: FastifyBaseLogger,
 	input: SignUpInput,
 ): Promise<SignUpResult> {
 	const existing = await db.query.usersTable.findFirst({
@@ -109,10 +109,10 @@ export async function signUp(
 		if (err instanceof TalawaRestError) {
 			throw err;
 		}
+		log.error({ err }, "User registration failed");
 		throw new TalawaRestError({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "User registration failed",
-			details: err instanceof Error ? { cause: err.message } : undefined,
 		});
 	}
 }
@@ -240,7 +240,14 @@ export async function rotateRefresh(
 		});
 	}
 
-	await revokeRefreshToken(db, token);
+	try {
+		await revokeRefreshToken(db, token);
+	} catch (err) {
+		log.warn(
+			{ err },
+			"revokeRefreshToken failed after new token persisted; returning new tokens",
+		);
+	}
 
 	return { access, refresh, userId: payload.sub };
 }

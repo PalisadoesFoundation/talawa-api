@@ -4,7 +4,7 @@
 
 # Function: signUp()
 
-> **signUp**(`db`, `_log`, `input`): `Promise`\<[`SignUpResult`](../type-aliases/SignUpResult.md)\>
+> **signUp**(`db`, `log`, `input`): `Promise`\<[`SignUpResult`](../type-aliases/SignUpResult.md)\>
 
 Defined in: [src/services/auth/authService.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L65)
 
@@ -18,11 +18,11 @@ Registers a new user.
 
 Drizzle client for database access.
 
-### \_log
+### log
 
 `FastifyBaseLogger`
 
-Logger (unused; reserved for future use).
+Logger for error reporting (e.g. registration failures).
 
 ### input
 

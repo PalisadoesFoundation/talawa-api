@@ -283,6 +283,24 @@ describe("authService", () => {
 			expect(mockVerifyPassword).not.toHaveBeenCalled();
 		});
 
+		it("returns invalid_credentials when user has no passwordHash (OAuth-only)", async () => {
+			const { signIn } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockDb.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-1",
+				emailAddress: "a@b.co",
+				passwordHash: null,
+			});
+
+			const result = await signIn(mockDb as unknown as DrizzleClient, log, {
+				email: "a@b.co",
+				password: "pwd",
+			});
+
+			expect(result).toEqual({ error: "invalid_credentials" });
+			expect(mockVerifyPassword).not.toHaveBeenCalled();
+		});
+
 		it("returns invalid_credentials when password is wrong", async () => {
 			const { signIn } = await import("~/src/services/auth/authService");
 			const mockDb = createMockDb();
