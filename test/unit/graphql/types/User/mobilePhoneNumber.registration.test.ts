@@ -33,7 +33,8 @@ suite("User.mobilePhoneNumber - Schema Registration", () => {
 
 		// Find the call that registered mobilePhoneNumber
 		const registrationCall = implementSpy.mock.calls.find((call) => {
-			const config = call[0] as ImplementConfig;
+			// biome-ignore lint/suspicious/noExplicitAny: Type assertion needed to access Pothos internal structure
+			const config = call[0] as any as ImplementConfig;
 			if (typeof config?.fields === "function") {
 				const mockBuilder: MockFieldBuilder = {
 					field: vi.fn((cfg) => cfg),
@@ -48,7 +49,8 @@ suite("User.mobilePhoneNumber - Schema Registration", () => {
 
 		// Verify the field configuration
 		if (registrationCall) {
-			const config = registrationCall[0] as ImplementConfig;
+			// biome-ignore lint/suspicious/noExplicitAny: Type assertion needed to access Pothos internal structure
+			const config = registrationCall[0] as any as ImplementConfig;
 			if (config?.fields) {
 				const mockBuilder: MockFieldBuilder = {
 					field: vi.fn((cfg) => cfg),
