@@ -34,4 +34,4 @@ SignInInput (email, password; optional ip, userAgent).
 
 `Promise`\<[`SignInResult`](../type-aliases/SignInResult.md)\>
 
-Promise resolving to SignInResult: either `{ user, access, refresh }` with the user row and JWT strings, or `{ error: "invalid_credentials" }` if the user is not found or the password does not match.
+Promise resolving to SignInResult: either { user, access, refresh } with the user row and JWT strings, or { error: "invalid_credentials" } if the user is not found or the password does not match.

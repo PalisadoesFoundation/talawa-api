@@ -34,4 +34,4 @@ Raw refresh JWT string; empty or whitespace-only is rejected without calling ver
 
 `Promise`\<[`RotateRefreshResult`](../type-aliases/RotateRefreshResult.md)\>
 
-Promise resolving to RotateRefreshResult: either `{ access, refresh, userId }` with new tokens, or `{ error: "invalid_refresh" }` if the token is expired, invalid, wrong typ, not valid in DB, or the user is not found.
+Promise resolving to RotateRefreshResult: either { access, refresh, userId } with new tokens, or { error: "invalid_refresh" } if the token is expired, invalid, wrong typ, not valid in DB, or the user is not found.

@@ -340,6 +340,27 @@ describe("authService", () => {
 			expect(result).toEqual({ error: "invalid_credentials" });
 			expect(mockPersistRefreshToken).not.toHaveBeenCalled();
 		});
+
+		it("throws TalawaRestError when persistRefreshToken rejects", async () => {
+			const { signIn } = await import("~/src/services/auth/authService");
+			const mockDb = createMockDb();
+			mockDb.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-1",
+				emailAddress: "a@b.co",
+				passwordHash: "stored-hash",
+			});
+			mockVerifyPassword.mockResolvedValue(true);
+			mockSignAccessToken.mockResolvedValue("access-jwt");
+			mockSignRefreshToken.mockResolvedValue("refresh-jwt");
+			mockPersistRefreshToken.mockRejectedValue(new Error("DB unavailable"));
+
+			await expect(
+				signIn(mockDb as unknown as DrizzleClient, log, {
+					email: "a@b.co",
+					password: "pwd",
+				}),
+			).rejects.toThrow(TalawaRestError);
+		});
 	});
 
 	describe("rotateRefresh", () => {
