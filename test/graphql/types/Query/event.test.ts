@@ -144,7 +144,9 @@ suite("Query field event", () => {
 			name = "Test Event",
 		} = options;
 
-		const startAt = new Date(Date.now() + startOffset);
+		// Use fixed base date instead of Date.now() for deterministic tests
+		const baseDate = new Date("2026-03-01T10:00:00Z");
+		const startAt = new Date(baseDate.getTime() + startOffset);
 		const endAt = new Date(
 			startAt.getTime() + durationInHours * 60 * 60 * 1000,
 		);
@@ -596,13 +598,16 @@ suite("Query field event", () => {
 			});
 
 			// Create an event in the past directly in DB to bypass mutation validation
+			// Use fixed UTC timestamps for deterministic assertions
+			const pastStartAt = new Date("2025-01-01T10:00:00Z");
+			const pastEndAt = new Date("2025-01-02T10:00:00Z");
 			const pastEventId = uuidv7();
 			await server.drizzleClient.insert(eventsTable).values({
 				id: pastEventId,
 				name: "Past Event",
 				description: "Past Event",
-				startAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-				endAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+				startAt: pastStartAt,
+				endAt: pastEndAt,
 				organizationId: organization.id,
 				creatorId: userId,
 				allDay: false,
@@ -642,8 +647,10 @@ suite("Query field event", () => {
 			expect(queriedEvent.id).toBe(pastEvent.id);
 			assertToBeNonNullish(queriedEvent.startAt);
 			assertToBeNonNullish(queriedEvent.endAt);
-			expect(new Date(queriedEvent.startAt).getTime()).toBeLessThan(Date.now());
-			expect(new Date(queriedEvent.endAt).getTime()).toBeLessThan(Date.now());
+			expect(new Date(queriedEvent.startAt).getTime()).toBe(
+				pastStartAt.getTime(),
+			);
+			expect(new Date(queriedEvent.endAt).getTime()).toBe(pastEndAt.getTime());
 		});
 
 		test("handles multi-day events correctly", async () => {
@@ -668,10 +675,8 @@ suite("Query field event", () => {
 					variables: {
 						input: {
 							description: "Multi-day Conference",
-							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-							endAt: new Date(
-								Date.now() + 3 * 24 * 60 * 60 * 1000,
-							).toISOString(), // 3 days from now
+							startAt: "2026-03-01T10:00:00Z", // Fixed future date
+							endAt: "2026-03-04T10:00:00Z", // 3 days later
 							name: "Annual Conference",
 							organizationId: organization.id,
 						},
@@ -731,8 +736,8 @@ suite("Query field event", () => {
 				});
 			});
 
-			const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-			const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+			const startAt = "2026-03-01T10:00:00Z";
+			const endAt = "2026-03-01T11:00:00Z";
 
 			// Create never-ending recurring event
 			const createEventResult = await mercuriusClient.mutate(
@@ -826,7 +831,7 @@ suite("Query field event", () => {
 						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: {
 							input: {
-								emailAddress: faker.internet.email(),
+								emailAddress: `${faker.string.ulid()}@test.com`,
 								password: faker.internet.password(),
 								name: faker.person.fullName(),
 								role: "regular",
@@ -871,10 +876,8 @@ suite("Query field event", () => {
 				});
 
 				// Create invite-only event
-				const startAt = new Date(
-					Date.now() + 24 * 60 * 60 * 1000,
-				).toISOString();
-				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+				const startAt = "2026-03-01T10:00:00Z";
+				const endAt = "2026-03-01T11:00:00Z";
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -965,7 +968,7 @@ suite("Query field event", () => {
 						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: {
 							input: {
-								emailAddress: faker.internet.email(),
+								emailAddress: `${faker.string.ulid()}@test.com`,
 								password: faker.internet.password(),
 								name: faker.person.fullName(),
 								role: "regular",
@@ -1010,10 +1013,8 @@ suite("Query field event", () => {
 				});
 
 				// Create invite-only event
-				const startAt = new Date(
-					Date.now() + 24 * 60 * 60 * 1000,
-				).toISOString();
-				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+				const startAt = "2026-03-01T10:00:00Z";
+				const endAt = "2026-03-01T11:00:00Z";
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -1107,7 +1108,7 @@ suite("Query field event", () => {
 						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: {
 							input: {
-								emailAddress: faker.internet.email(),
+								emailAddress: `${faker.string.ulid()}@test.com`,
 								password: faker.internet.password(),
 								name: faker.person.fullName(),
 								role: "regular",
@@ -1152,10 +1153,8 @@ suite("Query field event", () => {
 				});
 
 				// Create invite-only event
-				const startAt = new Date(
-					Date.now() + 24 * 60 * 60 * 1000,
-				).toISOString();
-				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+				const startAt = "2026-03-01T10:00:00Z";
+				const endAt = "2026-03-01T11:00:00Z";
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -1229,10 +1228,8 @@ suite("Query field event", () => {
 				});
 
 				// Create invite-only event as admin (admin becomes the creator)
-				const startAt = new Date(
-					Date.now() + 24 * 60 * 60 * 1000,
-				).toISOString();
-				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+				const startAt = "2026-03-01T10:00:00Z";
+				const endAt = "2026-03-01T11:00:00Z";
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -1314,7 +1311,7 @@ suite("Query field event", () => {
 						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: {
 							input: {
-								emailAddress: faker.internet.email(),
+								emailAddress: `${faker.string.ulid()}@test.com`,
 								password: faker.internet.password(),
 								name: faker.person.fullName(),
 								role: "regular",
@@ -1359,10 +1356,8 @@ suite("Query field event", () => {
 				});
 
 				// Create invite-only event
-				const startAt = new Date(
-					Date.now() + 24 * 60 * 60 * 1000,
-				).toISOString();
-				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+				const startAt = "2026-03-01T10:00:00Z";
+				const endAt = "2026-03-01T11:00:00Z";
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
