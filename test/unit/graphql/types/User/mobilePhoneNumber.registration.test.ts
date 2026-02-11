@@ -7,8 +7,8 @@ import { expect, suite, test, vi } from "vitest";
 suite("User.mobilePhoneNumber - Schema Registration", () => {
 	test("module registers mobilePhoneNumber field on User type", async () => {
 		// Import User and spy on implement before importing mobilePhoneNumber
-		const { User } = await import("~/src/graphql/types/User/User");
-		const implementSpy = vi.spyOn(User, "implement");
+		const UserModule = await import("~/src/graphql/types/User/User");
+		const implementSpy = vi.spyOn(UserModule.User, "implement");
 
 		// Import the module which triggers the User.implement call
 		await import("~/src/graphql/types/User/mobilePhoneNumber");
@@ -18,9 +18,11 @@ suite("User.mobilePhoneNumber - Schema Registration", () => {
 
 		// Find the call that registered mobilePhoneNumber
 		const registrationCall = implementSpy.mock.calls.find((call) => {
-			const config = call[0];
+			// biome-ignore lint/suspicious/noExplicitAny: Dynamic import makes type inference difficult
+			const config = call[0] as any;
 			if (typeof config?.fields === "function") {
-				const mockBuilder = { field: vi.fn((cfg) => cfg) };
+				// biome-ignore lint/suspicious/noExplicitAny: Mock builder needs to match ObjectFieldBuilder interface
+				const mockBuilder = { field: vi.fn((cfg) => cfg) } as any;
 				const fields = config.fields(mockBuilder);
 				return "mobilePhoneNumber" in fields;
 			}
@@ -31,19 +33,23 @@ suite("User.mobilePhoneNumber - Schema Registration", () => {
 
 		// Verify the field configuration
 		if (registrationCall) {
-			const [config] = registrationCall;
-			const mockBuilder = { field: vi.fn((cfg) => cfg) };
-			const fields = config.fields(mockBuilder);
+			// biome-ignore lint/suspicious/noExplicitAny: Dynamic import makes type inference difficult
+			const config = registrationCall[0] as any;
+			if (config?.fields) {
+				// biome-ignore lint/suspicious/noExplicitAny: Mock builder needs to match ObjectFieldBuilder interface
+				const mockBuilder = { field: vi.fn((cfg) => cfg) } as any;
+				const fields = config.fields(mockBuilder);
 
-			expect(fields.mobilePhoneNumber).toBeDefined();
-			expect(mockBuilder.field).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "PhoneNumber",
-					description: expect.stringContaining("phone number"),
-					complexity: expect.any(Number),
-					resolve: expect.any(Function),
-				}),
-			);
+				expect(fields.mobilePhoneNumber).toBeDefined();
+				expect(mockBuilder.field).toHaveBeenCalledWith(
+					expect.objectContaining({
+						type: "PhoneNumber",
+						description: expect.stringContaining("phone number"),
+						complexity: expect.any(Number),
+						resolve: expect.any(Function),
+					}),
+				);
+			}
 		}
 	});
 });

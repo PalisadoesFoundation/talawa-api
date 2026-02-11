@@ -96,7 +96,6 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 		} as unknown as UserType;
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-			// @ts-expect-error - mockImplementation types are hard to match perfectly with Drizzle
 			async (args: {
 				where: (
 					fields: Record<string, unknown>,
