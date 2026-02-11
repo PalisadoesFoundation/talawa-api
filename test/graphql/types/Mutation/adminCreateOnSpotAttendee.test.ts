@@ -1,3 +1,4 @@
+import { beforeEach } from "node:test";
 import { faker } from "@faker-js/faker";
 import { afterAll, afterEach, expect, suite, test, vi } from "vitest";
 import { emailService } from "~/src/services/email/emailServiceInstance";
@@ -28,19 +29,24 @@ interface AdminCreateOnSpotAttendeePayload {
 	refreshToken: string;
 }
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+let authToken: string;
+let adminUserId: string;
+
+beforeEach(async () => {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
 		},
-	},
+	});
+	assertToBeNonNullish(signInResult.data?.signIn);
+	authToken = signInResult.data.signIn.authenticationToken as string;
+	adminUserId = signInResult.data.signIn.user?.id as string;
+	assertToBeNonNullish(authToken);
+	assertToBeNonNullish(adminUserId);
 });
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-const adminUserId = signInResult.data.signIn.user?.id;
-assertToBeNonNullish(authToken);
-assertToBeNonNullish(adminUserId);
 
 /**
  * Tracking arrays for cleanup - prevents DB entity leaks in tests
@@ -529,16 +535,11 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 
 			expect(sendEmailSpy).toHaveBeenCalledTimes(1);
 
-			expect(sendEmailSpy).toHaveBeenCalledWith(
-				expect.objectContaining({
-					to: attendeeEmail,
-					template: expect.any(String),
-					variables: expect.objectContaining({
-						emailAddress: attendeeEmail,
-						password: tempPassword,
-					}),
-				}),
-			);
+			const emailArgs = sendEmailSpy.mock.calls[0]?.[0];
+			expect(emailArgs?.email).toBe(attendeeEmail);
+			expect(emailArgs?.subject).toMatch(/welcome|account|ready/i);
+			const body = emailArgs?.htmlBody ?? emailArgs?.textBody ?? "";
+			expect(body).toContain(tempPassword);
 		});
 	});
 
