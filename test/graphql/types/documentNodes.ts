@@ -387,10 +387,17 @@ export const Query_user_natalSex =
     }
   }`);
 
+export const Query_user_naturalLanguageCode =
+	gql(`query Query_user_naturalLanguageCode($input: QueryUserInput!) {
+    user(input: $input) {
+        naturalLanguageCode
+    }
+}`);
+
 export const Query_user_emailAddress =
 	gql(`query Query_user_emailAddress($input: QueryUserInput!) {
     user(input: $input) {
-        emailAddress    
+        emailAddress
     }
 }`);
 
