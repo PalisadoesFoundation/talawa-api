@@ -6,11 +6,16 @@
 
 > **resolveNaturalLanguageCode**(`parent`, `_args`, `ctx`): `Promise`\<`"ae"` \| `"af"` \| `"am"` \| `"ar"` \| `"as"` \| `"az"` \| `"ba"` \| `"be"` \| `"bg"` \| `"bi"` \| `"bm"` \| `"bn"` \| `"bo"` \| `"br"` \| `"bs"` \| `"ca"` \| `"ch"` \| `"co"` \| `"cr"` \| `"cu"` \| `"cv"` \| `"cy"` \| `"de"` \| `"dz"` \| `"ee"` \| `"es"` \| `"et"` \| `"fi"` \| `"fj"` \| `"fo"` \| `"fr"` \| `"ga"` \| `"gd"` \| `"gl"` \| `"gn"` \| `"gu"` \| `"hr"` \| `"ht"` \| `"hu"` \| `"id"` \| `"ie"` \| `"io"` \| `"is"` \| `"it"` \| `"kg"` \| `"ki"` \| `"km"` \| `"kn"` \| `"kr"` \| `"kw"` \| `"ky"` \| `"la"` \| `"lb"` \| `"li"` \| `"lt"` \| `"lu"` \| `"lv"` \| `"mg"` \| `"mh"` \| `"mk"` \| `"ml"` \| `"mn"` \| `"mr"` \| `"ms"` \| `"mt"` \| `"my"` \| `"na"` \| `"ne"` \| `"ng"` \| `"nl"` \| `"no"` \| `"nr"` \| `"om"` \| `"pa"` \| `"pl"` \| `"ps"` \| `"pt"` \| `"ro"` \| `"ru"` \| `"rw"` \| `"sa"` \| `"sc"` \| `"sd"` \| `"se"` \| `"sg"` \| `"si"` \| `"sk"` \| `"sl"` \| `"sm"` \| `"sn"` \| `"so"` \| `"sr"` \| `"ss"` \| `"st"` \| `"sv"` \| `"tg"` \| `"th"` \| `"tk"` \| `"tl"` \| `"tn"` \| `"to"` \| `"tr"` \| `"tt"` \| `"tw"` \| `"ug"` \| `"uz"` \| `"ve"` \| `"vi"` \| `"za"` \| `"aa"` \| `"ab"` \| `"ak"` \| `"an"` \| `"av"` \| `"ay"` \| `"ce"` \| `"cs"` \| `"da"` \| `"dv"` \| `"el"` \| `"en"` \| `"eo"` \| `"eu"` \| `"fa"` \| `"ff"` \| `"fy"` \| `"gv"` \| `"ha"` \| `"he"` \| `"hi"` \| `"ho"` \| `"hy"` \| `"hz"` \| `"ia"` \| `"ig"` \| `"ii"` \| `"ik"` \| `"iu"` \| `"ja"` \| `"jv"` \| `"ka"` \| `"kj"` \| `"kk"` \| `"kl"` \| `"ko"` \| `"ks"` \| `"ku"` \| `"kv"` \| `"lg"` \| `"ln"` \| `"lo"` \| `"mi"` \| `"nb"` \| `"nd"` \| `"nn"` \| `"nv"` \| `"ny"` \| `"oc"` \| `"oj"` \| `"or"` \| `"os"` \| `"pi"` \| `"qu"` \| `"rm"` \| `"rn"` \| `"sq"` \| `"su"` \| `"sw"` \| `"ta"` \| `"te"` \| `"ti"` \| `"ts"` \| `"ty"` \| `"uk"` \| `"ur"` \| `"vo"` \| `"wa"` \| `"wo"` \| `"xh"` \| `"yi"` \| `"yo"` \| `"zh"` \| `"zu"` \| `null`\>
 
-Defined in: [src/graphql/types/User/naturalLanguageCode.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/naturalLanguageCode.ts#L10)
+Defined in: [src/graphql/types/User/naturalLanguageCode.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/naturalLanguageCode.ts#L21)
+
+Resolves the naturalLanguageCode field on the User type.
+Requires authentication and either administrator role or self-access.
 
 ## Parameters
 
 ### parent
+
+The User parent object containing the naturalLanguageCode field.
 
 #### addressLine1
 
@@ -140,10 +145,24 @@ Defined in: [src/graphql/types/User/naturalLanguageCode.ts:10](https://github.co
 
 `Record`\<`string`, `never`\>
 
+GraphQL arguments (unused).
+
 ### ctx
 
 [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md)
 
+The GraphQL context containing authentication state and database client.
+
 ## Returns
 
 `Promise`\<`"ae"` \| `"af"` \| `"am"` \| `"ar"` \| `"as"` \| `"az"` \| `"ba"` \| `"be"` \| `"bg"` \| `"bi"` \| `"bm"` \| `"bn"` \| `"bo"` \| `"br"` \| `"bs"` \| `"ca"` \| `"ch"` \| `"co"` \| `"cr"` \| `"cu"` \| `"cv"` \| `"cy"` \| `"de"` \| `"dz"` \| `"ee"` \| `"es"` \| `"et"` \| `"fi"` \| `"fj"` \| `"fo"` \| `"fr"` \| `"ga"` \| `"gd"` \| `"gl"` \| `"gn"` \| `"gu"` \| `"hr"` \| `"ht"` \| `"hu"` \| `"id"` \| `"ie"` \| `"io"` \| `"is"` \| `"it"` \| `"kg"` \| `"ki"` \| `"km"` \| `"kn"` \| `"kr"` \| `"kw"` \| `"ky"` \| `"la"` \| `"lb"` \| `"li"` \| `"lt"` \| `"lu"` \| `"lv"` \| `"mg"` \| `"mh"` \| `"mk"` \| `"ml"` \| `"mn"` \| `"mr"` \| `"ms"` \| `"mt"` \| `"my"` \| `"na"` \| `"ne"` \| `"ng"` \| `"nl"` \| `"no"` \| `"nr"` \| `"om"` \| `"pa"` \| `"pl"` \| `"ps"` \| `"pt"` \| `"ro"` \| `"ru"` \| `"rw"` \| `"sa"` \| `"sc"` \| `"sd"` \| `"se"` \| `"sg"` \| `"si"` \| `"sk"` \| `"sl"` \| `"sm"` \| `"sn"` \| `"so"` \| `"sr"` \| `"ss"` \| `"st"` \| `"sv"` \| `"tg"` \| `"th"` \| `"tk"` \| `"tl"` \| `"tn"` \| `"to"` \| `"tr"` \| `"tt"` \| `"tw"` \| `"ug"` \| `"uz"` \| `"ve"` \| `"vi"` \| `"za"` \| `"aa"` \| `"ab"` \| `"ak"` \| `"an"` \| `"av"` \| `"ay"` \| `"ce"` \| `"cs"` \| `"da"` \| `"dv"` \| `"el"` \| `"en"` \| `"eo"` \| `"eu"` \| `"fa"` \| `"ff"` \| `"fy"` \| `"gv"` \| `"ha"` \| `"he"` \| `"hi"` \| `"ho"` \| `"hy"` \| `"hz"` \| `"ia"` \| `"ig"` \| `"ii"` \| `"ik"` \| `"iu"` \| `"ja"` \| `"jv"` \| `"ka"` \| `"kj"` \| `"kk"` \| `"kl"` \| `"ko"` \| `"ks"` \| `"ku"` \| `"kv"` \| `"lg"` \| `"ln"` \| `"lo"` \| `"mi"` \| `"nb"` \| `"nd"` \| `"nn"` \| `"nv"` \| `"ny"` \| `"oc"` \| `"oj"` \| `"or"` \| `"os"` \| `"pi"` \| `"qu"` \| `"rm"` \| `"rn"` \| `"sq"` \| `"su"` \| `"sw"` \| `"ta"` \| `"te"` \| `"ti"` \| `"ts"` \| `"ty"` \| `"uk"` \| `"ur"` \| `"vo"` \| `"wa"` \| `"wo"` \| `"xh"` \| `"yi"` \| `"yo"` \| `"zh"` \| `"zu"` \| `null`\>
+
+The user's preferred natural language code, or null if not set.
+
+## Throws
+
+TalawaGraphQLError with code "unauthenticated" if the client is not authenticated or the user is not found.
+
+## Throws
+
+TalawaGraphQLError with code "unauthorized_action" if a non-admin user tries to access another user's data.

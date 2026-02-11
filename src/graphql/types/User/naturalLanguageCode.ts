@@ -7,6 +7,17 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { User as UserType } from "./User";
 import { User } from "./User";
 
+/**
+ * Resolves the naturalLanguageCode field on the User type.
+ * Requires authentication and either administrator role or self-access.
+ *
+ * @param parent - The User parent object containing the naturalLanguageCode field.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing authentication state and database client.
+ * @returns The user's preferred natural language code, or null if not set.
+ * @throws TalawaGraphQLError with code "unauthenticated" if the client is not authenticated or the user is not found.
+ * @throws TalawaGraphQLError with code "unauthorized_action" if a non-admin user tries to access another user's data.
+ */
 export const resolveNaturalLanguageCode = async (
 	parent: UserType,
 	_args: Record<string, never>,

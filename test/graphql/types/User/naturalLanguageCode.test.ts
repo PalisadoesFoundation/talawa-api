@@ -47,6 +47,10 @@ describe("User field naturalLanguageCode", () => {
 				extensions: { code: "unauthenticated" },
 			}),
 		);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should throw unauthorized_action error when non-admin user accesses another user's data", async () => {
@@ -69,6 +73,10 @@ describe("User field naturalLanguageCode", () => {
 				extensions: { code: "unauthorized_action" },
 			}),
 		);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return naturalLanguageCode when admin accesses another user's data", async () => {
@@ -86,6 +94,10 @@ describe("User field naturalLanguageCode", () => {
 
 		const result = await resolveNaturalLanguageCode(parent, {}, context);
 		expect(result).toBe("es");
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return naturalLanguageCode when user accesses their own data", async () => {
@@ -103,6 +115,10 @@ describe("User field naturalLanguageCode", () => {
 
 		const result = await resolveNaturalLanguageCode(parent, {}, context);
 		expect(result).toBe("de");
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return null when naturalLanguageCode is null", async () => {
@@ -120,6 +136,10 @@ describe("User field naturalLanguageCode", () => {
 
 		const result = await resolveNaturalLanguageCode(parent, {}, context);
 		expect(result).toBeNull();
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return naturalLanguageCode when admin accesses their own data", async () => {
@@ -137,5 +157,9 @@ describe("User field naturalLanguageCode", () => {
 
 		const result = await resolveNaturalLanguageCode(parent, {}, context);
 		expect(result).toBe("fr");
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 });
