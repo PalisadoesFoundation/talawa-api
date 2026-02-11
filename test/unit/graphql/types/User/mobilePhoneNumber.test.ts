@@ -204,11 +204,17 @@ suite("User field mobilePhoneNumber - Unit Tests", () => {
 			genericError,
 		);
 
-		await expect(
-			mobilePhoneNumberResolver(parent, {}, context),
-		).rejects.toThrow("Internal server error");
-
-		expect(context.log.error).toHaveBeenCalledWith(genericError);
+		try {
+			await mobilePhoneNumberResolver(parent, {}, context);
+		} catch (error) {
+			expect(context.log.error).toHaveBeenCalledWith(genericError);
+			expect(error).toMatchObject({
+				message: "Internal server error",
+				extensions: {
+					code: "unexpected",
+				},
+			});
+		}
 	});
 
 	test("rethrows TalawaGraphQLError as is", async () => {
