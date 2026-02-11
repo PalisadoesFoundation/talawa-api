@@ -139,11 +139,18 @@ export class SESProvider implements IEmailProvider {
 			const response = await client.send(command);
 			return { id: job.id, success: true, messageId: response.MessageId };
 		} catch (error) {
-			rootLogger.error({ error, jobId: job.id }, "Failed to send email");
+			const msg = error instanceof Error ? error.message : String(error);
+			const stack = error instanceof Error ? error.stack : undefined;
+
+			rootLogger.error(
+				{ error: msg, stack, jobId: job.id },
+				"Failed to send email",
+			);
+
 			return {
 				id: job.id,
 				success: false,
-				error: error instanceof Error ? error.message : String(error),
+				error: msg,
 			};
 		}
 	}

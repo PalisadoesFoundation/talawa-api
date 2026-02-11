@@ -43,7 +43,7 @@ The SES configuration object containing region and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:159](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L159)
+Defined in: [src/services/email/providers/SESProvider.ts:166](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L166)
 
 Executes the sendBulkEmails operation to process multiple email requests concurrently in batches.
 This method ensures compliance with AWS SES rate limits (defaults to 14 messages per second)
