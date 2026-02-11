@@ -311,8 +311,6 @@ suite("User field mobilePhoneNumber", () => {
 			expect(result.data.user?.mobilePhoneNumber).toBeNull();
 		});
 
-
-
 		test("returns error when querying non-existent user", async () => {
 			// 1. Sign in as admin
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {
