@@ -375,3 +375,95 @@ reviews:
         - Prioritize substantive issues over minor stylistic suggestions
         - Focus on issues causing CI failures or production bugs
         - Post response as single easily readable comment
+
+    # NEW: Add this section for test file isolation
+    - path: "test/**/*.test.ts"
+      instructions: |
+        **Test Isolation & Cleanup Requirements:**
+
+        1. **Mandatory Cleanup Hooks:**
+          - Every test file MUST include cleanup hooks (afterEach, afterAll, or both)
+          - Flag any test file that creates database records without cleanup
+          - Verify cleanup hooks are present for tests that:
+            * Call createRegularUserUsingAdmin() or similar user creation
+            * Call createTestOrganization() or similar entity creation
+            * Insert directly into drizzle tables (drizzleClient.insert)
+            * Create cascading dependencies (user → org → post → comment → vote)
+
+        2. **Cleanup Order Validation:**
+          - Cleanup MUST occur in reverse dependency order
+          - Example: commentVotes → comments → posts → organizations → users
+          - Check for proper foreign key cascade awareness
+          - Flag any cleanup that deletes parent entities before children
+
+        3. **Data Accumulation Risks:**
+          - **CRITICAL:** Identify tests that create data without cleanup
+          - Calculate accumulation: (number of tests) × (entities per test) = risk level
+          - Flag files with >10 tests and no cleanup as HIGH RISK for sharded execution
+          - Warn about shared database state contamination across parallel test shards
+
+        4. **Transaction Isolation (Preferred):**
+          - Prefer transaction-based isolation: `drizzleClient.transaction(async (tx) => {...})`
+          - Transactions auto-rollback on completion, eliminating cleanup needs
+          - If transactions are NOT used, explicit afterEach/afterAll is REQUIRED
+          - Flag any test that modifies database state outside transactions without cleanup
+
+        5. **Sharded Environment Compatibility:**
+          - Reminder: Tests run in 12-shard parallel execution
+          - Without cleanup, tests pollute shared database state
+          - Query results become non-deterministic (e.g., "find all votes" returns data from other shards)
+          - Flag patterns that query "all records" without filtering by test-specific IDs
+
+        6. **Proper Cleanup Pattern Example:**
+          ```typescript
+          describe("table tests", () => {
+            const createdUserIds: string[] = [];
+            const createdOrgIds: string[] = [];
+            
+            afterEach(async () => {
+              // Cleanup in REVERSE dependency order
+              await server.drizzleClient.delete(commentVotesTable);
+              await server.drizzleClient.delete(commentsTable);
+              await server.drizzleClient.delete(postsTable);
+              await server.drizzleClient.delete(organizationsTable).where(
+                inArray(organizationsTable.id, createdOrgIds)
+              );
+              await server.drizzleClient.delete(usersTable).where(
+                inArray(usersTable.id, createdUserIds)
+              );
+              createdUserIds.length = 0;
+              createdOrgIds.length = 0;
+            });
+          });
+          ```
+
+        7. **Transaction Isolation Pattern (Preferred):**
+          ```typescript
+          it("test", async () => {
+            await server.drizzleClient.transaction(async (tx) => {
+              // All operations inside transaction
+              const user = await tx.insert(usersTable).values({...}).returning();
+              // ... test logic
+              // Auto-rollback on completion
+            });
+          });
+          ```
+
+        8. **Review Decision Impact:**
+          - **Request Changes** if:
+            * Test file creates database records without cleanup hooks
+            * No afterEach/afterAll and no transaction isolation
+            * Cleanup order is incorrect (deletes parents before children)
+            * High risk of data accumulation (>10 tests, no cleanup)
+          - **Approve** only if:
+            * Proper cleanup hooks exist OR transactions are used
+            * Cleanup order follows reverse dependencies
+            * No data accumulation risk in sharded execution
+
+        9. **Detection Checklist:**
+          - [ ] Does test file call createRegularUserUsingAdmin, createTestOrganization, etc.?
+          - [ ] Does test file use drizzleClient.insert()?
+          - [ ] Are there afterEach/afterAll hooks?
+          - [ ] Is transaction isolation used?
+          - [ ] Is cleanup order correct (reverse of dependencies)?
+          - [ ] Are there >10 tests without cleanup? (HIGH RISK flag)
