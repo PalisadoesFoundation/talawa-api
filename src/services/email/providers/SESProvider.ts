@@ -1,3 +1,6 @@
+import { ErrorCode } from "../../../utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../utilities/errors/TalawaRestError";
+import { rootLogger } from "../../../utilities/logging/logger";
 import type {
 	EmailJob,
 	EmailResult,
@@ -53,16 +56,21 @@ export class SESProvider implements IEmailProvider {
 
 			// Validate region
 			if (!this.config.region) {
-				throw new Error("API_AWS_SES_REGION must be a non-empty string");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "API_AWS_SES_REGION must be a non-empty string",
+				});
 			}
 
 			// Validate that either both credentials are provided or neither
 			const hasAccessKey = Boolean(this.config.accessKeyId);
 			const hasSecretKey = Boolean(this.config.secretAccessKey);
 			if (hasAccessKey !== hasSecretKey) {
-				throw new Error(
-					"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
+				});
 			}
 
 			this.sesClient = new mod.SESClient({
@@ -103,9 +111,11 @@ export class SESProvider implements IEmailProvider {
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
 			if (!this.config.fromEmail) {
-				throw new Error(
-					"Email service not configured. Please set API_AWS_SES_FROM_EMAIL (and optionally API_AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Email service not configured. Please set API_AWS_SES_FROM_EMAIL (and optionally API_AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
+				});
 			}
 
 			const { client, SendEmailCommand } = await this.getSesArtifacts();
@@ -131,6 +141,10 @@ export class SESProvider implements IEmailProvider {
 			const response = await client.send(command);
 			return { id: job.id, success: true, messageId: response.MessageId };
 		} catch (error) {
+			rootLogger.error(
+				{ error, jobId: job.id },
+				"Failed to send email via SES",
+			);
 			return {
 				id: job.id,
 				success: false,

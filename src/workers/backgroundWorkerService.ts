@@ -2,6 +2,9 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+import { rootLogger } from "~/src/utilities/logging/logger";
 import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
@@ -298,7 +301,10 @@ export async function triggerMaterializationWorker(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		throw new Error("Background worker service is not running");
+		throw new TalawaRestError({
+			code: ErrorCode.CONFLICT,
+			message: "Background worker service is not running",
+		});
 	}
 
 	logger.info("Manually triggering materialization worker");
@@ -313,7 +319,10 @@ export async function triggerCleanupWorker(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		throw new Error("Background worker service is not running");
+		throw new TalawaRestError({
+			code: ErrorCode.CONFLICT,
+			message: "Background worker service is not running",
+		});
 	}
 
 	logger.info("Manually triggering cleanup worker");
@@ -396,6 +405,7 @@ export async function healthCheck(
 			details: status,
 		};
 	} catch (error) {
+		rootLogger.error({ error }, "Background worker health check failed");
 		return {
 			status: "unhealthy",
 			details: {
