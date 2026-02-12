@@ -825,7 +825,7 @@ jobs:
         run: |
           npm install -g @devcontainers/cli
           cp envFiles/.env.devcontainer .env
-          devcontainer up --workspace-folder .
+          devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
       - name: Wait for Postgres in devcontainer before migrations
         run: |
@@ -911,7 +911,7 @@ jobs:
       - name: Copy devcontainer environment file
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
-        run: devcontainer up --workspace-folder .
+        run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail
