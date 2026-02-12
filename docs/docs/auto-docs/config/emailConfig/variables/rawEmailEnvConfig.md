@@ -10,41 +10,45 @@ Defined in: [src/config/emailConfig.ts:25](https://github.com/PalisadoesFoundati
 
 ## Type Declaration
 
+### API\_AWS\_ACCESS\_KEY\_ID?
+
+> `optional` **API\_AWS\_ACCESS\_KEY\_ID**: `string`
+
+### API\_AWS\_SECRET\_ACCESS\_KEY?
+
+> `optional` **API\_AWS\_SECRET\_ACCESS\_KEY**: `string`
+
+### API\_AWS\_SES\_FROM\_EMAIL?
+
+> `optional` **API\_AWS\_SES\_FROM\_EMAIL**: `string`
+
+### API\_AWS\_SES\_FROM\_NAME?
+
+> `optional` **API\_AWS\_SES\_FROM\_NAME**: `string`
+
+### API\_AWS\_SES\_REGION?
+
+> `optional` **API\_AWS\_SES\_REGION**: `string`
+
 ### API\_EMAIL\_PROVIDER?
 
 > `optional` **API\_EMAIL\_PROVIDER**: `"ses"` \| `"smtp"` \| `"mailpit"`
 
-### AWS\_ACCESS\_KEY\_ID?
+### API\_SMTP\_FROM\_EMAIL?
 
-> `optional` **AWS\_ACCESS\_KEY\_ID**: `string`
+> `optional` **API\_SMTP\_FROM\_EMAIL**: `string`
 
-### AWS\_SECRET\_ACCESS\_KEY?
+### API\_SMTP\_FROM\_NAME?
 
-> `optional` **AWS\_SECRET\_ACCESS\_KEY**: `string`
+> `optional` **API\_SMTP\_FROM\_NAME**: `string`
 
-### AWS\_SES\_FROM\_EMAIL?
+### API\_SMTP\_HOST?
 
-> `optional` **AWS\_SES\_FROM\_EMAIL**: `string`
+> `optional` **API\_SMTP\_HOST**: `string`
 
-### AWS\_SES\_FROM\_NAME?
+### API\_SMTP\_PORT?
 
-> `optional` **AWS\_SES\_FROM\_NAME**: `string`
-
-### AWS\_SES\_REGION?
-
-> `optional` **AWS\_SES\_REGION**: `string`
-
-### SMTP\_FROM\_EMAIL?
-
-> `optional` **SMTP\_FROM\_EMAIL**: `string`
-
-### SMTP\_FROM\_NAME?
-
-> `optional` **SMTP\_FROM\_NAME**: `string`
-
-### SMTP\_HOST?
-
-> `optional` **SMTP\_HOST**: `string`
+> `optional` **API\_SMTP\_PORT**: `number`
 
 ### SMTP\_LOCAL\_ADDRESS?
 
@@ -57,10 +61,6 @@ Defined in: [src/config/emailConfig.ts:25](https://github.com/PalisadoesFoundati
 ### SMTP\_PASSWORD?
 
 > `optional` **SMTP\_PASSWORD**: `string`
-
-### SMTP\_PORT?
-
-> `optional` **SMTP\_PORT**: `number`
 
 ### SMTP\_SECURE?
 

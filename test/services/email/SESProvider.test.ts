@@ -1,5 +1,13 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import { SESProvider } from "~/src/services/email/providers/SESProvider";
 import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
 
@@ -28,7 +36,11 @@ describe("SESProvider", () => {
 		sesProvider = new SESProvider(mockConfig);
 	});
 
-	it("should throw error if AWS_SES_REGION is empty string", async () => {
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("should throw error if API_AWS_SES_REGION is empty string", async () => {
 		const provider = new SESProvider({
 			...mockConfig,
 			region: "" as NonEmptyString,
@@ -45,7 +57,7 @@ describe("SESProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "AWS_SES_REGION must be a non-empty string",
+				error: "API_AWS_SES_REGION must be a non-empty string",
 			}),
 		);
 	});

@@ -48,9 +48,10 @@ Environment variables:
 
    2. The variables used by the `api` container should be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example:
       ```
-      API_BASE_URL
-      API_PORT
-      ```
+	      API_BASE_URL
+	      API_PORT
+	      ```
+3. Orchestration variables interpreted directly by Docker Compose are an exception and use the `COMPOSE_` prefix (for example: `COMPOSE_FILE`, `COMPOSE_PROFILES`, `COMPOSE_PROJECT_NAME`).
 
 This approach reduces the risk of duplicated names being used by multiple containers that could create instability.
 
@@ -149,6 +150,10 @@ This environment variable is used to configure the time in seconds for which an 
 ### API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET
 
 This environment variable is used to configure the secret key for hashing email verification tokens. Used for defense-in-depth; tokens already have 256 bits of entropy. Should be at least 32 characters for security best practices. Defaults to a static value if not provided.
+
+### API_FRONTEND_URL
+
+This environment variable is used to configure the frontend base URL used by talawa api for CORS and frontend links in email workflows.
 
 ### API_HOST
 
@@ -261,6 +266,14 @@ This environment variable is used to configure the ssl mode on the connection be
 
 - More information can be found at [this](https://min.io/docs/minio/linux/developers/javascript/API.html##constructor) link.
 
+### API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for cleanup of old recurring event instances.
+
+### API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for generation of recurring event instances.
+
 ### Observability
 
 #### API_OTEL_ENABLED
@@ -370,23 +383,23 @@ This environment variable is used to configure the host ip of the redis server f
 
 Listed below are the environment variables for configuring AWS Simple Email Service (SES).
 
-#### AWS_ACCESS_KEY_ID
+#### API_AWS_ACCESS_KEY_ID
 
 This environment variable is used to configure the AWS Access Key ID for authentication with AWS SES.
 
-#### AWS_SECRET_ACCESS_KEY
+#### API_AWS_SECRET_ACCESS_KEY
 
 This environment variable is used to configure the AWS Secret Access Key for authentication with AWS SES.
 
-#### AWS_SES_FROM_EMAIL
+#### API_AWS_SES_FROM_EMAIL
 
 This environment variable is used to configure the email address that will be used as the sender for emails sent from the talawa api. This email must be verified in AWS SES.
 
-#### AWS_SES_FROM_NAME
+#### API_AWS_SES_FROM_NAME
 
 This environment variable is used to configure the name that will be displayed as the sender for emails sent from the talawa api.
 
-#### AWS_SES_REGION
+#### API_AWS_SES_REGION
 
 This environment variable is used to configure the AWS region where your SES instance is located.
 
@@ -394,11 +407,11 @@ This environment variable is used to configure the AWS region where your SES ins
 
 Listed below are the environment variables for configuring a generic SMTP email provider. These are used when `API_EMAIL_PROVIDER` is set to `smtp`.
 
-#### SMTP_HOST
+#### API_SMTP_HOST
 
 This environment variable is used to configure the SMTP server hostname (e.g., `smtp.gmail.com`, `smtp.mailgun.org`).
 
-#### SMTP_PORT
+#### API_SMTP_PORT
 
 This environment variable is used to configure the SMTP server port. Common values:
 
@@ -418,11 +431,11 @@ This environment variable is used to configure the password for SMTP authenticat
 
 This environment variable is used to configure whether to use SSL/TLS for the SMTP connection. Set to `true` for port 465, `false` for port 587.
 
-#### SMTP_FROM_EMAIL
+#### API_SMTP_FROM_EMAIL
 
 This environment variable is used to configure the email address that will be used as the sender for emails sent from the talawa api. This email must be authorized by your SMTP provider.
 
-#### SMTP_FROM_NAME
+#### API_SMTP_FROM_NAME
 
 This environment variable is used to configure the display name that will appear as the sender for emails sent from the talawa api. Defaults to `Talawa`.
 

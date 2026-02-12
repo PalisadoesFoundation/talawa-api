@@ -53,7 +53,7 @@ export class SESProvider implements IEmailProvider {
 
 			// Validate region
 			if (!this.config.region) {
-				throw new Error("AWS_SES_REGION must be a non-empty string");
+				throw new Error("API_AWS_SES_REGION must be a non-empty string");
 			}
 
 			// Validate that either both credentials are provided or neither
@@ -104,7 +104,7 @@ export class SESProvider implements IEmailProvider {
 		try {
 			if (!this.config.fromEmail) {
 				throw new Error(
-					"Email service not configured. Please set AWS_SES_FROM_EMAIL (and optionally AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
+					"Email service not configured. Please set API_AWS_SES_FROM_EMAIL (and optionally API_AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
 				);
 			}
 

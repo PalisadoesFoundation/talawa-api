@@ -43,7 +43,7 @@ export async function startBackgroundWorkers(
 
 		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 			() => runMaterializationWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -53,7 +53,7 @@ export async function startBackgroundWorkers(
 
 		// Schedule cleanup worker - runs daily at 2 AM UTC
 		cleanupTask = cron.schedule(
-			process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE || "0 2 * * *",
 			() => runCleanupWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -120,8 +120,11 @@ export async function startBackgroundWorkers(
 		logger.info(
 			{
 				materializationSchedule:
-					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+					process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
+					"0 * * * *",
+				cleanupSchedule:
+					process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
+					"0 2 * * *",
 				metricsEnabled: metricsEnabled && !!getMetricsSnapshots,
 			},
 			"Background worker service started successfully",
@@ -351,8 +354,9 @@ export function getBackgroundWorkerStatus(): {
 	return {
 		isRunning,
 		materializationSchedule:
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+		cleanupSchedule:
+			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE || "0 2 * * *",
 		// Include metrics fields when enabled (default or explicit)
 		...(currentMetricsEnabled && {
 			metricsSchedule: currentMetricsSchedule,

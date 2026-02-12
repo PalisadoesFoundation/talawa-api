@@ -8,27 +8,27 @@ describe("EmailProviderFactory", () => {
 	it("should return SESProvider when API_EMAIL_PROVIDER is 'ses'", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "ses",
-			AWS_SES_REGION: "us-east-1",
-			AWS_ACCESS_KEY_ID: "key",
-			AWS_SECRET_ACCESS_KEY: "secret",
-			AWS_SES_FROM_EMAIL: "from@example.com",
+			API_AWS_SES_REGION: "us-east-1",
+			API_AWS_ACCESS_KEY_ID: "key",
+			API_AWS_SECRET_ACCESS_KEY: "secret",
+			API_AWS_SES_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
 		expect(provider).toBeInstanceOf(SESProvider);
 	});
 
-	it("should throw error when AWS_SES_REGION is missing for SES provider", () => {
+	it("should throw error when API_AWS_SES_REGION is missing for SES provider", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "ses",
-			// AWS_SES_REGION missing
-			AWS_ACCESS_KEY_ID: "key",
-			AWS_SECRET_ACCESS_KEY: "secret",
-			AWS_SES_FROM_EMAIL: "from@example.com",
+			// API_AWS_SES_REGION missing
+			API_AWS_ACCESS_KEY_ID: "key",
+			API_AWS_SECRET_ACCESS_KEY: "secret",
+			API_AWS_SES_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		expect(() => EmailProviderFactory.create(config)).toThrow(
-			"AWS_SES_REGION is required when using SES provider",
+			"API_AWS_SES_REGION is required when using SES provider",
 		);
 	});
 
@@ -42,68 +42,68 @@ describe("EmailProviderFactory", () => {
 		);
 	});
 
-	it("should throw error when SMTP provider is selected but SMTP_HOST is missing", () => {
+	it("should throw error when SMTP provider is selected but API_SMTP_HOST is missing", () => {
 		// SMTP is now implemented
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
 		} as unknown as EnvConfig;
 
-		// Should throw error for missing SMTP_HOST
+		// Should throw error for missing API_SMTP_HOST
 		expect(() => EmailProviderFactory.create(config)).toThrow(
-			"SMTP_HOST is required when using SMTP provider",
+			"API_SMTP_HOST is required when using SMTP provider",
 		);
 	});
 
 	it("should return SMTPProvider when API_EMAIL_PROVIDER is 'smtp'", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
-			SMTP_HOST: "smtp.example.com",
-			SMTP_PORT: 587,
+			API_SMTP_HOST: "smtp.example.com",
+			API_SMTP_PORT: 587,
 			SMTP_USER: "user@example.com",
 			SMTP_PASSWORD: "password",
-			SMTP_FROM_EMAIL: "from@example.com",
+			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
 		expect(provider).toBeInstanceOf(SMTPProvider);
 	});
 
-	it("should throw error when SMTP_PORT is missing for SMTP provider", () => {
+	it("should throw error when API_SMTP_PORT is missing for SMTP provider", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
-			SMTP_HOST: "smtp.example.com",
-			// SMTP_PORT missing
-			SMTP_FROM_EMAIL: "from@example.com",
+			API_SMTP_HOST: "smtp.example.com",
+			// API_SMTP_PORT missing
+			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		expect(() => EmailProviderFactory.create(config)).toThrow(
-			"SMTP_PORT is required when using SMTP provider",
+			"API_SMTP_PORT is required when using SMTP provider",
 		);
 	});
 
 	it("should return SMTPProvider when authentication is omitted", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
-			SMTP_HOST: "smtp.example.com",
-			SMTP_PORT: 587,
+			API_SMTP_HOST: "smtp.example.com",
+			API_SMTP_PORT: 587,
 			// SMTP_USER omitted
 			// SMTP_PASSWORD omitted
-			SMTP_FROM_EMAIL: "from@example.com",
+			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
 		expect(provider).toBeInstanceOf(SMTPProvider);
 	});
 
-	it("should return SMTPProvider when SMTP_FROM_NAME is omitted", () => {
+	it("should return SMTPProvider when API_SMTP_FROM_NAME is omitted", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
-			SMTP_HOST: "smtp.example.com",
-			SMTP_PORT: 587,
+			API_SMTP_HOST: "smtp.example.com",
+			API_SMTP_PORT: 587,
 			SMTP_USER: "user@example.com",
 			SMTP_PASSWORD: "password",
-			SMTP_FROM_EMAIL: "from@example.com",
-			// SMTP_FROM_NAME omitted
+			API_SMTP_FROM_EMAIL: "from@example.com",
+			// API_SMTP_FROM_NAME omitted
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
@@ -113,10 +113,10 @@ describe("EmailProviderFactory", () => {
 	it("should pass SMTP_SECURE through to SMTPProvider", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
-			SMTP_HOST: "smtp.example.com",
-			SMTP_PORT: 465,
+			API_SMTP_HOST: "smtp.example.com",
+			API_SMTP_PORT: 465,
 			SMTP_SECURE: true,
-			SMTP_FROM_EMAIL: "from@example.com",
+			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
@@ -126,24 +126,24 @@ describe("EmailProviderFactory", () => {
 	it("should return SESProvider when credentials are omitted (IAM role scenario)", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "ses",
-			AWS_SES_REGION: "us-east-1",
-			// AWS_ACCESS_KEY_ID omitted
-			// AWS_SECRET_ACCESS_KEY omitted
-			AWS_SES_FROM_EMAIL: "from@example.com",
+			API_AWS_SES_REGION: "us-east-1",
+			// API_AWS_ACCESS_KEY_ID omitted
+			// API_AWS_SECRET_ACCESS_KEY omitted
+			API_AWS_SES_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
 		expect(provider).toBeInstanceOf(SESProvider);
 	});
 
-	it("should return SESProvider when AWS_SES_FROM_NAME is omitted", () => {
+	it("should return SESProvider when API_AWS_SES_FROM_NAME is omitted", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "ses",
-			AWS_SES_REGION: "us-east-1",
-			AWS_ACCESS_KEY_ID: "key",
-			AWS_SECRET_ACCESS_KEY: "secret",
-			AWS_SES_FROM_EMAIL: "from@example.com",
-			// AWS_SES_FROM_NAME omitted
+			API_AWS_SES_REGION: "us-east-1",
+			API_AWS_ACCESS_KEY_ID: "key",
+			API_AWS_SECRET_ACCESS_KEY: "secret",
+			API_AWS_SES_FROM_EMAIL: "from@example.com",
+			// API_AWS_SES_FROM_NAME omitted
 		} as unknown as EnvConfig;
 
 		const provider = EmailProviderFactory.create(config);
@@ -154,10 +154,10 @@ describe("EmailProviderFactory", () => {
 		it("should return SMTPProvider with correct config when API_EMAIL_PROVIDER is 'mailpit'", () => {
 			const config = {
 				API_EMAIL_PROVIDER: "mailpit",
-				SMTP_HOST: "mailpit",
-				SMTP_PORT: 1025,
-				SMTP_FROM_EMAIL: "test@talawa.local",
-				SMTP_FROM_NAME: "Talawa Test",
+				API_SMTP_HOST: "mailpit",
+				API_SMTP_PORT: 1025,
+				API_SMTP_FROM_EMAIL: "test@talawa.local",
+				API_SMTP_FROM_NAME: "Talawa Test",
 			} as unknown as EnvConfig;
 
 			const provider = EmailProviderFactory.create(config);
@@ -199,11 +199,11 @@ describe("EmailProviderFactory", () => {
 		it("should work without SMTP_USER and SMTP_PASSWORD (no auth required)", () => {
 			const config = {
 				API_EMAIL_PROVIDER: "mailpit",
-				SMTP_HOST: "mailpit",
-				SMTP_PORT: 1025,
+				API_SMTP_HOST: "mailpit",
+				API_SMTP_PORT: 1025,
 				// SMTP_USER omitted
 				// SMTP_PASSWORD omitted
-				SMTP_FROM_EMAIL: "test@talawa.local",
+				API_SMTP_FROM_EMAIL: "test@talawa.local",
 			} as unknown as EnvConfig;
 
 			const provider = EmailProviderFactory.create(config);
@@ -217,10 +217,10 @@ describe("EmailProviderFactory", () => {
 		it("should use provided custom values for mailpit", () => {
 			const config = {
 				API_EMAIL_PROVIDER: "mailpit",
-				SMTP_HOST: "custom-mailpit",
-				SMTP_PORT: 2525,
-				SMTP_FROM_EMAIL: "custom@example.com",
-				SMTP_FROM_NAME: "Custom Name",
+				API_SMTP_HOST: "custom-mailpit",
+				API_SMTP_PORT: 2525,
+				API_SMTP_FROM_EMAIL: "custom@example.com",
+				API_SMTP_FROM_NAME: "Custom Name",
 			} as unknown as EnvConfig;
 
 			const provider = EmailProviderFactory.create(config);

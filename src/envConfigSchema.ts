@@ -10,7 +10,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * The frontend URL allowed for CORS.
 	 */
-	FRONTEND_URL: Type.String({
+	API_FRONTEND_URL: Type.String({
 		minLength: 1,
 		format: "uri",
 	}),
@@ -151,15 +151,15 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * AWS access key ID for SES email service.
 	 */
-	AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
+	API_AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS secret access key for SES email service.
 	 */
-	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
+	API_AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS region for SES email service.
 	 */
-	AWS_SES_REGION: Type.Optional(
+	API_AWS_SES_REGION: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "ap-south-1",
@@ -168,7 +168,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Verified email address to send emails from in AWS SES.
 	 */
-	AWS_SES_FROM_EMAIL: Type.Optional(
+	API_AWS_SES_FROM_EMAIL: Type.Optional(
 		Type.String({
 			format: "email",
 		}),
@@ -176,7 +176,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Display name for the sender in emails.
 	 */
-	AWS_SES_FROM_NAME: Type.Optional(
+	API_AWS_SES_FROM_NAME: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "Talawa",
@@ -185,12 +185,12 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * SMTP server hostname for email service.
 	 */
-	SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * SMTP server port for email service.
 	 * Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
 	 */
-	SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
+	API_SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
 	/**
 	 * SMTP username for authentication.
 	 */
@@ -207,7 +207,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Verified email address to send emails from via SMTP.
 	 */
-	SMTP_FROM_EMAIL: Type.Optional(
+	API_SMTP_FROM_EMAIL: Type.Optional(
 		Type.String({
 			format: "email",
 		}),
@@ -215,7 +215,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Display name for the sender in emails via SMTP.
 	 */
-	SMTP_FROM_NAME: Type.Optional(
+	API_SMTP_FROM_NAME: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "Talawa",
@@ -571,7 +571,7 @@ export const envConfigSchema = Type.Object({
 	 * Cron schedule for the recurring event instance generation background worker.
 	 * Default: "0 * * * *" (every hour at minute 0)
 	 */
-	RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
+	API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
@@ -581,7 +581,7 @@ export const envConfigSchema = Type.Object({
 	 * Cron schedule for the old event instance cleanup background worker.
 	 * Default: "0 2 * * *" (daily at 2 AM UTC)
 	 */
-	OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
+	API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
