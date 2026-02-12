@@ -641,13 +641,24 @@ create_mock "apt-get" '
     if [ "$1" = "install" ]; then
         # Simulate installing jq: remove hidden marker and create real mock
         rm -f "$MOCK_BIN/jq.hidden" 2>/dev/null || true
-        cat > "$MOCK_BIN/jq" <<JQBIN
+        cat > "$MOCK_BIN/jq" <<'JQBIN'
 #!/bin/bash
-if [ "\$1" = "--version" ]; then echo "jq-1.6"; exit 0; fi
-if [ "\$1" = "-r" ]; then
-    # Minimal behavior for package.json parsing
+if [ "$1" = "--version" ]; then echo "jq-1.6"; exit 0; fi
+if [ "$1" = "-r" ]; then
+    query="$2"
     if [ -f package.json ]; then
-        node -e "const p=require('./package.json'); console.log(p.name||'')"
+        if [[ "$query" == *".name"* ]]; then
+            node -e "const p=require('./package.json'); console.log(p.name||'')"
+        elif [[ "$query" == *".engines.node"* ]]; then
+            node -e "const p=require('./package.json'); console.log((p.engines&&p.engines.node)||'')"
+        elif [[ "$query" == *".packageManager"* ]]; then
+            node -e "const p=require('./package.json'); console.log(p.packageManager||'')"
+        elif [[ "$query" == *".version"* ]] && [[ "$query" != *"engines"* ]]; then
+            node -e "const p=require('./package.json'); console.log(p.version||'')"
+        else
+            # Fallback to name if unknown
+            node -e "const p=require('./package.json'); console.log(p.name||'')"
+        fi
     fi
     exit 0
 fi
@@ -744,12 +755,49 @@ setup_debian_system
 echo "0" > "$MOCK_BIN/.curl_attempts"
 
 create_mock "curl" '
+    out=""
+    next_out=0
+    for arg in "$@"; do
+        if [ "$next_out" -eq 1 ]; then
+            out="$arg"
+            next_out=0
+            continue
+        fi
+        case "$arg" in
+            -o)
+                next_out=1
+                ;;
+            --output=*)
+                out="${arg#--output=}"
+                ;;
+        esac
+    done
+
     ATTEMPT=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || echo 0)
     ATTEMPT=$((ATTEMPT + 1))
     echo "$ATTEMPT" > "$MOCK_BIN/.curl_attempts"
     if [ "$ATTEMPT" -lt 3 ]; then
         echo "Network error" >&2
         exit 1
+    fi
+    # On success, if an output path was provided, write a minimal fnm installer there
+    if [ -n "$out" ]; then
+        cat > "$out" <<'FNMINST'
+#!/bin/bash
+echo Installing fnm...
+rm -f "$MOCK_BIN/fnm.hidden" 2>/dev/null || true
+cat > "$MOCK_BIN/fnm" <<'FNM'
+#!/bin/bash
+if [ "$1" = "env" ]; then echo "export PATH=mock:$PATH"; exit 0; fi
+if [ "$1" = "install" ]; then echo "Installing Node $2"; exit 0; fi
+if [ "$1" = "use" ]; then exit 0; fi
+if [ "$1" = "default" ]; then exit 0; fi
+exit 0
+FNM
+chmod +x "$MOCK_BIN/fnm"
+exit 0
+FNMINST
+        chmod +x "$out"
     fi
     exit 0
 '
@@ -765,12 +813,12 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-# Check if retry logic was exercised
+# Check if retry logic was exercised and script exited successfully
 ATTEMPTS=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || echo 0)
-if [ "$ATTEMPTS" -ge 2 ]; then
+if [ $EXIT_CODE -eq 0 ] && [ "$ATTEMPTS" -ge 2 ]; then
     test_pass
 else
-    test_fail "Expected retry attempts. Attempts: $ATTEMPTS\nLogs:\n$OUTPUT"
+    test_fail "Expected retry attempts and successful install. Attempts: $ATTEMPTS, Exit: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
 
 
@@ -1038,8 +1086,8 @@ create_mock "curl" '
 #!/bin/bash
 echo DOCKER_INSTALLER_EXECUTED
 rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
-cat > "$MOCK_BIN/docker" <<'DOCKERSCRIPT'
-#!/bin/bash
+    cat > "$MOCK_BIN/docker" <<'DOCKERSCRIPT'
+#!/bin/sh
 if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
 if [ "$1" = "info" ]; then exit 0; fi
 if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
@@ -1088,13 +1136,13 @@ create_mock "sh" '
     # If executing an installer file path, simulate installer behavior
     if [ -n "$1" ] && [ -f "$1" ]; then
         rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
-        cat > "$MOCK_BIN/docker" <<DOCKERSCRIPT
-#!/bin/sh
-if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
-if [ "$1" = "info" ]; then exit 0; fi
-if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
-exit 0
-DOCKERSCRIPT
+        cat > "$MOCK_BIN/docker" <<'DOCKERSCRIPT'
+    #!/bin/sh
+    if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+    if [ "$1" = "info" ]; then exit 0; fi
+    if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
+    exit 0
+    DOCKERSCRIPT
         chmod +x "$MOCK_BIN/docker"
         exit 0
     fi

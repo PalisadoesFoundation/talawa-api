@@ -296,11 +296,13 @@ fi
 
 # Get the repository root directory
 get_repo_root() {
-    local script_dir
     local repo_root
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # Reuse SCRIPT_DIR if available; otherwise compute from BASH_SOURCE
+    if [ -z "${SCRIPT_DIR:-}" ]; then
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    fi
     # Navigate up from scripts/install/linux to repo root
-    repo_root="$(cd "$script_dir/../../.." && pwd)"
+    repo_root="$(cd "$SCRIPT_DIR/../../.." && pwd)"
     printf '%s\n' "$repo_root"
 }
 
