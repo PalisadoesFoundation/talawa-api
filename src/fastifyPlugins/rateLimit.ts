@@ -19,7 +19,7 @@ declare module "fastify" {
 		): preHandlerHookHandler;
 	}
 	interface FastifyRequest {
-		currentUser?: { id: string };
+		currentUser?: { id: string; email?: string };
 	}
 }
 

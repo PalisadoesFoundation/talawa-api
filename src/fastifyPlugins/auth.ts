@@ -1,0 +1,69 @@
+/**
+ * Fastify auth plugin: sets request.currentUser from a valid access JWT
+ * (cookie or Authorization: Bearer) and provides app.requireAuth() for protected routes.
+ */
+import type {
+	FastifyInstance,
+	FastifyReply,
+	FastifyRequest,
+	preHandlerHookHandler,
+} from "fastify";
+import fp from "fastify-plugin";
+import { verifyToken } from "~/src/services/auth/tokens";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+
+/** Access token payload shape used when verifying; typ must be "access" to set currentUser. */
+type AccessPayload = { sub: string; email?: string; typ: string };
+
+declare module "fastify" {
+	interface FastifyInstance {
+		requireAuth(): preHandlerHookHandler;
+	}
+	interface FastifyRequest {
+		currentUser?: { id: string; email?: string };
+	}
+}
+
+const BEARER_PREFIX = /^Bearer\s+/i;
+
+function getTokenFromRequest(req: FastifyRequest): string | null {
+	const cookieAt = req.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
+	const authHeader = (req.headers.authorization ?? "").trim();
+	const bearer = authHeader.replace(BEARER_PREFIX, "").trim();
+	const raw = cookieAt || bearer || "";
+	const token = raw.trim();
+	return token || null;
+}
+
+async function authPlugin(app: FastifyInstance): Promise<void> {
+	app.addHook("preHandler", async (req) => {
+		const token = getTokenFromRequest(req);
+		if (!token) return;
+
+		try {
+			const payload = await verifyToken<AccessPayload>(token);
+			if (payload.typ !== "access" || !payload.sub) return;
+			req.currentUser = { id: payload.sub, email: payload.email };
+		} catch (err) {
+			req.log.debug(
+				{ err },
+				"Invalid or expired token; request remains unauthenticated",
+			);
+		}
+	});
+
+	app.decorate("requireAuth", function requireAuth(): preHandlerHookHandler {
+		return async (req: FastifyRequest, _reply: FastifyReply) => {
+			if (!req.currentUser) {
+				throw new TalawaRestError({
+					code: ErrorCode.UNAUTHENTICATED,
+					message: "Authentication required",
+				});
+			}
+		};
+	});
+}
+
+export default fp(authPlugin, { name: "auth" });
