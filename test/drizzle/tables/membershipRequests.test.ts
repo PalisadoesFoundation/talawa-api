@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq, getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
 import {
@@ -19,6 +19,7 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 	const createdMembershipRequestIds: string[] = [];
 
 	afterEach(async () => {
+		vi.restoreAllMocks();
 		for (const id of createdMembershipRequestIds) {
 			await server.drizzleClient
 				.delete(membershipRequestsTable)
@@ -204,6 +205,33 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			await server.drizzleClient
 				.delete(organizationsTable)
 				.where(eq(organizationsTable.id, orgId));
+
+			const rows = await server.drizzleClient
+				.select()
+				.from(membershipRequestsTable)
+				.where(
+					eq(
+						membershipRequestsTable.membershipRequestId,
+						inserted.membershipRequestId,
+					),
+				);
+
+			expect(rows.length).toBe(0);
+		});
+		it("should cascade delete on user delete", async () => {
+			const orgId = await createTestOrganization();
+			const userId = await createTestUser();
+
+			const [inserted] = await server.drizzleClient
+				.insert(membershipRequestsTable)
+				.values({ userId, organizationId: orgId })
+				.returning();
+
+			if (!inserted) throw new Error("Insert failed");
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
 
 			const rows = await server.drizzleClient
 				.select()
