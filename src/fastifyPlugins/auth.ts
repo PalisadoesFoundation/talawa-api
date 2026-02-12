@@ -14,8 +14,8 @@ import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
-/** Access token payload shape used when verifying; typ must be "access" to set currentUser. JWTs may omit sub. */
-type AccessPayload = { sub?: string; email?: string; typ: string };
+/** Access token payload shape used when verifying; typ must be "access" to set currentUser. JWTs may omit sub or typ. */
+type AccessPayload = { sub?: string; email?: string; typ?: string };
 
 declare module "fastify" {
 	interface FastifyInstance {
