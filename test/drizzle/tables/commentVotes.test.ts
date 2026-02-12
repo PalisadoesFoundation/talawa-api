@@ -104,12 +104,14 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 		await server.drizzleClient.delete(commentsTable);
 		await server.drizzleClient.delete(postsTable);
 		await server.drizzleClient.delete(organizationsTable);
+		await server.drizzleClient.delete(usersTable);
 	});
 	afterAll(async () => {
 		await server.drizzleClient.delete(commentVotesTable);
 		await server.drizzleClient.delete(commentsTable);
 		await server.drizzleClient.delete(postsTable);
 		await server.drizzleClient.delete(organizationsTable);
+		await server.drizzleClient.delete(usersTable);
 	});
 
 	describe("CommentVotes Table Schema", () => {
