@@ -14,6 +14,12 @@ import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
+/** Authenticated user set on the request by the auth plugin. Single authoritative shape for FastifyRequest.currentUser. */
+export interface CurrentUser {
+	id: string;
+	email?: string;
+}
+
 /** Access token payload shape used when verifying; typ must be "access" to set currentUser. JWTs may omit sub or typ. */
 type AccessPayload = { sub?: string; email?: string; typ?: string };
 
@@ -22,7 +28,7 @@ declare module "fastify" {
 		requireAuth(): preHandlerHookHandler;
 	}
 	interface FastifyRequest {
-		currentUser?: { id: string; email?: string };
+		currentUser?: CurrentUser;
 	}
 }
 
@@ -68,7 +74,10 @@ async function authPlugin(app: FastifyInstance): Promise<void> {
 		try {
 			const payload = await verifyToken<AccessPayload>(token);
 			if (payload.typ !== "access" || !payload.sub) return;
-			req.currentUser = { id: payload.sub, email: payload.email };
+			req.currentUser = {
+				id: payload.sub,
+				email: payload.email,
+			} satisfies CurrentUser;
 		} catch (err) {
 			req.log.debug(
 				{ err },

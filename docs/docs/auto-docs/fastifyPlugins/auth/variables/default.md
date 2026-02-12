@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/auth.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/auth.ts#L92)
+Defined in: [src/fastifyPlugins/auth.ts:101](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/auth.ts#L101)
 
 Registers a global preHandler hook that populates `req.currentUser` from a valid access JWT
 (via getTokenFromRequest and verifyToken with AccessPayload), and decorates the app with

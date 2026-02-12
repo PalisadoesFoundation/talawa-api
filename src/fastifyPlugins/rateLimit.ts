@@ -18,9 +18,6 @@ declare module "fastify" {
 				| RateLimitTier,
 		): preHandlerHookHandler;
 	}
-	interface FastifyRequest {
-		currentUser?: { id: string; email?: string };
-	}
 }
 
 function identityFromRequest(req: FastifyRequest): string {
