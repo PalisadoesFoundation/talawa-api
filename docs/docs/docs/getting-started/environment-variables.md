@@ -186,7 +186,7 @@ This environment variable is used to configure the time in milli-seconds it take
 
 ### API_JWT_SECRET
 
-This environment variable is used to configure the secret used for signing and verifying the authentication json web tokens issued by talawa api. This secret must be at least 64 characters in length.
+This environment variable is used to configure the secret for signing and verifying the authentication JSON web tokens used by the **GraphQL API** (via `fastify-jwt`). It is separate from `API_AUTH_JWT_SECRET`, which is used only for REST auth. This secret must be at least 64 characters in length.
 
 - More information can be found at [this](https://github.com/fastify/fastify-jwt?tab=readme-ov-file##secret-required) link.
 
@@ -194,15 +194,15 @@ This environment variable is used to configure the secret used for signing and v
 
 This environment variable is used to configure the time in milliseconds it takes for a refresh token issued by talawa api to expire. Refresh tokens are long-lived tokens used to obtain new short-lived access tokens without requiring users to re-authenticate. Recommended value is 7 days (604800000 milliseconds).
 
-### AUTH_JWT_SECRET (REST auth)
+### API_AUTH_JWT_SECRET (REST auth)
 
-Optional. REST auth JWT secret for signing and verifying access/refresh tokens (see `src/services/auth/tokens`). When unset, tokens fall back to a dev default in non-production. Set to at least 32 characters when using REST auth in production.
+Optional. JWT secret used **only for REST auth** (signing and verifying REST access/refresh tokens in `src/services/auth/tokens`). It is separate from `API_JWT_SECRET`, which is used for GraphQL. When unset, REST tokens fall back to a dev default in non-production. Set to at least 32 characters when using REST auth in production.
 
-### ACCESS_TOKEN_TTL (REST auth)
+### API_ACCESS_TOKEN_TTL (REST auth)
 
 Optional. REST auth access token TTL in seconds; used for JWT expiry and cookie maxAge. Default: 900 (15 minutes).
 
-### REFRESH_TOKEN_TTL (REST auth)
+### API_REFRESH_TOKEN_TTL (REST auth)
 
 Optional. REST auth refresh token TTL in seconds; used for refresh JWT and cookie maxAge. Default: 2592000 (30 days).
 

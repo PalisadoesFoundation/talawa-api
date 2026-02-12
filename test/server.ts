@@ -15,7 +15,7 @@ if (!process.env.API_COOKIE_SECRET) {
 	process.env.API_COOKIE_SECRET = testEnvConfig.API_COOKIE_SECRET;
 }
 
-/** Satisfies env schema AUTH_JWT_SECRET minLength for createServer in tests. */
+/** Satisfies env schema API_AUTH_JWT_SECRET minLength for createServer in tests. */
 const TEST_AUTH_JWT_SECRET = "12345678901234567890123456789012";
 
 export const server = await createServer({
@@ -40,7 +40,7 @@ export const server = await createServer({
 		 * This makes the server test instance use the test cookie secret.
 		 */
 		API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
-		AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
+		API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 		/**
 		 * Set high rate limits for tests to prevent "Too many requests" errors.
 		 */

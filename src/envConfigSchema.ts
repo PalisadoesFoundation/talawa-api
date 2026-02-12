@@ -340,7 +340,7 @@ export const envConfigSchema = Type.Object({
 	 * Should be at least 32 characters. Prefer setting in production when using REST auth.
 	 * Default ensures env validation passes when unset (e.g. in tests or when only API_JWT_SECRET is used).
 	 */
-	AUTH_JWT_SECRET: Type.Optional(
+	API_AUTH_JWT_SECRET: Type.Optional(
 		Type.String({
 			minLength: 32,
 			default: "00000000000000000000000000000000",
@@ -350,7 +350,7 @@ export const envConfigSchema = Type.Object({
 	 * REST auth access token TTL in seconds. Used by src/services/auth/tokens and cookie maxAge.
 	 * Default: 900 (15 minutes)
 	 */
-	ACCESS_TOKEN_TTL: Type.Optional(
+	API_ACCESS_TOKEN_TTL: Type.Optional(
 		Type.Integer({
 			minimum: 1,
 			default: 900,
@@ -360,7 +360,7 @@ export const envConfigSchema = Type.Object({
 	 * REST auth refresh token TTL in seconds. Used by src/services/auth/tokens and refreshStore.
 	 * Default: 2592000 (30 days)
 	 */
-	REFRESH_TOKEN_TTL: Type.Optional(
+	API_REFRESH_TOKEN_TTL: Type.Optional(
 		Type.Integer({
 			minimum: 1,
 			default: 2592000,

@@ -13,8 +13,8 @@ describe("envConfigSchema - Metrics Configuration", () => {
 		delete process.env.API_METRICS_SLOW_OPERATION_MS;
 		delete process.env.API_METRICS_SLOW_REQUEST_MS;
 		delete process.env.API_METRICS_CACHE_TTL_SECONDS;
-		// Ensure AUTH_JWT_SECRET satisfies schema (minLength 32) when envSchema validates full process.env
-		process.env.AUTH_JWT_SECRET = "00000000000000000000000000000000";
+		// Ensure API_AUTH_JWT_SECRET satisfies schema (minLength 32) when envSchema validates full process.env
+		process.env.API_AUTH_JWT_SECRET = "00000000000000000000000000000000";
 	});
 
 	describe("API_METRICS_AGGREGATION_CRON_SCHEDULE", () => {
