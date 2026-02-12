@@ -1651,6 +1651,9 @@ suite("Mutation field updateVenue", () => {
 		});
 
 		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
+		assertToBeNonNullish(signUpResult.data?.signUp?.user?.id);
+		const tempUserId = signUpResult.data.signUp.user.id;
+
 		const tempSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: { emailAddress: tempEmail, password: "Passw0rd!23" },
@@ -1658,10 +1661,10 @@ suite("Mutation field updateVenue", () => {
 		});
 		assertToBeNonNullish(tempSignIn.data?.signIn?.authenticationToken);
 
-		// Remove user record from DB so lookup returns undefined
+		// Remove user record from DB so lookup returns undefined (delete by primary key for reliability)
 		await server.drizzleClient
 			.delete(usersTable)
-			.where(eq(usersTable.emailAddress, tempEmail));
+			.where(eq(usersTable.id, tempUserId));
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
