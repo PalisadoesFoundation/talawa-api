@@ -189,6 +189,7 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 			expect(inserted.userId).toBe(userId);
 			expect(inserted.organizationId).toBe(orgId);
 			expect(inserted.status).toBe("pending");
+			expect(inserted.createdAt).toBeInstanceOf(Date);
 		});
 
 		it("should cascade delete on organization delete", async () => {
@@ -201,6 +202,8 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.returning();
 
 			if (!inserted) throw new Error("Insert failed");
+
+			createdMembershipRequestIds.push(inserted.membershipRequestId);
 
 			await server.drizzleClient
 				.delete(organizationsTable)
@@ -228,6 +231,8 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 				.returning();
 
 			if (!inserted) throw new Error("Insert failed");
+
+			createdMembershipRequestIds.push(inserted.membershipRequestId);
 
 			await server.drizzleClient
 				.delete(usersTable)
