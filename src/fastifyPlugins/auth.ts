@@ -14,8 +14,8 @@ import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
-/** Access token payload shape used when verifying; typ must be "access" to set currentUser. */
-type AccessPayload = { sub: string; email?: string; typ: string };
+/** Access token payload shape used when verifying; typ must be "access" to set currentUser. JWTs may omit sub. */
+type AccessPayload = { sub?: string; email?: string; typ: string };
 
 declare module "fastify" {
 	interface FastifyInstance {
@@ -28,6 +28,14 @@ declare module "fastify" {
 
 const BEARER_PREFIX = /^Bearer\s+/i;
 
+/**
+ * Reads the access token from the request: cookie first (COOKIE_NAMES.ACCESS_TOKEN),
+ * then Authorization header when it starts with Bearer (case-insensitive, via BEARER_PREFIX).
+ * Returns null when no token is present or the trimmed value is empty.
+ *
+ * @param req - The Fastify request.
+ * @returns The token string, or null if none found.
+ */
 function getTokenFromRequest(req: FastifyRequest): string | null {
 	const cookieAt = req.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 	const authHeader = (req.headers.authorization ?? "").trim();
@@ -71,4 +79,7 @@ async function authPlugin(app: FastifyInstance): Promise<void> {
 	});
 }
 
-export default fp(authPlugin, { name: "auth" });
+export default fp(authPlugin, {
+	name: "auth",
+	dependencies: ["@fastify/cookie"],
+});
