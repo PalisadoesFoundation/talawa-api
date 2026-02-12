@@ -1,4 +1,12 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import { SMTPProvider } from "~/src/services/email/providers/SMTPProvider";
 import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
@@ -68,6 +76,10 @@ describe("SMTPProvider", () => {
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	it("should throw error if SMTP_HOST is empty string", async () => {

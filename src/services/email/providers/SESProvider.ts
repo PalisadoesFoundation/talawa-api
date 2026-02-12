@@ -52,7 +52,6 @@ export class SESProvider implements IEmailProvider {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
 
-			// Validate region
 			if (!this.config.region) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
@@ -60,7 +59,6 @@ export class SESProvider implements IEmailProvider {
 				});
 			}
 
-			// Validate that either both credentials are provided or neither
 			const hasAccessKey = Boolean(this.config.accessKeyId);
 			const hasSecretKey = Boolean(this.config.secretAccessKey);
 			if (hasAccessKey !== hasSecretKey) {
@@ -156,40 +154,36 @@ export class SESProvider implements IEmailProvider {
 	}
 
 	/**
-	 * Executes the sendBulkEmails operation to process multiple email requests concurrently in batches.
-	 * This method ensures compliance with AWS SES rate limits (defaults to 14 messages per second)
-	 * while maximizing network throughput.
+	 * Sends multiple emails in concurrent batches to respect rate limits.
 	 *
-	 * @param jobs - An array of EmailJob objects to be sent.
-	 * @returns A Promise that resolves to an array of EmailResult objects, providing the success status, message ID, or error details for each processed email.
+	 * Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+	 * between batches to prevent overwhelming the email provider or hitting rate limits.
+	 *
+	 * @param {EmailJob[]} jobs - An array of email jobs to be processed.
+	 * @returns {Promise<EmailResult[]>} A promise that resolves to an array of results
+	 * (success or failure) for each email job.
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
 		const BATCH_SIZE = 14;
 		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
 
-		// Replaced validJobs with the interface-guaranteed jobs array
 		for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
 			const batch = jobs.slice(i, i + BATCH_SIZE);
 
-			// 2. Map the batch to an array of Promises
 			const batchPromises = batch.map((job) => this.sendEmail(job));
 
-			// 3. Execute concurrently with Promise.allSettled
 			const batchSettledResults = await Promise.allSettled(batchPromises);
 
-			// 4. Extract the results
 			for (let j = 0; j < batchSettledResults.length; j++) {
 				const settled = batchSettledResults[j];
 				const currentJob = batch[j];
 
-				// SAFETY CHECK: This satisfies TypeScript's strict index checking
 				if (!settled || !currentJob) continue;
 
 				if (settled.status === "fulfilled") {
 					results.push(settled.value);
 				} else {
-					// Fallback in case a promise rejects outside of sendEmail's try/catch
 					results.push({
 						id: currentJob.id,
 						success: false,
@@ -201,7 +195,6 @@ export class SESProvider implements IEmailProvider {
 				}
 			}
 
-			// 5. Apply rate limit delay between batches (skip after the last batch)
 			if (i + BATCH_SIZE < jobs.length) {
 				await new Promise((resolve) =>
 					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),

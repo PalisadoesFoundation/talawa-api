@@ -45,9 +45,10 @@ The SES configuration object containing region and credentials.
 
 Defined in: [src/services/email/providers/SESProvider.ts:166](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L166)
 
-Executes the sendBulkEmails operation to process multiple email requests concurrently in batches.
-This method ensures compliance with AWS SES rate limits (defaults to 14 messages per second)
-while maximizing network throughput.
+Sends multiple emails in concurrent batches to respect rate limits.
+
+Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+between batches to prevent overwhelming the email provider or hitting rate limits.
 
 #### Parameters
 
@@ -55,13 +56,14 @@ while maximizing network throughput.
 
 [`EmailJob`](../../../types/interfaces/EmailJob.md)[]
 
-An array of EmailJob objects to be sent.
+An array of email jobs to be processed.
 
 #### Returns
 
 `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-A Promise that resolves to an array of EmailResult objects, providing the success status, message ID, or error details for each processed email.
+A promise that resolves to an array of results
+(success or failure) for each email job.
 
 #### Implementation of
 
@@ -73,7 +75,7 @@ A Promise that resolves to an array of EmailResult objects, providing the succes
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:109](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L109)
+Defined in: [src/services/email/providers/SESProvider.ts:107](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L107)
 
 Send a single email using AWS SES
 

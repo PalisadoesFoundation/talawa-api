@@ -32,8 +32,6 @@ export interface SMTPProviderConfig {
 	localAddress?: string;
 }
 
-// TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
-// This would improve throughput for high-volume scenarios.
 /**
  * SMTP implementation of IEmailProvider using Nodemailer.
  *
@@ -201,10 +199,14 @@ export class SMTPProvider implements IEmailProvider {
 		}
 	}
 	/**
-	 * Send multiple emails in bulk with rate limiting and concurrent batching.
+	 * Sends multiple emails in concurrent batches to respect rate limits.
 	 *
-	 * @param jobs - An array of EmailJob objects to be sent.
-	 * @returns A Promise that resolves to an array of EmailResult objects.
+	 * Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+	 * between batches to prevent overwhelming the email provider or hitting rate limits.
+	 *
+	 * @param {EmailJob[]} jobs - An array of email jobs to be processed.
+	 * @returns {Promise<EmailResult[]>} A promise that resolves to an array of results
+	 * (success or failure) for each email job.
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
 		const BATCH_SIZE = 14;
