@@ -20,10 +20,39 @@ The `NODE_ENV` variable is extremely sparsely used.
 
 In an environment where one capability is needed but the other is not, using a single environment variable to control all of them at once wouldn't work.
 
-### Variable Naming Convention
+## Variable Naming Convention
 
-Environment variables should be named using uppercase letters, numbers, and underscores. They should also be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example `API_BASE_URL` and `API_PORT`.
+This information will be important to both end users and developers alike.
 
+:::info
+
+Talawa API uses a strict environment variable naming convention.
+
+:::
+
+Environment variables:
+
+1. Should be named using uppercase letters, numbers, and underscores.
+2. Must have a prefix that matches the name of the Docker container which uses them.
+   1. For example the current container names are:
+
+      ```
+      api
+      caddy
+      cloudbeaver
+      mailpit
+      minio
+      postgres
+      redis
+      ```
+
+   2. The variables used by the `api` container should be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example:
+      ```
+      API_BASE_URL
+      API_PORT
+      ```
+
+This approach reduces the risk of duplicated names being used by multiple containers that could create instability.
 
 ## talawa api (standalone)
 
@@ -372,6 +401,7 @@ This environment variable is used to configure the SMTP server hostname (e.g., `
 #### SMTP_PORT
 
 This environment variable is used to configure the SMTP server port. Common values:
+
 - `587` - Standard TLS port (recommended)
 - `465` - SSL port (legacy)
 - `25` - Unsecured port (not recommended)
