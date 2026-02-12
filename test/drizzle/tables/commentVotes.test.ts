@@ -7,11 +7,12 @@ import {
 	Query_signIn,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it } from "vitest";
 import {
 	commentsTable,
 	commentVotesTable,
 	commentVotesTableRelations,
+	organizationsTable,
 	postsTable,
 	usersTable,
 } from "~/src/drizzle/schema";
@@ -98,10 +99,17 @@ async function createTestComment(): Promise<string> {
 }
 
 describe("src/drizzle/tables/commentVotes.test.ts", () => {
+	afterEach(async () => {
+		await server.drizzleClient.delete(commentVotesTable);
+		await server.drizzleClient.delete(commentsTable);
+		await server.drizzleClient.delete(postsTable);
+		await server.drizzleClient.delete(organizationsTable);
+	});
 	afterAll(async () => {
 		await server.drizzleClient.delete(commentVotesTable);
 		await server.drizzleClient.delete(commentsTable);
 		await server.drizzleClient.delete(postsTable);
+		await server.drizzleClient.delete(organizationsTable);
 	});
 
 	describe("CommentVotes Table Schema", () => {
@@ -604,7 +612,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 	});
 
 	describe("Index Configuration", () => {
-		it("should efficiently query using indexed creatorId column", async () => {
+		it("should query by creatorId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const commentId = await createTestComment();
 			const type = "down_vote";
@@ -626,7 +634,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			expect(results.length).toBeGreaterThan(0);
 		});
 
-		it("should efficiently query using indexed commentId column", async () => {
+		it("should query by commentId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const commentId = await createTestComment();
 			const type = "down_vote";
@@ -648,7 +656,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			expect(results.length).toBeGreaterThan(0);
 		});
 
-		it("should efficiently query using indexed type column", async () => {
+		it("should query by indexed type column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const commentId = await createTestComment();
 			const type = "down_vote";
