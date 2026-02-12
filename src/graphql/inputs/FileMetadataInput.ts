@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
+import { postAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { builder } from "~/src/graphql/builder";
 import { PostAttachmentMimeType } from "~/src/graphql/enums/PostAttachmentMimeType";
 
@@ -20,7 +20,7 @@ export const fileMetadataInputSchema = z.object({
 	/**
 	 * MIME type of the uploaded file.
 	 */
-	mimeType: postAttachmentMimeTypeEnum,
+	mimeType: postAttachmentMimeTypeZodEnum,
 	/**
 	 * Original file name for display purposes.
 	 */

@@ -1,10 +1,26 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgEnum,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
+import { postAttachmentTypes } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { agendaItemsTable } from "./agendaItems";
 import { usersTable } from "./users";
+
+/**
+ * PostgreSQL enum for agendaItem attachment MIME types.
+ * Valid values: image/avif, image/jpeg, image/png, image/webp, video/mp4, video/webm, video/quicktime
+ */
+export const agendaItemAttachmentMimeTypePgEnum = pgEnum(
+	"agenda_item_attachment_mime_type",
+	postAttachmentTypes,
+);
 
 /**
  * Drizzle orm postgres table definition for agenda item attachments.
@@ -46,9 +62,7 @@ export const agendaItemAttachmentsTable = pgTable(
 		/**
 		 * Mime type of the attachment.
 		 */
-		mimeType: text("mime_type", {
-			enum: postAttachmentMimeTypeEnum.options as [string, ...string[]],
-		}).notNull(),
+		mimeType: agendaItemAttachmentMimeTypePgEnum("mime_type").notNull(),
 		/**
 		 * Identifier name of the attachment.
 		 */

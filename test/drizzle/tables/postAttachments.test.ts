@@ -836,5 +836,27 @@ describe("src/drizzle/tables/postAttachments", () => {
 				expect(result.mimeType).toBe(validMimeType);
 			}
 		});
+
+		it("should reject invalid enum values at the database layer", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const postId = await createTestPost();
+			const name = faker.system.fileName();
+			const invalidMimeType = "not/a/real-type";
+			const createdAt = faker.date.recent();
+			const objectName = faker.system.fileName();
+			const fileHash = faker.string.hexadecimal({ length: 64 });
+
+			await expect(
+				server.drizzleClient.insert(postAttachmentsTable).values({
+					name,
+					creatorId: userId,
+					mimeType: invalidMimeType as "image/png",
+					postId: postId,
+					createdAt: createdAt,
+					objectName: objectName,
+					fileHash: fileHash,
+				}),
+			).rejects.toThrow();
+		});
 	});
 });

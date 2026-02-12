@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
+import { postAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import {
 	MutationCreateAgendaItemInput,
 	mutationCreateAgendaItemInputSchema,
@@ -110,7 +110,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				attachments: [
 					{
 						name: "file",
-						mimeType: postAttachmentMimeTypeEnum.options[0],
+						mimeType: postAttachmentMimeTypeZodEnum.options[0],
 						objectName: "object-name",
 						fileHash: "hash",
 					},
@@ -140,7 +140,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				attachments: [
 					{
 						name: "",
-						mimeType: postAttachmentMimeTypeEnum.options[0],
+						mimeType: postAttachmentMimeTypeZodEnum.options[0],
 						objectName: "",
 						fileHash: "",
 					},
@@ -154,7 +154,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				...validBaseInput,
 				attachments: Array.from({ length: 11 }).map((_, i) => ({
 					name: `file-${i}`,
-					mimeType: postAttachmentMimeTypeEnum.options[0],
+					mimeType: postAttachmentMimeTypeZodEnum.options[0],
 					objectName: `object-${i}`,
 					fileHash: `hash-${i}`,
 				})),

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
+import { postAttachmentMimeTypeZodEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { AgendaItemType } from "~/src/graphql/enums/AgendaItemType";
@@ -33,7 +33,7 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.array(
 				z.object({
 					name: z.string().min(1),
-					mimeType: z.enum(postAttachmentMimeTypeEnum.options),
+					mimeType: postAttachmentMimeTypeZodEnum,
 					objectName: z.string().min(1),
 					fileHash: z.string().min(1),
 				}),
