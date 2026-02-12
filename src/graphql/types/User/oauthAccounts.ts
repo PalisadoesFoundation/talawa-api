@@ -44,12 +44,21 @@ User.implement({
 					.where(eq(oauthAccountsTable.userId, parent.id));
 
 				// Transform database results to match OAuthAccountInfo type
-				return oauthAccounts.map((account) => ({
-					provider: account.provider.toUpperCase() as "GOOGLE" | "GITHUB",
-					email: account.email || "",
-					linkedAt: account.linkedAt,
-					lastUsedAt: account.lastUsedAt,
-				}));
+				return oauthAccounts.map((account) => {
+					const provider = account.provider.toUpperCase();
+					if (provider !== "GOOGLE" && provider !== "GITHUB") {
+						throw new TalawaGraphQLError({
+							extensions: { code: "unexpected" },
+							message: `Unknown OAuth provider: ${account.provider}`,
+						});
+					}
+					return {
+						provider,
+						email: account.email ?? "",
+						linkedAt: account.linkedAt,
+						lastUsedAt: account.lastUsedAt,
+					};
+				});
 			},
 		}),
 	}),

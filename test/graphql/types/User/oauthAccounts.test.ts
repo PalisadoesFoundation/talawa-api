@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
-import { afterEach, beforeEach, expect, suite, test } from "vitest";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
@@ -97,6 +97,7 @@ suite("User field oauthAccounts", () => {
 	});
 
 	afterEach(async () => {
+		vi.restoreAllMocks();
 		// Cleanup OAuth accounts
 		if (testUser) {
 			await server.drizzleClient
@@ -245,8 +246,8 @@ suite("User field oauthAccounts", () => {
 			providerId: "test-provider-123",
 			email: testUser.emailAddress,
 			profile: { name: "Test User" },
-			linkedAt: new Date(),
-			lastUsedAt: new Date(),
+			linkedAt: new Date("2024-06-01T00:00:00Z"),
+			lastUsedAt: new Date("2024-06-02T00:00:00Z"),
 		});
 
 		const res = await mercuriusClient.query(Query_UserOAuthAccounts, {
@@ -261,5 +262,28 @@ suite("User field oauthAccounts", () => {
 		expect(res.errors).toBeUndefined();
 		expect(res.data.user?.oauthAccounts).toHaveLength(1);
 		expect(res.data.user?.oauthAccounts?.[0]?.provider).toBe("GOOGLE"); // Should be uppercase
+	});
+	test("returns empty string when OAuth account email is null", async () => {
+		await server.drizzleClient.insert(oauthAccountsTable).values({
+			userId: testUser.id,
+			provider: "google",
+			providerId: "google-null-email",
+			email: null,
+			profile: { name: "Test User" },
+			linkedAt: new Date("2024-01-01T00:00:00Z"),
+			lastUsedAt: new Date("2024-01-02T00:00:00Z"),
+		});
+
+		const res = await mercuriusClient.query(Query_UserOAuthAccounts, {
+			headers: { authorization: `bearer ${testUserToken}` },
+			variables: {
+				input: {
+					id: testUser.id,
+				},
+			},
+		});
+
+		expect(res.errors).toBeUndefined();
+		expect(res.data.user?.oauthAccounts?.[0]?.email).toBe("");
 	});
 });
