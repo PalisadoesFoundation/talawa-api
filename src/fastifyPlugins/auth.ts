@@ -31,13 +31,18 @@ const BEARER_PREFIX = /^Bearer\s+/i;
 function getTokenFromRequest(req: FastifyRequest): string | null {
 	const cookieAt = req.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 	const authHeader = (req.headers.authorization ?? "").trim();
-	const bearer = authHeader.replace(BEARER_PREFIX, "").trim();
+	const bearer = BEARER_PREFIX.test(authHeader)
+		? authHeader.replace(BEARER_PREFIX, "").trim()
+		: "";
 	const raw = cookieAt || bearer || "";
 	const token = raw.trim();
 	return token || null;
 }
 
 async function authPlugin(app: FastifyInstance): Promise<void> {
+	// Global preHandler: runs on every request and only sets req.currentUser when a valid
+	// access token is present. This is not a route handler; rate limiting is applied per-route
+	// (e.g. login, refresh, protected routes) where handlers are registered.
 	app.addHook("preHandler", async (req) => {
 		const token = getTokenFromRequest(req);
 		if (!token) return;

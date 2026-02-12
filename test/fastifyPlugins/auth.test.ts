@@ -28,16 +28,22 @@ async function buildTestApp() {
 }
 
 describe("auth plugin", () => {
+	let app: Awaited<ReturnType<typeof buildTestApp>> | null = null;
+
 	beforeEach(() => {
 		vi.mocked(verifyToken).mockReset();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		vi.clearAllMocks();
+		if (app) {
+			await app.close();
+			app = null;
+		}
 	});
 
 	it("leaves currentUser unset when no token is provided", async () => {
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({ method: "GET", url: "/me" });
 		expect(res.statusCode).toBe(200);
 		expect(res.json()).toEqual({ currentUser: undefined });
@@ -50,7 +56,7 @@ describe("auth plugin", () => {
 			email: "u@b.co",
 			typ: "access",
 		});
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -70,7 +76,7 @@ describe("auth plugin", () => {
 			email: "bearer@b.co",
 			typ: "access",
 		});
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -83,6 +89,18 @@ describe("auth plugin", () => {
 		expect(verifyToken).toHaveBeenCalledWith("bearer-token");
 	});
 
+	it("ignores non-Bearer Authorization header and does not call verifyToken", async () => {
+		app = await buildTestApp();
+		const res = await app.inject({
+			method: "GET",
+			url: "/me",
+			headers: { authorization: "Basic dXNlcjpwYXNz" },
+		});
+		expect(res.statusCode).toBe(200);
+		expect(res.json()).toEqual({ currentUser: undefined });
+		expect(verifyToken).not.toHaveBeenCalled();
+	});
+
 	it("prefers cookie over Bearer when both are present", async () => {
 		vi.mocked(verifyToken).mockImplementation(async (token: string) => {
 			if (token === "cookie-token") {
@@ -90,7 +108,7 @@ describe("auth plugin", () => {
 			}
 			return { sub: "user-from-bearer", email: "b@b.co", typ: "access" };
 		});
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -106,7 +124,7 @@ describe("auth plugin", () => {
 
 	it("leaves currentUser unset when token is invalid or expired", async () => {
 		vi.mocked(verifyToken).mockRejectedValue(new Error("invalid"));
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -121,7 +139,7 @@ describe("auth plugin", () => {
 			sub: "user-1",
 			typ: "refresh",
 		});
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -136,7 +154,7 @@ describe("auth plugin", () => {
 			typ: "access",
 			email: "nobody@b.co",
 		});
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -147,7 +165,7 @@ describe("auth plugin", () => {
 	});
 
 	it("leaves currentUser unset and does not call verifyToken when token is whitespace-only", async () => {
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/me",
@@ -159,7 +177,7 @@ describe("auth plugin", () => {
 	});
 
 	it("requireAuth returns 401 when currentUser is not set", async () => {
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({ method: "GET", url: "/protected" });
 		expect(res.statusCode).toBe(401);
 		const body = res.json();
@@ -174,7 +192,7 @@ describe("auth plugin", () => {
 			email: "u@b.co",
 			typ: "access",
 		});
-		const app = await buildTestApp();
+		app = await buildTestApp();
 		const res = await app.inject({
 			method: "GET",
 			url: "/protected",
