@@ -263,6 +263,7 @@ suite("User field oauthAccounts", () => {
 		expect(res.data.user?.oauthAccounts).toHaveLength(1);
 		expect(res.data.user?.oauthAccounts?.[0]?.provider).toBe("GOOGLE"); // Should be uppercase
 	});
+
 	test("returns empty string when OAuth account email is null", async () => {
 		await server.drizzleClient.insert(oauthAccountsTable).values({
 			userId: testUser.id,
@@ -285,5 +286,31 @@ suite("User field oauthAccounts", () => {
 
 		expect(res.errors).toBeUndefined();
 		expect(res.data.user?.oauthAccounts?.[0]?.email).toBe("");
+	});
+
+	test("throws error when unknown OAuth provider is encountered", async () => {
+		// Insert OAuth account with unsupported provider
+		await server.drizzleClient.insert(oauthAccountsTable).values({
+			userId: testUser.id,
+			provider: "facebook", // Unsupported provider
+			providerId: "facebook-123",
+			email: testUser.emailAddress,
+			profile: { name: "Test User" },
+			linkedAt: new Date("2024-01-01T00:00:00Z"),
+			lastUsedAt: new Date("2024-01-02T00:00:00Z"),
+		});
+
+		const res = await mercuriusClient.query(Query_UserOAuthAccounts, {
+			headers: { authorization: `bearer ${testUserToken}` },
+			variables: {
+				input: {
+					id: testUser.id,
+				},
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
+		expect(res.errors?.[0]?.message).toBe("Unknown OAuth provider: facebook");
 	});
 });
