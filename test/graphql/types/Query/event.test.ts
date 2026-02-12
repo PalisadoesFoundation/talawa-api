@@ -905,7 +905,7 @@ suite("Query field event", () => {
 			// Calculate dates within the materialization window
 			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
 			const baseDate = new Date();
-			baseDate.setMonth(baseDate.getMonth() + 1); // Start event 1 month from now
+			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
 			baseDate.setUTCHours(10, 0, 0, 0);
 			const startAt = baseDate.toISOString();
 
