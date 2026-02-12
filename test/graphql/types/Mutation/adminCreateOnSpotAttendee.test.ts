@@ -426,7 +426,11 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			// Create organization
 			const sendEmailSpy = vi
 				.spyOn(emailService, "sendEmail")
-				.mockResolvedValue(undefined);
+				.mockResolvedValue({
+					id: faker.string.uuid(),
+					success: true,
+					messageId: faker.string.uuid(),
+				});
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -516,8 +520,9 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					operators.eq(fields.emailAddress, attendeeEmail),
 			});
 			expect(dbUser).toBeDefined();
-			expect(dbUser?.isEmailAddressVerified).toBe(true);
-			expect(dbUser?.name).toBe(attendeeName);
+			assertToBeNonNullish(dbUser);
+			expect(dbUser.isEmailAddressVerified).toBe(true);
+			expect(dbUser.name).toBe(attendeeName);
 
 			// Verify organization membership created
 			const dbMembership =
@@ -525,7 +530,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					{
 						where: (fields, operators) =>
 							operators.and(
-								operators.eq(fields.memberId, dbUser?.id),
+								operators.eq(fields.memberId, dbUser.id),
 								operators.eq(fields.organizationId, orgId),
 							),
 					},
@@ -813,11 +818,14 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 
 			expect(sendEmailSpy).toHaveBeenCalledOnce();
 
+			const createdAttendee = result.data
+				?.adminCreateOnSpotAttendee as AdminCreateOnSpotAttendeePayload;
+
 			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
 					operators.eq(
 						fields.emailAddress,
-						result.data?.adminCreateOnSpotAttendee.user.emailAddress,
+						createdAttendee.user.emailAddress,
 					),
 			});
 			expect(dbUser).toBeDefined();
