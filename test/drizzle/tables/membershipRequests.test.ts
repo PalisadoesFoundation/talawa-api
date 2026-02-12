@@ -221,7 +221,7 @@ describe("src/drizzle/tables/membershipRequests.ts", () => {
 
 			expect(rows.length).toBe(0);
 		});
-		
+
 		it("should cascade delete on user delete", async () => {
 			const orgId = await createTestOrganization();
 			const userId = await createTestUser();
