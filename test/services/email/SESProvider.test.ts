@@ -195,16 +195,15 @@ describe("SESProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only accessKeyId is provided (without secret)", async () => {

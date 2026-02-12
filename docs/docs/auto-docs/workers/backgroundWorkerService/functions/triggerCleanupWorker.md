@@ -6,7 +6,7 @@
 
 > **triggerCleanupWorker**(`drizzleClient`, `logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:311](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L311)
+Defined in: [src/workers/backgroundWorkerService.ts:317](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L317)
 
 Manually triggers a run of the cleanup worker, useful for testing or administrative purposes.
 

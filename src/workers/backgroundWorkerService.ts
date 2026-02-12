@@ -405,7 +405,13 @@ export async function healthCheck(
 			details: status,
 		};
 	} catch (error) {
-		rootLogger.error({ error }, "Background worker health check failed");
+		rootLogger.error(
+			{
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Background worker health check failed",
+		);
 		return {
 			status: "unhealthy",
 			details: {
