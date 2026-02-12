@@ -125,6 +125,9 @@ export default defineConfig({
 			],
 		},
 
+		// Run in each worker before test files load so tokens.ts can load when auth is imported
+		setupFiles: ["./test/setup-unit-env.ts"],
+
 		// https://vitest.dev/config/#globalsetup
 		globalSetup: [],
 
