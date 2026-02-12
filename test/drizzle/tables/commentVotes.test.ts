@@ -7,7 +7,7 @@ import {
 	Query_signIn,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import {
 	commentsTable,
 	commentVotesTable,
@@ -41,7 +41,7 @@ async function createTestOrganization(): Promise<string> {
 		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
-				name: `Org-${Date.now()}`,
+				name: `Org-${faker.string.uuid()}`,
 				countryCode: "us",
 				isUserRegistrationRequired: true,
 			},
@@ -98,6 +98,12 @@ async function createTestComment(): Promise<string> {
 }
 
 describe("src/drizzle/tables/commentVotes.test.ts", () => {
+	afterAll(async () => {
+		await server.drizzleClient.delete(commentVotesTable);
+		await server.drizzleClient.delete(commentsTable);
+		await server.drizzleClient.delete(postsTable);
+	});
+
 	describe("CommentVotes Table Schema", () => {
 		it("should have the correct schema", () => {
 			const columns = Object.keys(commentVotesTable);
