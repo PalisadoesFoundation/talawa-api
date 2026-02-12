@@ -349,6 +349,94 @@ describe("SESProvider", () => {
 		);
 	});
 
+	it("should handle partial batch failures gracefully", async () => {
+		// Spy on sendEmail to simulate one success and one failure
+		const sendEmailSpy = vi
+			.spyOn(sesProvider, "sendEmail")
+			.mockResolvedValueOnce({
+				id: "1",
+				success: true,
+				messageId: "success-id",
+			}) // First job succeeds
+			.mockResolvedValueOnce({
+				id: "2",
+				success: false,
+				error: "AWS Limit Exceeded",
+			}); // Second job fails
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "bad@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		const results = await sesProvider.sendBulkEmails(jobs);
+
+		// Verify we got both results back
+		expect(results).toHaveLength(2);
+		expect(results[0]).toEqual({
+			id: "1",
+			success: true,
+			messageId: "success-id",
+		});
+		expect(results[1]).toEqual({
+			id: "2",
+			success: false,
+			error: "AWS Limit Exceeded",
+		});
+
+		sendEmailSpy.mockRestore();
+	});
+
+	it("should handle unhandled promise rejections (system crashes) in batch processing", async () => {
+		// Spy on sendEmail to simulate a catastrophic failure
+		const sendEmailSpy = vi
+			.spyOn(sesProvider, "sendEmail")
+			.mockResolvedValueOnce({ id: "1", success: true, messageId: "ok" }) // First job works
+			.mockRejectedValueOnce(new Error("Critical System Failure")); // Second job EXPLODES
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "crash@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		// This triggers the 'rejected' path in Promise.allSettled
+
+		const results = await sesProvider.sendBulkEmails(jobs); // Fixed variable name here
+
+		expect(results).toHaveLength(2);
+		expect(results[0]?.success).toBe(true);
+
+		// This verifies that your code caught the explosion and handled it safely
+		expect(results[1]?.success).toBe(false);
+		expect(results[1]?.error).toBe("Critical System Failure");
+
+		sendEmailSpy.mockRestore();
+	});
+
 	it("should wait ~100ms between bulk emails", async () => {
 		// Spy on setTimeout so the test runs instantly
 		const setTimeoutSpy = vi

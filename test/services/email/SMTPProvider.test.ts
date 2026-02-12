@@ -630,6 +630,41 @@ describe("SMTPProvider", () => {
 		);
 	});
 
+	it("should handle unhandled promise rejections (system crashes) in batch processing", async () => {
+		const sendEmailSpy = vi
+			.spyOn(smtpProvider, "sendEmail")
+			.mockResolvedValueOnce({ id: "1", success: true, messageId: "ok" })
+			.mockRejectedValueOnce(new Error("Network Down"));
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "crash@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		const results = await smtpProvider.sendBulkEmails(jobs);
+
+		expect(results).toHaveLength(2);
+		expect(results[0]?.success).toBe(true);
+		expect(results[1]?.success).toBe(false);
+		expect(results[1]?.error).toBe("Network Down");
+
+		expect(sendEmailSpy).toHaveBeenCalledTimes(2);
+
+		sendEmailSpy.mockRestore();
+	});
+
 	it("should process emails concurrently in batches and enforce delay between batches", async () => {
 		const nodemailer = await import("nodemailer");
 		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-batch" });
@@ -647,6 +682,7 @@ describe("SMTPProvider", () => {
 				}
 				return {} as unknown as NodeJS.Timeout;
 			});
+
 		// Generate 15 jobs (BATCH_SIZE = 14 → 2 batches)
 		const jobs = Array.from({ length: 15 }, (_, i) => ({
 			id: String(i),
