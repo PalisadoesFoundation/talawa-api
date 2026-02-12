@@ -1650,14 +1650,14 @@ suite("Mutation field updateVenue", () => {
 				},
 			},
 		});
-
+		assertToBeNonNullish(signUpResult.data?.signUp?.user);
 		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
 		const tempUserToken = signUpResult.data.signUp.authenticationToken;
 
 		// delete user from DB
 		await server.drizzleClient
 			.delete(usersTable)
-			.where(eq(usersTable.emailAddress, tempEmail));
+			.where(eq(usersTable.id, signUpResult.data.signUp.user.id));
 
 		// call mutation using now-invalid user token
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
