@@ -43,7 +43,7 @@ The SES configuration object containing region and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:166](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L166)
+Defined in: [src/services/email/providers/SESProvider.ts:165](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L165)
 
 Sends multiple emails in concurrent batches to respect rate limits.
 
@@ -62,8 +62,7 @@ An array of email jobs to be processed.
 
 `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-A promise that resolves to an array of results
-(success or failure) for each email job.
+A promise that resolves to an array of results (success or failure) for each email job.
 
 #### Implementation of
 
