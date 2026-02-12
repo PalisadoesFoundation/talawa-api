@@ -204,9 +204,8 @@ export class SMTPProvider implements IEmailProvider {
 	 * Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
 	 * between batches to prevent overwhelming the email provider or hitting rate limits.
 	 *
-	 * @param {EmailJob[]} jobs - An array of email jobs to be processed.
-	 * @returns {Promise<EmailResult[]>} A promise that resolves to an array of results
-	 * (success or failure) for each email job.
+	 * @param jobs - An array of email jobs to be processed.
+	 * @returns A promise that resolves to an array of results (success or failure) for each email job.
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
 		const BATCH_SIZE = 14;
