@@ -429,7 +429,7 @@ The rootless configuration uses a specific `compose.rootless.devcontainer.yaml` 
 4.  Verify the container starts and the API is accessible at [http://localhost:4000](http://localhost:4000).
 
 :::note
-For troubleshooting Docker Rootless mode issues, see the [Troubleshooting Guide](/developer-resources/troubleshooting#docker-rootless-mode).
+For troubleshooting Docker Rootless mode issues, see the [Troubleshooting Guide](../developer-resources/testing/troubleshooting.md#docker-rootless-mode).
 :::
 
 **Note:** Restart Docker if you are getting this error `Cannot connect to the Docker daemon`
