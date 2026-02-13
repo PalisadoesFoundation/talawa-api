@@ -35,7 +35,9 @@ jobs:
 
       # Create .env file for Talawa API testing environment
       - name: Create .env file for Talawa API testing environment
-        run: cp ./envFiles/.env.ci ./.env
+        run: |
+          cp ./envFiles/.env.ci ./.env
+          echo "API_JWT_SECRET=$(openssl rand -hex 32)" >> .env
 
       # Build Talawa API compose testing environment
       - name: Build Talawa API compose testing environment

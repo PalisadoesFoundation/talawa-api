@@ -38,16 +38,16 @@ const REFRESH_TTL_SEC = parsePositiveSeconds(
 );
 
 function getSecret(): Uint8Array {
-	const raw = process.env.AUTH_JWT_SECRET;
+	const raw = process.env.API_JWT_SECRET;
 	if (!raw) {
 		if (process.env.NODE_ENV === "production") {
 			throw new TalawaRestError({
 				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "AUTH_JWT_SECRET must be set in production",
+				message: "API_JWT_SECRET must be set in production",
 			});
 		}
 		rootLogger.warn(
-			"AUTH_JWT_SECRET is unset; using dev default. Set AUTH_JWT_SECRET in production.",
+			"API_JWT_SECRET is unset; using dev default. Set API_JWT_SECRET in production.",
 		);
 		return encoder.encode("dev-secret-change-me");
 	}

@@ -9,13 +9,13 @@ import type { AccessClaims, RefreshClaims } from "~/src/services/auth";
 const FIXED_SECRET = "test-secret-for-unit-tests";
 
 describe("auth/tokens", () => {
-	const originalSecret = process.env.AUTH_JWT_SECRET;
+	const originalSecret = process.env.API_JWT_SECRET;
 	const originalAccessTtl = process.env.ACCESS_TOKEN_TTL;
 	const originalRefreshTtl = process.env.REFRESH_TOKEN_TTL;
 	const originalNodeEnv = process.env.NODE_ENV;
 
 	beforeEach(() => {
-		process.env.AUTH_JWT_SECRET = FIXED_SECRET;
+		process.env.API_JWT_SECRET = FIXED_SECRET;
 		delete process.env.ACCESS_TOKEN_TTL;
 		delete process.env.REFRESH_TOKEN_TTL;
 		process.env.NODE_ENV = "test";
@@ -24,9 +24,9 @@ describe("auth/tokens", () => {
 
 	afterEach(() => {
 		if (originalSecret !== undefined) {
-			process.env.AUTH_JWT_SECRET = originalSecret;
+			process.env.API_JWT_SECRET = originalSecret;
 		} else {
-			delete process.env.AUTH_JWT_SECRET;
+			delete process.env.API_JWT_SECRET;
 		}
 		if (originalAccessTtl !== undefined) {
 			process.env.ACCESS_TOKEN_TTL = originalAccessTtl;
@@ -82,7 +82,7 @@ describe("auth/tokens", () => {
 		it("throws on wrong secret", async () => {
 			const { signAccessToken } = await getTokens();
 			const token = await signAccessToken({ id: "u1", email: "a@b.co" });
-			process.env.AUTH_JWT_SECRET = "different-secret";
+			process.env.API_JWT_SECRET = "different-secret";
 			vi.resetModules();
 			const { verifyToken } = await getTokens();
 			await expect(verifyToken(token)).rejects.toThrow(
@@ -140,10 +140,10 @@ describe("auth/tokens", () => {
 		});
 	});
 
-	describe("default secret when AUTH_JWT_SECRET unset", () => {
+	describe("default secret when API_JWT_SECRET unset", () => {
 		it("uses default secret and can sign and verify", async () => {
 			process.env.NODE_ENV = "test";
-			delete process.env.AUTH_JWT_SECRET;
+			delete process.env.API_JWT_SECRET;
 			vi.resetModules();
 			const { signAccessToken, verifyToken } = await import(
 				"~/src/services/auth"
@@ -158,14 +158,14 @@ describe("auth/tokens", () => {
 		});
 	});
 
-	describe("production guard when AUTH_JWT_SECRET unset", () => {
-		it("throws TalawaRestError when NODE_ENV is production and AUTH_JWT_SECRET is unset", async () => {
+	describe("production guard when API_JWT_SECRET unset", () => {
+		it("throws TalawaRestError when NODE_ENV is production and API_JWT_SECRET is unset", async () => {
 			process.env.NODE_ENV = "production";
-			delete process.env.AUTH_JWT_SECRET;
+			delete process.env.API_JWT_SECRET;
 			vi.resetModules();
 			await expect(import("~/src/services/auth")).rejects.toMatchObject({
 				name: "TalawaRestError",
-				message: "AUTH_JWT_SECRET must be set in production",
+				message: "API_JWT_SECRET must be set in production",
 			});
 		});
 	});
