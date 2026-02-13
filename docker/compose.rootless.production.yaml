@@ -1,0 +1,25 @@
+# Rootless Docker production compose override.
+#
+# This file exists to support running Talawa API with Docker Engine in rootless mode.
+# A common rootless limitation is publishing privileged host ports (<1024), so this
+# override replaces Caddy's published ports with unprivileged defaults (8080/8443).
+#
+# Use this file *in addition to* the main compose.yaml, e.g. via:
+#   COMPOSE_FILE=./compose.yaml:./docker/compose.rootless.production.yaml
+#   docker compose up
+#
+# Docs: https://docs.docker.com/engine/security/rootless/
+services:
+  caddy:
+    # Replace the base ports list so we don't publish 80/443 by default in rootless mode.
+    ports: !override
+      - name: caddy_http
+        published: ${CADDY_HTTP_MAPPED_PORT:-8080}
+        target: 80
+      - name: caddy_https
+        published: ${CADDY_HTTPS_MAPPED_PORT:-8443}
+        target: 443
+      - name: caddy_http3
+        protocol: udp
+        published: ${CADDY_HTTP3_MAPPED_PORT:-8443}
+        target: 443

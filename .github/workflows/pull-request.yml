@@ -218,6 +218,19 @@ jobs:
       - name: Check mock isolation
         run: docker container run talawa_api pnpm check_mock_isolation
 
+  check_rootless_production_config:
+    name: Check rootless production Docker config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Ensure rootless production files exist
+        run: |
+          test -f ./envFiles/.env.rootless.production
+          test -f ./docker/compose.rootless.production.yaml
+      - name: Render docker compose config (rootless production override)
+        run: docker compose --env-file ./envFiles/.env.deploy -f ./compose.yaml -f ./docker/compose.rootless.production.yaml config > /dev/null
+
   Check_unused_code:
     name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
@@ -463,6 +476,7 @@ jobs:
         python_checks,
         check_type_errors,
         check_mock_isolation,
+        check_rootless_production_config,
         check_drizzle_migrations,
         check_gql_tada,
         Check-AutoDocs,
