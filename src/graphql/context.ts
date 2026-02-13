@@ -76,6 +76,7 @@ export type ExplicitGraphQLContext = {
 		| "AWS_SES_FROM_NAME"
 		| "FRONTEND_URL"
 		| "RECAPTCHA_SECRET_KEY"
+		| "RECAPTCHA_SCORE_THRESHOLD"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;

@@ -184,6 +184,35 @@ reviews:
           - `beforeAll` acceptable only for truly immutable shared setup (e.g., test utilities, constants)
           - Auth tokens should be created per-test to avoid cascading failures
 
+        - **Data Accumulation Risks:**
+          - **CRITICAL:** Identify tests that create data without cleanup
+          - Calculate accumulation: (number of tests) × (entities per test) = risk level
+          - Flag files with >10 tests and no cleanup as HIGH RISK for sharded execution
+          - Warn about shared database state contamination across parallel test shards
+
+        - **Cleanup Order Validation:**
+          - Cleanup MUST occur in reverse dependency order
+          - Example: commentVotes → comments → posts → organizations → users
+          - Check for proper foreign key cascade awareness
+          - Flag any cleanup that deletes parent entities before children
+
+        - **Transaction Isolation (Preferred):**
+          - Prefer transaction-based isolation: `drizzleClient.transaction(async (tx) => {...})`
+          - Transactions COMMIT on success; to force rollback for test isolation, throw an error
+          - Example: Wrap transaction in expect().rejects.toThrow() to force rollback
+          - Otherwise, use explicit afterEach cleanup even with transactions
+          - If transactions are NOT used, explicit afterEach/afterAll is REQUIRED
+          - Flag any test that modifies database state outside transactions without cleanup
+
+        - **Mandatory Cleanup Hooks:**
+          - Every test file MUST include cleanup hooks (afterEach, afterAll, or both)
+          - Flag any test file that creates database records without cleanup
+          - Verify cleanup hooks are present for tests that:
+            * Call createRegularUserUsingAdmin() or similar user creation
+            * Call createTestOrganization() or similar entity creation
+            * Insert directly into drizzle tables (drizzleClient.insert)
+            * Create cascading dependencies (user → org → post → comment → vote)
+
         - **Test Isolation Verification:**
           - Each test must be runnable in isolation and in any order
           - Tests must not depend on data created by previous tests
@@ -353,6 +382,10 @@ reviews:
         - Non-compliance with previous feedback
         - Presence of unnecessary files
         - Failing CI checks requiring code changes
+        - Test file creates database records without cleanup hooks
+        - No afterEach/afterAll and no transaction isolation
+        - Cleanup order is incorrect (deletes parents before children)
+        - High risk of data accumulation (>10 tests, no cleanup)
 
         APPROVE ONLY when ALL of these are satisfied:
         - Complete test coverage (≥95% new/modified code, ≥80% overall)

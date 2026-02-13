@@ -924,17 +924,17 @@ suite("Query field signIn", () => {
 	});
 
 	suite("reCAPTCHA validation", () => {
+		const mockFetch = vi.fn<typeof fetch>();
 		let originalRecaptchaSecret: string | undefined;
-		let originalFetch: typeof global.fetch;
 
 		beforeEach(() => {
+			vi.spyOn(globalThis, "fetch").mockImplementation(mockFetch);
+			vi.clearAllMocks();
 			originalRecaptchaSecret = server.envConfig.RECAPTCHA_SECRET_KEY;
-			originalFetch = global.fetch;
 		});
 
 		afterEach(() => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecret;
-			global.fetch = originalFetch;
 			vi.restoreAllMocks();
 		});
 
@@ -1039,8 +1039,9 @@ suite("Query field signIn", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to return failed verification
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () => Promise.resolve({ success: false }),
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: false }),
 			} as Response);
 
 			const result = await mercuriusClient.query(Query_signIn, {
@@ -1064,7 +1065,7 @@ suite("Query field signIn", () => {
 							>([
 								{
 									argumentPath: ["input", "recaptchaToken"],
-									message: "Invalid reCAPTCHA token.",
+									message: "reCAPTCHA verification failed. Please try again.",
 								},
 							]),
 						}),
@@ -1078,10 +1079,17 @@ suite("Query field signIn", () => {
 		test("should accept valid reCAPTCHA token and proceed with authentication", async () => {
 			// Set a mock reCAPTCHA secret key
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+			// Ensure score threshold is set to default (0.5) or lower
+			server.envConfig.RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
-			// Mock fetch to return successful verification
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () => Promise.resolve({ success: true }),
+			// Mock fetch to return successful verification with v3 fields
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					success: true,
+					score: 0.9,
+					action: "login",
+				}),
 			} as Response);
 
 			const result = await mercuriusClient.query(Query_signIn, {
@@ -1099,7 +1107,7 @@ suite("Query field signIn", () => {
 			expect(result.data.signIn?.user?.emailAddress).toBe(user1Email);
 
 			// Verify fetch was called with correct URL and method
-			expect(global.fetch).toHaveBeenCalledWith(
+			expect(mockFetch).toHaveBeenCalledWith(
 				"https://www.google.com/recaptcha/api/siteverify",
 				expect.objectContaining({
 					method: "POST",
@@ -1111,8 +1119,7 @@ suite("Query field signIn", () => {
 			);
 
 			// Verify the body contains the correct parameters
-			const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
-				.calls[0];
+			const fetchCall = mockFetch.mock.calls[0];
 			const body = fetchCall?.[1]?.body as URLSearchParams;
 			expect(body.get("secret")).toBe("test-secret-key");
 			expect(body.get("response")).toBe("valid-token");
@@ -1123,7 +1130,7 @@ suite("Query field signIn", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to throw network error
-			global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+			mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
 			const result = await mercuriusClient.query(Query_signIn, {
 				variables: {
@@ -1154,8 +1161,9 @@ suite("Query field signIn", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to return malformed response
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () => Promise.resolve(null), // Malformed response
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => null, // Malformed response
 			} as Response);
 
 			const result = await mercuriusClient.query(Query_signIn, {
@@ -1187,12 +1195,12 @@ suite("Query field signIn", () => {
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
 			// Mock fetch to return response with error codes
-			global.fetch = vi.fn().mockResolvedValue({
-				json: () =>
-					Promise.resolve({
-						success: false,
-						"error-codes": ["timeout-or-duplicate", "invalid-input-response"],
-					}),
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					success: false,
+					"error-codes": ["timeout-or-duplicate", "invalid-input-response"],
+				}),
 			} as Response);
 
 			const result = await mercuriusClient.query(Query_signIn, {
@@ -1216,7 +1224,7 @@ suite("Query field signIn", () => {
 							>([
 								{
 									argumentPath: ["input", "recaptchaToken"],
-									message: "Invalid reCAPTCHA token.",
+									message: "reCAPTCHA verification failed. Please try again.",
 								},
 							]),
 						}),
