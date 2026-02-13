@@ -29,8 +29,16 @@ jobs:
         run: |
           test -f ./envFiles/.env.rootless.production
           test -f ./docker/compose.rootless.production.yaml
-      - name: Render docker compose config (rootless production override)
-        run: docker compose --env-file ./envFiles/.env.deploy -f ./compose.yaml -f ./docker/compose.rootless.production.yaml config > /dev/null
+      - name: Validate docker compose config (rootless env, no interpolation)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config --no-interpolate -q
+      - name: Validate docker compose config (deploy env, interpolated)
+        run: |
+          docker compose --env-file ./envFiles/.env.deploy \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
 
   test-and-upload-coverage:
     name: Run tests (Shard ${{ matrix.shard }})
