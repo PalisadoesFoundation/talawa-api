@@ -902,10 +902,19 @@ suite("Query field event", () => {
 			// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
 			vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
 
-			// Cleanup: Restore real timers
-			testCleanupFunctions.push(async () => {
-				vi.useRealTimers();
-			});
+			// Calculate dates within the materialization window
+			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
+			const baseDate = new Date();
+			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
+			baseDate.setUTCHours(10, 0, 0, 0);
+			const startAt = baseDate.toISOString();
+
+			const endDate = new Date(baseDate);
+			endDate.setUTCHours(11, 0, 0, 0);
+			const endAt = endDate.toISOString();
+
+			// Restore real timers before making async API calls
+			vi.useRealTimers();
 
 			const { authToken, userId } = await getAdminTokenAndUserId();
 
@@ -920,17 +929,6 @@ suite("Query field event", () => {
 					variables: { input: { id: organizationId } },
 				});
 			});
-
-			// Calculate dates within the materialization window
-			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
-			const baseDate = new Date();
-			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
-			baseDate.setUTCHours(10, 0, 0, 0);
-			const startAt = baseDate.toISOString();
-
-			const endDate = new Date(baseDate);
-			endDate.setUTCHours(11, 0, 0, 0);
-			const endAt = endDate.toISOString();
 
 			// Create never-ending recurring event
 			const createEventResult = await mercuriusClient.mutate(
