@@ -1,4 +1,12 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import { SMTPProvider } from "~/src/services/email/providers/SMTPProvider";
 import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
@@ -68,6 +76,10 @@ describe("SMTPProvider", () => {
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	it("should throw error if SMTP_HOST is empty string", async () => {
@@ -630,32 +642,77 @@ describe("SMTPProvider", () => {
 		);
 	});
 
-	it("should enforce rate limiting delay between bulk emails (>=50ms)", async () => {
+	it("should handle unhandled promise rejections (system crashes) in batch processing", async () => {
+		const sendEmailSpy = vi
+			.spyOn(smtpProvider, "sendEmail")
+			.mockResolvedValueOnce({ id: "1", success: true, messageId: "ok" })
+			.mockRejectedValueOnce(new Error("Network Down"));
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "crash@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		const results = await smtpProvider.sendBulkEmails(jobs);
+
+		expect(results).toHaveLength(2);
+		expect(results[0]?.success).toBe(true);
+		expect(results[1]?.success).toBe(false);
+		expect(results[1]?.error).toBe("Network Down");
+
+		expect(sendEmailSpy).toHaveBeenCalledTimes(2);
+
+		sendEmailSpy.mockRestore();
+	});
+
+	it("should process emails concurrently in batches and enforce delay between batches", async () => {
 		const nodemailer = await import("nodemailer");
-		const sendTimes: number[] = [];
-		const mockSendMail = vi.fn().mockImplementation(() => {
-			sendTimes.push(Date.now());
-			return Promise.resolve({ messageId: "msg-delay" });
-		});
+		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-batch" });
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
 
-		const jobs = [
-			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
-			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
-			{ id: "3", email: "e3@x.com", subject: "s", htmlBody: "b", userId: "u3" },
-		];
+		// Spy on setTimeout to ensure the 1000ms delay happens, but execute it
+		// immediately so it doesn't artificially slow down our test suite!
+		const setTimeoutSpy = vi
+			.spyOn(global, "setTimeout")
+			.mockImplementation((callback: () => void, _ms?: number) => {
+				if (typeof callback === "function") {
+					callback();
+				}
+				return {} as unknown as NodeJS.Timeout;
+			});
+
+		// Generate 15 jobs (BATCH_SIZE = 14 → 2 batches)
+		const jobs = Array.from({ length: 15 }, (_, i) => ({
+			id: String(i),
+			email: `test${i}@example.com`,
+			subject: "Batch Test",
+			htmlBody: "Batch Body",
+			userId: "u1",
+		})) as EmailJob[];
 
 		await smtpProvider.sendBulkEmails(jobs);
 
-		expect(mockSendMail).toHaveBeenCalledTimes(3);
+		expect(mockSendMail).toHaveBeenCalledTimes(15);
 
-		// Since mockSendMail was called 3 times, sendTimes has 3 entries
-		const firstDelay = (sendTimes[1] as number) - (sendTimes[0] as number);
-		const secondDelay = (sendTimes[2] as number) - (sendTimes[1] as number);
-		expect(firstDelay).toBeGreaterThanOrEqual(50);
-		expect(secondDelay).toBeGreaterThanOrEqual(50);
+		// Ensure delay happened exactly once
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+
+		setTimeoutSpy.mockRestore();
 	});
 
 	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
