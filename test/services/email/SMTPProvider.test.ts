@@ -78,10 +78,11 @@ describe("SMTPProvider", () => {
 		});
 	});
 
-	it("should throw error if API_SMTP_HOST is empty string", async () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
+
+	it("should throw error if API_SMTP_HOST is empty string", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			host: "" as NonEmptyString,
