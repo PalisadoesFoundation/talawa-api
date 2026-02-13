@@ -15,8 +15,6 @@ import {
 import plugins from "./fastifyPlugins/index";
 import routes from "./routes/index";
 import { fastifyOtelInstrumentation } from "./tracing";
-import { ErrorCode } from "./utilities/errors/errorCodes";
-import { TalawaRestError } from "./utilities/errors/TalawaRestError";
 import { loggerOptions } from "./utilities/logging/logger";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
@@ -30,6 +28,13 @@ declare module "fastify" {
 }
 
 const PLACEHOLDER_SENTINEL = "CHANGE_ME_BEFORE_DEPLOY";
+
+class StartupConfigError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "StartupConfigError";
+	}
+}
 
 const assertSecretsPresent = (envConfig: EnvConfig) => {
 	const invalidEnvNames: string[] = [];
@@ -55,6 +60,9 @@ const assertSecretsPresent = (envConfig: EnvConfig) => {
 	);
 
 	// Only validate these when explicitly present for the API process.
+	// These are intentionally read from process.env (not envConfig) because they are
+	// service-level vars outside the API env-schema, and are only injected for the
+	// rootless-production startup check via docker/compose.rootless.production.yaml.
 	const minioRootPassword = process.env.MINIO_ROOT_PASSWORD;
 	if (minioRootPassword !== undefined) {
 		checkRequired("MINIO_ROOT_PASSWORD", minioRootPassword);
@@ -66,15 +74,11 @@ const assertSecretsPresent = (envConfig: EnvConfig) => {
 	}
 
 	if (invalidEnvNames.length > 0) {
-		throw new TalawaRestError({
-			code: ErrorCode.INVALID_INPUT,
-			message: `Refusing to start: replace placeholder/empty values for: ${invalidEnvNames.join(
+		throw new StartupConfigError(
+			`Refusing to start: replace placeholder/empty values for: ${invalidEnvNames.join(
 				", ",
 			)}`,
-			details: {
-				envNames: invalidEnvNames,
-			},
-		});
+		);
 	}
 };
 

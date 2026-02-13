@@ -43,7 +43,7 @@ jobs:
   test-and-upload-coverage:
     name: Run tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    needs: [Merge-Conflict-Check, check_rootless_production_config]
+    needs: [Merge-Conflict-Check]
     strategy:
       fail-fast: false
       matrix:

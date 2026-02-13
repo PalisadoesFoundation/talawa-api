@@ -4,6 +4,9 @@
 # A common rootless limitation is publishing privileged host ports (<1024), so this
 # override replaces Caddy's published ports with unprivileged defaults (8080/8443).
 #
+# NOTE: This file uses the Compose `!override` YAML tag (e.g. `caddy -> ports: !override`),
+# which requires Docker Compose v2.24.4+; older versions may fail to parse this YAML.
+#
 # Use this file *in addition to* the main compose.yaml, e.g. via:
 #   COMPOSE_FILE=./compose.yaml:./docker/compose.rootless.production.yaml
 #   docker compose up
@@ -11,8 +14,10 @@
 # Docs: https://docs.docker.com/engine/security/rootless/
 services:
   api:
-    # Expose dependent service credentials to the API process so startup validation can
-    # fail fast if placeholder secrets are still present.
+    # Inject service-level credentials into the API container solely for the
+    # `assertSecretsPresent` startup check (see `src/createServer.ts`).
+    # Trade-off: the API process can see MINIO_ROOT_PASSWORD / POSTGRES_PASSWORD, even
+    # though it primarily needs API_MINIO_SECRET_KEY / API_POSTGRES_PASSWORD.
     environment:
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
