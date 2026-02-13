@@ -258,8 +258,7 @@ jobs:
     name: Checks if sensitive files have been changed without authorization
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -276,7 +275,7 @@ jobs:
       - name: Get PR labels
         id: check-labels
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
           if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
@@ -297,13 +296,14 @@ jobs:
         if: steps.check-labels.outputs.skip != 'true'
         run: |
           if [ -z "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
-            echo "No files changed; skipping sensitive file check."
+            echo "No changed files. Skipping sensitive file check."
             exit 0
           fi
 
-          .github-central/.github/workflows/scripts/sensitive_file_check.py \
+          python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
             --config .github/workflows/config/sensitive-files.txt \
             --files ${{ steps.changed-files.outputs.all_changed_files }}
+
 
 
   Check-AutoDocs:
