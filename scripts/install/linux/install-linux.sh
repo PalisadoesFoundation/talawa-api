@@ -296,13 +296,15 @@ fi
 
 # Get the repository root directory
 get_repo_root() {
-    local repo_root
-    # Reuse SCRIPT_DIR if available; otherwise compute from BASH_SOURCE
-    if [ -z "${SCRIPT_DIR:-}" ]; then
-        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_dir repo_root
+    # Prefer existing SCRIPT_DIR but do not mutate global SCRIPT_DIR
+    if [[ -n "${SCRIPT_DIR:-}" ]]; then
+        script_dir="$SCRIPT_DIR"
+    else
+        script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     fi
     # Navigate up from scripts/install/linux to repo root
-    repo_root="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+    repo_root="$(cd "$script_dir/../../.." && pwd)"
     printf '%s\n' "$repo_root"
 }
 
@@ -310,18 +312,18 @@ get_repo_root() {
 apt_cache_is_fresh() {
     local apt_lists_dir="/var/lib/apt/lists"
     local cache_max_age=3600  # 1 hour in seconds
-    
-    if [ -d "$apt_lists_dir" ]; then
+
+    if [[ -d "$apt_lists_dir" ]]; then
         local last_update
         last_update=$(find "$apt_lists_dir" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1 | cut -d. -f1)
-        if [ -z "$last_update" ]; then
+        if [[ -z "$last_update" ]]; then
             return 1
         fi
         local current_time
         current_time=$(date +%s)
         local cache_age=$((current_time - last_update))
-        
-        if [ $cache_age -lt $cache_max_age ]; then
+
+        if [[ "$cache_age" =~ ^[0-9]+$ && "$cache_max_age" =~ ^[0-9]+$ && "$cache_age" -lt "$cache_max_age" ]]; then
             return 0
         fi
     fi
@@ -354,7 +356,7 @@ validate_package_json_fields() {
     # Verify this is the talawa-api repository
     local pkg_name
     pkg_name=$(jq -r '.name // empty' package.json 2>/dev/null)
-    if [ "$pkg_name" != "talawa-api" ]; then
+    if [[ "$pkg_name" != "talawa-api" ]]; then
         error "This script must be run from the talawa-api repository."
         info "  Found package name: '$pkg_name'"
         info "  Expected: 'talawa-api'"
@@ -367,15 +369,15 @@ validate_package_json_fields() {
     local missing_fields=""
 
     PKG_VERSION=$(jq -r '.version // empty' package.json 2>/dev/null)
-    [ -z "$PKG_VERSION" ] && missing_fields="$missing_fields version"
+    [[ -z "$PKG_VERSION" ]] && missing_fields="$missing_fields version"
 
     NODE_ENGINE=$(jq -r '.engines.node // empty' package.json 2>/dev/null)
-    [ -z "$NODE_ENGINE" ] && missing_fields="$missing_fields engines.node"
+    [[ -z "$NODE_ENGINE" ]] && missing_fields="$missing_fields engines.node"
 
     PKG_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null)
-    [ -z "$PKG_MANAGER" ] && missing_fields="$missing_fields packageManager"
+    [[ -z "$PKG_MANAGER" ]] && missing_fields="$missing_fields packageManager"
 
-    if [ -n "$missing_fields" ]; then
+    if [[ -n "$missing_fields" ]]; then
         error "Required fields missing from package.json:$missing_fields"
         info ""
         info "Remediation steps:"
@@ -397,7 +399,7 @@ cd "$REPO_ROOT"
 print_section "Repository Validation"
 
 # Validate package.json exists
-if [ ! -f "package.json" ]; then
+if [[ ! -f "package.json" ]]; then
     error "package.json not found. Please run this script from the talawa-api repository root."
     info ""
     info "Remediation steps:"
@@ -413,7 +415,7 @@ JQ_AVAILABLE=false
 if command_exists jq; then
     JQ_AVAILABLE=true
 else
-    if [ "$SKIP_PREREQS" = "true" ]; then
+    if [[ "$SKIP_PREREQS" == "true" ]]; then
         # User explicitly skipped prereqs but jq is missing - this is an error
         error "jq is required but not installed."
         info ""
@@ -434,13 +436,15 @@ fi
 
 # Perform jq-dependent validations only if jq is available
 # These will be re-run after prerequisites installation if deferred
-if [ "$JQ_AVAILABLE" = "true" ]; then
+if [[ "$JQ_AVAILABLE" == "true" ]]; then
     validate_package_json_fields
 fi
 
 # Validate disk space
-AVAILABLE_SPACE_KB=$(df -k "$REPO_ROOT" | awk 'NR==2 {print $4}')
-if [ -n "$AVAILABLE_SPACE_KB" ] && [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]; then
+# Use POSIX single-line output (-P) to avoid wrapped device names
+AVAILABLE_SPACE_KB=$(df -kP "$REPO_ROOT" | awk 'NR==2 {print $4}')
+# Guard against non-numeric df output before numeric comparison
+if [[ -n "$AVAILABLE_SPACE_KB" && "$AVAILABLE_SPACE_KB" =~ ^[0-9]+$ && "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]]; then
     AVAILABLE_SPACE_MB=$((AVAILABLE_SPACE_KB / 1024))
     REQUIRED_SPACE_MB=$((MIN_DISK_SPACE_KB / 1024))
     error "Insufficient disk space. Available: ${AVAILABLE_SPACE_MB}MB, Required: ${REQUIRED_SPACE_MB}MB (2GB)"
@@ -452,7 +456,7 @@ if [ -n "$AVAILABLE_SPACE_KB" ] && [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_
 fi
 
 # Validate git repository (use -e to accept both .git directories and .git files for worktrees/submodules)
-if [ ! -e ".git" ]; then
+if [[ ! -e ".git" ]]; then
     error "This directory is not a git repository."
     info ""
     info "Remediation: Clone the repository properly:"
@@ -490,7 +494,7 @@ info "Detected distribution: $DISTRO (family: $DISTRO_FAMILY, version: $OS_VERSI
 CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step "$CURRENT_STEP" "$TOTAL_STEPS" "Installing system dependencies..."
 
-if [ "$SKIP_PREREQS" = "true" ]; then
+if [[ "$SKIP_PREREQS" == "true" ]]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
 else
     INSTALLED_PREREQS=false
@@ -541,7 +545,7 @@ else
             ;;
     esac
     
-    if [ "$INSTALLED_PREREQS" = "true" ]; then
+    if [[ "$INSTALLED_PREREQS" == "true" ]]; then
         success "System dependencies installed"
     fi
 fi
@@ -550,7 +554,7 @@ fi
 # Deferred Package.json Validation (after jq installation)
 ##############################################################################
 # If jq was not available earlier, run the deferred validations now
-if [ "$JQ_AVAILABLE" = "false" ]; then
+if [[ "$JQ_AVAILABLE" == "false" ]]; then
     if command_exists jq; then
         info "Running deferred package.json validation..."
         validate_package_json_fields
@@ -568,10 +572,10 @@ fi
 CURRENT_STEP=$((CURRENT_STEP + 1))
 print_step "$CURRENT_STEP" "$TOTAL_STEPS" "Checking Docker installation..."
 
-if [ "$INSTALL_MODE" = "docker" ]; then
+if [[ "$INSTALL_MODE" == "docker" ]]; then
     if command_exists docker; then
         success "Docker is already installed: $(docker --version)"
-    elif [ "$SKIP_PREREQS" = "true" ]; then
+    elif [[ "$SKIP_PREREQS" == "true" ]]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
         # Check for WSL with Docker Desktop recommendation
@@ -584,7 +588,7 @@ if [ "$INSTALL_MODE" = "docker" ]; then
             info "  2. Enable WSL2 backend and integration with this distro"
             info ""
             
-            if [ "$AUTO_YES" != "true" ] && test -t 0; then
+            if [[ "$AUTO_YES" != "true" ]] && test -t 0; then
                 read -p "Continue with native Docker installation anyway? (y/N): " -n 1 -r
                 echo ""
                 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -609,7 +613,7 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         success "Docker installer downloaded"
         
         # User confirmation before execution
-        if [ "$AUTO_YES" = "true" ] || ! test -t 0; then
+        if [[ "$AUTO_YES" == "true" ]] || ! test -t 0; then
             info "Non-interactive mode: proceeding with Docker installation..."
         else
             info "You can review the script before installation:"
@@ -685,7 +689,7 @@ else
     success "fnm installer downloaded"
     
     # User confirmation
-    if [ "$AUTO_YES" = "true" ] || ! test -t 0; then
+    if [[ "$AUTO_YES" == "true" ]] || ! test -t 0; then
         info "Non-interactive mode: proceeding with fnm installation..."
     else
         info "You can review the script: less $fnm_installer"
@@ -731,7 +735,7 @@ fi
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-    if [ -z "$CLEAN_NODE_VERSION" ]; then
+    if [[ -z "$CLEAN_NODE_VERSION" ]]; then
         CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1)
     fi
 else
@@ -764,7 +768,7 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
     if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
         handle_version_validation_error "packageManager" "$PNPM_VERSION" ".packageManager"
     fi
-elif [ -n "$PNPM_FULL" ]; then
+elif [[ -n "$PNPM_FULL" ]]; then
     warn "packageManager field '$PNPM_FULL' is not in expected format 'pnpm@version'"
     PNPM_VERSION="latest"
 else
@@ -820,33 +824,33 @@ PNPM_CACHE_MAX_AGE=86400  # 24 hours
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
-    if [ "$PNPM_VERSION" = "latest" ]; then
+    if [[ "$PNPM_VERSION" == "latest" ]]; then
         SHOULD_CHECK=true
-        if [ -f "$PNPM_VERSION_CACHE" ]; then
-            CACHE_TIME=$(stat -c %Y "$PNPM_VERSION_CACHE" 2>/dev/null || echo 0)
+                if [[ -f "$PNPM_VERSION_CACHE" ]]; then
+                    CACHE_TIME=$(stat -c %Y "$PNPM_VERSION_CACHE" 2>/dev/null || printf '0')
             CURRENT_TIME=$(date +%s)
             CACHE_AGE=$((CURRENT_TIME - CACHE_TIME))
-            if [ $CACHE_AGE -lt $PNPM_CACHE_MAX_AGE ]; then
+            if [[ "$CACHE_AGE" =~ ^[0-9]+$ && "$PNPM_CACHE_MAX_AGE" =~ ^[0-9]+$ && "$CACHE_AGE" -lt "$PNPM_CACHE_MAX_AGE" ]]; then
                 CACHED_VERSION=$(cat "$PNPM_VERSION_CACHE" 2>/dev/null)
-                if [ "$CACHED_VERSION" = "$CURRENT_PNPM" ]; then
+                if [[ "$CACHED_VERSION" == "$CURRENT_PNPM" ]]; then
                     SHOULD_CHECK=false
                     success "pnpm is already at latest version: v$CURRENT_PNPM (verified within 24h)"
                 fi
             fi
         fi
         
-        if [ "$SHOULD_CHECK" = true ]; then
+        if [[ "$SHOULD_CHECK" == "true" ]]; then
             LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
-            if [ -n "$LATEST_PNPM" ] && [ "$CURRENT_PNPM" = "$LATEST_PNPM" ]; then
-                echo "$CURRENT_PNPM" > "$PNPM_VERSION_CACHE"
+            if [[ -n "$LATEST_PNPM" && "$CURRENT_PNPM" == "$LATEST_PNPM" ]]; then
+                printf '%s\n' "$CURRENT_PNPM" > "$PNPM_VERSION_CACHE"
                 success "pnpm is already at latest version: v$CURRENT_PNPM"
-            elif [ -n "$LATEST_PNPM" ]; then
+            elif [[ -n "$LATEST_PNPM" ]]; then
                 info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
                 if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
                     error "Failed to install pnpm after $MAX_RETRY_ATTEMPTS attempts"
                     exit 1
                 fi
-                echo "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
+                printf '%s\n' "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
             else
                 warn "Could not determine latest pnpm version"
                 info "Updating pnpm to latest version..."
@@ -856,7 +860,7 @@ if command_exists pnpm; then
                 fi
             fi
         fi
-    elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
+    elif [[ "$CURRENT_PNPM" == "$PNPM_VERSION" ]]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
@@ -895,22 +899,22 @@ GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo ".git")"
 LOCKFILE_HASH_CACHE="${GIT_DIR}/.talawa-pnpm-lock-hash"
 NEEDS_INSTALL=true
 
-if [ -f "pnpm-lock.yaml" ]; then
+if [[ -f "pnpm-lock.yaml" ]]; then
     CURRENT_LOCKFILE_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
     if [ -z "$CURRENT_LOCKFILE_HASH" ]; then
         warn "Failed to compute lockfile hash, proceeding with install"
         CURRENT_LOCKFILE_HASH="unknown"
     fi
 
-    if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
+    if [[ -d "node_modules" && -f "$LOCKFILE_HASH_CACHE" ]]; then
         CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
-        if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
+        if [[ "$CURRENT_LOCKFILE_HASH" == "$CACHED_HASH" ]]; then
             NEEDS_INSTALL=false
             success "Dependencies already up-to-date (lockfile unchanged)"
         fi
     fi
     
-    if [ "$NEEDS_INSTALL" = true ]; then
+    if [[ "$NEEDS_INSTALL" == "true" ]]; then
         info "Installing dependencies..."
         if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
             error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
@@ -920,8 +924,8 @@ if [ -f "pnpm-lock.yaml" ]; then
             info "  - Corrupted pnpm cache (try: pnpm store prune)"
             exit 1
         fi
-        if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
-            echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        if [[ "$CURRENT_LOCKFILE_HASH" != "unknown" ]]; then
+            printf '%s\n' "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
         fi
         success "Project dependencies installed"
     fi
@@ -931,10 +935,10 @@ else
         error "Failed to install dependencies."
         exit 1
     fi
-    if [ -f "pnpm-lock.yaml" ]; then
+        if [ -f "pnpm-lock.yaml" ]; then
         NEW_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
         if [ -n "$NEW_HASH" ]; then
-            echo "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+            printf '%s\n' "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
         fi
     fi
     success "Project dependencies installed"

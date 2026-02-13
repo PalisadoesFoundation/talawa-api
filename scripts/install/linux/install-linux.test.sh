@@ -20,7 +20,7 @@
 # - Unsupported distribution handling
 ##############################################################################
 
-set -e
+set -euo pipefail
 
 # Test statistics
 TESTS_RUN=0
@@ -36,30 +36,31 @@ NC='\033[0m'
 test_start() {
     local test_name="$1"
     TESTS_RUN=$((TESTS_RUN + 1))
-    echo -n "Test $TESTS_RUN: $test_name ... "
+    printf "Test %s: %s ... " "$TESTS_RUN" "$test_name"
 }
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo -e "${GREEN}✓ PASS${NC}"
+    printf "%b\n" "${GREEN}✓ PASS${NC}"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo -e "${RED}✗ FAIL${NC}"
-    echo -e "  ${RED}Reason: $message${NC}"
+    printf "%b\n" "${RED}✗ FAIL${NC}"
+    printf "  %b\n" "${RED}Reason: $message${NC}"
 }
 
 # Create a temporary directory for mocks and test state
-TEST_DIR=$(mktemp -d)
+# Use a deterministic template to make cleanup checks safer
+TEST_DIR=$(mktemp -d -t talawa-install-test-XXXXXX)
 MOCK_BIN="$TEST_DIR/bin"
 mkdir -p "$MOCK_BIN"
 
 # Cleanup function to remove temp directory on exit/interrupt
 cleanup() {
-    # Only attempt cleanup if TEST_DIR is non-empty and exists
-    if [ -n "$TEST_DIR" ] && [ -d "$TEST_DIR" ]; then
+    # Only remove the temp dir if it's under /tmp to avoid accidental deletions
+    if [[ -n "${TEST_DIR:-}" && -d "$TEST_DIR" && "$TEST_DIR" == /tmp/* ]]; then
         rm -rf "$TEST_DIR"
     fi
 }
@@ -92,64 +93,54 @@ unset FNM_DIR FNM_LOGLEVEL FNM_NODE_DIST_MIRROR FNM_COREPACK_ENABLED FNM_ARCH FN
 # Mock Helper Functions
 ##############################################################################
 
+
 create_mock() {
-    local cmd_name="$1"
-    local behavior="$2"
-    
-    rm -rf "$MOCK_BIN/$cmd_name"
-    rm -f "$MOCK_BIN/$cmd_name.hidden"
-    
-    cat > "$MOCK_BIN/$cmd_name" <<EOF
+    local name="$1"
+    local body="$2"
+
+    cat > "$MOCK_BIN/$name" <<EOF
 #!/bin/bash
-$behavior
+$body
 EOF
-    chmod +x "$MOCK_BIN/$cmd_name"
+    chmod +x "$MOCK_BIN/$name"
 }
 
-# Create a standalone jq mock using node for robust JSON parsing
 create_jq_mock() {
-    create_mock "jq" '
-if [ "$1" == "--version" ]; then echo "jq-1.6"; exit 0; fi
-if [ "$1" == "-r" ] && [ -f package.json ]; then
+    cat > "$MOCK_BIN/jq" <<'EOF'
+#!/bin/bash
+if [ "$1" = "--version" ]; then
+    echo "jq-1.6"
+    exit 0
+fi
+
+if [ "$1" = "-r" ]; then
     query="$2"
-    # Use node for robust JSON parsing instead of fragile sed
-    if command -v node >/dev/null 2>&1; then
+    if [ -f package.json ]; then
         if [[ "$query" == *".name"* ]]; then
-            node -e "const p=require(\"./package.json\"); console.log(p.name || \"\");"
-        elif [[ "$query" == *".version"* ]] && [[ "$query" != *"engines"* ]]; then
-            node -e "const p=require(\"./package.json\"); console.log(p.version || \"\");"
+            node -e "const p=require('./package.json'); console.log(p.name||'')"
         elif [[ "$query" == *".engines.node"* ]]; then
-            node -e "const p=require(\"./package.json\"); console.log(p.engines?.node || \"\");"
+            node -e "const p=require('./package.json'); console.log((p.engines&&p.engines.node)||'')"
         elif [[ "$query" == *".packageManager"* ]]; then
-            node -e "const p=require(\"./package.json\"); console.log(p.packageManager || \"\");"
-        fi
-    elif command -v python3 >/dev/null 2>&1; then
-        # Fallback to python if node is not available
-        if [[ "$query" == *".name"* ]]; then
-            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"name\", \"\"))"
+            node -e "const p=require('./package.json'); console.log(p.packageManager||'')"
         elif [[ "$query" == *".version"* ]] && [[ "$query" != *"engines"* ]]; then
-            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"version\", \"\"))"
-        elif [[ "$query" == *".engines.node"* ]]; then
-            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"engines\", {}).get(\"node\", \"\"))"
-        elif [[ "$query" == *".packageManager"* ]]; then
-            python3 -c "import json; p=json.load(open(\"package.json\")); print(p.get(\"packageManager\", \"\"))"
+            node -e "const p=require('./package.json'); console.log(p.version||'')"
         fi
-    else
-        # Neither node nor python3 available - fail fast with clear error
-        echo "jq mock: no JSON parser available, please install node or python3" >&2
-        exit 1
     fi
     exit 0
 fi
+
 exit 0
-'
+EOF
+    chmod +x "$MOCK_BIN/jq"
 }
+
+
 
 # Mock /proc/version for WSL detection
 create_wsl_mock() {
     local is_wsl="$1"
     mkdir -p "$TEST_DIR/proc"
-    if [ "$is_wsl" = "true" ]; then
+    if [[ "$is_wsl" == "true" ]]; then
         echo "Linux version 5.10.16.3-microsoft-standard-WSL2" > "$TEST_DIR/proc/version"
     else
         echo "Linux version 5.10.0-generic" > "$TEST_DIR/proc/version"
@@ -202,10 +193,6 @@ EOF
 
 # Run the test subject in a subshell
 run_test_script() {
-    local install_mode="${1:-docker}"
-    local skip_prereqs="${2:-false}"
-    
-    # Build the inner script as a multiline variable for readability
     local inner_script
     read -r -d '' inner_script <<INNER_SCRIPT || true
 export PATH='$MOCK_BIN:/usr/bin:/bin'
@@ -213,7 +200,7 @@ export MOCK_BIN='$MOCK_BIN'
 export ETC_OS_RELEASE='$TEST_DIR/etc/os-release'
 export PROC_VERSION='$TEST_DIR/proc/version'
 cd '$TEST_DIR'
-'$TEST_DIR/scripts/install/linux/install-linux.sh' '$install_mode' '$skip_prereqs'
+'$TEST_DIR/scripts/install/linux/install-linux.sh' "$@"
 INNER_SCRIPT
 
     env -i \
@@ -225,7 +212,7 @@ INNER_SCRIPT
         AUTO_YES="true" \
         ETC_OS_RELEASE="$TEST_DIR/etc/os-release" \
         PROC_VERSION="$TEST_DIR/proc/version" \
-        bash --noprofile --norc -c "$inner_script"
+        bash --noprofile --norc -c "$inner_script" -- "$@"
 }
 
 # Setup test repo structure
@@ -392,7 +379,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "WSL Environment Detected"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "WSL Environment Detected"; then
     test_pass
 else
     test_fail "Expected WSL detection message with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -413,7 +400,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "Docker Desktop"; then
+if echo "$OUTPUT" | grep -qF "Docker Desktop"; then
     test_pass
 else
     test_fail "Expected Docker Desktop recommendation in WSL.\nLogs:\n$OUTPUT"
@@ -434,7 +421,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if ! echo "$OUTPUT" | grep -q "WSL Environment Detected"; then
+if ! echo "$OUTPUT" | grep -qF "WSL Environment Detected"; then
     test_pass
 else
     test_fail "WSL should not be detected on native Linux.\nLogs:\n$OUTPUT"
@@ -458,7 +445,7 @@ OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Mock apt-get installed"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Mock apt-get installed"; then
     test_pass
 else
     test_fail "Expected apt-get package installation.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -478,7 +465,7 @@ OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Mock dnf installed"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Mock dnf installed"; then
     test_pass
 else
     test_fail "Expected dnf package installation.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -498,7 +485,7 @@ OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Mock pacman installed"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Mock pacman installed"; then
     test_pass
 else
     test_fail "Expected pacman package installation.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -515,7 +502,7 @@ OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Unsupported distribution family"; then
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -qF "Unsupported distribution family"; then
     test_pass
 else
     test_fail "Expected non-zero exit for unsupported distro.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -551,7 +538,7 @@ OUTPUT=$(run_test_script local false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "up-to-date"; then
+if echo "$OUTPUT" | grep -qF "up-to-date"; then
     test_pass
 else
     test_fail "Expected apt cache freshness check.\nLogs:\n$OUTPUT"
@@ -737,7 +724,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Target pnpm version: 8.14.0"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Target pnpm version: 8.14.0"; then
     test_pass
 else
     test_fail "Expected pnpm 8.14.0 to be targeted.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -752,7 +739,7 @@ test_start "Curl Retry - Network Failure Recovery"
 setup_debian_system
 
 # Create a counter file to track retry attempts (inside MOCK_BIN so it's reachable in the isolated env)
-echo "0" > "$MOCK_BIN/.curl_attempts"
+printf '0' > "$MOCK_BIN/.curl_attempts"
 
 create_mock "curl" '
     out=""
@@ -773,7 +760,7 @@ create_mock "curl" '
         esac
     done
 
-    ATTEMPT=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || echo 0)
+    ATTEMPT=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || printf '0')
     ATTEMPT=$((ATTEMPT + 1))
     echo "$ATTEMPT" > "$MOCK_BIN/.curl_attempts"
     if [ "$ATTEMPT" -lt 3 ]; then
@@ -782,19 +769,19 @@ create_mock "curl" '
     fi
     # On success, if an output path was provided, write a minimal fnm installer there
     if [ -n "$out" ]; then
-        cat > "$out" <<'FNMINST'
+        cat > "$out" <<FNMINST
 #!/bin/bash
 echo Installing fnm...
-rm -f "$MOCK_BIN/fnm.hidden" 2>/dev/null || true
-cat > "$MOCK_BIN/fnm" <<'FNM'
+rm -f \$MOCK_BIN/fnm.hidden 2>/dev/null || true
+cat > \$MOCK_BIN/fnm <<FNM
 #!/bin/bash
-if [ "$1" = "env" ]; then echo "export PATH=mock:$PATH"; exit 0; fi
-if [ "$1" = "install" ]; then echo "Installing Node $2"; exit 0; fi
-if [ "$1" = "use" ]; then exit 0; fi
-if [ "$1" = "default" ]; then exit 0; fi
+if [ "\$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exit 0; fi
+if [ "\$1" = "install" ]; then echo "Installing Node \$2"; exit 0; fi
+if [ "\$1" = "use" ]; then exit 0; fi
+if [ "\$1" = "default" ]; then exit 0; fi
 exit 0
 FNM
-chmod +x "$MOCK_BIN/fnm"
+chmod +x \$MOCK_BIN/fnm
 exit 0
 FNMINST
         chmod +x "$out"
@@ -814,7 +801,7 @@ EXIT_CODE=$?
 set -e
 
 # Check if retry logic was exercised and script exited successfully
-ATTEMPTS=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || echo 0)
+ATTEMPTS=$(cat "$MOCK_BIN/.curl_attempts" 2>/dev/null || printf '0')
 if [ $EXIT_CODE -eq 0 ] && [ "$ATTEMPTS" -ge 2 ]; then
     test_pass
 else
@@ -853,7 +840,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing dependencies..."; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Installing dependencies..."; then
     test_pass
 else
     test_fail "Expected pnpm install to run.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -886,7 +873,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Dependencies already up-to-date" && ! echo "$OUTPUT" | grep -q "SHOULD_NOT_RUN"; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Dependencies already up-to-date" && ! echo "$OUTPUT" | grep -qF "SHOULD_NOT_RUN"; then
     test_pass
 else
     test_fail "Expected skip message for unchanged lockfile.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -921,7 +908,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing updated dependencies..."; then
+if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -qF "Installing updated dependencies..."; then
     test_pass
 else
     test_fail "Expected pnpm install for changed lockfile.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -941,7 +928,7 @@ OUTPUT=$(run_test_script local 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "package.json not found"; then
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -qF "package.json not found"; then
     test_pass
 else
     test_fail "Expected missing package.json error.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -966,7 +953,7 @@ OUTPUT=$(run_test_script local 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "must be run from the talawa-api repository"; then
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -qF "must be run from the talawa-api repository"; then
     test_pass
 else
     test_fail "Expected wrong repository error.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -1031,7 +1018,7 @@ OUTPUT=$(run_test_script local true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -q "Failed to install dependencies"; then
+if [ $EXIT_CODE -ne 0 ] && echo "$OUTPUT" | grep -qF "Failed to install dependencies"; then
     test_pass
 else
     test_fail "Expected retry failure message.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -1082,18 +1069,18 @@ create_mock "curl" '
     for arg in "$@"; do
         if [[ "$arg" == *"get.docker.com"* ]] || [[ "$arg" == *"https://get.docker.com"* ]]; then
             if [ -n "$out" ]; then
-                cat > "$out" <<'DOCKERINST'
+                cat > "$out" <<DOCKERINST
 #!/bin/bash
 echo DOCKER_INSTALLER_EXECUTED
-rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
-    cat > "$MOCK_BIN/docker" <<'DOCKERSCRIPT'
+rm -f \$MOCK_BIN/docker.hidden 2>/dev/null || true
+cat > \$MOCK_BIN/docker <<DOCKERSCRIPT
 #!/bin/sh
-if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
-if [ "$1" = "info" ]; then exit 0; fi
-if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
+if [ "\$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+if [ "\$1" = "info" ]; then exit 0; fi
+if [ "\$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
 exit 0
 DOCKERSCRIPT
-chmod +x "$MOCK_BIN/docker"
+chmod +x \$MOCK_BIN/docker
 DOCKERINST
                 chmod +x "$out"
                 exit 0
@@ -1113,7 +1100,7 @@ DOCKERINST
 # Mock bash to track installer execution
 create_mock "bash" '
     # If running the installer script, echo our marker
-    if [[ "$*" == *"/tmp/get-docker"* ]] || echo "$*" | grep -q "DOCKER_INSTALLER"; then
+    if [[ "$*" == *"/tmp/get-docker"* ]] || echo "$*" | grep -qF "DOCKER_INSTALLER"; then
         echo "DOCKER_INSTALLER_EXECUTED"
         rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
         # Create docker mock after "installation"
@@ -1136,13 +1123,13 @@ create_mock "sh" '
     # If executing an installer file path, simulate installer behavior
     if [ -n "$1" ] && [ -f "$1" ]; then
         rm -f "$MOCK_BIN/docker.hidden" 2>/dev/null || true
-        cat > "$MOCK_BIN/docker" <<'DOCKERSCRIPT'
-    #!/bin/sh
-    if [ "$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
-    if [ "$1" = "info" ]; then exit 0; fi
-    if [ "$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
-    exit 0
-    DOCKERSCRIPT
+        cat > "$MOCK_BIN/docker" <<DOCKERSCRIPT
+#!/bin/sh
+if [ "\$1" = "--version" ]; then echo "Docker version 20.10.0"; exit 0; fi
+if [ "\$1" = "info" ]; then exit 0; fi
+if [ "\$1" = "compose" ]; then echo "Docker Compose version 2.0.0"; exit 0; fi
+exit 0
+DOCKERSCRIPT
         chmod +x "$MOCK_BIN/docker"
         exit 0
     fi
@@ -1171,8 +1158,8 @@ EXIT_CODE=$?
 set -e
 
 # Check that the script attempted Docker installation flow
-# It should either show the installer execution or Docker installation messages
-if echo "$OUTPUT" | grep -qE "(Installing Docker|DOCKER_INSTALLER_EXECUTED|Docker.*installed)"; then
+# Require an explicit installer execution marker or a curl|sh execution pipeline
+if echo "$OUTPUT" | grep -qE "(DOCKER_INSTALLER_EXECUTED|curl .*\| sh)"; then
     test_pass
 else
     test_fail "Expected Docker installer flow execution.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
@@ -1200,7 +1187,7 @@ OUTPUT=$(run_test_script docker true 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "not running"; then
+if echo "$OUTPUT" | grep -qF "not running"; then
     test_pass
 else
     test_fail "Expected Docker not running warning.\nLogs:\n$OUTPUT"
@@ -1220,7 +1207,7 @@ OUTPUT=$(run_test_script local --skip-prereqs 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "Skipping prerequisite installation"; then
+if echo "$OUTPUT" | grep -qF "Skipping prerequisite installation"; then
     test_pass
 else
     test_fail "Expected skip prereqs message.\nLogs:\n$OUTPUT"
@@ -1241,7 +1228,7 @@ OUTPUT=$(run_test_script --skip-prereqs 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "Skipping prerequisite installation"; then
+if echo "$OUTPUT" | grep -qF "Skipping prerequisite installation"; then
     test_pass
 else
     test_fail "Expected skip prereqs message.\nLogs:\n$OUTPUT"
@@ -1262,7 +1249,7 @@ OUTPUT=$(run_test_script --skip-prereqs docker 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "Skipping prerequisite installation"; then
+if echo "$OUTPUT" | grep -qF "Skipping prerequisite installation"; then
     test_pass
 else
     test_fail "Expected skip prereqs message.\nLogs:\n$OUTPUT"
@@ -1277,7 +1264,7 @@ OUTPUT=$(run_test_script invalid-mode false 2>&1)
 EXIT_CODE=$?
 set -e
 
-if echo "$OUTPUT" | grep -q "Unknown argument"; then
+if echo "$OUTPUT" | grep -qF "Unknown argument"; then
     test_pass
 else
     test_fail "Expected unknown argument error.\nLogs:\n$OUTPUT"
@@ -1291,13 +1278,13 @@ fi
 ##############################################################################
 # Summary
 ##############################################################################
-echo ""
-echo "========================================================================"
-echo "Test Summary"
-echo "========================================================================"
-echo "Total tests run:    $TESTS_RUN"
-echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
-echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
+printf "\n"
+printf "========================================================================\n"
+printf "Test Summary\n"
+printf "========================================================================\n"
+printf "Total tests run:    %s\n" "$TESTS_RUN"
+printf "%b\n" "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
+printf "%b\n" "Tests failed:       ${RED}$TESTS_FAILED${NC}"
 
 if [ $TESTS_FAILED -eq 0 ]; then
     exit 0
