@@ -45,7 +45,10 @@ The SES configuration object containing region and credentials.
 
 Defined in: [src/services/email/providers/SESProvider.ts:165](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L165)
 
-Send multiple emails
+Sends multiple emails in concurrent batches to respect rate limits.
+
+Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+between batches to prevent overwhelming the email provider or hitting rate limits.
 
 #### Parameters
 
@@ -53,9 +56,13 @@ Send multiple emails
 
 [`EmailJob`](../../../types/interfaces/EmailJob.md)[]
 
+An array of email jobs to be processed.
+
 #### Returns
 
 `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
+
+A promise that resolves to an array of results (success or failure) for each email job.
 
 #### Implementation of
 

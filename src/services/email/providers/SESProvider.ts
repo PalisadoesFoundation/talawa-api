@@ -24,8 +24,6 @@ export interface SESProviderConfig {
 	fromName?: string;
 }
 
-// TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
-// This would improve throughput for high-volume scenarios.
 /**
  * AWS SES implementation of IEmailProvider.
  *
@@ -54,7 +52,6 @@ export class SESProvider implements IEmailProvider {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
 
-			// Validate region
 			if (!this.config.region) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
@@ -62,7 +59,6 @@ export class SESProvider implements IEmailProvider {
 				});
 			}
 
-			// Validate that either both credentials are provided or neither
 			const hasAccessKey = Boolean(this.config.accessKeyId);
 			const hasSecretKey = Boolean(this.config.secretAccessKey);
 			if (hasAccessKey !== hasSecretKey) {
@@ -160,18 +156,53 @@ export class SESProvider implements IEmailProvider {
 	}
 
 	/**
-	 * Send multiple emails
+	 * Sends multiple emails in concurrent batches to respect rate limits.
+	 *
+	 * Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+	 * between batches to prevent overwhelming the email provider or hitting rate limits.
+	 *
+	 * @param jobs - An array of email jobs to be processed.
+	 * @returns A promise that resolves to an array of results (success or failure) for each email job.
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
+		const BATCH_SIZE = 14;
+		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
-		for (const [i, job] of jobs.entries()) {
-			if (!job) continue;
-			results.push(await this.sendEmail(job));
-			if (i < jobs.length - 1) {
-				// Rate limiting delay to avoid AWS SES throttling
-				await new Promise((r) => setTimeout(r, 100));
+
+		for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+			const batch = jobs.slice(i, i + BATCH_SIZE);
+
+			const batchPromises = batch.map((job) => this.sendEmail(job));
+
+			const batchSettledResults = await Promise.allSettled(batchPromises);
+
+			for (let j = 0; j < batchSettledResults.length; j++) {
+				const settled = batchSettledResults[j];
+				const currentJob = batch[j];
+
+				if (!settled || !currentJob) continue;
+
+				if (settled.status === "fulfilled") {
+					results.push(settled.value);
+				} else {
+					results.push({
+						id: currentJob.id,
+						success: false,
+						error:
+							settled.reason instanceof Error
+								? settled.reason.message
+								: String(settled.reason),
+					});
+				}
+			}
+
+			if (i + BATCH_SIZE < jobs.length) {
+				await new Promise((resolve) =>
+					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),
+				);
 			}
 		}
+
 		return results;
 	}
 }
