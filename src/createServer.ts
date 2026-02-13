@@ -17,6 +17,8 @@ import routes from "./routes/index";
 import { fastifyOtelInstrumentation } from "./tracing";
 import { loggerOptions } from "./utilities/logging/logger";
 
+export type { EnvConfig } from "./envConfigSchema";
+
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
 	interface FastifyInstance {
@@ -29,14 +31,14 @@ declare module "fastify" {
 
 const PLACEHOLDER_SENTINEL = "CHANGE_ME_BEFORE_DEPLOY";
 
-class StartupConfigError extends Error {
+export class StartupConfigError extends Error {
 	constructor(message: string) {
 		super(message);
 		this.name = "StartupConfigError";
 	}
 }
 
-const assertSecretsPresent = (envConfig: EnvConfig) => {
+export const assertSecretsPresent = (envConfig: EnvConfig) => {
 	const invalidEnvNames: string[] = [];
 
 	const isEmptyOrPlaceholder = (value: string) => {
