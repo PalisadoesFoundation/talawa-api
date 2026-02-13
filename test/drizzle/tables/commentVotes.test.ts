@@ -125,31 +125,53 @@ async function createTestDependencyChain(): Promise<{
 
 describe("src/drizzle/tables/commentVotes", () => {
 	afterEach(async () => {
-		// Delete in reverse dependency order using tracked IDs only
-		if (createdResources.voteIds.length > 0) {
-			await server.drizzleClient
-				.delete(commentVotesTable)
-				.where(inArray(commentVotesTable.id, createdResources.voteIds));
+		// Delete in reverse dependency order using tracked IDs only.
+		// Each step is wrapped in try/catch so that a failure in one
+		// does not skip cleanup of the remaining tables.
+		try {
+			if (createdResources.voteIds.length > 0) {
+				await server.drizzleClient
+					.delete(commentVotesTable)
+					.where(inArray(commentVotesTable.id, createdResources.voteIds));
+			}
+		} catch (_) {
+			/* best-effort cleanup */
 		}
-		if (createdResources.commentIds.length > 0) {
-			await server.drizzleClient
-				.delete(commentsTable)
-				.where(inArray(commentsTable.id, createdResources.commentIds));
+		try {
+			if (createdResources.commentIds.length > 0) {
+				await server.drizzleClient
+					.delete(commentsTable)
+					.where(inArray(commentsTable.id, createdResources.commentIds));
+			}
+		} catch (_) {
+			/* best-effort cleanup */
 		}
-		if (createdResources.postIds.length > 0) {
-			await server.drizzleClient
-				.delete(postsTable)
-				.where(inArray(postsTable.id, createdResources.postIds));
+		try {
+			if (createdResources.postIds.length > 0) {
+				await server.drizzleClient
+					.delete(postsTable)
+					.where(inArray(postsTable.id, createdResources.postIds));
+			}
+		} catch (_) {
+			/* best-effort cleanup */
 		}
-		if (createdResources.orgIds.length > 0) {
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(inArray(organizationsTable.id, createdResources.orgIds));
+		try {
+			if (createdResources.orgIds.length > 0) {
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(inArray(organizationsTable.id, createdResources.orgIds));
+			}
+		} catch (_) {
+			/* best-effort cleanup */
 		}
-		if (createdResources.userIds.length > 0) {
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(inArray(usersTable.id, createdResources.userIds));
+		try {
+			if (createdResources.userIds.length > 0) {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(inArray(usersTable.id, createdResources.userIds));
+			}
+		} catch (_) {
+			/* best-effort cleanup */
 		}
 
 		// Reset tracked arrays
@@ -871,7 +893,7 @@ describe("src/drizzle/tables/commentVotes", () => {
 			}
 		});
 
-		it("should efficiently query using indexed commentId column", async () => {
+		it("should query by indexed commentId column", async () => {
 			const { userId, commentId } = await createTestDependencyChain();
 
 			const [inserted] = await server.drizzleClient
@@ -895,7 +917,7 @@ describe("src/drizzle/tables/commentVotes", () => {
 			expect(results.length).toBeGreaterThan(0);
 		});
 
-		it("should efficiently query using indexed creatorId column", async () => {
+		it("should query by indexed creatorId column", async () => {
 			const { userId, commentId } = await createTestDependencyChain();
 
 			const [inserted] = await server.drizzleClient
@@ -919,7 +941,7 @@ describe("src/drizzle/tables/commentVotes", () => {
 			expect(results.length).toBeGreaterThan(0);
 		});
 
-		it("should efficiently query using indexed type column", async () => {
+		it("should query by indexed type column", async () => {
 			const { userId, commentId } = await createTestDependencyChain();
 
 			const [inserted] = await server.drizzleClient
