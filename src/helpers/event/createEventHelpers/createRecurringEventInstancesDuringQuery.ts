@@ -16,8 +16,9 @@ import type { InterfaceGenerateRecurringInstancesData } from "../recurringEventH
  * @remarks The following steps are followed:
  * 1. Get the limit date upto which we would want to update the recurrenceRules by generating new instances.
  * 2. Get a recurrence rules to be used for instance generation during this query.
- * 3. For every reurrence rule found, generate new instances after their latestInstanceDates.
- * 4. Update the latestInstanceDate for the recurrence rules.
+ * 3. For every recurrence rule found, get the number of existing instances and how many more to generate.
+ * 4. For every reurrence rule found, generate new instances after their latestInstanceDates.
+ * 5. Update the latestInstanceDate for the recurrence rules.
  */
 
 export const createRecurringEventInstancesDuringQuery = async (
@@ -61,12 +62,27 @@ export const createRecurringEventInstancesDuringQuery = async (
       const recurrenceStartDate = addDays(latestInstanceDate, 1);
 
       // get the dates for recurrence
-      const recurringInstanceDates = getRecurringInstanceDates(
+      let recurringInstanceDates = getRecurringInstanceDates(
         recurrenceRule.recurrenceRuleString,
         recurrenceStartDate,
         recurrenceRule.endDate,
         calendarDate
       );
+
+      // find out how many instances following the recurrence rule already exist and how many more to generate
+      const { count: totalInstancesCount } = recurrenceRule;
+      if (totalInstancesCount) {
+        const totalExistingInstances = await Event.countDocuments({
+          recurrenceRuleId: recurrenceRule._id,
+        });
+
+        const remainingInstances = totalInstancesCount - totalExistingInstances;
+
+        recurringInstanceDates = recurringInstanceDates.slice(
+          0,
+          Math.min(recurringInstanceDates.length, remainingInstances)
+        );
+      }
 
       /* c8 ignore start */
       if (session) {
