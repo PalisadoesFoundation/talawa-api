@@ -23,6 +23,8 @@ let cleanupTask: cron.ScheduledTask | undefined;
 let metricsTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+let materializationSchedule = DEFAULT_HOURLY_CRON;
+let cleanupSchedule = DEFAULT_DAILY_2AM_CRON;
 // Store metrics configuration at startup for status reporting
 let metricsEnabled: boolean | undefined;
 let metricsSchedule: string | undefined;
@@ -46,11 +48,16 @@ export async function startBackgroundWorkers(
 
 	try {
 		logger.info("Starting background worker service...");
+		materializationSchedule =
+			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
+			DEFAULT_HOURLY_CRON;
+		cleanupSchedule =
+			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
+			DEFAULT_DAILY_2AM_CRON;
 
 		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
-			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
-				DEFAULT_HOURLY_CRON,
+			materializationSchedule,
 			() => runMaterializationWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -60,8 +67,7 @@ export async function startBackgroundWorkers(
 
 		// Schedule cleanup worker - runs daily at 2 AM UTC
 		cleanupTask = cron.schedule(
-			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
-				DEFAULT_DAILY_2AM_CRON,
+			cleanupSchedule,
 			() => runCleanupWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -127,12 +133,8 @@ export async function startBackgroundWorkers(
 		isRunning = true;
 		logger.info(
 			{
-				materializationSchedule:
-					process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
-					DEFAULT_HOURLY_CRON,
-				cleanupSchedule:
-					process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
-					DEFAULT_DAILY_2AM_CRON,
+				materializationSchedule,
+				cleanupSchedule,
 				metricsEnabled: metricsEnabled && !!getMetricsSnapshots,
 			},
 			"Background worker service started successfully",
@@ -367,12 +369,8 @@ export function getBackgroundWorkerStatus(): {
 
 	return {
 		isRunning,
-		materializationSchedule:
-			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
-			DEFAULT_HOURLY_CRON,
-		cleanupSchedule:
-			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
-			DEFAULT_DAILY_2AM_CRON,
+		materializationSchedule,
+		cleanupSchedule,
 		// Include metrics fields when enabled (default or explicit)
 		...(currentMetricsEnabled && {
 			metricsSchedule: currentMetricsSchedule,

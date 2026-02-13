@@ -4,7 +4,7 @@
 
 # Class: SESProvider
 
-Defined in: [src/services/email/providers/SESProvider.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L35)
+Defined in: [src/services/email/providers/SESProvider.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L33)
 
 AWS SES implementation of IEmailProvider.
 
@@ -21,7 +21,7 @@ It lazily initializes the SESClient and Command constructors on first use.
 
 > **new SESProvider**(`config`): `SESProvider`
 
-Defined in: [src/services/email/providers/SESProvider.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L46)
+Defined in: [src/services/email/providers/SESProvider.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L44)
 
 Creates an instance of SESProvider.
 
@@ -43,7 +43,7 @@ The SES configuration object containing region and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:165](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L165)
+Defined in: [src/services/email/providers/SESProvider.ts:167](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L167)
 
 Sends multiple emails in concurrent batches to respect rate limits.
 
@@ -74,7 +74,7 @@ A promise that resolves to an array of results (success or failure) for each ema
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:111](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L111)
+Defined in: [src/services/email/providers/SESProvider.ts:107](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L107)
 
 Send a single email using AWS SES
 

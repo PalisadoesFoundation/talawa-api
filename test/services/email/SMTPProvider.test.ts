@@ -395,10 +395,11 @@ describe("SMTPProvider", () => {
 
 		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
 			{
-				error: expect.any(Error),
+				error: "Connection timeout",
+				stack: expect.any(String),
 				jobId: "test-job-123",
 			},
-			"Failed to send email",
+			"Failed to send email via SMTP",
 		);
 	});
 
@@ -422,9 +423,10 @@ describe("SMTPProvider", () => {
 		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
 			{
 				error: "String error",
+				stack: undefined,
 				jobId: "test-job-456",
 			},
-			"Failed to send email",
+			"Failed to send email via SMTP",
 		);
 	});
 
@@ -467,16 +469,15 @@ describe("SMTPProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only user is provided (without password)", async () => {
