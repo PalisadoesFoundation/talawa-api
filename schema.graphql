@@ -336,7 +336,7 @@ input EventWhereInput {
   location_not: String
   location_not_in: [String!]
   location_starts_with: String
-  organization_id: ID
+  organization_id: ID!
   title: String
   title_contains: String
   title_in: [String!]
@@ -866,7 +866,7 @@ type Query {
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
-  eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput!): [Event!]!
   getAdvertisements: [Advertisement]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]

@@ -20,23 +20,32 @@ import { cacheEvents } from "../../../services/EventCache/cacheEvents";
  * @returns A recurring instance generated during this operation.
  */
 
+export interface InterfaceGenerateRecurringInstancesData extends EventInput {
+  attendees?: string;
+  admins?: string[];
+  status?: string;
+}
+
 interface InterfaceGenerateRecurringInstances {
-  data: EventInput;
+  data: InterfaceGenerateRecurringInstancesData;
   baseRecurringEventId: string;
   recurrenceRuleId: string;
   recurringInstanceDates: Date[];
   currentUserId: string;
   organizationId: string;
+  status?: string;
   session: mongoose.ClientSession;
 }
 
 interface InterfaceRecurringEvent extends EventInput {
+  attendees?: string;
   isBaseRecurringEvent: boolean;
   recurrenceRuleId: string;
   baseRecurringEventId: string;
   creatorId: string;
   admins: string[];
   organization: string;
+  status?: string;
 }
 
 export const generateRecurringEventInstances = async ({
@@ -49,9 +58,10 @@ export const generateRecurringEventInstances = async ({
   session,
 }: InterfaceGenerateRecurringInstances): Promise<InterfaceEvent> => {
   const recurringInstances: InterfaceRecurringEvent[] = [];
-  recurringInstanceDates.map((date) => {
+  recurringInstanceDates.map((date): void => {
     const createdEventInstance = {
       ...data,
+      attendees: data.attendees,
       startDate: date,
       endDate: date,
       recurring: true,
@@ -59,8 +69,9 @@ export const generateRecurringEventInstances = async ({
       recurrenceRuleId,
       baseRecurringEventId,
       creatorId: currentUserId,
-      admins: [currentUserId],
+      admins: data.admins && data.admins.length ? data.admins : [currentUserId],
       organization: organizationId,
+      status: data.status,
     };
 
     recurringInstances.push(createdEventInstance);
