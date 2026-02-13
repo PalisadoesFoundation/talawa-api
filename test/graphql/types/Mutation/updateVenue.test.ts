@@ -968,6 +968,10 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName1,
 				);
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+			try {
 				await server.minio.client.removeObject(
 					server.minio.bucketName,
 					objectName2,
