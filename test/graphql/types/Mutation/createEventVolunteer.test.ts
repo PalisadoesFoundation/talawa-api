@@ -1125,7 +1125,136 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			templateVolunteerResult.data?.createEventVolunteer?.id,
 		);
 	});
+	test("Integration: THIS_INSTANCE_ONLY reuses existing instance volunteer", async () => {
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
 
+		const testUser = await createTestUser();
+		testCleanupFunctions.push(testUser.cleanup);
+
+		const { token: adminAuth, userId: creatorId } = await ensureAdminAuth();
+
+		// Admin membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: creatorId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Regular user membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		// Create recurring template event
+		const startAt = new Date("2024-12-01T10:00:00Z");
+		const endAt = new Date("2024-12-01T12:00:00Z");
+
+		const [template] = await server.drizzleClient
+			.insert(eventsTable)
+			.values({
+				name: "Reuse Test Event",
+				description: "Testing reuse path",
+				startAt,
+				endAt,
+				organizationId: organization.orgId,
+				creatorId,
+				isPublic: true,
+				isRegisterable: true,
+				isRecurringEventTemplate: true,
+			})
+			.returning();
+
+		assertToBeNonNullish(template); // Ensure template is not undefined
+
+		const [recurrenceRule] = await server.drizzleClient
+			.insert(recurrenceRulesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				frequency: "DAILY",
+				interval: 1,
+				count: 1,
+				organizationId: organization.orgId,
+				creatorId,
+				recurrenceRuleString: "RRULE:FREQ=DAILY;INTERVAL=1;COUNT=1",
+				recurrenceStartDate: startAt,
+				latestInstanceDate: startAt,
+			})
+			.returning();
+
+		assertToBeNonNullish(recurrenceRule); // Ensure recurrenceRule is not undefined
+
+		const [instance] = await server.drizzleClient
+			.insert(recurringEventInstancesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				recurrenceRuleId: recurrenceRule.id,
+				originalSeriesId: template.id,
+				originalInstanceStartTime: startAt,
+				actualStartTime: startAt,
+				actualEndTime: endAt,
+				organizationId: organization.orgId,
+				sequenceNumber: 1,
+				totalCount: 1,
+			})
+			.returning();
+
+		assertToBeNonNullish(instance); // Ensure instance is not undefined
+
+		const instanceId = instance.id;
+
+		//  First call (creates volunteer)
+		const first = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					userId: testUser.userId,
+					eventId: template.id,
+					scope: "THIS_INSTANCE_ONLY",
+					recurringEventInstanceId: instanceId,
+				},
+			},
+		});
+
+		expect(first.errors).toBeUndefined();
+		const firstId = first.data?.createEventVolunteer?.id;
+
+		// Second call (should reuse)
+		const second = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					userId: testUser.userId,
+					eventId: template.id,
+					scope: "THIS_INSTANCE_ONLY",
+					recurringEventInstanceId: instanceId,
+				},
+			},
+		});
+
+		expect(second.errors).toBeUndefined();
+		expect(second.data?.createEventVolunteer?.id).toBe(firstId);
+
+		//  DB check — ensure only one row exists
+		const dbRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteersTable)
+			.where(eq(eventVolunteersTable.recurringEventInstanceId, instanceId));
+
+		expect(dbRows).toHaveLength(1);
+	});
 	test("Integration: ENTIRE_SERIES scope removes existing instance-specific volunteers (new template)", async () => {
 		// Test to cover: Removal of instance-specific volunteers when creating new template
 		await new Promise((resolve) => setTimeout(resolve, 2200));
