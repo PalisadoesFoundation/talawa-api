@@ -134,8 +134,8 @@ describe("src/drizzle/tables/commentVotes", () => {
 					.delete(commentVotesTable)
 					.where(inArray(commentVotesTable.id, createdResources.voteIds));
 			}
-		} catch (_) {
-			/* best-effort cleanup */
+		} catch (error) {
+			console.error("Cleanup failed for commentVotes:", error);
 		}
 		try {
 			if (createdResources.commentIds.length > 0) {
@@ -143,8 +143,8 @@ describe("src/drizzle/tables/commentVotes", () => {
 					.delete(commentsTable)
 					.where(inArray(commentsTable.id, createdResources.commentIds));
 			}
-		} catch (_) {
-			/* best-effort cleanup */
+		} catch (error) {
+			console.error("Cleanup failed for comments:", error);
 		}
 		try {
 			if (createdResources.postIds.length > 0) {
@@ -152,8 +152,8 @@ describe("src/drizzle/tables/commentVotes", () => {
 					.delete(postsTable)
 					.where(inArray(postsTable.id, createdResources.postIds));
 			}
-		} catch (_) {
-			/* best-effort cleanup */
+		} catch (error) {
+			console.error("Cleanup failed for posts:", error);
 		}
 		try {
 			if (createdResources.orgIds.length > 0) {
@@ -161,8 +161,8 @@ describe("src/drizzle/tables/commentVotes", () => {
 					.delete(organizationsTable)
 					.where(inArray(organizationsTable.id, createdResources.orgIds));
 			}
-		} catch (_) {
-			/* best-effort cleanup */
+		} catch (error) {
+			console.error("Cleanup failed for organizations:", error);
 		}
 		try {
 			if (createdResources.userIds.length > 0) {
@@ -170,8 +170,8 @@ describe("src/drizzle/tables/commentVotes", () => {
 					.delete(usersTable)
 					.where(inArray(usersTable.id, createdResources.userIds));
 			}
-		} catch (_) {
-			/* best-effort cleanup */
+		} catch (error) {
+			console.error("Cleanup failed for users:", error);
 		}
 
 		// Reset tracked arrays
