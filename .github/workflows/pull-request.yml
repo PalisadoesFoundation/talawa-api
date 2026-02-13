@@ -493,6 +493,7 @@ jobs:
       - name: Create .env file for talawa api testing environment
         run: |
           cp ./envFiles/.env.ci ./.env
+          echo "NODE_ENV=production" >> .env
           echo "API_JWT_SECRET=$(openssl rand -hex 32)" >> .env
       - name: Build talawa api compose testing environment
         run: docker compose build
