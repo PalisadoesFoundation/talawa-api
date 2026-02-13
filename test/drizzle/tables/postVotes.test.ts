@@ -103,7 +103,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postVotesTable.id, _createdResources.voteIds));
 			}
 		} catch (error) {
-			console.error("Cleanup failed for comments:", error);
+			console.error("Cleanup failed for postvotes:", error);
 		}
 		try {
 			if (_createdResources.postIds.length > 0) {
@@ -465,7 +465,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				.from(postVotesTable)
 				.where(eq(postVotesTable.type, type));
 
-			results.map((e) => _createdResources.voteIds.push(e.id));
+			results.forEach((e) => _createdResources.voteIds.push(e.id));
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBeGreaterThan(0);
 			expect(results[0]?.type).toBe(type);
@@ -678,7 +678,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				.from(postVotesTable)
 				.where(eq(postVotesTable.creatorId, userId));
 
-			results.map((e) => _createdResources.voteIds.push(e.id));
+			results.forEach((e) => _createdResources.voteIds.push(e.id));
 			expect(results.length).toBeGreaterThan(0);
 		});
 
@@ -702,7 +702,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				.from(postVotesTable)
 				.where(eq(postVotesTable.postId, postId));
 
-			results.map((e) => _createdResources.voteIds.push(e.id));
+			results.forEach((e) => _createdResources.voteIds.push(e.id));
 			expect(results.length).toBeGreaterThan(0);
 		});
 
@@ -726,7 +726,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				.from(postVotesTable)
 				.where(eq(postVotesTable.type, type));
 
-			results.map((e) => _createdResources.voteIds.push(e.id));
+			results.forEach((e) => _createdResources.voteIds.push(e.id));
 			expect(results.length).toBeGreaterThan(0);
 		});
 
@@ -776,8 +776,8 @@ describe("src/drizzle/tables/postVotes", () => {
 
 			expect(result).toBeDefined();
 
-			_createdResources.voteIds.push(result?.id as string);
 			if (result) {
+				_createdResources.voteIds.push(result.id);
 				expect(result.type).toBe(type);
 			}
 		});
