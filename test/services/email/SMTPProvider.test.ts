@@ -111,12 +111,7 @@ describe("SMTPProvider", () => {
 		});
 
 		const nodemailer = await import("nodemailer");
-		const mockCreateTransport = vi.fn();
-		(
-			nodemailer.default as unknown as {
-				createTransport: typeof mockCreateTransport;
-			}
-		).createTransport = mockCreateTransport;
+		(nodemailer.default.createTransport as Mock).mockImplementation(vi.fn());
 
 		const result = await provider.sendEmail({
 			id: "1",
@@ -128,7 +123,7 @@ describe("SMTPProvider", () => {
 
 		expect(result.success).toBe(false);
 		expect(result.error).toBe("API_SMTP_HOST must be a non-empty string");
-		expect(mockCreateTransport).not.toHaveBeenCalled();
+		expect(nodemailer.default.createTransport).not.toHaveBeenCalled();
 	});
 
 	it("should return a copy of the config via getConfig()", () => {
