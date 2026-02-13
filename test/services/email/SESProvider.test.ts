@@ -1,13 +1,5 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	type Mock,
-	vi,
-} from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { SESProvider } from "~/src/services/email/providers/SESProvider";
 import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
 
@@ -34,10 +26,6 @@ describe("SESProvider", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		sesProvider = new SESProvider(mockConfig);
-	});
-
-	afterEach(() => {
-		vi.clearAllMocks();
 	});
 
 	it("should throw error if API_AWS_SES_REGION is empty string", async () => {

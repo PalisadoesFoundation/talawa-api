@@ -419,15 +419,15 @@ This environment variable is used to configure the SMTP server port. Common valu
 - `465` - SSL port (legacy)
 - `25` - Unsecured port (not recommended)
 
-#### SMTP_USER
+#### API_SMTP_USER
 
 This environment variable is used to configure the username for SMTP authentication. Optional - only required if your SMTP server requires authentication.
 
-#### SMTP_PASSWORD
+#### API_SMTP_PASSWORD
 
 This environment variable is used to configure the password for SMTP authentication. Optional - only required if your SMTP server requires authentication.
 
-#### SMTP_SECURE
+#### API_SMTP_SECURE
 
 This environment variable is used to configure whether to use SSL/TLS for the SMTP connection. Set to `true` for port 465, `false` for port 587.
 
@@ -439,11 +439,11 @@ This environment variable is used to configure the email address that will be us
 
 This environment variable is used to configure the display name that will appear as the sender for emails sent from the talawa api. Defaults to `Talawa`.
 
-#### SMTP_NAME
+#### API_SMTP_NAME
 
 This environment variable is used to configure the client hostname sent during the SMTP handshake (HELO/EHLO command). Defaults to the machine hostname.
 
-#### SMTP_LOCAL_ADDRESS
+#### API_SMTP_LOCAL_ADDRESS
 
 This environment variable is used to configure the local IP address to bind to for outgoing SMTP connections. Optional - useful when your server has multiple network interfaces.
 

@@ -15,6 +15,9 @@ import {
 } from "./eventGeneration/eventGenerationPipeline";
 import { runMetricsAggregationWorker } from "./metrics/metricsAggregationWorker";
 
+const DEFAULT_HOURLY_CRON = "0 * * * *";
+const DEFAULT_DAILY_2AM_CRON = "0 2 * * *";
+
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
 let metricsTask: cron.ScheduledTask | undefined;
@@ -46,7 +49,8 @@ export async function startBackgroundWorkers(
 
 		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
-			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
+				DEFAULT_HOURLY_CRON,
 			() => runMaterializationWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -56,7 +60,8 @@ export async function startBackgroundWorkers(
 
 		// Schedule cleanup worker - runs daily at 2 AM UTC
 		cleanupTask = cron.schedule(
-			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
+				DEFAULT_DAILY_2AM_CRON,
 			() => runCleanupWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -124,10 +129,10 @@ export async function startBackgroundWorkers(
 			{
 				materializationSchedule:
 					process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
-					"0 * * * *",
+					DEFAULT_HOURLY_CRON,
 				cleanupSchedule:
 					process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
-					"0 2 * * *",
+					DEFAULT_DAILY_2AM_CRON,
 				metricsEnabled: metricsEnabled && !!getMetricsSnapshots,
 			},
 			"Background worker service started successfully",
@@ -363,9 +368,11 @@ export function getBackgroundWorkerStatus(): {
 	return {
 		isRunning,
 		materializationSchedule:
-			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
+			DEFAULT_HOURLY_CRON,
 		cleanupSchedule:
-			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
+			DEFAULT_DAILY_2AM_CRON,
 		// Include metrics fields when enabled (default or explicit)
 		...(currentMetricsEnabled && {
 			metricsSchedule: currentMetricsSchedule,

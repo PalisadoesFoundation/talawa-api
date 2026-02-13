@@ -194,16 +194,16 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * SMTP username for authentication.
 	 */
-	SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * SMTP password for authentication.
 	 */
-	SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Whether to use SSL/TLS for SMTP connection.
 	 * Set to true for port 465, false for port 587 with STARTTLS.
 	 */
-	SMTP_SECURE: Type.Optional(Type.Boolean()),
+	API_SMTP_SECURE: Type.Optional(Type.Boolean()),
 	/**
 	 * Verified email address to send emails from via SMTP.
 	 */
@@ -225,11 +225,11 @@ export const envConfigSchema = Type.Object({
 	 * Client hostname to greet the SMTP server with.
 	 * Default: machine hostname
 	 */
-	SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Local IP address to bind to for outgoing SMTP connections.
 	 */
-	SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * URL to the youtube account of the community.
 	 */

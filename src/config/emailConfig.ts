@@ -11,13 +11,13 @@ const schema = Type.Pick(envConfigSchema, [
 	"API_EMAIL_PROVIDER",
 	"API_SMTP_HOST",
 	"API_SMTP_PORT",
-	"SMTP_USER",
-	"SMTP_PASSWORD",
-	"SMTP_SECURE",
+	"API_SMTP_USER",
+	"API_SMTP_PASSWORD",
+	"API_SMTP_SECURE",
 	"API_SMTP_FROM_EMAIL",
 	"API_SMTP_FROM_NAME",
-	"SMTP_NAME",
-	"SMTP_LOCAL_ADDRESS",
+	"API_SMTP_NAME",
+	"API_SMTP_LOCAL_ADDRESS",
 ]);
 
 export type EmailEnvConfig = Static<typeof schema>;

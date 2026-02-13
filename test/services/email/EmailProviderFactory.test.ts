@@ -59,8 +59,8 @@ describe("EmailProviderFactory", () => {
 			API_EMAIL_PROVIDER: "smtp",
 			API_SMTP_HOST: "smtp.example.com",
 			API_SMTP_PORT: 587,
-			SMTP_USER: "user@example.com",
-			SMTP_PASSWORD: "password",
+			API_SMTP_USER: "user@example.com",
+			API_SMTP_PASSWORD: "password",
 			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
@@ -86,8 +86,8 @@ describe("EmailProviderFactory", () => {
 			API_EMAIL_PROVIDER: "smtp",
 			API_SMTP_HOST: "smtp.example.com",
 			API_SMTP_PORT: 587,
-			// SMTP_USER omitted
-			// SMTP_PASSWORD omitted
+			// API_SMTP_USER omitted
+			// API_SMTP_PASSWORD omitted
 			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
@@ -100,8 +100,8 @@ describe("EmailProviderFactory", () => {
 			API_EMAIL_PROVIDER: "smtp",
 			API_SMTP_HOST: "smtp.example.com",
 			API_SMTP_PORT: 587,
-			SMTP_USER: "user@example.com",
-			SMTP_PASSWORD: "password",
+			API_SMTP_USER: "user@example.com",
+			API_SMTP_PASSWORD: "password",
 			API_SMTP_FROM_EMAIL: "from@example.com",
 			// API_SMTP_FROM_NAME omitted
 		} as unknown as EnvConfig;
@@ -110,12 +110,12 @@ describe("EmailProviderFactory", () => {
 		expect(provider).toBeInstanceOf(SMTPProvider);
 	});
 
-	it("should pass SMTP_SECURE through to SMTPProvider", () => {
+	it("should pass API_SMTP_SECURE through to SMTPProvider", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
 			API_SMTP_HOST: "smtp.example.com",
 			API_SMTP_PORT: 465,
-			SMTP_SECURE: true,
+			API_SMTP_SECURE: true,
 			API_SMTP_FROM_EMAIL: "from@example.com",
 		} as unknown as EnvConfig;
 
@@ -196,13 +196,13 @@ describe("EmailProviderFactory", () => {
 			});
 		});
 
-		it("should work without SMTP_USER and SMTP_PASSWORD (no auth required)", () => {
+		it("should work without API_SMTP_USER and API_SMTP_PASSWORD (no auth required)", () => {
 			const config = {
 				API_EMAIL_PROVIDER: "mailpit",
 				API_SMTP_HOST: "mailpit",
 				API_SMTP_PORT: 1025,
-				// SMTP_USER omitted
-				// SMTP_PASSWORD omitted
+				// API_SMTP_USER omitted
+				// API_SMTP_PASSWORD omitted
 				API_SMTP_FROM_EMAIL: "test@talawa.local",
 			} as unknown as EnvConfig;
 

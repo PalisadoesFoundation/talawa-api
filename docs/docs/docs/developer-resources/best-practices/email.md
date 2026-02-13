@@ -180,11 +180,11 @@ API_EMAIL_PROVIDER=smtp
 # SMTP Server Settings
 API_SMTP_HOST=smtp.gmail.com          # Required: SMTP server hostname  
 API_SMTP_PORT=587                     # Required: SMTP port (587 for TLS, 465 for SSL)
-SMTP_SECURE=false                 # Required: true for SSL (port 465), false for TLS (port 587)
+API_SMTP_SECURE=false                 # Required: true for SSL (port 465), false for TLS (port 587)
 
 # Authentication (optional if server doesn't require auth)
-SMTP_USER=your-email@gmail.com    # SMTP username
-SMTP_PASSWORD=your-app-password   # SMTP password
+API_SMTP_USER=your-email@gmail.com    # SMTP username
+API_SMTP_PASSWORD=your-app-password   # SMTP password
 
 # Email Settings
 API_SMTP_FROM_EMAIL=noreply@talawa.io # Required: sender email
@@ -203,7 +203,7 @@ API_SMTP_FROM_NAME=Talawa             # Optional: sender name (default: "Talawa"
 - Prevents overwhelming SMTP servers
 
 **TLS/SSL Support**
-- Configurable security mode via `SMTP_SECURE`
+- Configurable security mode via `API_SMTP_SECURE`
 - STARTTLS support for port 587
 - Direct SSL/TLS for port 465
 
@@ -222,9 +222,9 @@ API_SMTP_FROM_NAME=Talawa             # Optional: sender name (default: "Talawa"
 ```bash
 API_SMTP_HOST=smtp.gmail.com
 API_SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password  # Use App Password, not regular password
+API_SMTP_SECURE=false
+API_SMTP_USER=your-email@gmail.com
+API_SMTP_PASSWORD=your-app-password  # Use App Password, not regular password
 API_SMTP_FROM_EMAIL=your-email@gmail.com
 ```
 
@@ -234,9 +234,9 @@ API_SMTP_FROM_EMAIL=your-email@gmail.com
 ```bash
 API_SMTP_HOST=smtp-mail.outlook.com
 API_SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@outlook.com
-SMTP_PASSWORD=your-password
+API_SMTP_SECURE=false
+API_SMTP_USER=your-email@outlook.com
+API_SMTP_PASSWORD=your-password
 API_SMTP_FROM_EMAIL=your-email@outlook.com
 ```
 
@@ -244,9 +244,9 @@ API_SMTP_FROM_EMAIL=your-email@outlook.com
 ```bash
 API_SMTP_HOST=smtp.secureserver.net
 API_SMTP_PORT=465
-SMTP_SECURE=true
-SMTP_USER=your-email@yourdomain.com
-SMTP_PASSWORD=your-password
+API_SMTP_SECURE=true
+API_SMTP_USER=your-email@yourdomain.com
+API_SMTP_PASSWORD=your-password
 API_SMTP_FROM_EMAIL=your-email@yourdomain.com
 ```
 
@@ -254,15 +254,15 @@ API_SMTP_FROM_EMAIL=your-email@yourdomain.com
 ```bash
 API_SMTP_HOST=mail.yourdomain.com
 API_SMTP_PORT=587
-SMTP_SECURE=false
+API_SMTP_SECURE=false
 # Authentication may not be required for local server
-# SMTP_USER and SMTP_PASSWORD can be omitted
+# API_SMTP_USER and API_SMTP_PASSWORD can be omitted
 API_SMTP_FROM_EMAIL=noreply@yourdomain.com
 ```
 
 ### SMTP Security Best Practices
 
-1. **Use TLS/STARTTLS**: Always use port 587 with `SMTP_SECURE=false` (STARTTLS) or port 465 with `SMTP_SECURE=true` (direct SSL)
+1. **Use TLS/STARTTLS**: Always use port 587 with `API_SMTP_SECURE=false` (STARTTLS) or port 465 with `API_SMTP_SECURE=true` (direct SSL)
 2. **Never use port 25**: Port 25 is often blocked by ISPs and lacks encryption
 3. **Use App Passwords**: For Gmail and other providers with 2FA, use app-specific passwords
 4. **Secure Credentials**: Store SMTP credentials in environment variables, never in code
@@ -608,13 +608,13 @@ API_AWS_SECRET_ACCESS_KEY=...
 ```bash
 API_SMTP_HOST=smtp.example.com          # SMTP server hostname (required)
 API_SMTP_PORT=587                       # SMTP port (required)
-SMTP_SECURE=false                   # Use SSL/TLS (required)
-SMTP_USER=user@example.com          # SMTP username (optional)
-SMTP_PASSWORD=password              # SMTP password (optional)
+API_SMTP_SECURE=false                   # Use SSL/TLS (required)
+API_SMTP_USER=user@example.com          # SMTP username (optional)
+API_SMTP_PASSWORD=password              # SMTP password (optional)
 API_SMTP_FROM_EMAIL=noreply@talawa.io   # Sender email (required)
 API_SMTP_FROM_NAME=Talawa               # Sender name (optional)
-SMTP_NAME=client.hostname.com       # Client hostname for HELO/EHLO (optional)
-SMTP_LOCAL_ADDRESS=192.168.1.10     # Local bind IP address (optional)
+API_SMTP_NAME=client.hostname.com       # Client hostname for HELO/EHLO (optional)
+API_SMTP_LOCAL_ADDRESS=192.168.1.10     # Local bind IP address (optional)
 ```
 
 **Queue Processing**
@@ -729,21 +729,21 @@ aws ses get-send-quota --region us-east-1
 **Authentication failed:**
 
 1. **Verify credentials:**
-   - Double-check SMTP_USER and SMTP_PASSWORD
+   - Double-check API_SMTP_USER and API_SMTP_PASSWORD
    - For Gmail, use App Password (not regular password)
    - For Office 365, ensure account allows SMTP access
 
 2. **Check authentication requirements:**
    ```typescript
    // Some servers don't require auth
-   // Omit SMTP_USER and SMTP_PASSWORD if not needed
+   // Omit API_SMTP_USER and API_SMTP_PASSWORD if not needed
    ```
 
 **SSL/TLS errors:**
 
-1. **Use correct SMTP_SECURE setting:**
-   - Port 587: `SMTP_SECURE=false` (uses STARTTLS)
-   - Port 465: `SMTP_SECURE=true` (direct SSL/TLS)
+1. **Use correct API_SMTP_SECURE setting:**
+   - Port 587: `API_SMTP_SECURE=false` (uses STARTTLS)
+   - Port 465: `API_SMTP_SECURE=true` (direct SSL/TLS)
    - Never use port 25 (unencrypted)
 
 2. **Certificate issues:**

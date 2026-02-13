@@ -30,13 +30,13 @@ function clearEmailCredentials(answers: SetupAnswers): void {
 	delete answers.API_AWS_SES_FROM_NAME;
 	delete answers.API_SMTP_HOST;
 	delete answers.API_SMTP_PORT;
-	delete answers.SMTP_USER;
-	delete answers.SMTP_PASSWORD;
-	delete answers.SMTP_SECURE;
+	delete answers.API_SMTP_USER;
+	delete answers.API_SMTP_PASSWORD;
+	delete answers.API_SMTP_SECURE;
 	delete answers.API_SMTP_FROM_EMAIL;
 	delete answers.API_SMTP_FROM_NAME;
-	delete answers.SMTP_NAME;
-	delete answers.SMTP_LOCAL_ADDRESS;
+	delete answers.API_SMTP_NAME;
+	delete answers.API_SMTP_LOCAL_ADDRESS;
 }
 
 export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -61,11 +61,11 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			delete answers.API_AWS_SECRET_ACCESS_KEY;
 			delete answers.API_AWS_SES_FROM_EMAIL;
 			delete answers.API_AWS_SES_FROM_NAME;
-			delete answers.SMTP_USER;
-			delete answers.SMTP_PASSWORD;
-			delete answers.SMTP_SECURE;
-			delete answers.SMTP_NAME;
-			delete answers.SMTP_LOCAL_ADDRESS;
+			delete answers.API_SMTP_USER;
+			delete answers.API_SMTP_PASSWORD;
+			delete answers.API_SMTP_SECURE;
+			delete answers.API_SMTP_NAME;
+			delete answers.API_SMTP_LOCAL_ADDRESS;
 
 			console.log(
 				"SUCCESS: Mailpit configured automatically for local email testing.",
@@ -89,13 +89,13 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				// Avoid persisting unrelated provider settings
 				delete answers.API_SMTP_HOST;
 				delete answers.API_SMTP_PORT;
-				delete answers.SMTP_USER;
-				delete answers.SMTP_PASSWORD;
-				delete answers.SMTP_SECURE;
+				delete answers.API_SMTP_USER;
+				delete answers.API_SMTP_PASSWORD;
+				delete answers.API_SMTP_SECURE;
 				delete answers.API_SMTP_FROM_EMAIL;
 				delete answers.API_SMTP_FROM_NAME;
-				delete answers.SMTP_NAME;
-				delete answers.SMTP_LOCAL_ADDRESS;
+				delete answers.API_SMTP_NAME;
+				delete answers.API_SMTP_LOCAL_ADDRESS;
 				answers.API_AWS_SES_REGION = await promptInput(
 					"API_AWS_SES_REGION",
 					"AWS SES Region:",
@@ -194,8 +194,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				);
 
 				if (useAuth) {
-					answers.SMTP_USER = await promptInput(
-						"SMTP_USER",
+					answers.API_SMTP_USER = await promptInput(
+						"API_SMTP_USER",
 						"SMTP Username:",
 						"",
 						(value) => {
@@ -206,8 +206,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						},
 					);
 
-					answers.SMTP_PASSWORD = await promptPassword(
-						"SMTP_PASSWORD",
+					answers.API_SMTP_PASSWORD = await promptPassword(
+						"API_SMTP_PASSWORD",
 						"SMTP Password:",
 						(value) => {
 							if (!value || value.trim().length === 0) {
@@ -218,15 +218,15 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					);
 				} else {
 					// Clear auth fields when authentication is not required
-					delete answers.SMTP_USER;
-					delete answers.SMTP_PASSWORD;
+					delete answers.API_SMTP_USER;
+					delete answers.API_SMTP_PASSWORD;
 				}
 
 				// Determine secure based on port
 				const defaultSecure =
 					parseInt(answers.API_SMTP_PORT || "0", 10) === 465;
-				answers.SMTP_SECURE = (await promptConfirm(
-					"SMTP_SECURE",
+				answers.API_SMTP_SECURE = (await promptConfirm(
+					"API_SMTP_SECURE",
 					"Use SSL/TLS? (true for port 465, false for port 587)",
 					defaultSecure,
 				))
@@ -247,25 +247,25 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				);
 
 				const smtpName = await promptInput(
-					"SMTP_NAME",
+					"API_SMTP_NAME",
 					"Client Hostname (optional, e.g., for HELO/EHLO):",
 					"",
 				);
 				if (smtpName.trim()) {
-					answers.SMTP_NAME = smtpName.trim();
+					answers.API_SMTP_NAME = smtpName.trim();
 				} else {
-					delete answers.SMTP_NAME;
+					delete answers.API_SMTP_NAME;
 				}
 
 				const localAddress = await promptInput(
-					"SMTP_LOCAL_ADDRESS",
+					"API_SMTP_LOCAL_ADDRESS",
 					"Local Bind IP Address (optional):",
 					"",
 				);
 				if (localAddress.trim()) {
-					answers.SMTP_LOCAL_ADDRESS = localAddress.trim();
+					answers.API_SMTP_LOCAL_ADDRESS = localAddress.trim();
 				} else {
-					delete answers.SMTP_LOCAL_ADDRESS;
+					delete answers.API_SMTP_LOCAL_ADDRESS;
 				}
 			}
 
@@ -368,13 +368,13 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 							const service = new SMTPProvider({
 								host: (answers.API_SMTP_HOST || "") as NonEmptyString,
 								port: parseInt(answers.API_SMTP_PORT || "587", 10),
-								user: answers.SMTP_USER,
-								password: answers.SMTP_PASSWORD,
-								secure: answers.SMTP_SECURE === "true",
+								user: answers.API_SMTP_USER,
+								password: answers.API_SMTP_PASSWORD,
+								secure: answers.API_SMTP_SECURE === "true",
 								fromEmail: answers.API_SMTP_FROM_EMAIL,
 								fromName: answers.API_SMTP_FROM_NAME,
-								name: answers.SMTP_NAME,
-								localAddress: answers.SMTP_LOCAL_ADDRESS,
+								name: answers.API_SMTP_NAME,
+								localAddress: answers.API_SMTP_LOCAL_ADDRESS,
 							});
 
 							const result = await service.sendEmail({

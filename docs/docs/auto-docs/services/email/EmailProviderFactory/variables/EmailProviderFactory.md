@@ -58,27 +58,27 @@ Email environment configuration
 
 `string`
 
+###### API_SMTP_LOCAL_ADDRESS?
+
+`string`
+
+###### API_SMTP_NAME?
+
+`string`
+
+###### API_SMTP_PASSWORD?
+
+`string`
+
 ###### API_SMTP_PORT?
 
 `number`
 
-###### SMTP_LOCAL_ADDRESS?
-
-`string`
-
-###### SMTP_NAME?
-
-`string`
-
-###### SMTP_PASSWORD?
-
-`string`
-
-###### SMTP_SECURE?
+###### API_SMTP_SECURE?
 
 `boolean`
 
-###### SMTP_USER?
+###### API_SMTP_USER?
 
 `string`
 
@@ -106,7 +106,7 @@ Error if provider type is unsupported
 
 #### Remarks
 
-For SMTP provider, optional fields (SMTP_USER, SMTP_PASSWORD, SMTP_SECURE,
+For SMTP provider, optional fields (API_SMTP_USER, API_SMTP_PASSWORD, API_SMTP_SECURE,
 API_SMTP_FROM_EMAIL, API_SMTP_FROM_NAME) are passed through to SMTPProvider.
 For SES provider, optional fields (API_AWS_ACCESS_KEY_ID, API_AWS_SECRET_ACCESS_KEY,
 API_AWS_SES_FROM_NAME) are passed through to SESProvider.

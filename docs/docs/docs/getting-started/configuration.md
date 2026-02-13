@@ -165,8 +165,8 @@ For providers like Gmail, SendGrid, or Mailgun, update the `.env` file with:
 API_EMAIL_PROVIDER=smtp
 API_SMTP_HOST=smtp.yourprovider.com
 API_SMTP_PORT=587
-SMTP_USER=your-username
-SMTP_PASSWORD=your-password
+API_SMTP_USER=your-username
+API_SMTP_PASSWORD=your-password
 API_SMTP_FROM_EMAIL=sender@yourdomain.com
 API_SMTP_FROM_NAME=Your Organization
 ```
@@ -294,13 +294,13 @@ You will need to update the `.env` file with the following information.
 1. `API_EMAIL_PROVIDER` - Set to `smtp`
 2. `API_SMTP_HOST` - SMTP server hostname (required)
 3. `API_SMTP_PORT` - SMTP server port (required, e.g., 587 or 465)
-4. `SMTP_USER` - SMTP username (optional)
-5. `SMTP_PASSWORD` - SMTP password (optional)
-6. `SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
+4. `API_SMTP_USER` - SMTP username (optional)
+5. `API_SMTP_PASSWORD` - SMTP password (optional)
+6. `API_SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
 7. `API_SMTP_FROM_EMAIL` - Sender email address (required)
 8. `API_SMTP_FROM_NAME` - Sender display name (optional)
-9. `SMTP_NAME` - Client hostname for HELO/EHLO (optional)
-10. `SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
+9. `API_SMTP_NAME` - Client hostname for HELO/EHLO (optional)
+10. `API_SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
 
 **Required IAM Permissions:**
 Your AWS IAM user needs the following permissions:

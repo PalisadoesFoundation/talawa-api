@@ -558,13 +558,13 @@ describe("emailSetup", () => {
 			expect(result.API_EMAIL_PROVIDER).toBe("smtp");
 			expect(result.API_SMTP_HOST).toBe("smtp.gmail.com");
 			expect(result.API_SMTP_PORT).toBe("587");
-			expect(result.SMTP_USER).toBe("user@gmail.com");
-			expect(result.SMTP_PASSWORD).toBe("app-password");
-			expect(result.SMTP_SECURE).toBe("false");
+			expect(result.API_SMTP_USER).toBe("user@gmail.com");
+			expect(result.API_SMTP_PASSWORD).toBe("app-password");
+			expect(result.API_SMTP_SECURE).toBe("false");
 			expect(result.API_SMTP_FROM_EMAIL).toBe("from@example.com");
 			expect(result.API_SMTP_FROM_NAME).toBe("Test App");
-			expect(result.SMTP_NAME).toBe("client.hostname");
-			expect(result.SMTP_LOCAL_ADDRESS).toBe("192.168.1.100");
+			expect(result.API_SMTP_NAME).toBe("client.hostname");
+			expect(result.API_SMTP_LOCAL_ADDRESS).toBe("192.168.1.100");
 
 			// Assert successful mock usage
 			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledWith(
@@ -596,10 +596,10 @@ describe("emailSetup", () => {
 
 			expect(result.API_EMAIL_PROVIDER).toBe("smtp");
 			expect(result.API_SMTP_HOST).toBe("localhost");
-			expect(result.SMTP_USER).toBeUndefined();
-			expect(result.SMTP_PASSWORD).toBeUndefined();
-			expect(result.SMTP_NAME).toBeUndefined();
-			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
+			expect(result.API_SMTP_USER).toBeUndefined();
+			expect(result.API_SMTP_PASSWORD).toBeUndefined();
+			expect(result.API_SMTP_NAME).toBeUndefined();
+			expect(result.API_SMTP_LOCAL_ADDRESS).toBeUndefined();
 		});
 
 		it("should treat whitespace-only SMTP optional fields as undefined", async () => {
@@ -621,8 +621,8 @@ describe("emailSetup", () => {
 
 			const result = await emailSetup(answers);
 
-			expect(result.SMTP_NAME).toBeUndefined();
-			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
+			expect(result.API_SMTP_NAME).toBeUndefined();
+			expect(result.API_SMTP_LOCAL_ADDRESS).toBeUndefined();
 		});
 
 		it("should retry SMTP setup when test fails", async () => {
@@ -677,7 +677,7 @@ describe("emailSetup", () => {
 			const result = await emailSetup(answers);
 
 			expect(result.API_SMTP_HOST).toBe("smtp.good.com");
-			expect(result.SMTP_USER).toBe("good@example.com");
+			expect(result.API_SMTP_USER).toBe("good@example.com");
 			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledTimes(2);
 		});
 

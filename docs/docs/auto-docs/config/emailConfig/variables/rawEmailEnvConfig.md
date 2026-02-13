@@ -46,26 +46,26 @@ Defined in: [src/config/emailConfig.ts:25](https://github.com/PalisadoesFoundati
 
 > `optional` **API\_SMTP\_HOST**: `string`
 
+### API\_SMTP\_LOCAL\_ADDRESS?
+
+> `optional` **API\_SMTP\_LOCAL\_ADDRESS**: `string`
+
+### API\_SMTP\_NAME?
+
+> `optional` **API\_SMTP\_NAME**: `string`
+
+### API\_SMTP\_PASSWORD?
+
+> `optional` **API\_SMTP\_PASSWORD**: `string`
+
 ### API\_SMTP\_PORT?
 
 > `optional` **API\_SMTP\_PORT**: `number`
 
-### SMTP\_LOCAL\_ADDRESS?
+### API\_SMTP\_SECURE?
 
-> `optional` **SMTP\_LOCAL\_ADDRESS**: `string`
+> `optional` **API\_SMTP\_SECURE**: `boolean`
 
-### SMTP\_NAME?
+### API\_SMTP\_USER?
 
-> `optional` **SMTP\_NAME**: `string`
-
-### SMTP\_PASSWORD?
-
-> `optional` **SMTP\_PASSWORD**: `string`
-
-### SMTP\_SECURE?
-
-> `optional` **SMTP\_SECURE**: `boolean`
-
-### SMTP\_USER?
-
-> `optional` **SMTP\_USER**: `string`
+> `optional` **API\_SMTP\_USER**: `string`
