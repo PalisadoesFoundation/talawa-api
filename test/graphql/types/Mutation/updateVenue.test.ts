@@ -232,6 +232,18 @@ suite("Mutation field updateVenue", () => {
 		assertToBeNonNullish(signUpResult.data?.signUp?.user?.id);
 		const nonAdminToken = signUpResult.data.signUp.authenticationToken;
 
+		const nonAdminUserId = signUpResult.data.signUp.user.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, nonAdminUserId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
+
 		// Attempt to update venue with non-admin token
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: { authorization: `bearer ${nonAdminToken}` },
@@ -1075,6 +1087,18 @@ suite("Mutation field updateVenue", () => {
 		assertToBeNonNullish(signUpResult.data?.signUp?.user);
 		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
 		const tempUserToken = signUpResult.data.signUp.authenticationToken;
+
+		const tempUserId = signUpResult.data.signUp.user.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, tempUserId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// delete user from DB
 		await server.drizzleClient
