@@ -131,8 +131,8 @@ suite("Mutation field updateVenue", () => {
 		for (const fn of [...cleanupFns].reverse()) {
 			try {
 				await fn();
-			} catch (e) {
-				console.error("Cleanup failed:", e);
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
 			}
 		}
 
@@ -284,7 +284,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
@@ -338,7 +340,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
@@ -457,7 +461,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, venue1Id));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Create second venue with different name
@@ -487,7 +493,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, venue2Id));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Try to rename venue1 to match venue2's name
@@ -547,7 +555,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		const newDescription = "Updated description for testing";
@@ -601,7 +611,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		const newName = "Multi Field Updated Venue";
@@ -663,7 +675,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Update the venue, keeping the same name but changing capacity
@@ -762,7 +776,9 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName,
 				);
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Update venue using FileMetadataInput
@@ -944,7 +960,9 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName2,
 				);
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		try {
@@ -1160,7 +1178,9 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Put first file in MinIO
@@ -1180,7 +1200,9 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName1,
 				);
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Add attachments via update
@@ -1228,7 +1250,9 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName2,
 				);
-			} catch {}
+			} catch {
+				// Intentional: best-effort cleanup, ignore errors
+			}
 		});
 
 		// Mock removeObject to fail (simulating cleanup failure)
