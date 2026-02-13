@@ -899,6 +899,14 @@ suite("Query field event", () => {
 		});
 
 		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
+			// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
+			vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
+
+			// Cleanup: Restore real timers
+			testCleanupFunctions.push(async () => {
+				vi.useRealTimers();
+			});
+
 			const { authToken, userId } = await getAdminTokenAndUserId();
 
 			const organization = await createTestOrganization(authToken, userId);
