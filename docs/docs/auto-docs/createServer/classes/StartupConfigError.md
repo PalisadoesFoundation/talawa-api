@@ -4,7 +4,10 @@
 
 # Class: StartupConfigError
 
-Defined in: [src/createServer.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L34)
+Defined in: [src/createServer.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L38)
+
+Error thrown during process startup when critical configuration is missing or
+still set to the placeholder sentinel (`PLACEHOLDER_SENTINEL`).
 
 ## Extends
 
@@ -16,7 +19,7 @@ Defined in: [src/createServer.ts:34](https://github.com/PalisadoesFoundation/tal
 
 > **new StartupConfigError**(`message`): `StartupConfigError`
 
-Defined in: [src/createServer.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L35)
+Defined in: [src/createServer.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L39)
 
 #### Parameters
 

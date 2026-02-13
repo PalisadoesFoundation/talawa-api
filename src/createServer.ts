@@ -31,6 +31,10 @@ declare module "fastify" {
 
 const PLACEHOLDER_SENTINEL = "CHANGE_ME_BEFORE_DEPLOY";
 
+/**
+ * Error thrown during process startup when critical configuration is missing or
+ * still set to the placeholder sentinel (`PLACEHOLDER_SENTINEL`).
+ */
 export class StartupConfigError extends Error {
 	constructor(message: string) {
 		super(message);
@@ -38,6 +42,25 @@ export class StartupConfigError extends Error {
 	}
 }
 
+/**
+ * Validates that critical secrets in the environment configuration are neither
+ * empty nor set to the placeholder sentinel (`PLACEHOLDER_SENTINEL`).
+ *
+ * This check is primarily intended to prevent accidental deployments using the
+ * default sentinel placeholders in production templates.
+ *
+ * @param envConfig - The parsed environment configuration. This function checks
+ * API-level secrets such as `API_JWT_SECRET`, `API_COOKIE_SECRET`,
+ * `API_MINIO_SECRET_KEY`, `API_POSTGRES_PASSWORD`, and
+ * `API_ADMINISTRATOR_USER_PASSWORD`.
+ * Additionally, when present, it validates `process.env.MINIO_ROOT_PASSWORD` and
+ * `process.env.POSTGRES_PASSWORD` (service-level credentials injected for the
+ * rootless-production compose path).
+ * @returns void - Returns nothing; throws {@link StartupConfigError} when any
+ * required secret is empty or contains the placeholder sentinel.
+ * @throws {StartupConfigError} If any required secret is empty or contains the
+ * placeholder sentinel.
+ */
 export const assertSecretsPresent = (envConfig: EnvConfig) => {
 	const invalidEnvNames: string[] = [];
 

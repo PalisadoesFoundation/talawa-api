@@ -24,10 +24,26 @@ describe("assertSecretsPresent", () => {
 		expect(() => assertSecretsPresent(envConfig)).toThrow(StartupConfigError);
 	});
 
+	it("throws StartupConfigError when an API secret is whitespace-only", () => {
+		const envConfig = makeValidEnvConfig();
+		envConfig.API_POSTGRES_PASSWORD =
+			"   " as unknown as EnvConfig["API_POSTGRES_PASSWORD"];
+
+		expect(() => assertSecretsPresent(envConfig)).toThrow(StartupConfigError);
+	});
+
 	it("throws StartupConfigError when an API secret contains the sentinel", () => {
 		const envConfig = makeValidEnvConfig();
 		envConfig.API_MINIO_SECRET_KEY =
 			"CHANGE_ME_BEFORE_DEPLOY" as unknown as EnvConfig["API_MINIO_SECRET_KEY"];
+
+		expect(() => assertSecretsPresent(envConfig)).toThrow(StartupConfigError);
+	});
+
+	it("throws StartupConfigError when an API secret contains an embedded sentinel substring", () => {
+		const envConfig = makeValidEnvConfig();
+		envConfig.API_MINIO_SECRET_KEY =
+			"prefixCHANGE_ME_BEFORE_DEPLOYsuffix" as unknown as EnvConfig["API_MINIO_SECRET_KEY"];
 
 		expect(() => assertSecretsPresent(envConfig)).toThrow(StartupConfigError);
 	});
@@ -60,6 +76,20 @@ describe("assertSecretsPresent", () => {
 				process.env.POSTGRES_PASSWORD = prev;
 			}
 		}
+	});
+
+	it("includes all offending secret names in the error message when multiple are invalid", () => {
+		const envConfig = makeValidEnvConfig();
+		envConfig.API_JWT_SECRET =
+			"CHANGE_ME_BEFORE_DEPLOY" as unknown as EnvConfig["API_JWT_SECRET"];
+		envConfig.API_POSTGRES_PASSWORD =
+			"" as unknown as EnvConfig["API_POSTGRES_PASSWORD"];
+
+		expect(() => assertSecretsPresent(envConfig)).toThrow(StartupConfigError);
+		expect(() => assertSecretsPresent(envConfig)).toThrow("API_JWT_SECRET");
+		expect(() => assertSecretsPresent(envConfig)).toThrow(
+			"API_POSTGRES_PASSWORD",
+		);
 	});
 
 	it("does not throw when values are non-empty and do not contain sentinel (and service vars are unset)", () => {

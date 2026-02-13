@@ -6,11 +6,25 @@
 
 > **assertSecretsPresent**(`envConfig`): `void`
 
-Defined in: [src/createServer.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L41)
+Defined in: [src/createServer.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L64)
+
+Validates that critical secrets in the environment configuration are neither
+empty nor set to the placeholder sentinel (`PLACEHOLDER_SENTINEL`).
+
+This check is primarily intended to prevent accidental deployments using the
+default sentinel placeholders in production templates.
 
 ## Parameters
 
 ### envConfig
+
+The parsed environment configuration. This function checks
+API-level secrets such as `API_JWT_SECRET`, `API_COOKIE_SECRET`,
+`API_MINIO_SECRET_KEY`, `API_POSTGRES_PASSWORD`, and
+`API_ADMINISTRATOR_USER_PASSWORD`.
+Additionally, when present, it validates `process.env.MINIO_ROOT_PASSWORD` and
+`process.env.POSTGRES_PASSWORD` (service-level credentials injected for the
+rootless-production compose path).
 
 #### API_ACCOUNT_LOCKOUT_DURATION_MS?
 
@@ -672,3 +686,11 @@ SMTP username for authentication.
 ## Returns
 
 `void`
+
+void - Returns nothing; throws [StartupConfigError](../classes/StartupConfigError.md) when any
+required secret is empty or contains the placeholder sentinel.
+
+## Throws
+
+If any required secret is empty or contains the
+placeholder sentinel.
