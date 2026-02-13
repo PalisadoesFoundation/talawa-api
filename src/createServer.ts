@@ -15,6 +15,8 @@ import {
 import plugins from "./fastifyPlugins/index";
 import routes from "./routes/index";
 import { fastifyOtelInstrumentation } from "./tracing";
+import { ErrorCode } from "./utilities/errors/errorCodes";
+import { TalawaRestError } from "./utilities/errors/TalawaRestError";
 import { loggerOptions } from "./utilities/logging/logger";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
@@ -26,6 +28,55 @@ declare module "fastify" {
 		envConfig: EnvConfig;
 	}
 }
+
+const PLACEHOLDER_SENTINEL = "CHANGE_ME_BEFORE_DEPLOY";
+
+const assertSecretsPresent = (envConfig: EnvConfig) => {
+	const invalidEnvNames: string[] = [];
+
+	const isEmptyOrPlaceholder = (value: string) => {
+		const trimmed = value.trim();
+		return trimmed.length === 0 || trimmed.includes(PLACEHOLDER_SENTINEL);
+	};
+
+	const checkRequired = (name: string, value: string) => {
+		if (isEmptyOrPlaceholder(value)) {
+			invalidEnvNames.push(name);
+		}
+	};
+
+	checkRequired("API_JWT_SECRET", envConfig.API_JWT_SECRET);
+	checkRequired("API_COOKIE_SECRET", envConfig.API_COOKIE_SECRET);
+	checkRequired("API_MINIO_SECRET_KEY", envConfig.API_MINIO_SECRET_KEY);
+	checkRequired("API_POSTGRES_PASSWORD", envConfig.API_POSTGRES_PASSWORD);
+	checkRequired(
+		"API_ADMINISTRATOR_USER_PASSWORD",
+		envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+	);
+
+	// Only validate these when explicitly present for the API process.
+	const minioRootPassword = process.env.MINIO_ROOT_PASSWORD;
+	if (minioRootPassword !== undefined) {
+		checkRequired("MINIO_ROOT_PASSWORD", minioRootPassword);
+	}
+
+	const postgresPassword = process.env.POSTGRES_PASSWORD;
+	if (postgresPassword !== undefined) {
+		checkRequired("POSTGRES_PASSWORD", postgresPassword);
+	}
+
+	if (invalidEnvNames.length > 0) {
+		throw new TalawaRestError({
+			code: ErrorCode.INVALID_INPUT,
+			message: `Refusing to start: replace placeholder/empty values for: ${invalidEnvNames.join(
+				", ",
+			)}`,
+			details: {
+				envNames: invalidEnvNames,
+			},
+		});
+	}
+};
 
 /**
  * This function is used to set up the fastify server.
@@ -44,6 +95,8 @@ export const createServer = async (options?: {
 		dotenv: true,
 		schema: envConfigSchema,
 	});
+
+	assertSecretsPresent(envConfig);
 
 	/**
 	 * The root fastify instance or we could say the talawa api server itself. It could be considered as the root node of a directed acyclic graph(DAG) of fastify plugins.

@@ -10,6 +10,12 @@
 #
 # Docs: https://docs.docker.com/engine/security/rootless/
 services:
+  api:
+    # Expose dependent service credentials to the API process so startup validation can
+    # fail fast if placeholder secrets are still present.
+    environment:
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
   caddy:
     # Replace the base ports list so we don't publish 80/443 by default in rootless mode.
     ports: !override

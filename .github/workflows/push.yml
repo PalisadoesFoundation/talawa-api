@@ -34,9 +34,9 @@ jobs:
           docker compose --env-file ./envFiles/.env.rootless.production \
             -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
             config --no-interpolate -q
-      - name: Validate docker compose config (deploy env, interpolated)
+      - name: Validate docker compose config (rootless env, interpolated)
         run: |
-          docker compose --env-file ./envFiles/.env.deploy \
+          docker compose --env-file ./envFiles/.env.rootless.production \
             -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
             config -q
 
