@@ -131,8 +131,8 @@ suite("Mutation field updateVenue", () => {
 		for (const fn of [...cleanupFns].reverse()) {
 			try {
 				await fn();
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		}
 
@@ -284,8 +284,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -340,8 +340,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -461,8 +461,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, venue1Id));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -493,8 +493,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, venue2Id));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -555,8 +555,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -611,8 +611,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -675,8 +675,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -776,8 +776,8 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName,
 				);
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -960,8 +960,8 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName2,
 				);
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -1178,8 +1178,8 @@ suite("Mutation field updateVenue", () => {
 				await server.drizzleClient
 					.delete(venuesTable)
 					.where(eq(venuesTable.id, testVenueId));
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -1200,8 +1200,8 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName1,
 				);
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
@@ -1250,8 +1250,8 @@ suite("Mutation field updateVenue", () => {
 					server.minio.bucketName,
 					objectName2,
 				);
-			} catch {
-				// Intentional: best-effort cleanup, ignore errors
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		});
 
