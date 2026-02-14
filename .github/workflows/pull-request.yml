@@ -167,12 +167,14 @@ jobs:
           python-version: 3.9
 
       - name: Run Disable Statements Check
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          if [ -z "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
+          if [ -z "$ALL_CHANGED_FILES" ]; then
             echo "No eligible text files changed; skipping disable statements check."
             exit 0
           fi
-          python .github-central/.github/workflows/scripts/disable_statements_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github-central/.github/workflows/scripts/disable_statements_check.py --files $ALL_CHANGED_FILES
 
   check_gql_tada:
     name: Check gql tada files and configuration
@@ -294,17 +296,18 @@ jobs:
 
       - name: Run sensitive files check
         if: steps.check-labels.outputs.skip != 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          if [ -z "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
+          if [ -z "$ALL_CHANGED_FILES" ]; then
             echo "No changed files. Skipping sensitive file check."
             exit 0
           fi
 
+          chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
           python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
             --config .github/workflows/config/sensitive-files.txt \
-            --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-
+            --files $ALL_CHANGED_FILES
 
   Check-AutoDocs:
     needs: [Code-Quality-Checks]
