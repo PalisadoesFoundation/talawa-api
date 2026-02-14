@@ -139,9 +139,8 @@ async function createTestUser(): Promise<TestUser> {
 async function createTestEvent(organizationId: string): Promise<TestEvent> {
 	const { token: adminAuthToken, userId: adminUserId } =
 		await ensureAdminAuth();
-	const now = Date.now();
-	const startAt = new Date(now + 60 * 60 * 1000);
-	const endAt = new Date(now + 3 * 60 * 60 * 1000);
+	const startAt = new Date("2030-06-01T10:00:00Z");
+	const endAt = new Date("2030-06-01T12:00:00Z");
 
 	// Make sure admin is a member of the organization first
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
