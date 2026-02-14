@@ -2789,18 +2789,6 @@ input MutationAcceptMembershipRequestInput {
   membershipRequestId: ID!
 }
 
-"""Input for updating a member's password."""
-input MutationAdminUpdateUserPasswordInput {
-  """Confirm new password"""
-  confirmNewPassword: String!
-
-  """ID of the member whose password is being updated."""
-  id: ID!
-
-  """New password"""
-  newPassword: String!
-}
-
 """Input to block a user from an organization"""
 input MutationBlockUserInput {
   """Global identifier of the organization."""
@@ -4292,9 +4280,6 @@ input MutationUpdateUserInput {
 input MutationUpdateUserPasswordInput {
   """Confirm new password"""
   confirmNewPassword: String!
-
-  """ID of the member whose password is being updated."""
-  id: ID!
 
   """New password"""
   newPassword: String!
