@@ -79,6 +79,32 @@ describe("envFileManager", () => {
 		expect(process.env.KEY2).toBe("VAL2");
 	});
 
+	it('initializeEnvFile (ci=true) writes normalized KEY="value" lines from templateCiFile and populates process.env', async () => {
+		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
+		const templateCi = path.join(ROOT, "template-ci.env");
+		await write(templateCi, "CI_KEY=CI_VAL\nOTHER=123\n");
+
+		delete process.env.CI_KEY;
+		delete process.env.OTHER;
+
+		await initializeEnvFile({
+			ci: true,
+			envFile: ENV,
+			backupFile: BACKUP,
+			tempFile: TEMP,
+			templateCiFile: templateCi,
+		});
+
+		const content = await read(ENV);
+		expect(content).toBe('CI_KEY="CI_VAL"\nOTHER="123"\n');
+		expect(content.endsWith("\n")).toBe(true);
+
+		const parsed = dotenv.parse(content);
+		expect(parsed).toEqual({ CI_KEY: "CI_VAL", OTHER: "123" });
+		expect(process.env.CI_KEY).toBe("CI_VAL");
+		expect(process.env.OTHER).toBe("123");
+	});
+
 	it("initializeEnvFile throws ENV_INIT_FAILED when CI template is missing and leaves no files behind", async () => {
 		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
 		const missingTemplate = path.join(ROOT, "missing-template.env");
@@ -163,6 +189,23 @@ describe("envFileManager", () => {
 
 		expect(process.env.EXISTING_VAR).toBe("new_value");
 		expect(process.env.NEW_VAR).toBe("new_value");
+	});
+
+	it("updateEnvVariable coerces numeric values via String(rawValue) and syncs process.env", async () => {
+		const { updateEnvVariable } = await import("scripts/setup/envFileManager");
+		await write(ENV, "EXISTING_VAR=old_value\n");
+
+		delete process.env.PORT;
+
+		await updateEnvVariable(
+			{ PORT: 3000 },
+			{ envFile: ENV, backupFile: BACKUP, tempFile: TEMP },
+		);
+
+		const content = await read(ENV);
+		expect(content).toContain('PORT="3000"');
+		expect(content.endsWith("\n")).toBe(true);
+		expect(process.env.PORT).toBe("3000");
 	});
 
 	it("updateEnvVariable escapes carriage returns (\\r) in values", async () => {

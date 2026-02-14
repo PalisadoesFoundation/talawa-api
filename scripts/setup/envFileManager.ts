@@ -104,9 +104,11 @@ export async function initializeEnvFile(
 		const parsedEnv = dotenv.parse(fileContent);
 		const nextContent = serializeEnvVars(parsedEnv);
 
-		// `restoreFromBackup` implies safe overwrite: ensure rollback target exists
-		// before we write the new env file content.
-		if (restoreFromBackup) {
+		// Protect existing env files from silent overwrite: if `envFile` already
+		// exists, always take/refresh a backup before we write the new content.
+		// (`restoreFromBackup` only controls whether we attempt automatic restore
+		// on error; callers may still want a manual rollback path.)
+		if (await fileExists(envFile)) {
 			await ensureBackup(envFile, backupFile);
 		}
 
@@ -158,6 +160,11 @@ export async function updateEnvVariable(
 				parsedEnv[key] = value;
 				changed = true;
 			}
+			// Intentionally sync the running process environment for every key in
+			// `appliedEntries`, even when `parsedEnv` already matches and `changed`
+			// stays false (no file rewrite). We may return early on the no-op path,
+			// but callers still expect `process.env` to reflect the effective env
+			// state represented by `parsedEnv`.
 			process.env[key] = value;
 		}
 
