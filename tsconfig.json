@@ -1,0 +1,52 @@
+// More information at this link: https://www.typescriptlang.org/tsconfig/
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"baseUrl": "." /* Specify the base directory to resolve non-relative module names. */,
+		"esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
+		"forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+		"isolatedModules": true /* Ensure that each file can be safely transpiled without relying on other imports. */,
+		"lib": [
+			"ESNext"
+		] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
+		"module": "ESNext" /* Specify what module code is generated. */,
+		"moduleResolution": "Bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
+		"noEmit": true /* Disable emitting files from a compilation. */,
+		"noImplicitOverride": true /* Ensure overriding members in derived classes are marked with an override modifier. */,
+		"noUnusedLocals": true /* Enable error reporting when local variables aren't read. */,
+		"paths": {
+			"~/src/*": ["./src/*"]
+		} /* Specify a set of entries that re-map imports to additional lookup locations. */,
+		"plugins": [
+			/* https://www.typescriptlang.org/tsconfig/#plugins */
+			{
+				"name": "gql.tada/ts-plugin" /* https://gql-tada.0no.co/reference/config-format */,
+				"schema": "./schema.graphql" /* https://gql-tada.0no.co/reference/config-format#schema */,
+				"shouldCheckForColocatedFragments": false /* https://gql-tada.0no.co/reference/config-format#shouldcheckforcolocatedfragments */,
+				"trackFieldUsage": false /* https://gql-tada.0no.co/reference/config-format#trackfieldusage */,
+				"tadaOutputLocation": "./test/graphql/types/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
+				"tadaTurboLocation": "./test/graphql/types/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
+			}
+		],
+		"noUncheckedIndexedAccess": true,
+		"skipLibCheck": true /* Skip type checking all .d.ts files. */,
+		"strict": true /* Enable all strict type-checking options. */,
+		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+		"useUnknownInCatchVariables": true /* Default catch clause variables as 'unknown' instead of 'any'. */,
+		// tsconfig settings for /docs
+		"jsx": "react",
+		"noImplicitAny": true,
+		"strictNullChecks": true
+	},
+	"include": ["src/**/*.ts", "test/**/*.ts"],
+	"exclude": [
+		"**/node_modules/**",
+		"node_modules",
+		"docs/**/*",
+		"dist/**/*",
+		"coverage/**/*",
+		".git/**/*",
+		"**/*.spec.ts",
+		"**/*.test.ts"
+	]
+}
