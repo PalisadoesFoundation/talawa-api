@@ -4,7 +4,7 @@
 
 # Interface: ServiceDependencies
 
-Defined in: [src/services/eventGeneration/types.ts:84](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L84)
+Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L85)
 
 Service dependencies that need to be injected
 
@@ -14,7 +14,7 @@ Service dependencies that need to be injected
 
 > **drizzleClient**: `NodePgDatabase`\<[API Docs](/)\>
 
-Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L85)
+Defined in: [src/services/eventGeneration/types.ts:86](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L86)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/Palisa
 
 > **logger**: `FastifyBaseLogger`
 
-Defined in: [src/services/eventGeneration/types.ts:86](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L86)
+Defined in: [src/services/eventGeneration/types.ts:87](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L87)

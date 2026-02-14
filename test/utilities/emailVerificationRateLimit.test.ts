@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Import the rate limit map for testing cleanup
 import {
+	__resetLastCleanupAtForTests,
 	checkEmailVerificationRateLimit,
 	EMAIL_VERIFICATION_RATE_LIMITS,
 	resetEmailVerificationRateLimit,
@@ -11,6 +12,7 @@ describe("emailVerificationRateLimit", () => {
 		vi.clearAllMocks();
 		// Clear rate limit state between tests for isolation
 		EMAIL_VERIFICATION_RATE_LIMITS.clear();
+		__resetLastCleanupAtForTests(0);
 	});
 
 	afterEach(() => {
@@ -109,6 +111,33 @@ describe("emailVerificationRateLimit", () => {
 			// 1ms after expiry (new window starts)
 			vi.setSystemTime(startTime + 60 * 60 * 1000 + 1);
 			expect(checkEmailVerificationRateLimit(userId)).toBe(true);
+
+			vi.useRealTimers();
+		});
+	});
+
+	describe("cleanup mechanism", () => {
+		it("should cleanup old entries", () => {
+			const userId = "cleanup_test_user";
+			const startTime = 1000000;
+
+			vi.useFakeTimers();
+			vi.setSystemTime(startTime);
+
+			// create an entry
+			checkEmailVerificationRateLimit(userId);
+			expect(EMAIL_VERIFICATION_RATE_LIMITS.has(userId)).toBe(true);
+
+			// Advance time beyond cleanup threshold (2 hours)
+			// Window is 1 hour, cleanup checks for > 2 hours
+			vi.advanceTimersByTime(2 * 60 * 60 * 1000 + 1000);
+
+			// Trigger cleanup (it runs every 5 minutes on check)
+			// Use a different user to trigger the check without modifying the original entry map state for that user immediately (though check cleans up first)
+			checkEmailVerificationRateLimit("trigger_user");
+
+			// Old entry should be gone
+			expect(EMAIL_VERIFICATION_RATE_LIMITS.has(userId)).toBe(false);
 
 			vi.useRealTimers();
 		});

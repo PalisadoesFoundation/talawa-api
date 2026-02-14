@@ -100,10 +100,10 @@ suite("Query field venue", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: {
+					extensions: expect.objectContaining({
 						code: "unauthenticated",
 						correlationId: expect.any(String),
-					},
+					}),
 					path: ["venue"],
 				}),
 			]),

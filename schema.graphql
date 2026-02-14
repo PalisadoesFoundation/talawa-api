@@ -948,7 +948,9 @@ type EventAttendee {
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
-  """The event the attendee is associated with."""
+  """
+  The event the attendee is associated with. Supports both standalone events and recurring event instances.
+  """
   event: Event
 
   """Indicates if the attendee has submitted feedback for the event."""
@@ -2822,8 +2824,8 @@ input MutationCreateActionItemCategoryInput {
 
 """"""
 input MutationCreateAdvertisementInput {
-  """Attachments of the advertisement."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Custom information about the advertisement."""
   description: String
@@ -3090,7 +3092,7 @@ input MutationCreateOrganizationInput {
   addressLine2: String
 
   """Avatar of the organization."""
-  avatar: Upload
+  avatar: FileMetadataInput
 
   """Name of the city where the organization resides in."""
   city: String
@@ -3280,8 +3282,8 @@ input MutationCreateVenueBookingInput {
 
 """"""
 input MutationCreateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -3726,6 +3728,9 @@ input MutationUpdateAgendaItemInput {
   """File metadata for attachments uploaded via MinIO presigned URLs."""
   attachments: [FileMetadataInput!]
 
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
+
   """Custom information about the agenda item."""
   description: String
 
@@ -3745,6 +3750,9 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+
+  """Notes of the agenda item."""
+  notes: String
   url: [UpdateAgendaItemUrlInput!]
 }
 
@@ -3830,8 +3838,8 @@ input MutationUpdateCommunityInput {
   """URL to the linkedin account of the community."""
   linkedinURL: String
 
-  """Mime type of the logo of the community."""
-  logo: Upload
+  """Logo of the community."""
+  logo: FileMetadataInput
 
   """Name of the community."""
   name: String
@@ -4267,8 +4275,8 @@ input MutationUpdateUserInput {
 
 """"""
 input MutationUpdateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -5210,6 +5218,12 @@ type Query {
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+
+  """Fetch tags assigned to a specific user"""
+  userTags(
+    """User ID to fetch assigned tags for"""
+    userId: ID!
+  ): [Tag!]!
 
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]

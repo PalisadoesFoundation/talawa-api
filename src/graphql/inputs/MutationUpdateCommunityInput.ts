@@ -1,7 +1,11 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { z } from "zod";
+import type { z } from "zod";
 import { communitiesTableInsertSchema } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
+import { url } from "~/src/graphql/validators/core";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 
 export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 	.omit({
@@ -14,17 +18,17 @@ export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
-		facebookURL: z.string().url().nullable().optional(),
-		githubURL: z.string().url().nullable().optional(),
-		instagramURL: z.string().url().nullable().optional(),
-		linkedinURL: z.string().url().nullable().optional(),
-		logo: z.custom<Promise<FileUpload>>().nullish(),
+		facebookURL: url.nullable().optional(),
+		githubURL: url.nullable().optional(),
+		instagramURL: url.nullable().optional(),
+		linkedinURL: url.nullable().optional(),
+		logo: fileMetadataInputSchema.nullish(),
 		name: communitiesTableInsertSchema.shape.name.trim().optional(),
-		redditURL: z.string().url().nullable().optional(),
-		slackURL: z.string().url().nullable().optional(),
-		websiteURL: z.string().url().nullable().optional(),
-		xURL: z.string().url().nullable().optional(),
-		youtubeURL: z.string().url().nullable().optional(),
+		redditURL: url.nullable().optional(),
+		slackURL: url.nullable().optional(),
+		websiteURL: url.nullable().optional(),
+		xURL: url.nullable().optional(),
+		youtubeURL: url.nullable().optional(),
 	})
 	.refine((arg) => Object.values(arg).some((value) => value !== undefined), {
 		message: "At least one optional argument must be provided.",
@@ -58,9 +62,9 @@ export const MutationUpdateCommunityInput = builder
 				required: false,
 			}),
 			logo: t.field({
-				description: "Mime type of the logo of the community.",
+				description: "Logo of the community.",
 				required: false,
-				type: "Upload",
+				type: FileMetadataInput,
 			}),
 			name: t.string({
 				description: "Name of the community.",

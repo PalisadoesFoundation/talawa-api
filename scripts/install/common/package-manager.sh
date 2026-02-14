@@ -13,11 +13,17 @@ set -euo pipefail
 # scripts/install/common/package-manager.sh
 # Shared package management functions
 
-# Validate OS_TYPE is set (fail-fast behavior)
-: "${OS_TYPE:?OS_TYPE must be set (e.g., macos/linux)}"
+# Check if OS_TYPE is set
+require_os_type() {
+    if [ -z "${OS_TYPE:-}" ]; then
+        error "OS_TYPE must be set (e.g., macos/linux)"
+        return 1
+    fi
+}
 
 # Update package index
 update_package_index() {
+    require_os_type || return 1
     if [[ "$OS_TYPE" == "macos" ]]; then
         info "Updating Homebrew..."
         brew update
@@ -30,6 +36,7 @@ update_package_index() {
 # Arguments:
 #   $1: package_name
 is_package_installed() {
+    require_os_type || return 1
     local package="$1"
     if [[ "$OS_TYPE" == "macos" ]]; then
         if brew list --versions "$package" >/dev/null 2>&1; then
@@ -51,6 +58,7 @@ is_package_installed() {
 # Arguments:
 #   $1: package_name
 install_package() {
+    require_os_type || return 1
     local package="$1"
     if [[ "$OS_TYPE" == "macos" ]]; then
         info "Installing $package..."

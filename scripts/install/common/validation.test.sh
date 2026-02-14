@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ##############################################################################
-# Talawa API - Validation Functions Test Suite
+# validation.test.sh - Talawa API Validation Functions Test Suite
 #
-# This test suite validates the security-critical validation functions
-# to prevent command injection and ensure proper version string handling.
+# Validates the security-critical validation functions to prevent command
+# injection and ensure proper version string, path, and run_cmd behavior.
 #
 # Usage: ./validation.test.sh
-#
+# Returns: 0 if all tests pass, 1 if any test fails
 # Requirements: bash 4.0+
 ##############################################################################
 
@@ -22,6 +22,7 @@ TESTS_FAILED=0
 info() { echo "ℹ $1"; }
 warn() { echo "⚠ $1"; }
 error() { echo "✗ $1"; }
+success() { echo "✓ $1"; }
 
 # Source the validation functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -29,6 +30,15 @@ source "$SCRIPT_DIR/validation.sh"
 
 ##############################################################################
 # Test framework functions
+#
+# test_start - Start a test and print its name; increments TESTS_RUN.
+# Usage: test_start "test name"
+#
+# test_pass - Record a passing test; increments TESTS_PASSED.
+# Usage: test_pass
+#
+# test_fail - Record a failing test with reason; increments TESTS_FAILED.
+# Usage: test_fail "reason message"
 ##############################################################################
 
 test_start() {
@@ -48,6 +58,27 @@ test_fail() {
     echo "✗ FAIL"
     echo "  Reason: $message"
 }
+
+##############################################################################
+# Test: Guard fails when success() is missing
+##############################################################################
+
+test_start "Guard fails when success() is omitted (subshell exits non-zero, stderr contains guard message)"
+set +e
+guard_stderr=$( (
+    info() { :; }
+    warn() { :; }
+    error() { :; }
+    unset -f success 2>/dev/null || true
+    source "$SCRIPT_DIR/validation.sh"
+) 2>&1 )
+guard_exitcode=$?
+set -e
+if [ "$guard_exitcode" -ne 0 ] && echo "$guard_stderr" | grep -q "requires info(), warn(), error(), and success() functions to be defined"; then
+    test_pass
+else
+    test_fail "Expected subshell to exit non-zero with guard message; exitcode=$guard_exitcode"
+fi
 
 ##############################################################################
 # Test: validate_version_string() - Valid versions should PASS
@@ -163,6 +194,177 @@ if declare -F retry_command >/dev/null 2>&1; then
     test_pass
 else
     test_fail "retry_command function not found"
+fi
+
+test_start "validate_version_string_secure helper exists and is callable"
+if declare -F validate_version_string_secure >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "validate_version_string_secure function not found"
+fi
+
+test_start "validate_path helper exists and is callable"
+if declare -F validate_path >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "validate_path function not found"
+fi
+
+test_start "run_cmd helper exists and is callable"
+if declare -F run_cmd >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "run_cmd function not found"
+fi
+
+##############################################################################
+# Test: validate_version_string_secure() - Valid versions
+##############################################################################
+
+test_valid_version_secure() {
+    local version="$1"
+    local description="$2"
+
+    test_start "Valid version (secure): $description ($version)"
+
+    if validate_version_string_secure "$version" &>/dev/null; then
+        test_pass
+    else
+        test_fail "Expected version '$version' to be valid"
+    fi
+}
+
+test_valid_version_secure "1.0" "x.y"
+test_valid_version_secure "2.3" "x.y"
+test_valid_version_secure "1.2.3" "x.y.z"
+
+##############################################################################
+# Test: validate_version_string_secure() - Invalid versions
+##############################################################################
+
+test_invalid_version_secure() {
+    local version="$1"
+    local description="$2"
+
+    test_start "Invalid version (secure, should reject): $description"
+
+    if validate_version_string_secure "$version" &>/dev/null; then
+        test_fail "Expected version '$version' to be rejected"
+    else
+        test_pass
+    fi
+}
+
+test_invalid_version_secure "" "empty string"
+test_invalid_version_secure "1" "single number"
+test_invalid_version_secure "1.2.3.4" "four segments"
+test_invalid_version_secure "1.2.3-beta" "prerelease"
+test_invalid_version_secure "^1.0" "caret"
+test_invalid_version_secure "1.0; rm -rf /" "command injection"
+test_invalid_version_secure "1.0 2.0" "spaces"
+
+##############################################################################
+# Test: validate_path() - Valid paths
+##############################################################################
+
+test_valid_path() {
+    local path="$1"
+    local description="$2"
+
+    test_start "Valid path: $description ($path)"
+
+    if validate_path "$path" &>/dev/null; then
+        test_pass
+    else
+        test_fail "Expected path '$path' to be valid"
+    fi
+}
+
+test_valid_path "/tmp" "tmp"
+test_valid_path "/home/user/app" "absolute path"
+test_valid_path "/tmp/file..bak" "consecutive dots in filename (legitimate)"
+
+##############################################################################
+# Test: validate_path() - Invalid paths
+##############################################################################
+
+test_invalid_path() {
+    local path="$1"
+    local description="$2"
+
+    test_start "Invalid path (should reject): $description"
+
+    if validate_path "$path" &>/dev/null; then
+        test_fail "Expected path '$path' to be rejected"
+    else
+        test_pass
+    fi
+}
+
+test_invalid_path "/" "root (operations on root are risky)"
+test_invalid_path "./foo" "relative with dot"
+test_invalid_path "foo" "relative"
+test_invalid_path "/tmp/../etc" "path traversal"
+test_invalid_path "" "empty string"
+
+# Reject paths containing shell metacharacters and unsafe characters
+test_invalid_path '/tmp/foo;rm -rf /' "contains semicolon"
+test_invalid_path '/tmp/foo|ls' "pipe"
+test_invalid_path '/tmp/$(rm -rf /)' "command substitution"
+test_invalid_path '/tmp/foo`out' "backtick"
+test_invalid_path '/tmp/foo&' "background ampersand"
+test_invalid_path '/tmp/foo>out' "redirection"
+test_invalid_path '/tmp/foo<in' "input redirection"
+test_invalid_path '/tmp/foo*' "glob asterisk"
+test_invalid_path '/tmp/foo?' "glob question mark"
+test_invalid_path $'/tmp/foo\'out' "single quote"
+test_invalid_path '/tmp/foo"out' "double quote"
+test_invalid_path '/tmp/foo\out' "backslash"
+test_invalid_path '/tmp/foo out' "space"
+
+##############################################################################
+# Test: run_cmd() and DRY_RUN
+##############################################################################
+
+test_start "run_cmd with DRY_RUN=1 prints command and does not execute"
+# Use a temp file to verify run_cmd does NOT actually execute when DRY_RUN=1
+TMPFILE=$(mktemp -u)
+output=$(DRY_RUN=1 run_cmd touch "$TMPFILE" 2>&1)
+if ! echo "$output" | grep -q "dry-run" || ! echo "$output" | grep -q "touch"; then
+    test_fail "Expected dry-run message and command in output, got: $output"
+elif [ -e "$TMPFILE" ]; then
+    test_fail "DRY_RUN=1 must not execute: file was created: $TMPFILE"
+else
+    test_pass
+fi
+
+test_start "run_cmd with DRY_RUN=0 executes command"
+if DRY_RUN=0 run_cmd true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected run_cmd to execute command and return 0"
+fi
+
+test_start "run_cmd propagates exit code on command failure"
+if DRY_RUN=0 run_cmd false &>/dev/null; then
+    test_fail "Expected run_cmd to return non-zero when command fails"
+else
+    test_pass
+fi
+
+# Default DRY_RUN fallback (${DRY_RUN:-0}): unset DRY_RUN and assert run_cmd executes and propagates exit codes
+test_start "run_cmd with DRY_RUN unset executes command (default like DRY_RUN=0)"
+if unset DRY_RUN; run_cmd true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected run_cmd to execute command when DRY_RUN is unset"
+fi
+
+test_start "run_cmd with DRY_RUN unset propagates exit code on failure"
+if unset DRY_RUN; run_cmd false &>/dev/null; then
+    test_fail "Expected run_cmd to return non-zero when DRY_RUN unset and command fails"
+else
+    test_pass
 fi
 
 ##############################################################################
@@ -305,6 +507,219 @@ else
 fi
 
 ##############################################################################
+# Test: validate_repository_root()
+##############################################################################
+
+test_start "validate_repository_root succeeds at repo root"
+(
+    cd "$SCRIPT_DIR/../../.." || exit 1
+    if validate_repository_root &>/dev/null; then
+        exit 0
+    else
+        exit 1
+    fi
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_repository_root to succeed at repo root"
+fi
+
+
+test_start "validate_repository_root fails outside repo root"
+(
+    temp_dir=$(mktemp -d)
+    trap 'rm -rf "$temp_dir"' EXIT
+    cd "$temp_dir" || exit 1
+    
+    if validate_repository_root &>/dev/null; then
+        rc=1
+    else
+        rc=0
+    fi
+    
+    cd / || true
+    rm -rf "$temp_dir"
+    exit "$rc"
+)
+if [ $? -eq 0 ]; then
+    test_pass
+else
+    test_fail "Expected validate_repository_root to fail outside repo root"
+fi
+
+##############################################################################
+# Test: validate_disk_space()
+##############################################################################
+
+test_start "validate_disk_space succeeds with low minimum"
+if validate_disk_space 1 &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected validate_disk_space to succeed with low threshold"
+fi
+
+test_start "validate_disk_space fails with unrealistic requirement"
+if validate_disk_space 99999999 &>/dev/null; then
+    test_fail "Expected validate_disk_space to fail with high threshold"
+else
+    test_pass
+fi
+
+##############################################################################
+# Test: validate_disk_space() with mocked df output
+##############################################################################
+
+test_start "validate_disk_space succeeds when df reports enough space"
+(
+    df() {
+        echo -e "Filesystem 1024-blocks Used Available Capacity Mounted\n/dev 10000000 1 5000000 1% /"
+    }
+    export -f df
+
+    validate_disk_space 4000 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected success when available space >= min_mb"
+
+
+test_start "validate_disk_space succeeds when available space equals min_mb (boundary)"
+(
+    df() {
+        echo -e "Filesystem 1024-blocks Used Available Capacity Mounted\n/dev 10000000 1 2048000 1% /"
+    }
+    export -f df
+
+    validate_disk_space 2000 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected success at boundary"
+
+
+test_start "validate_disk_space fails when df reports insufficient space"
+(
+    df() {
+        echo -e "Filesystem 1024-blocks Used Available Capacity Mounted\n/dev 10000000 1 1000 1% /"
+    }
+    export -f df
+
+    ! validate_disk_space 4000 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when space insufficient"
+
+
+test_start "validate_disk_space fails when df output is non-numeric"
+(
+    df() { echo "nonsense output"; }
+    export -f df
+
+    ! validate_disk_space 1 &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure on non-numeric df output"
+
+##############################################################################
+# Test: validate_internet_connectivity()
+##############################################################################
+
+test_start "validate_internet_connectivity succeeds when curl succeeds"
+(
+    curl() { return 0; }
+    ping() { return 1; }
+    export -f curl ping
+
+    validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected connectivity success"
+
+
+test_start "validate_internet_connectivity fails when curl fails"
+(
+    curl() { return 1; }
+    ping() { return 1; }
+    export -f curl ping
+
+    ! validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected connectivity failure"
+
+
+test_start "validate_internet_connectivity succeeds when curl missing but ping succeeds"
+(
+    unset -f curl 2>/dev/null || true
+    ping() { return 0; }
+    export -f ping
+
+    validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected success via ping"
+
+
+test_start "validate_internet_connectivity fails when neither curl nor ping available"
+(
+    unset -f curl ping 2>/dev/null || true
+
+    command() {
+        if [ "$2" = "curl" ] || [ "$2" = "ping" ]; then
+            return 1
+        fi
+        /usr/bin/command "$@"
+    }
+    export -f command
+
+    ! validate_internet_connectivity &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure without network tools"
+
+##############################################################################
+# Test: validate_prerequisites()
+##############################################################################
+
+test_start "validate_prerequisites succeeds when all checks pass"
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 0; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected prerequisites to succeed"
+
+
+test_start "validate_prerequisites fails when disk space fails"
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 1; }
+    validate_internet_connectivity() { return 0; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    ! validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when disk fails"
+
+
+test_start "validate_prerequisites fails when repository validation fails"
+(
+    validate_repository_root() { return 1; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 0; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    ! validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when repo check fails"
+
+
+test_start "validate_prerequisites fails when internet validation fails"
+(
+    validate_repository_root() { return 0; }
+    validate_disk_space() { return 0; }
+    validate_internet_connectivity() { return 1; }
+    export -f validate_repository_root validate_disk_space validate_internet_connectivity
+
+    ! validate_prerequisites &>/dev/null
+)
+[ $? -eq 0 ] && test_pass || test_fail "Expected failure when internet fails"
+
+##############################################################################
 # Test summary
 ##############################################################################
 
@@ -317,12 +732,10 @@ echo "Tests passed:       $TESTS_PASSED"
 echo "Tests failed:       $TESTS_FAILED"
 echo ""
 
-if [ $TESTS_FAILED -eq 0 ]; then
+if [ "$TESTS_FAILED" -eq 0 ]; then
     echo "✓ All tests passed!"
-    echo ""
     exit 0
 else
     echo "✗ Some tests failed"
-    echo ""
     exit 1
 fi

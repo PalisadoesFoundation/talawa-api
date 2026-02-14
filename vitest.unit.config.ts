@@ -2,6 +2,15 @@ import { cpus } from "node:os";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { configDefaults, defineConfig } from "vitest/config";
 
+// Allow auth module (src/services/auth, tokens.ts) to load when any unit test imports it.
+// NODE_ENV: only set when unset (?? "test"); does not override CI's NODE_ENV=production.
+// API_AUTH_JWT_SECRET: when unset, this fallback prevents getSecret() from throwing TalawaRestError
+// ("API_AUTH_JWT_SECRET must be set in production") so password.test.ts and other files can static-import auth.
+process.env.NODE_ENV = process.env.NODE_ENV ?? "test";
+if (!process.env.API_AUTH_JWT_SECRET) {
+	process.env.API_AUTH_JWT_SECRET = "unit-test-secret";
+}
+
 const isCI = !!process.env.CI;
 const cpuCount = cpus().length;
 
@@ -60,6 +69,7 @@ export default defineConfig({
 			"test/fastifyPlugins/**/*.{test,spec}.ts",
 			"test/plugin/**/*.{test,spec}.ts",
 			"test/scripts/**/*.{test,spec}.ts",
+			"test/setup/**/*.{test,spec}.ts",
 			"test/unit_tests/**/*.{test,spec}.ts",
 			"test/helpers/**/*.{test,spec}.ts",
 			"test/*.{test,spec}.ts",
@@ -84,6 +94,21 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "lcov", "html", "json"],
+			// Restrict unit coverage to unit-owned source paths
+			include: [
+				"src/config/**",
+				"src/fastifyPlugins/**",
+				"src/observability/**",
+				"src/plugin/**",
+				"src/plugins/**",
+				"src/routes/**",
+				"src/services/**",
+				"src/setup/**",
+				"src/types/**",
+				"src/utilities/**",
+				"src/workers/**",
+				"src/*.ts",
+			],
 			// Only include files that are actually touched by tests
 			all: false,
 			exclude: [

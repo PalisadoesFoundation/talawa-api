@@ -74,12 +74,14 @@ export const Details = ({
 ```graphql
 input MutationUpdateAgendaItemInput {
   attachments: [FileMetadataInput!]
+  categoryId: ID
   description: String
   duration: String
   folderId: ID
   id: ID!
   key: String
   name: String
+  notes: String
   url: [UpdateAgendaItemUrlInput!]
 }
 ```
@@ -89,6 +91,10 @@ input MutationUpdateAgendaItemInput {
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FileMetadataInput!]</b></code>](/auto-schema/types/inputs/file-metadata-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
 
 File metadata for attachments uploaded via MinIO presigned URLs.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>categoryId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Global identifier of the associated agenda category.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -113,6 +119,10 @@ Key of the agenda item if it's of a "song" type. More information at [this](<htt
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Name of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>notes</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Notes of the agenda item.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>url</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[UpdateAgendaItemUrlInput!]</b></code>](/auto-schema/types/inputs/update-agenda-item-url-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
 

@@ -116,6 +116,8 @@ builder.mutationField("signUp", (t) =>
 				parsedArgs.input.recaptchaToken,
 				ctx.envConfig.RECAPTCHA_SECRET_KEY,
 				["input", "recaptchaToken"],
+				"signup", // v3 action for signup
+				ctx.envConfig.RECAPTCHA_SCORE_THRESHOLD ?? 0.5,
 			);
 
 			const [[existingUserWithEmailAddress], existingOrganization] =
@@ -330,7 +332,7 @@ builder.mutationField("signUp", (t) =>
 					expiresAt,
 				);
 
-				const verificationLink = `${ctx.envConfig.FRONTEND_URL}/verify-email?token=${rawToken}`;
+				const verificationLink = `${ctx.envConfig.API_FRONTEND_URL}/verify-email?token=${rawToken}`;
 				const emailContext = {
 					userName: result.user.name,
 					communityName: ctx.envConfig.API_COMMUNITY_NAME,

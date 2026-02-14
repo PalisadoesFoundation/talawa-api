@@ -1,4 +1,4 @@
-type Paths<T> = T extends object
+export type Paths<T> = T extends object
 	? { [K in keyof T]: [K, ...Paths<T[K]>] | [K] }[keyof T]
 	: never;
 
@@ -56,7 +56,7 @@ export const getKeyPathsWithNonUndefinedValues = <
 				accumulator: Record<string | number | symbol, unknown> | undefined,
 				key,
 			) => {
-				if (accumulator === undefined) return undefined;
+				if (accumulator === undefined || accumulator === null) return undefined;
 				const val = accumulator[key as keyof typeof accumulator];
 				return val !== undefined
 					? (val as Record<string | number | symbol, unknown>)

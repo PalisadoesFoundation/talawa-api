@@ -30,3 +30,22 @@ export interface OAuthConfig {
 	redirectUri?: string;
 	requestTimeoutMs?: number;
 }
+/**
+ * GitHub user response structure
+ */
+export interface GitHubUser {
+	id: number;
+	login: string;
+	name: string | null;
+	email?: string;
+	avatar_url: string;
+}
+
+/**
+ * GitHub email response structure
+ */
+export interface GitHubEmail {
+	email: string;
+	primary: boolean;
+	verified?: boolean;
+}

@@ -6,7 +6,7 @@
 
 > **resetEmailVerificationRateLimit**(`userId`): `void`
 
-Defined in: [src/utilities/emailVerificationRateLimit.ts:83](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailVerificationRateLimit.ts#L83)
+Defined in: [src/utilities/emailVerificationRateLimit.ts:84](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailVerificationRateLimit.ts#L84)
 
 Resets the rate limit for a specific user (useful for testing).
 
@@ -21,3 +21,5 @@ The user ID to reset
 ## Returns
 
 `void`
+
+void
