@@ -129,6 +129,8 @@ exit 0
 # REPO_ROOT so coverage is attributed to scripts/install/ (real paths).
 setup_test_repo() {
     mkdir -p "$TEST_DIR/.git"
+    # So install script's get_repo_root (SCRIPT_DIR/../../..) resolves to TEST_DIR
+    mkdir -p "$TEST_DIR/scripts/install/linux"
     cat > "$TEST_DIR/package.json" <<'PKG'
 {
   "name": "talawa-api",
@@ -160,13 +162,15 @@ run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-true}"
     local extra_env="${3:-}"
-    # Build minimal env for install script: no host FNM/PNPM etc.
+    # SCRIPT_DIR makes install script use TEST_DIR as repo root (get_repo_root)
+    # HOME=TEST_DIR so fnm installer creates $TEST_DIR/.local/share/fnm/fnm and script finds it
     local env_args=(
         "PATH=$MOCK_BIN:/usr/bin:/bin"
         "TERM=dumb"
         "MOCK_BIN=$MOCK_BIN"
         "TEST_DIR=$TEST_DIR"
-        "HOME=${HOME:-}"
+        "SCRIPT_DIR=$TEST_DIR/scripts/install/linux"
+        "HOME=$TEST_DIR"
         "USER=${USER:-}"
     )
     local token
@@ -185,8 +189,22 @@ setup_clean_system() {
     create_jq_mock
     create_mock "df" 'echo "Filesystem 1K-blocks Used Available"; echo "dummy 10000000 1000 5000000 /"'
     create_mock "git" 'if [ "$1" = "rev-parse" ]; then echo "true"; exit 0; fi; if [ "$1" = "diff-index" ]; then exit 1; fi; exit 0'
-    # Mock curl for offline tests: write minimal script to path given by -o so fnm/Docker install steps succeed
-    create_mock "curl" 'next=; for i in "$@"; do if [ "$i" = "-o" ]; then next=1; elif [ -n "$next" ]; then printf "%s\n" "#!/bin/bash" "exit 0" > "$i"; chmod +x "$i"; next=; fi; done; exit 0'
+    # Stub that creates $HOME/.local/share/fnm/fnm so install script finds fnm after "install"
+    cat > "$TEST_DIR/fnm-installer-stub.sh" << 'STUBEOF'
+#!/bin/bash
+mkdir -p "$HOME/.local/share/fnm"
+cat > "$HOME/.local/share/fnm/fnm" << 'INNEREOF'
+#!/bin/bash
+if [ "$1" = "env" ]; then echo "export PATH=$HOME/.local/share/fnm:\$PATH"; exit 0; fi
+if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi
+exit 0
+INNEREOF
+chmod +x "$HOME/.local/share/fnm/fnm"
+exit 0
+STUBEOF
+    chmod +x "$TEST_DIR/fnm-installer-stub.sh"
+    # Mock curl: write fnm installer stub to -o path so script finds fnm after download
+    create_mock "curl" 'next=; for i in "$@"; do if [ "$i" = "-o" ]; then next=1; elif [ -n "$next" ]; then if [ -f "${TEST_DIR:-}/fnm-installer-stub.sh" ]; then cp "${TEST_DIR}/fnm-installer-stub.sh" "$i"; chmod +x "$i"; else printf "%s\n" "#!/bin/bash" "exit 0" > "$i"; chmod +x "$i"; fi; next=; fi; done; exit 0'
     rm -f "$MOCK_BIN/docker" "$MOCK_BIN/fnm" "$MOCK_BIN/node" "$MOCK_BIN/npm" "$MOCK_BIN/pnpm"
     touch "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
 }
@@ -518,11 +536,13 @@ setup_clean_system
 create_mock "docker" 'echo "Docker version 24.0.0"; exit 0'
 create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=fnm_path:\$PATH"; exit 0; fi; if [ "$1" = "install" ] || [ "$1" = "use" ] || [ "$1" = "default" ]; then exit 0; fi; exit 0'
 create_mock "node" 'echo "v20.10.0"'
-create_mock "npm" 'if [ "$1" = "install" ] && [ "$2" = "-g" ]; then
+create_mock "npm" 'if [ "$1" = "config" ] && [ "$2" = "get" ] && [ "$3" = "prefix" ]; then echo "${MOCK_BIN:-.}"; exit 0; fi
+if [ "$1" = "install" ] && [ "$2" = "-g" ]; then
   BIN_DIR="${MOCK_BIN:-$(dirname "$(command -v npm)")}"
   echo "#!/bin/bash" > "$BIN_DIR/pnpm"
   echo "if [ \"\$1\" = \"--version\" ]; then echo 8.14.0; fi; if [ \"\$1\" = \"install\" ]; then exit 0; fi; exit 0" >> "$BIN_DIR/pnpm"
   chmod +x "$BIN_DIR/pnpm"
+  rm -f "$BIN_DIR/pnpm.hidden"
   exit 0
 fi; exit 0'
 rm -f "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"

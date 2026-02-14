@@ -27,8 +27,8 @@ export OS_TYPE="macos"
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
-# Source shared libraries
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Source shared libraries (honor SCRIPT_DIR from env for tests)
+SCRIPT_DIR="${SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 COMMON_DIR="${SCRIPT_DIR%/macos}/common"
 
 source "${COMMON_DIR}/logging.sh"
@@ -58,10 +58,14 @@ fi
 readonly MAX_RETRY_ATTEMPTS=3
 
 # Get the repository root directory
+# When SCRIPT_DIR is set (e.g. by tests), use it so repo root is under TEST_DIR
 get_repo_root() {
-    local script_dir
-    local repo_root
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_dir repo_root
+    if [[ -n "${SCRIPT_DIR:-}" ]]; then
+        script_dir="$SCRIPT_DIR"
+    else
+        script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    fi
     # Navigate up from scripts/install/macos to repo root
     repo_root="$(cd "$script_dir/../../.." && pwd)"
     printf '%s\n' "$repo_root"

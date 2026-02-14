@@ -500,9 +500,9 @@ jobs:
         run: |
           chmod +x run-all.sh
           bundle exec bashcov --root ../.. -- ./run-all.sh
-      # fail_ci_if_error: false so transient Codecov upload issues don't fail the job
+      # Upload only when coverage file exists so the install flag gets data and shows in Codecov
       - name: Upload install coverage to Codecov
-        if: "!cancelled()"
+        if: "!cancelled() && hashFiles('tests/install/coverage/coverage.xml') != ''"
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"

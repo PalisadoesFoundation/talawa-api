@@ -49,9 +49,11 @@ trap 'rm -rf "$TEST_DIR"' EXIT
 MOCK_BIN="$TEST_DIR/bin"
 mkdir -p "$MOCK_BIN"
 
-# Create a mock package.json
+# Create a mock package.json (name required for validation)
 cat > "$TEST_DIR/package.json" <<EOF
 {
+  "name": "talawa-api",
+  "version": "1.0.0",
   "engines": {
     "node": "20.10.0"
   },
@@ -107,20 +109,21 @@ exit 0
 }
 
 # Run the test subject in a subshell with controlled pwd
-# Runs in a clean environment without fnm shell integration
+# SCRIPT_DIR makes install script use TEST_DIR as repo root; HOME so fnm/state stay under TEST_DIR
 run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-false}"
     
     # Run in a completely clean bash subshell without any profile/rc files
-    # This prevents fnm from being auto-loaded and interfering with mocks
     env -i \
         PATH="$MOCK_BIN:/usr/bin:/bin" \
         MOCK_BIN="$MOCK_BIN" \
-        HOME="$HOME" \
-        USER="$USER" \
+        TEST_DIR="$TEST_DIR" \
+        SCRIPT_DIR="$TEST_DIR/scripts/install/macos" \
+        HOME="$TEST_DIR" \
+        USER="${USER:-}" \
         TERM="dumb" \
-        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; cd '$TEST_DIR' && bash '$REPO_ROOT/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
+        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; export SCRIPT_DIR='$TEST_DIR/scripts/install/macos'; export HOME='$TEST_DIR'; cd '$TEST_DIR' && bash '$REPO_ROOT/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
 }
 
 # TEST_DIR holds only test data (package.json, .git). Install scripts are run from
@@ -128,6 +131,8 @@ run_test_script() {
 
 setup_test_repo() {
     mkdir -p "$TEST_DIR/.git"
+    # So install script get_repo_root (SCRIPT_DIR/../../..) resolves to TEST_DIR
+    mkdir -p "$TEST_DIR/scripts/install/macos"
     # package.json already created at top of file
 }
 
@@ -357,6 +362,8 @@ setup_clean_system
 # Create a clean test environment for lockfile testing
 cat > "$TEST_DIR/package.json" <<EOF
 {
+  "name": "talawa-api",
+  "version": "1.0.0",
   "engines": {
     "node": "20.10.0"
   },
@@ -424,6 +431,8 @@ setup_clean_system
 # Setup test environment with existing lockfile hash
 cat > "$TEST_DIR/package.json" <<EOF
 {
+  "name": "talawa-api",
+  "version": "1.0.0",
   "engines": {
     "node": "20.10.0"
   },
@@ -488,6 +497,8 @@ setup_clean_system
 
 cat > "$TEST_DIR/package.json" <<EOF
 {
+  "name": "talawa-api",
+  "version": "1.0.0",
   "engines": {
     "node": "20.10.0"
   },
@@ -996,10 +1007,10 @@ create_mock "fnm" 'if [ "$1" = "env" ]; then echo "export PATH=mock:\$PATH"; exi
 create_mock "node" 'echo "v20.10.0"'
 create_mock "npm" 'echo "10.0.0"'
 
-# Mock pnpm to return matching version
+# Mock pnpm: version matches package.json (8.14.0), install (deps) must succeed
 create_mock "pnpm" '
     if [ "$1" = "--version" ]; then echo "8.14.0"; exit 0; fi
-    if [ "$1" = "install" ]; then echo "SHOULD_NOT_RUN"; exit 1; fi
+    if [ "$1" = "install" ]; then exit 0; fi
 '
 
 set +e
