@@ -2221,8 +2221,13 @@ type Mutation {
   """Mutation field to add an event attendee."""
   addEventAttendee(data: EventAttendeeInput!): User
 
-  """"""
-  adminUpdateUserPassword(input: MutationAdminUpdateUserPasswordInput!): Boolean
+  """
+  Mutation to allow an administrator to reset a non-admin user's password.
+  """
+  adminUpdateUserPassword(
+    """Input for updating a member's password by an admin."""
+    input: MutationAdminUpdateUserPasswordInput!
+  ): Boolean
 
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean

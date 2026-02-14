@@ -19,12 +19,12 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input for updating a member's password by an admin.",
 				required: true,
 				type: MutationAdminUpdateUserPasswordInput,
 			}),
 		},
-		description: "",
+		description: "Mutation to allow an administrator to reset a non-admin user's password.",
 		complexity: envConfig.API_GRAPHQL_MUTATION_BASE_COST,
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
@@ -136,8 +136,8 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action",
-						message: "Admins cannot reset another admin's password",
 					},
+					message: "Admins cannot reset another admin's password",
 				});
 			}
 
@@ -189,16 +189,16 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 					.where(eq(usersTable.id, parsedArgs.input.id));
 
 				await revokeAllUserRefreshTokens(tx, parsedArgs.input.id);
+			});
 
-				ctx.log.info(
+			ctx.log.info(
 					{
 						actorUserId: currentUserId,
 						targetUserId: parsedArgs.input.id,
 						action: "admin_password_reset",
 					},
 					"Admin reset user password",
-				);
-			});
+			);
 
 			return true;
 		},
