@@ -85,29 +85,38 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		);
 	});
 
-	test("Returns unauthenticated when token user no longer exists", async () => {
-		const adminUser = await createRegularUserUsingAdmin();
+	test("Returns unauthenticated when admin user no longer exists", async () => {
+		const adminToken = await getAdminAuth();
+
+		const admin = await server.drizzleClient.query.usersTable.findFirst({
+			where: (f, o) =>
+				o.eq(
+					f.emailAddress,
+					server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				),
+		});
+
+		assertToBeNonNullish(admin);
 
 		cleanupFns.push(async () => {
 			try {
-				await server.drizzleClient
-					.delete(usersTable)
-					.where(eq(usersTable.id, adminUser.userId));
+				await server.drizzleClient.insert(usersTable).values(admin);
 			} catch (err) {
-				console.error("User cleanup failed:", err);
+				console.error("Admin restore failed:", err);
 			}
 		});
 
+		// delete admin
 		await server.drizzleClient
 			.delete(usersTable)
-			.where(eq(usersTable.id, adminUser.userId));
+			.where(eq(usersTable.id, admin.id));
 
 		const targetUser = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(
 			Mutation_adminUpdateUserPassword,
 			{
-				headers: { authorization: `bearer ${adminUser.authToken}` },
+				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
 						id: targetUser.userId,
@@ -369,16 +378,10 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		);
 	});
 
-	test("Returns forbidden_action when admin tries to reset another admin", async () => {
+	test("Returns invalid_arguments when zod validation fails", async () => {
 		const adminToken = await getAdminAuth();
 
-		const targetAdmin = await createUserWithCleanup();
-
-		// promote target to admin
-		await server.drizzleClient
-			.update(usersTable)
-			.set({ role: "administrator" })
-			.where(eq(usersTable.id, targetAdmin.userId));
+		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(
 			Mutation_adminUpdateUserPassword,
@@ -386,7 +389,36 @@ suite("Mutation field adminUpdateUserPassword", () => {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						id: targetAdmin.userId,
+						id: user.userId,
+						newPassword: "short", // < 8 chars
+						confirmNewPassword: "short",
+					},
+				},
+			},
+		);
+
+		expect(result.data?.adminUpdateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("Returns invalid_arguments when id is invalid uuid", async () => {
+		const adminToken = await getAdminAuth();
+
+		const result = await mercuriusClient.mutate(
+			Mutation_adminUpdateUserPassword,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: "not-a-uuid",
 						newPassword: "newPassword123",
 						confirmNewPassword: "newPassword123",
 					},
@@ -399,7 +431,7 @@ suite("Mutation field adminUpdateUserPassword", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "forbidden_action",
+						code: "invalid_arguments",
 					}),
 				}),
 			]),

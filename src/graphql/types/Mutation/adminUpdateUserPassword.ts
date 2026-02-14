@@ -133,15 +133,6 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 				});
 			}
 
-			if (existingUser.role === "administrator") {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action",
-					},
-					message: "Admins cannot reset another admin's password",
-				});
-			}
-
 			if (
 				parsedArgs.input.newPassword !== parsedArgs.input.confirmNewPassword
 			) {
