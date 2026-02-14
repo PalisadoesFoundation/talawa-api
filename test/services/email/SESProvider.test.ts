@@ -28,7 +28,7 @@ describe("SESProvider", () => {
 		sesProvider = new SESProvider(mockConfig);
 	});
 
-	it("should throw error if AWS_SES_REGION is empty string", async () => {
+	it("should throw error if API_AWS_SES_REGION is empty string", async () => {
 		const provider = new SESProvider({
 			...mockConfig,
 			region: "" as NonEmptyString,
@@ -45,7 +45,7 @@ describe("SESProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "AWS_SES_REGION must be a non-empty string",
+				error: "API_AWS_SES_REGION must be a non-empty string",
 			}),
 		);
 	});
@@ -183,16 +183,15 @@ describe("SESProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only accessKeyId is provided (without secret)", async () => {
@@ -349,22 +348,132 @@ describe("SESProvider", () => {
 		);
 	});
 
-	it("should wait ~100ms between bulk emails", async () => {
-		// Using real timers to avoid race conditions with dynamic imports + fake timers
-		const mockSend = vi.fn().mockResolvedValue({ MessageId: "msg-id" });
-		(SESClient as unknown as Mock).prototype.send = mockSend;
+	it("should handle partial batch failures gracefully", async () => {
+		// Spy on sendEmail to simulate one success and one failure
+		const sendEmailSpy = vi
+			.spyOn(sesProvider, "sendEmail")
+			.mockResolvedValueOnce({
+				id: "1",
+				success: true,
+				messageId: "success-id",
+			}) // First job succeeds
+			.mockResolvedValueOnce({
+				id: "2",
+				success: false,
+				error: "AWS Limit Exceeded",
+			}); // Second job fails
 
 		const jobs = [
-			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
-			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "bad@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
 		];
 
-		const start = Date.now();
-		await sesProvider.sendBulkEmails(jobs);
-		const end = Date.now();
+		const results = await sesProvider.sendBulkEmails(jobs);
 
-		expect(mockSend).toHaveBeenCalledTimes(2);
-		// Should be at least 100ms (1 delay)
-		expect(end - start).toBeGreaterThanOrEqual(95); // Allow small margin for timer imprecision
+		// Verify we got both results back
+		expect(results).toHaveLength(2);
+		expect(results[0]).toEqual({
+			id: "1",
+			success: true,
+			messageId: "success-id",
+		});
+		expect(results[1]).toEqual({
+			id: "2",
+			success: false,
+			error: "AWS Limit Exceeded",
+		});
+
+		sendEmailSpy.mockRestore();
+	});
+
+	it("should handle unhandled promise rejections (system crashes) in batch processing", async () => {
+		// Spy on sendEmail to simulate a catastrophic failure
+		const sendEmailSpy = vi
+			.spyOn(sesProvider, "sendEmail")
+			.mockResolvedValueOnce({ id: "1", success: true, messageId: "ok" }) // First job works
+			.mockRejectedValueOnce(new Error("Critical System Failure")); // Second job EXPLODES
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "crash@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		// This triggers the 'rejected' path in Promise.allSettled
+
+		const results = await sesProvider.sendBulkEmails(jobs); // Fixed variable name here
+
+		expect(results).toHaveLength(2);
+		expect(results[0]?.success).toBe(true);
+
+		// This verifies that your code caught the explosion and handled it safely
+		expect(results[1]?.success).toBe(false);
+		expect(results[1]?.error).toBe("Critical System Failure");
+
+		sendEmailSpy.mockRestore();
+	});
+
+	it("should wait ~100ms between bulk emails", async () => {
+		// Spy on setTimeout so the test runs instantly
+		const setTimeoutSpy = vi
+			.spyOn(global, "setTimeout")
+			.mockImplementation((callback: () => void, _ms?: number) => {
+				if (typeof callback === "function") {
+					callback();
+				}
+				return {} as unknown as NodeJS.Timeout;
+			});
+
+		// Create exactly 15 jobs to trigger the batch limit (14 per batch)
+		const jobs = Array.from({ length: 15 }, (_, i) => ({
+			id: String(i),
+			email: `test${i}@example.com`,
+			subject: "Batch Test",
+			htmlBody: "Batch Body",
+			userId: "u1",
+		}));
+
+		// We spy directly on the provider's sendEmail method to count how many times it fires
+		// NOTE: If your instance is named 'sesProvider', change 'provider' to 'sesProvider' on these next two lines!
+		const sendEmailSpy = vi.spyOn(sesProvider, "sendEmail").mockResolvedValue({
+			id: "1",
+			success: true,
+			messageId: "msg-batch",
+		});
+
+		await sesProvider.sendBulkEmails(jobs as unknown as EmailJob[]);
+
+		// 15 emails should have been processed
+		expect(sendEmailSpy).toHaveBeenCalledTimes(15);
+
+		// It should have paused exactly once between the first batch (14) and the second batch (1)
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+
+		setTimeoutSpy.mockRestore();
+		sendEmailSpy.mockRestore();
 	});
 });

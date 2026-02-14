@@ -251,6 +251,7 @@ describe("GraphQL Error Formatting Integration", () => {
 				API_RATE_LIMIT_BUCKET_CAPACITY: 1, // Very low capacity
 				API_RATE_LIMIT_REFILL_RATE: 0, // No refill
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				API_AUTH_JWT_SECRET: "12345678901234567890123456789012",
 				API_PORT: 0,
 			},
 		});

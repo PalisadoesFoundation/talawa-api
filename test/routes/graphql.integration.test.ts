@@ -30,6 +30,8 @@ import { testEnvConfig } from "../envConfigSchema";
 describe("GraphQL Correlation ID Integration", () => {
 	let server: FastifyInstance;
 
+	const TEST_AUTH_JWT_SECRET = "12345678901234567890123456789012";
+
 	beforeEach(async () => {
 		server = await createServer({
 			envConfig: {
@@ -37,6 +39,7 @@ describe("GraphQL Correlation ID Integration", () => {
 				API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 				API_RATE_LIMIT_REFILL_RATE: 10000,
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 			},
 		});
 		await server.ready();

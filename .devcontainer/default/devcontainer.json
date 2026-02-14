@@ -1,5 +1,7 @@
 // https://containers.dev/implementors/json_reference/
 // https://github.com/orgs/devcontainers/discussions/4
+// Default (non-rootless) Docker devcontainer configuration
+// Use this configuration when running Docker in standard (root) mode
 {
 	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
 	"containerUser": "talawa",
@@ -48,9 +50,9 @@
 		}
 	},
 	"dockerComposeFile": [
-		"../compose.yaml",
-		"../docker/compose.testing.yaml",
-		"../docker/compose.devcontainer.yaml"
+		"../../compose.yaml",
+		"../../docker/compose.testing.yaml",
+		"../../docker/compose.devcontainer.yaml"
 	],
 	"features": {
 		// https://github.com/devcontainers/features/tree/main/src/common-utils
@@ -71,9 +73,9 @@
 	},
 	"init": true,
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
-	"name": "talawa_api",
+	"name": "talawa_api_default",
 	"overrideCommand": true,
-	"postCreateCommand": "./.devcontainer/post-create.sh",
+	"postCreateCommand": "./.devcontainer/default/post-create.sh",
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",

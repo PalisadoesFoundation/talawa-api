@@ -25,6 +25,7 @@ describe("emailServiceInstance", () => {
 	});
 
 	afterEach(() => {
+		vi.clearAllMocks();
 		stopEmailQueue();
 	});
 
@@ -99,7 +100,7 @@ describe("emailServiceInstance factory integration", () => {
 		vi.doMock("~/src/config/emailConfig", () => ({
 			rawEmailEnvConfig: {
 				API_EMAIL_PROVIDER: "ses",
-				AWS_SES_REGION: "us-east-1",
+				API_AWS_SES_REGION: "us-east-1",
 			},
 		}));
 
@@ -110,7 +111,7 @@ describe("emailServiceInstance factory integration", () => {
 
 		expect(mockCreate).toHaveBeenCalledWith({
 			API_EMAIL_PROVIDER: "ses",
-			AWS_SES_REGION: "us-east-1",
+			API_AWS_SES_REGION: "us-east-1",
 		});
 		expect(emailService).toBe(mockProvider);
 	});
