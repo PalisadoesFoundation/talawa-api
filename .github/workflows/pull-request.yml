@@ -905,8 +905,7 @@ jobs:
           TIMEOUT=90
           INTERVAL=3
           ELAPSED=0
-          # Use Node for healthcheck (no curl dependency; works in devcontainer)
-          until docker exec talawa-api-1 node -e "require('http').get('http://127.0.0.1:4000/healthcheck',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1));" 2>/dev/null; do
+          until docker exec talawa-api-1 curl -sf http://127.0.0.1:4000/healthcheck >/dev/null; do
             if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
               echo "Backend failed to start within ${TIMEOUT}s"
               echo "=== Backend container logs (last 150 lines) ==="
