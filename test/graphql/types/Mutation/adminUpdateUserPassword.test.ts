@@ -332,4 +332,108 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.adminUpdateUserPassword).toBe(true);
 	});
+
+	test("Returns invalid_arguments when target user has no password login", async () => {
+		const adminToken = await getAdminAuth();
+		const user = await createUserWithCleanup();
+
+		// remove password login
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ passwordHash: "" })
+			.where(eq(usersTable.id, user.userId));
+
+		const result = await mercuriusClient.mutate(
+			Mutation_adminUpdateUserPassword,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: user.userId,
+						newPassword: "newPassword123",
+						confirmNewPassword: "newPassword123",
+					},
+				},
+			},
+		);
+
+		expect(result.data?.adminUpdateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("Returns forbidden_action when admin tries to reset another admin", async () => {
+		const adminToken = await getAdminAuth();
+
+		const targetAdmin = await createUserWithCleanup();
+
+		// promote target to admin
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ role: "administrator" })
+			.where(eq(usersTable.id, targetAdmin.userId));
+
+		const result = await mercuriusClient.mutate(
+			Mutation_adminUpdateUserPassword,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: targetAdmin.userId,
+						newPassword: "newPassword123",
+						confirmNewPassword: "newPassword123",
+					},
+				},
+			},
+		);
+
+		expect(result.data?.adminUpdateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "forbidden_action",
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("Returns invalid_arguments when new password equals current password", async () => {
+		const adminToken = await getAdminAuth();
+		const user = await createUserWithCleanup();
+
+		// user original password = "password" (from helper)
+		const result = await mercuriusClient.mutate(
+			Mutation_adminUpdateUserPassword,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: user.userId,
+						newPassword: "password",
+						confirmNewPassword: "password",
+					},
+				},
+			},
+		);
+
+		expect(result.data?.adminUpdateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			]),
+		);
+	});
 });
