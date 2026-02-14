@@ -188,7 +188,7 @@ run_test_script() {
 setup_clean_system() {
     create_jq_mock
     create_mock "df" 'echo "Filesystem 1K-blocks Used Available"; echo "dummy 10000000 1000 5000000 /"'
-    create_mock "git" 'if [ "$1" = "rev-parse" ]; then echo "true"; exit 0; fi; if [ "$1" = "diff-index" ]; then exit 1; fi; exit 0'
+    create_mock "git" 'if [ "$1" = "rev-parse" ]; then if [ "${2:-}" = "--git-dir" ]; then echo ".git"; else echo "true"; fi; exit 0; fi; if [ "$1" = "diff-index" ]; then exit 1; fi; exit 0'
     # Stub that creates $HOME/.local/share/fnm/fnm so install script finds fnm after "install"
     cat > "$TEST_DIR/fnm-installer-stub.sh" << 'STUBEOF'
 #!/bin/bash

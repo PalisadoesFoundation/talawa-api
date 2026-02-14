@@ -126,9 +126,11 @@ set -euo pipefail
 
 ##############################################################################
 # Script Configuration
+# Source common libs from actual script location; SCRIPT_DIR (env) only used for get_repo_root in tests.
 ##############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_DIR="${SCRIPT_DIR}/../common"
+SOURCE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="${SCRIPT_DIR:-$SOURCE_SCRIPT_DIR}"
+COMMON_DIR="${SOURCE_SCRIPT_DIR}/../common"
 
 # Parse arguments (position-independent)
 INSTALL_MODE="docker"

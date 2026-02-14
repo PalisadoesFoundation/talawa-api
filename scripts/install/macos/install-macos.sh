@@ -27,9 +27,11 @@ export OS_TYPE="macos"
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
-# Source shared libraries (honor SCRIPT_DIR from env for tests)
-SCRIPT_DIR="${SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
-COMMON_DIR="${SCRIPT_DIR%/macos}/common"
+# Source shared libraries from the actual script location (so common/*.sh are always found).
+# SCRIPT_DIR can be set by tests to override get_repo_root (REPO_ROOT); we do not use it for sourcing.
+SOURCE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_DIR="${SOURCE_SCRIPT_DIR%/macos}/common"
+SCRIPT_DIR="${SCRIPT_DIR:-$SOURCE_SCRIPT_DIR}"
 
 source "${COMMON_DIR}/logging.sh"
 source "${COMMON_DIR}/os-detection.sh"
