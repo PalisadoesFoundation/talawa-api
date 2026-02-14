@@ -1,4 +1,4 @@
-import { hash } from "@node-rs/argon2";
+import { hash, verify } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -7,7 +7,6 @@ import {
 	MutationUpdateUserPasswordInput,
 	mutationUpdateUserPasswordInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserPasswordInput";
-import { verifyPassword } from "~/src/services/auth";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -83,7 +82,7 @@ builder.mutationField("updateUserPassword", (t) =>
 				});
 			}
 
-			const isValid = await verifyPassword(
+			const isValid = await verify(
 				currentUser.passwordHash,
 				parsedArgs.input.oldPassword,
 			);

@@ -42,7 +42,7 @@ suite("Mutation field updateUserPassword", () => {
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			variables: {
 				input: {
-					oldPassword: "oldPassword123",
+					oldPassword: "anything",
 					newPassword: "newPassword123",
 					confirmNewPassword: "newPassword123",
 				},
@@ -70,7 +70,7 @@ suite("Mutation field updateUserPassword", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "password123",
+					oldPassword: "password",
 					newPassword: "newPassword123",
 					confirmNewPassword: "newPassword123",
 				},
@@ -94,7 +94,7 @@ suite("Mutation field updateUserPassword", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "", // invalid
+					oldPassword: "",
 					newPassword: "short",
 					confirmNewPassword: "short",
 				},
@@ -105,9 +105,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
 				}),
 			]),
 		);
@@ -118,14 +116,14 @@ suite("Mutation field updateUserPassword", () => {
 
 		await server.drizzleClient
 			.update(usersTable)
-			.set({ passwordHash: "" }) // ← FIX
+			.set({ passwordHash: "" })
 			.where(eq(usersTable.id, user.userId));
 
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "password123",
+					oldPassword: "password",
 					newPassword: "newPassword123",
 					confirmNewPassword: "newPassword123",
 				},
@@ -136,9 +134,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
 				}),
 			]),
 		);
@@ -162,9 +158,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
 				}),
 			]),
 		);
@@ -177,9 +171,9 @@ suite("Mutation field updateUserPassword", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "password123",
-					newPassword: "password123",
-					confirmNewPassword: "password123",
+					oldPassword: "password",
+					newPassword: "password",
+					confirmNewPassword: "password",
 				},
 			},
 		});
@@ -188,9 +182,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
 				}),
 			]),
 		);
@@ -203,7 +195,7 @@ suite("Mutation field updateUserPassword", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "password123",
+					oldPassword: "password",
 					newPassword: "newPassword123",
 					confirmNewPassword: "differentPassword",
 				},
@@ -214,9 +206,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
 				}),
 			]),
 		);
@@ -229,7 +219,7 @@ suite("Mutation field updateUserPassword", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "password123",
+					oldPassword: "password",
 					newPassword: "newPassword123",
 					confirmNewPassword: "newPassword123",
 				},
@@ -239,7 +229,6 @@ suite("Mutation field updateUserPassword", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateUserPassword).toBe(true);
 
-		// ensure hash actually changed
 		const updatedUser = await server.drizzleClient.query.usersTable.findFirst({
 			where: (fields, ops) => ops.eq(fields.id, user.userId),
 		});
@@ -256,14 +245,13 @@ suite("Mutation field updateUserPassword", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					oldPassword: "password123",
+					oldPassword: "password",
 					newPassword: "brandNewPassword123",
 					confirmNewPassword: "brandNewPassword123",
 				},
 			},
 		});
 
-		// Try updating again using new password (verifies hashing worked)
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
