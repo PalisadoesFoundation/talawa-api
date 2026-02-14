@@ -15,8 +15,8 @@ suite("Mutation field updateUserPassword", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {
-				// ignore cleanup failures
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		}
 		cleanupFns.length = 0;
