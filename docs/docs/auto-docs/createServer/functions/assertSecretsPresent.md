@@ -58,6 +58,36 @@ Email address of the user with "administrator" role that is guaranteed to exist 
 
 Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
 
+#### API_AWS_ACCESS_KEY_ID?
+
+`string` = `...`
+
+AWS access key ID for SES email service.
+
+#### API_AWS_SECRET_ACCESS_KEY?
+
+`string` = `...`
+
+AWS secret access key for SES email service.
+
+#### API_AWS_SES_FROM_EMAIL?
+
+`string` = `...`
+
+Verified email address to send emails from in AWS SES.
+
+#### API_AWS_SES_FROM_NAME?
+
+`string` = `...`
+
+Display name for the sender in emails.
+
+#### API_AWS_SES_REGION?
+
+`string` = `...`
+
+AWS region for SES email service.
+
 #### API_BASE_URL
 
 `string` = `...`
@@ -174,6 +204,12 @@ Defaults to a static value if not provided (upgrade to custom secret is recommen
 `boolean` = `...`
 
 Enables the background email queue processor. Default should be false in tests / local unless explicitly needed.
+
+#### API_FRONTEND_URL
+
+`string` = `...`
+
+The frontend URL allowed for CORS.
 
 #### API_GRAPHQL_LIST_FIELD_COST
 
@@ -364,6 +400,13 @@ More information can be found at: [https://github.com/minio/minio-js?tab=readme-
 Request timeout in milliseconds for OAuth provider API calls.
 Default: 10000 (10 seconds)
 
+#### API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE?
+
+`string` = `...`
+
+Cron schedule for the old event instance cleanup background worker.
+Default: "0 2 * * *" (daily at 2 AM UTC)
+
 #### API_OTEL_ENABLED
 
 `boolean` = `...`
@@ -475,6 +518,13 @@ Maximum capacity of a user's request bucket for rate limiting.
 
 Rate at which a user's request bucket refills per second for rate limiting.
 
+#### API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE?
+
+`string` = `...`
+
+Cron schedule for the recurring event instance generation background worker.
+Default: "0 * * * *" (every hour at minute 0)
+
 #### API_REDIS_HOST
 
 `string` = `...`
@@ -491,35 +541,62 @@ Used for providing the number of milli-seconds for setting the expiry time of re
 Refresh tokens are long-lived tokens used to obtain new access tokens without re-authentication.
 Default: 604800000 (7 days)
 
-#### AWS_ACCESS_KEY_ID?
+#### API_SMTP_FROM_EMAIL?
 
 `string` = `...`
 
-AWS access key ID for SES email service.
+Verified email address to send emails from via SMTP.
 
-#### AWS_SECRET_ACCESS_KEY?
-
-`string` = `...`
-
-AWS secret access key for SES email service.
-
-#### AWS_SES_FROM_EMAIL?
+#### API_SMTP_FROM_NAME?
 
 `string` = `...`
 
-Verified email address to send emails from in AWS SES.
+Display name for the sender in emails via SMTP.
 
-#### AWS_SES_FROM_NAME?
-
-`string` = `...`
-
-Display name for the sender in emails.
-
-#### AWS_SES_REGION?
+#### API_SMTP_HOST?
 
 `string` = `...`
 
-AWS region for SES email service.
+SMTP server hostname for email service.
+
+#### API_SMTP_LOCAL_ADDRESS?
+
+`string` = `...`
+
+Local IP address to bind to for outgoing SMTP connections.
+
+#### API_SMTP_NAME?
+
+`string` = `...`
+
+Client hostname to greet the SMTP server with.
+Default: machine hostname
+
+#### API_SMTP_PASSWORD?
+
+`string` = `...`
+
+SMTP password for authentication.
+
+#### API_SMTP_PORT?
+
+`number` = `...`
+
+SMTP server port for email service.
+Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
+
+#### API_SMTP_SECURE?
+
+`boolean` = `...`
+
+Whether to use SSL/TLS for SMTP connection.
+Set to true for port 465, false for port 587 with STARTTLS.
+
+#### API_SMTP_USER?
+
+`string` = `...`
+
+SMTP username for authentication.
 
 #### CACHE_ENTITY_TTLS?
 
@@ -548,12 +625,6 @@ Optional JSON object to override default cache TTL values per entity type.
 **See**
 
 src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.
-
-#### FRONTEND_URL
-
-`string` = `...`
-
-The frontend URL allowed for CORS.
 
 #### GITHUB_CLIENT_ID?
 
@@ -597,13 +668,6 @@ Google OAuth Redirect URI for authentication callback.
 
 More information can be found at: [https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client](https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client)
 
-#### OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE?
-
-`string` = `...`
-
-Cron schedule for the old event instance cleanup background worker.
-Default: "0 2 * * *" (daily at 2 AM UTC)
-
 #### RECAPTCHA_SCORE_THRESHOLD?
 
 `number` = `...`
@@ -618,70 +682,6 @@ Default: 0.5
 
 Secret key for Google reCAPTCHA v3 verification.
 Used to verify reCAPTCHA tokens on the server side.
-
-#### RECURRING_EVENT_GENERATION_CRON_SCHEDULE?
-
-`string` = `...`
-
-Cron schedule for the recurring event instance generation background worker.
-Default: "0 * * * *" (every hour at minute 0)
-
-#### SMTP_FROM_EMAIL?
-
-`string` = `...`
-
-Verified email address to send emails from via SMTP.
-
-#### SMTP_FROM_NAME?
-
-`string` = `...`
-
-Display name for the sender in emails via SMTP.
-
-#### SMTP_HOST?
-
-`string` = `...`
-
-SMTP server hostname for email service.
-
-#### SMTP_LOCAL_ADDRESS?
-
-`string` = `...`
-
-Local IP address to bind to for outgoing SMTP connections.
-
-#### SMTP_NAME?
-
-`string` = `...`
-
-Client hostname to greet the SMTP server with.
-Default: machine hostname
-
-#### SMTP_PASSWORD?
-
-`string` = `...`
-
-SMTP password for authentication.
-
-#### SMTP_PORT?
-
-`number` = `...`
-
-SMTP server port for email service.
-Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
-
-#### SMTP_SECURE?
-
-`boolean` = `...`
-
-Whether to use SSL/TLS for SMTP connection.
-Set to true for port 465, false for port 587 with STARTTLS.
-
-#### SMTP_USER?
-
-`string` = `...`
-
-SMTP username for authentication.
 
 ## Returns
 
