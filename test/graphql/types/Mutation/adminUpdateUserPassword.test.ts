@@ -51,7 +51,9 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {}
+			} catch (err) {
+				console.error("User cleanup failed:", err);
+			}
 		}
 		cleanupFns.length = 0;
 	});
