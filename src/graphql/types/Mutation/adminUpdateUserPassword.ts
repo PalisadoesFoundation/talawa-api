@@ -24,7 +24,8 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 				type: MutationAdminUpdateUserPasswordInput,
 			}),
 		},
-		description: "Mutation to allow an administrator to reset a non-admin user's password.",
+		description:
+			"Mutation to allow an administrator to reset a non-admin user's password.",
 		complexity: envConfig.API_GRAPHQL_MUTATION_BASE_COST,
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
@@ -192,12 +193,12 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 			});
 
 			ctx.log.info(
-					{
-						actorUserId: currentUserId,
-						targetUserId: parsedArgs.input.id,
-						action: "admin_password_reset",
-					},
-					"Admin reset user password",
+				{
+					actorUserId: currentUserId,
+					targetUserId: parsedArgs.input.id,
+					action: "admin_password_reset",
+				},
+				"Admin reset user password",
 			);
 
 			return true;
