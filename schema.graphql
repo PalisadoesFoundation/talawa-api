@@ -2753,7 +2753,10 @@ type Mutation {
   updateUser(input: MutationUpdateUserInput!): User
 
   """Mutation field to update a user password."""
-  updateUserPassword(input: MutationUpdateUserPasswordInput!): Boolean
+  updateUserPassword(
+    """Input for updating the current user's password."""
+    input: MutationUpdateUserPasswordInput!
+  ): Boolean
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/tables/users";
+import * as passwordChangeRateLimitModule from "~/src/utilities/passwordChangeRateLimit";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -36,6 +37,35 @@ suite("Mutation field updateUserPassword", () => {
 			}
 		}
 		cleanupFns.length = 0;
+	});
+
+	test("Returns too_many_requests when rate limit exceeded", async () => {
+		const user = await createUserWithCleanup();
+
+		vi.spyOn(
+			passwordChangeRateLimitModule,
+			"checkPasswordChangeRateLimit",
+		).mockReturnValue(false);
+
+		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
+			headers: { authorization: `bearer ${user.authToken}` },
+			variables: {
+				input: {
+					oldPassword: "password",
+					newPassword: "newPassword123",
+					confirmNewPassword: "newPassword123",
+				},
+			},
+		});
+
+		expect(result.data?.updateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "too_many_requests" }),
+				}),
+			]),
+		);
 	});
 
 	test("Returns unauthenticated when client is not authenticated", async () => {
