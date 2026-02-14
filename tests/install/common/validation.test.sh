@@ -15,23 +15,16 @@
 # and assert on the exit code; set -e would exit the script on those.
 set -u  # Catch undefined variables
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 # Test statistics
 TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Define required functions before sourcing validation.sh
-info() { echo -e "${BLUE}ℹ${NC} $1"; }
-warn() { echo -e "${YELLOW}⚠${NC} $1"; }
-error() { echo -e "${RED}✗${NC} $1"; }
-success() { echo -e "${GREEN}✓${NC} $1"; }
+info() { echo "ℹ $1"; }
+warn() { echo "⚠ $1"; }
+error() { echo "✗ $1"; }
+success() { echo "✓ $1"; }
 
 # Source the validation functions (scripts live under scripts/install when tests run from tests/install)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -61,14 +54,14 @@ test_start() {
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo -e "${GREEN}✓ PASS${NC}"
+    echo "✓ PASS"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo -e "${RED}✗ FAIL${NC}"
-    echo -e "  ${RED}Reason: $message${NC}"
+    echo "✗ FAIL"
+    echo "  Reason: $message"
 }
 
 ##############################################################################
@@ -747,14 +740,14 @@ echo "========================================================================"
 echo "Test Summary"
 echo "========================================================================"
 echo "Total tests run:    $TESTS_RUN"
-echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
-echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
+echo "Tests passed:       $TESTS_PASSED"
+echo "Tests failed:       $TESTS_FAILED"
 echo ""
 
 if [ "$TESTS_FAILED" -eq 0 ]; then
-    echo -e "${GREEN}✓ All tests passed!${NC}"
+    echo "✓ All tests passed!"
     exit 0
 else
-    echo -e "${RED}✗ Some tests failed${NC}"
+    echo "✗ Some tests failed"
     exit 1
 fi
