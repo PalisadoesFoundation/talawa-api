@@ -2,7 +2,7 @@
 set -eu
 
 # Preflight checks
-for cmd in fnm corepack pnpm; do
+for cmd in fnm corepack; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "Error: Required command '$cmd' is not installed." >&2
     exit 1
@@ -39,53 +39,15 @@ fnm install "$NODE_VERSION"
 fnm use "$NODE_VERSION"
 fnm default "$NODE_VERSION"
 corepack prepare pnpm@10.28.1 --activate
+
+# Check pnpm is available after corepack activation
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "Error: Required command 'pnpm' is not installed after enabling corepack." >&2
+  exit 1
+fi
+
 pnpm install
 
-# ============ VALIDATION CHECKS ============
-# CI/CD will FAIL if any of these checks fail
-
-echo "Running validation checks..."
-
-# Check 1: Node.js is installed and correct version
-if ! command -v node >/dev/null 2>&1; then
-    echo "FAILED: Node.js is not installed"
-    exit 1
-fi
-
-NODE_VERSION=$(node --version | cut -d'v' -f2)
-EXPECTED_NODE="24.12.0"
-if [ "$NODE_VERSION" != "$EXPECTED_NODE" ]; then
-    echo "FAILED: Node.js version is $NODE_VERSION, expected $EXPECTED_NODE"
-    exit 1
-fi
-echo "Node.js $NODE_VERSION"
-
-# Check 2: pnpm is installed and correct version
-if ! command -v pnpm >/dev/null 2>&1; then
-    echo "FAILED: pnpm is not installed"
-    exit 1
-fi
-
-PNPM_VERSION=$(pnpm --version)
-EXPECTED_PNPM="10.28.1"
-if [ "$PNPM_VERSION" != "$EXPECTED_PNPM" ]; then
-    echo "FAILED: pnpm version is $PNPM_VERSION, expected $EXPECTED_PNPM"
-    exit 1
-fi
-echo "pnpm $PNPM_VERSION"
-
-# Check 3: node_modules exists and is not empty
-if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
-    echo "FAILED: node_modules is missing or empty"
-    exit 1
-fi
-echo "node_modules is populated"
-
-# Check 4: Critical dependency exists (graphql)
-if [ ! -d "node_modules/graphql" ]; then
-    echo "FAILED: graphql dependency is missing"
-    exit 1
-fi
-echo "Graphql is installed"
-
-echo "All validation checks passed! Devcontainer setup completed successfully."
+# Source validation checks
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+. "$SCRIPT_DIR/validate-setup.sh"

@@ -828,13 +828,13 @@ jobs:
           devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
           
-      - name: Run Devcontainer Setup Script with Validation
+      - name: Validate Devcontainer Environment
         run: |
-          echo "Running post-create.sh with validation checks..."
-          # Run the setup script and capture its exit code
-          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/default/post-create.sh"
-          # If the script exits with non-zero, this step will fail
-          echo "Devcontainer setup completed successfully"
+          echo "Running environment validation checks..."
+          # Run ONLY the validation script (lightweight, doesn't reinstall everything)
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/validate-setup.sh"
+          # If validation fails, this step will fail
+          echo "Environment validation passed"
 
       - name: Wait for Postgres in devcontainer before migrations
         run: |
@@ -922,13 +922,13 @@ jobs:
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
         
-      - name: Run Devcontainer Setup Script with Validation
+      - name: Validate Devcontainer Environment
         run: |
-          echo "Running post-create.sh with validation checks..."
-          # Run the setup script and capture its exit code
-          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/default/post-create.sh"
-          # If the script exits with non-zero, this step will fail
-          echo "Devcontainer setup completed successfully"
+          echo "Running environment validation checks..."
+          # Run ONLY the validation script (lightweight, doesn't reinstall everything)
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/validate-setup.sh"
+          # If validation fails, this step will fail
+          echo "Environment validation passed"
 
       - name: Wait for Postgres in devcontainer
         run: |
