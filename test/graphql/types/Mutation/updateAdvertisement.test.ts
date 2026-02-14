@@ -887,8 +887,12 @@ suite("Mutation field updateAdvertisement", () => {
 				},
 			);
 
+			expect(createOrgResult.errors).toBeUndefined();
 			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
+			assertToBeNonNullish(
+				orgId,
+				`createOrganization returned no id. Response: ${JSON.stringify(createOrgResult.data)}`,
+			);
 
 			const createAdResult = await mercuriusClient.mutate(
 				Mutation_createAdvertisement,
@@ -906,8 +910,12 @@ suite("Mutation field updateAdvertisement", () => {
 				},
 			);
 
+			expect(createAdResult.errors).toBeUndefined();
 			const adId = createAdResult.data?.createAdvertisement?.id;
-			assertToBeNonNullish(adId);
+			assertToBeNonNullish(
+				adId,
+				`createAdvertisement returned no id. Response: ${JSON.stringify(createAdResult.data)}`,
+			);
 
 			const updatedDescription = faker.lorem.paragraph();
 			const result = await mercuriusClient.mutate(

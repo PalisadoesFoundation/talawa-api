@@ -10,6 +10,7 @@ const {
 	cleanupBackup,
 	cleanupTemp,
 	commitTemp,
+	errToError,
 	ensureBackup,
 	fileExists,
 	getErrCode,
@@ -55,12 +56,30 @@ describe("ensureBackup", () => {
 		await ensureBackup(ENV, BACKUP);
 		expect(await fileExists(BACKUP)).toBe(false);
 	});
+
+	it("throws BACKUP_FAILED when backup creation fails", async () => {
+		vi.spyOn(fs, "copyFile").mockRejectedValueOnce(
+			Object.assign(new Error("no permissions"), { code: "EACCES" }),
+		);
+
+		await expect(ensureBackup(ENV, BACKUP)).rejects.toMatchObject({
+			code: SetupErrorCode.BACKUP_FAILED,
+		});
+	});
 });
 
 describe("writeTemp", () => {
 	it("writes content to temp file", async () => {
 		await writeTemp(TEMP, "TMP=1\n");
 		expect(await read(TEMP)).toBe("TMP=1\n");
+	});
+
+	it("throws FILE_OP_FAILED when writing temp file fails", async () => {
+		vi.spyOn(fs, "writeFile").mockRejectedValueOnce(new Error("disk full"));
+
+		await expect(writeTemp(TEMP, "X=1\n")).rejects.toMatchObject({
+			code: SetupErrorCode.FILE_OP_FAILED,
+		});
 	});
 });
 
@@ -89,6 +108,38 @@ describe("commitTemp", () => {
 		expect(await fileExists(TEMP)).toBe(false);
 		expect(await read(ENV)).toBe("Y=2\n");
 	});
+
+	it("throws COMMIT_FAILED when fallback copy fails", async () => {
+		await write(TEMP, "Z=3\n");
+
+		vi.spyOn(fs, "rename").mockRejectedValueOnce(new Error("rename failed"));
+		vi.spyOn(fs, "copyFile").mockRejectedValueOnce(new Error("copy failed"));
+
+		await expect(commitTemp(ENV, TEMP)).rejects.toMatchObject({
+			code: SetupErrorCode.COMMIT_FAILED,
+		});
+
+		expect(await fileExists(ENV)).toBe(false);
+		expect(await fileExists(TEMP)).toBe(true);
+	});
+
+	it("throws COMMIT_FAILED when fallback unlink fails after copying", async () => {
+		await write(TEMP, "W=1\n");
+
+		vi.spyOn(fs, "rename").mockRejectedValueOnce(
+			Object.assign(new Error("EXDEV"), { code: "EXDEV" }),
+		);
+		vi.spyOn(fs, "unlink").mockRejectedValueOnce(
+			Object.assign(new Error("unlink failed"), { code: "EACCES" }),
+		);
+
+		await expect(commitTemp(ENV, TEMP)).rejects.toMatchObject({
+			code: SetupErrorCode.COMMIT_FAILED,
+		});
+
+		expect(await read(ENV)).toBe("W=1\n");
+		expect(await fileExists(TEMP)).toBe(true);
+	});
 });
 
 describe("cleanupTemp", () => {
@@ -102,6 +153,19 @@ describe("cleanupTemp", () => {
 		await cleanupTemp(TEMP);
 		expect(await fileExists(TEMP)).toBe(false);
 	});
+
+	it("logs a warning via logger when unlink fails with non-ENOENT", async () => {
+		const logger = { warn: vi.fn() };
+		vi.spyOn(fs, "unlink").mockRejectedValueOnce(
+			Object.assign(new Error("unlink failed"), { code: "EACCES" }),
+		);
+
+		await cleanupTemp(TEMP, logger);
+
+		expect(logger.warn).toHaveBeenCalledWith(
+			expect.stringContaining("Failed to cleanup temporary file"),
+		);
+	});
 });
 
 describe("cleanupBackup", () => {
@@ -114,6 +178,17 @@ describe("cleanupBackup", () => {
 	it("ignores ENOENT", async () => {
 		await cleanupBackup(BACKUP);
 		expect(await fileExists(BACKUP)).toBe(false);
+	});
+
+	it("warns when cleanup fails with non-ENOENT", async () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(fs, "unlink").mockRejectedValueOnce(
+			Object.assign(new Error("unlink failed"), { code: "EACCES" }),
+		);
+
+		await cleanupBackup(BACKUP);
+
+		expect(warnSpy).toHaveBeenCalled();
 	});
 });
 
@@ -130,6 +205,16 @@ describe("restoreBackup", () => {
 	it("does nothing when backup is missing", async () => {
 		await restoreBackup(ENV, BACKUP);
 		expect(await fileExists(ENV)).toBe(false);
+	});
+
+	it("throws RESTORE_FAILED when restore fails", async () => {
+		vi.spyOn(fs, "copyFile").mockRejectedValueOnce(
+			Object.assign(new Error("no permissions"), { code: "EACCES" }),
+		);
+
+		await expect(restoreBackup(ENV, BACKUP)).rejects.toMatchObject({
+			code: SetupErrorCode.RESTORE_FAILED,
+		});
 	});
 });
 
@@ -158,6 +243,57 @@ describe("atomicWriteEnv", () => {
 
 		expect(await read(ENV)).toBe("NO_BACKUP=1\n");
 		expect(await fileExists(BACKUP)).toBe(false);
+	});
+
+	it("skips restore when createBackup=false and a write fails", async () => {
+		await write(ENV, "SAFE=1\n");
+		const copySpy = vi.spyOn(fs, "copyFile");
+
+		vi.spyOn(fs, "writeFile").mockRejectedValueOnce(new Error("disk full"));
+
+		await expect(
+			atomicWriteEnv("FAIL=1\n", {
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+				createBackup: false,
+			}),
+		).rejects.toBeInstanceOf(Error);
+
+		expect(await read(ENV)).toBe("SAFE=1\n");
+		// createBackup: false prevents ensureBackup from calling copyFile, so no
+		// backup exists. Without a backup, restoreBackup's copyFile is a no-op
+		// (ENOENT is silently ignored). Therefore no copyFile calls at all.
+		expect(copySpy).not.toHaveBeenCalled();
+	});
+
+	it("cleans up temp and restores when commit fails after writing temp", async () => {
+		await write(ENV, "ORIGINAL=1\n");
+
+		// Force commitTemp to fail after `writeTemp` succeeds, leaving TEMP behind.
+		vi.spyOn(fs, "rename").mockRejectedValueOnce(
+			Object.assign(new Error("EXDEV"), { code: "EXDEV" }),
+		);
+
+		const realCopyFile = fs.copyFile.bind(fs);
+		vi.spyOn(fs, "copyFile").mockImplementation(async (src, dest) => {
+			if (src === TEMP && dest === ENV) {
+				throw Object.assign(new Error("copy failed"), { code: "EIO" });
+			}
+			return realCopyFile(src, dest);
+		});
+
+		await expect(
+			atomicWriteEnv("NEW=2\n", {
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+			}),
+		).rejects.toMatchObject({ code: SetupErrorCode.COMMIT_FAILED });
+
+		expect(await read(ENV)).toBe("ORIGINAL=1\n");
+		expect(await read(BACKUP)).toBe("ORIGINAL=1\n");
+		expect(await fileExists(TEMP)).toBe(false);
 	});
 
 	it("does not restore when autoRestore=false", async () => {
@@ -214,20 +350,14 @@ describe("atomicWriteEnv", () => {
 				backupFile: BACKUP,
 				tempFile: TEMP,
 			}),
-		).rejects.toBeInstanceOf(SetupError);
-
-		try {
-			await atomicWriteEnv("Y=2\n", {
-				envFile: ENV,
-				backupFile: BACKUP,
-				tempFile: TEMP,
-			});
-		} catch (err: unknown) {
-			expect([
-				SetupErrorCode.RESTORE_FAILED,
-				SetupErrorCode.FILE_OP_FAILED,
-			]).toContain(getErrCode(err));
-		}
+		).rejects.toMatchObject({
+			code: SetupErrorCode.RESTORE_FAILED,
+			context: expect.objectContaining({
+				operation: "atomicWriteEnv",
+				originalError: "Failed to write temporary file",
+				restoreError: "Failed to restore .env from backup",
+			}),
+		});
 	});
 });
 
@@ -248,9 +378,35 @@ describe("SetupError", () => {
 	});
 });
 
+describe("getErrCode & errToError", () => {
+	it("getErrCode returns code when present", () => {
+		expect(getErrCode({ code: "EACCES" })).toBe("EACCES");
+	});
+
+	it("getErrCode returns undefined for non-objects", () => {
+		expect(getErrCode("boom")).toBeUndefined();
+	});
+
+	it("errToError converts non-Error values into Error", () => {
+		const err = errToError("boom");
+		expect(err).toBeInstanceOf(Error);
+		expect(err.message).toBe("boom");
+	});
+});
+
 describe("readEnv & fileExists", () => {
 	it("readEnv returns empty string when file missing", async () => {
 		expect(await readEnv(ENV)).toBe("");
+	});
+
+	it("readEnv throws FILE_OP_FAILED when read fails with non-ENOENT", async () => {
+		vi.spyOn(fs, "readFile").mockRejectedValueOnce(
+			Object.assign(new Error("no permissions"), { code: "EACCES" }),
+		);
+
+		await expect(readEnv(ENV)).rejects.toMatchObject({
+			code: SetupErrorCode.FILE_OP_FAILED,
+		});
 	});
 
 	it("fileExists reflects actual state", async () => {
