@@ -439,7 +439,12 @@ check_git_repo() {
 ##############################################################################
 # Repository Validation
 ##############################################################################
-REPO_ROOT=$(get_repo_root)
+# Allow tests to override repo root via REPO_ROOT env (avoids exec/env inheritance issues)
+if [[ -n "${REPO_ROOT:-}" ]]; then
+    REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
+else
+    REPO_ROOT=$(get_repo_root)
+fi
 cd "$REPO_ROOT"
 
 print_section "Repository Validation"

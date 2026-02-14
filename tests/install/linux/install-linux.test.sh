@@ -162,13 +162,14 @@ run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-true}"
     local extra_env="${3:-}"
-    # SCRIPT_DIR makes install script use TEST_DIR as repo root (get_repo_root)
+    # REPO_ROOT makes install script use TEST_DIR as repo root (reliable in all environments)
     # HOME=TEST_DIR so fnm installer creates $TEST_DIR/.local/share/fnm/fnm and script finds it
     local env_args=(
         "PATH=$MOCK_BIN:/usr/bin:/bin"
         "TERM=dumb"
         "MOCK_BIN=$MOCK_BIN"
         "TEST_DIR=$TEST_DIR"
+        "REPO_ROOT=$TEST_DIR"
         "SCRIPT_DIR=$TEST_DIR/scripts/install/linux"
         "HOME=$TEST_DIR"
         "USER=${USER:-}"
@@ -181,7 +182,8 @@ run_test_script() {
     done
     (
         cd "$TEST_DIR"
-        env -i "${env_args[@]}" bash --noprofile --norc -c "bash \"$REPO_ROOT/scripts/install/linux/install-linux.sh\" \"$install_mode\" \"$skip_prereqs\""
+        # Export REPO_ROOT so install script uses TEST_DIR (reliable across exec/env -i)
+        env -i "${env_args[@]}" bash --noprofile --norc -c "export REPO_ROOT=\"$TEST_DIR\"; exec bash \"$REPO_ROOT/scripts/install/linux/install-linux.sh\" \"$install_mode\" \"$skip_prereqs\""
     )
 }
 

@@ -70,6 +70,33 @@ In CI, install script tests are run under [bashcov](https://github.com/infertux/
 
 - **Bash 4.0+** for most tests (some use bash 3.2+).
 - **jq** (optional): required for `parse_package_json` functional tests in `validation.test.sh`; those tests are skipped if `jq` is not installed.
-- **Coverage (bashcov)** uses Ruby 3.x and Bundler; the Gemfile uses a patched simplecov (see `.github/workflows/pull-request.yml` step "Prepare simplecov for Ruby 3.2"). To run `bundle exec bashcov` locally with Ruby 3.2, run the same clone-and-patch of simplecov into `tests/install/vendor/simplecov` first, or rely on CI.
+- **Coverage (bashcov)** requires **Ruby 3.0+** (Gemfile; CI uses 3.2) and Bundler. macOS system Ruby (2.6) is too old; use a Ruby 3.x from Homebrew or rbenv.
+
+# Run tests with coverage locally
+
+You need Ruby 3.0+ and Bundler. If you see `Could not find 'bundler'` or a Ruby version error:
+
+1. **Install Ruby 3.2** (pick one):
+   - **Homebrew:** `brew install ruby` then ensure the Homebrew Ruby is on your PATH (e.g. add `export PATH="/opt/homebrew/opt/ruby/bin:$PATH"` to your shell profile, or use the full path to `bundle`).
+   - **rbenv:** `brew install rbenv ruby-build`, then `rbenv install 3.2.0`, `cd tests/install`, `rbenv local 3.2.0`.
+
+2. **Prepare simplecov (same as CI):**
+   ```bash
+   cd tests/install
+   mkdir -p vendor
+   git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git vendor/simplecov
+   # macOS: sed -i '' '...'; Linux: sed -i '...'
+   sed -i.bak 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' vendor/simplecov/simplecov.gemspec && rm -f vendor/simplecov/simplecov.gemspec.bak
+   ```
+
+3. **Install gems and run tests with coverage:**
+   ```bash
+   gem install bundler
+   bundle install
+   chmod +x run-all.sh
+   bundle exec bashcov --root ../.. -- ./run-all.sh
+   ```
+
+Coverage is written to `tests/install/coverage/` (e.g. `coverage.xml` for Codecov).
 
 See also: [scripts/install/common/README.md](../../scripts/install/common/README.md) for script behavior and validation details.

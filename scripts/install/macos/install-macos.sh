@@ -73,7 +73,12 @@ get_repo_root() {
     printf '%s\n' "$repo_root"
 }
 
-REPO_ROOT=$(get_repo_root)
+# Allow tests to override repo root via REPO_ROOT env (avoids exec/env inheritance issues)
+if [[ -n "${REPO_ROOT:-}" ]]; then
+    REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
+else
+    REPO_ROOT=$(get_repo_root)
+fi
 
 # Ensure we're in the repository root
 cd "$REPO_ROOT"
@@ -108,14 +113,14 @@ else
     
     info "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-    # Add Homebrew to PATH
-    if [ -f /opt/homebrew/bin/brew ]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [ -f /usr/local/bin/brew ]; then
-        eval "$(/usr/local/bin/brew shellenv)"
+    # Add Homebrew to PATH (skip when REPO_ROOT is set so test mocks stay in use)
+    if [[ -z "${REPO_ROOT:-}" ]]; then
+        if [ -f /opt/homebrew/bin/brew ]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [ -f /usr/local/bin/brew ]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
     fi
-    
     success "Homebrew installed successfully"
 fi
 

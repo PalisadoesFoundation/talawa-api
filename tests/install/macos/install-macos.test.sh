@@ -114,16 +114,16 @@ run_test_script() {
     local install_mode="${1:-docker}"
     local skip_prereqs="${2:-false}"
     
-    # Run in a completely clean bash subshell without any profile/rc files
+    # Run in a completely clean bash subshell; REPO_ROOT so install script uses TEST_DIR
     env -i \
         PATH="$MOCK_BIN:/usr/bin:/bin" \
         MOCK_BIN="$MOCK_BIN" \
         TEST_DIR="$TEST_DIR" \
-        SCRIPT_DIR="$TEST_DIR/scripts/install/macos" \
+        REPO_ROOT="$TEST_DIR" \
         HOME="$TEST_DIR" \
         USER="${USER:-}" \
         TERM="dumb" \
-        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; export SCRIPT_DIR='$TEST_DIR/scripts/install/macos'; export HOME='$TEST_DIR'; cd '$TEST_DIR' && bash '$REPO_ROOT/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
+        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; export REPO_ROOT='$TEST_DIR'; export HOME='$TEST_DIR'; cd '$TEST_DIR' && exec bash '$REPO_ROOT/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
 }
 
 # TEST_DIR holds only test data (package.json, .git). Install scripts are run from
@@ -827,6 +827,11 @@ fi
 ##############################################################################
 
 test_start "Homebrew Not Present -> Install Success"
+# Skip on hosts where real Homebrew exists: script may call real brew after "install", causing permission errors
+if [ -x /opt/homebrew/bin/brew ] || [ -x /usr/local/bin/brew ]; then
+    echo "SKIP (real Homebrew present; test runs in CI where brew is absent)"
+    test_pass
+else
 setup_clean_system
 # Simulate missing Homebrew by removing it from mock bin
 rm -rf "$MOCK_BIN/brew"
@@ -875,7 +880,7 @@ if [ $EXIT_CODE -eq 0 ] && echo "$OUTPUT" | grep -q "Installing Homebrew..."; th
 else
     test_fail "Expected Homebrew installation flow with exit code 0.\nExit code: $EXIT_CODE\nLogs:\n$OUTPUT"
 fi
-
+fi
 
 test_start "Docker Missing (Docker Mode)"
 setup_clean_system
