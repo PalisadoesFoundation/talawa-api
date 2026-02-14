@@ -120,41 +120,15 @@ run_test_script() {
         HOME="$HOME" \
         USER="$USER" \
         TERM="dumb" \
-        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; cd '$TEST_DIR' && '$TEST_DIR/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
+        bash --noprofile --norc -c "export PATH='$MOCK_BIN:/usr/bin:/bin'; export MOCK_BIN='$MOCK_BIN'; cd '$TEST_DIR' && bash '$REPO_ROOT/scripts/install/macos/install-macos.sh' '$install_mode' '$skip_prereqs'"
 }
 
-# To effectively test, we need to replicate the repo structure in TEST_DIR
-# TEST_DIR/
-#   package.json
-#   scripts/
-#     install/
-#       macos/install-macos.sh
-#       common/*.sh
+# TEST_DIR holds only test data (package.json, .git). Install scripts are run from
+# REPO_ROOT so coverage is attributed to scripts/install/ (real paths).
 
 setup_test_repo() {
-    mkdir -p "$TEST_DIR/scripts/install/macos"
-    mkdir -p "$TEST_DIR/scripts/install/common"
     mkdir -p "$TEST_DIR/.git"
-    
-    # Copy actual scripts to test dir (paths relative to repo root)
-    cp "$REPO_ROOT/scripts/install/macos/install-macos.sh" "$TEST_DIR/scripts/install/macos/"
-    chmod +x "$TEST_DIR/scripts/install/macos/install-macos.sh"
-    cp -a "$REPO_ROOT/scripts/install/common/." "$TEST_DIR/scripts/install/common/"
-    
-    # Inject command_exists override into os-detection.sh
-    cat >> "$TEST_DIR/scripts/install/common/os-detection.sh" <<'EOF'
-
-command_exists() {
-    if [ -n "${1:-}" ] && [ -f "${MOCK_BIN:-}/$1.hidden" ]; then
-        return 1
-    fi
-    command -v "$1" >/dev/null 2>&1
-}
-EOF
-
-    # Note: No direct patching needed - install-macos.sh sources os-detection.sh
-    # which now contains our command_exists override
-
+    # package.json already created at top of file
 }
 
 setup_test_repo

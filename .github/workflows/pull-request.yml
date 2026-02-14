@@ -482,72 +482,18 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      - name: Run install script tests
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: tests/install
+      - name: Run install script tests with coverage
         working-directory: tests/install
         run: |
           chmod +x run-all.sh
-          ./run-all.sh
-      - name: Generate install script coverage report
-        run: |
-          # Generate a Cobertura coverage report for install scripts
-          # Since bashcov cannot track coverage for sourced scripts in test isolation,
-          # we generate a report marking all tested scripts as covered.
-          # The tests validate these scripts work correctly.
-          
-          mkdir -p tests/install/coverage
-          TIMESTAMP=$(date +%s)
-          OUTPUT="tests/install/coverage/coverage.xml"
-          
-          # Count total lines across all scripts
-          TOTAL_LINES=0
-          for script in scripts/install/**/*.sh scripts/install/*.sh; do
-            [ -f "$script" ] && TOTAL_LINES=$((TOTAL_LINES + $(wc -l < "$script")))
-          done
-          
-          # Write XML header
-          cat > "$OUTPUT" << EOF
-          <?xml version="1.0" ?>
-          <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-          <coverage version="1.0" timestamp="$TIMESTAMP" lines-valid="$TOTAL_LINES" lines-covered="$TOTAL_LINES" line-rate="1.0" branches-valid="0" branches-covered="0" branch-rate="1.0" complexity="0">
-            <sources>
-              <source>.</source>
-            </sources>
-            <packages>
-              <package name="scripts.install" line-rate="1.0" branch-rate="1.0" complexity="0">
-                <classes>
-          EOF
-          
-          # Add each install script
-          for script in scripts/install/**/*.sh scripts/install/*.sh; do
-            if [ -f "$script" ]; then
-              filename=$(basename "$script")
-              lines=$(wc -l < "$script")
-              cat >> "$OUTPUT" << EOF
-                <class name="$filename" filename="$script" line-rate="1.0" branch-rate="1.0" complexity="0">
-                  <lines>
-          EOF
-              for i in $(seq 1 "$lines"); do
-                echo "              <line number=\"$i\" hits=\"1\"/>" >> "$OUTPUT"
-              done
-              cat >> "$OUTPUT" << EOF
-                  </lines>
-                </class>
-          EOF
-            fi
-          done
-          
-          # Close XML
-          cat >> "$OUTPUT" << EOF
-                </classes>
-              </package>
-            </packages>
-          </coverage>
-          EOF
-          
-          echo "=== Generated coverage report ==="
-          echo "Total lines: $TOTAL_LINES"
-          echo "=== First 50 lines of coverage.xml ==="
-          head -50 "$OUTPUT"
+          bundle exec bashcov --root ../.. -- ./run-all.sh
+      # fail_ci_if_error: false so transient Codecov upload issues don't fail the job
       - name: Upload install coverage to Codecov
         if: "!cancelled()"
         uses: codecov/codecov-action@v5

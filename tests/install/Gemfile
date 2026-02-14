@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+ruby '>= 3.0'  # required by bashcov 3.x
+
+gem 'bashcov', '~> 3.1'
+gem 'simplecov', '~> 0.21'
+gem 'simplecov-cobertura', '~> 2.1'

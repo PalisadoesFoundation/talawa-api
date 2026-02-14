@@ -5,7 +5,8 @@ coverage:
         target: 90%
         threshold: 1%
 
-# Fix paths from bashcov cobertura output (GitHub Actions workspace)
+# Remap absolute paths from CI workspace (GitHub Actions runner) to repo-relative
+# paths so coverage reports (e.g. bashcov, vitest) match source paths in the repo.
 fixes:
   - "/home/runner/work/talawa-api/talawa-api/::"
 

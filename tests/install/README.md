@@ -64,7 +64,7 @@ This ensures the script under test runs with no inherited env from the test proc
 
 # Coverage
 
-In CI, install script tests are run under [kcov](https://github.com/SimonKagstrom/kcov); coverage for `scripts/install/` is uploaded to Codecov with the `install` flag. The 95% patch coverage target for the install flag is configured in `codecov.yml`.
+In CI, install script tests are run under [bashcov](https://github.com/infertux/bashcov); coverage for `scripts/install/` is uploaded to Codecov with the `install` flag. The install flag is configured in `codecov.yml`.
 
 # Requirements
 

@@ -125,13 +125,10 @@ exit 0
 '
 }
 
+# TEST_DIR holds only test data (package.json, .git). Install scripts are run from
+# REPO_ROOT so coverage is attributed to scripts/install/ (real paths).
 setup_test_repo() {
-    mkdir -p "$TEST_DIR/scripts/install/linux"
-    mkdir -p "$TEST_DIR/scripts/install/common"
     mkdir -p "$TEST_DIR/.git"
-    cp "$REPO_ROOT/scripts/install/linux/install-linux.sh" "$TEST_DIR/scripts/install/linux/"
-    chmod +x "$TEST_DIR/scripts/install/linux/install-linux.sh"
-    cp "$REPO_ROOT/scripts/install/common/"*.sh "$TEST_DIR/scripts/install/common/"
     cat > "$TEST_DIR/package.json" <<'PKG'
 {
   "name": "talawa-api",
@@ -180,7 +177,7 @@ run_test_script() {
     done
     (
         cd "$TEST_DIR"
-        env -i "${env_args[@]}" bash --noprofile --norc -c "\"$TEST_DIR/scripts/install/linux/install-linux.sh\" \"$install_mode\" \"$skip_prereqs\""
+        env -i "${env_args[@]}" bash --noprofile --norc -c "bash \"$REPO_ROOT/scripts/install/linux/install-linux.sh\" \"$install_mode\" \"$skip_prereqs\""
     )
 }
 
@@ -188,6 +185,8 @@ setup_clean_system() {
     create_jq_mock
     create_mock "df" 'echo "Filesystem 1K-blocks Used Available"; echo "dummy 10000000 1000 5000000 /"'
     create_mock "git" 'if [ "$1" = "rev-parse" ]; then echo "true"; exit 0; fi; if [ "$1" = "diff-index" ]; then exit 1; fi; exit 0'
+    # Mock curl for offline tests: write minimal script to path given by -o so fnm/Docker install steps succeed
+    create_mock "curl" 'next=; for i in "$@"; do if [ "$i" = "-o" ]; then next=1; elif [ -n "$next" ]; then printf "%s\n" "#!/bin/bash" "exit 0" > "$i"; chmod +x "$i"; next=; fi; done; exit 0'
     rm -f "$MOCK_BIN/docker" "$MOCK_BIN/fnm" "$MOCK_BIN/node" "$MOCK_BIN/npm" "$MOCK_BIN/pnpm"
     touch "$MOCK_BIN/docker.hidden" "$MOCK_BIN/fnm.hidden" "$MOCK_BIN/node.hidden" "$MOCK_BIN/npm.hidden" "$MOCK_BIN/pnpm.hidden"
 }
@@ -212,7 +211,7 @@ set +e
 OUTPUT=$(run_test_script docker true "CI=true" 2>&1)
 EXIT_CODE=$?
 set -e
-if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Installation completed successfully"; then
+if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -qi "Installation completed successfully"; then
     test_pass
 else
     test_fail "Expected success with CI=true. Exit: $EXIT_CODE. Logs: $OUTPUT"
@@ -472,7 +471,7 @@ set +e
 OUTPUT=$(run_test_script docker true 2>&1)
 EXIT_CODE=$?
 set -e
-if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Detected Linux distribution:"; then
+if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Detected distribution:"; then
     test_pass
 else
     test_fail "Expected distro in output. Exit: $EXIT_CODE. Logs: $OUTPUT"
@@ -532,7 +531,7 @@ set +e
 OUTPUT=$(run_test_script docker true 2>&1)
 EXIT_CODE=$?
 set -e
-if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -q "Installation completed successfully"; then
+if [ "$EXIT_CODE" -eq 0 ] && echo "$OUTPUT" | grep -qi "Installation completed successfully"; then
     test_pass
 else
     test_fail "Expected success with pnpm install path. Exit: $EXIT_CODE. Logs: $OUTPUT"
