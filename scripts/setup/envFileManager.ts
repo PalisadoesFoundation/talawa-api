@@ -1,0 +1,175 @@
+import { promises as fs } from "node:fs";
+import dotenv from "dotenv";
+import {
+	cleanupTemp,
+	commitTemp,
+	ensureBackup,
+	fileExists,
+	readEnv,
+	restoreBackup,
+	writeTemp,
+} from "./AtomicEnvWriter";
+import { SetupError, SetupErrorCode } from "./SetupError";
+
+export const DEFAULT_ENV_FILE = ".env";
+export const DEFAULT_ENV_BACKUP_FILE = ".env.backup";
+export const DEFAULT_ENV_TEMP_FILE = ".env.tmp";
+
+export type EnvPaths = {
+	envFile?: string;
+	backupFile?: string;
+	tempFile?: string;
+};
+
+export type InitEnvOptions = EnvPaths & {
+	ci: boolean;
+	templateCiFile?: string;
+	templateDevcontainerFile?: string;
+	restoreFromBackup?: boolean;
+};
+
+export type UpdateEnvOptions = EnvPaths & {
+	createBackup?: boolean;
+	restoreFromBackup?: boolean;
+};
+
+function errToError(err: unknown): Error {
+	return err instanceof Error ? err : new Error(String(err));
+}
+
+function escapeEnvValue(value: string): string {
+	return value
+		.replace(/\\/g, "\\\\")
+		.replace(/"/g, '\\"')
+		.replace(/\n/g, "\\n");
+}
+
+function serializeEnvVars(vars: Record<string, string>): string {
+	const entries = Object.entries(vars);
+	if (entries.length === 0) return "";
+	return `${entries
+		.map(([key, value]) => `${key}="${escapeEnvValue(value)}"`)
+		.join("\n")}\n`;
+}
+
+function resolvePaths(paths?: EnvPaths): Required<EnvPaths> {
+	const envFile = paths?.envFile ?? DEFAULT_ENV_FILE;
+	return {
+		envFile,
+		backupFile: paths?.backupFile ?? `${envFile}.backup`,
+		tempFile: paths?.tempFile ?? `${envFile}.tmp`,
+	};
+}
+
+export async function checkEnvFile(
+	envFile: string = DEFAULT_ENV_FILE,
+): Promise<boolean> {
+	return fileExists(envFile);
+}
+
+export async function initializeEnvFile(
+	options: InitEnvOptions,
+): Promise<void> {
+	const { envFile, backupFile, tempFile } = resolvePaths(options);
+	const restoreFromBackup = options.restoreFromBackup ?? false;
+
+	const templateCiFile = options.templateCiFile ?? "envFiles/.env.ci";
+	const templateDevcontainerFile =
+		options.templateDevcontainerFile ?? "envFiles/.env.devcontainer";
+	const templateFile = options.ci ? templateCiFile : templateDevcontainerFile;
+
+	try {
+		await fs.access(templateFile);
+	} catch (e: unknown) {
+		throw new SetupError(
+			SetupErrorCode.ENV_INIT_FAILED,
+			`Configuration file '${templateFile}' is missing. Please create the file or use a different environment configuration.`,
+			{ operation: "initializeEnvFile", filePath: templateFile },
+			errToError(e),
+		);
+	}
+
+	try {
+		const fileContent = await fs.readFile(templateFile, { encoding: "utf-8" });
+		const parsedEnv = dotenv.parse(fileContent);
+		const nextContent = serializeEnvVars(parsedEnv);
+
+		await writeTemp(tempFile, nextContent);
+		await commitTemp(envFile, tempFile);
+
+		dotenv.config({ path: envFile });
+	} catch (e: unknown) {
+		await cleanupTemp(tempFile);
+		if (restoreFromBackup) {
+			await restoreBackup(envFile, backupFile);
+		}
+		throw new SetupError(
+			SetupErrorCode.ENV_INIT_FAILED,
+			"Failed to initialize env file",
+			{
+				operation: "initializeEnvFile",
+				filePath: envFile,
+				details: { templateFile },
+			},
+			errToError(e),
+		);
+	}
+}
+
+export async function updateEnvVariable(
+	config: Record<string, string | number | undefined>,
+	options: UpdateEnvOptions = {},
+): Promise<void> {
+	const { envFile, backupFile, tempFile } = resolvePaths(options);
+	const createBackup = options.createBackup ?? false;
+	const restoreFromBackup = options.restoreFromBackup ?? false;
+
+	try {
+		const appliedEntries = Object.entries(config).filter(
+			(entry): entry is [string, string | number] => entry[1] !== undefined,
+		);
+		if (appliedEntries.length === 0) {
+			return;
+		}
+
+		const existingText = await readEnv(envFile);
+		const parsedEnv = dotenv.parse(existingText);
+
+		let changed = false;
+		for (const [key, rawValue] of appliedEntries) {
+			const value = String(rawValue);
+			if (parsedEnv[key] !== value) {
+				parsedEnv[key] = value;
+				changed = true;
+			}
+			process.env[key] = value;
+		}
+
+		// Preserve the existing file (and its formatting/comments) when the update
+		// results in no changes.
+		if (!changed) {
+			return;
+		}
+
+		if (createBackup) {
+			await ensureBackup(envFile, backupFile);
+		}
+
+		// When we do have changes, we intentionally rewrite the file in a canonical
+		// format (dotenv.parse + serialize). This will drop comments/blank lines.
+		const nextContent = serializeEnvVars(parsedEnv);
+		await writeTemp(tempFile, nextContent);
+		await commitTemp(envFile, tempFile);
+	} catch (e: unknown) {
+		await cleanupTemp(tempFile);
+		if (restoreFromBackup) {
+			await restoreBackup(envFile, backupFile);
+		}
+		throw new SetupError(
+			SetupErrorCode.FILE_OP_FAILED,
+			"Failed to update .env file",
+			{ operation: "updateEnvVariable", filePath: envFile },
+			errToError(e),
+		);
+	}
+}
