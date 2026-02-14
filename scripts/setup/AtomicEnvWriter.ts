@@ -15,7 +15,6 @@ export function getErrCode(err: unknown): string | undefined {
 export function errToError(err: unknown): Error {
 	return err instanceof Error ? err : new Error(String(err));
 }
-}
 
 export interface AtomicWriteOptions {
 	envFile?: string;
