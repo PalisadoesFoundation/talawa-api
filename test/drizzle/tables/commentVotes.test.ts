@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import {
@@ -7,7 +7,7 @@ import {
 	Query_signIn,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
 	commentsTable,
 	commentVotesTable,
@@ -18,6 +18,14 @@ import {
 } from "~/src/drizzle/schema";
 import { commentVotesTableInsertSchema } from "~/src/drizzle/tables/commentVotes";
 import { server } from "../../server";
+
+const createdResources = {
+	voteIds: [] as string[],
+	commentIds: [] as string[],
+	postIds: [] as string[],
+	orgIds: [] as string[],
+	userIds: [] as string[],
+};
 
 async function createTestOrganization(): Promise<string> {
 	// Clear any existing headers to ensure a clean sign-in
@@ -58,6 +66,7 @@ async function createTestOrganization(): Promise<string> {
 		orgId,
 		"Organization ID is missing from creation response",
 	);
+	createdResources.orgIds.push(orgId);
 	return orgId;
 }
 
@@ -74,6 +83,7 @@ async function createTestPost(): Promise<string> {
 		.returning({ id: postsTable.id });
 	const postId = postResult[0]?.id;
 	assertToBeNonNullish(postId, "Post ID is missing from creation response");
+	createdResources.postIds.push(postId);
 	return postId;
 }
 
@@ -95,23 +105,63 @@ async function createTestComment(): Promise<string> {
 		commentId,
 		"Comment ID is missing from creation response",
 	);
+	createdResources.commentIds.push(commentId);
 	return commentId;
 }
 
 describe("src/drizzle/tables/commentVotes.test.ts", () => {
 	afterEach(async () => {
-		await server.drizzleClient.delete(commentVotesTable);
-		await server.drizzleClient.delete(commentsTable);
-		await server.drizzleClient.delete(postsTable);
-		await server.drizzleClient.delete(organizationsTable);
-		await server.drizzleClient.delete(usersTable);
-	});
-	afterAll(async () => {
-		await server.drizzleClient.delete(commentVotesTable);
-		await server.drizzleClient.delete(commentsTable);
-		await server.drizzleClient.delete(postsTable);
-		await server.drizzleClient.delete(organizationsTable);
-		await server.drizzleClient.delete(usersTable);
+		try {
+			if (createdResources.voteIds.length > 0) {
+				await server.drizzleClient
+					.delete(commentVotesTable)
+					.where(inArray(commentVotesTable.id, createdResources.voteIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for commentVotes:", error);
+		}
+		try {
+			if (createdResources.commentIds.length > 0) {
+				await server.drizzleClient
+					.delete(commentsTable)
+					.where(inArray(commentsTable.id, createdResources.commentIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for comments:", error);
+		}
+		try {
+			if (createdResources.postIds.length > 0) {
+				await server.drizzleClient
+					.delete(postsTable)
+					.where(inArray(postsTable.id, createdResources.postIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for posts:", error);
+		}
+		try {
+			if (createdResources.orgIds.length > 0) {
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(inArray(organizationsTable.id, createdResources.orgIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for organizations:", error);
+		}
+		try {
+			if (createdResources.userIds.length > 0) {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(inArray(usersTable.id, createdResources.userIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for users:", error);
+		}
+
+		createdResources.voteIds.length = 0;
+		createdResources.commentIds.length = 0;
+		createdResources.postIds.length = 0;
+		createdResources.orgIds.length = 0;
+		createdResources.userIds.length = 0;
 	});
 
 	describe("CommentVotes Table Schema", () => {
@@ -368,6 +418,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 	describe("Database Operations", () => {
 		it("should successfully insert a record with required fields", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "up_vote";
 
@@ -385,6 +436,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				throw new Error("Insert did not return a result");
 			}
 
+			createdResources.voteIds.push(result.id);
 			expect(result.id).toBeDefined();
 			expect(result.type).toBe(type);
 			expect(result.commentId).toBe(commentId);
@@ -393,6 +445,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should successfully insert a record with each valid enum value", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const validTypes: Array<"down_vote" | "up_vote"> = [
 				"down_vote",
 				"up_vote",
@@ -411,6 +464,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 				expect(result).toBeDefined();
 				if (result) {
+					createdResources.voteIds.push(result.id);
 					expect(result.type).toBe(type);
 				}
 			}
@@ -418,6 +472,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should successfully query records", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "up_vote";
 
@@ -432,6 +487,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				.from(commentVotesTable)
 				.where(eq(commentVotesTable.type, type));
 
+			results.map((result) => createdResources.voteIds.push(result.id));
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBeGreaterThan(0);
 			expect(results[0]?.type).toBe(type);
@@ -439,6 +495,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should successfully update a record", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "up_vote";
 
@@ -455,6 +512,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+			createdResources.voteIds.push(inserted.id);
 
 			const updateType = "down_vote";
 
@@ -473,6 +531,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should successfully delete a record", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "up_vote";
 
@@ -489,6 +548,8 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+
+			createdResources.voteIds.push(inserted.id);
 
 			const commentVoteId = inserted.id;
 
@@ -511,6 +572,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should not find commentVote by old creatorId after user deletion", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -527,6 +589,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+			createdResources.voteIds.push(inserted.id);
 
 			await server.drizzleClient
 				.delete(usersTable)
@@ -543,6 +606,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should set null when creator is deleted", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -559,6 +623,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+			createdResources.voteIds.push(inserted.id);
 
 			expect(inserted.creatorId).toBe(userId);
 			const commentVoteId = inserted.id;
@@ -579,6 +644,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 		it("should delete postVote when post is deleted (cascade)", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -596,6 +662,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				throw new Error("Failed to insert record");
 			}
 
+			createdResources.voteIds.push(inserted.id);
 			expect(inserted.commentId).toBe(commentId);
 			const commentVoteId = inserted.id;
 
@@ -616,6 +683,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 	describe("Index Configuration", () => {
 		it("should query by creatorId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -633,11 +701,13 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				.from(commentVotesTable)
 				.where(eq(commentVotesTable.creatorId, userId));
 
+			results.map((result) => createdResources.voteIds.push(result.id));
 			expect(results.length).toBeGreaterThan(0);
 		});
 
 		it("should query by commentId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -655,11 +725,13 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				.from(commentVotesTable)
 				.where(eq(commentVotesTable.commentId, commentId));
 
+			results.map((result) => createdResources.voteIds.push(result.id));
 			expect(results.length).toBeGreaterThan(0);
 		});
 
 		it("should query by indexed type column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -677,11 +749,13 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				.from(commentVotesTable)
 				.where(eq(commentVotesTable.type, type));
 
+			results.map((result) => createdResources.voteIds.push(result.id));
 			expect(results.length).toBeGreaterThan(0);
 		});
 
 		it("should not allow duplicate votes by same user on same post", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -710,6 +784,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 	describe("Enum Constraints", () => {
 		it("should validate enum values in insert schema", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 			const type = "down_vote";
 
@@ -724,12 +799,14 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 
 			expect(result).toBeDefined();
 			if (result) {
+				createdResources.voteIds.push(result.id);
 				expect(result.type).toBe(type);
 			}
 		});
 
 		it("should reject invalid enum values at database level", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
+			createdResources.userIds.push(userId);
 			const commentId = await createTestComment();
 
 			await expect(
