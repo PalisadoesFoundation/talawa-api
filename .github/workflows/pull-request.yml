@@ -979,24 +979,38 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
+      - name: Resolve API container
+        id: api-container
+        run: |
+          API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E '\-api\-1$' | head -1 || true)
+          fi
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER="talawa-api-1"
+          fi
+          echo "name=$API_CONTAINER" >> "$GITHUB_OUTPUT"
+          echo "Resolved API container: $API_CONTAINER"
       - name: Install dependencies inside the container
-        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
+        run: docker exec ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm install'
       - name: Start server
-        run: docker exec -d talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
+        run: docker exec -d ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm run start_development_server'
       - name: Wait for GraphQL endpoint to become available
         run: |
           set -euo pipefail
-          echo "Waiting for the GraphQL endpoint to become available..."
+          API_CONTAINER="${{ steps.api-container.outputs.name }}"
+          echo "Waiting for the GraphQL endpoint to become available (container: $API_CONTAINER)..."
+          RESPONSE="Connection failed"
           for i in $(seq 1 60); do
-            if ! docker ps | grep -q talawa-api-1; then
-              echo "Container talawa-api-1 not found. Waiting..."
+            if ! docker exec "$API_CONTAINER" true 2>/dev/null; then
+              echo "Container $API_CONTAINER not found or not running. Waiting... (attempt $i/60)"
               sleep 2
               continue
             fi
-            if ! docker exec talawa-api-1 which curl >/dev/null 2>&1; then
-              docker exec talawa-api-1 sh -c 'command -v wget >/dev/null || (apt-get update -qq && apt-get install -y -qq curl)' || true
+            if ! docker exec "$API_CONTAINER" which curl >/dev/null 2>&1; then
+              docker exec "$API_CONTAINER" sh -c 'command -v wget >/dev/null || (apt-get update -qq && apt-get install -y -qq curl)' || true
             fi
-            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+            RESPONSE=$(docker exec "$API_CONTAINER" curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
             if echo "$RESPONSE" | grep -q '__typename'; then
               echo "GraphQL endpoint is available!"
               exit 0
@@ -1006,9 +1020,14 @@ jobs:
           done
           echo "GraphQL endpoint did not become available within the expected time."
           echo "=== Last response ==="
-          echo "$RESPONSE"
-          echo "=== Backend container logs (tail 80) ==="
-          docker logs talawa-api-1 --tail 80
+          echo "${RESPONSE:-Connection failed}"
+          if docker exec "$API_CONTAINER" true 2>/dev/null; then
+            echo "=== Backend container logs (tail 80) ==="
+            docker logs "$API_CONTAINER" --tail 80
+          else
+            echo "=== Container $API_CONTAINER not running; docker ps -a ==="
+            docker ps -a
+          fi
           exit 1
       - name: Cleanup - Free ports by stopping containers
         if: always()
