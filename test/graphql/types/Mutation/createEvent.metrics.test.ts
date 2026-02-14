@@ -6,7 +6,7 @@
  * tracker is unavailable. Uses direct resolver invocation for precise control over
  * context.perf and attachment/MIME validation behavior.
  *
- * CI fix (included in validation-security-hardening PR): Two tests use vi.useRealTimers()
+ * CI fix (included in validation-security-hardening PR): Three tests use vi.useRealTimers()
  * and no runAllTimersAsync to avoid Vitest's "10000 timers" infinite loop in CI; without
  * this, the suite would fail on shard 5. The change is test-only and does not alter
  * resolver behavior.
@@ -940,6 +940,10 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 
 		it("should track mutation and trigger cleanup when attachment upload fails", async () => {
+			// Use real timers so resolver/stream/cleanup run without fake-timer interference.
+			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
+			vi.useRealTimers();
+
 			const perf = createPerformanceTracker();
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 			context.perf = perf;
@@ -1095,49 +1099,52 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				fieldName: "attachments",
 			});
 
-			await vi.runAllTimersAsync();
 			try {
-				await createEventMutationResolver(
-					null,
-					{
-						input: {
-							name: "Test Event",
-							description: "Test Description",
-							organizationId,
-							startAt,
-							endAt,
-							attachments: [mockAttachment1, mockAttachment2],
+				try {
+					await createEventMutationResolver(
+						null,
+						{
+							input: {
+								name: "Test Event",
+								description: "Test Description",
+								organizationId,
+								startAt,
+								endAt,
+								attachments: [mockAttachment1, mockAttachment2],
+							},
 						},
-					},
-					context,
+						context,
+					);
+					expect.fail("Expected error to be thrown");
+				} catch (error) {
+					expect(error).toBeInstanceOf(TalawaGraphQLError);
+					expect((error as TalawaGraphQLError).extensions?.code).toBe(
+						"unexpected",
+					);
+					expect((error as TalawaGraphQLError).message).toContain(
+						"Upload failed",
+					);
+				}
+
+				// Verify putObject was called for both attachments
+				expect(putObjectMock).toHaveBeenCalledTimes(2);
+
+				// Verify cleanup was called for the successfully uploaded file
+				expect(removeObjectMock).toHaveBeenCalled();
+				expect(removeObjectMock).toHaveBeenCalledWith(
+					expect.any(String), // bucketName
+					attachment1Name, // First attachment that was successfully uploaded
 				);
-				expect.fail("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				expect((error as TalawaGraphQLError).extensions?.code).toBe(
-					"unexpected",
-				);
-				expect((error as TalawaGraphQLError).message).toContain(
-					"Upload failed",
-				);
+
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:createEvent"];
+
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
+				expect(op?.ms).toBeGreaterThanOrEqual(0);
+			} finally {
+				vi.useFakeTimers();
 			}
-
-			// Verify putObject was called for both attachments
-			expect(putObjectMock).toHaveBeenCalledTimes(2);
-
-			// Verify cleanup was called for the successfully uploaded file
-			expect(removeObjectMock).toHaveBeenCalled();
-			expect(removeObjectMock).toHaveBeenCalledWith(
-				expect.any(String), // bucketName
-				attachment1Name, // First attachment that was successfully uploaded
-			);
-
-			const snapshot = perf.snapshot();
-			const op = snapshot.ops["mutation:createEvent"];
-
-			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
-			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should reject invalid MIME type for attachments with indexed error path", async () => {

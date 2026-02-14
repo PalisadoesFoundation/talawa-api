@@ -8,6 +8,9 @@ import { getTier } from "~/src/config/rateLimits";
 import { createServer } from "~/src/createServer";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
+/** Satisfies env schema API_AUTH_JWT_SECRET minLength for createServer in tests. */
+const TEST_AUTH_JWT_SECRET = "12345678901234567890123456789012";
+
 const expectValidErrorResponse = (
 	body: { error: Record<string, unknown> },
 	expectedCode: string,
@@ -114,6 +117,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 
@@ -158,6 +162,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 
@@ -227,6 +232,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 
@@ -273,6 +279,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 			return app;
