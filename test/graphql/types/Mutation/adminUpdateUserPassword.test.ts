@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, expect, suite, test, vi } from "vitest";
@@ -202,7 +203,7 @@ suite("Mutation field adminUpdateUserPassword", () => {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						id: "550e8400-e29b-41d4-a716-446655440000",
+						id: faker.string.uuid(),
 						newPassword: "newPassword123",
 						confirmNewPassword: "newPassword123",
 					},
@@ -280,6 +281,18 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		expect(updatedUser?.passwordHash).toBeDefined();
 		expect(updatedUser?.failedLoginAttempts).toBe(0);
 		expect(updatedUser?.lockedUntil).toBeNull();
+
+		// Verify the user can sign in with the new password
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: updatedUser?.emailAddress ?? "",
+					password: "brandNewPassword123",
+				},
+			},
+		});
+		expect(signInResult.errors).toBeUndefined();
+		expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
 	});
 
 	test("Admin can reset password multiple times", async () => {
