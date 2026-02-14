@@ -92,7 +92,9 @@ suite("Mutation field adminUpdateUserPassword", () => {
 				await server.drizzleClient
 					.delete(usersTable)
 					.where(eq(usersTable.id, adminUser.userId));
-			} catch {}
+			} catch (err) {
+				console.error("User cleanup failed:", err);
+			}
 		});
 
 		await server.drizzleClient
