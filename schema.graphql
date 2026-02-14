@@ -2221,6 +2221,9 @@ type Mutation {
   """Mutation field to add an event attendee."""
   addEventAttendee(data: EventAttendeeInput!): User
 
+  """"""
+  adminUpdateUserPassword(input: MutationAdminUpdateUserPasswordInput!): Boolean
+
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
 
@@ -2753,7 +2756,10 @@ type Mutation {
   updateUser(input: MutationUpdateUserInput!): User
 
   """Mutation field to update a user password."""
-  updateUserPassword(input: MutationUpdateUserPasswordInput!): Boolean
+  updateUserPassword(
+    """Input for updating the current user's password."""
+    input: MutationUpdateUserPasswordInput!
+  ): Boolean
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
@@ -2787,6 +2793,18 @@ type Mutation {
 input MutationAcceptMembershipRequestInput {
   """ID of the membership request to accept"""
   membershipRequestId: ID!
+}
+
+"""Input for updating a member's password."""
+input MutationAdminUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """ID of the member whose password is being updated."""
+  id: ID!
+
+  """New password"""
+  newPassword: String!
 }
 
 """Input to block a user from an organization"""
@@ -4257,9 +4275,6 @@ input MutationUpdateUserInput {
 
   """Language code of the user's preferred natural language."""
   naturalLanguageCode: Iso639Set1LanguageCode
-
-  """Password of the user to sign in to the application."""
-  password: String
 
   """Postal code of the user."""
   postalCode: String
