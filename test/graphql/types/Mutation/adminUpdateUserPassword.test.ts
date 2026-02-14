@@ -97,7 +97,7 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		});
 
 		assertToBeNonNullish(admin);
-
+		const targetUser = await createUserWithCleanup();
 		cleanupFns.push(async () => {
 			try {
 				await server.drizzleClient.insert(usersTable).values(admin);
@@ -111,7 +111,6 @@ suite("Mutation field adminUpdateUserPassword", () => {
 			.delete(usersTable)
 			.where(eq(usersTable.id, admin.id));
 
-		const targetUser = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(
 			Mutation_adminUpdateUserPassword,
