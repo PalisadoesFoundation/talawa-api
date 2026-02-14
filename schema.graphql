@@ -2752,6 +2752,9 @@ type Mutation {
   """Mutation field to update a user."""
   updateUser(input: MutationUpdateUserInput!): User
 
+  """Mutation field to update a user password."""
+  updateUserPassword(input: MutationUpdateUserPasswordInput!): Boolean
+
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
 
@@ -2784,6 +2787,18 @@ type Mutation {
 input MutationAcceptMembershipRequestInput {
   """ID of the membership request to accept"""
   membershipRequestId: ID!
+}
+
+"""Input for updating a member's password."""
+input MutationAdminUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """ID of the member whose password is being updated."""
+  id: ID!
+
+  """New password"""
+  newPassword: String!
 }
 
 """Input to block a user from an organization"""
@@ -4271,6 +4286,21 @@ input MutationUpdateUserInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
+}
+
+"""Input for updating the current user's password."""
+input MutationUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """ID of the member whose password is being updated."""
+  id: ID!
+
+  """New password"""
+  newPassword: String!
+
+  """User's current password"""
+  oldPassword: String!
 }
 
 """"""
