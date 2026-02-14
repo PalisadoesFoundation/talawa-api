@@ -96,6 +96,16 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		});
 
 		assertToBeNonNullish(admin);
+
+		// Schedule admin restoration before deleting
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient.insert(usersTable).values(admin);
+			} catch (err) {
+				console.error("Admin restore failed:", err);
+			}
+		});
+
 		await server.drizzleClient
 			.delete(usersTable)
 			.where(eq(usersTable.id, admin.id));
@@ -285,16 +295,21 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		const adminToken = await getAdminAuth();
 		const user = await createUserWithCleanup();
 
-		await mercuriusClient.mutate(Mutation_adminUpdateUserPassword, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					id: user.userId,
-					newPassword: "firstPassword123",
-					confirmNewPassword: "firstPassword123",
+		const firstResult = await mercuriusClient.mutate(
+			Mutation_adminUpdateUserPassword,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: user.userId,
+						newPassword: "firstPassword123",
+						confirmNewPassword: "firstPassword123",
+					},
 				},
 			},
-		});
+		);
+		expect(firstResult.errors).toBeUndefined();
+		expect(firstResult.data?.adminUpdateUserPassword).toBe(true);
 
 		const result = await mercuriusClient.mutate(
 			Mutation_adminUpdateUserPassword,
