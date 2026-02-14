@@ -482,6 +482,13 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
+      # simplecov 0.21.x pulls simplecov-html 0.11.0 which requires Ruby ~> 2.4; use
+      # a patched simplecov so we can use simplecov-html 0.12.3 (Ruby 3.2 compatible)
+      - name: Prepare simplecov for Ruby 3.2
+        run: |
+          mkdir -p tests/install/vendor
+          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git tests/install/vendor/simplecov
+          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' tests/install/vendor/simplecov/simplecov.gemspec
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:

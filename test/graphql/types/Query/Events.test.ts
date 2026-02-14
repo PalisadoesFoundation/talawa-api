@@ -321,6 +321,7 @@ suite("Query eventsByIds", () => {
 
 	// 5. INVITE-ONLY FILTERING
 	test("should filter out invite-only events for non-invited users", async () => {
+		mercuriusClient.setHeaders({});
 		// Sign in as admin
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -353,6 +354,11 @@ suite("Query eventsByIds", () => {
 			},
 		);
 
+		if (orgResult.errors) {
+			throw new Error(
+				`createOrganization failed: ${JSON.stringify(orgResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(orgResult.data?.createOrganization);
 		const organizationId = orgResult.data.createOrganization.id;
 
@@ -370,6 +376,11 @@ suite("Query eventsByIds", () => {
 			},
 		);
 
+		if (membershipResult.errors) {
+			throw new Error(
+				`createOrganizationMembership failed: ${JSON.stringify(membershipResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(membershipResult.data?.createOrganizationMembership);
 
 		// Create a public event
@@ -470,6 +481,7 @@ suite("Query eventsByIds", () => {
 	});
 
 	test("should show invite-only events to event creator", async () => {
+		mercuriusClient.setHeaders({});
 		// Sign in as admin
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -502,19 +514,33 @@ suite("Query eventsByIds", () => {
 			},
 		);
 
+		if (orgResult.errors) {
+			throw new Error(
+				`createOrganization failed: ${JSON.stringify(orgResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(orgResult.data?.createOrganization);
 		const organizationId = orgResult.data.createOrganization.id;
 
 		// Create membership for admin
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			variables: {
-				input: {
-					organizationId: organizationId,
-					memberId: adminUserId,
-					role: "administrator" as const,
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				variables: {
+					input: {
+						organizationId: organizationId,
+						memberId: adminUserId,
+						role: "administrator" as const,
+					},
 				},
 			},
-		});
+		);
+
+		if (membershipResult.errors) {
+			throw new Error(
+				`createOrganizationMembership failed: ${JSON.stringify(membershipResult.errors)}`,
+			);
+		}
 
 		// Create an invite-only event as admin (creator)
 		const inviteOnlyStartDate = faker.date.soon({ days: 1 });

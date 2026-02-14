@@ -70,5 +70,6 @@ In CI, install script tests are run under [bashcov](https://github.com/infertux/
 
 - **Bash 4.0+** for most tests (some use bash 3.2+).
 - **jq** (optional): required for `parse_package_json` functional tests in `validation.test.sh`; those tests are skipped if `jq` is not installed.
+- **Coverage (bashcov)** uses Ruby 3.x and Bundler; the Gemfile uses a patched simplecov (see `.github/workflows/pull-request.yml` step "Prepare simplecov for Ruby 3.2"). To run `bundle exec bashcov` locally with Ruby 3.2, run the same clone-and-patch of simplecov into `tests/install/vendor/simplecov` first, or rely on CI.
 
 See also: [scripts/install/common/README.md](../../scripts/install/common/README.md) for script behavior and validation details.
