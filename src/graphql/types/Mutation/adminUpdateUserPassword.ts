@@ -190,13 +190,14 @@ builder.mutationField("adminUpdateUserPassword", (t) =>
 
 				await revokeAllUserRefreshTokens(tx, parsedArgs.input.id);
 
-				ctx.log.info({
-					actorUserId: currentUserId,
-					targetUserId: parsedArgs.input.id,
-					action: "admin_password_reset",
-				},
-                "Admin reset user password"
-            );
+				ctx.log.info(
+					{
+						actorUserId: currentUserId,
+						targetUserId: parsedArgs.input.id,
+						action: "admin_password_reset",
+					},
+					"Admin reset user password",
+				);
 			});
 
 			return true;
