@@ -459,7 +459,7 @@ validate_path() {
 DRY_RUN="${DRY_RUN:-0}"
 
 run_cmd() {
-    if [ "$DRY_RUN" = "1" ]; then
+    if [ "${DRY_RUN:-0}" = "1" ]; then
         printf "[INFO] (dry-run) %s\n" "$*"
         return 0
     fi

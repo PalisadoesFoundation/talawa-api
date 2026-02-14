@@ -476,6 +476,44 @@ jobs:
       - name: This job intentionally does nothing
         run: echo "This job intentionally does nothing"
 
+  Install-Script-Tests:
+    name: Run install script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [Pre-Test-Checks-Pass]
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      # simplecov 0.21.x pulls simplecov-html 0.11.0 which requires Ruby ~> 2.4; use
+      # a patched simplecov so we can use simplecov-html 0.12.3 (Ruby 3.2 compatible)
+      - name: Prepare simplecov for Ruby 3.2
+        run: |
+          mkdir -p tests/install/vendor
+          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git tests/install/vendor/simplecov
+          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' tests/install/vendor/simplecov/simplecov.gemspec
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: tests/install
+      - name: Run install script tests with coverage
+        working-directory: tests/install
+        run: |
+          chmod +x run-all.sh
+          bundle exec bashcov --root ../.. -- ./run-all.sh
+      # Upload only when coverage file exists so the install flag gets data and shows in Codecov
+      - name: Upload install coverage to Codecov
+        if: "!cancelled() && hashFiles('tests/install/coverage/coverage.xml') != ''"
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+          files: tests/install/coverage/coverage.xml
+          flags: install
+
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
     timeout-minutes: 10

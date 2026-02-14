@@ -135,13 +135,13 @@ builder.mutationField("deleteComment", (t) =>
 				});
 			}
 
-			const [deletedComment] = await ctx.drizzleClient
+			const deleted = await ctx.drizzleClient
 				.delete(commentsTable)
 				.where(eq(commentsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Deleted comment not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedComment === undefined) {
+			// No rows returned means the delete did not affect any row (e.g. DB failure or row already removed).
+			if (deleted.length === 0) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -149,7 +149,7 @@ builder.mutationField("deleteComment", (t) =>
 				});
 			}
 
-			return deletedComment;
+			return deleted[0];
 		},
 		type: Comment,
 	}),
