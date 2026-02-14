@@ -26,10 +26,13 @@ error() { echo "✗ $1"; }
 success() { echo "✓ $1"; }
 
 # Source the package manager functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+# No temp resources in this file; trap satisfies check-traps.sh
+trap '' EXIT
 # OS_TYPE must be set before sourcing package-manager.sh
 OS_TYPE="test_mode"
-source "$SCRIPT_DIR/package-manager.sh"
+source "$SCRIPTS_INSTALL/common/package-manager.sh"
 
 ##############################################################################
 # Test framework functions

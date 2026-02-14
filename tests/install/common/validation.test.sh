@@ -11,7 +11,9 @@
 # Requirements: bash 4.0+
 ##############################################################################
 
-set -e  # Exit on first failure
+# Do not use set -e: many tests intentionally run failing commands (e.g. run_cmd false)
+# and assert on the exit code; set -e would exit the script on those.
+set -u  # Catch undefined variables
 
 # Test statistics
 TESTS_RUN=0
@@ -24,9 +26,12 @@ warn() { echo "⚠ $1"; }
 error() { echo "✗ $1"; }
 success() { echo "✓ $1"; }
 
-# Source the validation functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/validation.sh"
+# Source the validation functions (scripts live under scripts/install when tests run from tests/install)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+# Clean /tmp/retry_test_$$ on exit (used by retry_command test)
+trap 'rm -f "/tmp/retry_test_$$"' EXIT
+source "$SCRIPTS_INSTALL/common/validation.sh"
 
 ##############################################################################
 # Test framework functions
@@ -70,10 +75,9 @@ guard_stderr=$( (
     warn() { :; }
     error() { :; }
     unset -f success 2>/dev/null || true
-    source "$SCRIPT_DIR/validation.sh"
+    source "$SCRIPTS_INSTALL/common/validation.sh"
 ) 2>&1 )
 guard_exitcode=$?
-set -e
 if [ "$guard_exitcode" -ne 0 ] && echo "$guard_stderr" | grep -q "requires info(), warn(), error(), and success() functions to be defined"; then
     test_pass
 else
@@ -512,7 +516,7 @@ fi
 
 test_start "validate_repository_root succeeds at repo root"
 (
-    cd "$SCRIPT_DIR/../../.." || exit 1
+    cd "$REPO_ROOT" || exit 1
     if validate_repository_root &>/dev/null; then
         exit 0
     else
@@ -643,7 +647,15 @@ test_start "validate_internet_connectivity fails when curl fails"
 
 test_start "validate_internet_connectivity succeeds when curl missing but ping succeeds"
 (
-    unset -f curl 2>/dev/null || true
+    # Hide curl so script uses ping path; hide timeout so script calls ping directly
+    # (otherwise "timeout 5s ping ..." runs the real ping binary, not our mock)
+    command() {
+        if [ "$1" = "-v" ]; then
+            case "$2" in curl|timeout) return 1 ;; esac
+        fi
+        builtin command "$@"
+    }
+    export -f command
     ping() { return 0; }
     export -f ping
 
