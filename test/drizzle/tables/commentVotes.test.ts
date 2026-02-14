@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { eq, getTableName, inArray, type Table } from "drizzle-orm";
+import { and, eq, getTableName, inArray, type Table } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -832,6 +832,7 @@ describe("src/drizzle/tables/commentVotes", () => {
 
 			expect(inserted.commentId).toBe(commentId);
 			const voteId = inserted.id;
+			createdResources.voteIds.push(voteId);
 
 			await server.drizzleClient
 				.delete(commentsTable)
@@ -960,7 +961,12 @@ describe("src/drizzle/tables/commentVotes", () => {
 			const results = await server.drizzleClient
 				.select()
 				.from(commentVotesTable)
-				.where(eq(commentVotesTable.type, "down_vote"));
+				.where(
+					and(
+						eq(commentVotesTable.type, "down_vote"),
+						eq(commentVotesTable.commentId, commentId),
+					),
+				);
 
 			expect(results.length).toBeGreaterThan(0);
 		});
