@@ -45,6 +45,10 @@ pre-commit:
       glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: pnpm run check_mock_isolation {staged_files}
 
+    9.5_check_install_test_traps:
+      glob: "tests/install/**/*.test.sh"
+      run: bash tests/install/check-traps.sh
+
     11_check_disable_statements:
       glob: "**/*.{ts,tsx}"
       run: |

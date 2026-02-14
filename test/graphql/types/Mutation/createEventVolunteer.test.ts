@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
-import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
@@ -27,12 +27,7 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Admin auth (fetched once per suite)
-let adminToken: string | null = null;
-let adminUserId: string | null = null;
 async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
-	if (adminToken && adminUserId)
-		return { token: adminToken, userId: adminUserId };
 	if (
 		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
 		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
@@ -56,8 +51,8 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
 		);
 	}
-	adminToken = res.data.signIn.authenticationToken;
-	adminUserId = res.data.signIn.user.id;
+	const adminToken: string = res.data.signIn.authenticationToken;
+	const adminUserId: string = res.data.signIn.user.id;
 	assertToBeNonNullish(adminToken);
 	assertToBeNonNullish(adminUserId);
 	return { token: adminToken, userId: adminUserId };
@@ -81,9 +76,6 @@ interface TestUser {
 }
 
 async function createTestOrganization(): Promise<TestOrganization> {
-	// Add delay to prevent rate limiting
-	await new Promise((resolve) => setTimeout(resolve, 300));
-
 	const { token } = await ensureAdminAuth();
 	const res = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `bearer ${token}` },
@@ -114,13 +106,10 @@ async function createTestOrganization(): Promise<TestOrganization> {
 					console.warn(`Failed to delete admin membership: ${error}`);
 				}
 
-				await new Promise((resolve) => setTimeout(resolve, 200));
-
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `bearer ${token}` },
 					variables: { input: { id: orgId } },
 				});
-				await new Promise((resolve) => setTimeout(resolve, 200));
 			} catch (error) {
 				console.warn(`Failed to delete organization: ${error}`);
 			}
@@ -129,9 +118,6 @@ async function createTestOrganization(): Promise<TestOrganization> {
 }
 
 async function createTestUser(): Promise<TestUser> {
-	// Add delay to prevent rate limiting
-	await new Promise((resolve) => setTimeout(resolve, 400));
-
 	const regularUser = await createRegularUserUsingAdmin();
 	return {
 		userId: regularUser.userId,
@@ -143,7 +129,6 @@ async function createTestUser(): Promise<TestUser> {
 					headers: { authorization: `bearer ${token}` },
 					variables: { input: { id: regularUser.userId } },
 				});
-				await new Promise((resolve) => setTimeout(resolve, 200));
 			} catch (error) {
 				console.warn(`Failed to delete user: ${error}`);
 			}
@@ -152,28 +137,22 @@ async function createTestUser(): Promise<TestUser> {
 }
 
 async function createTestEvent(organizationId: string): Promise<TestEvent> {
-	// Add delay to prevent rate limiting
-	await new Promise((resolve) => setTimeout(resolve, 500));
-
-	const { token: adminAuthToken } = await ensureAdminAuth();
-	const startAt = new Date();
-	startAt.setHours(startAt.getHours() + 1);
-	const endAt = new Date(startAt);
-	endAt.setHours(endAt.getHours() + 2);
+	const { token: adminAuthToken, userId: adminUserId } =
+		await ensureAdminAuth();
+	const startAt = new Date("2030-06-01T10:00:00Z");
+	const endAt = new Date("2030-06-01T12:00:00Z");
 
 	// Make sure admin is a member of the organization first
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: {
 			input: {
-				memberId: adminUserId || "",
+				memberId: adminUserId,
 				organizationId: organizationId,
 				role: "administrator",
 			},
 		},
 	});
-
-	await new Promise((resolve) => setTimeout(resolve, 300));
 
 	const res = await mercuriusClient.mutate(Mutation_createEvent, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
@@ -199,12 +178,6 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 	};
 }
 
-beforeAll(async () => {
-	// Add initial delay for rate limiting protection
-	await new Promise((resolve) => setTimeout(resolve, 600));
-	await ensureAdminAuth();
-});
-
 suite("Mutation createEventVolunteer - Integration Tests", () => {
 	const testCleanupFunctions: Array<() => Promise<void>> = [];
 
@@ -217,20 +190,13 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		for (const cleanup of cleanupFunctionsToRun.reverse()) {
 			try {
 				await cleanup();
-				await new Promise((resolve) => setTimeout(resolve, 300)); // Longer delays for cleanup
 			} catch (error) {
 				console.error("Cleanup failed:", error);
 			}
 		}
-
-		// Extra delay after all cleanup to prevent affecting next test
-		await new Promise((resolve) => setTimeout(resolve, 500));
 	});
 
 	test("Integration: Unauthenticated user cannot create event volunteer", async () => {
-		// Add delay at start of first test
-		await new Promise((resolve) => setTimeout(resolve, 400));
-
 		const createEventVolunteerResult = await mercuriusClient.mutate(
 			Mutation_createEventVolunteer,
 			{
@@ -258,8 +224,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 	});
 
 	test("Integration: Regular user cannot create event volunteer (authorization)", async () => {
-		await new Promise((resolve) => setTimeout(resolve, 600));
-
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
 
@@ -267,7 +231,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		testCleanupFunctions.push(testUser.cleanup);
 
 		const { token: adminAuth } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 300));
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
@@ -280,7 +243,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
 
@@ -314,8 +276,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 	});
 
 	test("Integration: Admin successfully creates event volunteer with default values", async () => {
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
 
@@ -323,7 +283,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		testCleanupFunctions.push(testUser.cleanup);
 
 		const { token: adminAuth } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 300));
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
@@ -336,7 +295,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
 
@@ -370,8 +328,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 	});
 
 	test("Integration: Returns existing volunteer for duplicate records", async () => {
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
 
@@ -379,8 +335,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		testCleanupFunctions.push(testUser.cleanup);
 
 		const { token: adminAuth } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 300));
-
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
 			variables: {
@@ -392,7 +346,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
 
@@ -434,10 +387,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			firstVolunteerId,
 		);
 	});
-
-	test("Integration: Multiple users can volunteer for the same event", async () => {
-		await new Promise((resolve) => setTimeout(resolve, 1200));
-
+	async function setupRecurrenceEventwithInstances() {
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
 
@@ -447,8 +397,12 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		const testUser2 = await createTestUser();
 		testCleanupFunctions.push(testUser2.cleanup);
 
-		const { token: adminAuth } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 400));
+		const { token: adminAuth, userId: creatorId } = await ensureAdminAuth();
+		return { organization, testUser1, testUser2, adminAuth, creatorId };
+	}
+	test("Integration: Multiple users can volunteer for the same event", async () => {
+		const { organization, testUser1, testUser2, adminAuth } =
+			await setupRecurrenceEventwithInstances();
 
 		// Add both users to organization
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -462,8 +416,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
-
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
 			variables: {
@@ -475,7 +427,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
 
@@ -536,17 +487,12 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 	});
 
 	test("Integration: Creates volunteer with THIS_INSTANCE_ONLY scope (new volunteer path)", async () => {
-		// Integration test covering the complex recurring event volunteer logic
-		await new Promise((resolve) => setTimeout(resolve, 1500));
-
-		const organization = await createTestOrganization();
-		testCleanupFunctions.push(organization.cleanup);
-
-		const testUser = await createTestUser();
-		testCleanupFunctions.push(testUser.cleanup);
-
-		const { token: adminAuth, userId: creatorId } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 400));
+		const {
+			organization,
+			testUser1: testUser,
+			adminAuth,
+			creatorId,
+		} = await setupRecurrenceEventwithInstances();
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
@@ -559,8 +505,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
-
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
 			variables: {
@@ -571,8 +515,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 				},
 			},
 		});
-
-		await new Promise((resolve) => setTimeout(resolve, 400));
 
 		// Setup recurring event data for integration testing
 		const startAt = new Date("2024-12-01T10:00:00Z");
@@ -889,9 +831,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 	});
 
 	test("Integration: ENTIRE_SERIES scope removes existing instance-specific volunteers (template exists)", async () => {
-		// Test to cover: Removal of instance-specific volunteers when template already exists
-		await new Promise((resolve) => setTimeout(resolve, 2000));
-
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
 
@@ -1125,11 +1064,137 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			templateVolunteerResult.data?.createEventVolunteer?.id,
 		);
 	});
+	test("Integration: THIS_INSTANCE_ONLY reuses existing instance volunteer", async () => {
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
 
+		const testUser = await createTestUser();
+		testCleanupFunctions.push(testUser.cleanup);
+
+		const { token: adminAuth, userId: creatorId } = await ensureAdminAuth();
+
+		// Admin membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: creatorId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Regular user membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		// Create recurring template event
+		const startAt = new Date("2024-12-01T10:00:00Z");
+		const endAt = new Date("2024-12-01T12:00:00Z");
+
+		const [template] = await server.drizzleClient
+			.insert(eventsTable)
+			.values({
+				name: "Reuse Test Event",
+				description: "Testing reuse path",
+				startAt,
+				endAt,
+				organizationId: organization.orgId,
+				creatorId,
+				isPublic: true,
+				isRegisterable: true,
+				isRecurringEventTemplate: true,
+			})
+			.returning();
+
+		assertToBeNonNullish(template); // Ensure template is not undefined
+
+		const [recurrenceRule] = await server.drizzleClient
+			.insert(recurrenceRulesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				frequency: "DAILY",
+				interval: 1,
+				count: 1,
+				organizationId: organization.orgId,
+				creatorId,
+				recurrenceRuleString: "RRULE:FREQ=DAILY;INTERVAL=1;COUNT=1",
+				recurrenceStartDate: startAt,
+				latestInstanceDate: startAt,
+			})
+			.returning();
+
+		assertToBeNonNullish(recurrenceRule); // Ensure recurrenceRule is not undefined
+
+		const [instance] = await server.drizzleClient
+			.insert(recurringEventInstancesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				recurrenceRuleId: recurrenceRule.id,
+				originalSeriesId: template.id,
+				originalInstanceStartTime: startAt,
+				actualStartTime: startAt,
+				actualEndTime: endAt,
+				organizationId: organization.orgId,
+				sequenceNumber: 1,
+				totalCount: 1,
+			})
+			.returning();
+
+		assertToBeNonNullish(instance); // Ensure instance is not undefined
+
+		const instanceId = instance.id;
+
+		//  First call (creates volunteer)
+		const first = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					userId: testUser.userId,
+					eventId: template.id,
+					scope: "THIS_INSTANCE_ONLY",
+					recurringEventInstanceId: instanceId,
+				},
+			},
+		});
+
+		expect(first.errors).toBeUndefined();
+		const firstId = first.data?.createEventVolunteer?.id;
+		assertToBeNonNullish(firstId);
+		// Second call (should reuse)
+		const second = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					userId: testUser.userId,
+					eventId: template.id,
+					scope: "THIS_INSTANCE_ONLY",
+					recurringEventInstanceId: instanceId,
+				},
+			},
+		});
+
+		expect(second.errors).toBeUndefined();
+		expect(second.data?.createEventVolunteer?.id).toBe(firstId);
+
+		//  DB check — ensure only one row exists
+		const dbRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteersTable)
+			.where(eq(eventVolunteersTable.recurringEventInstanceId, instanceId));
+
+		expect(dbRows).toHaveLength(1);
+	});
 	test("Integration: ENTIRE_SERIES scope removes existing instance-specific volunteers (new template)", async () => {
-		// Test to cover: Removal of instance-specific volunteers when creating new template
-		await new Promise((resolve) => setTimeout(resolve, 2200));
-
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
 
@@ -1559,7 +1624,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 	test("Integration: THIS_INSTANCE_ONLY scope validation - missing recurringEventInstanceId", async () => {
 		// Test to cover: if (scope === "THIS_INSTANCE_ONLY") {
 		//   if (!recurringInstance || !parsedArgs.data.recurringEventInstanceId) {
-		await new Promise((resolve) => setTimeout(resolve, 3000));
 
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
@@ -1568,7 +1632,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		testCleanupFunctions.push(testUser.cleanup);
 
 		const { token: adminAuth } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 400));
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
@@ -1581,7 +1644,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
 
@@ -1639,7 +1701,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 
 	test("Integration: THIS_INSTANCE_ONLY scope validation - non-existent recurringEventInstanceId", async () => {
 		// Test to cover the !recurringInstance part of the validation
-		await new Promise((resolve) => setTimeout(resolve, 3500));
 
 		const organization = await createTestOrganization();
 		testCleanupFunctions.push(organization.cleanup);
@@ -1648,7 +1709,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		testCleanupFunctions.push(testUser.cleanup);
 
 		const { token: adminAuth } = await ensureAdminAuth();
-		await new Promise((resolve) => setTimeout(resolve, 400));
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth}` },
@@ -1661,7 +1721,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 300));
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
 

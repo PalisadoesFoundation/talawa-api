@@ -27,9 +27,11 @@ export OS_TYPE="macos"
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
-# Source shared libraries
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_DIR="${SCRIPT_DIR%/macos}/common"
+# Source shared libraries from the actual script location (so common/*.sh are always found).
+# SCRIPT_DIR can be set by tests to override get_repo_root (REPO_ROOT); we do not use it for sourcing.
+SOURCE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_DIR="${SOURCE_SCRIPT_DIR%/macos}/common"
+SCRIPT_DIR="${SCRIPT_DIR:-$SOURCE_SCRIPT_DIR}"
 
 source "${COMMON_DIR}/logging.sh"
 source "${COMMON_DIR}/os-detection.sh"
@@ -58,16 +60,25 @@ fi
 readonly MAX_RETRY_ATTEMPTS=3
 
 # Get the repository root directory
+# When SCRIPT_DIR is set (e.g. by tests), use it so repo root is under TEST_DIR
 get_repo_root() {
-    local script_dir
-    local repo_root
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_dir repo_root
+    if [[ -n "${SCRIPT_DIR:-}" ]]; then
+        script_dir="$SCRIPT_DIR"
+    else
+        script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    fi
     # Navigate up from scripts/install/macos to repo root
     repo_root="$(cd "$script_dir/../../.." && pwd)"
     printf '%s\n' "$repo_root"
 }
 
-REPO_ROOT=$(get_repo_root)
+# Allow tests to override repo root via REPO_ROOT env (avoids exec/env inheritance issues)
+if [[ -n "${REPO_ROOT:-}" ]]; then
+    REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
+else
+    REPO_ROOT=$(get_repo_root)
+fi
 
 # Ensure we're in the repository root
 cd "$REPO_ROOT"
@@ -102,14 +113,14 @@ else
     
     info "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-    # Add Homebrew to PATH
-    if [ -f /opt/homebrew/bin/brew ]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [ -f /usr/local/bin/brew ]; then
-        eval "$(/usr/local/bin/brew shellenv)"
+    # Add Homebrew to PATH (skip when REPO_ROOT is set so test mocks stay in use)
+    if [[ -z "${REPO_ROOT:-}" ]]; then
+        if [ -f /opt/homebrew/bin/brew ]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [ -f /usr/local/bin/brew ]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
     fi
-    
     success "Homebrew installed successfully"
 fi
 

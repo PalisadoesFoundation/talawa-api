@@ -18,12 +18,21 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Use a dedicated test log file so we don't pollute the default log
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
 LOG_FILE="/tmp/talawa-logging-test-$$.log"
+trap 'rm -f "$LOG_FILE"' EXIT
 export LOG_FILE
 
+# Configurable timer/spinner duration; extend in CI to reduce flakiness
+if [ -n "${CI:-}" ]; then
+  TEST_TIMER_DURATION_SEC="${TEST_TIMER_DURATION_SEC:-2}"
+else
+  TEST_TIMER_DURATION_SEC="${TEST_TIMER_DURATION_SEC:-1}"
+fi
+
 # Source the logging library (creates LOG_FILE and __TIMINGS)
-source "$SCRIPT_DIR/logging.sh"
+source "$SCRIPTS_INSTALL/common/logging.sh"
 
 ##############################################################################
 # Test framework functions
@@ -48,11 +57,11 @@ test_fail() {
 }
 
 ##############################################################################
-# Test: with_timer records step and completes in ~1s
+# Test: with_timer records step and completes in expected duration
 ##############################################################################
 
-test_start "with_timer records step and completes in ~1s"
-if with_timer "test-step" sleep 1; then
+test_start "with_timer records step and completes in ~${TEST_TIMER_DURATION_SEC}s"
+if with_timer "test-step" sleep "$TEST_TIMER_DURATION_SEC"; then
   # __TIMINGS is array of "label:seconds"; find test-step
   found_sec=""
   for entry in "${__TIMINGS[@]}"; do
@@ -61,13 +70,13 @@ if with_timer "test-step" sleep 1; then
       break
     fi
   done
-  if [ -n "$found_sec" ] && [ "$found_sec" -ge 1 ]; then
+  if [ -n "$found_sec" ] && [ "$found_sec" -ge "$TEST_TIMER_DURATION_SEC" ]; then
     test_pass
   else
-    test_fail "Expected test-step in __TIMINGS with >= 1s, got: ${found_sec:-none}"
+    test_fail "Expected test-step in __TIMINGS with >= ${TEST_TIMER_DURATION_SEC}s, got: ${found_sec:-none}"
   fi
 else
-  test_fail "with_timer should have exited 0 for sleep 1"
+  test_fail "with_timer should have exited 0 for sleep $TEST_TIMER_DURATION_SEC"
 fi
 
 ##############################################################################
@@ -90,10 +99,10 @@ fi
 ##############################################################################
 
 test_start "with_spinner runs command and shows spinner"
-if with_spinner "Waiting" sleep 1; then
+if with_spinner "Waiting" sleep "$TEST_TIMER_DURATION_SEC"; then
   test_pass
 else
-  test_fail "with_spinner sleep 1 should complete with exit 0"
+  test_fail "with_spinner sleep $TEST_TIMER_DURATION_SEC should complete with exit 0"
 fi
 
 ##############################################################################
