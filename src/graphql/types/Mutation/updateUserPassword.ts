@@ -1,4 +1,3 @@
-import { hash, verify } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -7,9 +6,13 @@ import {
 	MutationUpdateUserPasswordInput,
 	mutationUpdateUserPasswordInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserPasswordInput";
+import { hashPassword, verifyPassword } from "~/src/services/auth";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+/**
+ * Zod schema for validating the updateUserPassword mutation arguments.
+ */
 const mutationUpdateUserPasswordArgumentsSchema = z.object({
 	input: mutationUpdateUserPasswordInputSchema,
 });
@@ -76,10 +79,10 @@ builder.mutationField("updateUserPassword", (t) =>
 							},
 						],
 					},
- 			});
- 		}
+				});
+			}
 
-			const isValid = await verify(
+			const isValid = await verifyPassword(
 				currentUser.passwordHash,
 				parsedArgs.input.oldPassword,
 			);
@@ -92,6 +95,20 @@ builder.mutationField("updateUserPassword", (t) =>
 							{
 								argumentPath: ["input", "oldPassword"],
 								message: "Current password is incorrect",
+							},
+						],
+					},
+				});
+			}
+
+			if (parsedArgs.input.newPassword === parsedArgs.input.oldPassword) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "newPassword"],
+								message: "New password must be different from current password",
 							},
 						],
 					},
@@ -114,7 +131,7 @@ builder.mutationField("updateUserPassword", (t) =>
 				});
 			}
 
-			const newPasswordHash = await hash(parsedArgs.input.newPassword);
+			const newPasswordHash = await hashPassword(parsedArgs.input.newPassword);
 			await ctx.drizzleClient
 				.update(usersTable)
 				.set({
