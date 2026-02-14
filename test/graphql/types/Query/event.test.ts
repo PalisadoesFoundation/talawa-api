@@ -390,7 +390,6 @@ suite("Query field event", () => {
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
 				const { authToken, userId } = await getAdminTokenAndUserId();
 				const { event, organization } = await setupTestData(authToken, userId);
-				const deletedUser = await createAndDeleteTestUser(authToken);
 
 				// Cleanup: Delete organization
 				testCleanupFunctions.push(async () => {
@@ -407,6 +406,8 @@ suite("Query field event", () => {
 						variables: { input: { id: event.id } },
 					});
 				});
+
+				const deletedUser = await createAndDeleteTestUser(authToken);
 
 				// Try to access event with deleted user's token
 				const queryResult = await mercuriusClient.query(Query_event, {
@@ -752,6 +753,7 @@ suite("Query field event", () => {
 		const testCleanupFunctions: Array<() => Promise<void>> = [];
 
 		afterEach(async () => {
+			vi.useRealTimers();
 			vi.restoreAllMocks();
 			for (const cleanup of testCleanupFunctions.reverse()) {
 				try {
