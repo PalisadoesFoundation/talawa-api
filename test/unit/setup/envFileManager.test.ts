@@ -123,7 +123,7 @@ describe("envFileManager", () => {
 		await expect(fs.access(TEMP)).rejects.toBeTruthy();
 	});
 
-	it("initializeEnvFile creates backup before overwriting when restoreFromBackup=true", async () => {
+	it("initializeEnvFile creates backup before overwriting an existing env file", async () => {
 		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
 
 		await write(ENV, "OLD=1\n");
@@ -141,6 +141,29 @@ describe("envFileManager", () => {
 		expect(await read(BACKUP)).toBe("OLD=1\n");
 		expect(await read(ENV)).toBe('NEW="2"\n');
 		await expect(fs.access(TEMP)).rejects.toBeTruthy();
+	});
+
+	it("initializeEnvFile skips commit when the template has no env vars (prevents wiping existing env file)", async () => {
+		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
+		const { commitTemp } = await import("scripts/setup/AtomicEnvWriter");
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		await write(ENV, "EXISTING=1\n");
+		await write(TEMPLATE, "# comment only\n");
+		delete process.env.EXISTING;
+
+		await initializeEnvFile({
+			ci: false,
+			envFile: ENV,
+			backupFile: BACKUP,
+			tempFile: TEMP,
+			templateDevcontainerFile: TEMPLATE,
+		});
+
+		expect(await read(ENV)).toBe("EXISTING=1\n");
+		await expect(fs.access(TEMP)).rejects.toBeTruthy();
+		expect(vi.mocked(commitTemp)).not.toHaveBeenCalled();
+		expect(process.env.EXISTING).toBe("1");
 	});
 
 	it("initializeEnvFile restores from backup when commit fails and restoreFromBackup=true", async () => {

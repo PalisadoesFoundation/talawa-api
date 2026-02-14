@@ -99,11 +99,43 @@ export async function initializeEnvFile(
 		);
 	}
 
+	let nextContent = "";
 	try {
 		const fileContent = await fs.readFile(templateFile, { encoding: "utf-8" });
 		const parsedEnv = dotenv.parse(fileContent);
-		const nextContent = serializeEnvVars(parsedEnv);
+		nextContent = serializeEnvVars(parsedEnv);
+	} catch (e: unknown) {
+		throw new SetupError(
+			SetupErrorCode.ENV_INIT_FAILED,
+			"Failed to initialize env file",
+			{
+				operation: "initializeEnvFile",
+				filePath: envFile,
+				details: { templateFile },
+			},
+			errToError(e),
+		);
+	}
 
+	// If `dotenv.parse` yields no keys, `serializeEnvVars` returns an empty string.
+	// In `initializeEnvFile`, we must not pass that empty result to `writeTemp` and
+	// `commitTemp`, otherwise we can wipe an existing `.env` file with empty content.
+	if (nextContent === "") {
+		if (await fileExists(envFile)) {
+			console.warn(
+				`Configuration file '${templateFile}' contains no environment variables; skipping overwrite of existing env file.`,
+			);
+			dotenv.config({ path: envFile });
+			return;
+		}
+		throw new SetupError(
+			SetupErrorCode.ENV_INIT_FAILED,
+			`Configuration file '${templateFile}' contains no environment variables; refusing to write an empty env file.`,
+			{ operation: "initializeEnvFile", filePath: templateFile },
+		);
+	}
+
+	try {
 		// Protect existing env files from silent overwrite: if `envFile` already
 		// exists, always take/refresh a backup before we write the new content.
 		// (`restoreFromBackup` only controls whether we attempt automatic restore
