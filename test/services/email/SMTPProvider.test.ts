@@ -82,7 +82,7 @@ describe("SMTPProvider", () => {
 		vi.restoreAllMocks();
 	});
 
-	it("should throw error if SMTP_HOST is empty string", async () => {
+	it("should throw error if API_SMTP_HOST is empty string", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			host: "" as NonEmptyString,
@@ -99,24 +99,19 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_HOST must be a non-empty string",
+				error: "API_SMTP_HOST must be a non-empty string",
 			}),
 		);
 	});
 
-	it("should use TalawaRestError for SMTP_HOST validation errors", async () => {
+	it("should use TalawaRestError for API_SMTP_HOST validation errors", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			host: "" as NonEmptyString,
 		});
 
 		const nodemailer = await import("nodemailer");
-		const mockCreateTransport = vi.fn();
-		(
-			nodemailer.default as unknown as {
-				createTransport: typeof mockCreateTransport;
-			}
-		).createTransport = mockCreateTransport;
+		(nodemailer.default.createTransport as Mock).mockImplementation(vi.fn());
 
 		const result = await provider.sendEmail({
 			id: "1",
@@ -127,8 +122,8 @@ describe("SMTPProvider", () => {
 		});
 
 		expect(result.success).toBe(false);
-		expect(result.error).toBe("SMTP_HOST must be a non-empty string");
-		expect(mockCreateTransport).not.toHaveBeenCalled();
+		expect(result.error).toBe("API_SMTP_HOST must be a non-empty string");
+		expect(nodemailer.default.createTransport).not.toHaveBeenCalled();
 	});
 
 	it("should return a copy of the config via getConfig()", () => {
@@ -149,7 +144,7 @@ describe("SMTPProvider", () => {
 		expect(provider.getConfig().host).toBe("smtp.example.com");
 	});
 
-	it("should throw error if SMTP_PORT is missing", async () => {
+	it("should throw error if API_SMTP_PORT is missing", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: undefined as unknown as number,
@@ -166,12 +161,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be provided",
+				error: "API_SMTP_PORT must be provided",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is 0 (below range)", async () => {
+	it("should throw error if API_SMTP_PORT is 0 (below range)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 0,
@@ -188,12 +183,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be provided",
+				error: "API_SMTP_PORT must be provided",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is 65536 (above range)", async () => {
+	it("should throw error if API_SMTP_PORT is 65536 (above range)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 65536,
@@ -210,12 +205,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "API_SMTP_PORT must be an integer between 1 and 65535",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is non-integer (587.5)", async () => {
+	it("should throw error if API_SMTP_PORT is non-integer (587.5)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 587.5,
@@ -232,7 +227,7 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "API_SMTP_PORT must be an integer between 1 and 65535",
 			}),
 		);
 	});
@@ -395,10 +390,11 @@ describe("SMTPProvider", () => {
 
 		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
 			{
-				error: expect.any(Error),
+				error: "Connection timeout",
+				stack: expect.any(String),
 				jobId: "test-job-123",
 			},
-			"Failed to send email",
+			"Failed to send email via SMTP",
 		);
 	});
 
@@ -422,9 +418,10 @@ describe("SMTPProvider", () => {
 		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
 			{
 				error: "String error",
+				stack: undefined,
 				jobId: "test-job-456",
 			},
-			"Failed to send email",
+			"Failed to send email via SMTP",
 		);
 	});
 
@@ -467,16 +464,15 @@ describe("SMTPProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only user is provided (without password)", async () => {
@@ -805,7 +801,7 @@ describe("SMTPProvider", () => {
 			expect.objectContaining({
 				success: false,
 				error:
-					"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+					"API_SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
 			}),
 		);
 

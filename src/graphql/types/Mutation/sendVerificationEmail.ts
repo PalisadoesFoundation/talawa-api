@@ -92,7 +92,7 @@ builder.mutationField("sendVerificationEmail", (t) =>
 			);
 
 			// Build verification link using configured frontend URL
-			const frontendUrl = ctx.envConfig.FRONTEND_URL;
+			const frontendUrl = ctx.envConfig.API_FRONTEND_URL;
 			const verificationLink = `${frontendUrl}/verify-email?token=${rawToken}`;
 
 			// Get community name for email branding
