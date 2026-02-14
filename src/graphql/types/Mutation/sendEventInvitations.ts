@@ -227,7 +227,7 @@ builder.mutationField("sendEventInvitations", (t) =>
 						.returning();
 
 					for (const inv of created) {
-						const url = `${ctx.envConfig.FRONTEND_URL}/event/invitation/${inv.invitationToken}`;
+						const url = `${ctx.envConfig.API_FRONTEND_URL}/event/invitation/${inv.invitationToken}`;
 
 						try {
 							ctx.notification?.enqueueSendEventInvite({
