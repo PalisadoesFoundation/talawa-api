@@ -873,8 +873,6 @@ jobs:
               echo "Backend failed to start within ${TIMEOUT}s"
               echo "=== Backend container logs (last 150 lines) ==="
               docker logs talawa-api-1 --tail 150
-              echo "=== Healthcheck error (running from host) ==="
-              docker exec talawa-api-1 node -e "require('http').get('http://127.0.0.1:4000/healthcheck',r=>{console.log('status',r.statusCode);process.exit(r.statusCode===200?0:1);}).on('error',e=>{console.error(e.message);process.exit(1);});" || true
               exit 1
             fi
             echo "Backend not ready yet... (${ELAPSED}s)"
