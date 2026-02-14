@@ -1,0 +1,206 @@
+# Rootless Docker devcontainer compose configuration
+# This file is used instead of compose.devcontainer.yaml when running Docker in rootless mode
+# Key difference: Docker socket path uses XDG_RUNTIME_DIR instead of /var/run/docker.sock
+# https://docs.docker.com/reference/compose-file/services
+services:
+  api:
+    # https://docs.docker.com/reference/compose-file/build/
+    build:
+      args:
+        - API_DEBUGGER_HOST=${API_DEBUGGER_HOST:?error}
+        - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
+      # https://docs.docker.com/reference/compose-file/build/#target
+      target: devcontainer
+    depends_on:
+      minio:
+        condition: service_healthy
+        required: false
+      minio-test:
+        condition: service_healthy
+        required: false
+      postgres:
+        condition: service_healthy
+        required: false
+      postgres-test:
+        condition: service_healthy
+        required: false
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    # https://docs.docker.com/reference/compose-file/merge/#reset-value
+    # This resets any environment variables set under this keyword in other compose configuration files which prevents injecting those environment variables with default values within the execution context of this service. This in turn allows mutations to values of environment variables specific to this service within the `.env` file present within this service's devcontainer to take effect without restarting or rebuilding it.
+    environment: !reset []
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      disable: true
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${API_MAPPED_HOST_IP:?error}
+        name: api
+        published: ${API_MAPPED_PORT:?error}
+        target: ${API_PORT}
+      - host_ip: ${API_DEBUGGER_MAPPED_HOST_IP:?error}
+        name: api_debugger
+        published: ${API_DEBUGGER_MAPPED_PORT:?error}
+        target: ${API_DEBUGGER_PORT}
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # NOTE: In rootless Docker mode, we intentionally do NOT set user: talawa here.
+    # Running as "root" inside the container actually maps to the non-root host user
+    # due to user namespace remapping. This allows proper permission handling for
+    # bind-mounted directories from the host.
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - consistency: cached
+        source: ./
+        target: /home/talawa/api
+        type: bind
+      # Mount Docker socket for plugin container management
+      # For rootless Docker, the socket is at /run/user/$UID/docker.sock
+      # We use XDG_RUNTIME_DIR which is set to /run/user/$UID in rootless mode
+      # Fallback uses ${UID} env var - users must ensure XDG_RUNTIME_DIR or UID is set
+      - source: ${XDG_RUNTIME_DIR:-/run/user/${UID}}/docker.sock
+        target: /var/run/docker.sock
+        type: bind
+        # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+      - source: api_bash_history
+        target: /commandhistory
+        type: volume
+        # https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-a-targeted-named-volume
+      - source: api_node_modules
+        target: /home/talawa/api/node_modules
+        type: volume
+        # https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-a-targeted-named-volume
+      - source: api_pnpm_store
+        target: /home/talawa/api/.pnpm-store
+        type: volume
+  caddy:
+    # https://docs.docker.com/reference/compose-file/services/#depends_on
+    depends_on:
+      api:
+        condition: service_healthy
+        required: false
+  cloudbeaver:
+    # https://docs.docker.com/reference/compose-file/services/#depends_on
+    depends_on:
+      postgres:
+        condition: service_healthy
+        # Should be set to false when a third party postgres service could be used in the api service and the postgres compose profile is disabled.
+        required: false
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - CB_ADMIN_NAME=${CLOUDBEAVER_ADMIN_NAME:?error}
+      - CB_ADMIN_PASSWORD=${CLOUDBEAVER_ADMIN_PASSWORD:?error}
+      - CB_SERVER_NAME=${CLOUDBEAVER_SERVER_NAME:?error}
+      - CB_SERVER_URL=${CLOUDBEAVER_SERVER_URL:?error}
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD-SHELL", "curl -f -s http://127.0.0.1:8978"]
+      timeout: 10s
+    # https://dbeaver.com/docs/cloudbeaver/Run-Docker-Container/
+    # https://hub.docker.com/r/dbeaver/cloudbeaver
+    image: dbeaver/cloudbeaver:24.3.1
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - postgres
+      - postgres_test
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${CLOUDBEAVER_MAPPED_HOST_IP:?error}
+        name: cloudbeaver
+        published: ${CLOUDBEAVER_MAPPED_PORT:?error}
+        target: 8978
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - cloudbeaver
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: cloudbeaver_data
+        target: /opt/cloudbeaver/workspace
+        type: volume
+  minio:
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${MINIO_API_MAPPED_HOST_IP:?error}
+        name: minio_api
+        published: ${MINIO_API_MAPPED_PORT:?error}
+        target: 9000
+      - host_ip: ${MINIO_CONSOLE_MAPPED_HOST_IP:?error}
+        name: minio_console
+        published: ${MINIO_CONSOLE_MAPPED_PORT:?error}
+        target: 9001
+  minio-test:
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${MINIO_API_MAPPED_HOST_IP:?error}
+        name: minio_api
+        published: ${MINIO_TEST_API_MAPPED_PORT:?error}
+        target: 9000
+      - host_ip: ${MINIO_CONSOLE_MAPPED_HOST_IP:?error}
+        name: minio_console
+        published: ${MINIO_TEST_CONSOLE_MAPPED_PORT:?error}
+        target: 9001
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: minio_test_data
+        target: /data
+        type: volume
+  postgres:
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${POSTGRES_MAPPED_HOST_IP:?error}
+        name: postgres
+        published: ${POSTGRES_MAPPED_PORT:?error}
+        target: 5432
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: postgres_data
+        target: /var/lib/postgresql/data
+        type: volume
+
+  postgres-test:
+    ports:
+      - host_ip: ${POSTGRES_MAPPED_HOST_IP:?error}
+        name: postgres
+        published: ${POSTGRES_TEST_MAPPED_PORT:?error}
+        target: 5432
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: postgres_test_data
+        target: /var/lib/postgresql/data
+        type: volume
+  redis:
+    ports:
+      - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
+        name: redis
+        published: ${REDIS_MAPPED_PORT:?error}
+        target: 6379
+    # No volume: Redis is used for caching/ephemeral data in dev, persistence not required.
+  redis-test:
+    ports:
+      - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
+        name: redis
+        published: ${REDIS_TEST_MAPPED_PORT:?error}
+        target: 6379
+    volumes:
+      - source: redis_test_data
+        target: /data
+        type: volume
+# https://docs.docker.com/reference/compose-file/volumes/
+volumes:
+  api_bash_history:
+  api_node_modules:
+  api_pnpm_store:
+  cloudbeaver_data:
+  minio_test_data:
+  postgres_data:
+  postgres_test_data:
+  redis_test_data:

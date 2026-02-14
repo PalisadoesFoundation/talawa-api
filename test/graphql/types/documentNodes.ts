@@ -286,6 +286,13 @@ export const Query_user_workPhoneNumber =
     }
 }`);
 
+export const Query_user_mobilePhoneNumber =
+	gql(`query Query_user_mobilePhoneNumber($input: QueryUserInput!) {
+    user(input: $input) {
+        mobilePhoneNumber
+    }
+}`);
+
 export const Query_allUsers = gql(`
   query Query_allUsers(
     $first: Int,
@@ -390,7 +397,7 @@ export const Query_user_natalSex =
 export const Query_user_emailAddress =
 	gql(`query Query_user_emailAddress($input: QueryUserInput!) {
     user(input: $input) {
-        emailAddress    
+        emailAddress
     }
 }`);
 
