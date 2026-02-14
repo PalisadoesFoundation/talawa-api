@@ -953,8 +953,6 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
-      - name: Install dependencies inside the container
-        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
       - name: Start server and monitor logs
         run: |
           docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &

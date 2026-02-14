@@ -40,6 +40,9 @@ fi
 
 pnpm install
 
+# Add a small pause to ensure file system consistency
+sleep 2
+
 # Source validation checks
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 . "$SCRIPT_DIR/../validate-setup.sh"
