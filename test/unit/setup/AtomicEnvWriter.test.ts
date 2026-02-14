@@ -261,6 +261,9 @@ describe("atomicWriteEnv", () => {
 		).rejects.toBeInstanceOf(Error);
 
 		expect(await read(ENV)).toBe("SAFE=1\n");
+		// createBackup: false prevents ensureBackup from calling copyFile, so no
+		// backup exists. Without a backup, restoreBackup's copyFile is a no-op
+		// (ENOENT is silently ignored). Therefore no copyFile calls at all.
 		expect(copySpy).not.toHaveBeenCalled();
 	});
 

@@ -166,6 +166,50 @@ describe("envFileManager", () => {
 		expect(process.env.EXISTING).toBe("1");
 	});
 
+	it("initializeEnvFile throws ENV_INIT_FAILED when template yields empty content and no env file exists", async () => {
+		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
+
+		// Template with only comments — dotenv.parse yields no keys, serializeEnvVars returns "".
+		await write(TEMPLATE, "# comment only\n");
+
+		await expect(
+			initializeEnvFile({
+				ci: false,
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+				templateDevcontainerFile: TEMPLATE,
+			}),
+		).rejects.toMatchObject({ code: SetupErrorCode.ENV_INIT_FAILED });
+
+		// ENV should still not exist.
+		await expect(fs.access(ENV)).rejects.toBeTruthy();
+	});
+
+	it("initializeEnvFile throws ENV_INIT_FAILED when fs.readFile rejects for the template", async () => {
+		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
+
+		// Create the template so fs.access succeeds (first try block passes).
+		await write(TEMPLATE, "KEY=VAL\n");
+
+		// Mock fs.readFile to reject — triggers the second try-catch.
+		vi.spyOn(fs, "readFile").mockRejectedValueOnce(new Error("read error"));
+
+		await expect(
+			initializeEnvFile({
+				ci: false,
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+				templateDevcontainerFile: TEMPLATE,
+			}),
+		).rejects.toMatchObject({ code: SetupErrorCode.ENV_INIT_FAILED });
+
+		// No temp or env files should remain.
+		await expect(fs.access(ENV)).rejects.toBeTruthy();
+		await expect(fs.access(TEMP)).rejects.toBeTruthy();
+	});
+
 	it("initializeEnvFile restores from backup when commit fails and restoreFromBackup=true", async () => {
 		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
 		const { commitTemp } = await import("scripts/setup/AtomicEnvWriter");

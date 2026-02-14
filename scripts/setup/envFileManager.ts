@@ -151,7 +151,20 @@ export async function initializeEnvFile(
 	} catch (e: unknown) {
 		await cleanupTemp(tempFile);
 		if (restoreFromBackup) {
-			await restoreBackup(envFile, backupFile);
+			try {
+				await restoreBackup(envFile, backupFile);
+			} catch (restoreErr: unknown) {
+				throw new SetupError(
+					SetupErrorCode.RESTORE_FAILED,
+					"Initialization failed and backup restoration also failed",
+					{
+						operation: "initializeEnvFile",
+						filePath: envFile,
+						originalError: errToError(e).message,
+						restoreError: errToError(restoreErr).message,
+					},
+				);
+			}
 		}
 		throw new SetupError(
 			SetupErrorCode.ENV_INIT_FAILED,
@@ -218,7 +231,20 @@ export async function updateEnvVariable(
 	} catch (e: unknown) {
 		await cleanupTemp(tempFile);
 		if (restoreFromBackup) {
-			await restoreBackup(envFile, backupFile);
+			try {
+				await restoreBackup(envFile, backupFile);
+			} catch (restoreErr: unknown) {
+				throw new SetupError(
+					SetupErrorCode.RESTORE_FAILED,
+					"Update failed and backup restoration also failed",
+					{
+						operation: "updateEnvVariable",
+						filePath: envFile,
+						originalError: errToError(e).message,
+						restoreError: errToError(restoreErr).message,
+					},
+				);
+			}
 		}
 		throw new SetupError(
 			SetupErrorCode.FILE_OP_FAILED,
