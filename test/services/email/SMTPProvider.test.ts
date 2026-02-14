@@ -1,6 +1,16 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import { SMTPProvider } from "~/src/services/email/providers/SMTPProvider";
 import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 // Mock nodemailer
 vi.mock("nodemailer", () => {
@@ -11,6 +21,31 @@ vi.mock("nodemailer", () => {
 		},
 		createTransport: createTransportMock,
 	};
+});
+
+// Mock rootLogger - we will spy on it in beforeEach
+vi.mock("~/src/utilities/logging/logger", () => ({
+	rootLogger: {
+		error: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}));
+
+describe("TalawaRestError usage in SMTPProvider", () => {
+	it("should create TalawaRestError with correct properties", () => {
+		const error = new TalawaRestError({
+			code: ErrorCode.INVALID_ARGUMENTS,
+			message: "Test error message",
+		});
+
+		expect(error).toBeInstanceOf(TalawaRestError);
+		expect(error).toBeInstanceOf(Error);
+		expect(error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+		expect(error.message).toBe("Test error message");
+		expect(error.name).toBe("TalawaRestError");
+	});
 });
 
 describe("SMTPProvider", () => {
@@ -24,9 +59,15 @@ describe("SMTPProvider", () => {
 		fromName: "Talawa Test",
 	};
 	let smtpProvider: SMTPProvider;
+	let mockLoggerErrorSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+
+		// Spy on rootLogger.error
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
+		mockLoggerErrorSpy = vi.spyOn(rootLogger, "error");
+
 		smtpProvider = new SMTPProvider(mockConfig);
 
 		// Setup default mock behavior
@@ -37,7 +78,11 @@ describe("SMTPProvider", () => {
 		});
 	});
 
-	it("should throw error if SMTP_HOST is empty string", async () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("should throw error if API_SMTP_HOST is empty string", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			host: "" as NonEmptyString,
@@ -54,12 +99,52 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_HOST must be a non-empty string",
+				error: "API_SMTP_HOST must be a non-empty string",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is missing", async () => {
+	it("should use TalawaRestError for API_SMTP_HOST validation errors", async () => {
+		const provider = new SMTPProvider({
+			...mockConfig,
+			host: "" as NonEmptyString,
+		});
+
+		const nodemailer = await import("nodemailer");
+		(nodemailer.default.createTransport as Mock).mockImplementation(vi.fn());
+
+		const result = await provider.sendEmail({
+			id: "1",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		});
+
+		expect(result.success).toBe(false);
+		expect(result.error).toBe("API_SMTP_HOST must be a non-empty string");
+		expect(nodemailer.default.createTransport).not.toHaveBeenCalled();
+	});
+
+	it("should return a copy of the config via getConfig()", () => {
+		const provider = new SMTPProvider(mockConfig);
+		const config = provider.getConfig();
+
+		// Should return the config values
+		expect(config.host).toBe("smtp.example.com");
+		expect(config.port).toBe(587);
+		expect(config.user).toBe("test@example.com");
+		expect(config.password).toBe("test-password");
+		expect(config.secure).toBe(false);
+		expect(config.fromEmail).toBe("noreply@talawa.io");
+		expect(config.fromName).toBe("Talawa Test");
+
+		// Should return a copy, not the original reference
+		config.host = "modified.example.com" as NonEmptyString;
+		expect(provider.getConfig().host).toBe("smtp.example.com");
+	});
+
+	it("should throw error if API_SMTP_PORT is missing", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: undefined as unknown as number,
@@ -76,12 +161,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be provided",
+				error: "API_SMTP_PORT must be provided",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is 0 (below range)", async () => {
+	it("should throw error if API_SMTP_PORT is 0 (below range)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 0,
@@ -98,12 +183,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be provided",
+				error: "API_SMTP_PORT must be provided",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is 65536 (above range)", async () => {
+	it("should throw error if API_SMTP_PORT is 65536 (above range)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 65536,
@@ -120,12 +205,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "API_SMTP_PORT must be an integer between 1 and 65535",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is non-integer (587.5)", async () => {
+	it("should throw error if API_SMTP_PORT is non-integer (587.5)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 587.5,
@@ -142,7 +227,7 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "API_SMTP_PORT must be an integer between 1 and 65535",
 			}),
 		);
 	});
@@ -284,6 +369,62 @@ describe("SMTPProvider", () => {
 		});
 	});
 
+	it("should log SMTP errors when sending fails", async () => {
+		const nodemailer = await import("nodemailer");
+		const mockSendMail = vi
+			.fn()
+			.mockRejectedValue(new Error("Connection timeout"));
+		(nodemailer.default.createTransport as Mock).mockReturnValue({
+			sendMail: mockSendMail,
+		});
+
+		const job = {
+			id: "test-job-123",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		};
+
+		await smtpProvider.sendEmail(job);
+
+		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
+			{
+				error: "Connection timeout",
+				stack: expect.any(String),
+				jobId: "test-job-123",
+			},
+			"Failed to send email via SMTP",
+		);
+	});
+
+	it("should log non-Error values when sending fails", async () => {
+		const nodemailer = await import("nodemailer");
+		const mockSendMail = vi.fn().mockRejectedValue("String error");
+		(nodemailer.default.createTransport as Mock).mockReturnValue({
+			sendMail: mockSendMail,
+		});
+
+		const job = {
+			id: "test-job-456",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		};
+
+		await smtpProvider.sendEmail(job);
+
+		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
+			{
+				error: "String error",
+				stack: undefined,
+				jobId: "test-job-456",
+			},
+			"Failed to send email via SMTP",
+		);
+	});
+
 	it("should send bulk emails", async () => {
 		const nodemailer = await import("nodemailer");
 		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-bulk" });
@@ -323,16 +464,15 @@ describe("SMTPProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only user is provided (without password)", async () => {
@@ -498,32 +638,77 @@ describe("SMTPProvider", () => {
 		);
 	});
 
-	it("should enforce rate limiting delay between bulk emails (>=50ms)", async () => {
+	it("should handle unhandled promise rejections (system crashes) in batch processing", async () => {
+		const sendEmailSpy = vi
+			.spyOn(smtpProvider, "sendEmail")
+			.mockResolvedValueOnce({ id: "1", success: true, messageId: "ok" })
+			.mockRejectedValueOnce(new Error("Network Down"));
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "crash@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		const results = await smtpProvider.sendBulkEmails(jobs);
+
+		expect(results).toHaveLength(2);
+		expect(results[0]?.success).toBe(true);
+		expect(results[1]?.success).toBe(false);
+		expect(results[1]?.error).toBe("Network Down");
+
+		expect(sendEmailSpy).toHaveBeenCalledTimes(2);
+
+		sendEmailSpy.mockRestore();
+	});
+
+	it("should process emails concurrently in batches and enforce delay between batches", async () => {
 		const nodemailer = await import("nodemailer");
-		const sendTimes: number[] = [];
-		const mockSendMail = vi.fn().mockImplementation(() => {
-			sendTimes.push(Date.now());
-			return Promise.resolve({ messageId: "msg-delay" });
-		});
+		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-batch" });
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
 
-		const jobs = [
-			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
-			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
-			{ id: "3", email: "e3@x.com", subject: "s", htmlBody: "b", userId: "u3" },
-		];
+		// Spy on setTimeout to ensure the 1000ms delay happens, but execute it
+		// immediately so it doesn't artificially slow down our test suite!
+		const setTimeoutSpy = vi
+			.spyOn(global, "setTimeout")
+			.mockImplementation((callback: () => void, _ms?: number) => {
+				if (typeof callback === "function") {
+					callback();
+				}
+				return {} as unknown as NodeJS.Timeout;
+			});
+
+		// Generate 15 jobs (BATCH_SIZE = 14 → 2 batches)
+		const jobs = Array.from({ length: 15 }, (_, i) => ({
+			id: String(i),
+			email: `test${i}@example.com`,
+			subject: "Batch Test",
+			htmlBody: "Batch Body",
+			userId: "u1",
+		})) as EmailJob[];
 
 		await smtpProvider.sendBulkEmails(jobs);
 
-		expect(mockSendMail).toHaveBeenCalledTimes(3);
+		expect(mockSendMail).toHaveBeenCalledTimes(15);
 
-		// Since mockSendMail was called 3 times, sendTimes has 3 entries
-		const firstDelay = (sendTimes[1] as number) - (sendTimes[0] as number);
-		const secondDelay = (sendTimes[2] as number) - (sendTimes[1] as number);
-		expect(firstDelay).toBeGreaterThanOrEqual(50);
-		expect(secondDelay).toBeGreaterThanOrEqual(50);
+		// Ensure delay happened exactly once
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+
+		setTimeoutSpy.mockRestore();
 	});
 
 	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
@@ -586,6 +771,43 @@ describe("SMTPProvider", () => {
 		);
 	});
 
+	it("should throw error if sender email (fromEmail) is empty after sanitization", async () => {
+		const provider = new SMTPProvider(mockConfig);
+
+		const sanitizeHeaderSpy = vi
+			.spyOn(
+				provider as unknown as {
+					sanitizeHeader: (value: string | undefined) => string;
+				},
+				"sanitizeHeader",
+			)
+			.mockImplementation((value: string | undefined) => {
+				if (value === mockConfig.fromEmail) {
+					return "";
+				}
+				if (!value) return "";
+				return value.replace(/[\r\n]/g, " ");
+			});
+
+		const result = await provider.sendEmail({
+			id: "1",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		});
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				success: false,
+				error:
+					"API_SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+			}),
+		);
+
+		sanitizeHeaderSpy.mockRestore();
+	});
+
 	it("should use secure=true when configured", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
@@ -641,6 +863,35 @@ describe("SMTPProvider", () => {
 		expect(nodemailer.default.createTransport).toHaveBeenCalledWith(
 			expect.objectContaining({
 				port: 587,
+				secure: false,
+			}),
+		);
+	});
+
+	it("should default secure to false when not specified (undefined)", async () => {
+		const provider = new SMTPProvider({
+			...mockConfig,
+			secure: undefined,
+		});
+
+		const nodemailer = await import("nodemailer");
+		const mockSendMail = vi
+			.fn()
+			.mockResolvedValue({ messageId: "msg-default" });
+		(nodemailer.default.createTransport as Mock).mockReturnValue({
+			sendMail: mockSendMail,
+		});
+
+		await provider.sendEmail({
+			id: "1",
+			email: "to@example.com",
+			subject: "S",
+			htmlBody: "B",
+			userId: "u",
+		});
+
+		expect(nodemailer.default.createTransport).toHaveBeenCalledWith(
+			expect.objectContaining({
 				secure: false,
 			}),
 		);

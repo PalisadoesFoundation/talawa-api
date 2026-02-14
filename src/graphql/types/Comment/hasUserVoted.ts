@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { commentVoteTypeEnum } from "~/src/drizzle/enums/commentVoteType";
+import type { commentVoteTypeZodEnum } from "~/src/drizzle/enums/commentVoteType";
 import { builder } from "~/src/graphql/builder";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -8,7 +8,7 @@ import { Comment } from "./Comment";
 
 export const HasUserVotedComment = builder.objectRef<{
 	hasVoted: boolean;
-	voteType: z.infer<typeof commentVoteTypeEnum> | null;
+	voteType: z.infer<typeof commentVoteTypeZodEnum> | null;
 }>("HasUserVotedComment");
 
 HasUserVotedComment.implement({
@@ -117,7 +117,7 @@ Comment.implement({
 
 				return {
 					voteType: existingCommentVote.type as z.infer<
-						typeof commentVoteTypeEnum
+						typeof commentVoteTypeZodEnum
 					>,
 					hasVoted: true,
 				};

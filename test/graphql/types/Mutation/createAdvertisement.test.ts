@@ -719,4 +719,169 @@ suite("Mutation field createAdvertisement", () => {
 			);
 		});
 	});
+
+	suite("when creating advertisement with attachments", () => {
+		test("should return invalid_arguments when attachment file not found in MinIO", async () => {
+			const orgId = await createTestOrganization(authToken);
+			const objectName = `non-existent-${faker.string.uuid()}`;
+
+			// Mock statObject to throw NotFound error
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(
+					Object.assign(new Error("Not Found"), { code: "NotFound" }),
+				);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_createAdvertisement,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: `Ad With Attachment ${faker.string.uuid()}`,
+								description: "Test ad with attachment",
+								organizationId: orgId,
+								type: "banner",
+								startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
+								attachments: [
+									{
+										objectName: objectName,
+										mimeType: "IMAGE_JPEG",
+										fileHash: "a".repeat(64),
+										name: "test.jpg",
+									},
+								],
+							},
+						},
+					},
+				);
+
+				expect(result.data?.createAdvertisement).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+							}),
+							path: ["createAdvertisement"],
+						}),
+					]),
+				);
+				expect(statObjectSpy).toHaveBeenCalled();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("should return unexpected error when statObject fails with non-NotFound error", async () => {
+			const orgId = await createTestOrganization(authToken);
+			const objectName = `some-file-${faker.string.uuid()}`;
+
+			// Mock statObject to throw a non-NotFound error (e.g., network error)
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(new Error("Network connection failed"));
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_createAdvertisement,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: `Ad With Attachment ${faker.string.uuid()}`,
+								description: "Test ad with attachment",
+								organizationId: orgId,
+								type: "banner",
+								startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
+								attachments: [
+									{
+										objectName: objectName,
+										mimeType: "IMAGE_PNG",
+										fileHash: "a".repeat(64),
+										name: "test.png",
+									},
+								],
+							},
+						},
+					},
+				);
+
+				expect(result.data?.createAdvertisement).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["createAdvertisement"],
+						}),
+					]),
+				);
+				expect(statObjectSpy).toHaveBeenCalled();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("should successfully create advertisement with attachments", async () => {
+			const orgId = await createTestOrganization(authToken);
+
+			// Put a file in MinIO first
+			const objectName = `attachments/${faker.string.uuid()}.jpg`;
+			const fileContent = Buffer.from("fake image content");
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				objectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/jpeg" },
+			);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_createAdvertisement,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: `Ad With Attachment ${faker.string.uuid()}`,
+								description: "Test ad with attachment",
+								organizationId: orgId,
+								type: "banner",
+								startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
+								attachments: [
+									{
+										objectName: objectName,
+										mimeType: "IMAGE_JPEG",
+										fileHash: "a".repeat(64),
+										name: "uploaded-image.jpg",
+									},
+								],
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createAdvertisement).toBeDefined();
+				expect(result.data?.createAdvertisement?.attachments).toHaveLength(1);
+			} finally {
+				// Cleanup: remove uploaded MinIO object
+				try {
+					await server.minio.client.removeObject(
+						server.minio.bucketName,
+						objectName,
+					);
+				} catch {
+					// Intentional: cleanup errors are non-critical and should not fail the test
+					console.debug("MinIO cleanup failed, ignoring");
+				}
+			}
+		});
+	});
 });

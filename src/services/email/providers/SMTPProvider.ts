@@ -1,3 +1,6 @@
+import { ErrorCode } from "../../../utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../utilities/errors/TalawaRestError";
+import { rootLogger } from "../../../utilities/logging/logger";
 import type {
 	EmailJob,
 	EmailResult,
@@ -29,8 +32,6 @@ export interface SMTPProviderConfig {
 	localAddress?: string;
 }
 
-// TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
-// This would improve throughput for high-volume scenarios.
 /**
  * SMTP implementation of IEmailProvider using Nodemailer.
  *
@@ -51,6 +52,14 @@ export class SMTPProvider implements IEmailProvider {
 		this.config = config;
 	}
 
+	/**
+	 * Returns the SMTP configuration for testing purposes.
+	 * @returns The SMTP configuration object.
+	 */
+	getConfig(): SMTPProviderConfig {
+		return { ...this.config };
+	}
+
 	private async getTransporter(): Promise<{
 		sendMail: (options: unknown) => Promise<{ messageId?: string }>;
 	}> {
@@ -61,12 +70,18 @@ export class SMTPProvider implements IEmailProvider {
 
 			// Validate host
 			if (!this.config.host) {
-				throw new Error("SMTP_HOST must be a non-empty string");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "API_SMTP_HOST must be a non-empty string",
+				});
 			}
 
 			// Validate port
 			if (!this.config.port) {
-				throw new Error("SMTP_PORT must be provided");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "API_SMTP_PORT must be provided",
+				});
 			}
 
 			// Validate port is a finite integer in the range 1-65535
@@ -75,16 +90,21 @@ export class SMTPProvider implements IEmailProvider {
 				this.config.port < 1 ||
 				this.config.port > 65535
 			) {
-				throw new Error("SMTP_PORT must be an integer between 1 and 65535");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "API_SMTP_PORT must be an integer between 1 and 65535",
+				});
 			}
 
 			// Validate that either both user and password are provided or neither
 			const hasUser = Boolean(this.config.user);
 			const hasPassword = Boolean(this.config.password);
 			if (hasUser !== hasPassword) {
-				throw new Error(
-					"Both user and password must be provided together, or neither should be set",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Both user and password must be provided together, or neither should be set",
+				});
 			}
 
 			this.transporter = nodemailer.createTransport({
@@ -119,13 +139,15 @@ export class SMTPProvider implements IEmailProvider {
 	 * Send a single email using the configured SMTP server
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
-		try {
-			if (!this.config.fromEmail) {
-				throw new Error(
-					"Email service not configured. Please set SMTP_FROM_EMAIL (and optionally SMTP_FROM_NAME) or run 'npm run setup' to configure SMTP.",
-				);
-			}
+		if (!this.config.fromEmail) {
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_ARGUMENTS,
+				message:
+					"Email service not configured. Please set API_SMTP_FROM_EMAIL (and optionally API_SMTP_FROM_NAME) or run 'npm run setup' to configure SMTP.",
+			});
+		}
 
+		try {
 			const transporter = await this.getTransporter();
 
 			// Sanitize all header fields to prevent SMTP header injection
@@ -137,16 +159,20 @@ export class SMTPProvider implements IEmailProvider {
 			// Validate that the recipient email is not empty/invalid
 			// We explicitly check for CR/LF in the original input to prevent injection
 			if (!safeTo || !safeTo.trim() || /[\r\n]/.test(job.email)) {
-				throw new Error(
-					"Recipient email is invalid or contains forbidden characters (CR/LF)",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Recipient email is invalid or contains forbidden characters (CR/LF)",
+				});
 			}
 
 			// Validate that the sender email is not empty/invalid after sanitization
 			if (!safeFromEmail) {
-				throw new Error(
-					"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"API_SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+				});
 			}
 
 			const fromAddress = safeFromName
@@ -164,30 +190,77 @@ export class SMTPProvider implements IEmailProvider {
 			const response = await transporter.sendMail(mailOptions);
 			return { id: job.id, success: true, messageId: response.messageId };
 		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			rootLogger.error(
+				{
+					error: errorMessage,
+					stack: error instanceof Error ? error.stack : undefined,
+					jobId: job.id,
+				},
+				"Failed to send email via SMTP",
+			);
 			return {
 				id: job.id,
 				success: false,
-				error: error instanceof Error ? error.message : String(error),
+				error: errorMessage,
 			};
 		}
 	}
-
 	/**
-	 * Send multiple emails in bulk with rate limiting.
-	 * Accepts sparse arrays (nullish values are skipped).
+	 * Sends multiple emails in concurrent batches to respect rate limits.
+	 *
+	 * Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+	 * between batches to prevent overwhelming the email provider or hitting rate limits.
+	 *
+	 * @param jobs - An array of email jobs to be processed.
+	 * @returns A promise that resolves to an array of results (success or failure) for each email job.
 	 */
-	async sendBulkEmails(
-		jobs: (EmailJob | undefined | null)[],
-	): Promise<EmailResult[]> {
+	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
+		const BATCH_SIZE = 14;
+		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
-		for (const [i, job] of jobs.entries()) {
-			if (!job) continue;
-			results.push(await this.sendEmail(job));
-			if (i < jobs.length - 1) {
-				// Rate limiting delay to avoid SMTP throttling
-				await new Promise((r) => setTimeout(r, 100));
+
+		for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+			const batch = jobs.slice(i, i + BATCH_SIZE);
+
+			// 2. Map the batch to an array of Promises
+			const batchPromises = batch.map((job) => this.sendEmail(job));
+
+			// 3. Execute concurrently with Promise.allSettled
+			const batchSettledResults = await Promise.allSettled(batchPromises);
+
+			// 4. Extract the results
+			for (let j = 0; j < batchSettledResults.length; j++) {
+				const settled = batchSettledResults[j];
+				const currentJob = batch[j];
+
+				// SAFETY CHECK: This satisfies TypeScript's strict index checking
+				if (!settled || !currentJob) continue;
+
+				if (settled.status === "fulfilled") {
+					results.push(settled.value);
+				} else {
+					// Fallback in case a promise rejects outside of sendEmail's try/catch
+					results.push({
+						id: currentJob.id,
+						success: false,
+						error:
+							settled.reason instanceof Error
+								? settled.reason.message
+								: String(settled.reason),
+					});
+				}
+			}
+
+			// 5. Apply rate limit delay between batches (skip after the last batch)
+			if (i + BATCH_SIZE < jobs.length) {
+				await new Promise((resolve) =>
+					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),
+				);
 			}
 		}
+
 		return results;
 	}
 }

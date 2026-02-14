@@ -1,6 +1,7 @@
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
 import { type Static, Type } from "typebox";
+import { rootLogger } from "./utilities/logging/logger";
 
 /**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.
@@ -9,7 +10,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * The frontend URL allowed for CORS.
 	 */
-	FRONTEND_URL: Type.String({
+	API_FRONTEND_URL: Type.String({
 		minLength: 1,
 		format: "uri",
 	}),
@@ -138,24 +139,27 @@ export const envConfigSchema = Type.Object({
 	),
 	/**
 	 * Email provider selection.
-	 * Supported values: 'ses' (Amazon SES) and 'smtp'.
-	 * Defaults to 'ses' if not specified.
+	 * Supported values: 'ses' (Amazon SES), 'smtp', and 'mailpit' (local testing).
+	 * Defaults to 'mailpit' if not specified.
 	 */
 	API_EMAIL_PROVIDER: Type.Optional(
-		Type.Union([Type.Literal("ses"), Type.Literal("smtp")], { default: "ses" }),
+		Type.Union(
+			[Type.Literal("ses"), Type.Literal("smtp"), Type.Literal("mailpit")],
+			{ default: "mailpit" },
+		),
 	),
 	/**
 	 * AWS access key ID for SES email service.
 	 */
-	AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
+	API_AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS secret access key for SES email service.
 	 */
-	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
+	API_AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS region for SES email service.
 	 */
-	AWS_SES_REGION: Type.Optional(
+	API_AWS_SES_REGION: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "ap-south-1",
@@ -164,7 +168,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Verified email address to send emails from in AWS SES.
 	 */
-	AWS_SES_FROM_EMAIL: Type.Optional(
+	API_AWS_SES_FROM_EMAIL: Type.Optional(
 		Type.String({
 			format: "email",
 		}),
@@ -172,7 +176,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Display name for the sender in emails.
 	 */
-	AWS_SES_FROM_NAME: Type.Optional(
+	API_AWS_SES_FROM_NAME: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "Talawa",
@@ -181,29 +185,29 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * SMTP server hostname for email service.
 	 */
-	SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * SMTP server port for email service.
 	 * Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
 	 */
-	SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
+	API_SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
 	/**
 	 * SMTP username for authentication.
 	 */
-	SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * SMTP password for authentication.
 	 */
-	SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Whether to use SSL/TLS for SMTP connection.
 	 * Set to true for port 465, false for port 587 with STARTTLS.
 	 */
-	SMTP_SECURE: Type.Optional(Type.Boolean()),
+	API_SMTP_SECURE: Type.Optional(Type.Boolean()),
 	/**
 	 * Verified email address to send emails from via SMTP.
 	 */
-	SMTP_FROM_EMAIL: Type.Optional(
+	API_SMTP_FROM_EMAIL: Type.Optional(
 		Type.String({
 			format: "email",
 		}),
@@ -211,7 +215,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Display name for the sender in emails via SMTP.
 	 */
-	SMTP_FROM_NAME: Type.Optional(
+	API_SMTP_FROM_NAME: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "Talawa",
@@ -221,11 +225,11 @@ export const envConfigSchema = Type.Object({
 	 * Client hostname to greet the SMTP server with.
 	 * Default: machine hostname
 	 */
-	SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Local IP address to bind to for outgoing SMTP connections.
 	 */
-	SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
+	API_SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * URL to the youtube account of the community.
 	 */
@@ -329,6 +333,39 @@ export const envConfigSchema = Type.Object({
 	API_JWT_SECRET: Type.String({
 		minLength: 64,
 	}),
+	/**
+	 * REST auth JWT secret for signing and verifying access/refresh tokens.
+	 * tokens.getSecret() (src/services/auth/tokens) reads only this variable; there is no fallback to API_JWT_SECRET.
+	 * When unset in non-production, getSecret() uses a hardcoded dev default and logs a warning; in production it throws.
+	 * Should be at least 32 characters. Prefer setting in production when using REST auth.
+	 * Default ensures env validation passes when unset (e.g. in tests or when only API_JWT_SECRET is used).
+	 */
+	API_AUTH_JWT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "00000000000000000000000000000000",
+		}),
+	),
+	/**
+	 * REST auth access token TTL in seconds. Used by src/services/auth/tokens and cookie maxAge.
+	 * Default: 900 (15 minutes)
+	 */
+	API_ACCESS_TOKEN_TTL: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 900,
+		}),
+	),
+	/**
+	 * REST auth refresh token TTL in seconds. Used by src/services/auth/tokens and refreshStore.
+	 * Default: 2592000 (30 days)
+	 */
+	API_REFRESH_TOKEN_TTL: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 2592000,
+		}),
+	),
 	/**
 	 * Secret used for signing cookies. Should be a random string of at least 32 characters.
 	 * Used by @fastify/cookie for cookie signing and verification.
@@ -567,7 +604,7 @@ export const envConfigSchema = Type.Object({
 	 * Cron schedule for the recurring event instance generation background worker.
 	 * Default: "0 * * * *" (every hour at minute 0)
 	 */
-	RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
+	API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
@@ -577,19 +614,32 @@ export const envConfigSchema = Type.Object({
 	 * Cron schedule for the old event instance cleanup background worker.
 	 * Default: "0 2 * * *" (daily at 2 AM UTC)
 	 */
-	OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
+	API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
 	),
 
 	/**
-	 * Secret key for Google reCAPTCHA v2 verification.
+	 * Secret key for Google reCAPTCHA v3 verification.
 	 * Used to verify reCAPTCHA tokens on the server side.
 	 */
 	RECAPTCHA_SECRET_KEY: Type.Optional(
 		Type.String({
 			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Score threshold for Google reCAPTCHA v3 verification.
+	 * Valid range: 0.0-1.0, where 1.0 is very likely human and 0.0 is very likely bot.
+	 * Default: 0.5
+	 */
+	RECAPTCHA_SCORE_THRESHOLD: Type.Optional(
+		Type.Number({
+			minimum: 0.0,
+			maximum: 1.0,
+			default: 0.5,
 		}),
 	),
 
@@ -791,7 +841,8 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 						typeof parsed === "object" &&
 						!Array.isArray(parsed)
 					);
-				} catch {
+				} catch (error) {
+					rootLogger.debug({ error }, "JSON validation failed for env var");
 					return false;
 				}
 			},

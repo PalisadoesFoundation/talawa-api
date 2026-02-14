@@ -1,10 +1,16 @@
 import { promises as fs } from "node:fs";
-import path, { resolve } from "node:path";
+import { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
+import {
+	restoreBackup as atomicRestoreBackup,
+	cleanupTemp,
+	commitTemp,
+	ensureBackup,
+	writeTemp,
+} from "./AtomicEnvWriter";
 import { emailSetup } from "./emailSetup";
-import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
 import {
@@ -35,6 +41,7 @@ export type SetupKey =
 	| "CI"
 	| "API_ADMINISTRATOR_USER_EMAIL_ADDRESS"
 	| "RECAPTCHA_SECRET_KEY"
+	| "RECAPTCHA_SCORE_THRESHOLD"
 	| "API_BASE_URL"
 	| "API_HOST"
 	| "API_PORT"
@@ -85,13 +92,21 @@ export type SetupKey =
 	| "CADDY_TALAWA_API_HOST"
 	| "CADDY_TALAWA_API_PORT"
 	| "API_OTEL_ENABLED"
+	| "API_OTEL_SERVICE_NAME"
 	| "API_OTEL_SAMPLING_RATIO"
+	| "API_OTEL_EXPORTER_ENABLED"
+	| "API_OTEL_EXPORTER_TYPE"
+	| "API_OTEL_TRACE_EXPORTER_ENDPOINT"
+	| "API_OTEL_METRIC_EXPORTER_ENDPOINT"
 	| "API_EMAIL_PROVIDER"
-	| "AWS_SES_REGION"
-	| "AWS_ACCESS_KEY_ID"
-	| "AWS_SECRET_ACCESS_KEY"
-	| "AWS_SES_FROM_EMAIL"
-	| "AWS_SES_FROM_NAME"
+	| "API_AWS_SES_REGION"
+	| "API_AWS_ACCESS_KEY_ID"
+	| "API_AWS_SECRET_ACCESS_KEY"
+	| "API_AWS_SES_FROM_EMAIL"
+	| "API_AWS_SES_FROM_NAME"
+	| "MAILPIT_MAPPED_HOST_IP"
+	| "MAILPIT_WEB_MAPPED_PORT"
+	| "MAILPIT_SMTP_MAPPED_PORT"
 	| "GOOGLE_CLIENT_ID"
 	| "GOOGLE_CLIENT_SECRET"
 	| "GOOGLE_REDIRECT_URI"
@@ -116,171 +131,75 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 };
 
 const envFileName = ".env";
-let backupCreated = false;
-let cleanupInProgress = false;
-let sigintHandler: (() => void | Promise<void>) | null = null;
+const envBackupFile = ".env.backup";
+export const envTempFile = ".env.tmp";
+export let backupCreated = false;
+let cleaningUp = false;
+let exitCalled = false;
 
 /**
- * Restores .env file from backup if one was created during setup.
- * Guards against concurrent cleanup attempts.
- * @returns Boolean indicating restoration status:
- *   - `true` if restoration was successful
- *   - `true` if no backup was created (nothing to restore, not an error)
- *   - `false` if restoration failed (backup exists but could not be restored)
- *   - `false` if cleanup is already in progress (prevents concurrent cleanup)
+ * Graceful cleanup handler for interruptions (SIGINT/SIGTERM).
+ * Uses AtomicEnvWriter to clean up temp files and restore backups.
+ * Idempotent - safe to call multiple times.
+ * @internal Exported for testing purposes
  */
-async function restoreBackup(): Promise<boolean> {
-	// Note: There's a tiny window for a race condition between the check and set
-	// of cleanupInProgress. This is acceptable for SIGINT handler cleanup as:
-	// 1. SIGINT is typically a user-initiated single event
-	// 2. The worst case is redundant cleanup attempts, which are safe
-	// 3. The finally block ensures cleanupInProgress is always reset
-	if (cleanupInProgress) {
-		// Prevent multiple simultaneous cleanup attempts
-		return false;
+export async function gracefulCleanup(signal?: string): Promise<void> {
+	// Atomic check-and-set to prevent race conditions
+	if (cleaningUp) {
+		return; // Already cleaning up, exit silently
 	}
+	cleaningUp = true;
 
-	cleanupInProgress = true;
+	console.log(
+		signal === undefined
+			? "\n\n⚠️  Setup interrupted by user (CTRL+C)"
+			: `\n\n⚠️  Setup interrupted by signal ${signal}. Cleaning up...`,
+	);
 
 	try {
-		if (!backupCreated) {
-			console.log("📋 No backup was created yet, nothing to restore");
-			return true; // Not an error, just nothing to do
-		}
-
+		// Clean up temporary file
 		try {
-			// Validate that backup actually exists when backupCreated is true
-			// This ensures state consistency: if backupCreated is true, we should have a backup
-			const backupDir = ".backup";
-			try {
-				await fs.access(backupDir);
-			} catch (err: unknown) {
-				const error = err as NodeJS.ErrnoException;
-				if (error.code === "ENOENT") {
-					console.warn(
-						"⚠️  Backup was marked as created but backup directory does not exist",
-					);
-					return false; // State inconsistency: backupCreated=true but no backup dir
-				}
-				throw err; // Re-throw other errors
-			}
+			await cleanupTemp(envTempFile);
+		} catch (tempErr) {
+			console.warn("⚠️  Failed to clean temp file:", tempErr);
+			// Continue to restore backup
+		}
 
-			await restoreLatestBackup();
+		// Restore backup if one was created
+		if (backupCreated) {
+			await atomicRestoreBackup(envFileName, envBackupFile);
 			console.log("✅ Original configuration restored successfully");
-			return true;
-		} catch (error: unknown) {
-			console.error("❌ Failed to restore backup:", error);
-			console.error(
-				"\n   You may need to manually restore from the .backup directory",
-			);
-			return false;
-		}
-	} finally {
-		cleanupInProgress = false;
-	}
-}
-
-/**
- * Test-only export to allow testing the cleanupInProgress guard
- * @internal
- */
-export function __test__setCleanupInProgress(value: boolean): void {
-	cleanupInProgress = value;
-}
-
-/**
- * Test-only export to allow testing restoreBackup function
- * @internal
- */
-export async function __test__restoreBackup(): Promise<boolean> {
-	return restoreBackup();
-}
-
-/**
- * SIGINT handler that restores backup and exits
- * Defined at module scope to allow removal before re-registration
- */
-async function sigintHandlerFunction(): Promise<void> {
-	console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
-	console.log("=".repeat(60));
-	console.log("📋 Cleaning up and restoring previous configuration...");
-	console.log(`${"=".repeat(60)}\n`);
-
-	const restored = await restoreBackup();
-
-	if (restored) {
-		console.log(
-			"\n✅ Your environment has been restored to its previous state",
-		);
-		console.log("   You can safely run setup again when ready\n");
-		process.exit(0); // Clean exit since we restored successfully
-	} else {
-		console.log("\n⚠️  Cleanup incomplete - please check your .env file");
-		console.log(
-			"   Run setup again or restore manually from .backup directory\n",
-		);
-		process.exit(1); // Error exit since restoration failed
-	}
-}
-
-async function restoreLatestBackup(): Promise<void> {
-	const backupDir = ".backup";
-	const envPrefix = ".env.";
-	try {
-		await fs.access(backupDir);
-	} catch (err: unknown) {
-		const error = err as NodeJS.ErrnoException;
-		if (error.code === "ENOENT") {
-			console.warn("⚠️  Backup directory .backup does not exist");
-			return;
-		}
-		console.error("❌ Error accessing backup directory:", error);
-		throw error;
-	}
-	try {
-		const files = await fs.readdir(backupDir);
-		const backupFiles = files.filter((file) => file.startsWith(envPrefix));
-		if (backupFiles.length > 0) {
-			const sortedBackups = backupFiles
-				.map((fileName) => {
-					const epochStr = fileName.substring(envPrefix.length);
-					return {
-						name: fileName,
-						epoch: Number.parseInt(epochStr, 10),
-					};
-				})
-				.filter((file) => !Number.isNaN(file.epoch))
-				.sort((a, b) => b.epoch - a.epoch);
-			const latestBackup = sortedBackups[0];
-			if (latestBackup) {
-				const backupPath = path.join(backupDir, latestBackup.name);
-				console.log(`Restoring from latest backup: ${backupPath}`);
-				// Use atomic write: write to temp file first, then rename
-				// This ensures the .env file is either fully restored or unchanged
-				const tempPath = ".env.tmp";
-				try {
-					await fs.copyFile(backupPath, tempPath);
-					await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
-				} catch (err) {
-					// Clean up temp file if it exists (e.g., if copyFile succeeded but rename failed)
-					try {
-						await fs.unlink(tempPath);
-					} catch {
-						// Ignore cleanup errors - temp file may not exist or already be removed
-					}
-					throw err; // Re-throw the original error after cleanup attempt
-				}
-			} else {
-				console.warn("⚠️  No valid backup files found with epoch timestamps");
-			}
 		} else {
-			console.warn("⚠️  No backup files found in .backup directory");
+			console.log("✓ Cleanup complete. No backup to restore.");
 		}
-	} catch (readError) {
-		console.error("❌ Error reading backup directory:", readError);
-		throw readError;
+
+		if (!exitCalled) {
+			exitCalled = true;
+			process.exit(0);
+		}
+	} catch (e) {
+		console.error("✗ Cleanup encountered errors:", e);
+		if (!exitCalled) {
+			exitCalled = true;
+			process.exit(1);
+		}
 	}
 }
+
+/**
+ * Reset internal state for testing purposes.
+ * @internal Only for use in unit tests
+ */
+export function resetCleanupState(options?: {
+	backupCreated?: boolean;
+	cleaning?: boolean;
+}): void {
+	backupCreated = options?.backupCreated ?? false;
+	cleaningUp = options?.cleaning ?? false;
+	exitCalled = false;
+}
+
+// Signal handlers will be registered in setup() to avoid test pollution
 
 export function isBooleanString(input: unknown): input is "true" | "false" {
 	return typeof input === "string" && (input === "true" || input === "false");
@@ -373,19 +292,99 @@ export async function observabilitySetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
 	try {
+		console.log("\n--- OpenTelemetry Observability Configuration ---");
+		console.log("Configure distributed tracing and metrics for your API.");
+		console.log();
+
 		answers.API_OTEL_ENABLED = await promptList(
 			"API_OTEL_ENABLED",
 			"Enable OpenTelemetry observability?",
 			["true", "false"],
 			"false",
 		);
+
 		if (answers.API_OTEL_ENABLED === "true") {
+			answers.API_OTEL_SERVICE_NAME = await promptInput(
+				"API_OTEL_SERVICE_NAME",
+				"OpenTelemetry service name:",
+				"talawa-api",
+				(input: string) => {
+					if (input.trim().length < 1) {
+						return "Service name cannot be empty.";
+					}
+					return true;
+				},
+			);
+
 			answers.API_OTEL_SAMPLING_RATIO = await promptInput(
 				"API_OTEL_SAMPLING_RATIO",
 				"OpenTelemetry sampling ratio (0-1):",
-				"1.0",
+				"1",
 				validateSamplingRatio,
 			);
+
+			answers.API_OTEL_EXPORTER_ENABLED = await promptList(
+				"API_OTEL_EXPORTER_ENABLED",
+				"Enable OpenTelemetry exporter?",
+				["true", "false"],
+				"true",
+			);
+
+			if (answers.API_OTEL_EXPORTER_ENABLED === "true") {
+				answers.API_OTEL_EXPORTER_TYPE = await promptList(
+					"API_OTEL_EXPORTER_TYPE",
+					"Select exporter type:",
+					["console", "otlp"],
+					"console",
+				);
+
+				if (answers.API_OTEL_EXPORTER_TYPE === "otlp") {
+					console.log("\n--- OTLP Exporter Configuration ---");
+					console.log(
+						"Configure endpoints for traces and metrics export to OTLP receivers.",
+					);
+					console.log(
+						"Common examples: http://localhost:4318/v1/traces or http://otel-collector:4318/v1/traces",
+					);
+					console.log();
+
+					// Trace Exporter Endpoint
+					answers.API_OTEL_TRACE_EXPORTER_ENDPOINT = await promptInput(
+						"API_OTEL_TRACE_EXPORTER_ENDPOINT",
+						"OTLP trace exporter endpoint URL:",
+						"",
+						(input: string) => {
+							try {
+								new URL(input.trim());
+								return true;
+							} catch {
+								return "Please enter a valid URL (e.g., http://localhost:4318/v1/traces).";
+							}
+						},
+					);
+
+					// Metric Exporter Endpoint
+					answers.API_OTEL_METRIC_EXPORTER_ENDPOINT = await promptInput(
+						"API_OTEL_METRIC_EXPORTER_ENDPOINT",
+						"OTLP metric exporter endpoint URL:",
+						"",
+						(input: string) => {
+							try {
+								new URL(input.trim());
+								return true;
+							} catch {
+								return "Please enter a valid URL (e.g., http://localhost:4318/v1/metrics).";
+							}
+						},
+					);
+				} else {
+					// Console exporter - set empty endpoints
+					answers.API_OTEL_TRACE_EXPORTER_ENDPOINT = "";
+					answers.API_OTEL_METRIC_EXPORTER_ENDPOINT = "";
+				}
+			}
+
+			console.log("\nOpenTelemetry observability configuration completed!");
 		}
 	} catch (err) {
 		await handlePromptError(err);
@@ -482,7 +481,14 @@ export async function metricsSetup(
 }
 async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
-	await restoreLatestBackup();
+	if (backupCreated) {
+		try {
+			await atomicRestoreBackup(envFileName, envBackupFile);
+			console.log("✅ Original configuration restored successfully");
+		} catch (restoreErr) {
+			console.error("❌ Failed to restore backup:", restoreErr);
+		}
+	}
 	process.exit(1);
 }
 export async function checkEnvFile(): Promise<boolean> {
@@ -505,6 +511,7 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 		);
 	}
 	try {
+		// Read and parse the source environment file
 		const fileContent = await fs.readFile(envFileToUse, { encoding: "utf-8" });
 		const parsedEnv = dotenv.parse(fileContent);
 		const safeContent = Object.entries(parsedEnv)
@@ -516,12 +523,23 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 				return `${key}="${escaped}"`;
 			})
 			.join("\n");
-		await fs.writeFile(envFileName, safeContent, { encoding: "utf-8" });
+
+		// Use AtomicEnvWriter for safe file operations
+		// Note: Backup is already created in setup() based on user preference
+		await writeTemp(envTempFile, safeContent);
+		await commitTemp(envFileName, envTempFile);
+
 		dotenv.config({ path: envFileName });
 		console.log(
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
 		);
 	} catch (error) {
+		// Clean up temp file on error
+		try {
+			await cleanupTemp(envTempFile);
+		} catch (cleanupError) {
+			console.warn("⚠️  Failed to clean temp file:", cleanupError);
+		}
 		console.error(
 			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
 		);
@@ -545,7 +563,7 @@ export async function administratorEmail(
 	try {
 		answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = await promptInput(
 			"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
-			"Enter email:",
+			"Enter administrator user email address:",
 			"administrator@email.com",
 			validateEmail,
 		);
@@ -560,11 +578,28 @@ export async function reCaptchaSetup(
 	try {
 		answers.RECAPTCHA_SECRET_KEY = await promptInput(
 			"RECAPTCHA_SECRET_KEY",
-			"Enter Google reCAPTCHA v2 Secret Key:",
+			"Enter Google reCAPTCHA v3 Secret Key:",
 			"",
 			(input: string) => {
 				if (input.trim().length < 1) {
 					return "reCAPTCHA Secret Key cannot be empty.";
+				}
+				return true;
+			},
+		);
+
+		// Configure score threshold for reCAPTCHA v3
+		answers.RECAPTCHA_SCORE_THRESHOLD = await promptInput(
+			"RECAPTCHA_SCORE_THRESHOLD",
+			"Enter reCAPTCHA v3 score threshold (0.0-1.0, higher = more human-like, default: 0.5):",
+			"0.5",
+			(input: string) => {
+				const score = parseFloat(input.trim());
+				if (Number.isNaN(score)) {
+					return "Score threshold must be a valid number.";
+				}
+				if (score < 0.0 || score > 1.0) {
+					return "Score threshold must be between 0.0 and 1.0.";
 				}
 				return true;
 			},
@@ -1187,7 +1222,14 @@ export async function setup(): Promise<SetupAnswers> {
 	// Reset state variables at the start of each setup call
 	// This ensures clean state for tests and multiple setup() calls
 	backupCreated = false;
-	cleanupInProgress = false;
+	cleaningUp = false;
+	exitCalled = false;
+
+	// Register signal handlers for graceful cleanup
+	const sigintHandler = () => gracefulCleanup("SIGINT");
+	const sigtermHandler = () => gracefulCleanup("SIGTERM");
+	process.on("SIGINT", sigintHandler);
+	process.on("SIGTERM", sigtermHandler);
 
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
@@ -1203,14 +1245,7 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	dotenv.config({ path: envFileName });
 
-	// Remove previous SIGINT handler if one exists to prevent accumulation
-	if (sigintHandler) {
-		process.removeListener("SIGINT", sigintHandler);
-	}
-
-	// Register the SIGINT handler
-	sigintHandler = sigintHandlerFunction;
-	process.once("SIGINT", sigintHandler);
+	// Create backup using AtomicEnvWriter if .env exists
 	if (await checkEnvFile()) {
 		const isInteractive =
 			initialCI !== "true" && process.stdin && process.stdin.isTTY;
@@ -1232,14 +1267,17 @@ export async function setup(): Promise<SetupAnswers> {
 		} else {
 			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
 		}
-		try {
-			backupCreated = await envFileBackup(shouldBackup);
-		} catch (err) {
-			if (process.env.NODE_ENV === "production" || initialCI === "true") {
-				console.error("envFileBackup failed (fatal):", err);
-				process.exit(1);
+		if (shouldBackup) {
+			try {
+				await ensureBackup(envFileName, envBackupFile);
+				backupCreated = true;
+			} catch (err) {
+				if (process.env.NODE_ENV === "production" || initialCI === "true") {
+					console.error("Backup creation failed (fatal):", err);
+					process.exit(1);
+				}
+				throw err;
 			}
-			throw err;
 		}
 	}
 	answers = await setCI(answers);
@@ -1289,7 +1327,7 @@ export async function setup(): Promise<SetupAnswers> {
 	answers = await administratorEmail(answers);
 	const setupReCaptcha = await promptConfirm(
 		"setupReCaptcha",
-		"Do you want to set up Google reCAPTCHA v2 now?",
+		"Do you want to set up Google reCAPTCHA v3 now?",
 		false,
 	);
 	if (setupReCaptcha) {
@@ -1304,6 +1342,15 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupOAuth) {
 		answers = await oauthSetup(answers);
 	}
+	const setupObservability = await promptConfirm(
+		"setupObservability",
+		"Do you want to configure OpenTelemetry observability now?",
+		false,
+	);
+
+	if (setupObservability) {
+		answers = await observabilitySetup(answers);
+	}
 	const setupMetrics = await promptConfirm(
 		"setupMetrics",
 		"Do you want to configure performance metrics settings now?",
@@ -1314,6 +1361,11 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");
+
+	// Cleanup: Unregister signal handlers after successful setup
+	process.removeListener("SIGINT", sigintHandler);
+	process.removeListener("SIGTERM", sigtermHandler);
+
 	return answers;
 }
 if (

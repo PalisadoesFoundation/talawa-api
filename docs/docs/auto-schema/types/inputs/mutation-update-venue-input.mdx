@@ -73,7 +73,7 @@ export const Details = ({
 
 ```graphql
 input MutationUpdateVenueInput {
-  attachments: [Upload!]
+  attachments: [FileMetadataInput!]
   capacity: Int
   description: String
   id: ID!
@@ -83,9 +83,9 @@ input MutationUpdateVenueInput {
 
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateVenueInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[Upload!]</b></code>](/auto-schema/types/scalars/upload.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateVenueInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FileMetadataInput!]</b></code>](/auto-schema/types/inputs/file-metadata-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
 
-Attachments of the venue.
+File metadata for attachments uploaded via MinIO presigned URLs.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateVenueInput.<b>capacity</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

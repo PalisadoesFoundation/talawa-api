@@ -21,6 +21,15 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 Please read the [Palisadoes Contributing Guidelines](https://developer.palisadoes.org/docs/contributor-guide/contributing).
 
+## Docker Devcontainer
+
+This project provides two devcontainer configurations:
+
+1. **Default mode** (`.devcontainer/default/devcontainer.json`): For standard Docker installations.
+2. **Rootless mode** (`.devcontainer/rootless/devcontainer.json`): For Docker Rootless installations.
+
+For full setup and usage instructions, see the [Installation Guide](docs/docs/docs/getting-started/installation.md). For troubleshooting, see the [Troubleshooting Guide](docs/docs/docs/developer-resources/testing/troubleshooting.md).
+
 ## Testing and Code Quality
 
 Testing and code quality documentation can be found at these locations:

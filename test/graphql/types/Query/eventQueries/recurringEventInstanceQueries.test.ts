@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -7,12 +9,17 @@ import type {
 } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	type GetRecurringEventInstancesInput,
+	getRecurringEventInstanceByBaseId,
 	getRecurringEventInstanceById,
-	getRecurringEventInstancesByBaseId,
+	getRecurringEventInstancesByBaseIds,
 	getRecurringEventInstancesByIds,
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import {
+	RECURRING_EVENT_DEFAULTS,
+	RECURRING_EVENT_TEST_DATA,
+} from "../../../../fixtures/recurringEventFixtures";
 
 // Mock the service dependencies
 vi.mock("~/src/services/eventGeneration/instanceResolver", () => ({
@@ -54,13 +61,17 @@ const mockRawInstance: typeof recurringEventInstancesTable.$inferSelect = {
 	totalCount: 10,
 };
 
-const mockBaseTemplate: typeof eventsTable.$inferSelect = {
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+
+const mockBaseTemplate: typeof eventsTable.$inferSelect & {
+	attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+} = {
 	id: "base-event-1",
-	name: "Base Recurring Event",
-	description: "A base template for recurring events",
+	name: RECURRING_EVENT_TEST_DATA.NAME,
+	description: RECURRING_EVENT_TEST_DATA.DESCRIPTION,
 	startAt: new Date("2025-01-15T10:00:00.000Z"),
 	endAt: new Date("2025-01-15T11:00:00.000Z"),
-	location: "Main Hall",
+	location: RECURRING_EVENT_TEST_DATA.LOCATION,
 	allDay: false,
 	isPublic: true,
 	isRegisterable: true,
@@ -70,7 +81,9 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect = {
 	updaterId: null,
 	createdAt: new Date("2025-01-01T00:00:00.000Z"),
 	updatedAt: null,
+
 	isRecurringEventTemplate: true,
+	attachments: [],
 };
 
 const mockException: typeof eventExceptionsTable.$inferSelect = {
@@ -113,7 +126,9 @@ const mockResolvedInstance: ResolvedRecurringEventInstance = {
 	hasExceptions: true,
 	appliedExceptionData: { modified: true },
 	exceptionCreatedBy: "user-2",
+
 	exceptionCreatedAt: new Date("2025-01-03T00:00:00.000Z"),
+	attachments: [],
 };
 
 function setupMockDrizzleClient(): ServiceDependencies["drizzleClient"] {
@@ -250,6 +265,9 @@ describe("getRecurringEventInstancesInDateRange", () => {
 		// Verify parallel fetching
 		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalledWith({
 			where: expect.any(Object),
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findMany,
@@ -410,6 +428,9 @@ describe("getRecurringEventInstanceById", () => {
 		});
 		expect(mockDrizzleClient.query.eventsTable.findFirst).toHaveBeenCalledWith({
 			where: expect.any(Object), // eq(eventsTable.id, instance.baseRecurringEventId)
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findFirst,
@@ -699,6 +720,9 @@ describe("getRecurringEventInstancesByIds", () => {
 		// Verify template and exception fetching
 		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalledWith({
 			where: expect.any(Object), // inArray condition for base event IDs
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findMany,
@@ -824,6 +848,346 @@ describe("getRecurringEventInstancesByIds", () => {
 	});
 });
 
+describe("getRecurringEventInstancesByBaseIds", () => {
+	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
+	let mockLogger: ServiceDependencies["logger"];
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockDrizzleClient = setupMockDrizzleClient();
+		mockLogger = setupMockLogger();
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([mockRawInstance]);
+		vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockResolvedValue([
+			mockBaseTemplate,
+		]);
+		vi.mocked(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).mockResolvedValue([mockException]);
+		mockResolveMultipleInstances.mockReturnValue([mockResolvedInstance]);
+	});
+
+	it("should fetch instances, templates and exceptions for base IDs", async () => {
+		const result = await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith({
+			where: expect.any(Object),
+			orderBy: expect.any(Array),
+			limit: 1000,
+		});
+
+		// Verify templates and exceptions were also fetched
+		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalledWith({
+			where: expect.any(Object),
+			with: {
+				attachmentsWhereEvent: true,
+			},
+		});
+		expect(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).toHaveBeenCalledWith({
+			where: expect.any(Object),
+		});
+
+		// Verify resolution was invoked with correct arguments
+		expect(mockResolveMultipleInstances).toHaveBeenCalledWith(
+			expect.any(Array),
+			expect.any(Map),
+			expect.any(Map),
+			mockLogger,
+		);
+
+		expect(result).toHaveLength(1);
+	});
+
+	it("should return empty array when baseRecurringEventIds is empty", async () => {
+		const result = await getRecurringEventInstancesByBaseIds(
+			[],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(result).toEqual([]);
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should use default limit of 1000 when no limit is provided", async () => {
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{
+				// no limit provided
+			},
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: RECURRING_EVENT_DEFAULTS.LIMIT,
+			}),
+		);
+	});
+
+	it("should forward custom limit to DB call", async () => {
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ limit: 50 },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: 50,
+			}),
+		);
+	});
+
+	it("should apply different filters when includeCancelled is explicitly true", async () => {
+		// 1. Call with default (includeCancelled: false)
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ includeCancelled: false },
+		);
+		const defaultCallArgs = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls[0]?.[0];
+
+		// 2. Call with includeCancelled: true
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ includeCancelled: true },
+		);
+		const includeCancelledArgs = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls[0]?.[0];
+
+		// Verify the 'where' clause is structurally different
+		const whereFalse = inspect(defaultCallArgs?.where, {
+			depth: null,
+			colors: false,
+		});
+		expect(whereFalse).toContain("isCancelled");
+		expect(whereFalse).toContain("false");
+
+		const whereTrue = inspect(includeCancelledArgs?.where, {
+			depth: null,
+			colors: false,
+		});
+		expect(whereTrue).not.toEqual(whereFalse);
+		expect(defaultCallArgs?.where).not.toEqual(includeCancelledArgs?.where);
+	});
+
+	it("should apply different filters when excludeInstanceIds is provided", async () => {
+		// 1. Call without exclusions
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+		const noExclusionArgs = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls[0]?.[0];
+
+		// 2. Call with exclusions
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+		const excludeIds = ["instance-to-exclude-1", "instance-to-exclude-2"];
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ excludeInstanceIds: excludeIds },
+		);
+		const withExclusionArgs = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls[0]?.[0];
+
+		// Verify the 'where' clause is structurally different
+		// (The implementation adds a `NOT IN` clause)
+		expect(noExclusionArgs?.where).toBeDefined();
+		expect(withExclusionArgs?.where).toBeDefined();
+		expect(noExclusionArgs?.where).not.toEqual(withExclusionArgs?.where);
+	});
+
+	it("should return empty array when no instances found after query", async () => {
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([]);
+
+		const result = await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(result).toEqual([]);
+		expect(mockDrizzleClient.query.eventsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	it("should log and re-throw error on failure", async () => {
+		const error = new Error("Query failed");
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockRejectedValue(error);
+
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow("Query failed");
+
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			error,
+			"Failed to get recurring event instances by base IDs",
+		);
+	});
+
+	it("should throw error when limit is less than 1", async () => {
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ limit: 0 },
+			),
+		).rejects.toThrow(
+			"Invalid limit: 0. Limit must be greater than or equal to 1.",
+		);
+
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ limit: -5 },
+			),
+		).rejects.toThrow(
+			"Invalid limit: -5. Limit must be greater than or equal to 1.",
+		);
+
+		// Verify query was never called
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when offset is negative", async () => {
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ offset: -1 },
+			),
+		).rejects.toThrow(
+			"Invalid offset: -1. Offset must be greater than or equal to 0.",
+		);
+
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{ offset: -100 },
+			),
+		).rejects.toThrow(
+			"Invalid offset: -100. Offset must be greater than or equal to 0.",
+		);
+
+		// Verify query was never called
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should accept valid limit and offset values", async () => {
+		// Test limit = 1 (minimum valid)
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ limit: 1 },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: 1,
+			}),
+		);
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+
+		// Test offset = 0 (minimum valid)
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ offset: 0 },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				offset: 0,
+			}),
+		);
+	});
+
+	it("should correctly apply offset when greater than 0", async () => {
+		const offset = 5;
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ offset },
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				offset,
+			}),
+		);
+	});
+});
+
 describe("getRecurringEventInstancesByBaseId", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
 	let mockLogger: ServiceDependencies["logger"];
@@ -847,7 +1211,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 	});
 
 	it("should fetch and resolve instances for a base event ID", async () => {
-		const result = await getRecurringEventInstancesByBaseId(
+		const result = await getRecurringEventInstanceByBaseId(
 			baseEventId,
 			mockDrizzleClient,
 			mockLogger,
@@ -858,6 +1222,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 		).toHaveBeenCalledWith({
 			where: expect.any(Object),
 			orderBy: expect.any(Object),
+			limit: 1000,
 		});
 
 		// Check that templates and exceptions were fetched
@@ -881,7 +1246,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 		).mockResolvedValue([]);
 
-		const result = await getRecurringEventInstancesByBaseId(
+		const result = await getRecurringEventInstanceByBaseId(
 			baseEventId,
 			mockDrizzleClient,
 			mockLogger,
@@ -898,7 +1263,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 		).mockRejectedValue(error);
 
 		await expect(
-			getRecurringEventInstancesByBaseId(
+			getRecurringEventInstanceByBaseId(
 				baseEventId,
 				mockDrizzleClient,
 				mockLogger,
