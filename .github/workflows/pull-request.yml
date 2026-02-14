@@ -304,7 +304,6 @@ jobs:
             exit 0
           fi
 
-          chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
           python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
             --config .github/workflows/config/sensitive-files.txt \
             --files $ALL_CHANGED_FILES
