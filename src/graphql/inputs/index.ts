@@ -89,6 +89,7 @@ import "./MutationUpdateEntireRecurringEventSeriesInput";
 import "./MutationUpdateTagFolderInput";
 import "./MutationUpdateTagInput";
 import "./MutationUpdateUserInput";
+import "./MutationUpdateUserPasswordInput";
 import "./MutationUpdateVenueInput";
 import "./QueryAdvertisementInput";
 import "./QueryAgendaFolderInput";
