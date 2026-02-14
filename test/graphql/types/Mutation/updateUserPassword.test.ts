@@ -10,6 +10,22 @@ import { Mutation_updateUserPassword } from "../documentNodes";
 suite("Mutation field updateUserPassword", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
 
+	const createUserWithCleanup = async () => {
+		const user = await createRegularUserUsingAdmin();
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, user.userId));
+			} catch (err) {
+				console.error("User cleanup failed:", err);
+			}
+		});
+
+		return user;
+	};
+
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		for (const fn of cleanupFns.reverse()) {
@@ -44,7 +60,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Returns unauthenticated when token user no longer exists", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		await server.drizzleClient
 			.delete(usersTable)
@@ -72,7 +88,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Returns invalid_arguments when zod validation fails", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
@@ -98,7 +114,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Returns invalid_arguments when user has no passwordHash", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		await server.drizzleClient
 			.update(usersTable)
@@ -129,7 +145,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Returns invalid_arguments when old password is incorrect", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
@@ -155,7 +171,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Returns invalid_arguments when new password equals old password", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
@@ -181,7 +197,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Returns invalid_arguments when confirmation does not match", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
@@ -207,7 +223,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Successfully updates password", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
@@ -234,7 +250,7 @@ suite("Mutation field updateUserPassword", () => {
 	});
 
 	test("Allows login with new password after update", async () => {
-		const user = await createRegularUserUsingAdmin();
+		const user = await createUserWithCleanup();
 
 		await mercuriusClient.mutate(Mutation_updateUserPassword, {
 			headers: { authorization: `bearer ${user.authToken}` },
