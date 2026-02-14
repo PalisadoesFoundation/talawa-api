@@ -96,7 +96,7 @@
   "license": "GNU General Public License v3.0",
   "main": "./dist/index.js",
   "name": "talawa-api",
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.28.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/PalisadoesFoundation/talawa-api"

@@ -47,6 +47,7 @@ RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 # Install Node.js 24.12.0 LTS using fnm
 RUN /home/talawa/.local/share/fnm/fnm install 24.12.0 && /home/talawa/.local/share/fnm/fnm default 24.12.0
+RUN corepack enable && corepack prepare pnpm@10.28.1 --activate
 WORKDIR /home/talawa/api
 
 FROM node:24.12.0-bookworm-slim AS base
@@ -62,7 +63,7 @@ RUN userdel -r node \
     && groupadd -g ${API_GID} talawa \
     # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
     && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
-    && corepack enable
+    && corepack enable && corepack prepare pnpm@10.28.1 --activate
 USER talawa
 WORKDIR /home/talawa/api
 

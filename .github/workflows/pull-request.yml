@@ -408,7 +408,7 @@ jobs:
     needs: [Code-Quality-Checks]
     uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
     with:
-      pnpm-version: "10.26.1"
+      pnpm-version: "10.28.1"
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
@@ -827,6 +827,15 @@ jobs:
           cp envFiles/.env.devcontainer .env
           devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
+          
+      - name: Run Devcontainer Setup Script with Validation
+        run: |
+          echo "Running post-create.sh with validation checks..."
+          # Run the setup script and capture its exit code
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/default/post-create.sh"
+          # If the script exits with non-zero, this step will fail
+          echo "Devcontainer setup completed successfully"
+
       - name: Wait for Postgres in devcontainer before migrations
         run: |
           set -euo pipefail
@@ -912,6 +921,15 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+        
+      - name: Run Devcontainer Setup Script with Validation
+        run: |
+          echo "Running post-create.sh with validation checks..."
+          # Run the setup script and capture its exit code
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/default/post-create.sh"
+          # If the script exits with non-zero, this step will fail
+          echo "Devcontainer setup completed successfully"
+
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail
