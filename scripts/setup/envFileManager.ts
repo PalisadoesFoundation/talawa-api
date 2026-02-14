@@ -4,6 +4,7 @@ import {
 	cleanupTemp,
 	commitTemp,
 	ensureBackup,
+	errToError,
 	fileExists,
 	readEnv,
 	restoreBackup,
@@ -33,15 +34,12 @@ export type UpdateEnvOptions = EnvPaths & {
 	restoreFromBackup?: boolean;
 };
 
-function errToError(err: unknown): Error {
-	return err instanceof Error ? err : new Error(String(err));
-}
-
 function escapeEnvValue(value: string): string {
 	return value
 		.replace(/\\/g, "\\\\")
 		.replace(/"/g, '\\"')
-		.replace(/\n/g, "\\n");
+		.replace(/\n/g, "\\n")
+		.replace(/\r/g, "\\r");
 }
 
 function serializeEnvVars(vars: Record<string, string>): string {
@@ -105,6 +103,12 @@ export async function initializeEnvFile(
 		const fileContent = await fs.readFile(templateFile, { encoding: "utf-8" });
 		const parsedEnv = dotenv.parse(fileContent);
 		const nextContent = serializeEnvVars(parsedEnv);
+
+		// `restoreFromBackup` implies safe overwrite: ensure rollback target exists
+		// before we write the new env file content.
+		if (restoreFromBackup) {
+			await ensureBackup(envFile, backupFile);
+		}
 
 		await writeTemp(tempFile, nextContent);
 		await commitTemp(envFile, tempFile);

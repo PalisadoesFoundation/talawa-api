@@ -37,7 +37,7 @@ describe("envFileManager", () => {
 		process.env = { ...originalEnv };
 
 		const { commitTemp } = await import("scripts/setup/AtomicEnvWriter");
-		(commitTemp as unknown as { mockClear: () => void }).mockClear?.();
+		vi.mocked(commitTemp).mockClear();
 	});
 
 	afterEach(async () => {
@@ -79,18 +79,53 @@ describe("envFileManager", () => {
 		expect(process.env.KEY2).toBe("VAL2");
 	});
 
+	it("initializeEnvFile throws ENV_INIT_FAILED when CI template is missing and leaves no files behind", async () => {
+		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
+		const missingTemplate = path.join(ROOT, "missing-template.env");
+
+		await expect(
+			initializeEnvFile({
+				ci: true,
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+				templateCiFile: missingTemplate,
+			}),
+		).rejects.toMatchObject({ code: SetupErrorCode.ENV_INIT_FAILED });
+
+		await expect(fs.access(ENV)).rejects.toBeTruthy();
+		await expect(fs.access(TEMP)).rejects.toBeTruthy();
+	});
+
+	it("initializeEnvFile creates backup before overwriting when restoreFromBackup=true", async () => {
+		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
+
+		await write(ENV, "OLD=1\n");
+		await write(TEMPLATE, "NEW=2\n");
+
+		await initializeEnvFile({
+			ci: false,
+			envFile: ENV,
+			backupFile: BACKUP,
+			tempFile: TEMP,
+			templateDevcontainerFile: TEMPLATE,
+			restoreFromBackup: true,
+		});
+
+		expect(await read(BACKUP)).toBe("OLD=1\n");
+		expect(await read(ENV)).toBe('NEW="2"\n');
+		await expect(fs.access(TEMP)).rejects.toBeTruthy();
+	});
+
 	it("initializeEnvFile restores from backup when commit fails and restoreFromBackup=true", async () => {
 		const { initializeEnvFile } = await import("scripts/setup/envFileManager");
 		const { commitTemp } = await import("scripts/setup/AtomicEnvWriter");
-		const commitTempMock = commitTemp as unknown as {
-			mockRejectedValueOnce: (e: unknown) => void;
-		};
 
 		await write(ENV, "BEFORE=1\n");
 		await write(BACKUP, "BACKUP=1\n");
 		await write(TEMPLATE, "KEY=VAL\n");
 
-		commitTempMock.mockRejectedValueOnce(new Error("commit failed"));
+		vi.mocked(commitTemp).mockRejectedValueOnce(new Error("commit failed"));
 
 		await expect(
 			initializeEnvFile({
@@ -103,8 +138,10 @@ describe("envFileManager", () => {
 			}),
 		).rejects.toBeInstanceOf(SetupError);
 
-		const content = await read(ENV);
-		expect(content).toBe("BACKUP=1\n");
+		// Backup should be refreshed from the current env before overwriting.
+		expect(await read(BACKUP)).toBe("BEFORE=1\n");
+		// Restore should bring env back to the pre-init content.
+		expect(await read(ENV)).toBe("BEFORE=1\n");
 
 		await expect(fs.access(TEMP)).rejects.toBeTruthy();
 	});
@@ -126,6 +163,20 @@ describe("envFileManager", () => {
 
 		expect(process.env.EXISTING_VAR).toBe("new_value");
 		expect(process.env.NEW_VAR).toBe("new_value");
+	});
+
+	it("updateEnvVariable escapes carriage returns (\\r) in values", async () => {
+		const { updateEnvVariable } = await import("scripts/setup/envFileManager");
+
+		await updateEnvVariable(
+			{ A: "x\ry" },
+			{ envFile: ENV, backupFile: BACKUP, tempFile: TEMP },
+		);
+
+		const content = await read(ENV);
+		expect(content).toBe('A="x\\ry"\n');
+		expect(content).toContain("\\r");
+		expect(content).not.toContain("\r");
 	});
 
 	it("updateEnvVariable is a no-op when all config values are undefined", async () => {
@@ -189,14 +240,11 @@ describe("envFileManager", () => {
 	it("updateEnvVariable restores from backup when commit fails and restoreFromBackup=true", async () => {
 		const { updateEnvVariable } = await import("scripts/setup/envFileManager");
 		const { commitTemp } = await import("scripts/setup/AtomicEnvWriter");
-		const commitTempMock = commitTemp as unknown as {
-			mockRejectedValueOnce: (e: unknown) => void;
-		};
 
 		await write(ENV, "BEFORE=1\n");
 		await write(BACKUP, "BACKUP=1\n");
 
-		commitTempMock.mockRejectedValueOnce(new Error("commit failed"));
+		vi.mocked(commitTemp).mockRejectedValueOnce(new Error("commit failed"));
 
 		await expect(
 			updateEnvVariable(

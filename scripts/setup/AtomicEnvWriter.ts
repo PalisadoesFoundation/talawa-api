@@ -9,7 +9,7 @@ export function getErrCode(err: unknown): string | undefined {
 	return undefined;
 }
 
-function errToError(err: unknown): Error {
+export function errToError(err: unknown): Error {
 	return err instanceof Error ? err : new Error(String(err));
 }
 
