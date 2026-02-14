@@ -469,6 +469,8 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createTagFolder: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { parentFolderId?: string | null | undefined; organizationId: string; name: string; }; }, void>;
     "\n  query TagCreatedAt($id: String!) {\n    tag(input: { id: $id }) {\n      id\n      createdAt\n    }\n  }\n":
       TadaDocumentNode<{ tag: { id: string; createdAt: string | null; } | null; }, { id: string; }, void>;
+    "\n  query TagFolder($id: String!) {\n    tag(input: { id: $id }) {\n      id\n      folder {\n        id\n        name\n      }\n    }\n  }\n":
+      TadaDocumentNode<{ tag: { id: string; folder: { id: string; name: string | null; } | null; } | null; }, { id: string; }, void>;
     "\n  query TagOrganization($id: String!) {\n    tag(input: { id: $id }) {\n      id\n      organization {\n        id\n        name\n      }\n    }\n  }\n":
       TadaDocumentNode<{ tag: { id: string; organization: { id: string; name: string | null; } | null; } | null; }, { id: string; }, void>;
     "\n  query UserOAuthAccounts($input: QueryUserInput!) {\n    user(input: $input) {\n      oauthAccounts {\n        provider\n        email\n        linkedAt\n        lastUsedAt\n      }\n    }\n  }\n":
