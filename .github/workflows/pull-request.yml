@@ -219,8 +219,10 @@ jobs:
         run: docker container run talawa_api pnpm check_mock_isolation
 
   check_rootless_production_config:
-    name: Check rootless production Docker config
+    name: Check rootless production Docker config (rootless)
     runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
@@ -238,6 +240,154 @@ jobs:
           docker compose --env-file ./envFiles/.env.rootless.production \
             -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
             config -q
+      - name: Install rootless prerequisites
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y uidmap dbus-user-session slirp4netns fuse-overlayfs ca-certificates curl gnupg
+
+          if ! command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
+            sudo install -m 0755 -d /etc/apt/keyrings
+            if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              sudo chmod a+r /etc/apt/keyrings/docker.gpg
+            fi
+
+            echo \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+              $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
+              sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            sudo apt-get update
+            sudo apt-get install -y docker-ce-rootless-extras
+          fi
+
+      - name: Start rootless Docker daemon
+        run: |
+          set -euxo pipefail
+          export XDG_RUNTIME_DIR="/run/user/$UID"
+          sudo mkdir -p "$XDG_RUNTIME_DIR"
+          sudo chown "$USER":"$USER" "$XDG_RUNTIME_DIR"
+
+          export PATH="$HOME/bin:$PATH"
+
+          if [ ! -f "$HOME/.config/systemd/user/docker.service" ]; then
+            dockerd-rootless-setuptool.sh install --force
+          fi
+
+          systemctl --user daemon-reload || true
+          systemctl --user start docker || true
+
+          if ! systemctl --user --no-pager status docker >/dev/null 2>&1; then
+            nohup dockerd-rootless.sh > "$RUNNER_TEMP/dockerd-rootless.log" 2>&1 &
+          fi
+
+          chmod +x scripts/docker/resolve-docker-host.sh
+          eval "$(./scripts/docker/resolve-docker-host.sh --mode rootless --emit-export --warn-if-docker-group)"
+          echo "DOCKER_HOST=$DOCKER_HOST" >> "$GITHUB_ENV"
+          echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >> "$GITHUB_ENV"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Verify rootless daemon
+        run: |
+          set -euxo pipefail
+
+          chmod +x scripts/docker/resolve-docker-host.sh
+          eval "$(./scripts/docker/resolve-docker-host.sh --mode rootless --emit-export --warn-if-docker-group)"
+
+          TIMEOUT=60
+          until docker info >/dev/null 2>&1 || [ "$TIMEOUT" -le 0 ]; do
+            sleep 2
+            TIMEOUT=$((TIMEOUT - 2))
+          done
+
+          if ! docker info >/dev/null 2>&1; then
+            echo "Rootless Docker daemon did not start in time."
+            if [ -f "$RUNNER_TEMP/dockerd-rootless.log" ]; then
+              tail -n 200 "$RUNNER_TEMP/dockerd-rootless.log"
+            fi
+            exit 1
+          fi
+
+          docker info --format '{{json .SecurityOptions}}' | tee "$RUNNER_TEMP/rootless-security-options.json"
+          grep -qi rootless "$RUNNER_TEMP/rootless-security-options.json"
+
+      - name: Set CI-safe secrets for rootless production template
+        run: |
+          set -euo pipefail
+
+          # Align build args with the current runner user to avoid permission mismatches.
+          echo "API_UID=$(id -u)" >> "$GITHUB_ENV"
+          echo "API_GID=$(id -g)" >> "$GITHUB_ENV"
+
+          # Override sentinel placeholders so the rootless production stack can start in CI.
+          echo "API_JWT_SECRET=ci_jwt_secret_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_COOKIE_SECRET=ci_cookie_secret_0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_ADMINISTRATOR_USER_PASSWORD=ci_admin_password_0123456789abcdef" >> "$GITHUB_ENV"
+
+          # Ensure API <-> MinIO credentials match.
+          echo "API_MINIO_SECRET_KEY=ci_minio_secret_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "MINIO_ROOT_PASSWORD=ci_minio_secret_0123456789abcdef" >> "$GITHUB_ENV"
+
+          # Ensure API <-> Postgres credentials match.
+          echo "API_POSTGRES_PASSWORD=ci_postgres_password_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "POSTGRES_PASSWORD=ci_postgres_password_0123456789abcdef" >> "$GITHUB_ENV"
+
+      - name: Start rootless production stack
+        run: |
+          set -euo pipefail
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            up -d --build
+
+      - name: Wait for API to be healthy and reachable via Caddy
+        run: |
+          set -euo pipefail
+
+          api_id="$(docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps -q api)"
+          if [ -z "$api_id" ]; then
+            echo "::error::API container not found."
+            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
+            exit 1
+          fi
+
+          TIMEOUT=120
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id")" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
+            echo "Waiting for API health... ($TIMEOUT seconds remaining)"
+            sleep 2
+            TIMEOUT=$((TIMEOUT - 2))
+          done
+
+          if [ "$TIMEOUT" -le 0 ]; then
+            echo "::error::API did not become healthy in time."
+            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
+            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml logs --tail 200 api
+            exit 1
+          fi
+
+          http_port="$(docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml port caddy 80 | head -n 1 | awk -F: '{print $2}')"
+          if [ -z "$http_port" ]; then
+            echo "::error::Failed to determine published HTTP port for Caddy."
+            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
+            exit 1
+          fi
+
+          echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
+          curl -fsS --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+
+      - name: Stop rootless production stack
+        if: always()
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            down -v
+
+      - name: Print rootless daemon logs on failure
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/dockerd-rootless.log" ]; then
+            tail -n 200 "$RUNNER_TEMP/dockerd-rootless.log"
+          fi
 
   Check_unused_code:
     name: Check for unused files, exports and dependencies
@@ -484,7 +634,6 @@ jobs:
         python_checks,
         check_type_errors,
         check_mock_isolation,
-        check_rootless_production_config,
         check_drizzle_migrations,
         check_gql_tada,
         Check-AutoDocs,

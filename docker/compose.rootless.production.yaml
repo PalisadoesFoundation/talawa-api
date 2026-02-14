@@ -21,6 +21,9 @@ services:
     environment:
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
+      # API_COOKIE_SECRET is required by the API runtime schema but is not passed via the base
+      # compose.yaml environment list; include it here for the rootless-production path.
+      - API_COOKIE_SECRET=${API_COOKIE_SECRET:?error}
   caddy:
     # Replace the base ports list so we don't publish 80/443 by default in rootless mode.
     ports: !override
