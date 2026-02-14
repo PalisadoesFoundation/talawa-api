@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -eu
 
 # retry function
@@ -78,7 +78,7 @@ check_node_modules() {
   fi
   
   # Verify pnpm installation marker exists
-  if [ ! -f "node_modules/.pnpm/lock.yaml" ] && [ ! -d "node_modules/.bin" ]; then
+  if [ ! -d "node_modules/.pnpm" ] && [ ! -f "node_modules/.modules.yaml" ]; then
     return 1
   fi
   
