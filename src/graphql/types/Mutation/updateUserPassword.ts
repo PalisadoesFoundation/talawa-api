@@ -18,7 +18,7 @@ builder.mutationField("updateUserPassword", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input for updating the current user's password.",
 				required: true,
 				type: MutationUpdateUserPasswordInput,
 			}),
@@ -64,21 +64,21 @@ builder.mutationField("updateUserPassword", (t) =>
 				});
 			}
 
-			if (
-				parsedArgs.input.newPassword !== parsedArgs.input.confirmNewPassword
-			) {
+			if (!currentUser.passwordHash) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
 						issues: [
 							{
-								argumentPath: ["input", "confirmNewPassword"],
-								message: "Passwords do not match",
+								argumentPath: ["input", "oldPassword"],
+								message:
+									"Password authentication is not configured for this account",
 							},
 						],
 					},
-				});
-			}
+ 			});
+ 		}
+
 			const isValid = await verify(
 				currentUser.passwordHash,
 				parsedArgs.input.oldPassword,
@@ -92,6 +92,22 @@ builder.mutationField("updateUserPassword", (t) =>
 							{
 								argumentPath: ["input", "oldPassword"],
 								message: "Current password is incorrect",
+							},
+						],
+					},
+				});
+			}
+
+			if (
+				parsedArgs.input.newPassword !== parsedArgs.input.confirmNewPassword
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "confirmNewPassword"],
+								message: "Passwords do not match",
 							},
 						],
 					},

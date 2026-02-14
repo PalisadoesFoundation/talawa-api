@@ -6,8 +6,8 @@ import { builder } from "~/src/graphql/builder";
  */
 export const mutationUpdateUserPasswordInputSchema = z.object({
 	oldPassword: z.string().min(1).max(64),
-	newPassword: z.string().min(1).max(64),
-	confirmNewPassword: z.string().min(1).max(64),
+	newPassword: z.string().min(8).max(64),
+	confirmNewPassword: z.string().min(8).max(64),
 });
 
 export const MutationUpdateUserPasswordInput = builder
