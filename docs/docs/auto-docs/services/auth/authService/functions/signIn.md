@@ -1,0 +1,37 @@
+[API Docs](/)
+
+***
+
+# Function: signIn()
+
+> **signIn**(`db`, `log`, `input`): `Promise`\<[`SignInResult`](../type-aliases/SignInResult.md)\>
+
+Defined in: [src/services/auth/authService.ts:143](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L143)
+
+Authenticates a user by email and password.
+
+## Parameters
+
+### db
+
+[`DrizzleClient`](../../../../fastifyPlugins/drizzleClient/type-aliases/DrizzleClient.md)
+
+Drizzle client for database access.
+
+### log
+
+`FastifyBaseLogger`
+
+Logger for error reporting (e.g. persist failures).
+
+### input
+
+[`SignInInput`](../interfaces/SignInInput.md)
+
+SignInInput (email, password; optional ip, userAgent).
+
+## Returns
+
+`Promise`\<[`SignInResult`](../type-aliases/SignInResult.md)\>
+
+Promise resolving to SignInResult: either `{ user, access, refresh }` with the user row and JWT strings, or `{ error: "invalid_credentials" }` if the user is not found or the password does not match.
