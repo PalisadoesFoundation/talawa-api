@@ -31,9 +31,10 @@ describe("Correlation ID behavior", () => {
 				API_COOKIE_SECRET: "12345678901234567890123456789012",
 				API_JWT_SECRET:
 					"1234567890123456789012345678901212345678901234567890123456789012",
+				API_AUTH_JWT_SECRET: "12345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
-				FRONTEND_URL: "http://localhost:4321",
+				API_FRONTEND_URL: "http://localhost:4321",
 			},
 		});
 
@@ -45,7 +46,9 @@ describe("Correlation ID behavior", () => {
 	});
 
 	afterEach(async () => {
-		await server.close();
+		if (server) {
+			await server.close();
+		}
 		vi.restoreAllMocks();
 	});
 
@@ -158,9 +161,10 @@ describe("Correlation ID logger integration", () => {
 				API_COOKIE_SECRET: "12345678901234567890123456789012",
 				API_JWT_SECRET:
 					"1234567890123456789012345678901212345678901234567890123456789012",
+				API_AUTH_JWT_SECRET: "12345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
-				FRONTEND_URL: "http://localhost:4321",
+				API_FRONTEND_URL: "http://localhost:4321",
 			},
 		});
 
@@ -195,9 +199,10 @@ describe("Correlation ID logger integration", () => {
 				API_COOKIE_SECRET: "12345678901234567890123456789012",
 				API_JWT_SECRET:
 					"1234567890123456789012345678901212345678901234567890123456789012",
+				API_AUTH_JWT_SECRET: "12345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
-				FRONTEND_URL: "http://localhost:4321",
+				API_FRONTEND_URL: "http://localhost:4321",
 			},
 		});
 
@@ -236,9 +241,10 @@ describe("Correlation ID logger integration", () => {
 				API_COOKIE_SECRET: "12345678901234567890123456789012",
 				API_JWT_SECRET:
 					"1234567890123456789012345678901212345678901234567890123456789012",
+				API_AUTH_JWT_SECRET: "12345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
-				FRONTEND_URL: "http://localhost:4321",
+				API_FRONTEND_URL: "http://localhost:4321",
 			},
 		});
 

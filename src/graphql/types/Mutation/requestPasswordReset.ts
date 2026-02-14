@@ -121,7 +121,7 @@ builder.mutationField("requestPasswordReset", (t) =>
 				);
 
 				// Build reset link using configured frontend URL
-				const frontendUrl = ctx.envConfig.FRONTEND_URL;
+				const frontendUrl = ctx.envConfig.API_FRONTEND_URL;
 				const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
 
 				// Get community name for email branding

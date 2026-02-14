@@ -86,10 +86,10 @@ describe("emailSetup", () => {
 		);
 		expect(promptHelpers.promptList).not.toHaveBeenCalled();
 		expect(result.API_EMAIL_PROVIDER).toBe("mailpit");
-		expect(result.SMTP_HOST).toBe("mailpit");
-		expect(result.SMTP_PORT).toBe("1025");
-		expect(result.SMTP_FROM_EMAIL).toBe("test@talawa.local");
-		expect(result.SMTP_FROM_NAME).toBe("Talawa");
+		expect(result.API_SMTP_HOST).toBe("mailpit");
+		expect(result.API_SMTP_PORT).toBe("1025");
+		expect(result.API_SMTP_FROM_EMAIL).toBe("test@talawa.local");
+		expect(result.API_SMTP_FROM_NAME).toBe("Talawa");
 	});
 
 	it("should configure SES and send test email successfully", async () => {
@@ -118,11 +118,11 @@ describe("emailSetup", () => {
 
 		// Assert credentials preserved
 		expect(result.API_EMAIL_PROVIDER).toBe("ses");
-		expect(result.AWS_SES_REGION).toBe("us-east-1");
-		expect(result.AWS_ACCESS_KEY_ID).toBe("access-key");
-		expect(result.AWS_SECRET_ACCESS_KEY).toBe("secret-key");
-		expect(result.AWS_SES_FROM_EMAIL).toBe("test@example.com");
-		expect(result.AWS_SES_FROM_NAME).toBe("Test App");
+		expect(result.API_AWS_SES_REGION).toBe("us-east-1");
+		expect(result.API_AWS_ACCESS_KEY_ID).toBe("access-key");
+		expect(result.API_AWS_SECRET_ACCESS_KEY).toBe("secret-key");
+		expect(result.API_AWS_SES_FROM_EMAIL).toBe("test@example.com");
+		expect(result.API_AWS_SES_FROM_NAME).toBe("Test App");
 
 		// Assert successful mock usage
 		expect(mocks.mockSendEmail).toHaveBeenCalledWith(
@@ -155,11 +155,11 @@ describe("emailSetup", () => {
 		const result = await emailSetup(answers);
 
 		expect(result.API_EMAIL_PROVIDER).toBe("ses");
-		expect(result.AWS_SES_REGION).toBe("us-east-1");
-		expect(result.AWS_ACCESS_KEY_ID).toBe("access-key");
-		expect(result.AWS_SECRET_ACCESS_KEY).toBe("secret-key");
-		expect(result.AWS_SES_FROM_EMAIL).toBe("test@example.com");
-		expect(result.AWS_SES_FROM_NAME).toBe("Test App");
+		expect(result.API_AWS_SES_REGION).toBe("us-east-1");
+		expect(result.API_AWS_ACCESS_KEY_ID).toBe("access-key");
+		expect(result.API_AWS_SECRET_ACCESS_KEY).toBe("secret-key");
+		expect(result.API_AWS_SES_FROM_EMAIL).toBe("test@example.com");
+		expect(result.API_AWS_SES_FROM_NAME).toBe("Test App");
 
 		// Assert mock was not called
 		expect(mocks.mockSendEmail).not.toHaveBeenCalled();
@@ -213,8 +213,8 @@ describe("emailSetup", () => {
 
 		// All email config should be cleared
 		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
-		expect(result.AWS_SES_REGION).toBeUndefined();
-		expect(result.AWS_ACCESS_KEY_ID).toBeUndefined();
+		expect(result.API_AWS_SES_REGION).toBeUndefined();
+		expect(result.API_AWS_ACCESS_KEY_ID).toBeUndefined();
 	});
 
 	it("should retry setup when user chooses retry after test failure", async () => {
@@ -276,7 +276,7 @@ describe("emailSetup", () => {
 
 		// Should have final successful values
 		expect(result.API_EMAIL_PROVIDER).toBe("ses");
-		expect(result.AWS_ACCESS_KEY_ID).toBe("good-key");
+		expect(result.API_AWS_ACCESS_KEY_ID).toBe("good-key");
 
 		// Verify mocks were used
 		expect(mocks.mockSendEmail).toHaveBeenCalledTimes(2);
@@ -349,7 +349,7 @@ describe("emailSetup", () => {
 
 		// All email config should be cleared when user cancels
 		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
-		expect(result.AWS_SES_REGION).toBeUndefined();
+		expect(result.API_AWS_SES_REGION).toBeUndefined();
 		expect(mocks.mockSendEmail).toHaveBeenCalled();
 	});
 
@@ -380,8 +380,8 @@ describe("emailSetup", () => {
 
 		// Config should be kept when user explicitly continues
 		expect(result.API_EMAIL_PROVIDER).toBe("ses");
-		expect(result.AWS_SES_REGION).toBe("us-east-1");
-		expect(result.AWS_ACCESS_KEY_ID).toBe("bad-key");
+		expect(result.API_AWS_SES_REGION).toBe("us-east-1");
+		expect(result.API_AWS_ACCESS_KEY_ID).toBe("bad-key");
 		expect(mocks.mockSendEmail).toHaveBeenCalled();
 	});
 
@@ -438,7 +438,7 @@ describe("emailSetup", () => {
 		// We'll capture it and call it directly.
 		vi.mocked(promptHelpers.promptInput).mockImplementation(
 			async (name, _message, defaultValue, validator) => {
-				if (name === "AWS_SES_FROM_EMAIL" && validator) {
+				if (name === "API_AWS_SES_FROM_EMAIL" && validator) {
 					// Test invalid email
 					expect(validator("invalid-email")).toBe(
 						"Invalid email format. Please enter a valid email address.",
@@ -453,7 +453,7 @@ describe("emailSetup", () => {
 		await emailSetup(answers);
 
 		expect(promptHelpers.promptInput).toHaveBeenCalledWith(
-			"AWS_SES_FROM_EMAIL",
+			"API_AWS_SES_FROM_EMAIL",
 			expect.any(String),
 			"",
 			expect.any(Function),
@@ -470,7 +470,7 @@ describe("emailSetup", () => {
 		// Capture validators for Region and Keys
 		vi.mocked(promptHelpers.promptInput).mockImplementation(
 			async (name, _message, defaultValue, validator) => {
-				if (name === "AWS_SES_REGION" && validator) {
+				if (name === "API_AWS_SES_REGION" && validator) {
 					// Empty
 					expect(validator("")).toBe("AWS SES Region is required");
 					// Invalid format
@@ -480,7 +480,7 @@ describe("emailSetup", () => {
 					// Valid format
 					expect(validator("us-east-1")).toBe(true);
 				}
-				if (name === "AWS_ACCESS_KEY_ID" && validator) {
+				if (name === "API_AWS_ACCESS_KEY_ID" && validator) {
 					expect(validator("")).toBe(
 						"AWS Access Key ID is required for SES configuration",
 					);
@@ -493,7 +493,7 @@ describe("emailSetup", () => {
 		// Also check Secret Key validator which is in promptPassword
 		vi.mocked(promptHelpers.promptPassword).mockImplementation(
 			async (name, _message, validator) => {
-				if (name === "AWS_SECRET_ACCESS_KEY" && validator) {
+				if (name === "API_AWS_SECRET_ACCESS_KEY" && validator) {
 					expect(validator("")).toBe(
 						"AWS Secret Access Key is required for SES configuration",
 					);
@@ -507,7 +507,7 @@ describe("emailSetup", () => {
 
 		// Ensure we actually hit these checks
 		expect(promptHelpers.promptInput).toHaveBeenCalledWith(
-			"AWS_SES_REGION",
+			"API_AWS_SES_REGION",
 			expect.any(String),
 			expect.any(String),
 			expect.any(Function),
@@ -556,15 +556,15 @@ describe("emailSetup", () => {
 
 			// Assert credentials preserved
 			expect(result.API_EMAIL_PROVIDER).toBe("smtp");
-			expect(result.SMTP_HOST).toBe("smtp.gmail.com");
-			expect(result.SMTP_PORT).toBe("587");
-			expect(result.SMTP_USER).toBe("user@gmail.com");
-			expect(result.SMTP_PASSWORD).toBe("app-password");
-			expect(result.SMTP_SECURE).toBe("false");
-			expect(result.SMTP_FROM_EMAIL).toBe("from@example.com");
-			expect(result.SMTP_FROM_NAME).toBe("Test App");
-			expect(result.SMTP_NAME).toBe("client.hostname");
-			expect(result.SMTP_LOCAL_ADDRESS).toBe("192.168.1.100");
+			expect(result.API_SMTP_HOST).toBe("smtp.gmail.com");
+			expect(result.API_SMTP_PORT).toBe("587");
+			expect(result.API_SMTP_USER).toBe("user@gmail.com");
+			expect(result.API_SMTP_PASSWORD).toBe("app-password");
+			expect(result.API_SMTP_SECURE).toBe("false");
+			expect(result.API_SMTP_FROM_EMAIL).toBe("from@example.com");
+			expect(result.API_SMTP_FROM_NAME).toBe("Test App");
+			expect(result.API_SMTP_NAME).toBe("client.hostname");
+			expect(result.API_SMTP_LOCAL_ADDRESS).toBe("192.168.1.100");
 
 			// Assert successful mock usage
 			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledWith(
@@ -595,11 +595,11 @@ describe("emailSetup", () => {
 			const result = await emailSetup(answers);
 
 			expect(result.API_EMAIL_PROVIDER).toBe("smtp");
-			expect(result.SMTP_HOST).toBe("localhost");
-			expect(result.SMTP_USER).toBeUndefined();
-			expect(result.SMTP_PASSWORD).toBeUndefined();
-			expect(result.SMTP_NAME).toBeUndefined();
-			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
+			expect(result.API_SMTP_HOST).toBe("localhost");
+			expect(result.API_SMTP_USER).toBeUndefined();
+			expect(result.API_SMTP_PASSWORD).toBeUndefined();
+			expect(result.API_SMTP_NAME).toBeUndefined();
+			expect(result.API_SMTP_LOCAL_ADDRESS).toBeUndefined();
 		});
 
 		it("should treat whitespace-only SMTP optional fields as undefined", async () => {
@@ -621,8 +621,8 @@ describe("emailSetup", () => {
 
 			const result = await emailSetup(answers);
 
-			expect(result.SMTP_NAME).toBeUndefined();
-			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
+			expect(result.API_SMTP_NAME).toBeUndefined();
+			expect(result.API_SMTP_LOCAL_ADDRESS).toBeUndefined();
 		});
 
 		it("should retry SMTP setup when test fails", async () => {
@@ -676,8 +676,8 @@ describe("emailSetup", () => {
 
 			const result = await emailSetup(answers);
 
-			expect(result.SMTP_HOST).toBe("smtp.good.com");
-			expect(result.SMTP_USER).toBe("good@example.com");
+			expect(result.API_SMTP_HOST).toBe("smtp.good.com");
+			expect(result.API_SMTP_USER).toBe("good@example.com");
 			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledTimes(2);
 		});
 

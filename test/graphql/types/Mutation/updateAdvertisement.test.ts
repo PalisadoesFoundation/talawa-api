@@ -814,8 +814,12 @@ suite("Mutation field updateAdvertisement", () => {
 				},
 			);
 
+			expect(createOrgResult.errors).toBeUndefined();
 			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
+			assertToBeNonNullish(
+				orgId,
+				`createOrganization did not return an id. Errors: ${JSON.stringify(createOrgResult.errors ?? [])}. Data: ${JSON.stringify(createOrgResult.data ?? null)}`,
+			);
 
 			const originalName = `Original-${faker.string.uuid()}`;
 			const createAdResult = await mercuriusClient.mutate(
@@ -834,8 +838,12 @@ suite("Mutation field updateAdvertisement", () => {
 				},
 			);
 
+			expect(createAdResult.errors).toBeUndefined();
 			const adId = createAdResult.data?.createAdvertisement?.id;
-			assertToBeNonNullish(adId);
+			assertToBeNonNullish(
+				adId,
+				`createAdvertisement did not return an id. Errors: ${JSON.stringify(createAdResult.errors ?? [])}. Data: ${JSON.stringify(createAdResult.data ?? null)}`,
+			);
 
 			const updatedName = `Updated-${faker.string.uuid()}`;
 			const result = await mercuriusClient.mutate(

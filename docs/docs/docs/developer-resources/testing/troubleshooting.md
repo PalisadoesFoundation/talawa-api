@@ -106,3 +106,72 @@ mongosh","version":"6.12.0|2.3.8"},"platform":"Node.js v20.18.1, LE","os":{"name
 {"t":{"$date":"2025-02-22T01:14:08.040+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:36848","uuid":{"uuid":{"$uuid":"1ef5fcbd-4913-45fe-bc66-7bc3600a941a"}},"connectionId":2195,"connectionCount":24}}
 {"t":{"$date":"2025-02-22T01:14:08.043+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:36854","uuid":{"uuid":{"$uuid":"48522796-7b00-46df-a5d1-3e2a9ec7edd8"}},"connectionId":2196,"connectionCount":25}}
 ```
+
+## Docker Rootless Mode
+
+This section covers troubleshooting specific to running the devcontainer in Docker Rootless mode.
+
+### Permission Denied on Docker Socket
+
+If the container cannot access the Docker socket, verify the following:
+
+1. The socket exists at the expected path:
+   ```bash
+   ls -la ${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/docker.sock
+   ```
+2. Your user has read/write access to the socket file.
+3. The `XDG_RUNTIME_DIR` environment variable is set correctly:
+   ```bash
+   echo $XDG_RUNTIME_DIR
+   # Should output something like /run/user/1000
+   ```
+
+### Socket Not Found
+
+If Docker reports that the socket cannot be found:
+
+1. Check your `DOCKER_HOST` variable:
+   ```bash
+   echo $DOCKER_HOST
+   # Should output something like unix:///run/user/1000/docker.sock
+   ```
+2. Ensure `XDG_RUNTIME_DIR` is set on your host machine **before** starting VS Code or the devcontainer CLI:
+   ```bash
+   export UID=$(id -u)
+   export XDG_RUNTIME_DIR=/run/user/$UID
+   ```
+3. Verify the Docker daemon is running in rootless mode:
+   ```bash
+   docker info --format '{{.SecurityOptions}}'
+   # Should include "rootless" in the output
+   ```
+
+### Bind Mount Permission Issues
+
+In rootless Docker mode, the container runs as `root` internally, but this maps to your non-root host user due to user namespace remapping. If you encounter permission issues with bind-mounted directories:
+
+1. Verify that the workspace directory is owned by your host user:
+   ```bash
+   ls -la /path/to/talawa-api
+   ```
+2. Ensure no files are owned by a different user or root.
+
+### Container Fails to Start
+
+If the rootless devcontainer fails to start:
+
+1. Verify Docker rootless is installed and running:
+   ```bash
+   systemctl --user status docker
+   ```
+2. Check Docker rootless logs:
+   ```bash
+   journalctl --user -u docker
+   ```
+3. Ensure the environment variables are exported in the same shell session where you launch VS Code:
+   ```bash
+   export UID=$(id -u)
+   export XDG_RUNTIME_DIR=/run/user/$UID
+   export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
+   code .
+   ```
