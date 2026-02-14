@@ -720,6 +720,7 @@ describe("src/drizzle/tables/commentVotes", () => {
 			}
 
 			const voteId = inserted.id;
+			createdResources.voteIds.push(voteId);
 
 			const [deleted] = await server.drizzleClient
 				.delete(commentVotesTable)
