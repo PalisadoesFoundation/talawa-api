@@ -84,7 +84,7 @@ services:
       - API_RATE_LIMIT_REFILL_RATE=${API_RATE_LIMIT_REFILL_RATE:?error}
       - CI=${CI:?error}
       - NODE_ENV=${NODE_ENV:?error}
-      - FRONTEND_URL=${FRONTEND_URL:?error}
+      - API_FRONTEND_URL=${API_FRONTEND_URL:?error}
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
     # https://docs.docker.com/reference/compose-file/build/#publishing-built-images
     # https://docs.docker.com/reference/compose-file/services/#image
