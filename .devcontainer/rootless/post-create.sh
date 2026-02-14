@@ -42,4 +42,4 @@ pnpm install
 
 # Source validation checks
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-. "$SCRIPT_DIR/validate-setup.sh"
+. "$SCRIPT_DIR/../validate-setup.sh"
