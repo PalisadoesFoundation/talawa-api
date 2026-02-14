@@ -26,6 +26,13 @@ Additionally, when present, it validates `process.env.MINIO_ROOT_PASSWORD` and
 `process.env.POSTGRES_PASSWORD` (service-level credentials injected for the
 rootless-production compose path).
 
+#### API_ACCESS_TOKEN_TTL?
+
+`number` = `...`
+
+REST auth access token TTL in seconds. Used by src/services/auth/tokens and cookie maxAge.
+Default: 900 (15 minutes)
+
 #### API_ACCOUNT_LOCKOUT_DURATION_MS?
 
 `number` = `...`
@@ -57,6 +64,16 @@ Email address of the user with "administrator" role that is guaranteed to exist 
 `string` = `...`
 
 Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+
+#### API_AUTH_JWT_SECRET?
+
+`string` = `...`
+
+REST auth JWT secret for signing and verifying access/refresh tokens.
+tokens.getSecret() (src/services/auth/tokens) reads only this variable; there is no fallback to API_JWT_SECRET.
+When unset in non-production, getSecret() uses a hardcoded dev default and logs a warning; in production it throws.
+Should be at least 32 characters. Prefer setting in production when using REST auth.
+Default ensures env validation passes when unset (e.g. in tests or when only API_JWT_SECRET is used).
 
 #### API_AWS_ACCESS_KEY_ID?
 
@@ -540,6 +557,13 @@ Default: "0 * * * *" (every hour at minute 0)
 Used for providing the number of milli-seconds for setting the expiry time of refresh tokens created by talawa api.
 Refresh tokens are long-lived tokens used to obtain new access tokens without re-authentication.
 Default: 604800000 (7 days)
+
+#### API_REFRESH_TOKEN_TTL?
+
+`number` = `...`
+
+REST auth refresh token TTL in seconds. Used by src/services/auth/tokens and refreshStore.
+Default: 2592000 (30 days)
 
 #### API_SMTP_FROM_EMAIL?
 
