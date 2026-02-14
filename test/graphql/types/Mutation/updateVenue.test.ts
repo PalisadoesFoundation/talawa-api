@@ -3,7 +3,9 @@ import { eq } from "drizzle-orm";
 import { graphql } from "gql.tada";
 import type { GraphQLError } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
+import { venuesTable } from "~/src/drizzle/tables/venues";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -56,117 +58,97 @@ const Mutation_signUp = graphql(`
   }
 `);
 
-suite("Mutation field updateVenue", () => {
-	// Attachment/MinIO upload paths are covered via Fastify raw multipart injection tests below (see createVenue tests for reference).
-	// We use server.inject with multipart form-data payloads to exercise the Upload scalar and MinIO interactions.
-	const createdResources: {
-		venueIds: string[];
-	} = {
-		venueIds: [],
+async function createOrgAndVenue() {
+	const signIn = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
+	const token = signIn.data.signIn.authenticationToken;
+
+	const orgRes = await mercuriusClient.mutate(
+		graphql(`
+      mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+        createOrganization(input: $input) { id }
+      }
+    `),
+		{
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					name: `TestOrg_${faker.string.ulid()}`,
+					description: faker.lorem.sentence(),
+				},
+			},
+		},
+	);
+
+	const orgId = orgRes.data?.createOrganization?.id;
+	assertToBeNonNullish(orgId);
+
+	const venueRes = await mercuriusClient.mutate(Mutation_createVenue, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				name: `Venue_${faker.string.ulid()}`,
+				description: faker.lorem.sentence(),
+				capacity: 50,
+			},
+		},
+	});
+
+	const venueId = venueRes.data?.createVenue?.id;
+	assertToBeNonNullish(venueId);
+
+	return {
+		token,
+		orgId,
+		venueId,
+		cleanup: async () => {
+			await server.drizzleClient
+				.delete(venuesTable)
+				.where(eq(venuesTable.id, venueId));
+
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, orgId));
+		},
 	};
+}
+
+suite("Mutation field updateVenue", () => {
+	const cleanupFns: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
-		// Cleanup: Delete created venues
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
 
-		const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (adminToken) {
-			for (const venueId of createdResources.venueIds) {
-				try {
-					await mercuriusClient.mutate(
-						graphql(`
-              mutation DeleteVenue($input: MutationDeleteVenueInput!) {
-                deleteVenue(input: $input) {
-                  id
-                }
-              }
-            `),
-						{
-							headers: { authorization: `bearer ${adminToken}` },
-							variables: { input: { id: venueId } },
-						},
-					);
-				} catch (_error) {
-					// Venue might already be deleted
-					console.debug("Cleanup: Venue deletion skipped", _error);
-				}
+		for (const fn of [...cleanupFns].reverse()) {
+			try {
+				await fn();
+			} catch (err) {
+				console.error("Cleanup failed:", err);
 			}
 		}
-		createdResources.venueIds = [];
+
+		cleanupFns.length = 0;
 	});
 
 	test("rejects unauthenticated user", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+		const { venueId } = env;
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			variables: {
 				input: {
-					id: createVenueResult.data.createVenue.id,
+					id: venueId,
 					name: "New Name",
 				},
 			},
@@ -227,61 +209,10 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("rejects non-admin organization member", async () => {
-		// Sign in as admin
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.authenticationToken);
-		const adminToken = adminSignInResult.data.signIn.authenticationToken;
-
-		// Create organization as admin
-		const createOrgResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
-		const orgId = createOrgResult.data.createOrganization.id;
-
-		// Create venue as admin
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { orgId, venueId } = env;
 
 		// Create a non-admin user
 		const nonAdminUserEmail = `user_${faker.string.ulid()}@test.com`;
@@ -300,6 +231,18 @@ suite("Mutation field updateVenue", () => {
 		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
 		assertToBeNonNullish(signUpResult.data?.signUp?.user?.id);
 		const nonAdminToken = signUpResult.data.signUp.authenticationToken;
+
+		const nonAdminUserId = signUpResult.data.signUp.user.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, nonAdminUserId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// Attempt to update venue with non-admin token
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
@@ -323,54 +266,20 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("updates venue name only", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const { token } = env;
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
+						organizationId: env.orgId,
 						name: `Venue_${faker.string.ulid()}`,
 						description: "Initial description",
 						capacity: 50,
@@ -380,77 +289,52 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const testVenueId = createVenueResult.data.createVenue.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, testVenueId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
-					id: venueId,
+					id: testVenueId,
 					name: "Updated Venue Name",
 				},
 			},
 		});
 
 		expect(res.errors).toBeUndefined();
-		expect(res.data?.updateVenue?.id).toBe(venueId);
+		expect(res.data?.updateVenue?.id).toBe(testVenueId);
 		expect(res.data?.updateVenue?.name).toBe("Updated Venue Name");
 		expect(res.data?.updateVenue?.description).toBe("Initial description");
 		expect(res.data?.updateVenue?.capacity).toBe(50);
 	});
 
 	test("updates capacity only", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const { token } = env;
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
+						organizationId: env.orgId,
 						name: `Venue_${faker.string.ulid()}`,
 						description: "Initial description",
 						capacity: 50,
@@ -460,96 +344,51 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const testVenueId = createVenueResult.data.createVenue.id;
 		const originalName = createVenueResult.data.createVenue.name;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, testVenueId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
-					id: venueId,
+					id: testVenueId,
 					capacity: 200,
 				},
 			},
 		});
 
 		expect(res.errors).toBeUndefined();
-		expect(res.data?.updateVenue?.id).toBe(venueId);
+		expect(res.data?.updateVenue?.id).toBe(testVenueId);
 		expect(res.data?.updateVenue?.capacity).toBe(200);
 		expect(res.data?.updateVenue?.description).toBe("Initial description");
 		expect(res.data?.updateVenue?.name).toBe(originalName);
 	});
 
 	test("rejects when no optional fields are provided", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+		const { token, venueId } = env;
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
-					id: createVenueResult.data.createVenue.id,
+					id: venueId,
 				},
 			},
 		});
@@ -603,55 +442,21 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("rejects duplicate venue name in same organization", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const { token, orgId } = env;
 
 		// Create first venue
 		const createVenue1Result = await mercuriusClient.mutate(
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
+						organizationId: orgId,
 						name: `Venue_${faker.string.ulid()}`,
 						description: "First venue",
 						capacity: 50,
@@ -661,19 +466,28 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenue1Result.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenue1Result.data.createVenue.id);
 		const venue1Id = createVenue1Result.data.createVenue.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, venue1Id));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// Create second venue with different name
 		const createVenue2Result = await mercuriusClient.mutate(
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
+						organizationId: orgId,
 						name: `Venue_${faker.string.ulid()}`,
 						description: "Second venue",
 						capacity: 100,
@@ -683,13 +497,23 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenue2Result.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenue2Result.data.createVenue.id);
+		const venue2Id = createVenue2Result.data.createVenue.id;
 		const venue2Name = createVenue2Result.data.createVenue.name;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, venue2Id));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// Try to rename venue1 to match venue2's name
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
@@ -712,54 +536,20 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("updates venue description only", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const { token, orgId } = env;
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
+						organizationId: orgId,
 						name: `Venue_${faker.string.ulid()}`,
 						description: "Initial description",
 						capacity: 100,
@@ -769,79 +559,54 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const testVenueId = createVenueResult.data.createVenue.id;
 		const originalName = createVenueResult.data.createVenue.name;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, testVenueId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		const newDescription = "Updated description for testing";
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
-					id: venueId,
+					id: testVenueId,
 					description: newDescription,
 				},
 			},
 		});
 
 		expect(res.errors).toBeUndefined();
-		expect(res.data?.updateVenue?.id).toBe(venueId);
+		expect(res.data?.updateVenue?.id).toBe(testVenueId);
 		expect(res.data?.updateVenue?.description).toBe(newDescription);
 		expect(res.data?.updateVenue?.name).toBe(originalName);
 		expect(res.data?.updateVenue?.capacity).toBe(100);
 	});
 
 	test("updates multiple fields simultaneously", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-          createOrganization(input: $input) {
-            id
-          }
-        }
-      `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const { token, orgId } = env;
 
 		const createVenueResult = await mercuriusClient.mutate(
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
+						organizationId: orgId,
 						name: `Venue_${faker.string.ulid()}`,
 						description: "Initial description",
 						capacity: 50,
@@ -851,8 +616,17 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const testVenueId = createVenueResult.data.createVenue.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, testVenueId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		const newName = "Multi Field Updated Venue";
 		const newDescription = "Updated with multiple fields";
@@ -860,11 +634,11 @@ suite("Mutation field updateVenue", () => {
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
-					id: venueId,
+					id: testVenueId,
 					name: newName,
 					description: newDescription,
 					capacity: newCapacity,
@@ -873,52 +647,17 @@ suite("Mutation field updateVenue", () => {
 		});
 
 		expect(res.errors).toBeUndefined();
-		expect(res.data?.updateVenue?.id).toBe(venueId);
+		expect(res.data?.updateVenue?.id).toBe(testVenueId);
 		expect(res.data?.updateVenue?.name).toBe(newName);
 		expect(res.data?.updateVenue?.description).toBe(newDescription);
 		expect(res.data?.updateVenue?.capacity).toBe(newCapacity);
 	});
 
 	test("successfully updates venue keeping the same name", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
-          }
-        `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
+		const { token, orgId } = env;
 
 		const venueName = `Conference Hall ${faker.string.ulid()}`;
 		const initialCapacity = 100;
@@ -927,7 +666,7 @@ suite("Mutation field updateVenue", () => {
 			Mutation_createVenue,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
@@ -941,18 +680,27 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const testVenueId = createVenueResult.data.createVenue.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, testVenueId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// Update the venue, keeping the same name but changing capacity
 		const newCapacity = 200;
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
-					id: venueId,
+					id: testVenueId,
 					name: venueName, // Keep same name
 					capacity: newCapacity, // Change capacity
 				},
@@ -960,73 +708,17 @@ suite("Mutation field updateVenue", () => {
 		});
 
 		expect(res.errors).toBeUndefined();
-		expect(res.data?.updateVenue?.id).toBe(venueId);
+		expect(res.data?.updateVenue?.id).toBe(testVenueId);
 		expect(res.data?.updateVenue?.name).toBe(venueName);
 		expect(res.data?.updateVenue?.capacity).toBe(newCapacity);
 	});
 
 	// FileMetadataInput attachment tests
 	test("rejects attachment with invalid MIME type", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
-          }
-        `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { token, venueId } = env;
 
 		// Try to update venue with invalid MIME type attachment using FileMetadataInput
 		const updateVenueAttachments = graphql(`
@@ -1040,7 +732,7 @@ suite("Mutation field updateVenue", () => {
 
 		const result = await mercuriusClient.mutate(updateVenueAttachments, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
@@ -1074,66 +766,10 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("successfully updates venue with valid image attachment using FileMetadataInput", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
-          }
-        `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { token, venueId } = env;
 
 		// Upload file to MinIO first (simulating presigned URL flow)
 		const objectName = faker.string.ulid();
@@ -1145,6 +781,17 @@ suite("Mutation field updateVenue", () => {
 			fileContent.length,
 			{ "content-type": "image/jpeg" },
 		);
+
+		cleanupFns.push(async () => {
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName,
+				);
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// Update venue using FileMetadataInput
 		const updateVenueAttachments = graphql(`
@@ -1158,7 +805,7 @@ suite("Mutation field updateVenue", () => {
 
 		const result = await mercuriusClient.mutate(updateVenueAttachments, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
@@ -1181,72 +828,13 @@ suite("Mutation field updateVenue", () => {
 
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.updateVenue?.id);
-
-		// Cleanup: remove uploaded file
-		await server.minio.client.removeObject(server.minio.bucketName, objectName);
 	});
 
 	test("returns invalid_arguments error when file not found in MinIO during update", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
-          }
-        `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { token, venueId } = env;
 
 		// Mock statObject to throw NotFound error (file doesn't exist)
 		const statObjectSpy = vi
@@ -1266,7 +854,7 @@ suite("Mutation field updateVenue", () => {
 
 		const result = await mercuriusClient.mutate(updateVenueAttachments, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
@@ -1302,66 +890,10 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("returns unexpected error when MinIO statObject throws non-NotFound error", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-            createOrganization(input: $input) {
-              id
-            }
-          }
-        `),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 50,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { token, venueId } = env;
 
 		// Mock statObject to throw unexpected error (not NotFound)
 		const statObjectSpy = vi
@@ -1379,7 +911,7 @@ suite("Mutation field updateVenue", () => {
 
 		const result = await mercuriusClient.mutate(updateVenueAttachments, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${token}`,
 			},
 			variables: {
 				input: {
@@ -1415,69 +947,10 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("replaces existing attachments when updating with attachments", async () => {
-		// Create venue with initial attachment
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		// create organization for venue
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) {
-				  id
-				}
-			  }
-			`),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		// Create venue without attachments first
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 10,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { token, venueId } = env;
 
 		// Mock statObject to return success (file exists in MinIO)
 		const statObjectSpy = vi
@@ -1485,6 +958,28 @@ suite("Mutation field updateVenue", () => {
 			.mockResolvedValue(
 				{} as Awaited<ReturnType<typeof server.minio.client.statObject>>,
 			);
+
+		const objectName1 = `attachments/${faker.string.uuid()}`;
+		const objectName2 = `attachments/${faker.string.uuid()}`;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName1,
+				);
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName2,
+				);
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		try {
 			// Add initial attachment using FileMetadataInput
@@ -1501,14 +996,14 @@ suite("Mutation field updateVenue", () => {
 				updateVenueWithInitialAttachment,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${token}`,
 					},
 					variables: {
 						input: {
 							id: venueId,
 							attachments: [
 								{
-									objectName: `attachments/${faker.string.uuid()}`,
+									objectName: objectName1,
 									mimeType: "IMAGE_JPEG",
 									fileHash: faker.string.hexadecimal({
 										length: 64,
@@ -1542,14 +1037,14 @@ suite("Mutation field updateVenue", () => {
 				updateVenueAttachments,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${token}`,
 					},
 					variables: {
 						input: {
 							id: venueId,
 							attachments: [
 								{
-									objectName: `attachments/${faker.string.uuid()}`,
+									objectName: objectName2,
 									mimeType: "IMAGE_PNG",
 									fileHash: faker.string.hexadecimal({
 										length: 64,
@@ -1575,70 +1070,14 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("throws unauthenticated when current user no longer exists", async () => {
-		// Create organization and venue as admin
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
+		const { orgId, venueId } = env;
 
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) {
-				  id
-				}
-			  }
-			`),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 10,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
-
-		// Create a temporary user and sign in
+		// create temp user via signup
 		const tempEmail = `temp-${faker.string.ulid()}@example.com`;
+
 		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
 			variables: {
 				input: {
@@ -1649,23 +1088,31 @@ suite("Mutation field updateVenue", () => {
 				},
 			},
 		});
-
+		assertToBeNonNullish(signUpResult.data?.signUp?.user);
 		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
-		const tempSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: { emailAddress: tempEmail, password: "Passw0rd!23" },
-			},
-		});
-		assertToBeNonNullish(tempSignIn.data?.signIn?.authenticationToken);
+		const tempUserToken = signUpResult.data.signUp.authenticationToken;
 
-		// Remove user record from DB so lookup returns undefined
+		const tempUserId = signUpResult.data.signUp.user.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, tempUserId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
+
+		// delete user from DB
 		await server.drizzleClient
 			.delete(usersTable)
-			.where(eq(usersTable.emailAddress, tempEmail));
+			.where(eq(usersTable.id, signUpResult.data.signUp.user.id));
 
+		// call mutation using now-invalid user token
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${tempSignIn.data.signIn.authenticationToken}`,
+				authorization: `bearer ${tempUserToken}`,
 			},
 			variables: {
 				input: {
@@ -1677,73 +1124,15 @@ suite("Mutation field updateVenue", () => {
 
 		expect(res.data?.updateVenue).toEqual(null);
 		expect(res.errors).toBeDefined();
-		if (!res.errors) {
-			throw new Error("Errors not found");
-		}
-		expect(res.errors.length).toBeGreaterThan(0);
+		expect(res.errors?.length).toBeGreaterThan(0);
 		expect(res.errors?.[0]?.extensions.code).toBe("unauthenticated");
 	});
 
 	test("throws unexpected when update affects no rows", async () => {
-		// create org + venue
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) { id }
-			  }
-			`),
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						name: `TestOrg_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						organizationId: orgId,
-						name: `Venue_${faker.string.ulid()}`,
-						description: faker.lorem.sentence(),
-						capacity: 10,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const { token, venueId } = env;
 
 		// Use vi.spyOn for proper mock lifecycle management
 		// Mock transaction to simulate update returning no rows
@@ -1765,7 +1154,7 @@ suite("Mutation field updateVenue", () => {
 		try {
 			const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: { input: { id: venueId, description: "won't update" } },
 			});
@@ -1781,54 +1170,10 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("should succeed even when old attachment removal fails during update (lines 252-255)", async () => {
-		// Get auth token
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
+		const env = await createOrgAndVenue();
+		cleanupFns.push(env.cleanup);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-
-		// Create organization
-		const createOrganizationResult = await mercuriusClient.mutate(
-			graphql(`
-			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
-				createOrganization(input: $input) {
-				  id
-				}
-			  }
-			`),
-			{
-				headers: {
-					authorization: `bearer ${adminToken}`,
-				},
-				variables: {
-					input: {
-						name: `${faker.company.name()}-${faker.string.uuid()}`,
-						description: faker.lorem.paragraph(),
-						countryCode: "us",
-						state: faker.location.state(),
-						city: faker.location.city(),
-						postalCode: faker.location.zipCode(),
-						addressLine1: faker.location.streetAddress(),
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
-		const orgId = createOrganizationResult.data.createOrganization.id;
+		const { token, orgId } = env;
 
 		// Create venue WITHOUT attachments first
 		const createVenueResult = await mercuriusClient.mutate(
@@ -1841,7 +1186,7 @@ suite("Mutation field updateVenue", () => {
 			`),
 			{
 				headers: {
-					authorization: `bearer ${adminToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
@@ -1854,7 +1199,17 @@ suite("Mutation field updateVenue", () => {
 		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
-		const venueId = createVenueResult.data.createVenue.id;
+		const testVenueId = createVenueResult.data.createVenue.id;
+
+		cleanupFns.push(async () => {
+			try {
+				await server.drizzleClient
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, testVenueId));
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
 
 		// Put first file in MinIO
 		const objectName1 = `attachments/${faker.string.uuid()}.jpg`;
@@ -1867,16 +1222,27 @@ suite("Mutation field updateVenue", () => {
 			{ "content-type": "image/jpeg" },
 		);
 
+		cleanupFns.push(async () => {
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName1,
+				);
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
+
 		// Add attachments via update
 		const addAttachmentResult = await mercuriusClient.mutate(
 			Mutation_updateVenue,
 			{
 				headers: {
-					authorization: `bearer ${adminToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						id: venueId,
+						id: testVenueId,
 						attachments: [
 							{
 								objectName: objectName1,
@@ -1906,6 +1272,17 @@ suite("Mutation field updateVenue", () => {
 			{ "content-type": "image/png" },
 		);
 
+		cleanupFns.push(async () => {
+			try {
+				await server.minio.client.removeObject(
+					server.minio.bucketName,
+					objectName2,
+				);
+			} catch (err) {
+				console.error("Cleanup failed:", err);
+			}
+		});
+
 		// Mock removeObject to fail (simulating cleanup failure)
 		const removeObjectSpy = vi
 			.spyOn(server.minio.client, "removeObject")
@@ -1915,11 +1292,11 @@ suite("Mutation field updateVenue", () => {
 			// Update venue with new attachments - this should succeed even if cleanup fails
 			const updateResult = await mercuriusClient.mutate(Mutation_updateVenue, {
 				headers: {
-					authorization: `bearer ${adminToken}`,
+					authorization: `bearer ${token}`,
 				},
 				variables: {
 					input: {
-						id: venueId,
+						id: testVenueId,
 						attachments: [
 							{
 								objectName: objectName2,
@@ -1941,20 +1318,6 @@ suite("Mutation field updateVenue", () => {
 			expect(updateResult.data?.updateVenue).toBeDefined();
 		} finally {
 			removeObjectSpy.mockRestore();
-			// Cleanup: remove uploaded MinIO objects
-			try {
-				await server.minio.client.removeObject(
-					server.minio.bucketName,
-					objectName1,
-				);
-				await server.minio.client.removeObject(
-					server.minio.bucketName,
-					objectName2,
-				);
-			} catch {
-				// Intentional: cleanup errors are non-critical and should not fail the test
-				console.debug("MinIO cleanup failed, ignoring");
-			}
 		}
 	});
 });

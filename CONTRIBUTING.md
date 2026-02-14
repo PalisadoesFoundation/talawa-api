@@ -21,27 +21,14 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 Please read the [Palisadoes Contributing Guidelines](https://developer.palisadoes.org/docs/contributor-guide/contributing).
 
-## Development with Docker Rootless
+## Docker Devcontainer
 
-If you are using Docker in Rootless mode, this project provides a dedicated devcontainer configuration (`.devcontainer/rootless/devcontainer.json`).
+This project provides two devcontainer configurations:
 
-**Critical Requirements:**
+1. **Default mode** (`.devcontainer/default/devcontainer.json`): For standard Docker installations.
+2. **Rootless mode** (`.devcontainer/rootless/devcontainer.json`): For Docker Rootless installations.
 
-1.  **Environment Variables**: You must ensure `UID` and `XDG_RUNTIME_DIR` are set on your host.
-    *   Bash/Zsh:
-        ```bash
-        export UID=$(id -u)
-        export XDG_RUNTIME_DIR=/run/user/$UID
-        ```
-2.  **Socket Mounting**: The configuration uses `docker/compose.rootless.devcontainer.yaml` to mount your host's Docker socket from `${XDG_RUNTIME_DIR:-/run/user/${UID}}/docker.sock` to `/var/run/docker.sock` inside the container.
-3.  **User Mapping**: The container runs as `root` internally. However, due to Rootless Docker's user namespace remapping, files created by this `root` user on bind mounts will be owned by your non-root host user.
-
-**Troubleshooting:**
-
-*   **Permission Denied**: If the container cannot access the Docker socket, verify that `XDG_RUNTIME_DIR` points to the directory containing your user's `docker.sock` and that you have read/write permissions.
-*   **Socket Path**: Ensure your `DOCKER_HOST` matches the path constructed by the variables.
-
-For full installation instructions, see [INSTALLATION.md](docs/docs/docs/getting-started/installation.md).
+For full setup and usage instructions, see the [Installation Guide](docs/docs/docs/getting-started/installation.md). For troubleshooting, see the [Troubleshooting Guide](docs/docs/docs/developer-resources/testing/troubleshooting.md).
 
 ## Testing and Code Quality
 

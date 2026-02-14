@@ -9,34 +9,34 @@ import type { AccessClaims, RefreshClaims } from "~/src/services/auth";
 const FIXED_SECRET = "test-secret-for-unit-tests";
 
 describe("auth/tokens", () => {
-	const originalSecret = process.env.API_JWT_SECRET;
-	const originalAccessTtl = process.env.ACCESS_TOKEN_TTL;
-	const originalRefreshTtl = process.env.REFRESH_TOKEN_TTL;
+	const originalSecret = process.env.API_AUTH_JWT_SECRET;
+	const originalAccessTtl = process.env.API_ACCESS_TOKEN_TTL;
+	const originalRefreshTtl = process.env.API_REFRESH_TOKEN_TTL;
 	const originalNodeEnv = process.env.NODE_ENV;
 
 	beforeEach(() => {
-		process.env.API_JWT_SECRET = FIXED_SECRET;
-		delete process.env.ACCESS_TOKEN_TTL;
-		delete process.env.REFRESH_TOKEN_TTL;
+		process.env.API_AUTH_JWT_SECRET = FIXED_SECRET;
+		delete process.env.API_ACCESS_TOKEN_TTL;
+		delete process.env.API_REFRESH_TOKEN_TTL;
 		process.env.NODE_ENV = "test";
 		vi.resetModules();
 	});
 
 	afterEach(() => {
 		if (originalSecret !== undefined) {
-			process.env.API_JWT_SECRET = originalSecret;
+			process.env.API_AUTH_JWT_SECRET = originalSecret;
 		} else {
-			delete process.env.API_JWT_SECRET;
+			delete process.env.API_AUTH_JWT_SECRET;
 		}
 		if (originalAccessTtl !== undefined) {
-			process.env.ACCESS_TOKEN_TTL = originalAccessTtl;
+			process.env.API_ACCESS_TOKEN_TTL = originalAccessTtl;
 		} else {
-			delete process.env.ACCESS_TOKEN_TTL;
+			delete process.env.API_ACCESS_TOKEN_TTL;
 		}
 		if (originalRefreshTtl !== undefined) {
-			process.env.REFRESH_TOKEN_TTL = originalRefreshTtl;
+			process.env.API_REFRESH_TOKEN_TTL = originalRefreshTtl;
 		} else {
-			delete process.env.REFRESH_TOKEN_TTL;
+			delete process.env.API_REFRESH_TOKEN_TTL;
 		}
 		if (originalNodeEnv !== undefined) {
 			process.env.NODE_ENV = originalNodeEnv;
@@ -82,7 +82,7 @@ describe("auth/tokens", () => {
 		it("throws on wrong secret", async () => {
 			const { signAccessToken } = await getTokens();
 			const token = await signAccessToken({ id: "u1", email: "a@b.co" });
-			process.env.API_JWT_SECRET = "different-secret";
+			process.env.API_AUTH_JWT_SECRET = "different-secret";
 			vi.resetModules();
 			const { verifyToken } = await getTokens();
 			await expect(verifyToken(token)).rejects.toThrow(
@@ -140,10 +140,10 @@ describe("auth/tokens", () => {
 		});
 	});
 
-	describe("default secret when API_JWT_SECRET unset", () => {
+	describe("default secret when API_AUTH_JWT_SECRET unset", () => {
 		it("uses default secret and can sign and verify", async () => {
 			process.env.NODE_ENV = "test";
-			delete process.env.API_JWT_SECRET;
+			delete process.env.API_AUTH_JWT_SECRET;
 			vi.resetModules();
 			const { signAccessToken, verifyToken } = await import(
 				"~/src/services/auth"
@@ -158,22 +158,40 @@ describe("auth/tokens", () => {
 		});
 	});
 
-	describe("production guard when API_JWT_SECRET unset", () => {
-		it("throws TalawaRestError when NODE_ENV is production and API_JWT_SECRET is unset", async () => {
+	describe("production guard when API_AUTH_JWT_SECRET unset", () => {
+		it("throws TalawaRestError when NODE_ENV is production and API_AUTH_JWT_SECRET is unset", async () => {
 			process.env.NODE_ENV = "production";
-			delete process.env.API_JWT_SECRET;
+			delete process.env.API_AUTH_JWT_SECRET;
 			vi.resetModules();
 			await expect(import("~/src/services/auth")).rejects.toMatchObject({
 				name: "TalawaRestError",
-				message: "API_JWT_SECRET must be set in production",
+				message: "API_AUTH_JWT_SECRET must be set in production",
 			});
+		});
+	});
+
+	describe("getAccessTtlSec and getRefreshTtlSec", () => {
+		it("getAccessTtlSec returns access TTL in seconds", async () => {
+			const { getAccessTtlSec } = await getTokens();
+			const ttl = getAccessTtlSec();
+			expect(typeof ttl).toBe("number");
+			expect(ttl).toBeGreaterThan(0);
+			expect(Number.isInteger(ttl)).toBe(true);
+		});
+
+		it("getRefreshTtlSec returns refresh TTL in seconds", async () => {
+			const { getRefreshTtlSec } = await getTokens();
+			const ttl = getRefreshTtlSec();
+			expect(typeof ttl).toBe("number");
+			expect(ttl).toBeGreaterThan(0);
+			expect(Number.isInteger(ttl)).toBe(true);
 		});
 	});
 
 	describe("TTL env parsing", () => {
 		it("uses default TTL when env is invalid or non-positive", async () => {
-			process.env.ACCESS_TOKEN_TTL = "invalid";
-			process.env.REFRESH_TOKEN_TTL = "0";
+			process.env.API_ACCESS_TOKEN_TTL = "invalid";
+			process.env.API_REFRESH_TOKEN_TTL = "0";
 			vi.resetModules();
 			const { signAccessToken, signRefreshToken, verifyToken } = await import(
 				"~/src/services/auth"
@@ -199,8 +217,8 @@ describe("auth/tokens", () => {
 		});
 
 		it("uses custom TTL when env is valid numeric string", async () => {
-			process.env.ACCESS_TOKEN_TTL = "60";
-			process.env.REFRESH_TOKEN_TTL = "3600";
+			process.env.API_ACCESS_TOKEN_TTL = "60";
+			process.env.API_REFRESH_TOKEN_TTL = "3600";
 			vi.resetModules();
 			const { signAccessToken, signRefreshToken, verifyToken } = await import(
 				"~/src/services/auth"

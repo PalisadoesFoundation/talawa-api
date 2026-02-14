@@ -29,25 +29,43 @@ function parsePositiveSeconds(
 }
 
 const ACCESS_TTL_SEC = parsePositiveSeconds(
-	process.env.ACCESS_TOKEN_TTL,
+	process.env.API_ACCESS_TOKEN_TTL,
 	DEFAULT_ACCESS_TTL_SEC,
 );
 const REFRESH_TTL_SEC = parsePositiveSeconds(
-	process.env.REFRESH_TOKEN_TTL,
+	process.env.API_REFRESH_TOKEN_TTL,
 	DEFAULT_REFRESH_TTL_SEC,
 );
 
+/**
+ * Returns the access token TTL in seconds.
+ *
+ * @returns TTL in seconds (number) used for access token expiry and cookie maxAge in authService.
+ */
+export function getAccessTtlSec(): number {
+	return ACCESS_TTL_SEC;
+}
+
+/**
+ * Returns the refresh token TTL in seconds.
+ *
+ * @returns TTL in seconds (number) used for refresh token expiry, persistRefreshToken, and cookie maxAge in authService.
+ */
+export function getRefreshTtlSec(): number {
+	return REFRESH_TTL_SEC;
+}
+
 function getSecret(): Uint8Array {
-	const raw = process.env.API_JWT_SECRET;
+	const raw = process.env.API_AUTH_JWT_SECRET;
 	if (!raw) {
 		if (process.env.NODE_ENV === "production") {
 			throw new TalawaRestError({
 				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				message: "API_JWT_SECRET must be set in production",
+				message: "API_AUTH_JWT_SECRET must be set in production",
 			});
 		}
 		rootLogger.warn(
-			"API_JWT_SECRET is unset; using dev default. Set API_JWT_SECRET in production.",
+			"API_AUTH_JWT_SECRET is unset; using dev default. Set API_AUTH_JWT_SECRET in production.",
 		);
 		return encoder.encode("dev-secret-change-me");
 	}

@@ -116,7 +116,7 @@ export function createMockGraphQLContext(
 			API_JWT_EXPIRES_IN: 900000,
 			API_COOKIE_DOMAIN: undefined,
 			API_IS_SECURE_COOKIES: false,
-			FRONTEND_URL: "http://localhost:3000",
+			API_FRONTEND_URL: "http://localhost:3000",
 		},
 		jwt: {
 			sign: mockJwtSign,

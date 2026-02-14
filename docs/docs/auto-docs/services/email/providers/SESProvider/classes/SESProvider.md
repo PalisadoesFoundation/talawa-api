@@ -4,7 +4,7 @@
 
 # Class: SESProvider
 
-Defined in: [src/services/email/providers/SESProvider.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L32)
+Defined in: [src/services/email/providers/SESProvider.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L33)
 
 AWS SES implementation of IEmailProvider.
 
@@ -21,7 +21,7 @@ It lazily initializes the SESClient and Command constructors on first use.
 
 > **new SESProvider**(`config`): `SESProvider`
 
-Defined in: [src/services/email/providers/SESProvider.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L43)
+Defined in: [src/services/email/providers/SESProvider.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L44)
 
 Creates an instance of SESProvider.
 
@@ -43,9 +43,12 @@ The SES configuration object containing region and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:145](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L145)
+Defined in: [src/services/email/providers/SESProvider.ts:167](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L167)
 
-Send multiple emails
+Sends multiple emails in concurrent batches to respect rate limits.
+
+Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+between batches to prevent overwhelming the email provider or hitting rate limits.
 
 #### Parameters
 
@@ -53,9 +56,13 @@ Send multiple emails
 
 [`EmailJob`](../../../types/interfaces/EmailJob.md)[]
 
+An array of email jobs to be processed.
+
 #### Returns
 
 `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
+
+A promise that resolves to an array of results (success or failure) for each email job.
 
 #### Implementation of
 
@@ -67,7 +74,7 @@ Send multiple emails
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L103)
+Defined in: [src/services/email/providers/SESProvider.ts:107](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L107)
 
 Send a single email using AWS SES
 

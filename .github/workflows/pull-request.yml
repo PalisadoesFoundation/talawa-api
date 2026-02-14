@@ -195,8 +195,8 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check drizzle migrations
         run: |
-          API_JWT_SECRET=$(openssl rand -hex 32)
-          docker container run --env-file ./envFiles/.env.ci -e "API_JWT_SECRET=$API_JWT_SECRET" talawa_api pnpm check_drizzle_migrations
+          JWT_SECRET=$(openssl rand -hex 32)
+          docker container run --env-file ./envFiles/.env.ci -e "API_JWT_SECRET=$JWT_SECRET" -e "API_AUTH_JWT_SECRET=$JWT_SECRET" talawa_api pnpm check_drizzle_migrations
 
   check_type_errors:
     name: Check type errors
@@ -494,7 +494,9 @@ jobs:
         run: |
           cp ./envFiles/.env.ci ./.env
           echo "NODE_ENV=production" >> .env
-          echo "API_JWT_SECRET=$(openssl rand -hex 32)" >> .env
+          JWT_SECRET=$(openssl rand -hex 32)
+          echo "API_JWT_SECRET=$JWT_SECRET" >> .env
+          echo "API_AUTH_JWT_SECRET=$JWT_SECRET" >> .env
       - name: Build talawa api compose testing environment
         run: docker compose build
       - name: Start test services (postgres-test, minio-test, redis-test, mailpit)
@@ -830,7 +832,7 @@ jobs:
         run: |
           npm install -g @devcontainers/cli
           cp envFiles/.env.devcontainer .env
-          devcontainer up --workspace-folder .
+          devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
       - name: Wait for Postgres in devcontainer before migrations
         run: |
@@ -916,7 +918,7 @@ jobs:
       - name: Copy devcontainer environment file
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
-        run: devcontainer up --workspace-folder .
+        run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail

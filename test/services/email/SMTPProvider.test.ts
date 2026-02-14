@@ -1,4 +1,12 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import { SMTPProvider } from "~/src/services/email/providers/SMTPProvider";
 import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
@@ -70,7 +78,11 @@ describe("SMTPProvider", () => {
 		});
 	});
 
-	it("should throw error if SMTP_HOST is empty string", async () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("should throw error if API_SMTP_HOST is empty string", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			host: "" as NonEmptyString,
@@ -87,24 +99,19 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_HOST must be a non-empty string",
+				error: "API_SMTP_HOST must be a non-empty string",
 			}),
 		);
 	});
 
-	it("should use TalawaRestError for SMTP_HOST validation errors", async () => {
+	it("should use TalawaRestError for API_SMTP_HOST validation errors", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			host: "" as NonEmptyString,
 		});
 
 		const nodemailer = await import("nodemailer");
-		const mockCreateTransport = vi.fn();
-		(
-			nodemailer.default as unknown as {
-				createTransport: typeof mockCreateTransport;
-			}
-		).createTransport = mockCreateTransport;
+		(nodemailer.default.createTransport as Mock).mockImplementation(vi.fn());
 
 		const result = await provider.sendEmail({
 			id: "1",
@@ -115,8 +122,8 @@ describe("SMTPProvider", () => {
 		});
 
 		expect(result.success).toBe(false);
-		expect(result.error).toBe("SMTP_HOST must be a non-empty string");
-		expect(mockCreateTransport).not.toHaveBeenCalled();
+		expect(result.error).toBe("API_SMTP_HOST must be a non-empty string");
+		expect(nodemailer.default.createTransport).not.toHaveBeenCalled();
 	});
 
 	it("should return a copy of the config via getConfig()", () => {
@@ -137,7 +144,7 @@ describe("SMTPProvider", () => {
 		expect(provider.getConfig().host).toBe("smtp.example.com");
 	});
 
-	it("should throw error if SMTP_PORT is missing", async () => {
+	it("should throw error if API_SMTP_PORT is missing", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: undefined as unknown as number,
@@ -154,12 +161,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be provided",
+				error: "API_SMTP_PORT must be provided",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is 0 (below range)", async () => {
+	it("should throw error if API_SMTP_PORT is 0 (below range)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 0,
@@ -176,12 +183,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be provided",
+				error: "API_SMTP_PORT must be provided",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is 65536 (above range)", async () => {
+	it("should throw error if API_SMTP_PORT is 65536 (above range)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 65536,
@@ -198,12 +205,12 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "API_SMTP_PORT must be an integer between 1 and 65535",
 			}),
 		);
 	});
 
-	it("should throw error if SMTP_PORT is non-integer (587.5)", async () => {
+	it("should throw error if API_SMTP_PORT is non-integer (587.5)", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,
 			port: 587.5,
@@ -220,7 +227,7 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "API_SMTP_PORT must be an integer between 1 and 65535",
 			}),
 		);
 	});
@@ -383,10 +390,11 @@ describe("SMTPProvider", () => {
 
 		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
 			{
-				error: expect.any(Error),
+				error: "Connection timeout",
+				stack: expect.any(String),
 				jobId: "test-job-123",
 			},
-			"Failed to send email",
+			"Failed to send email via SMTP",
 		);
 	});
 
@@ -410,9 +418,10 @@ describe("SMTPProvider", () => {
 		expect(mockLoggerErrorSpy).toHaveBeenCalledWith(
 			{
 				error: "String error",
+				stack: undefined,
 				jobId: "test-job-456",
 			},
-			"Failed to send email",
+			"Failed to send email via SMTP",
 		);
 	});
 
@@ -455,16 +464,15 @@ describe("SMTPProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only user is provided (without password)", async () => {
@@ -630,32 +638,77 @@ describe("SMTPProvider", () => {
 		);
 	});
 
-	it("should enforce rate limiting delay between bulk emails (>=50ms)", async () => {
+	it("should handle unhandled promise rejections (system crashes) in batch processing", async () => {
+		const sendEmailSpy = vi
+			.spyOn(smtpProvider, "sendEmail")
+			.mockResolvedValueOnce({ id: "1", success: true, messageId: "ok" })
+			.mockRejectedValueOnce(new Error("Network Down"));
+
+		const jobs = [
+			{
+				id: "1",
+				email: "good@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u1",
+			},
+			{
+				id: "2",
+				email: "crash@test.com",
+				subject: "S",
+				htmlBody: "B",
+				userId: "u2",
+			},
+		];
+
+		const results = await smtpProvider.sendBulkEmails(jobs);
+
+		expect(results).toHaveLength(2);
+		expect(results[0]?.success).toBe(true);
+		expect(results[1]?.success).toBe(false);
+		expect(results[1]?.error).toBe("Network Down");
+
+		expect(sendEmailSpy).toHaveBeenCalledTimes(2);
+
+		sendEmailSpy.mockRestore();
+	});
+
+	it("should process emails concurrently in batches and enforce delay between batches", async () => {
 		const nodemailer = await import("nodemailer");
-		const sendTimes: number[] = [];
-		const mockSendMail = vi.fn().mockImplementation(() => {
-			sendTimes.push(Date.now());
-			return Promise.resolve({ messageId: "msg-delay" });
-		});
+		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-batch" });
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
 
-		const jobs = [
-			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
-			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
-			{ id: "3", email: "e3@x.com", subject: "s", htmlBody: "b", userId: "u3" },
-		];
+		// Spy on setTimeout to ensure the 1000ms delay happens, but execute it
+		// immediately so it doesn't artificially slow down our test suite!
+		const setTimeoutSpy = vi
+			.spyOn(global, "setTimeout")
+			.mockImplementation((callback: () => void, _ms?: number) => {
+				if (typeof callback === "function") {
+					callback();
+				}
+				return {} as unknown as NodeJS.Timeout;
+			});
+
+		// Generate 15 jobs (BATCH_SIZE = 14 → 2 batches)
+		const jobs = Array.from({ length: 15 }, (_, i) => ({
+			id: String(i),
+			email: `test${i}@example.com`,
+			subject: "Batch Test",
+			htmlBody: "Batch Body",
+			userId: "u1",
+		})) as EmailJob[];
 
 		await smtpProvider.sendBulkEmails(jobs);
 
-		expect(mockSendMail).toHaveBeenCalledTimes(3);
+		expect(mockSendMail).toHaveBeenCalledTimes(15);
 
-		// Since mockSendMail was called 3 times, sendTimes has 3 entries
-		const firstDelay = (sendTimes[1] as number) - (sendTimes[0] as number);
-		const secondDelay = (sendTimes[2] as number) - (sendTimes[1] as number);
-		expect(firstDelay).toBeGreaterThanOrEqual(50);
-		expect(secondDelay).toBeGreaterThanOrEqual(50);
+		// Ensure delay happened exactly once
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+
+		setTimeoutSpy.mockRestore();
 	});
 
 	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
@@ -748,7 +801,7 @@ describe("SMTPProvider", () => {
 			expect.objectContaining({
 				success: false,
 				error:
-					"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+					"API_SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
 			}),
 		);
 

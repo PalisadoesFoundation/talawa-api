@@ -2,6 +2,9 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+import { rootLogger } from "~/src/utilities/logging/logger";
 import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
@@ -12,11 +15,16 @@ import {
 } from "./eventGeneration/eventGenerationPipeline";
 import { runMetricsAggregationWorker } from "./metrics/metricsAggregationWorker";
 
+const DEFAULT_HOURLY_CRON = "0 * * * *";
+const DEFAULT_DAILY_2AM_CRON = "0 2 * * *";
+
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
 let metricsTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+let materializationSchedule = DEFAULT_HOURLY_CRON;
+let cleanupSchedule = DEFAULT_DAILY_2AM_CRON;
 // Store metrics configuration at startup for status reporting
 let metricsEnabled: boolean | undefined;
 let metricsSchedule: string | undefined;
@@ -40,10 +48,16 @@ export async function startBackgroundWorkers(
 
 	try {
 		logger.info("Starting background worker service...");
+		materializationSchedule =
+			process.env.API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE ||
+			DEFAULT_HOURLY_CRON;
+		cleanupSchedule =
+			process.env.API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ||
+			DEFAULT_DAILY_2AM_CRON;
 
 		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+			materializationSchedule,
 			() => runMaterializationWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -53,7 +67,7 @@ export async function startBackgroundWorkers(
 
 		// Schedule cleanup worker - runs daily at 2 AM UTC
 		cleanupTask = cron.schedule(
-			process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			cleanupSchedule,
 			() => runCleanupWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -119,9 +133,8 @@ export async function startBackgroundWorkers(
 		isRunning = true;
 		logger.info(
 			{
-				materializationSchedule:
-					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+				materializationSchedule,
+				cleanupSchedule,
 				metricsEnabled: metricsEnabled && !!getMetricsSnapshots,
 			},
 			"Background worker service started successfully",
@@ -295,7 +308,10 @@ export async function triggerMaterializationWorker(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		throw new Error("Background worker service is not running");
+		throw new TalawaRestError({
+			code: ErrorCode.CONFLICT,
+			message: "Background worker service is not running",
+		});
 	}
 
 	logger.info("Manually triggering materialization worker");
@@ -310,7 +326,10 @@ export async function triggerCleanupWorker(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		throw new Error("Background worker service is not running");
+		throw new TalawaRestError({
+			code: ErrorCode.CONFLICT,
+			message: "Background worker service is not running",
+		});
 	}
 
 	logger.info("Manually triggering cleanup worker");
@@ -350,9 +369,8 @@ export function getBackgroundWorkerStatus(): {
 
 	return {
 		isRunning,
-		materializationSchedule:
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+		materializationSchedule,
+		cleanupSchedule,
 		// Include metrics fields when enabled (default or explicit)
 		...(currentMetricsEnabled && {
 			metricsSchedule: currentMetricsSchedule,
@@ -392,6 +410,13 @@ export async function healthCheck(
 			details: status,
 		};
 	} catch (error) {
+		rootLogger.error(
+			{
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Background worker health check failed",
+		);
 		return {
 			status: "unhealthy",
 			details: {
