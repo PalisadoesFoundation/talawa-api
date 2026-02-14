@@ -636,6 +636,12 @@ suite("Mutation field updateUser", () => {
 				});
 				expect(result.data).toBeNull();
 				expect(result.errors).toBeDefined();
+
+				// cleanup
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
 			});
 		},
 	);
