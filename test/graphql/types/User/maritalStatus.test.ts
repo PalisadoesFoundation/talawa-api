@@ -1,10 +1,10 @@
 import { faker } from "@faker-js/faker";
-import { beforeAll, expect, suite, test } from "vitest";
+import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
+} from "../../../../src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -18,6 +18,7 @@ import {
 suite("User field maritalStatus", () => {
 	let adminAuthToken: string;
 	let adminUserId: string;
+	const createdUserIds: string[] = [];
 
 	beforeAll(async () => {
 		const administratorUserSignInResult = await mercuriusClient.query(
@@ -40,6 +41,22 @@ suite("User field maritalStatus", () => {
 		adminAuthToken =
 			administratorUserSignInResult.data.signIn.authenticationToken;
 		adminUserId = administratorUserSignInResult.data.signIn.user.id;
+	});
+
+	afterEach(async () => {
+		for (const userId of createdUserIds) {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: userId,
+					},
+				},
+			});
+		}
+		createdUserIds.length = 0;
 	});
 
 	suite(
@@ -162,6 +179,8 @@ suite("User field maritalStatus", () => {
 				assertToBeNonNullish(
 					createUserResult.data.createUser?.authenticationToken,
 				);
+				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
 
 				const userMaritalStatusResult = await mercuriusClient.query(
 					Query_user_maritalStatus,
@@ -253,6 +272,7 @@ suite("User field maritalStatus", () => {
 					createUserResult.data.createUser?.authenticationToken,
 				);
 				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
 
 				const userMaritalStatusResult = await mercuriusClient.query(
 					Query_user_maritalStatus,
@@ -270,18 +290,6 @@ suite("User field maritalStatus", () => {
 
 				expect(userMaritalStatusResult.errors).toBeUndefined();
 				expect(userMaritalStatusResult.data.user?.maritalStatus).toBeNull();
-
-				// Cleanup: delete the created user
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							id: createUserResult.data.createUser.user.id,
-						},
-					},
-				});
 			});
 
 			test(`"data.user.maritalStatus" returns the correct maritalStatus value when admin accesses another user's data.`, async () => {
@@ -305,6 +313,7 @@ suite("User field maritalStatus", () => {
 				);
 
 				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
 
 				const userMaritalStatusResult = await mercuriusClient.query(
 					Query_user_maritalStatus,
@@ -324,18 +333,6 @@ suite("User field maritalStatus", () => {
 				expect(userMaritalStatusResult.data.user?.maritalStatus).toEqual(
 					"married",
 				);
-
-				// Cleanup: delete the created user
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							id: createUserResult.data.createUser.user.id,
-						},
-					},
-				});
 			});
 
 			test(`"data.user.maritalStatus" returns correct value for single maritalStatus.`, async () => {
@@ -359,6 +356,7 @@ suite("User field maritalStatus", () => {
 				);
 
 				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
 
 				const userMaritalStatusResult = await mercuriusClient.query(
 					Query_user_maritalStatus,
@@ -378,18 +376,6 @@ suite("User field maritalStatus", () => {
 				expect(userMaritalStatusResult.data.user?.maritalStatus).toEqual(
 					"single",
 				);
-
-				// Cleanup: delete the created user
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							id: createUserResult.data.createUser.user.id,
-						},
-					},
-				});
 			});
 
 			test(`"data.user.maritalStatus" returns correct value for divorced maritalStatus.`, async () => {
@@ -413,6 +399,7 @@ suite("User field maritalStatus", () => {
 				);
 
 				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
 
 				const userMaritalStatusResult = await mercuriusClient.query(
 					Query_user_maritalStatus,
@@ -432,18 +419,135 @@ suite("User field maritalStatus", () => {
 				expect(userMaritalStatusResult.data.user?.maritalStatus).toEqual(
 					"divorced",
 				);
+			});
 
-				// Cleanup: delete the created user
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							id: createUserResult.data.createUser.user.id,
+			test(`"data.user.maritalStatus" returns correct value for engaged maritalStatus.`, async () => {
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+								maritalStatus: "engaged",
+							},
 						},
 					},
-				});
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
+
+				const userMaritalStatusResult = await mercuriusClient.query(
+					Query_user_maritalStatus,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								id: createUserResult.data.createUser.user.id,
+							},
+						},
+					},
+				);
+
+				expect(userMaritalStatusResult.errors).toBeUndefined();
+				expect(userMaritalStatusResult.data.user?.maritalStatus).toEqual(
+					"engaged",
+				);
+			});
+
+			test(`"data.user.maritalStatus" returns correct value for seperated maritalStatus.`, async () => {
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+								maritalStatus: "seperated",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
+
+				const userMaritalStatusResult = await mercuriusClient.query(
+					Query_user_maritalStatus,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								id: createUserResult.data.createUser.user.id,
+							},
+						},
+					},
+				);
+
+				expect(userMaritalStatusResult.errors).toBeUndefined();
+				expect(userMaritalStatusResult.data.user?.maritalStatus).toEqual(
+					"seperated",
+				);
+			});
+
+			test(`"data.user.maritalStatus" returns correct value for widowed maritalStatus.`, async () => {
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+								maritalStatus: "widowed",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				createdUserIds.push(createUserResult.data.createUser.user.id);
+
+				const userMaritalStatusResult = await mercuriusClient.query(
+					Query_user_maritalStatus,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								id: createUserResult.data.createUser.user.id,
+							},
+						},
+					},
+				);
+
+				expect(userMaritalStatusResult.errors).toBeUndefined();
+				expect(userMaritalStatusResult.data.user?.maritalStatus).toEqual(
+					"widowed",
+				);
 			});
 		},
 	);
