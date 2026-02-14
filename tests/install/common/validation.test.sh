@@ -654,10 +654,11 @@ test_start "validate_internet_connectivity fails when curl fails"
 
 test_start "validate_internet_connectivity succeeds when curl missing but ping succeeds"
 (
-    # Hide curl so script uses ping path; ping is mocked to succeed
+    # Hide curl so script uses ping path; hide timeout so script calls ping directly
+    # (otherwise "timeout 5s ping ..." runs the real ping binary, not our mock)
     command() {
-        if [ "$1" = "-v" ] && [ "$2" = "curl" ]; then
-            return 1
+        if [ "$1" = "-v" ]; then
+            case "$2" in curl|timeout) return 1 ;; esac
         fi
         builtin command "$@"
     }
