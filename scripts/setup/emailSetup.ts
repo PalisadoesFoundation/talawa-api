@@ -23,20 +23,20 @@ import { type SetupAnswers, validateEmail } from "./setup";
  */
 function clearEmailCredentials(answers: SetupAnswers): void {
 	delete answers.API_EMAIL_PROVIDER;
-	delete answers.AWS_SES_REGION;
-	delete answers.AWS_ACCESS_KEY_ID;
-	delete answers.AWS_SECRET_ACCESS_KEY;
-	delete answers.AWS_SES_FROM_EMAIL;
-	delete answers.AWS_SES_FROM_NAME;
-	delete answers.SMTP_HOST;
-	delete answers.SMTP_PORT;
-	delete answers.SMTP_USER;
-	delete answers.SMTP_PASSWORD;
-	delete answers.SMTP_SECURE;
-	delete answers.SMTP_FROM_EMAIL;
-	delete answers.SMTP_FROM_NAME;
-	delete answers.SMTP_NAME;
-	delete answers.SMTP_LOCAL_ADDRESS;
+	delete answers.API_AWS_SES_REGION;
+	delete answers.API_AWS_ACCESS_KEY_ID;
+	delete answers.API_AWS_SECRET_ACCESS_KEY;
+	delete answers.API_AWS_SES_FROM_EMAIL;
+	delete answers.API_AWS_SES_FROM_NAME;
+	delete answers.API_SMTP_HOST;
+	delete answers.API_SMTP_PORT;
+	delete answers.API_SMTP_USER;
+	delete answers.API_SMTP_PASSWORD;
+	delete answers.API_SMTP_SECURE;
+	delete answers.API_SMTP_FROM_EMAIL;
+	delete answers.API_SMTP_FROM_NAME;
+	delete answers.API_SMTP_NAME;
+	delete answers.API_SMTP_LOCAL_ADDRESS;
 }
 
 export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -50,22 +50,22 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		if (!useManualEmail) {
 			// Auto-configure Mailpit with defaults for local development/testing
 			answers.API_EMAIL_PROVIDER = "mailpit";
-			answers.SMTP_HOST = "mailpit";
-			answers.SMTP_PORT = "1025";
-			answers.SMTP_FROM_EMAIL = "test@talawa.local";
-			answers.SMTP_FROM_NAME = "Talawa";
+			answers.API_SMTP_HOST = "mailpit";
+			answers.API_SMTP_PORT = "1025";
+			answers.API_SMTP_FROM_EMAIL = "test@talawa.local";
+			answers.API_SMTP_FROM_NAME = "Talawa";
 
 			// Clean up any previous email provider settings
-			delete answers.AWS_SES_REGION;
-			delete answers.AWS_ACCESS_KEY_ID;
-			delete answers.AWS_SECRET_ACCESS_KEY;
-			delete answers.AWS_SES_FROM_EMAIL;
-			delete answers.AWS_SES_FROM_NAME;
-			delete answers.SMTP_USER;
-			delete answers.SMTP_PASSWORD;
-			delete answers.SMTP_SECURE;
-			delete answers.SMTP_NAME;
-			delete answers.SMTP_LOCAL_ADDRESS;
+			delete answers.API_AWS_SES_REGION;
+			delete answers.API_AWS_ACCESS_KEY_ID;
+			delete answers.API_AWS_SECRET_ACCESS_KEY;
+			delete answers.API_AWS_SES_FROM_EMAIL;
+			delete answers.API_AWS_SES_FROM_NAME;
+			delete answers.API_SMTP_USER;
+			delete answers.API_SMTP_PASSWORD;
+			delete answers.API_SMTP_SECURE;
+			delete answers.API_SMTP_NAME;
+			delete answers.API_SMTP_LOCAL_ADDRESS;
 
 			console.log(
 				"SUCCESS: Mailpit configured automatically for local email testing.",
@@ -87,17 +87,17 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 
 			if (answers.API_EMAIL_PROVIDER === "ses") {
 				// Avoid persisting unrelated provider settings
-				delete answers.SMTP_HOST;
-				delete answers.SMTP_PORT;
-				delete answers.SMTP_USER;
-				delete answers.SMTP_PASSWORD;
-				delete answers.SMTP_SECURE;
-				delete answers.SMTP_FROM_EMAIL;
-				delete answers.SMTP_FROM_NAME;
-				delete answers.SMTP_NAME;
-				delete answers.SMTP_LOCAL_ADDRESS;
-				answers.AWS_SES_REGION = await promptInput(
-					"AWS_SES_REGION",
+				delete answers.API_SMTP_HOST;
+				delete answers.API_SMTP_PORT;
+				delete answers.API_SMTP_USER;
+				delete answers.API_SMTP_PASSWORD;
+				delete answers.API_SMTP_SECURE;
+				delete answers.API_SMTP_FROM_EMAIL;
+				delete answers.API_SMTP_FROM_NAME;
+				delete answers.API_SMTP_NAME;
+				delete answers.API_SMTP_LOCAL_ADDRESS;
+				answers.API_AWS_SES_REGION = await promptInput(
+					"API_AWS_SES_REGION",
 					"AWS SES Region:",
 					"ap-south-1",
 					(value) => {
@@ -112,8 +112,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					},
 				);
 
-				answers.AWS_ACCESS_KEY_ID = await promptInput(
-					"AWS_ACCESS_KEY_ID",
+				answers.API_AWS_ACCESS_KEY_ID = await promptInput(
+					"API_AWS_ACCESS_KEY_ID",
 					"AWS Access Key ID:",
 					"",
 					(value) => {
@@ -124,8 +124,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					},
 				);
 
-				answers.AWS_SECRET_ACCESS_KEY = await promptPassword(
-					"AWS_SECRET_ACCESS_KEY",
+				answers.API_AWS_SECRET_ACCESS_KEY = await promptPassword(
+					"API_AWS_SECRET_ACCESS_KEY",
 					"AWS Secret Access Key:",
 					(value) => {
 						if (!value || value.trim().length === 0) {
@@ -135,27 +135,27 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					},
 				);
 
-				answers.AWS_SES_FROM_EMAIL = await promptInput(
-					"AWS_SES_FROM_EMAIL",
+				answers.API_AWS_SES_FROM_EMAIL = await promptInput(
+					"API_AWS_SES_FROM_EMAIL",
 					"From Email Address (must be verified in SES):",
 					"",
 					validateEmail,
 				);
 
-				answers.AWS_SES_FROM_NAME = await promptInput(
-					"AWS_SES_FROM_NAME",
+				answers.API_AWS_SES_FROM_NAME = await promptInput(
+					"API_AWS_SES_FROM_NAME",
 					"From Display Name:",
 					"Talawa",
 				);
 			} else if (answers.API_EMAIL_PROVIDER === "smtp") {
 				// Avoid persisting unrelated provider settings
-				delete answers.AWS_SES_REGION;
-				delete answers.AWS_ACCESS_KEY_ID;
-				delete answers.AWS_SECRET_ACCESS_KEY;
-				delete answers.AWS_SES_FROM_EMAIL;
-				delete answers.AWS_SES_FROM_NAME;
-				answers.SMTP_HOST = await promptInput(
-					"SMTP_HOST",
+				delete answers.API_AWS_SES_REGION;
+				delete answers.API_AWS_ACCESS_KEY_ID;
+				delete answers.API_AWS_SECRET_ACCESS_KEY;
+				delete answers.API_AWS_SES_FROM_EMAIL;
+				delete answers.API_AWS_SES_FROM_NAME;
+				answers.API_SMTP_HOST = await promptInput(
+					"API_SMTP_HOST",
 					"SMTP Host:",
 					"",
 					(value) => {
@@ -167,7 +167,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				);
 
 				const portInput = await promptInput(
-					"SMTP_PORT",
+					"API_SMTP_PORT",
 					"SMTP Port (587 for TLS, 465 for SSL):",
 					"587",
 					(value) => {
@@ -185,7 +185,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						return true;
 					},
 				);
-				answers.SMTP_PORT = portInput;
+				answers.API_SMTP_PORT = portInput;
 
 				const useAuth = await promptConfirm(
 					"useSMTPAuth",
@@ -194,8 +194,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				);
 
 				if (useAuth) {
-					answers.SMTP_USER = await promptInput(
-						"SMTP_USER",
+					answers.API_SMTP_USER = await promptInput(
+						"API_SMTP_USER",
 						"SMTP Username:",
 						"",
 						(value) => {
@@ -206,8 +206,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						},
 					);
 
-					answers.SMTP_PASSWORD = await promptPassword(
-						"SMTP_PASSWORD",
+					answers.API_SMTP_PASSWORD = await promptPassword(
+						"API_SMTP_PASSWORD",
 						"SMTP Password:",
 						(value) => {
 							if (!value || value.trim().length === 0) {
@@ -218,53 +218,54 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					);
 				} else {
 					// Clear auth fields when authentication is not required
-					delete answers.SMTP_USER;
-					delete answers.SMTP_PASSWORD;
+					delete answers.API_SMTP_USER;
+					delete answers.API_SMTP_PASSWORD;
 				}
 
 				// Determine secure based on port
-				const defaultSecure = parseInt(answers.SMTP_PORT || "0", 10) === 465;
-				answers.SMTP_SECURE = (await promptConfirm(
-					"SMTP_SECURE",
+				const defaultSecure =
+					parseInt(answers.API_SMTP_PORT || "0", 10) === 465;
+				answers.API_SMTP_SECURE = (await promptConfirm(
+					"API_SMTP_SECURE",
 					"Use SSL/TLS? (true for port 465, false for port 587)",
 					defaultSecure,
 				))
 					? "true"
 					: "false";
 
-				answers.SMTP_FROM_EMAIL = await promptInput(
-					"SMTP_FROM_EMAIL",
+				answers.API_SMTP_FROM_EMAIL = await promptInput(
+					"API_SMTP_FROM_EMAIL",
 					"From Email Address:",
 					"",
 					validateEmail,
 				);
 
-				answers.SMTP_FROM_NAME = await promptInput(
-					"SMTP_FROM_NAME",
+				answers.API_SMTP_FROM_NAME = await promptInput(
+					"API_SMTP_FROM_NAME",
 					"From Display Name:",
 					"Talawa",
 				);
 
 				const smtpName = await promptInput(
-					"SMTP_NAME",
+					"API_SMTP_NAME",
 					"Client Hostname (optional, e.g., for HELO/EHLO):",
 					"",
 				);
 				if (smtpName.trim()) {
-					answers.SMTP_NAME = smtpName.trim();
+					answers.API_SMTP_NAME = smtpName.trim();
 				} else {
-					delete answers.SMTP_NAME;
+					delete answers.API_SMTP_NAME;
 				}
 
 				const localAddress = await promptInput(
-					"SMTP_LOCAL_ADDRESS",
+					"API_SMTP_LOCAL_ADDRESS",
 					"Local Bind IP Address (optional):",
 					"",
 				);
 				if (localAddress.trim()) {
-					answers.SMTP_LOCAL_ADDRESS = localAddress.trim();
+					answers.API_SMTP_LOCAL_ADDRESS = localAddress.trim();
 				} else {
-					delete answers.SMTP_LOCAL_ADDRESS;
+					delete answers.API_SMTP_LOCAL_ADDRESS;
 				}
 			}
 
@@ -278,19 +279,20 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				// Pre-flight validation for required credentials
 				const missingCreds: string[] = [];
 				if (answers.API_EMAIL_PROVIDER === "ses") {
-					if (!answers.AWS_SES_REGION?.trim())
-						missingCreds.push("AWS_SES_REGION");
-					if (!answers.AWS_ACCESS_KEY_ID?.trim())
-						missingCreds.push("AWS_ACCESS_KEY_ID");
-					if (!answers.AWS_SECRET_ACCESS_KEY?.trim())
-						missingCreds.push("AWS_SECRET_ACCESS_KEY");
-					if (!answers.AWS_SES_FROM_EMAIL?.trim())
-						missingCreds.push("AWS_SES_FROM_EMAIL");
+					if (!answers.API_AWS_SES_REGION?.trim())
+						missingCreds.push("API_AWS_SES_REGION");
+					if (!answers.API_AWS_ACCESS_KEY_ID?.trim())
+						missingCreds.push("API_AWS_ACCESS_KEY_ID");
+					if (!answers.API_AWS_SECRET_ACCESS_KEY?.trim())
+						missingCreds.push("API_AWS_SECRET_ACCESS_KEY");
+					if (!answers.API_AWS_SES_FROM_EMAIL?.trim())
+						missingCreds.push("API_AWS_SES_FROM_EMAIL");
 				} else if (answers.API_EMAIL_PROVIDER === "smtp") {
-					if (!answers.SMTP_HOST?.trim()) missingCreds.push("SMTP_HOST");
-					if (!answers.SMTP_PORT) missingCreds.push("SMTP_PORT");
-					if (!answers.SMTP_FROM_EMAIL?.trim())
-						missingCreds.push("SMTP_FROM_EMAIL");
+					if (!answers.API_SMTP_HOST?.trim())
+						missingCreds.push("API_SMTP_HOST");
+					if (!answers.API_SMTP_PORT) missingCreds.push("API_SMTP_PORT");
+					if (!answers.API_SMTP_FROM_EMAIL?.trim())
+						missingCreds.push("API_SMTP_FROM_EMAIL");
 				}
 
 				if (missingCreds.length > 0) {
@@ -318,8 +320,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						"testRecipient",
 						"Enter recipient email address:",
 						answers.API_EMAIL_PROVIDER === "ses"
-							? answers.AWS_SES_FROM_EMAIL || ""
-							: answers.SMTP_FROM_EMAIL || "",
+							? answers.API_AWS_SES_FROM_EMAIL || ""
+							: answers.API_SMTP_FROM_EMAIL || "",
 						validateEmail,
 					);
 
@@ -332,11 +334,11 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 							const { SESProvider } = await import("../../src/services/email");
 
 							const service = new SESProvider({
-								region: (answers.AWS_SES_REGION || "") as NonEmptyString,
-								accessKeyId: answers.AWS_ACCESS_KEY_ID,
-								secretAccessKey: answers.AWS_SECRET_ACCESS_KEY,
-								fromEmail: answers.AWS_SES_FROM_EMAIL,
-								fromName: answers.AWS_SES_FROM_NAME,
+								region: (answers.API_AWS_SES_REGION || "") as NonEmptyString,
+								accessKeyId: answers.API_AWS_ACCESS_KEY_ID,
+								secretAccessKey: answers.API_AWS_SECRET_ACCESS_KEY,
+								fromEmail: answers.API_AWS_SES_FROM_EMAIL,
+								fromName: answers.API_AWS_SES_FROM_NAME,
 							});
 
 							const result = await service.sendEmail({
@@ -364,15 +366,15 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 							const { SMTPProvider } = await import("../../src/services/email");
 
 							const service = new SMTPProvider({
-								host: (answers.SMTP_HOST || "") as NonEmptyString,
-								port: parseInt(answers.SMTP_PORT || "587", 10),
-								user: answers.SMTP_USER,
-								password: answers.SMTP_PASSWORD,
-								secure: answers.SMTP_SECURE === "true",
-								fromEmail: answers.SMTP_FROM_EMAIL,
-								fromName: answers.SMTP_FROM_NAME,
-								name: answers.SMTP_NAME,
-								localAddress: answers.SMTP_LOCAL_ADDRESS,
+								host: (answers.API_SMTP_HOST || "") as NonEmptyString,
+								port: parseInt(answers.API_SMTP_PORT || "587", 10),
+								user: answers.API_SMTP_USER,
+								password: answers.API_SMTP_PASSWORD,
+								secure: answers.API_SMTP_SECURE === "true",
+								fromEmail: answers.API_SMTP_FROM_EMAIL,
+								fromName: answers.API_SMTP_FROM_NAME,
+								name: answers.API_SMTP_NAME,
+								localAddress: answers.API_SMTP_LOCAL_ADDRESS,
 							});
 
 							const result = await service.sendEmail({
@@ -405,11 +407,11 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						if (error.name) console.error(`Type: ${error.name}`);
 						if (answers.API_EMAIL_PROVIDER === "ses") {
 							console.log(
-								"Tips: Check AWS_SES_REGION, verify AWS_ACCESS_KEY_ID/SECRET, and ensure AWS_SES_FROM_EMAIL is verified in SES.",
+								"Tips: Check API_AWS_SES_REGION, verify API_AWS_ACCESS_KEY_ID/SECRET, and ensure API_AWS_SES_FROM_EMAIL is verified in SES.",
 							);
 						} else if (answers.API_EMAIL_PROVIDER === "smtp") {
 							console.log(
-								"Tips: Check SMTP_HOST, SMTP_PORT, verify credentials, and ensure your email provider allows SMTP access.",
+								"Tips: Check API_SMTP_HOST, API_SMTP_PORT, verify credentials, and ensure your email provider allows SMTP access.",
 							);
 						}
 					}

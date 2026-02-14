@@ -55,7 +55,7 @@ export class SESProvider implements IEmailProvider {
 			if (!this.config.region) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
-					message: "AWS_SES_REGION must be a non-empty string",
+					message: "API_AWS_SES_REGION must be a non-empty string",
 				});
 			}
 
@@ -105,15 +105,15 @@ export class SESProvider implements IEmailProvider {
 	 * Send a single email using AWS SES
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
-		try {
-			if (!this.config.fromEmail) {
-				throw new TalawaRestError({
-					code: ErrorCode.INVALID_ARGUMENTS,
-					message:
-						"Email service not configured. Please set AWS_SES_FROM_EMAIL (and optionally AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
-				});
-			}
+		if (!this.config.fromEmail) {
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_ARGUMENTS,
+				message:
+					"Email service not configured. Please set API_AWS_SES_FROM_EMAIL (and optionally API_AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
+			});
+		}
 
+		try {
 			const { client, SendEmailCommand } = await this.getSesArtifacts();
 
 			const fromAddress = this.config.fromName
@@ -137,18 +137,20 @@ export class SESProvider implements IEmailProvider {
 			const response = await client.send(command);
 			return { id: job.id, success: true, messageId: response.MessageId };
 		} catch (error) {
-			const msg = error instanceof Error ? error.message : String(error);
-			const stack = error instanceof Error ? error.stack : undefined;
-
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
 			rootLogger.error(
-				{ error: msg, stack, jobId: job.id },
-				"Failed to send email",
+				{
+					error: errorMessage,
+					stack: error instanceof Error ? error.stack : undefined,
+					jobId: job.id,
+				},
+				"Failed to send email via SES",
 			);
-
 			return {
 				id: job.id,
 				success: false,
-				error: msg,
+				error: errorMessage,
 			};
 		}
 	}

@@ -72,7 +72,7 @@ export class SMTPProvider implements IEmailProvider {
 			if (!this.config.host) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
-					message: "SMTP_HOST must be a non-empty string",
+					message: "API_SMTP_HOST must be a non-empty string",
 				});
 			}
 
@@ -80,7 +80,7 @@ export class SMTPProvider implements IEmailProvider {
 			if (!this.config.port) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
-					message: "SMTP_PORT must be provided",
+					message: "API_SMTP_PORT must be provided",
 				});
 			}
 
@@ -92,7 +92,7 @@ export class SMTPProvider implements IEmailProvider {
 			) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
-					message: "SMTP_PORT must be an integer between 1 and 65535",
+					message: "API_SMTP_PORT must be an integer between 1 and 65535",
 				});
 			}
 
@@ -139,15 +139,15 @@ export class SMTPProvider implements IEmailProvider {
 	 * Send a single email using the configured SMTP server
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
-		try {
-			if (!this.config.fromEmail) {
-				throw new TalawaRestError({
-					code: ErrorCode.INVALID_ARGUMENTS,
-					message:
-						"Email service not configured. Please set SMTP_FROM_EMAIL (and optionally SMTP_FROM_NAME) or run 'npm run setup' to configure SMTP.",
-				});
-			}
+		if (!this.config.fromEmail) {
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_ARGUMENTS,
+				message:
+					"Email service not configured. Please set API_SMTP_FROM_EMAIL (and optionally API_SMTP_FROM_NAME) or run 'npm run setup' to configure SMTP.",
+			});
+		}
 
+		try {
 			const transporter = await this.getTransporter();
 
 			// Sanitize all header fields to prevent SMTP header injection
@@ -171,7 +171,7 @@ export class SMTPProvider implements IEmailProvider {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
 					message:
-						"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+						"API_SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
 				});
 			}
 
@@ -190,11 +190,20 @@ export class SMTPProvider implements IEmailProvider {
 			const response = await transporter.sendMail(mailOptions);
 			return { id: job.id, success: true, messageId: response.messageId };
 		} catch (error) {
-			rootLogger.error({ error, jobId: job.id }, "Failed to send email");
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			rootLogger.error(
+				{
+					error: errorMessage,
+					stack: error instanceof Error ? error.stack : undefined,
+					jobId: job.id,
+				},
+				"Failed to send email via SMTP",
+			);
 			return {
 				id: job.id,
 				success: false,
-				error: error instanceof Error ? error.message : String(error),
+				error: errorMessage,
 			};
 		}
 	}
