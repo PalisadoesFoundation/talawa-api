@@ -6,6 +6,20 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import { User } from "./User";
 
+/**
+ * Resolver for the user's marital status field.
+ *
+ * This resolver checks authentication and authorization before returning
+ * the marital status of a user. Only authenticated users can access this field,
+ * and non-administrators can only access their own marital status.
+ *
+ * @param parent - The parent User object containing the user's data
+ * @param _args - The resolver arguments (unused)
+ * @param ctx - The GraphQL context containing authentication and database client
+ * @returns The user's marital status or null if not set
+ * @throws {TalawaGraphQLError} With code "unauthenticated" if user is not authenticated or not found
+ * @throws {TalawaGraphQLError} With code "unauthorized_action" if non-admin tries to access another user's data
+ */
 export const maritalStatusResolver = async (
 	parent: User,
 	_args: Record<string, never>,
