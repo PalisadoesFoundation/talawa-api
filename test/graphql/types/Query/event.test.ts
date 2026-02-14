@@ -1236,16 +1236,27 @@ suite("Query field event", () => {
 				});
 
 				// Add user to organization as administrator
-				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: {
-						input: {
-							organizationId: organization.id,
-							memberId: orgAdminUserId,
-							role: "administrator",
+				const membershipResult = await mercuriusClient.mutate(
+					Mutation_createOrganizationMembership,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								organizationId: organization.id,
+								memberId: orgAdminUserId,
+								role: "administrator",
+							},
 						},
 					},
-				});
+				);
+
+				if (membershipResult.errors) {
+					throw new Error(
+						`Failed to create organization membership. Errors: ${JSON.stringify(
+							membershipResult.errors,
+						)}`,
+					);
+				}
 
 				// Create invite-only event
 				const startAt = "2099-03-01T10:00:00Z";
