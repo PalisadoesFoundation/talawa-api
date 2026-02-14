@@ -11,7 +11,9 @@
 # Requirements: bash 4.0+
 ##############################################################################
 
-set -e  # Exit on first failure
+# Do not use set -e: many tests intentionally run failing commands (e.g. run_cmd false)
+# and assert on the exit code; set -e would exit the script on those.
+set -u  # Catch undefined variables
 
 # Colors for output
 RED='\033[0;31m'
@@ -83,7 +85,6 @@ guard_stderr=$( (
     source "$SCRIPTS_INSTALL/common/validation.sh"
 ) 2>&1 )
 guard_exitcode=$?
-set -e
 if [ "$guard_exitcode" -ne 0 ] && echo "$guard_stderr" | grep -q "requires info(), warn(), error(), and success() functions to be defined"; then
     test_pass
 else
@@ -653,7 +654,14 @@ test_start "validate_internet_connectivity fails when curl fails"
 
 test_start "validate_internet_connectivity succeeds when curl missing but ping succeeds"
 (
-    unset -f curl 2>/dev/null || true
+    # Hide curl so script uses ping path; ping is mocked to succeed
+    command() {
+        if [ "$1" = "-v" ] && [ "$2" = "curl" ]; then
+            return 1
+        fi
+        builtin command "$@"
+    }
+    export -f command
     ping() { return 0; }
     export -f ping
 
