@@ -84,41 +84,30 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		);
 	});
 
-	test("Returns unauthenticated when admin user no longer exists", async () => {
-		const adminToken = await getAdminAuth();
+	test("Returns unauthenticated when token user no longer exists", async () => {
+		const adminUser = await createRegularUserUsingAdmin();
 
-		const admin = await server.drizzleClient.query.usersTable.findFirst({
-			where: (f, o) =>
-				o.eq(
-					f.emailAddress,
-					server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				),
-		});
-
-		assertToBeNonNullish(admin);
-
-		// Schedule admin restoration before deleting
 		cleanupFns.push(async () => {
 			try {
-				await server.drizzleClient.insert(usersTable).values(admin);
-			} catch (err) {
-				console.error("Admin restore failed:", err);
-			}
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, adminUser.userId));
+			} catch {}
 		});
 
 		await server.drizzleClient
 			.delete(usersTable)
-			.where(eq(usersTable.id, admin.id));
+			.where(eq(usersTable.id, adminUser.userId));
 
-		const user = await createUserWithCleanup();
+		const targetUser = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(
 			Mutation_adminUpdateUserPassword,
 			{
-				headers: { authorization: `bearer ${adminToken}` },
+				headers: { authorization: `bearer ${adminUser.authToken}` },
 				variables: {
 					input: {
-						id: user.userId,
+						id: targetUser.userId,
 						newPassword: "newPassword123",
 						confirmNewPassword: "newPassword123",
 					},
@@ -136,7 +125,7 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		);
 	});
 
-	test("Returns unauthorized_action when client is not admin", async () => {
+	test("Returns forbidden_action when client is not admin", async () => {
 		const user = await createUserWithCleanup();
 
 		const result = await mercuriusClient.mutate(
@@ -158,7 +147,7 @@ suite("Mutation field adminUpdateUserPassword", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "unauthorized_action",
+						code: "forbidden_action",
 					}),
 				}),
 			]),
