@@ -54,10 +54,22 @@ function serializeEnvVars(vars: Record<string, string>): string {
 
 function resolvePaths(paths?: EnvPaths): Required<EnvPaths> {
 	const envFile = paths?.envFile ?? DEFAULT_ENV_FILE;
+
+	// For the default env file, keep the canonical names used elsewhere in setup.
+	// For overrides (e.g. .env_test), derive adjacent backup/temp files.
+	const backupFile =
+		paths?.backupFile ??
+		(envFile === DEFAULT_ENV_FILE
+			? DEFAULT_ENV_BACKUP_FILE
+			: `${envFile}.backup`);
+	const tempFile =
+		paths?.tempFile ??
+		(envFile === DEFAULT_ENV_FILE ? DEFAULT_ENV_TEMP_FILE : `${envFile}.tmp`);
+
 	return {
 		envFile,
-		backupFile: paths?.backupFile ?? `${envFile}.backup`,
-		tempFile: paths?.tempFile ?? `${envFile}.tmp`,
+		backupFile,
+		tempFile,
 	};
 }
 
