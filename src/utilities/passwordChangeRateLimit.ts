@@ -71,6 +71,7 @@ export function checkPasswordChangeRateLimit(userId: string): boolean {
  * Should be called only after a successful password update.
  *
  * @param userId - The user ID to record a consumption for
+ * @returns void
  */
 export function consumePasswordChangeRateLimit(userId: string): void {
 	const now = Date.now();
