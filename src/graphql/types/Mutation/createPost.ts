@@ -10,6 +10,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { zParseOrThrow } from "~/src/graphql/validators/helpers";
 import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
@@ -238,14 +239,11 @@ builder.mutationField("createPost", (t) =>
 				return finalPost;
 			});
 
-			try {
-				await invalidateEntityLists(ctx.cache, "post");
-			} catch (error) {
-				ctx.log.error(
-					{ err: error, entity: "post" },
-					"Cache invalidation failed",
-				);
-			}
+			await runBestEffortInvalidation(
+				[invalidateEntityLists(ctx.cache, "post")],
+				"post",
+				ctx.log,
+			);
 
 			return result;
 		},

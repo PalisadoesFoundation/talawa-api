@@ -14,6 +14,7 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
 import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import {
@@ -634,14 +635,11 @@ builder.mutationField("createEvent", (t) =>
 					);
 				}
 
-				try {
-					await invalidateEntityLists(ctx.cache, "event");
-				} catch (error) {
-					ctx.log.error(
-						{ err: error, entity: "event" },
-						"Cache invalidation failed",
-					);
-				}
+				await runBestEffortInvalidation(
+					[invalidateEntityLists(ctx.cache, "event")],
+					"event",
+					ctx.log,
+				);
 
 				return createdEventResult;
 			},

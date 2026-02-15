@@ -6,6 +6,7 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
 import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
@@ -186,14 +187,11 @@ builder.mutationField("createOrganization", (t) =>
 					},
 				);
 
-				try {
-					await invalidateEntityLists(ctx.cache, "organization");
-				} catch (error) {
-					ctx.log.warn(
-						{ err: error, entity: "organization" },
-						"Cache invalidation failed",
-					);
-				}
+				await runBestEffortInvalidation(
+					[invalidateEntityLists(ctx.cache, "organization")],
+					"organization",
+					ctx.log,
+				);
 
 				return createdOrganization;
 			},

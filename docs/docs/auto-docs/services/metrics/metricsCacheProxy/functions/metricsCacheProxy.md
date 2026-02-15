@@ -4,14 +4,9 @@
 
 # Function: metricsCacheProxy()
 
-> **metricsCacheProxy**\<`TCache`\>(`cache`, `perf`): `object`
+> **metricsCacheProxy**\<`TCache`\>(`cache`, `perf`, `logger?`): `object`
 
-Defined in: [src/services/metrics/metricsCacheProxy.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L10)
-
-Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
-
-This function instruments cache operations (`get`, `mget`, `set`, `del`) to track cache hits
-and misses using a performance monitoring object.
+Defined in: [src/services/metrics/metricsCacheProxy.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L11)
 
 ## Type Parameters
 
@@ -34,6 +29,10 @@ and misses using a performance monitoring object.
 #### trackCacheMiss
 
 () => `void`
+
+### logger?
+
+`Logger`
 
 ## Returns
 
