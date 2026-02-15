@@ -30,7 +30,6 @@ export const mutationUpdateUserInputSchema = usersTableInsertSchema
 		isEmailAddressVerified:
 			usersTableInsertSchema.shape.isEmailAddressVerified.optional(),
 		name: usersTableInsertSchema.shape.name.optional(),
-		password: z.string().min(1).max(64).optional(),
 		role: usersTableInsertSchema.shape.role.optional(),
 	})
 	.refine(
@@ -116,9 +115,6 @@ export const MutationUpdateUserInput = builder
 			naturalLanguageCode: t.field({
 				description: "Language code of the user's preferred natural language.",
 				type: Iso639Set1LanguageCode,
-			}),
-			password: t.string({
-				description: "Password of the user to sign in to the application.",
 			}),
 			postalCode: t.string({
 				description: "Postal code of the user.",
