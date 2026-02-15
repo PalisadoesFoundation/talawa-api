@@ -348,8 +348,12 @@ builder.mutationField("updatePost", (t) =>
 				});
 			});
 
-			await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
-			await invalidateEntityLists(ctx.cache, "post");
+			try {
+				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "post");
+			} catch (error) {
+				ctx.log.error({ error, entity: "post" }, "Cache invalidation failed");
+			}
 
 			return result;
 		},

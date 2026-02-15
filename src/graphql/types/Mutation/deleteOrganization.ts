@@ -222,8 +222,19 @@ builder.mutationField("deleteOrganization", (t) =>
 					}
 				}
 
-				await invalidateEntity(ctx.cache, "organization", parsedArgs.input.id);
-				await invalidateEntityLists(ctx.cache, "organization");
+				try {
+					await invalidateEntity(
+						ctx.cache,
+						"organization",
+						parsedArgs.input.id,
+					);
+					await invalidateEntityLists(ctx.cache, "organization");
+				} catch (error) {
+					ctx.log.error(
+						{ error, entity: "organization" },
+						"Cache invalidation failed",
+					);
+				}
 
 				return deletedOrganization;
 			},

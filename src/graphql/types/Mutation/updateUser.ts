@@ -240,8 +240,12 @@ builder.mutationField("updateUser", (t) =>
 				return updatedUser;
 			});
 
-			await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
-			await invalidateEntityLists(ctx.cache, "user");
+			try {
+				await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "user");
+			} catch (error) {
+				ctx.log.error({ error, entity: "user" }, "Cache invalidation failed");
+			}
 
 			return result;
 		},

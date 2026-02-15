@@ -249,8 +249,12 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
-			await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
-			await invalidateEntityLists(ctx.cache, "event");
+			try {
+				await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "event");
+			} catch (error) {
+				ctx.log.error({ error, entity: "event" }, "Cache invalidation failed");
+			}
 
 			return Object.assign(updatedEvent, {
 				attachments: existingEvent.attachmentsWhereEvent,
