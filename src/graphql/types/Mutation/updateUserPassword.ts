@@ -8,7 +8,10 @@ import {
 	mutationUpdateUserPasswordInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserPasswordInput";
 import envConfig from "~/src/utilities/graphqLimits";
-import { checkPasswordChangeRateLimit } from "~/src/utilities/passwordChangeRateLimit";
+import {
+	checkPasswordChangeRateLimit,
+	consumePasswordChangeRateLimit,
+} from "~/src/utilities/passwordChangeRateLimit";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -152,6 +155,8 @@ builder.mutationField("updateUserPassword", (t) =>
 					lastFailedLoginAt: null,
 				})
 				.where(eq(usersTable.id, currentUserId));
+
+			consumePasswordChangeRateLimit(currentUserId);
 
 			return true;
 		},

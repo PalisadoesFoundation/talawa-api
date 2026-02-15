@@ -19,13 +19,37 @@ const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 let lastCleanupAt = 0;
 
 /**
- * Checks if a user has exceeded the rate limit for password change requests.
- * Uses a fixed window approach (entire window resets when it expires).
+ * Checks if a user is currently under the rate limit for password change requests.
+ * This is a pure check that does not mutate state.
  *
  * @param userId - The user ID to check
  * @returns true if request is allowed, false if rate limit exceeded
  */
 export function checkPasswordChangeRateLimit(userId: string): boolean {
+	const now = Date.now();
+	const entry = PASSWORD_CHANGE_RATE_LIMITS.get(userId);
+
+	if (!entry) {
+		return true;
+	}
+
+	// Window has expired — user is allowed
+	if (now - entry.windowStart >= RATE_LIMIT_WINDOW_MS) {
+		return true;
+	}
+
+	// Within window — check count
+	return entry.count < MAX_REQUESTS_PER_WINDOW;
+}
+
+/**
+ * Consumes one rate limit slot for the given user.
+ * Creates or resets the entry as needed and increments the count.
+ * Should be called only after a successful password update.
+ *
+ * @param userId - The user ID to record a consumption for
+ */
+export function consumePasswordChangeRateLimit(userId: string): void {
 	const now = Date.now();
 	const entry = PASSWORD_CHANGE_RATE_LIMITS.get(userId);
 
@@ -35,33 +59,17 @@ export function checkPasswordChangeRateLimit(userId: string): boolean {
 		lastCleanupAt = now;
 	}
 
-	if (!entry) {
-		// First request
+	if (!entry || now - entry.windowStart >= RATE_LIMIT_WINDOW_MS) {
+		// First request or window expired — start a new window
 		PASSWORD_CHANGE_RATE_LIMITS.set(userId, {
 			count: 1,
 			windowStart: now,
 		});
-		return true;
+		return;
 	}
 
-	// Check if window has expired
-	if (now - entry.windowStart >= RATE_LIMIT_WINDOW_MS) {
-		// Reset window
-		PASSWORD_CHANGE_RATE_LIMITS.set(userId, {
-			count: 1,
-			windowStart: now,
-		});
-		return true;
-	}
-
-	// Within window - check count
-	if (entry.count >= MAX_REQUESTS_PER_WINDOW) {
-		return false; // Rate limit exceeded
-	}
-
-	// Increment count
+	// Within window — increment count
 	entry.count++;
-	return true;
 }
 
 /**
@@ -79,6 +87,7 @@ function cleanupOldEntries(now: number): void {
 /**
  * Resets the rate limit for a specific user (useful for testing).
  * @param userId - The user ID to reset
+ * @returns void
  */
 export function resetPasswordChangeRateLimit(userId: string): void {
 	PASSWORD_CHANGE_RATE_LIMITS.delete(userId);
@@ -87,6 +96,7 @@ export function resetPasswordChangeRateLimit(userId: string): void {
 /**
  * Resets the last cleanup timestamp (useful for testing).
  * @param value - The value to set lastCleanupAt to (default 0)
+ * @returns void
  * @internal This function is for testing purposes only.
  */
 export function __resetLastCleanupAtForTests(value = 0): void {
