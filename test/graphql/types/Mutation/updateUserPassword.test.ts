@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/tables/users";
+import { PASSWORD_CHANGE_RATE_LIMITS } from "~/src/utilities/passwordChangeRateLimit";
 import * as passwordChangeRateLimitModule from "~/src/utilities/passwordChangeRateLimit";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -29,6 +30,7 @@ suite("Mutation field updateUserPassword", () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
+		PASSWORD_CHANGE_RATE_LIMITS.clear();
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
