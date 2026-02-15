@@ -7,6 +7,7 @@ import {
 	mutationUpdateEventInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import {
 	invalidateEntity,
 	invalidateEntityLists,
@@ -249,20 +250,14 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
-			const results = await Promise.allSettled([
-				invalidateEntity(ctx.cache, "event", parsedArgs.input.id),
-				invalidateEntityLists(ctx.cache, "event"),
-			]);
-
-			for (let i = 0; i < results.length; i++) {
-				const settled = results[i];
-				if (settled !== undefined && settled.status === "rejected") {
-					ctx.log.error(
-						{ err: settled.reason, entity: "event", opIndex: i },
-						"Cache invalidation failed",
-					);
-				}
-			}
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "event", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "event"),
+				],
+				"event",
+				ctx.log,
+			);
 
 			return Object.assign(updatedEvent, {
 				attachments: existingEvent.attachmentsWhereEvent,

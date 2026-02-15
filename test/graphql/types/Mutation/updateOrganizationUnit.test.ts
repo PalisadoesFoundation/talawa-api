@@ -1,11 +1,12 @@
+import { faker } from "@faker-js/faker";
 import Fastify, { type FastifyInstance } from "fastify";
 import { createMercuriusTestClient } from "mercurius-integration-testing";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { graphql } from "~/src/routes/graphql";
 import { Mutation_updateOrganization } from "../documentNodes";
 
 describe("Mutation updateOrganization (unit via mercurius)", () => {
-	const orgId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+	const orgId = faker.string.uuid();
 	const updatedName = "Updated Org";
 
 	const redisState = new Map<string, Record<string, string>>();
@@ -45,12 +46,12 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 	};
 
 	const mockCache = {
-		get: vi.fn().mockResolvedValue(null),
-		set: vi.fn().mockResolvedValue(undefined),
+		get: vi.fn(),
+		set: vi.fn(),
 		del: vi.fn(),
-		clearByPattern: vi.fn().mockResolvedValue(undefined),
-		mget: vi.fn().mockResolvedValue([]),
-		mset: vi.fn().mockResolvedValue(undefined),
+		clearByPattern: vi.fn(),
+		mget: vi.fn(),
+		mset: vi.fn(),
 	};
 
 	const mockMinio = {
@@ -64,7 +65,18 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 	let app: ReturnType<typeof Fastify>;
 	let mercuriusClient: ReturnType<typeof createMercuriusTestClient>;
 
-	beforeAll(async () => {
+	beforeEach(async () => {
+		// Reset mocks
+		vi.clearAllMocks();
+
+		// Setup default mock behaviors
+		mockCache.get.mockResolvedValue(null);
+		mockCache.set.mockResolvedValue(undefined);
+		mockCache.del.mockResolvedValue(undefined);
+		mockCache.clearByPattern.mockResolvedValue(undefined);
+		mockCache.mget.mockResolvedValue([]);
+		mockCache.mset.mockResolvedValue(undefined);
+
 		tx.update.mockReturnValue(tx);
 		tx.set.mockReturnValue(tx);
 		tx.where.mockReturnValue(tx);
@@ -99,9 +111,10 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 			})
 			.mockResolvedValueOnce(undefined);
 
-		mockCache.del.mockRejectedValue(new Error("Redis connection lost"));
-
 		app = Fastify({ logger: false });
+
+		// Spy on the logger
+		vi.spyOn(app.log, "error");
 
 		app.decorate("envConfig", {
 			API_IS_GRAPHIQL: true,
@@ -133,11 +146,15 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 		mercuriusClient = createMercuriusTestClient(app, { url: "/graphql" });
 	});
 
-	afterAll(async () => {
+	afterEach(async () => {
 		await app.close();
+		vi.restoreAllMocks();
 	});
 
 	it("should succeed even when cache invalidation fails (best-effort)", async () => {
+		// Simulate cache failure
+		mockCache.del.mockRejectedValue(new Error("Redis connection lost"));
+
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			variables: {
 				input: {
@@ -157,6 +174,15 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 		);
 		expect(mockCache.clearByPattern).toHaveBeenCalledWith(
 			"talawa:v1:organization:list:*",
+		);
+
+		// Verify logger was called
+		expect(app.log.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				entity: "organization",
+				opIndex: 0, // mockCache.del is the first promise in the array
+			}),
+			"Cache invalidation failed",
 		);
 	});
 });

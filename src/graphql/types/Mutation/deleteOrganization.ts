@@ -7,6 +7,7 @@ import {
 	mutationDeleteOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
 import {
 	invalidateEntity,
@@ -215,27 +216,21 @@ builder.mutationField("deleteOrganization", (t) =>
 							objectNames,
 						);
 					} catch (error) {
-						ctx.log?.error(
+						ctx.log.error(
 							{ err: error, objectNames },
 							"Failed to remove MinIO objects after organization deletion (best-effort cleanup); mutation succeeded.",
 						);
 					}
 				}
 
-				const results = await Promise.allSettled([
-					invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
-					invalidateEntityLists(ctx.cache, "organization"),
-				]);
-
-				for (let i = 0; i < results.length; i++) {
-					const settled = results[i];
-					if (settled !== undefined && settled.status === "rejected") {
-						ctx.log.error(
-							{ err: settled.reason, entity: "organization", opIndex: i },
-							"Cache invalidation failed",
-						);
-					}
-				}
+				await runBestEffortInvalidation(
+					[
+						invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+						invalidateEntityLists(ctx.cache, "organization"),
+					],
+					"organization",
+					ctx.log,
+				);
 
 				return deletedOrganization;
 			},

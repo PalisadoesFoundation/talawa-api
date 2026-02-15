@@ -10,6 +10,7 @@ import {
 	mutationUpdateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
 import {
 	invalidateEntity,
@@ -252,20 +253,14 @@ builder.mutationField("updateOrganization", (t) =>
 					);
 				}
 
-				const results = await Promise.allSettled([
-					invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
-					invalidateEntityLists(ctx.cache, "organization"),
-				]);
-
-				for (let i = 0; i < results.length; i++) {
-					const settled = results[i];
-					if (settled !== undefined && settled.status === "rejected") {
-						ctx.log.error(
-							{ err: settled.reason, entity: "organization", opIndex: i },
-							"Cache invalidation failed",
-						);
-					}
-				}
+				await runBestEffortInvalidation(
+					[
+						invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+						invalidateEntityLists(ctx.cache, "organization"),
+					],
+					"organization",
+					ctx.log,
+				);
 
 				return updatedOrganization;
 			},

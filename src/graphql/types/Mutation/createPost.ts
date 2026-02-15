@@ -240,9 +240,9 @@ builder.mutationField("createPost", (t) =>
 
 			try {
 				await invalidateEntityLists(ctx.cache, "post");
-			} catch (cacheError) {
+			} catch (error) {
 				ctx.log.error(
-					{ err: cacheError, entity: "post" },
+					{ err: error, entity: "post" },
 					"Cache invalidation failed",
 				);
 			}

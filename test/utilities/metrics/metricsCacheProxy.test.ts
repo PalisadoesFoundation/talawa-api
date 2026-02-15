@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { metricsCacheProxy } from "../../../src/services/metrics/metricsCacheProxy";
+import { ErrorCode } from "../../../src/utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../src/utilities/errors/TalawaRestError";
 
 describe("metricsCacheProxy", () => {
 	let mockCache: {
@@ -201,15 +203,17 @@ describe("metricsCacheProxy", () => {
 	});
 
 	describe("clearByPattern", () => {
-		it("delegates to underlying cache", async () => {
+		it("delegates to underlying cache and does not track metrics", async () => {
 			const proxy = metricsCacheProxy(mockCache, mockPerf);
 
 			await proxy.clearByPattern("test:*");
 
 			expect(mockCache.clearByPattern).toHaveBeenCalledWith("test:*");
+			expect(mockPerf.trackCacheHit).not.toHaveBeenCalled();
+			expect(mockPerf.trackCacheMiss).not.toHaveBeenCalled();
 		});
 
-		it("throws when underlying cache does not support clearByPattern", async () => {
+		it("throws TalawaRestError when underlying cache does not support clearByPattern", async () => {
 			const cacheWithoutClearByPattern = {
 				get: vi.fn(),
 				mget: vi.fn(),
@@ -219,9 +223,19 @@ describe("metricsCacheProxy", () => {
 
 			const proxy = metricsCacheProxy(cacheWithoutClearByPattern, mockPerf);
 
-			await expect(proxy.clearByPattern("test:*")).rejects.toThrow(
-				/clearByPattern.*list invalidation/i,
-			);
+			try {
+				await proxy.clearByPattern("test:*");
+				// Fail test if no error thrown
+				expect.fail("Should have thrown TalawaRestError");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaRestError);
+				expect((error as TalawaRestError).code).toBe(
+					ErrorCode.INTERNAL_SERVER_ERROR,
+				);
+				expect((error as Error).message).toMatch(
+					/clearByPattern.*list invalidation/i,
+				);
+			}
 		});
 	});
 });
