@@ -203,12 +203,19 @@ describe("metricsCacheProxy", () => {
 	});
 
 	describe("clearByPattern", () => {
-		it("delegates to underlying cache and does not track metrics", async () => {
+		it("delegates to underlying cache", async () => {
 			const proxy = metricsCacheProxy(mockCache, mockPerf);
 
 			await proxy.clearByPattern("test:*");
 
 			expect(mockCache.clearByPattern).toHaveBeenCalledWith("test:*");
+		});
+
+		it("does not track metrics on clearByPattern", async () => {
+			const proxy = metricsCacheProxy(mockCache, mockPerf);
+
+			await proxy.clearByPattern("test:*");
+
 			expect(mockPerf.trackCacheHit).not.toHaveBeenCalled();
 			expect(mockPerf.trackCacheMiss).not.toHaveBeenCalled();
 		});
@@ -223,19 +230,17 @@ describe("metricsCacheProxy", () => {
 
 			const proxy = metricsCacheProxy(cacheWithoutClearByPattern, mockPerf);
 
-			try {
-				await proxy.clearByPattern("test:*");
-				// Fail test if no error thrown
-				expect.fail("Should have thrown TalawaRestError");
-			} catch (error) {
-				expect(error).toBeInstanceOf(TalawaRestError);
-				expect((error as TalawaRestError).code).toBe(
-					ErrorCode.INTERNAL_SERVER_ERROR,
-				);
-				expect((error as Error).message).toMatch(
-					/clearByPattern.*list invalidation/i,
-				);
-			}
+			await expect(proxy.clearByPattern("test:*")).rejects.toSatisfy(
+				(error: unknown) => {
+					expect(error).toBeInstanceOf(TalawaRestError);
+					const restError = error as TalawaRestError;
+					expect(restError.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+					expect(restError.message).toMatch(
+						/clearByPattern.*list invalidation/i,
+					);
+					return true;
+				},
+			);
 		});
 	});
 });

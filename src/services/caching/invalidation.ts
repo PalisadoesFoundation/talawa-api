@@ -11,6 +11,7 @@ import { CacheNamespace } from "./cacheConfig";
  * ```typescript
  * await invalidateEntity(ctx.cache, "organization", args.id);
  * ```
+ * @returns {Promise<void>}
  */
 export async function invalidateEntity(
 	cache: { del(keys: string | string[]): Promise<unknown> },
@@ -31,6 +32,7 @@ export async function invalidateEntity(
  * ```typescript
  * await invalidateEntityLists(ctx.cache, "organization");
  * ```
+ * @returns {Promise<void>}
  */
 export async function invalidateEntityLists(
 	cache: { clearByPattern(pattern: string): Promise<unknown> },
