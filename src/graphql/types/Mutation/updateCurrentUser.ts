@@ -224,16 +224,19 @@ builder.mutationField("updateCurrentUser", (t) =>
 				return updatedCurrentUser;
 			});
 
-			try {
-				await Promise.allSettled([
-					invalidateEntity(ctx.cache, "user", currentUserId),
-					invalidateEntityLists(ctx.cache, "user"),
-				]);
-			} catch (cacheError) {
-				ctx.log.error(
-					{ cacheError, entity: "user" },
-					"Cache invalidation failed",
-				);
+			const results = await Promise.allSettled([
+				invalidateEntity(ctx.cache, "user", currentUserId),
+				invalidateEntityLists(ctx.cache, "user"),
+			]);
+
+			for (let i = 0; i < results.length; i++) {
+				const result = results[i];
+				if (result !== undefined && result.status === "rejected") {
+					ctx.log.error(
+						{ cacheError: result.reason, entity: "user", opIndex: i },
+						"Cache invalidation failed",
+					);
+				}
 			}
 
 			return result;

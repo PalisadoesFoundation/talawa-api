@@ -348,16 +348,19 @@ builder.mutationField("updatePost", (t) =>
 				});
 			});
 
-			try {
-				await Promise.allSettled([
-					invalidateEntity(ctx.cache, "post", parsedArgs.input.id),
-					invalidateEntityLists(ctx.cache, "post"),
-				]);
-			} catch (cacheError) {
-				ctx.log.error(
-					{ cacheError, entity: "post" },
-					"Cache invalidation failed",
-				);
+			const results = await Promise.allSettled([
+				invalidateEntity(ctx.cache, "post", parsedArgs.input.id),
+				invalidateEntityLists(ctx.cache, "post"),
+			]);
+
+			for (let i = 0; i < results.length; i++) {
+				const result = results[i];
+				if (result !== undefined && result.status === "rejected") {
+					ctx.log.error(
+						{ cacheError: result.reason, entity: "post", opIndex: i },
+						"Cache invalidation failed",
+					);
+				}
 			}
 
 			return result;

@@ -183,16 +183,19 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				});
 			});
 
-			try {
-				await Promise.allSettled([
-					invalidateEntity(ctx.cache, "event", parsedArgs.input.id),
-					invalidateEntityLists(ctx.cache, "event"),
-				]);
-			} catch (cacheError) {
-				ctx.log.error(
-					{ cacheError, entity: "event" },
-					"Cache invalidation failed",
-				);
+			const results = await Promise.allSettled([
+				invalidateEntity(ctx.cache, "event", parsedArgs.input.id),
+				invalidateEntityLists(ctx.cache, "event"),
+			]);
+
+			for (let i = 0; i < results.length; i++) {
+				const result = results[i];
+				if (result !== undefined && result.status === "rejected") {
+					ctx.log.error(
+						{ cacheError: result.reason, entity: "event", opIndex: i },
+						"Cache invalidation failed",
+					);
+				}
 			}
 
 			return result;

@@ -636,9 +636,9 @@ builder.mutationField("createEvent", (t) =>
 
 				try {
 					await invalidateEntityLists(ctx.cache, "event");
-				} catch (cacheError) {
+				} catch (error) {
 					ctx.log.error(
-						{ cacheError, entity: "event" },
+						{ error, entity: "event" },
 						"Cache invalidation failed",
 					);
 				}

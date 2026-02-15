@@ -108,6 +108,12 @@ const mockContext = {
 		mget: vi.fn().mockResolvedValue([]),
 		mset: vi.fn().mockResolvedValue(undefined),
 	},
+	log: {
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		debug: vi.fn(),
+	},
 };
 
 vi.mock("~/src/drizzle/client", () => ({
@@ -215,6 +221,66 @@ describe("updateOrganization Resolver Unit Coverage", () => {
 				avatarMimeType: "image/png",
 				avatarName: "old-avatar",
 			}),
+		);
+	});
+
+	it("should succeed even when cache invalidation fails (best-effort)", async () => {
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		// First call: existing org lookup; second call: duplicate name check
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: "org-1",
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined);
+
+		// Make cache.del throw to simulate cache failure
+		mockContext.cache.del.mockRejectedValue(new Error("Redis connection lost"));
+
+		const args = {
+			input: {
+				id: "org-1",
+				name: "Updated Org",
+			},
+		};
+
+		// Mutation should still succeed despite cache failure
+		const result = await resolver(null, args, mockContext);
+		expect(result).toBeDefined();
+
+		// Verify cache invalidation was attempted
+		expect(mockContext.cache.del).toHaveBeenCalled();
+	});
+
+	it("should invalidate cache when updating only organization fields (no avatar)", async () => {
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: "org-1",
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined); // No duplicate name found
+
+		mocks.tx.returning.mockResolvedValue([{ id: "org-1" }]);
+
+		const args = {
+			input: {
+				id: "org-1",
+				name: "Updated Org Name",
+			},
+		};
+
+		await resolver(null, args, mockContext);
+
+		expect(mockContext.cache.del).toHaveBeenCalledWith(
+			"talawa:v1:organization:org-1",
+		);
+		expect(mockContext.cache.clearByPattern).toHaveBeenCalledWith(
+			"talawa:v1:organization:list:*",
 		);
 	});
 });

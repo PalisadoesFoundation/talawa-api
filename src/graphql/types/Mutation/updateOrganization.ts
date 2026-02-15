@@ -252,16 +252,19 @@ builder.mutationField("updateOrganization", (t) =>
 					);
 				}
 
-				try {
-					await Promise.allSettled([
-						invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
-						invalidateEntityLists(ctx.cache, "organization"),
-					]);
-				} catch (cacheError) {
-					ctx.log.error(
-						{ cacheError, entity: "organization" },
-						"Cache invalidation failed",
-					);
+				const results = await Promise.allSettled([
+					invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "organization"),
+				]);
+
+				for (let i = 0; i < results.length; i++) {
+					const result = results[i];
+					if (result !== undefined && result.status === "rejected") {
+						ctx.log.error(
+							{ cacheError: result.reason, entity: "organization", opIndex: i },
+							"Cache invalidation failed",
+						);
+					}
 				}
 
 				return updatedOrganization;
