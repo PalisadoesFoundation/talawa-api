@@ -167,10 +167,10 @@ builder.mutationField("deletePost", (t) =>
 			]);
 
 			for (let i = 0; i < results.length; i++) {
-				const result = results[i];
-				if (result !== undefined && result.status === "rejected") {
+				const settled = results[i];
+				if (settled !== undefined && settled.status === "rejected") {
 					ctx.log.error(
-						{ cacheError: result.reason, entity: "post", opIndex: i },
+						{ err: settled.reason, entity: "post", opIndex: i },
 						"Cache invalidation failed",
 					);
 				}

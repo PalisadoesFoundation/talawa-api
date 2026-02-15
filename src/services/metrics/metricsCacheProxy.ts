@@ -1,3 +1,6 @@
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+
 /**
  * Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
  *
@@ -75,11 +78,20 @@ export function metricsCacheProxy<
 
 		/**
 		 * Clear all keys matching a pattern. Forwarded without metrics.
+		 *
+		 * @param pattern - Glob-style pattern used to match keys to clear.
+		 * @returns Promise that resolves when matching keys have been cleared.
 		 */
-		async clearByPattern(pattern: string) {
-			if (cache.clearByPattern) {
-				return cache.clearByPattern(pattern);
+		async clearByPattern(pattern: string): Promise<void> {
+			if (!cache.clearByPattern) {
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message:
+						"Underlying cache does not support clearByPattern - list invalidation will not work",
+					details: { method: "clearByPattern" },
+				});
 			}
+			await cache.clearByPattern(pattern);
 		},
 	};
 }

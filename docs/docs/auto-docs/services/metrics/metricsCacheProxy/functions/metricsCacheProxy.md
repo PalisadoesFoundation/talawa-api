@@ -6,7 +6,7 @@
 
 > **metricsCacheProxy**\<`TCache`\>(`cache`, `perf`): `object`
 
-Defined in: [src/services/metrics/metricsCacheProxy.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L7)
+Defined in: [src/services/metrics/metricsCacheProxy.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L10)
 
 Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
 
@@ -39,7 +39,7 @@ and misses using a performance monitoring object.
 
 ### clearByPattern()
 
-> **clearByPattern**(`pattern`): `Promise`\<`unknown`\>
+> **clearByPattern**(`pattern`): `Promise`\<`void`\>
 
 Clear all keys matching a pattern. Forwarded without metrics.
 
@@ -49,9 +49,13 @@ Clear all keys matching a pattern. Forwarded without metrics.
 
 `string`
 
+Glob-style pattern used to match keys to clear.
+
 #### Returns
 
-`Promise`\<`unknown`\>
+`Promise`\<`void`\>
+
+Promise that resolves when matching keys have been cleared.
 
 ### del()
 

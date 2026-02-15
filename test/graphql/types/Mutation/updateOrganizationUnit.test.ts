@@ -1,285 +1,161 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import Fastify, { type FastifyInstance } from "fastify";
+import { createMercuriusTestClient } from "mercurius-integration-testing";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { graphql } from "~/src/routes/graphql";
+import { Mutation_updateOrganization } from "../documentNodes";
 
-vi.mock("postgres", () => ({
-	default: vi.fn(() => ({
-		end: vi.fn(),
-	})),
-}));
+describe("Mutation updateOrganization (unit via mercurius)", () => {
+	const orgId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+	const updatedName = "Updated Org";
 
-vi.mock("~/src/server", () => ({
-	server: {
-		envConfig: {},
-		minio: { client: { putObject: vi.fn() } },
-	},
-}));
+	const redisState = new Map<string, Record<string, string>>();
+	const mockRedis = {
+		hgetall: vi.fn(async (key: string) => redisState.get(key) ?? {}),
+		hset: vi.fn(async (key: string, values: Record<string, string>) => {
+			const existing = redisState.get(key) ?? {};
+			redisState.set(key, { ...existing, ...values });
+			return 1;
+		}),
+	};
 
-// Mock utilities
-vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
-	TalawaGraphQLError: class extends Error {
-		constructor(message: string, _options?: Record<string, unknown>) {
-			super(message);
-		}
-	},
-}));
+	type MockTx = {
+		update: ReturnType<typeof vi.fn>;
+		set: ReturnType<typeof vi.fn>;
+		where: ReturnType<typeof vi.fn>;
+		returning: ReturnType<typeof vi.fn>;
+	};
 
-vi.mock("~/src/utilities/isNotNullish", () => ({
-	isNotNullish: (val: unknown) => val !== null && val !== undefined,
-}));
+	const tx: MockTx = {
+		update: vi.fn(),
+		set: vi.fn(),
+		where: vi.fn(),
+		returning: vi.fn(),
+	};
 
-// Hoist mocks to be accessible inside vi.mock
-const mocks = vi.hoisted(() => {
-	return {
-		builder: {
-			mutationField: vi.fn(),
-			field: vi.fn((args) => args),
-			arg: vi.fn(),
-			type: vi.fn(),
-			required: vi.fn(),
-			resolve: vi.fn(),
-			objectRef: vi.fn(),
-			inputType: vi.fn(),
-			inputRef: vi.fn(),
-			enumType: vi.fn(),
-			scalarType: vi.fn(),
-			interfaceType: vi.fn(),
-			unionType: vi.fn(),
-			queryField: vi.fn(),
-		},
-		tx: {
-			update: vi.fn(),
-			set: vi.fn(),
-			where: vi.fn(),
-			returning: vi.fn().mockResolvedValue([
-				{
-					id: "org-1",
-					avatarMimeType: "image/png",
-					avatarName: "new-avatar-id",
-				},
-			]),
-		},
-		drizzle: {
-			transaction: vi.fn(),
-			query: {
-				organizationsTable: {
-					findFirst: vi.fn(),
-				},
-				usersTable: {
-					findFirst: vi.fn(),
-				},
+	const mockDrizzleClient = {
+		transaction: vi.fn(),
+		query: {
+			usersTable: {
+				findFirst: vi.fn(),
 			},
-			update: vi.fn(),
-		},
-		minio: {
-			client: {
-				putObject: vi.fn().mockResolvedValue({}),
-				removeObject: vi.fn().mockResolvedValue({}),
+			organizationsTable: {
+				findFirst: vi.fn(),
 			},
-			bucketName: "talawa",
 		},
 	};
-});
 
-// Configure Drizzle Mock
-mocks.drizzle.transaction.mockImplementation(
-	(cb: (tx: typeof mocks.tx) => unknown) => cb(mocks.tx),
-);
-mocks.drizzle.update.mockReturnValue(mocks.tx);
-mocks.tx.update.mockReturnValue(mocks.tx);
-mocks.tx.set.mockReturnValue(mocks.tx);
-mocks.tx.where.mockReturnValue(mocks.tx);
-
-vi.mock("~/src/graphql/builder", () => ({
-	builder: mocks.builder,
-}));
-
-// Mock context and services
-const mockContext = {
-	currentClient: {
-		isAuthenticated: true,
-		user: { id: "admin-id" },
-	},
-	drizzleClient: mocks.drizzle,
-	minio: mocks.minio,
-	cache: {
+	const mockCache = {
 		get: vi.fn().mockResolvedValue(null),
 		set: vi.fn().mockResolvedValue(undefined),
-		del: vi.fn().mockResolvedValue(undefined),
+		del: vi.fn(),
 		clearByPattern: vi.fn().mockResolvedValue(undefined),
 		mget: vi.fn().mockResolvedValue([]),
 		mset: vi.fn().mockResolvedValue(undefined),
-	},
-	log: {
-		info: vi.fn(),
-		warn: vi.fn(),
-		error: vi.fn(),
-		debug: vi.fn(),
-	},
-};
-
-vi.mock("~/src/drizzle/client", () => ({
-	drizzleClient: mocks.drizzle,
-}));
-
-vi.mock("~/src/services/minio", () => ({
-	minio: mocks.minio,
-}));
-
-vi.mock("ulidx", () => ({
-	ulid: () => "mock-ulid",
-}));
-
-// Mock the Organization type to prevent import errors or side effects
-vi.mock("~/src/graphql/types/Organization/Organization", () => ({
-	Organization: "OrganizationType",
-}));
-
-vi.mock("~/src/graphql/inputs/MutationUpdateOrganizationInput", async () => {
-	const { z } = await vi.importActual<typeof import("zod")>("zod");
-	return {
-		mutationUpdateOrganizationInputSchema: z.any(),
-		MutationUpdateOrganizationInput: "MutationUpdateOrganizationInput",
 	};
-});
 
-vi.mock("~/src/drizzle/enums/imageMimeType", async () => {
-	const { z } = await vi.importActual<typeof import("zod")>("zod");
-	return {
-		imageMimeTypeEnum: z.enum(["image/png"]),
+	const mockMinio = {
+		client: {
+			putObject: vi.fn().mockResolvedValue({}),
+			removeObject: vi.fn().mockResolvedValue({}),
+		},
+		bucketName: "talawa",
 	};
-});
 
-import "~/src/graphql/types/Mutation/updateOrganization";
+	let app: ReturnType<typeof Fastify>;
+	let mercuriusClient: ReturnType<typeof createMercuriusTestClient>;
 
-describe("updateOrganization Resolver Unit Coverage", () => {
-	let resolver: (...args: unknown[]) => unknown;
-
-	beforeAll(() => {
-		// Capture the resolver from the builder mock
-		const calls = mocks.builder.mutationField.mock.calls;
-		const updateOrgCall = calls.find(
-			(c: unknown[]) => c[0] === "updateOrganization",
-		);
-		if (updateOrgCall) {
-			// The resolver is passed in the field definition
-			const fieldDef = updateOrgCall[1]({
-				field: mocks.builder.field,
-				arg: mocks.builder.arg,
-			});
-			resolver = fieldDef.resolve;
-		}
-	});
-
-	afterEach(() => {
-		vi.clearAllMocks();
-	});
-
-	it("should be defined", () => {
-		expect(resolver).toBeDefined();
-	});
-
-	it("should handle avatar upload (coverage for true branch of isNotNullish logic)", async () => {
-		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue({
-			id: "org-1",
-			avatarName: "old-avatar",
-		});
-
-		const args = {
-			input: {
-				id: "org-1",
-				avatar: {
-					mimetype: "image/png",
-					createReadStream: vi.fn().mockReturnValue("stream"),
-				},
+	beforeAll(async () => {
+		tx.update.mockReturnValue(tx);
+		tx.set.mockReturnValue(tx);
+		tx.where.mockReturnValue(tx);
+		tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: updatedName,
+				description: null,
+				addressLine1: null,
+				addressLine2: null,
+				city: null,
+				state: null,
+				postalCode: null,
+				countryCode: "us",
+				userRegistrationRequired: false,
+				avatarMimeType: null,
 			},
-		};
+		]);
 
-		// Execute resolver
-		await resolver(null, args, mockContext);
-
-		expect(mocks.minio.client.putObject).toHaveBeenCalledWith(
-			"talawa",
-			"old-avatar",
-			expect.anything(),
-			undefined,
-			{ "content-type": "image/png" },
+		mockDrizzleClient.transaction.mockImplementation(
+			(cb: (trx: MockTx) => unknown) => cb(tx),
 		);
 
-		// Verify cache invalidation
-		expect(mockContext.cache.del).toHaveBeenCalledWith(
-			"talawa:v1:organization:org-1",
-		);
-		expect(mockContext.cache.clearByPattern).toHaveBeenCalledWith(
-			"talawa:v1:organization:list:*",
-		);
-
-		// Verify Drizzle Update with Avatar Fields
-		expect(mocks.tx.set).toHaveBeenCalledWith(
-			expect.objectContaining({
-				avatarMimeType: "image/png",
-				avatarName: "old-avatar",
-			}),
-		);
-	});
-
-	it("should succeed even when cache invalidation fails (best-effort)", async () => {
-		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 		});
-		// First call: existing org lookup; second call: duplicate name check
-		mocks.drizzle.query.organizationsTable.findFirst
+
+		// 1st call: existing org lookup; 2nd call: duplicate name check
+		mockDrizzleClient.query.organizationsTable.findFirst
 			.mockResolvedValueOnce({
-				id: "org-1",
 				avatarName: null,
 			})
 			.mockResolvedValueOnce(undefined);
 
-		// Make cache.del throw to simulate cache failure
-		mockContext.cache.del.mockRejectedValue(new Error("Redis connection lost"));
+		mockCache.del.mockRejectedValue(new Error("Redis connection lost"));
 
-		const args = {
-			input: {
-				id: "org-1",
-				name: "Updated Org",
-			},
-		};
+		app = Fastify({ logger: false });
 
-		// Mutation should still succeed despite cache failure
-		const result = await resolver(null, args, mockContext);
-		expect(result).toBeDefined();
+		app.decorate("envConfig", {
+			API_IS_GRAPHIQL: true,
+			API_GRAPHQL_MUTATION_BASE_COST: 1,
+			API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
+			API_RATE_LIMIT_REFILL_RATE: 10000,
+		} as unknown as FastifyInstance["envConfig"]);
 
-		// Verify cache invalidation was attempted
-		expect(mockContext.cache.del).toHaveBeenCalled();
+		app.decorate(
+			"drizzleClient",
+			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
+		);
+
+		app.decorate("cache", mockCache as unknown as FastifyInstance["cache"]);
+		app.decorate("redis", mockRedis as unknown as FastifyInstance["redis"]);
+		app.decorate("minio", mockMinio as unknown as FastifyInstance["minio"]);
+		app.decorate("jwt", {
+			sign: vi.fn(),
+			verify: vi.fn(),
+		} as unknown as FastifyInstance["jwt"]);
+
+		// Ensure authentication for both createContext and the preExecution hook.
+		app.decorateRequest("jwtVerify", async () => ({
+			user: { id: "admin-id" },
+		}));
+
+		await app.register(graphql);
+
+		mercuriusClient = createMercuriusTestClient(app, { url: "/graphql" });
 	});
 
-	it("should invalidate cache when updating only organization fields (no avatar)", async () => {
-		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		mocks.drizzle.query.organizationsTable.findFirst
-			.mockResolvedValueOnce({
-				id: "org-1",
-				avatarName: null,
-			})
-			.mockResolvedValueOnce(undefined); // No duplicate name found
+	afterAll(async () => {
+		await app.close();
+	});
 
-		mocks.tx.returning.mockResolvedValue([{ id: "org-1" }]);
-
-		const args = {
-			input: {
-				id: "org-1",
-				name: "Updated Org Name",
+	it("should succeed even when cache invalidation fails (best-effort)", async () => {
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			variables: {
+				input: {
+					id: orgId,
+					name: updatedName,
+				},
 			},
-		};
+		});
 
-		await resolver(null, args, mockContext);
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization).toBeDefined();
+		expect(result.data?.updateOrganization?.id).toBe(orgId);
+		expect(result.data?.updateOrganization?.name).toBe(updatedName);
 
-		expect(mockContext.cache.del).toHaveBeenCalledWith(
-			"talawa:v1:organization:org-1",
+		expect(mockCache.del).toHaveBeenCalledWith(
+			`talawa:v1:organization:${orgId}`,
 		);
-		expect(mockContext.cache.clearByPattern).toHaveBeenCalledWith(
+		expect(mockCache.clearByPattern).toHaveBeenCalledWith(
 			"talawa:v1:organization:list:*",
 		);
 	});
