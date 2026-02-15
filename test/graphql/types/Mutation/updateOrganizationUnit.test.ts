@@ -100,6 +100,14 @@ const mockContext = {
 	},
 	drizzleClient: mocks.drizzle,
 	minio: mocks.minio,
+	cache: {
+		get: vi.fn().mockResolvedValue(null),
+		set: vi.fn().mockResolvedValue(undefined),
+		del: vi.fn().mockResolvedValue(undefined),
+		clearByPattern: vi.fn().mockResolvedValue(undefined),
+		mget: vi.fn().mockResolvedValue([]),
+		mset: vi.fn().mockResolvedValue(undefined),
+	},
 };
 
 vi.mock("~/src/drizzle/client", () => ({
