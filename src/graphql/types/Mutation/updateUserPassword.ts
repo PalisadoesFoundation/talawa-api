@@ -43,8 +43,7 @@ builder.mutationField("updateUserPassword", (t) =>
 
 			if (!checkPasswordChangeRateLimit(ctx.currentClient.user.id)) {
 				throw new TalawaGraphQLError({
-					message:
-						"Too many password change attempts. Please try again later.",
+					message: "Too many password change attempts. Please try again later.",
 					extensions: {
 						code: "too_many_requests",
 					},
