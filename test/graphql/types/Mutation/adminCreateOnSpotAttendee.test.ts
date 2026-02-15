@@ -823,10 +823,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 
 			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
-					operators.eq(
-						fields.emailAddress,
-						createdAttendee.user.emailAddress,
-					),
+					operators.eq(fields.emailAddress, createdAttendee.user.emailAddress),
 			});
 			expect(dbUser).toBeDefined();
 		});
