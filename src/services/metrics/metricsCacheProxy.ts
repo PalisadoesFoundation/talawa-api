@@ -10,6 +10,7 @@ export function metricsCacheProxy<
 		mget?: (keys: string[]) => Promise<unknown[]>;
 		set: (key: string, value: unknown, ttl: number) => Promise<unknown>;
 		del: (keys: string | string[]) => Promise<unknown>;
+		clearByPattern?: (pattern: string) => Promise<unknown>;
 	},
 >(
 	cache: TCache,
@@ -70,6 +71,15 @@ export function metricsCacheProxy<
 		 */
 		async del(keys: string | string[]) {
 			return cache.del(keys);
+		},
+
+		/**
+		 * Clear all keys matching a pattern. Forwarded without metrics.
+		 */
+		async clearByPattern(pattern: string) {
+			if (cache.clearByPattern) {
+				return cache.clearByPattern(pattern);
+			}
 		},
 	};
 }

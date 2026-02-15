@@ -7,6 +7,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
+import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -111,80 +112,83 @@ builder.mutationField("createOrganization", (t) =>
 						}
 					: {};
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
-					const [createdOrganization] = await tx
-						.insert(organizationsTable)
-						.values({
-							addressLine1: parsedArgs.input.addressLine1,
-							addressLine2: parsedArgs.input.addressLine2,
-							city: parsedArgs.input.city,
-							countryCode: parsedArgs.input.countryCode,
-							description: parsedArgs.input.description,
-							creatorId: currentUserId,
-							name: parsedArgs.input.name,
-							postalCode: parsedArgs.input.postalCode,
-							state: parsedArgs.input.state,
-							userRegistrationRequired:
-								parsedArgs.input.isUserRegistrationRequired,
-							...avatarMeta,
-						})
-						.returning();
+				const createdOrganization = await ctx.drizzleClient.transaction(
+					async (tx) => {
+						const [result] = await tx
+							.insert(organizationsTable)
+							.values({
+								addressLine1: parsedArgs.input.addressLine1,
+								addressLine2: parsedArgs.input.addressLine2,
+								city: parsedArgs.input.city,
+								countryCode: parsedArgs.input.countryCode,
+								description: parsedArgs.input.description,
+								creatorId: currentUserId,
+								name: parsedArgs.input.name,
+								postalCode: parsedArgs.input.postalCode,
+								state: parsedArgs.input.state,
+								userRegistrationRequired:
+									parsedArgs.input.isUserRegistrationRequired,
+								...avatarMeta,
+							})
+							.returning();
 
-					// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-					if (!createdOrganization) {
-						ctx.log.error(
-							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-						);
-
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
-
-					if (
-						isNotNullish(parsedArgs.input.avatar) &&
-						createdOrganization.avatarName
-					) {
-						// Verify the file exists in MinIO (uploaded via presigned URL)
-						try {
-							await ctx.minio.client.statObject(
-								ctx.minio.bucketName,
-								createdOrganization.avatarName,
+						// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+						if (!result) {
+							ctx.log.error(
+								"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 							);
-						} catch (error) {
-							// Only treat NotFound as user error
-							if (
-								error instanceof Error &&
-								(error.name === "NotFound" ||
-									error.message.includes("Not Found") ||
-									(error as { code?: string }).code === "NotFound")
-							) {
-								throw new TalawaGraphQLError({
-									extensions: {
-										code: "invalid_arguments",
-										issues: [
-											{
-												argumentPath: ["input", "avatar", "objectName"],
-												message:
-													"File not found in storage. Please upload the file first.",
-											},
-										],
-									},
-								});
-							}
-							// For other errors, throw unexpected
+
 							throw new TalawaGraphQLError({
 								extensions: {
 									code: "unexpected",
 								},
 							});
 						}
-					}
 
-					return createdOrganization;
-				});
+						if (isNotNullish(parsedArgs.input.avatar) && result.avatarName) {
+							// Verify the file exists in MinIO (uploaded via presigned URL)
+							try {
+								await ctx.minio.client.statObject(
+									ctx.minio.bucketName,
+									result.avatarName,
+								);
+							} catch (error) {
+								// Only treat NotFound as user error
+								if (
+									error instanceof Error &&
+									(error.name === "NotFound" ||
+										error.message.includes("Not Found") ||
+										(error as { code?: string }).code === "NotFound")
+								) {
+									throw new TalawaGraphQLError({
+										extensions: {
+											code: "invalid_arguments",
+											issues: [
+												{
+													argumentPath: ["input", "avatar", "objectName"],
+													message:
+														"File not found in storage. Please upload the file first.",
+												},
+											],
+										},
+									});
+								}
+								// For other errors, throw unexpected
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "unexpected",
+									},
+								});
+							}
+						}
+
+						return result;
+					},
+				);
+
+				await invalidateEntityLists(ctx.cache, "organization");
+
+				return createdOrganization;
 			},
 		),
 		type: Organization,

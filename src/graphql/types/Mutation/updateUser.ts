@@ -11,6 +11,10 @@ import {
 	mutationUpdateUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -160,7 +164,7 @@ builder.mutationField("updateUser", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [updatedUser] = await tx
 					.update(usersTable)
 					.set({
@@ -235,6 +239,11 @@ builder.mutationField("updateUser", (t) =>
 
 				return updatedUser;
 			});
+
+			await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
+			await invalidateEntityLists(ctx.cache, "user");
+
+			return result;
 		},
 		type: User,
 	}),

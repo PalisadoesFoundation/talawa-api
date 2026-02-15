@@ -8,6 +8,10 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
 import { zParseOrThrow } from "~/src/graphql/validators/helpers";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -102,7 +106,7 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [deletedUser] = await tx
 					.delete(usersTable)
 					.where(eq(usersTable.id, parsedArgs.input.id))
@@ -130,6 +134,11 @@ builder.mutationField("deleteUser", (t) =>
 
 				return deletedUser;
 			});
+
+			await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
+			await invalidateEntityLists(ctx.cache, "user");
+
+			return result;
 		},
 		type: User,
 	}),

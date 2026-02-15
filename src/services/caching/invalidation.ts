@@ -1,10 +1,9 @@
-import type { CacheService } from "./CacheService";
 import { CacheNamespace } from "./cacheConfig";
 
 /**
  * Invalidate a specific entity from the cache.
  *
- * @param cache - The cache service instance.
+ * @param cache - An object with a `del` method (e.g., CacheService or metrics proxy).
  * @param entity - The entity type (e.g., "user", "organization").
  * @param id - The entity ID.
  *
@@ -14,7 +13,7 @@ import { CacheNamespace } from "./cacheConfig";
  * ```
  */
 export async function invalidateEntity(
-	cache: CacheService,
+	cache: { del(keys: string | string[]): Promise<unknown> },
 	entity: string,
 	id: string | number,
 ): Promise<void> {
@@ -25,7 +24,7 @@ export async function invalidateEntity(
  * Invalidate all list caches for a specific entity type.
  * Use this after mutations that affect list queries (create, delete, bulk update).
  *
- * @param cache - The cache service instance.
+ * @param cache - An object with a `clearByPattern` method (e.g., CacheService or metrics proxy).
  * @param entity - The entity type.
  *
  * @example
@@ -34,7 +33,7 @@ export async function invalidateEntity(
  * ```
  */
 export async function invalidateEntityLists(
-	cache: CacheService,
+	cache: { clearByPattern(pattern: string): Promise<unknown> },
 	entity: string,
 ): Promise<void> {
 	const pattern = `${CacheNamespace}:${entity}:list:*`;

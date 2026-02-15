@@ -8,6 +8,10 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -217,6 +221,9 @@ builder.mutationField("deleteOrganization", (t) =>
 						);
 					}
 				}
+
+				await invalidateEntity(ctx.cache, "organization", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "organization");
 
 				return deletedOrganization;
 			},

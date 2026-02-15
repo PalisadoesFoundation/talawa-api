@@ -6,7 +6,7 @@
 
 > **invalidateEntity**(`cache`, `entity`, `id`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/invalidation.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/invalidation.ts#L16)
+Defined in: [src/services/caching/invalidation.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/invalidation.ts#L15)
 
 Invalidate a specific entity from the cache.
 
@@ -14,9 +14,9 @@ Invalidate a specific entity from the cache.
 
 ### cache
 
-[`CacheService`](../../CacheService/interfaces/CacheService.md)
+An object with a `del` method (e.g., CacheService or metrics proxy).
 
-The cache service instance.
+#### del
 
 ### entity
 

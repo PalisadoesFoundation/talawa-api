@@ -37,6 +37,22 @@ and misses using a performance monitoring object.
 
 ## Returns
 
+### clearByPattern()
+
+> **clearByPattern**(`pattern`): `Promise`\<`unknown`\>
+
+Clear all keys matching a pattern. Forwarded without metrics.
+
+#### Parameters
+
+##### pattern
+
+`string`
+
+#### Returns
+
+`Promise`\<`unknown`\>
+
 ### del()
 
 > **del**(`keys`): `Promise`\<`unknown`\>
