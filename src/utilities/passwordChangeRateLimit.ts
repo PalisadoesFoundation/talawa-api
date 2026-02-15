@@ -12,17 +12,31 @@ interface RateLimitEntry {
 
 export const PASSWORD_CHANGE_RATE_LIMITS = new Map<string, RateLimitEntry>();
 
-export const RATE_LIMIT_WINDOW_MS = Number.parseInt(
-	process.env.PASSWORD_RATE_WINDOW_MS || "3600000",
-	10,
+function parsePositiveInt(
+	envValue: string | undefined,
+	fallback: number,
+): number {
+	if (envValue == null) {
+		return fallback;
+	}
+	const parsed = Number.parseInt(envValue, 10);
+	if (Number.isNaN(parsed) || parsed <= 0) {
+		return fallback;
+	}
+	return parsed;
+}
+
+export const RATE_LIMIT_WINDOW_MS = parsePositiveInt(
+	process.env.PASSWORD_RATE_WINDOW_MS,
+	3_600_000,
 ); // default 1 hour
-export const MAX_REQUESTS_PER_WINDOW = Number.parseInt(
-	process.env.PASSWORD_MAX_REQUESTS || "3",
-	10,
+export const MAX_REQUESTS_PER_WINDOW = parsePositiveInt(
+	process.env.PASSWORD_MAX_REQUESTS,
+	3,
 ); // default 3
-export const CLEANUP_INTERVAL_MS = Number.parseInt(
-	process.env.PASSWORD_RATE_CLEANUP_INTERVAL_MS || "300000",
-	10,
+export const CLEANUP_INTERVAL_MS = parsePositiveInt(
+	process.env.PASSWORD_RATE_CLEANUP_INTERVAL_MS,
+	300_000,
 ); // default 5 minutes
 
 let lastCleanupAt = 0;
@@ -82,7 +96,10 @@ export function consumePasswordChangeRateLimit(userId: string): void {
 }
 
 /**
- * Cleans up rate limit entries older than the rate limit window.
+ * Removes stale entries from {@link PASSWORD_CHANGE_RATE_LIMITS}.
+ * An entry is considered stale when its age exceeds twice
+ * {@link RATE_LIMIT_WINDOW_MS} (i.e., `now - entry.windowStart >= RATE_LIMIT_WINDOW_MS * 2`).
+ *
  * @param now - Current timestamp
  */
 function cleanupOldEntries(now: number): void {
