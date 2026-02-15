@@ -12,9 +12,18 @@ interface RateLimitEntry {
 
 export const PASSWORD_CHANGE_RATE_LIMITS = new Map<string, RateLimitEntry>();
 
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_REQUESTS_PER_WINDOW = 3;
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+export const RATE_LIMIT_WINDOW_MS = Number.parseInt(
+	process.env.PASSWORD_RATE_WINDOW_MS || "3600000",
+	10,
+); // default 1 hour
+export const MAX_REQUESTS_PER_WINDOW = Number.parseInt(
+	process.env.PASSWORD_MAX_REQUESTS || "3",
+	10,
+); // default 3
+export const CLEANUP_INTERVAL_MS = Number.parseInt(
+	process.env.PASSWORD_RATE_CLEANUP_INTERVAL_MS || "300000",
+	10,
+); // default 5 minutes
 
 let lastCleanupAt = 0;
 
