@@ -11,7 +11,10 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { invalidateEntity } from "~/src/services/caching/invalidation";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -222,9 +225,15 @@ builder.mutationField("updateCurrentUser", (t) =>
 			});
 
 			try {
-				await invalidateEntity(ctx.cache, "user", currentUserId);
-			} catch (error) {
-				ctx.log.error({ error, entity: "user" }, "Cache invalidation failed");
+				await Promise.allSettled([
+					invalidateEntity(ctx.cache, "user", currentUserId),
+					invalidateEntityLists(ctx.cache, "user"),
+				]);
+			} catch (cacheError) {
+				ctx.log.error(
+					{ cacheError, entity: "user" },
+					"Cache invalidation failed",
+				);
 			}
 
 			return result;

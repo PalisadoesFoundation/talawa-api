@@ -201,6 +201,14 @@ describe("updateOrganization Resolver Unit Coverage", () => {
 			{ "content-type": "image/png" },
 		);
 
+		// Verify cache invalidation
+		expect(mockContext.cache.del).toHaveBeenCalledWith(
+			"talawa:v1:organization:org-1",
+		);
+		expect(mockContext.cache.clearByPattern).toHaveBeenCalledWith(
+			"talawa:v1:organization:list:*",
+		);
+
 		// Verify Drizzle Update with Avatar Fields
 		expect(mocks.tx.set).toHaveBeenCalledWith(
 			expect.objectContaining({

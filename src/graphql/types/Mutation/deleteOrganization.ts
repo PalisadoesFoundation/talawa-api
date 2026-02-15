@@ -223,15 +223,13 @@ builder.mutationField("deleteOrganization", (t) =>
 				}
 
 				try {
-					await invalidateEntity(
-						ctx.cache,
-						"organization",
-						parsedArgs.input.id,
-					);
-					await invalidateEntityLists(ctx.cache, "organization");
-				} catch (error) {
+					await Promise.allSettled([
+						invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+						invalidateEntityLists(ctx.cache, "organization"),
+					]);
+				} catch (cacheError) {
 					ctx.log.error(
-						{ error, entity: "organization" },
+						{ cacheError, entity: "organization" },
 						"Cache invalidation failed",
 					);
 				}

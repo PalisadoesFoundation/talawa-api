@@ -188,9 +188,9 @@ builder.mutationField("createOrganization", (t) =>
 
 				try {
 					await invalidateEntityLists(ctx.cache, "organization");
-				} catch (error) {
+				} catch (cacheError) {
 					ctx.log.error(
-						{ error, entity: "organization" },
+						{ cacheError, entity: "organization" },
 						"Cache invalidation failed",
 					);
 				}
