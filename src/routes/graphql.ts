@@ -152,10 +152,27 @@ export const createContext: CreateContext = async (initialContext) => {
 			user: jwtPayload.user,
 		};
 	} catch (headerError) {
-		request.log.debug(
-			{ err: headerError },
-			"Authorization token verification failed; falling back to cookie auth",
-		);
+		if (typeof request?.log?.debug === "function") {
+			request.log.debug(
+				{ err: headerError },
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		} else if (typeof request?.log?.info === "function") {
+			request.log.info(
+				{ err: headerError },
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		} else if (typeof request?.log?.warn === "function") {
+			request.log.warn(
+				{ err: headerError },
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		} else if (typeof request?.log?.error === "function") {
+			request.log.error(
+				{ err: headerError },
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		}
 
 		// If no Authorization header, try to get token from cookie (web clients)
 		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
@@ -170,10 +187,27 @@ export const createContext: CreateContext = async (initialContext) => {
 					user: jwtPayload.user,
 				};
 			} catch (cookieError) {
-				request.log.debug(
-					{ err: cookieError },
-					"Cookie token verification failed; treating request as unauthenticated",
-				);
+				if (typeof request?.log?.debug === "function") {
+					request.log.debug(
+						{ err: cookieError },
+						"Cookie token verification failed; treating request as unauthenticated",
+					);
+				} else if (typeof request?.log?.info === "function") {
+					request.log.info(
+						{ err: cookieError },
+						"Cookie token verification failed; treating request as unauthenticated",
+					);
+				} else if (typeof request?.log?.warn === "function") {
+					request.log.warn(
+						{ err: cookieError },
+						"Cookie token verification failed; treating request as unauthenticated",
+					);
+				} else if (typeof request?.log?.error === "function") {
+					request.log.error(
+						{ err: cookieError },
+						"Cookie token verification failed; treating request as unauthenticated",
+					);
+				}
 				currentClient = {
 					isAuthenticated: false,
 				};
@@ -876,10 +910,27 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					user: jwtPayload.user,
 				};
 			} catch (authError) {
-				request.log.debug(
-					{ err: authError },
-					"JWT verification failed during preExecution; using unauthenticated rate limits",
-				);
+				if (typeof request?.log?.debug === "function") {
+					request.log.debug(
+						{ err: authError },
+						"JWT verification failed during preExecution; using unauthenticated rate limits",
+					);
+				} else if (typeof request?.log?.info === "function") {
+					request.log.info(
+						{ err: authError },
+						"JWT verification failed during preExecution; using unauthenticated rate limits",
+					);
+				} else if (typeof request?.log?.warn === "function") {
+					request.log.warn(
+						{ err: authError },
+						"JWT verification failed during preExecution; using unauthenticated rate limits",
+					);
+				} else if (typeof request?.log?.error === "function") {
+					request.log.error(
+						{ err: authError },
+						"JWT verification failed during preExecution; using unauthenticated rate limits",
+					);
+				}
 				currentClient = {
 					isAuthenticated: false,
 				};
