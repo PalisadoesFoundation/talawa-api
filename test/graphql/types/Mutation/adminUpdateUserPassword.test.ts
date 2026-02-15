@@ -290,6 +290,35 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
 	});
 
+	test("Admin can reset another admin password", async () => {
+		const adminToken = await getAdminAuth();
+
+		const targetAdmin = await createUserWithCleanup();
+
+		// promote target to admin
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ role: "administrator" })
+			.where(eq(usersTable.id, targetAdmin.userId));
+
+		const result = await mercuriusClient.mutate(
+			Mutation_adminUpdateUserPassword,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: targetAdmin.userId,
+						newPassword: "newAdminPass123",
+						confirmNewPassword: "newAdminPass123",
+					},
+				},
+			},
+		);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.adminUpdateUserPassword).toBe(true);
+	});
+
 	test("Admin can reset password multiple times", async () => {
 		const adminToken = await getAdminAuth();
 		const user = await createUserWithCleanup();

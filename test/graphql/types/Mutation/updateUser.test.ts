@@ -1061,6 +1061,11 @@ suite("Mutation field updateUser", () => {
 				assertToBeNonNullish(result.data.updateUser);
 
 				expect(result.data.updateUser.name).toBe("updated name");
+
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
 			});
 		},
 	);
