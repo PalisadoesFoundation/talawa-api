@@ -151,6 +151,35 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 		vi.restoreAllMocks();
 	});
 
+	it("should succeed when cache invalidation succeeds (happy path)", async () => {
+		// Ensure cache invalidation succeeds
+		mockCache.del.mockResolvedValueOnce(undefined);
+		mockCache.clearByPattern.mockResolvedValueOnce(undefined);
+
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			variables: {
+				input: {
+					id: orgId,
+					name: updatedName,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization).toBeDefined();
+		expect(result.data?.updateOrganization?.id).toBe(orgId);
+		expect(result.data?.updateOrganization?.name).toBe(updatedName);
+
+		expect(mockCache.del).toHaveBeenCalledWith(
+			`talawa:v1:organization:${orgId}`,
+		);
+		expect(mockCache.clearByPattern).toHaveBeenCalledWith(
+			"talawa:v1:organization:list:*",
+		);
+
+		expect(app.log.error).not.toHaveBeenCalled();
+	});
+
 	it("should succeed even when cache invalidation fails (best-effort)", async () => {
 		// Simulate cache failure
 		mockCache.del.mockRejectedValue(new Error("Redis connection lost"));

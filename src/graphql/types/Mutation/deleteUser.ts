@@ -7,6 +7,7 @@ import {
 	mutationDeleteUserInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { zParseOrThrow } from "~/src/graphql/validators/helpers";
 import {
 	invalidateEntity,
@@ -135,20 +136,14 @@ builder.mutationField("deleteUser", (t) =>
 				return deletedUser;
 			});
 
-			const results = await Promise.allSettled([
-				invalidateEntity(ctx.cache, "user", parsedArgs.input.id),
-				invalidateEntityLists(ctx.cache, "user"),
-			]);
-
-			for (let i = 0; i < results.length; i++) {
-				const settled = results[i];
-				if (settled !== undefined && settled.status === "rejected") {
-					ctx.log.error(
-						{ err: settled.reason, entity: "user", opIndex: i },
-						"Cache invalidation failed",
-					);
-				}
-			}
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "user", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "user"),
+				],
+				"user",
+				ctx.log,
+			);
 
 			return result;
 		},

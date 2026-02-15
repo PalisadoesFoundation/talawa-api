@@ -10,6 +10,7 @@ import {
 	mutationUpdatePostInputSchema,
 } from "~/src/graphql/inputs/MutationUpdatePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import {
 	invalidateEntity,
 	invalidateEntityLists,
@@ -348,20 +349,14 @@ builder.mutationField("updatePost", (t) =>
 				});
 			});
 
-			const results = await Promise.allSettled([
-				invalidateEntity(ctx.cache, "post", parsedArgs.input.id),
-				invalidateEntityLists(ctx.cache, "post"),
-			]);
-
-			for (let i = 0; i < results.length; i++) {
-				const settled = results[i];
-				if (settled !== undefined && settled.status === "rejected") {
-					ctx.log.error(
-						{ err: settled.reason, entity: "post", opIndex: i },
-						"Cache invalidation failed",
-					);
-				}
-			}
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "post", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "post"),
+				],
+				"post",
+				ctx.log,
+			);
 
 			return result;
 		},

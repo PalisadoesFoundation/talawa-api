@@ -7,6 +7,7 @@ import type { FastifyBaseLogger } from "fastify";
  * @param promises - An array of promises returned by cache invalidation functions (e.g. invalidateEntity).
  * @param entity - The name of the entity being invalidated (e.g. "organization", "post").
  * @param logger - The logger instance (e.g. ctx.log) to record errors.
+ * @returns {Promise<void>} Resolves after all invalidation promises have settled.
  */
 export async function runBestEffortInvalidation(
 	promises: Promise<unknown>[],

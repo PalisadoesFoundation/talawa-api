@@ -11,6 +11,7 @@ import {
 	mutationUpdateUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import {
 	invalidateEntity,
 	invalidateEntityLists,
@@ -240,20 +241,14 @@ builder.mutationField("updateUser", (t) =>
 				return updatedUser;
 			});
 
-			const results = await Promise.allSettled([
-				invalidateEntity(ctx.cache, "user", parsedArgs.input.id),
-				invalidateEntityLists(ctx.cache, "user"),
-			]);
-
-			for (let i = 0; i < results.length; i++) {
-				const settled = results[i];
-				if (settled !== undefined && settled.status === "rejected") {
-					ctx.log.error(
-						{ err: settled.reason, entity: "user", opIndex: i },
-						"Cache invalidation failed",
-					);
-				}
-			}
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "user", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "user"),
+				],
+				"user",
+				ctx.log,
+			);
 
 			return result;
 		},
