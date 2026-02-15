@@ -2221,9 +2221,7 @@ type Mutation {
   """Mutation field to add an event attendee."""
   addEventAttendee(data: EventAttendeeInput!): User
 
-  """
-  Mutation to allow an administrator to reset a non-admin user's password.
-  """
+  """Mutation to allow an administrator to reset another user's password."""
   adminUpdateUserPassword(
     """Input for updating a member's password by an admin."""
     input: MutationAdminUpdateUserPasswordInput!
