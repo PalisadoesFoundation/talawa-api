@@ -5255,15 +5255,15 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should handle error with extensions and normalized details for Zod extraction", () => {
+		it("should handle error with extensions and normalized details for Zod extraction", async () => {
 			// This specifically tests the branch:
 			// if ((normalized.code === INTERNAL_SERVER_ERROR || INVALID_ARGUMENTS) && normalized.details)
 			// We need a ZodError or an error that normalizeError returns with details
-			const { ZodError: ZodErrorClass } = require("zod");
+			const { ZodError: ZodErrorClass } = await import("zod");
 			const zodError = new ZodErrorClass([
 				{
-					code: "invalid_string",
-					validation: "uuid",
+					code: "invalid_format",
+					format: "uuid",
 					message: "Invalid UUID",
 					path: ["id"],
 				},
@@ -5296,13 +5296,13 @@ describe("GraphQL Routes", () => {
 			expect(result.response.errors?.[0]?.message).toBe("Invalid uuid");
 		});
 
-		it("should handle error without extensions with normalized INVALID_ARGUMENTS code and Zod details", () => {
+		it("should handle error without extensions with normalized INVALID_ARGUMENTS code and Zod details", async () => {
 			// Create a ZodError without extensions to hit the !error.extensions path
-			const { ZodError: ZodErrorClass } = require("zod");
+			const { ZodError: ZodErrorClass } = await import("zod");
 			const zodError = new ZodErrorClass([
 				{
-					code: "invalid_string",
-					validation: "uuid",
+					code: "invalid_format",
+					format: "uuid",
 					message: "Invalid UUID",
 					path: ["id"],
 				},
