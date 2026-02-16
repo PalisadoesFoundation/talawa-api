@@ -30,7 +30,7 @@ describe("User field birthDate resolver", () => {
 			id: _userId,
 			name: "Test User",
 			emailAddress: "test@example.com",
-			birthDate: new Date("2000-01-15"),
+			birthDate: new Date("2000-01-15T00:00:00Z"),
 			role: "regular",
 			createdAt: new Date("2025-01-01T10:00:00Z"),
 			updatedAt: null,
@@ -131,12 +131,12 @@ describe("User field birthDate resolver", () => {
 		const anotherUser = {
 			...parent,
 			id: faker.string.ulid(),
-			birthDate: new Date("1995-06-20"),
+			birthDate: new Date("2000-01-15T00:00:00Z"),
 		} as UserType;
 
 		const result = await birthDateResolver(anotherUser, {}, ctx, {} as never);
 
-		expect(result).toEqual(new Date("1995-06-20"));
+		expect(result).toEqual(new Date("2000-01-15T00:00:00Z"));
 	});
 
 	it("returns null when administrator accesses another user's data and birthDate is not set", async () => {
@@ -155,40 +155,73 @@ describe("User field birthDate resolver", () => {
 		expect(result).toBeNull();
 	});
 
-	it("passes correct query configuration including where clause to findFirst", async () => {
-		const mockEq = vi.fn().mockReturnValue("eq-result");
-
-		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-			(config) => {
-				// Exercise the where callback to cover the arrow function
-				if (config?.where) {
-					const whereFn = config.where as (
-						fields: Record<string, unknown>,
-						operators: Record<string, unknown>,
-					) => unknown;
-					const result = whereFn({ id: "mock-field-id" }, { eq: mockEq });
-					expect(result).toBe("eq-result");
-				}
-
-				// Verify columns config
-				expect(config?.columns).toEqual({ role: true });
-
-				return Promise.resolve({ role: "regular" });
-			},
-		);
+	it("returns birthDate when administrator accesses their own data", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
 
 		const result = await birthDateResolver(parent, {}, ctx, {} as never);
 
 		expect(result).toEqual(new Date("2000-01-15"));
+	});
+
+	it("returns null when administrator accesses their own data and birthDate is not set", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+
+		const parentWithoutBirthDate = {
+			...parent,
+			birthDate: null,
+		} as unknown as UserType;
+
+		const result = await birthDateResolver(
+			parentWithoutBirthDate,
+			{},
+			ctx,
+			{} as never,
+		);
+
+		expect(result).toBeNull();
+	});
+
+	it("passes correct query configuration including where clause to findFirst", async () => {
+		const mockEq = vi.fn().mockReturnValue("eq-result");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "regular",
+		});
+
+		const result = await birthDateResolver(parent, {}, ctx, {} as never);
+
+		expect(result).toEqual(new Date("2000-01-15T00:00:00Z"));
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
+
+		// Retrieve the config that was passed to findFirst (cast needed because the mock type has no params)
+		const config = (
+			mocks.drizzleClient.query.usersTable.findFirst.mock
+				.calls as unknown as Record<string, unknown>[][]
+		)[0]?.[0];
+
+		// Verify columns config
+		expect(config?.columns).toEqual({ role: true });
+
+		// Exercise the where callback to cover the arrow function
+		expect(config?.where).toBeTypeOf("function");
+		const whereFn = config?.where as (
+			fields: Record<string, unknown>,
+			operators: Record<string, unknown>,
+		) => unknown;
+		const whereResult = whereFn({ id: "mock-field-id" }, { eq: mockEq });
+		expect(whereResult).toBe("eq-result");
 
 		// Verify the where callback called eq with the correct field and the current user's ID
 		expect(mockEq).toHaveBeenCalledWith(
 			"mock-field-id",
 			ctx.currentClient.isAuthenticated ? ctx.currentClient.user.id : undefined,
 		);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
 	});
 
 	it("rethrows TalawaGraphQLError from database layer without logging", async () => {
