@@ -8,6 +8,9 @@ import { getTier } from "~/src/config/rateLimits";
 import { createServer } from "~/src/createServer";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
+/** Satisfies env schema API_AUTH_JWT_SECRET minLength for createServer in tests. */
+const TEST_AUTH_JWT_SECRET = "12345678901234567890123456789012";
+
 const expectValidErrorResponse = (
 	body: { error: Record<string, unknown> },
 	expectedCode: string,
@@ -114,6 +117,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 
@@ -158,6 +162,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 
@@ -227,6 +232,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 
@@ -273,6 +279,7 @@ describe("/objects/:name route", () => {
 					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
 					API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+					API_AUTH_JWT_SECRET: TEST_AUTH_JWT_SECRET,
 				},
 			});
 			return app;
@@ -452,6 +459,22 @@ describe("/objects/:name route", () => {
 			});
 			expect(res1.statusCode).toBe(400);
 
+			const body1 = JSON.parse(res1.body);
+			expect(body1).toEqual(
+				expect.objectContaining({
+					error: expect.objectContaining({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "Validation failed",
+						details: expect.arrayContaining([
+							expect.objectContaining({
+								instancePath: "/name",
+								message: "must NOT have fewer than 1 characters",
+							}),
+						]),
+					}),
+				}),
+			);
+
 			// Test name exceeding max length (37 characters)
 			const longName = "a".repeat(37);
 			const res2 = await app.inject({
@@ -460,11 +483,20 @@ describe("/objects/:name route", () => {
 			});
 			expect(res2.statusCode).toBe(400);
 
-			const body = JSON.parse(res2.body);
-			expectValidErrorResponse(
-				body,
-				ErrorCode.INVALID_ARGUMENTS,
-				"Validation failed",
+			const body2 = JSON.parse(res2.body);
+			expect(body2).toEqual(
+				expect.objectContaining({
+					error: expect.objectContaining({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "Validation failed",
+						details: expect.arrayContaining([
+							expect.objectContaining({
+								instancePath: "/name",
+								message: "must NOT have more than 36 characters",
+							}),
+						]),
+					}),
+				}),
 			);
 		});
 	});

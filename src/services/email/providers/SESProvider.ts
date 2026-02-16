@@ -1,3 +1,6 @@
+import { ErrorCode } from "../../../utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../utilities/errors/TalawaRestError";
+import { rootLogger } from "../../../utilities/logging/logger";
 import type {
 	EmailJob,
 	EmailResult,
@@ -21,8 +24,6 @@ export interface SESProviderConfig {
 	fromName?: string;
 }
 
-// TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
-// This would improve throughput for high-volume scenarios.
 /**
  * AWS SES implementation of IEmailProvider.
  *
@@ -51,18 +52,21 @@ export class SESProvider implements IEmailProvider {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
 
-			// Validate region
 			if (!this.config.region) {
-				throw new Error("AWS_SES_REGION must be a non-empty string");
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "API_AWS_SES_REGION must be a non-empty string",
+				});
 			}
 
-			// Validate that either both credentials are provided or neither
 			const hasAccessKey = Boolean(this.config.accessKeyId);
 			const hasSecretKey = Boolean(this.config.secretAccessKey);
 			if (hasAccessKey !== hasSecretKey) {
-				throw new Error(
-					"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message:
+						"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
+				});
 			}
 
 			this.sesClient = new mod.SESClient({
@@ -101,13 +105,15 @@ export class SESProvider implements IEmailProvider {
 	 * Send a single email using AWS SES
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
-		try {
-			if (!this.config.fromEmail) {
-				throw new Error(
-					"Email service not configured. Please set AWS_SES_FROM_EMAIL (and optionally AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
-				);
-			}
+		if (!this.config.fromEmail) {
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_ARGUMENTS,
+				message:
+					"Email service not configured. Please set API_AWS_SES_FROM_EMAIL (and optionally API_AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
+			});
+		}
 
+		try {
 			const { client, SendEmailCommand } = await this.getSesArtifacts();
 
 			const fromAddress = this.config.fromName
@@ -131,27 +137,72 @@ export class SESProvider implements IEmailProvider {
 			const response = await client.send(command);
 			return { id: job.id, success: true, messageId: response.MessageId };
 		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			rootLogger.error(
+				{
+					error: errorMessage,
+					stack: error instanceof Error ? error.stack : undefined,
+					jobId: job.id,
+				},
+				"Failed to send email via SES",
+			);
 			return {
 				id: job.id,
 				success: false,
-				error: error instanceof Error ? error.message : String(error),
+				error: errorMessage,
 			};
 		}
 	}
 
 	/**
-	 * Send multiple emails
+	 * Sends multiple emails in concurrent batches to respect rate limits.
+	 *
+	 * Processes the jobs list in chunks (defined by BATCH_SIZE), ensuring a delay
+	 * between batches to prevent overwhelming the email provider or hitting rate limits.
+	 *
+	 * @param jobs - An array of email jobs to be processed.
+	 * @returns A promise that resolves to an array of results (success or failure) for each email job.
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
+		const BATCH_SIZE = 14;
+		const DELAY_BETWEEN_BATCHES_MS = 1000;
 		const results: EmailResult[] = [];
-		for (const [i, job] of jobs.entries()) {
-			if (!job) continue;
-			results.push(await this.sendEmail(job));
-			if (i < jobs.length - 1) {
-				// Rate limiting delay to avoid AWS SES throttling
-				await new Promise((r) => setTimeout(r, 100));
+
+		for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+			const batch = jobs.slice(i, i + BATCH_SIZE);
+
+			const batchPromises = batch.map((job) => this.sendEmail(job));
+
+			const batchSettledResults = await Promise.allSettled(batchPromises);
+
+			for (let j = 0; j < batchSettledResults.length; j++) {
+				const settled = batchSettledResults[j];
+				const currentJob = batch[j];
+
+				if (!settled || !currentJob) continue;
+
+				if (settled.status === "fulfilled") {
+					results.push(settled.value);
+				} else {
+					results.push({
+						id: currentJob.id,
+						success: false,
+						error:
+							settled.reason instanceof Error
+								? settled.reason.message
+								: String(settled.reason),
+					});
+				}
+			}
+
+			if (i + BATCH_SIZE < jobs.length) {
+				await new Promise((resolve) =>
+					setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS),
+				);
 			}
 		}
+
 		return results;
 	}
 }

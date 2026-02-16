@@ -251,10 +251,17 @@ describe("GraphQL Error Formatting Integration", () => {
 				API_RATE_LIMIT_BUCKET_CAPACITY: 1, // Very low capacity
 				API_RATE_LIMIT_REFILL_RATE: 0, // No refill
 				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+				API_AUTH_JWT_SECRET: "12345678901234567890123456789012",
 				API_PORT: 0,
 			},
 		});
 		await rateLimitServer.ready();
+
+		// Clear any existing rate limit buckets to ensure clean test state
+		const keys = await rateLimitServer.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await rateLimitServer.redis.del(...keys);
+		}
 
 		try {
 			const query = `

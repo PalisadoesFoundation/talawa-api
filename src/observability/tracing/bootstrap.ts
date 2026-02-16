@@ -1,10 +1,14 @@
 import { FastifyOtelInstrumentation } from "@fastify/otel";
 import { DiagConsoleLogger, DiagLogLevel, diag } from "@opentelemetry/api";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
+import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { NodeSDK } from "@opentelemetry/sdk-node";
+
 import {
 	ConsoleSpanExporter,
 	ParentBasedSampler,
@@ -20,15 +24,11 @@ export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation({
 
 export async function initTracing(): Promise<void> {
 	if (!observabilityConfig.enabled) {
+		console.log("[observability] Tracing is disabled via configuration.");
 		return;
 	}
 
-	const isLocal = observabilityConfig.environment === "local";
-
-	diag.setLogger(
-		new DiagConsoleLogger(),
-		isLocal ? DiagLogLevel.INFO : DiagLogLevel.ERROR,
-	);
+	diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 	// sampling ratio early Validation
 	const ratio = observabilityConfig.samplingRatio;
@@ -37,27 +37,65 @@ export async function initTracing(): Promise<void> {
 			`Invalid samplingRatio: ${ratio}. Expected number between 0 and 1.`,
 		);
 	}
+	let exporter: OTLPTraceExporter | ConsoleSpanExporter | undefined;
+	let metricExporter: OTLPMetricExporter | undefined;
+	let metricReader: PeriodicExportingMetricReader | undefined;
 
-	const exporter = isLocal
-		? new ConsoleSpanExporter()
-		: new OTLPTraceExporter({
-				url: observabilityConfig.otlpEndpoint,
-			});
+	if (observabilityConfig.exporterEnabled) {
+		switch (observabilityConfig.exporterType) {
+			case "console":
+				exporter = new ConsoleSpanExporter();
+				break;
 
+			case "otlp":
+				if (
+					!observabilityConfig.otlpTraceEndpoint ||
+					!observabilityConfig.otlpMetricEndpoint
+				) {
+					throw new Error(
+						"Both OTLP endpoint (trace and metric) must be provided when exporterType is 'otlp'. " +
+							"Set API_OTEL_TRACE_EXPORTER_ENDPOINT and API_OTEL_METRIC_EXPORTER_ENDPOINT.",
+					);
+				}
+				exporter = new OTLPTraceExporter({
+					url: observabilityConfig.otlpTraceEndpoint,
+				});
+
+				metricExporter = new OTLPMetricExporter({
+					url: observabilityConfig.otlpMetricEndpoint,
+				});
+
+				metricReader = new PeriodicExportingMetricReader({
+					exporter: metricExporter,
+					exportIntervalMillis: 60000,
+				});
+
+				break;
+
+			default:
+				exporter = undefined;
+				metricExporter = undefined;
+				metricReader = undefined;
+				break;
+		}
+	}
 	const sampler = new ParentBasedSampler({
 		root: new TraceIdRatioBasedSampler(ratio),
 	});
-
 	try {
 		sdk = new NodeSDK({
-			sampler,
-			textMapPropagator: new W3CTraceContextPropagator(),
 			traceExporter: exporter,
+			textMapPropagator: new W3CTraceContextPropagator(),
+			metricReader,
+			sampler,
 			resource: resourceFromAttributes({
 				"service.name": observabilityConfig.serviceName,
-				"deployment.environment": observabilityConfig.environment,
 			}),
-			instrumentations: [new HttpInstrumentation()],
+			instrumentations: [
+				new HttpInstrumentation(),
+				new FastifyInstrumentation(),
+				fastifyOtelInstrumentation,
+			],
 		});
 
 		await sdk.start();

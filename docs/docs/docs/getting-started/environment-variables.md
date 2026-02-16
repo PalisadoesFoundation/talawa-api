@@ -20,10 +20,40 @@ The `NODE_ENV` variable is extremely sparsely used.
 
 In an environment where one capability is needed but the other is not, using a single environment variable to control all of them at once wouldn't work.
 
-### Variable Naming Convention
+## Variable Naming Convention
 
-Environment variables should be named using uppercase letters, numbers, and underscores. They should also be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example `API_BASE_URL` and `API_PORT`.
+This information will be important to both end users and developers alike.
 
+:::info
+
+Talawa API uses a strict environment variable naming convention.
+
+:::
+
+Environment variables:
+
+1. Should be named using uppercase letters, numbers, and underscores.
+2. Must have a prefix that matches the name of the Docker container which uses them.
+   1. For example the current container names are:
+
+      ```
+      api
+      caddy
+      cloudbeaver
+      mailpit
+      minio
+      postgres
+      redis
+      ```
+
+   2. The variables used by the `api` container should be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example:
+      ```
+	      API_BASE_URL
+	      API_PORT
+	      ```
+3. Orchestration variables interpreted directly by Docker Compose are an exception and use the `COMPOSE_` prefix (for example: `COMPOSE_FILE`, `COMPOSE_PROFILES`, `COMPOSE_PROJECT_NAME`).
+
+This approach reduces the risk of duplicated names being used by multiple containers that could create instability.
 
 ## talawa api (standalone)
 
@@ -105,7 +135,13 @@ When talawa api debugger is run within a container environment this variable mus
 
 ### API_EMAIL_PROVIDER
 
-This environment variable is used to configure the email provider to be used by the talawa api. Currently supports `ses` and `smtp` (future). The default value is `ses`.
+This environment variable is used to configure the email provider to be used by the talawa api. Supported values are:
+
+- **`mailpit`** (default) - Used for local development and testing. Emails are captured by Mailpit and can be viewed in a web interface at http://localhost:8025.
+- **`ses`** - Amazon Simple Email Service for production environments.
+- **`smtp`** - Generic SMTP provider for production or testing with external email services.
+
+When running the setup script or using development containers, `mailpit` is automatically configured as the default. For production deployments, you should configure either `ses` or a custom `smtp` provider.
 
 ### API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS
 
@@ -114,6 +150,10 @@ This environment variable is used to configure the time in seconds for which an 
 ### API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET
 
 This environment variable is used to configure the secret key for hashing email verification tokens. Used for defense-in-depth; tokens already have 256 bits of entropy. Should be at least 32 characters for security best practices. Defaults to a static value if not provided.
+
+### API_FRONTEND_URL
+
+This environment variable is used to configure the frontend base URL used by talawa api for CORS and frontend links in email workflows.
 
 ### API_HOST
 
@@ -146,13 +186,25 @@ This environment variable is used to configure the time in milli-seconds it take
 
 ### API_JWT_SECRET
 
-This environment variable is used to configure the secret used for signing and verifying the authentication json web tokens issued by talawa api. This secret must be at least 64 characters in length.
+This environment variable is used to configure the secret for signing and verifying the authentication JSON web tokens used by the **GraphQL API** (via `fastify-jwt`). It is separate from `API_AUTH_JWT_SECRET`, which is used only for REST auth. This secret must be at least 64 characters in length.
 
 - More information can be found at [this](https://github.com/fastify/fastify-jwt?tab=readme-ov-file##secret-required) link.
 
 ### API_REFRESH_TOKEN_EXPIRES_IN
 
 This environment variable is used to configure the time in milliseconds it takes for a refresh token issued by talawa api to expire. Refresh tokens are long-lived tokens used to obtain new short-lived access tokens without requiring users to re-authenticate. Recommended value is 7 days (604800000 milliseconds).
+
+### API_AUTH_JWT_SECRET (REST auth)
+
+Optional. JWT secret used **only for REST auth** (signing and verifying REST access/refresh tokens in `src/services/auth/tokens`). It is separate from `API_JWT_SECRET`, which is used for GraphQL. When unset, REST tokens fall back to a dev default in non-production. Set to at least 32 characters when using REST auth in production.
+
+### API_ACCESS_TOKEN_TTL (REST auth)
+
+Optional. REST auth access token TTL in seconds; used for JWT expiry and cookie maxAge. Default: 900 (15 minutes).
+
+### API_REFRESH_TOKEN_TTL (REST auth)
+
+Optional. REST auth refresh token TTL in seconds; used for refresh JWT and cookie maxAge. Default: 2592000 (30 days).
 
 ### API_LOG_LEVEL
 
@@ -226,19 +278,38 @@ This environment variable is used to configure the ssl mode on the connection be
 
 - More information can be found at [this](https://min.io/docs/minio/linux/developers/javascript/API.html##constructor) link.
 
+### API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for cleanup of old recurring event instances.
+
+### API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for generation of recurring event instances.
+
 ### Observability
 
 #### API_OTEL_ENABLED
 
 - Takes values as `true` or `false` to enable and disable OTEL logging,
 
-#### API_OTEL_ENVIRONMENT
+#### API_OTEL_EXPORTER_ENABLED
 
-- set `local` for development environment and `production` for production environment.
+This environment variable is used to enable or disable OpenTelemetry metric and trace exporting. When disabled, telemetry data is collected but not exported. Takes values as `true` or `false`.
 
-#### API_OTEL_EXPORTER_OTLP_ENDPOINT
+#### API_OTEL_EXPORTER_TYPE
 
-- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
+This environment variable is used to configure the type of OpenTelemetry exporter to use. Supports the following values:
+
+- `otlp`: Exports telemetry data to an external OpenTelemetry Protocol (OTLP) compatible backend or vendor service for dashboard visualization and analysis.
+- `console`: Exports spans and metrics directly to the terminal/console for local development and debugging purposes.
+
+#### API_OTEL_TRACE_EXPORTER_ENDPOINT
+
+Use this environment variable only when exporting trace data to an external OpenTelemetry-compatible backend (such as a managed observability platform or a self-hosted OpenTelemetry Collector). It specifies the complete endpoint URL where application traces will be sent. If no external trace exporter is configured, this variable is not required. Ensure the URL is valid and reachable to prevent trace export failures.
+
+#### API_OTEL_METRIC_EXPORTER_ENDPOINT
+
+Use this environment variable only when exporting metric data to an external OpenTelemetry-compatible backend. It defines the full endpoint URL where application metrics will be pushed for monitoring and analysis. If metrics are not being exported to an external system, this variable can be omitted. Make sure the endpoint URL is correctly formatted and accessible to avoid metric export issues.
 
 #### API_OTEL_SAMPLING_RATIO
 
@@ -324,25 +395,93 @@ This environment variable is used to configure the host ip of the redis server f
 
 Listed below are the environment variables for configuring AWS Simple Email Service (SES).
 
-#### AWS_ACCESS_KEY_ID
+#### API_AWS_ACCESS_KEY_ID
 
 This environment variable is used to configure the AWS Access Key ID for authentication with AWS SES.
 
-#### AWS_SECRET_ACCESS_KEY
+#### API_AWS_SECRET_ACCESS_KEY
 
 This environment variable is used to configure the AWS Secret Access Key for authentication with AWS SES.
 
-#### AWS_SES_FROM_EMAIL
+#### API_AWS_SES_FROM_EMAIL
 
 This environment variable is used to configure the email address that will be used as the sender for emails sent from the talawa api. This email must be verified in AWS SES.
 
-#### AWS_SES_FROM_NAME
+#### API_AWS_SES_FROM_NAME
 
 This environment variable is used to configure the name that will be displayed as the sender for emails sent from the talawa api.
 
-#### AWS_SES_REGION
+#### API_AWS_SES_REGION
 
 This environment variable is used to configure the AWS region where your SES instance is located.
+
+### SMTP
+
+Listed below are the environment variables for configuring a generic SMTP email provider. These are used when `API_EMAIL_PROVIDER` is set to `smtp`.
+
+#### API_SMTP_HOST
+
+This environment variable is used to configure the SMTP server hostname (e.g., `smtp.gmail.com`, `smtp.mailgun.org`).
+
+#### API_SMTP_PORT
+
+This environment variable is used to configure the SMTP server port. Common values:
+
+- `587` - Standard TLS port (recommended)
+- `465` - SSL port (legacy)
+- `25` - Unsecured port (not recommended)
+
+#### API_SMTP_USER
+
+This environment variable is used to configure the username for SMTP authentication. Optional - only required if your SMTP server requires authentication.
+
+#### API_SMTP_PASSWORD
+
+This environment variable is used to configure the password for SMTP authentication. Optional - only required if your SMTP server requires authentication.
+
+#### API_SMTP_SECURE
+
+This environment variable is used to configure whether to use SSL/TLS for the SMTP connection. Set to `true` for port 465, `false` for port 587.
+
+#### API_SMTP_FROM_EMAIL
+
+This environment variable is used to configure the email address that will be used as the sender for emails sent from the talawa api. This email must be authorized by your SMTP provider.
+
+#### API_SMTP_FROM_NAME
+
+This environment variable is used to configure the display name that will appear as the sender for emails sent from the talawa api. Defaults to `Talawa`.
+
+#### API_SMTP_NAME
+
+This environment variable is used to configure the client hostname sent during the SMTP handshake (HELO/EHLO command). Defaults to the machine hostname.
+
+#### API_SMTP_LOCAL_ADDRESS
+
+This environment variable is used to configure the local IP address to bind to for outgoing SMTP connections. Optional - useful when your server has multiple network interfaces.
+
+### Mailpit (Development Email Testing)
+
+Listed below are the environment variables for configuring Mailpit, which is used for local email testing and development. These are automatically configured when using the devcontainer setup and should not need to be manually set unless customizing your development environment.
+
+#### MAILPIT_MAPPED_HOST_IP
+
+This environment variable is used to configure the host IP address that Mailpit's ports are mapped to in Docker Compose. Default is `127.0.0.1` (localhost).
+
+**Note:** This is used only by Docker Compose for port mapping and is automatically set in development environments.
+
+#### MAILPIT_WEB_MAPPED_PORT
+
+This environment variable is used to configure the host port that Mailpit's web UI is mapped to in Docker Compose. Default is `8025`.
+
+The Mailpit web interface can be accessed at `http://localhost:8025` when using the default configuration.
+
+**Note:** This is used only by Docker Compose for port mapping and is automatically set in development environments.
+
+#### MAILPIT_SMTP_MAPPED_PORT
+
+This environment variable is used to configure the host port that Mailpit's SMTP server is mapped to in Docker Compose. Default is `1025`.
+
+**Note:** This is used only by Docker Compose for port mapping and is automatically set in development environments. The talawa api connects to Mailpit internally via Docker networking.
 
 ### CACHE_ENTITY_TTLS
 
@@ -734,5 +873,3 @@ This environment variable is used to configure the OAuth Redirect URI for GitHub
 ### API_OAUTH_REQUEST_TIMEOUT_MS
 
 This environment variable is used to configure the request timeout in milliseconds for OAuth provider API calls. Default value is `10000` milliseconds (10 seconds).
-
-

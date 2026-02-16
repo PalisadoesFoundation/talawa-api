@@ -370,7 +370,87 @@ Follow these steps to install Docker on your system:
       ```
    4. Using the Docker documentation, you must ensure that Docker will restart after your next reboot.
 
-**Note:** Restart the docker if you are getting this error `Cannot connect to the Docker daemon `
+#### Docker Engine Rootless Mode (Linux)
+
+Docker can be installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/) on Linux to run the daemon and containers without root privileges.
+
+**Important notes:**
+
+1. The `dockerd-rootless-setuptool.sh install` command **MUST NOT** be run using `sudo`.
+2. Ensure `DOCKER_HOST` uses `$UID` so it works for any user:
+   ```bash
+   export DOCKER_HOST=unix:///run/user/$UID/docker.sock
+   ```
+3. Verify the daemon is running in rootless mode:
+   ```bash
+   docker info --format '{{.SecurityOptions}}'
+   ```
+   The output should include `rootless`.
+4. When testing rootless mode, make sure the user is **not** a member of the operating system `docker` group.
+
+### Docker Devcontainer Modes
+
+This project provides two devcontainer configurations to support different Docker setups:
+
+| Mode | Configuration | Use Case |
+| --- | --- | --- |
+| **Default** | `.devcontainer/default/devcontainer.json` | Standard Docker (Docker Desktop or Docker Engine with root) |
+| **Rootless** | `.devcontainer/rootless/devcontainer.json` | Docker installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/) |
+
+#### Default Mode (Recommended)
+
+This is the standard configuration for most users running Docker Desktop (Windows/Mac) or Docker Engine with root access (Linux).
+
+**Usage:**
+
+1.  Open VS Code in the `talawa-api` project folder.
+2.  Press `F1` and run **Dev Containers: Reopen in Container**.
+3.  Select the **"talawa_api_default"** configuration if prompted, or use the CLI:
+    ```bash
+    devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+    ```
+4.  Verify the container starts and the API is accessible at [http://localhost:4000](http://localhost:4000).
+
+#### Rootless Mode
+
+Use this configuration when running Docker in rootless mode. This allows you to run the development environment without root privileges on your host machine.
+
+**Prerequisites:**
+
+*   Docker installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/).
+*   The `DOCKER_HOST` environment variable must be set.
+    *   Example: `export DOCKER_HOST=unix:///run/user/$UID/docker.sock`
+    *   It is recommended to add this to your shell configuration (e.g., `.bashrc` or `.zshrc`).
+*   **Environment Variables**: Ensure `UID` and `XDG_RUNTIME_DIR` are set.
+    *   **Bash/Zsh**:
+        ```bash
+        export UID=$(id -u)
+        export XDG_RUNTIME_DIR=/run/user/$UID
+        ```
+    *   These are used to locate the correct Docker socket.
+
+**Technical Details:**
+
+The rootless configuration uses a specific `compose.rootless.devcontainer.yaml` file.
+
+*   **Socket Mounting**: It mounts the host Docker socket from `${XDG_RUNTIME_DIR:-/run/user/${UID}}/docker.sock` to `/var/run/docker.sock` inside the container. This ensures the container can communicate with the host's rootless Docker daemon.
+*   **User Mapping**: The container is configured to run as `root` internally, but due to **User Namespace Remapping** in rootless Docker, this maps to your non-root host user. This allows the container to write to bind-mounted directories (like the workspace) with the correct permissions for your host user.
+
+**Usage:**
+
+1.  Open VS Code in the `talawa-api` project folder.
+2.  Press `F1` and run **Dev Containers: Reopen in Container**.
+3.  Select the **"talawa_api_rootless"** configuration if prompted, or use the CLI:
+    ```bash
+    devcontainer up --workspace-folder . --config .devcontainer/rootless/devcontainer.json
+    ```
+4.  Verify the container starts and the API is accessible at [http://localhost:4000](http://localhost:4000).
+
+:::note
+For troubleshooting Docker Rootless mode issues, see the [Troubleshooting Guide](../developer-resources/testing/troubleshooting.md#docker-rootless-mode).
+:::
+
+**Note:** Restart Docker if you are getting this error `Cannot connect to the Docker daemon`
 
 ## Configuring Talawa API
 

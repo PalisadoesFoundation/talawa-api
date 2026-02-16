@@ -92,8 +92,8 @@ Talawa pre-creates occurrences for recurring events in a forward window to make 
 
 - **Window**: The default hot window is 12 months ahead; retention keeps ~3 months of history. Config lives in `event_generation_windows`.
 - **Cron**: A background worker runs on a schedule (node-cron). Defaults:
-  - Generation: hourly (`EVENT_GENERATION_CRON_SCHEDULE`, default `0 * * * *`).
-  - Cleanup: daily at 02:00 UTC (`CLEANUP_CRON_SCHEDULE`, default `0 2 * * *`).
+  - Generation: hourly (`API_RECURRING_EVENT_GENERATION_CRON_SCHEDULE`, default `0 * * * *`).
+  - Cleanup: daily at 02:00 UTC (`API_OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE`, default `0 2 * * *`).
 - **Pipeline (high level)**:
   1. Discover work: find orgs whose window needs extension and their recurring templates.
   2. Normalize recurrence rules (convert COUNT to a derived end date for consistent window math).

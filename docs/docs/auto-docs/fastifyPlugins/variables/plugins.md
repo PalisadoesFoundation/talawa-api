@@ -6,7 +6,7 @@
 
 > `const` **plugins**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/index.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/index.ts#L13)
+Defined in: [src/fastifyPlugins/index.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/index.ts#L15)
 
 ## Parameters
 

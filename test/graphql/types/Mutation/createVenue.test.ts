@@ -97,6 +97,7 @@ suite("Mutation field createVenue", () => {
 					});
 				} catch (_error) {
 					// User might already be deleted, continue
+					console.debug("Cleanup: User deletion skipped", _error);
 				}
 			}
 
@@ -109,6 +110,7 @@ suite("Mutation field createVenue", () => {
 					});
 				} catch (_error) {
 					// Organization might already be deleted, continue
+					console.debug("Cleanup: Organization deletion skipped", _error);
 				}
 			}
 		}
@@ -1761,7 +1763,13 @@ suite("Mutation field createVenue", () => {
 		},
 	);
 	suite("file upload validation and attachment processing", () => {
-		test("rejects file upload with invalid MIME type", async () => {
+		/**
+		 * Tests venue creation with invalid MIME type in FileMetadataInput.
+		 *
+		 * @remarks
+		 * Validates that the system rejects attachments with unsupported MIME types.
+		 */
+		test("rejects attachment with invalid MIME type", async () => {
 			const administratorUserSignInResult = await mercuriusClient.query(
 				Query_signIn,
 				{
@@ -1801,65 +1809,231 @@ suite("Mutation field createVenue", () => {
 				createOrganizationResult.data.createOrganization.id,
 			);
 
-			// Use Fastify's raw inject with manually constructed multipart data
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations = JSON.stringify({
-				query: `
-							mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
-								createVenue(input: $input) {
-									id
-									name
-									attachments { mimeType }
-								}
-							}
-						`,
-				variables: {
-					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
-						name: `Venue_${faker.string.ulid()}`,
-						description: "Test venue",
-						attachments: [null],
+			// Try to create venue with invalid MIME type
+			const createVenueResult = await mercuriusClient.mutate(
+				Mutation_createVenue,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							organizationId:
+								createOrganizationResult.data.createOrganization.id,
+							name: `Venue_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+							attachments: [
+								{
+									objectName: faker.string.ulid(),
+									mimeType: "application/x-msdownload" as never,
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "test.exe",
+								},
+							],
+						},
 					},
 				},
-			});
+			);
 
-			const map = JSON.stringify({
-				"0": ["variables.input.attachments.0"],
-			});
+			expect(createVenueResult.data?.createVenue).toBeUndefined();
+			expect(createVenueResult.errors).toBeDefined();
+			expect(createVenueResult.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
 
-			const fileContent = "fake executable content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.exe"',
-				"Content-Type: application/x-msdownload",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+		/**
+		 * Tests venue creation with valid image attachment metadata.
+		 *
+		 * @remarks
+		 * Note: This test validates the input format. In a real scenario,
+		 * the file must first be uploaded to MinIO via presigned URL,
+		 * then the mutation will verify the file exists.
+		 */
+		test("accepts valid FileMetadataInput for attachments", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
 				},
-				payload: body,
-			});
+			);
 
-			const result = JSON.parse(response.body);
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
 
-			expect(result.data?.createVenue).toEqual(null);
-			expect(result.errors).toEqual(
+			const createOrganizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: `TestOrg_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createOrganizationResult.data.createOrganization?.id,
+			);
+			createdResources.organizationIds.push(
+				createOrganizationResult.data.createOrganization.id,
+			);
+
+			const objectName = faker.string.ulid();
+
+			// First, upload a file to MinIO using presigned URL flow
+			// (In real usage, client gets presigned URL and uploads directly)
+			const fileContent = Buffer.from("fake jpeg content");
+			await server.minio.client.putObject(
+				server.minio.bucketName,
+				objectName,
+				fileContent,
+				fileContent.length,
+				{ "content-type": "image/jpeg" },
+			);
+
+			// Now create venue with FileMetadataInput referencing the uploaded file
+			const createVenueResult = await mercuriusClient.mutate(
+				Mutation_createVenue,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							organizationId:
+								createOrganizationResult.data.createOrganization.id,
+							name: `Venue_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+							attachments: [
+								{
+									objectName: objectName,
+									mimeType: "IMAGE_JPEG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "venue-photo.jpg",
+								},
+							],
+						},
+					},
+				},
+			);
+
+			expect(createVenueResult.errors).toBeUndefined();
+			assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+			assertToBeNonNullish(createVenueResult.data.createVenue.attachments);
+			expect(createVenueResult.data.createVenue.attachments).toHaveLength(1);
+			expect(createVenueResult.data.createVenue.attachments[0]?.mimeType).toBe(
+				"image/jpeg",
+			);
+
+			// Cleanup: remove uploaded file
+			await server.minio.client.removeObject(
+				server.minio.bucketName,
+				objectName,
+			);
+		});
+
+		/**
+		 * Tests that venue creation fails when the referenced file doesn't exist in MinIO.
+		 */
+		test("rejects attachment when file does not exist in MinIO", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createOrganizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: `TestOrg_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createOrganizationResult.data.createOrganization?.id,
+			);
+			createdResources.organizationIds.push(
+				createOrganizationResult.data.createOrganization.id,
+			);
+
+			// Try to create venue with FileMetadataInput referencing a non-existent file
+			const createVenueResult = await mercuriusClient.mutate(
+				Mutation_createVenue,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							organizationId:
+								createOrganizationResult.data.createOrganization.id,
+							name: `Venue_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+							attachments: [
+								{
+									objectName: "non-existent-file-object",
+									mimeType: "IMAGE_JPEG",
+									fileHash: faker.string.hexadecimal({
+										length: 64,
+										casing: "lower",
+										prefix: "",
+									}),
+									name: "missing.jpg",
+								},
+							],
+						},
+					},
+				},
+			);
+
+			expect(createVenueResult.data?.createVenue).toBeNull();
+			expect(createVenueResult.errors).toBeDefined();
+			expect(createVenueResult.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
@@ -1867,116 +2041,12 @@ suite("Mutation field createVenue", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: expect.arrayContaining(["attachments"]),
-									message: expect.stringContaining("Mime type"),
+									message: expect.stringContaining("File not found"),
 								}),
 							]),
 						}),
 					}),
 				]),
-			);
-		});
-
-		test("successfully creates venue with valid image attachment", async () => {
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				administratorUserSignInResult.data.signIn?.authenticationToken,
-			);
-
-			const createOrganizationResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							name: `TestOrg_${faker.string.ulid()}`,
-							description: faker.lorem.sentence(),
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				createOrganizationResult.data.createOrganization?.id,
-			);
-			createdResources.organizationIds.push(
-				createOrganizationResult.data.createOrganization.id,
-			);
-
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations = JSON.stringify({
-				query: `
-							mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
-								createVenue(input: $input) {
-									id
-									name
-									attachments { mimeType }
-								}
-							}
-						`,
-				variables: {
-					input: {
-						organizationId: createOrganizationResult.data.createOrganization.id,
-						name: `Venue_${faker.string.ulid()}`,
-						description: "Test venue",
-						attachments: [null],
-					},
-				},
-			});
-
-			const map = JSON.stringify({
-				"0": ["variables.input.attachments.0"],
-			});
-
-			const fileContent = "fake jpeg content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="venue-photo.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-				},
-				payload: body,
-			});
-
-			const result = JSON.parse(response.body);
-
-			expect(result.errors).toBeUndefined();
-			assertToBeNonNullish(result.data.createVenue?.id);
-			expect(result.data.createVenue.attachments).toHaveLength(1);
-			expect(result.data.createVenue.attachments[0].mimeType).toBe(
-				"image/jpeg",
 			);
 		});
 	});

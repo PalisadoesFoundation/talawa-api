@@ -21,6 +21,15 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 Please read the [Palisadoes Contributing Guidelines](https://developer.palisadoes.org/docs/contributor-guide/contributing).
 
+## Docker Devcontainer
+
+This project provides two devcontainer configurations:
+
+1. **Default mode** (`.devcontainer/default/devcontainer.json`): For standard Docker installations.
+2. **Rootless mode** (`.devcontainer/rootless/devcontainer.json`): For Docker Rootless installations.
+
+For full setup and usage instructions, see the [Installation Guide](docs/docs/docs/getting-started/installation.md). For troubleshooting, see the [Troubleshooting Guide](docs/docs/docs/developer-resources/testing/troubleshooting.md).
+
 ## Testing and Code Quality
 
 Testing and code quality documentation can be found at these locations:
@@ -35,4 +44,5 @@ Testing and code quality documentation can be found at these locations:
 1. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
 1. Now create a pull request to the Talawa-admin repository from your forked repo. Open an issue regarding the same and link your PR to it.
 1. Ensure the test suite passes, either locally or on CI once a PR has been created.
+2. Changes to code under `scripts/install/` must include or update tests in `tests/install/` in the same relative path.
 1. Review and address comments on your pull request if requested.
