@@ -354,6 +354,18 @@ describe("auth REST routes", () => {
 			expect(res.json().error.code).toBe(ErrorCode.UNAUTHENTICATED);
 			expect(res.json().error.message).toBe("Invalid refresh token");
 		});
+
+		it("returns 500 when rotateRefresh throws an unexpected exception", async () => {
+			mockRotateRefresh.mockRejectedValue(new Error("db unavailable"));
+
+			const res = await app.inject({
+				method: "POST",
+				url: "/auth/refresh",
+				payload: { refreshToken: "some-token" },
+			});
+
+			expect(res.statusCode).toBe(500);
+		});
 	});
 
 	describe("POST /auth/logout", () => {

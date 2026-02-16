@@ -70,10 +70,11 @@ function maskEmailForLog(email: string): string {
  */
 const authRoutes: FastifyPluginAsync = async (fastify) => {
 	const cookieOptions = getCookieOptionsFromApp(fastify);
+	const authRateLimit = [fastify.rateLimit("auth")];
 
 	fastify.post(
 		"/auth/signup",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, signUpBody, req.body);
 			if (body === undefined) return;
@@ -128,7 +129,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/signin",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, signInBody, req.body);
 			if (body === undefined) return;
@@ -161,7 +162,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/refresh",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, refreshBody, req.body ?? {});
 			if (body === undefined) return;
@@ -194,7 +195,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/logout",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const rt = req.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
 			if (rt) {
