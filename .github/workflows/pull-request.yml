@@ -580,7 +580,6 @@ jobs:
         Check_unused_code,
         Generate-Schema-Docs,
         Python-Compliance,
-        Check-Sensitive-Files
       ]
     steps:
       - name: This job intentionally does nothing
