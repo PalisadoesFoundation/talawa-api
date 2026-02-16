@@ -205,10 +205,8 @@ describe("User field birthDate resolver", () => {
 				.calls as unknown as Record<string, unknown>[][]
 		)[0]?.[0];
 
-		// Verify columns config
 		expect(config?.columns).toEqual({ role: true });
 
-		// Exercise the where callback to cover the arrow function
 		expect(config?.where).toBeTypeOf("function");
 		const whereFn = config?.where as (
 			fields: Record<string, unknown>,
