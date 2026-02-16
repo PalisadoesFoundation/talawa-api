@@ -6,7 +6,7 @@
 
 > **extractZodMessage**(`normalizedDetails`, `error`, `fallbackMessage`): `string`
 
-Defined in: [src/routes/graphql.ts:297](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L297)
+Defined in: [src/routes/graphql.ts:301](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L301)
 
 Helper to extract meaningful messages from Zod error details.
 Encapsulates logic for parsing JSON/treeified details and handling specific validation messages like UUID errors.

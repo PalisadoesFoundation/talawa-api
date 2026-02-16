@@ -4690,16 +4690,18 @@ describe("GraphQL Routes", () => {
 	});
 
 	describe("createContext - Auth logging fallbacks", () => {
-		it("should use info logger when debug is not available for header auth failure", async () => {
+		it("should silently skip logging when debug is not available for header auth failure", async () => {
 			const infoSpy = vi.fn();
+			const warnSpy = vi.fn();
+			const errorSpy = vi.fn();
 			const mockReq: Partial<FastifyRequest> = {
 				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
 				ip: "127.0.0.1",
 				cookies: {},
 				log: {
 					info: infoSpy,
-					warn: vi.fn(),
-					error: vi.fn(),
+					warn: warnSpy,
+					error: errorSpy,
 					child: vi.fn().mockReturnThis(),
 					level: "info",
 					fatal: vi.fn(),
@@ -4727,105 +4729,24 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context.currentClient.isAuthenticated).toBe(false);
-			expect(infoSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"Authorization token verification failed; falling back to cookie auth",
-			);
+			// With optional chaining, no fallback to info/warn/error occurs
+			expect(infoSpy).not.toHaveBeenCalled();
+			expect(warnSpy).not.toHaveBeenCalled();
+			expect(errorSpy).not.toHaveBeenCalled();
 		});
 
-		it("should use warn logger when debug and info are not available for header auth failure", async () => {
-			const warnSpy = vi.fn();
-			const mockReq: Partial<FastifyRequest> = {
-				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
-				ip: "127.0.0.1",
-				cookies: {},
-				log: {
-					warn: warnSpy,
-					error: vi.fn(),
-					child: vi.fn().mockReturnThis(),
-					level: "warn",
-					fatal: vi.fn(),
-					trace: vi.fn(),
-					silent: vi.fn(),
-				} as unknown as FastifyRequest["log"],
-			};
-
-			const mockFastifyLocal: Partial<FastifyInstance> = {
-				drizzleClient: {} as FastifyInstance["drizzleClient"],
-				cache: {} as unknown as FastifyInstance["cache"],
-				envConfig: {
-					API_JWT_EXPIRES_IN: 900000,
-				} as FastifyInstance["envConfig"],
-				jwt: { sign: vi.fn() } as unknown as FastifyInstance["jwt"],
-				log: mockReq.log as unknown as FastifyInstance["log"],
-				minio: {} as FastifyInstance["minio"],
-			};
-
-			const context = await createContext({
-				fastify: mockFastifyLocal as FastifyInstance,
-				request: mockReq as FastifyRequest,
-				isSubscription: false,
-				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
-			});
-
-			expect(context.currentClient.isAuthenticated).toBe(false);
-			expect(warnSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"Authorization token verification failed; falling back to cookie auth",
-			);
-		});
-
-		it("should use error logger when debug, info, and warn are not available for header auth failure", async () => {
-			const errorSpy = vi.fn();
-			const mockReq: Partial<FastifyRequest> = {
-				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
-				ip: "127.0.0.1",
-				cookies: {},
-				log: {
-					error: errorSpy,
-					child: vi.fn().mockReturnThis(),
-					level: "error",
-					fatal: vi.fn(),
-					trace: vi.fn(),
-					silent: vi.fn(),
-				} as unknown as FastifyRequest["log"],
-			};
-
-			const mockFastifyLocal: Partial<FastifyInstance> = {
-				drizzleClient: {} as FastifyInstance["drizzleClient"],
-				cache: {} as unknown as FastifyInstance["cache"],
-				envConfig: {
-					API_JWT_EXPIRES_IN: 900000,
-				} as FastifyInstance["envConfig"],
-				jwt: { sign: vi.fn() } as unknown as FastifyInstance["jwt"],
-				log: mockReq.log as unknown as FastifyInstance["log"],
-				minio: {} as FastifyInstance["minio"],
-			};
-
-			const context = await createContext({
-				fastify: mockFastifyLocal as FastifyInstance,
-				request: mockReq as FastifyRequest,
-				isSubscription: false,
-				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
-			});
-
-			expect(context.currentClient.isAuthenticated).toBe(false);
-			expect(errorSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"Authorization token verification failed; falling back to cookie auth",
-			);
-		});
-
-		it("should use info logger for cookie auth failure when debug is not available", async () => {
+		it("should silently skip logging when debug is not available for cookie auth failure", async () => {
 			const infoSpy = vi.fn();
+			const warnSpy = vi.fn();
+			const errorSpy = vi.fn();
 			const mockReq: Partial<FastifyRequest> = {
 				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
 				ip: "127.0.0.1",
 				cookies: { [COOKIE_NAMES.ACCESS_TOKEN]: "bad-cookie" },
 				log: {
 					info: infoSpy,
-					warn: vi.fn(),
-					error: vi.fn(),
+					warn: warnSpy,
+					error: errorSpy,
 					child: vi.fn().mockReturnThis(),
 					level: "info",
 					fatal: vi.fn(),
@@ -4856,100 +4777,10 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context.currentClient.isAuthenticated).toBe(false);
-			// info is called for both header and cookie failure
-			expect(infoSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"Cookie token verification failed; treating request as unauthenticated",
-			);
-		});
-
-		it("should use warn logger for cookie auth failure when debug and info are not available", async () => {
-			const warnSpy = vi.fn();
-			const mockReq: Partial<FastifyRequest> = {
-				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
-				ip: "127.0.0.1",
-				cookies: { [COOKIE_NAMES.ACCESS_TOKEN]: "bad-cookie" },
-				log: {
-					warn: warnSpy,
-					error: vi.fn(),
-					child: vi.fn().mockReturnThis(),
-					level: "warn",
-					fatal: vi.fn(),
-					trace: vi.fn(),
-					silent: vi.fn(),
-				} as unknown as FastifyRequest["log"],
-			};
-
-			const mockFastifyLocal: Partial<FastifyInstance> = {
-				drizzleClient: {} as FastifyInstance["drizzleClient"],
-				cache: {} as unknown as FastifyInstance["cache"],
-				envConfig: {
-					API_JWT_EXPIRES_IN: 900000,
-				} as FastifyInstance["envConfig"],
-				jwt: {
-					sign: vi.fn(),
-					verify: vi.fn().mockRejectedValue(new Error("Bad cookie")),
-				} as unknown as FastifyInstance["jwt"],
-				log: mockReq.log as unknown as FastifyInstance["log"],
-				minio: {} as FastifyInstance["minio"],
-			};
-
-			const context = await createContext({
-				fastify: mockFastifyLocal as FastifyInstance,
-				request: mockReq as FastifyRequest,
-				isSubscription: false,
-				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
-			});
-
-			expect(context.currentClient.isAuthenticated).toBe(false);
-			expect(warnSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"Cookie token verification failed; treating request as unauthenticated",
-			);
-		});
-
-		it("should use error logger for cookie auth failure when debug, info, and warn are not available", async () => {
-			const errorSpy = vi.fn();
-			const mockReq: Partial<FastifyRequest> = {
-				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
-				ip: "127.0.0.1",
-				cookies: { [COOKIE_NAMES.ACCESS_TOKEN]: "bad-cookie" },
-				log: {
-					error: errorSpy,
-					child: vi.fn().mockReturnThis(),
-					level: "error",
-					fatal: vi.fn(),
-					trace: vi.fn(),
-					silent: vi.fn(),
-				} as unknown as FastifyRequest["log"],
-			};
-
-			const mockFastifyLocal: Partial<FastifyInstance> = {
-				drizzleClient: {} as FastifyInstance["drizzleClient"],
-				cache: {} as unknown as FastifyInstance["cache"],
-				envConfig: {
-					API_JWT_EXPIRES_IN: 900000,
-				} as FastifyInstance["envConfig"],
-				jwt: {
-					sign: vi.fn(),
-					verify: vi.fn().mockRejectedValue(new Error("Bad cookie")),
-				} as unknown as FastifyInstance["jwt"],
-				log: mockReq.log as unknown as FastifyInstance["log"],
-				minio: {} as FastifyInstance["minio"],
-			};
-
-			const context = await createContext({
-				fastify: mockFastifyLocal as FastifyInstance,
-				request: mockReq as FastifyRequest,
-				isSubscription: false,
-				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
-			});
-
-			expect(context.currentClient.isAuthenticated).toBe(false);
-			expect(errorSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"Cookie token verification failed; treating request as unauthenticated",
-			);
+			// With optional chaining, no fallback to info/warn/error occurs
+			expect(infoSpy).not.toHaveBeenCalled();
+			expect(warnSpy).not.toHaveBeenCalled();
+			expect(errorSpy).not.toHaveBeenCalled();
 		});
 
 		it("should handle no logging methods at all for header auth failure", async () => {
@@ -5099,41 +4930,17 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should use info logger when debug is not available during preExecution JWT failure", async () => {
+		it("should silently skip logging when debug is not available during preExecution JWT failure", async () => {
 			const infoSpy = vi.fn();
-			const mockDocument = {
-				__currentQuery: {},
-				reply: {
-					request: {
-						ip: "192.168.1.1",
-						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
-						log: { info: infoSpy, warn: vi.fn(), error: vi.fn() },
-					},
-				},
-			};
-
-			await preExecutionHook(
-				mockSchema,
-				{ definitions: [{ kind: "OperationDefinition", operation: "query" }] },
-				mockDocument,
-				{},
-			);
-
-			expect(infoSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"JWT verification failed during preExecution; using unauthenticated rate limits",
-			);
-		});
-
-		it("should use warn logger when debug and info are not available during preExecution JWT failure", async () => {
 			const warnSpy = vi.fn();
+			const errorSpy = vi.fn();
 			const mockDocument = {
 				__currentQuery: {},
 				reply: {
 					request: {
 						ip: "192.168.1.1",
 						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
-						log: { warn: warnSpy, error: vi.fn() },
+						log: { info: infoSpy, warn: warnSpy, error: errorSpy },
 					},
 				},
 			};
@@ -5145,13 +4952,39 @@ describe("GraphQL Routes", () => {
 				{},
 			);
 
-			expect(warnSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"JWT verification failed during preExecution; using unauthenticated rate limits",
-			);
+			// With optional chaining, no fallback to info/warn/error occurs
+			expect(infoSpy).not.toHaveBeenCalled();
+			expect(warnSpy).not.toHaveBeenCalled();
+			expect(errorSpy).not.toHaveBeenCalled();
 		});
 
-		it("should use error logger when debug, info, and warn are not available during preExecution JWT failure", async () => {
+		it("should silently skip logging when only warn and error are available during preExecution JWT failure", async () => {
+			const warnSpy = vi.fn();
+			const errorSpy = vi.fn();
+			const mockDocument = {
+				__currentQuery: {},
+				reply: {
+					request: {
+						ip: "192.168.1.1",
+						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
+						log: { warn: warnSpy, error: errorSpy },
+					},
+				},
+			};
+
+			await preExecutionHook(
+				mockSchema,
+				{ definitions: [{ kind: "OperationDefinition", operation: "query" }] },
+				mockDocument,
+				{},
+			);
+
+			// With optional chaining, no fallback to warn/error occurs
+			expect(warnSpy).not.toHaveBeenCalled();
+			expect(errorSpy).not.toHaveBeenCalled();
+		});
+
+		it("should silently skip logging when only error is available during preExecution JWT failure", async () => {
 			const errorSpy = vi.fn();
 			const mockDocument = {
 				__currentQuery: {},
@@ -5171,10 +5004,8 @@ describe("GraphQL Routes", () => {
 				{},
 			);
 
-			expect(errorSpy).toHaveBeenCalledWith(
-				expect.objectContaining({ err: expect.any(Error) }),
-				"JWT verification failed during preExecution; using unauthenticated rate limits",
-			);
+			// With optional chaining, no fallback to error occurs
+			expect(errorSpy).not.toHaveBeenCalled();
 		});
 
 		it("should handle no logging methods during preExecution JWT failure", async () => {
