@@ -158,7 +158,6 @@ suite("User field creator", () => {
 						}),
 					]),
 				);
-
 			});
 		},
 	);
