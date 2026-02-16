@@ -1,6 +1,6 @@
 import { promptInput } from "../promptHelpers";
-import { handlePromptError, type SetupAnswers } from "../setup";
 import { validatePort } from "../validators";
+import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
@@ -33,7 +33,7 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				validatePort,
 			);
 			let portConflict = true;
-			while (portConflict && answers.CI === "false") {
+			while (portConflict) {
 				if (
 					answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT
 				) {

@@ -1,6 +1,6 @@
 import { promptInput } from "../promptHelpers";
-import { handlePromptError, type SetupAnswers } from "../setup";
 import { validateEmail, validatePort } from "../validators";
+import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
 export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {

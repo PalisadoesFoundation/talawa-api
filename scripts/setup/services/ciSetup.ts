@@ -1,5 +1,5 @@
 import { promptList } from "../promptHelpers";
-import { handlePromptError, type SetupAnswers } from "../setup";
+import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
 export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {

@@ -1,6 +1,6 @@
 import { promptInput, promptList } from "../promptHelpers";
-import { handlePromptError, type SetupAnswers } from "../setup";
 import { generateJwtSecret, validatePort, validateURL } from "../validators";
+import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
 export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
@@ -39,6 +39,13 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"API_JWT_EXPIRES_IN",
 			"JWT expiration (ms):",
 			"2592000000",
+			(input: string) => {
+				const ms = Number.parseInt(input, 10);
+				if (Number.isNaN(ms) || ms <= 0) {
+					return "JWT expiration must be a positive integer.";
+				}
+				return true;
+			},
 		);
 		const jwtSecret = generateJwtSecret();
 		answers.API_JWT_SECRET = await promptInput(
@@ -101,7 +108,26 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"API_MINIO_PORT",
 			"Minio port:",
 			"9000",
+			validatePort,
 		);
+		/**
+		 * CROSS-SERVICE PASSWORD SYNC CONTRACT
+		 *
+		 * The following code intentionally mutates the `answers` object and `process.env`
+		 * to propagate secrets between services.
+		 *
+		 * Key mappings:
+		 * - API_MINIO_SECRET_KEY <-> MINIO_ROOT_PASSWORD
+		 * - API_POSTGRES_PASSWORD <-> POSTGRES_PASSWORD
+		 *
+		 * Callers (e.g., in setup.ts or other service modules) rely on these side effects
+		 * to ensure consistency across the environment.
+		 *
+		 * MAINTAINERS: Preserve this behavior. Do not remove these mutations without
+		 * updating all services that share these credentials.
+		 * Specifically monitor: answers, API_MINIO_SECRET_KEY, MINIO_ROOT_PASSWORD,
+		 * and Postgres-related fields.
+		 */
 		// Treat empty string as unset so users can supply a new secret
 		const rawMinioPassword =
 			answers.MINIO_ROOT_PASSWORD ?? process.env.MINIO_ROOT_PASSWORD;

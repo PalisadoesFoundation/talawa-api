@@ -1,11 +1,11 @@
 import { promptInput } from "../promptHelpers";
-import { handlePromptError, type SetupAnswers } from "../setup";
 import {
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
 	validatePort,
 } from "../validators";
+import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
 export async function cloudbeaverSetup(
 	answers: SetupAnswers,

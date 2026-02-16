@@ -1,6 +1,6 @@
 import { promptInput } from "../promptHelpers";
-import { handlePromptError, type SetupAnswers } from "../setup";
 import { validateEmail } from "../validators";
+import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
 export async function administratorEmail(
 	answers: SetupAnswers,
