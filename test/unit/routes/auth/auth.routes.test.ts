@@ -169,6 +169,7 @@ describe("auth REST routes", () => {
 
 	afterEach(async () => {
 		if (app) await app.close();
+		vi.restoreAllMocks();
 	});
 
 	describe("POST /auth/signup", () => {

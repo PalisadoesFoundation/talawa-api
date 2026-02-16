@@ -16,6 +16,14 @@ import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import { refreshBody, signInBody, signUpBody } from "./auth/validators";
 
+/**
+ * Builds cookie options from the Fastify instance's envConfig when present.
+ *
+ * @param fastify - Object with optional envConfig. envConfig may contain
+ *   API_COOKIE_DOMAIN (optional string) and API_IS_SECURE_COOKIES (optional boolean).
+ * @returns CookieConfigOptions (domain, isSecure, path) when envConfig exists,
+ *   or undefined when envConfig is missing.
+ */
 function getCookieOptionsFromApp(fastify: {
 	envConfig?: {
 		API_COOKIE_DOMAIN?: string;
@@ -39,6 +47,17 @@ function getUserAgent(
 	return Array.isArray(header) ? header[0] : header;
 }
 
+/**
+ * Fastify plugin that registers REST auth routes: POST /auth/signup, /auth/signin,
+ * /auth/refresh, and /auth/logout. All routes use the "auth" rate limit, request
+ * validation via zReplyParsed and auth validators, and the auth service for
+ * sign-up, sign-in, token rotation, and cookie handling.
+ *
+ * @param fastify - Fastify instance. Must provide drizzleClient and rateLimit("auth").
+ *   Optional envConfig shape: { API_COOKIE_DOMAIN?: string; API_IS_SECURE_COOKIES?: boolean }.
+ *   When present, used to build cookie options for setAuthCookies/clearAuthCookies.
+ * @returns Promise that resolves when the plugin is registered (FastifyPluginAsync).
+ */
 const authRoutes: FastifyPluginAsync = async (fastify) => {
 	const cookieOptions = getCookieOptionsFromApp(fastify);
 
@@ -153,14 +172,18 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 		},
 	);
 
-	fastify.post("/auth/logout", async (req, reply) => {
-		const rt = req.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
-		if (rt) {
-			await revokeRefreshToken(fastify.drizzleClient, rt);
-		}
-		clearAuthCookies(reply, cookieOptions);
-		return reply.send({ ok: true });
-	});
+	fastify.post(
+		"/auth/logout",
+		{ preHandler: fastify.rateLimit("auth") },
+		async (req, reply) => {
+			const rt = req.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
+			if (rt) {
+				await revokeRefreshToken(fastify.drizzleClient, rt);
+			}
+			clearAuthCookies(reply, cookieOptions);
+			return reply.send({ ok: true });
+		},
+	);
 };
 
 export default authRoutes;
