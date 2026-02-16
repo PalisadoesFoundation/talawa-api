@@ -1,5 +1,5 @@
 import type { FastifyBaseLogger } from "fastify";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 
 function createMockLogger(): FastifyBaseLogger {
@@ -12,6 +12,10 @@ function createMockLogger(): FastifyBaseLogger {
 }
 
 describe("runBestEffortInvalidation", () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it("resolves when all invalidation promises succeed and does not log", async () => {
 		const logger = createMockLogger();
 
@@ -111,7 +115,5 @@ describe("runBestEffortInvalidation", () => {
 		await vi.advanceTimersByTimeAsync(40);
 		await runPromise;
 		expect(resolved).toBe(true);
-
-		vi.useRealTimers();
 	});
 });

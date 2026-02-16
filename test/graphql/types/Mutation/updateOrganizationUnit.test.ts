@@ -181,8 +181,11 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 	});
 
 	it("should succeed even when cache invalidation fails (best-effort)", async () => {
-		// Simulate cache failure
+		// Simulate cache failure for both del (opIndex 0) and clearByPattern (opIndex 1)
 		mockCache.del.mockRejectedValue(new Error("Redis connection lost"));
+		mockCache.clearByPattern.mockRejectedValue(
+			new Error("Redis connection lost"),
+		);
 
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			variables: {
@@ -205,11 +208,18 @@ describe("Mutation updateOrganization (unit via mercurius)", () => {
 			"talawa:v1:organization:list:*",
 		);
 
-		// Verify logger was called
+		// Verify logger was called for both failures
 		expect(app.log.error).toHaveBeenCalledWith(
 			expect.objectContaining({
 				entity: "organization",
 				opIndex: 0, // mockCache.del is the first promise in the array
+			}),
+			"Cache invalidation failed",
+		);
+		expect(app.log.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				entity: "organization",
+				opIndex: 1, // mockCache.clearByPattern is the second promise in the array
 			}),
 			"Cache invalidation failed",
 		);

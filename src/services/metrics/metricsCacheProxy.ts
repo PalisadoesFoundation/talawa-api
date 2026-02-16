@@ -1,12 +1,13 @@
+import type { FastifyBaseLogger } from "fastify";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+
 /**
  * Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
  *
  * This function instruments cache operations (`get`, `mget`, `set`, `del`) to track cache hits
  * and misses using a performance monitoring object.
  */
-type Logger = {
-	warn: (obj: object, msg?: string) => void;
-};
 
 export function metricsCacheProxy<
 	TCache extends {
@@ -22,7 +23,7 @@ export function metricsCacheProxy<
 		trackCacheHit: () => void;
 		trackCacheMiss: () => void;
 	},
-	logger?: Logger,
+	logger?: FastifyBaseLogger,
 ) {
 	return {
 		/**
@@ -86,12 +87,18 @@ export function metricsCacheProxy<
 		 */
 		async clearByPattern(pattern: string): Promise<void> {
 			if (!cache.clearByPattern) {
-				logger?.warn({
-					msg: "cache clearByPattern unsupported",
-					method: "clearByPattern",
-					pattern,
+				logger?.warn(
+					{
+						msg: "cache clearByPattern unsupported",
+						method: "clearByPattern",
+						pattern,
+					},
+					"clearByPattern is not supported by the underlying cache implementation",
+				);
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: `clearByPattern("${pattern}") failed: method not supported by the underlying cache implementation`,
 				});
-				return;
 			}
 			await cache.clearByPattern(pattern);
 		},
