@@ -394,6 +394,13 @@ export const Query_user_natalSex =
     }
   }`);
 
+export const Query_user_birthDate =
+	gql(`query Query_user_birthDate($input: QueryUserInput!) {
+    user(input: $input) {
+        birthDate
+    }
+  }`);
+
 export const Query_user_emailAddress =
 	gql(`query Query_user_emailAddress($input: QueryUserInput!) {
     user(input: $input) {
