@@ -194,7 +194,9 @@ jobs:
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check drizzle migrations
-        run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
+        run: |
+          JWT_SECRET=$(openssl rand -hex 32)
+          docker container run --env-file ./envFiles/.env.ci -e "API_JWT_SECRET=$JWT_SECRET" -e "API_AUTH_JWT_SECRET=$JWT_SECRET" talawa_api pnpm check_drizzle_migrations
 
   check_type_errors:
     name: Check type errors
@@ -527,7 +529,12 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
       - name: Create .env file for talawa api testing environment
-        run: cp ./envFiles/.env.ci ./.env
+        run: |
+          cp ./envFiles/.env.ci ./.env
+          echo "NODE_ENV=production" >> .env
+          JWT_SECRET=$(openssl rand -hex 32)
+          echo "API_JWT_SECRET=$JWT_SECRET" >> .env
+          echo "API_AUTH_JWT_SECRET=$JWT_SECRET" >> .env
       - name: Build talawa api compose testing environment
         run: docker compose build
       - name: Start test services (postgres-test, minio-test, redis-test, mailpit)
@@ -893,24 +900,22 @@ jobs:
 
       - name: Wait for Backend to be Ready
         run: |
-          echo "Waiting for backend at http://localhost:4000/healthcheck"
-
-          TIMEOUT=60
+          set -euo pipefail
+          echo "Waiting for backend at http://127.0.0.1:4000/healthcheck"
+          TIMEOUT=90
           INTERVAL=3
           ELAPSED=0
-
-          until docker exec talawa-api-1 curl -sf http://localhost:4000/healthcheck > /dev/null; do
+          until docker exec talawa-api-1 curl -sf http://127.0.0.1:4000/healthcheck >/dev/null; do
             if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
               echo "Backend failed to start within ${TIMEOUT}s"
-              echo "=== Backend container logs ==="
-              docker logs talawa-api-1 --tail 100
+              echo "=== Backend container logs (last 150 lines) ==="
+              docker logs talawa-api-1 --tail 150
               exit 1
             fi
             echo "Backend not ready yet... (${ELAPSED}s)"
             sleep $INTERVAL
             ELAPSED=$((ELAPSED + INTERVAL))
           done
-
           echo "Backend is up and responding"
 
       - name: Seed Sample Data
@@ -973,35 +978,55 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
+      - name: Resolve API container
+        id: api-container
+        run: |
+          API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E '\-api\-1$' | head -1 || true)
+          fi
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER="talawa-api-1"
+          fi
+          echo "name=$API_CONTAINER" >> "$GITHUB_OUTPUT"
+          echo "Resolved API container: $API_CONTAINER"
       - name: Install dependencies inside the container
-        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
-      - name: Start server and monitor logs
-        run: |
-          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
-          sleep 10
+        run: docker exec ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm install'
+      - name: Start server
+        run: docker exec -d ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm run start_development_server'
       - name: Wait for GraphQL endpoint to become available
-        if: always()
         run: |
-          echo "Waiting for the GraphQL endpoint to become available..."
-          for i in {1..60}; do
-            # Check if container exists first
-            if ! docker ps | grep -q talawa-api-1; then
-              echo "Container talawa-api-1 not found. Waiting..."
+          set -euo pipefail
+          API_CONTAINER="${{ steps.api-container.outputs.name }}"
+          echo "Waiting for the GraphQL endpoint to become available (container: $API_CONTAINER)..."
+          RESPONSE="Connection failed"
+          for i in $(seq 1 60); do
+            if ! docker exec "$API_CONTAINER" true 2>/dev/null; then
+              echo "Container $API_CONTAINER not found or not running. Waiting... (attempt $i/60)"
               sleep 2
               continue
             fi
-            docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
-              docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
-            }
-            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+            if ! docker exec "$API_CONTAINER" which curl >/dev/null 2>&1; then
+              docker exec "$API_CONTAINER" sh -c 'command -v wget >/dev/null || (apt-get update -qq && apt-get install -y -qq curl)' || true
+            fi
+            RESPONSE=$(docker exec "$API_CONTAINER" curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
             if echo "$RESPONSE" | grep -q '__typename'; then
               echo "GraphQL endpoint is available!"
               exit 0
             fi
-            echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
+            echo "GraphQL endpoint not ready (attempt $i/60). Retrying in 2 seconds..."
             sleep 2
           done
           echo "GraphQL endpoint did not become available within the expected time."
+          echo "=== Last response ==="
+          echo "${RESPONSE:-Connection failed}"
+          if docker exec "$API_CONTAINER" true 2>/dev/null; then
+            echo "=== Backend container logs (tail 80) ==="
+            docker logs "$API_CONTAINER" --tail 80
+          else
+            echo "=== Container $API_CONTAINER not running; docker ps -a ==="
+            docker ps -a
+          fi
           exit 1
       - name: Cleanup - Free ports by stopping containers
         if: always()
