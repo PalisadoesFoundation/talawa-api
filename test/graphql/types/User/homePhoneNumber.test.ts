@@ -247,4 +247,63 @@ suite("User field homePhoneNumber", () => {
 		expect(result.data.user).toEqual({ homePhoneNumber: null });
 		expect(result.errors).toBeDefined();
 	});
+
+	test('returns "unauthorized_action" when non-admin accesses another user', async () => {
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+		const adminToken = adminSignIn.data.signIn.authenticationToken;
+
+		// Create user A (requester)
+		const userA = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `userA-${faker.string.uuid()}@example.com`,
+					isEmailAddressVerified: false,
+					name: "User A",
+					password: "password123",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(userA.data.createUser?.user?.id);
+		assertToBeNonNullish(userA.data.createUser?.authenticationToken);
+		createdUserIds.push(userA.data.createUser.user.id);
+
+		// Create user B (target)
+		const userB = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `userB-${faker.string.uuid()}@example.com`,
+					isEmailAddressVerified: false,
+					name: "User B",
+					password: "password123",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(userB.data.createUser?.user?.id);
+		createdUserIds.push(userB.data.createUser.user.id);
+
+		const result = await mercuriusClient.query(Query_user_homePhoneNumber, {
+			headers: {
+				authorization: `bearer ${userA.data.createUser.authenticationToken}`,
+			},
+			variables: { input: { id: userB.data.createUser.user.id } },
+		});
+
+		expect(result.data.user).toEqual({ homePhoneNumber: null });
+		expect(result.errors).toBeDefined();
+	});
 });
