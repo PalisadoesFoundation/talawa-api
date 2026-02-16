@@ -168,6 +168,7 @@
       "version": "7",
       "when": 1769949031612,
       "tag": "20260201123031_slimy_arclight",
+      "breakpoints": true
     }
   ]
 }
