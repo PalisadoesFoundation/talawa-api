@@ -5,6 +5,14 @@ coverage:
         target: 90%
         threshold: 1%
 
+# Show "Coverage by Flag" (unit, integration, install) in PR comments
+comment:
+  layout: "diff, flags, files"
+
+# Remap absolute paths from CI workspace (GitHub Actions runner) to repo-relative
+# paths so coverage reports (e.g. bashcov, vitest) match source paths in the repo.
+fixes:
+  - "/home/runner/work/talawa-api/talawa-api/::"
 
 flags:
   unit:
@@ -28,6 +36,10 @@ flags:
       - src/drizzle/
       - src/graphql/
       - src/install/
+  install:
+    carryforward: false
+    paths:
+      - scripts/install/
 flag_management:
   default_rules:
     carryforward: true

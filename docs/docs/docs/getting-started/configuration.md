@@ -80,11 +80,28 @@ Follow these steps to ensure the minimum configuration is applied:
 
 You'll need to create a configuration file named `.env` in the repository's root directory.
 
-Copy the content of `./envFiles/.env.production` to the `.env` file.
+Choose the correct template based on how your Docker daemon is installed:
+
+1. Standard Docker (root): copy `./envFiles/.env.production`
+2. Docker Engine in rootless mode (Linux): copy `./envFiles/.env.rootless.production`
 
 ```bash
 cp ./envFiles/.env.production ./.env
 ```
+
+For rootless Docker Engine:
+
+```bash
+cp ./envFiles/.env.rootless.production ./.env
+```
+
+:::note Rootless Port Defaults
+Rootless mode defaults to `8080/8443` because publishing privileged ports `80/443` may fail under rootless Docker unless your host is configured to allow it.
+:::
+
+:::note Rootless DOCKER_HOST
+Ensure `DOCKER_HOST=unix:///run/user/$UID/docker.sock` is set in the same shell session where you run `docker compose`.
+:::
 
 #### Add a JWT Secret to .env
 
@@ -148,11 +165,11 @@ Update the `.env` file with:
 
 ```env
 API_EMAIL_PROVIDER=ses
-AWS_SES_REGION=your-region
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_SES_FROM_EMAIL=verified@yourdomain.com
-AWS_SES_FROM_NAME=Your Organization
+API_AWS_SES_REGION=your-region
+API_AWS_ACCESS_KEY_ID=your-access-key
+API_AWS_SECRET_ACCESS_KEY=your-secret-key
+API_AWS_SES_FROM_EMAIL=verified@yourdomain.com
+API_AWS_SES_FROM_NAME=Your Organization
 ```
 
 Note: You must verify your domain or email address in AWS SES console before sending emails.
@@ -163,12 +180,12 @@ For providers like Gmail, SendGrid, or Mailgun, update the `.env` file with:
 
 ```env
 API_EMAIL_PROVIDER=smtp
-SMTP_HOST=smtp.yourprovider.com
-SMTP_PORT=587
-SMTP_USER=your-username
-SMTP_PASSWORD=your-password
-SMTP_FROM_EMAIL=sender@yourdomain.com
-SMTP_FROM_NAME=Your Organization
+API_SMTP_HOST=smtp.yourprovider.com
+API_SMTP_PORT=587
+API_SMTP_USER=your-username
+API_SMTP_PASSWORD=your-password
+API_SMTP_FROM_EMAIL=sender@yourdomain.com
+API_SMTP_FROM_NAME=Your Organization
 ```
 
 
@@ -283,24 +300,24 @@ Talawa API requires email configuration for features like user registration veri
 You will need to update the `.env` file with the following information.
 
 1. `API_EMAIL_PROVIDER` - Set to `ses` (default)
-2. `AWS_SES_REGION` - Your AWS SES region (e.g., `ap-south-1`)
-3. `AWS_ACCESS_KEY_ID` - Your AWS IAM Access Key
-4. `AWS_SECRET_ACCESS_KEY` - Your AWS IAM Secret Key
-5. `AWS_SES_FROM_EMAIL` - The email address you have verified in SES
-6. `AWS_SES_FROM_NAME` - (Optional) The name to display as the sender (default: "Talawa")
+2. `API_AWS_SES_REGION` - Your AWS SES region (e.g., `ap-south-1`)
+3. `API_AWS_ACCESS_KEY_ID` - Your AWS IAM Access Key
+4. `API_AWS_SECRET_ACCESS_KEY` - Your AWS IAM Secret Key
+5. `API_AWS_SES_FROM_EMAIL` - The email address you have verified in SES
+6. `API_AWS_SES_FROM_NAME` - (Optional) The name to display as the sender (default: "Talawa")
 
 **Alternatively, for SMTP Provider:**
 
 1. `API_EMAIL_PROVIDER` - Set to `smtp`
-2. `SMTP_HOST` - SMTP server hostname (required)
-3. `SMTP_PORT` - SMTP server port (required, e.g., 587 or 465)
-4. `SMTP_USER` - SMTP username (optional)
-5. `SMTP_PASSWORD` - SMTP password (optional)
-6. `SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
-7. `SMTP_FROM_EMAIL` - Sender email address (required)
-8. `SMTP_FROM_NAME` - Sender display name (optional)
-9. `SMTP_NAME` - Client hostname for HELO/EHLO (optional)
-10. `SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
+2. `API_SMTP_HOST` - SMTP server hostname (required)
+3. `API_SMTP_PORT` - SMTP server port (required, e.g., 587 or 465)
+4. `API_SMTP_USER` - SMTP username (optional)
+5. `API_SMTP_PASSWORD` - SMTP password (optional)
+6. `API_SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
+7. `API_SMTP_FROM_EMAIL` - Sender email address (required)
+8. `API_SMTP_FROM_NAME` - Sender display name (optional)
+9. `API_SMTP_NAME` - Client hostname for HELO/EHLO (optional)
+10. `API_SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
 
 **Required IAM Permissions:**
 Your AWS IAM user needs the following permissions:
@@ -353,10 +370,10 @@ When using the default development setup, the following values are automatically
 
 ```env
 API_EMAIL_PROVIDER=mailpit
-SMTP_HOST=mailpit
-SMTP_PORT=1025
-SMTP_FROM_EMAIL=test@talawa.local
-SMTP_FROM_NAME=Talawa
+API_SMTP_HOST=mailpit
+API_SMTP_PORT=1025
+API_SMTP_FROM_EMAIL=test@talawa.local
+API_SMTP_FROM_NAME=Talawa
 ```
 
 **Mailpit Web Interface Features:**

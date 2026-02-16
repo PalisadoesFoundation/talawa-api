@@ -370,6 +370,24 @@ Follow these steps to install Docker on your system:
       ```
    4. Using the Docker documentation, you must ensure that Docker will restart after your next reboot.
 
+#### Docker Engine Rootless Mode (Linux)
+
+Docker can be installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/) on Linux to run the daemon and containers without root privileges.
+
+**Important notes:**
+
+1. The `dockerd-rootless-setuptool.sh install` command **MUST NOT** be run using `sudo`.
+2. Ensure `DOCKER_HOST` uses `$UID` so it works for any user:
+   ```bash
+   export DOCKER_HOST=unix:///run/user/$UID/docker.sock
+   ```
+3. Verify the daemon is running in rootless mode:
+   ```bash
+   docker info --format '{{.SecurityOptions}}'
+   ```
+   The output should include `rootless`.
+4. When testing rootless mode, make sure the user is **not** a member of the operating system `docker` group.
+
 ### Docker Devcontainer Modes
 
 This project provides two devcontainer configurations to support different Docker setups:

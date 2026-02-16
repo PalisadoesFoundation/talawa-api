@@ -1,4 +1,3 @@
-import { promises as fs } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
@@ -6,11 +5,13 @@ import dotenv from "dotenv";
 import {
 	restoreBackup as atomicRestoreBackup,
 	cleanupTemp,
-	commitTemp,
 	ensureBackup,
-	writeTemp,
 } from "./AtomicEnvWriter";
 import { emailSetup } from "./emailSetup";
+import {
+	checkEnvFile as checkEnvFileInternal,
+	initializeEnvFile as initializeEnvFileInternal,
+} from "./envFileManager";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
 import {
@@ -99,11 +100,11 @@ export type SetupKey =
 	| "API_OTEL_TRACE_EXPORTER_ENDPOINT"
 	| "API_OTEL_METRIC_EXPORTER_ENDPOINT"
 	| "API_EMAIL_PROVIDER"
-	| "AWS_SES_REGION"
-	| "AWS_ACCESS_KEY_ID"
-	| "AWS_SECRET_ACCESS_KEY"
-	| "AWS_SES_FROM_EMAIL"
-	| "AWS_SES_FROM_NAME"
+	| "API_AWS_SES_REGION"
+	| "API_AWS_ACCESS_KEY_ID"
+	| "API_AWS_SECRET_ACCESS_KEY"
+	| "API_AWS_SES_FROM_EMAIL"
+	| "API_AWS_SES_FROM_NAME"
 	| "MAILPIT_MAPPED_HOST_IP"
 	| "MAILPIT_WEB_MAPPED_PORT"
 	| "MAILPIT_SMTP_MAPPED_PORT"
@@ -492,61 +493,30 @@ async function handlePromptError(err: unknown): Promise<never> {
 	process.exit(1);
 }
 export async function checkEnvFile(): Promise<boolean> {
-	try {
-		await fs.access(envFileName);
-		return true;
-	} catch {
-		return false;
-	}
+	return checkEnvFileInternal(envFileName);
 }
 export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 	try {
-		await fs.access(envFileToUse);
-	} catch {
-		console.warn(`⚠️ Warning: Configuration file '${envFileToUse}' is missing.`);
-		throw new Error(
-			`Configuration file '${envFileToUse}' is missing. Please create the file or use a different environment configuration.`,
-		);
-	}
-	try {
-		// Read and parse the source environment file
-		const fileContent = await fs.readFile(envFileToUse, { encoding: "utf-8" });
-		const parsedEnv = dotenv.parse(fileContent);
-		const safeContent = Object.entries(parsedEnv)
-			.map(([key, value]) => {
-				const escaped = value
-					.replace(/\\/g, "\\\\")
-					.replace(/"/g, '\\"')
-					.replace(/\n/g, "\\n");
-				return `${key}="${escaped}"`;
-			})
-			.join("\n");
-
-		// Use AtomicEnvWriter for safe file operations
-		// Note: Backup is already created in setup() based on user preference
-		await writeTemp(envTempFile, safeContent);
-		await commitTemp(envFileName, envTempFile);
-
-		dotenv.config({ path: envFileName });
+		await initializeEnvFileInternal({
+			ci: answers.CI === "true",
+			envFile: envFileName,
+			backupFile: envBackupFile,
+			tempFile: envTempFile,
+			templateCiFile: "envFiles/.env.ci",
+			templateDevcontainerFile: "envFiles/.env.devcontainer",
+			restoreFromBackup: backupCreated,
+		});
 		console.log(
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
 		);
 	} catch (error) {
-		// Clean up temp file on error
-		try {
-			await cleanupTemp(envTempFile);
-		} catch (cleanupError) {
-			console.warn("⚠️  Failed to clean temp file:", cleanupError);
-		}
 		console.error(
 			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
 		);
 		console.error(error instanceof Error ? error.message : error);
-		throw new Error(
-			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
-		);
+		throw error;
 	}
 }
 export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -1359,7 +1329,13 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupMetrics) {
 		answers = await metricsSetup(answers);
 	}
-	await updateEnvVariable(answers);
+	await updateEnvVariable(answers, {
+		envFile: envFileName,
+		backupFile: envBackupFile,
+		tempFile: envTempFile,
+		createBackup: false,
+		restoreFromBackup: backupCreated,
+	});
 	console.log("Configuration complete.");
 
 	// Cleanup: Unregister signal handlers after successful setup

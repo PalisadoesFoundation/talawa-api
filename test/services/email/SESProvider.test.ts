@@ -28,7 +28,7 @@ describe("SESProvider", () => {
 		sesProvider = new SESProvider(mockConfig);
 	});
 
-	it("should throw error if AWS_SES_REGION is empty string", async () => {
+	it("should throw error if API_AWS_SES_REGION is empty string", async () => {
 		const provider = new SESProvider({
 			...mockConfig,
 			region: "" as NonEmptyString,
@@ -45,7 +45,7 @@ describe("SESProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "AWS_SES_REGION must be a non-empty string",
+				error: "API_AWS_SES_REGION must be a non-empty string",
 			}),
 		);
 	});
@@ -183,16 +183,15 @@ describe("SESProvider", () => {
 			// fromEmail missing
 		});
 
-		const result = await provider.sendEmail({
-			id: "1",
-			email: "recipient@example.com",
-			subject: "Subject",
-			htmlBody: "Body",
-			userId: "123",
-		});
-
-		expect(result.success).toBe(false);
-		expect(result.error).toContain("Email service not configured");
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).rejects.toThrow("Email service not configured");
 	});
 
 	it("should fail if only accessKeyId is provided (without secret)", async () => {
