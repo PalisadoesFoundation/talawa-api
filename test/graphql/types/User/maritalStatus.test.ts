@@ -127,6 +127,14 @@ describe("User field maritalStatus", () => {
 				);
 
 				expect(result).toBeNull();
+				expect(
+					mocks.drizzleClient.query.usersTable.findFirst,
+				).toHaveBeenCalledWith(
+					expect.objectContaining({
+						columns: { role: true },
+						where: expect.any(Function),
+					}),
+				);
 			});
 
 			it("returns maritalStatus when user accesses their own data", async () => {
@@ -146,6 +154,14 @@ describe("User field maritalStatus", () => {
 				);
 
 				expect(result).toBe("married");
+				expect(
+					mocks.drizzleClient.query.usersTable.findFirst,
+				).toHaveBeenCalledWith(
+					expect.objectContaining({
+						columns: { role: true },
+						where: expect.any(Function),
+					}),
+				);
 			});
 
 			it("returns maritalStatus when administrator accesses another user's data", async () => {
@@ -166,6 +182,14 @@ describe("User field maritalStatus", () => {
 				);
 
 				expect(result).toBe("single");
+				expect(
+					mocks.drizzleClient.query.usersTable.findFirst,
+				).toHaveBeenCalledWith(
+					expect.objectContaining({
+						columns: { role: true },
+						where: expect.any(Function),
+					}),
+				);
 			});
 		});
 
