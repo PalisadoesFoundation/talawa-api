@@ -64,6 +64,7 @@ import "./MutationDeleteUserInput";
 import "./MutationDeleteVenueBookingInput";
 import "./MutationDeleteVenueInput";
 import "./MutationSignUpInput";
+import "./MutationAdminUpdateUserPasswordInput";
 import "./MutationUpdateAdvertisementInput";
 import "./MutationUpdateAgendaFolderInput";
 import "./MutationUpdateAgendaItemInput";

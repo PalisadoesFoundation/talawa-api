@@ -1,4 +1,5 @@
 import "./Mutation";
+import "./adminUpdateUserPassword";
 import "./acceptMembershipRequest";
 import "./blockUser";
 import "./unblockUser";
