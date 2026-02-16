@@ -6,7 +6,7 @@
 
 > `const` **default**: `FastifyPluginAsync`
 
-Defined in: [src/routes/auth.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/auth.ts#L61)
+Defined in: [src/routes/auth.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/auth.ts#L71)
 
 Fastify plugin that registers REST auth routes: POST /auth/signup, /auth/signin,
 /auth/refresh, and /auth/logout. All routes use the "auth" rate limit, request
@@ -16,7 +16,7 @@ sign-up, sign-in, token rotation, and cookie handling.
 ## Param
 
 Fastify instance. Must provide drizzleClient and rateLimit("auth").
-  Optional envConfig shape: { API_COOKIE_DOMAIN?: string; API_IS_SECURE_COOKIES?: boolean }.
+  Optional envConfig with API_COOKIE_DOMAIN (string) and API_IS_SECURE_COOKIES (boolean).
   When present, used to build cookie options for setAuthCookies/clearAuthCookies.
 
 ## Returns

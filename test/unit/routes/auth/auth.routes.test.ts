@@ -29,11 +29,15 @@ vi.mock("~/src/services/auth", async (importOriginal) => {
 const TEST_COOKIE_SECRET = "test-cookie-secret-at-least-32-characters";
 const mockDb = {} as unknown as DrizzleClient;
 
-async function buildTestApp() {
+type BuildTestAppOptions = {
+	envConfig?: Partial<EnvConfig>;
+};
+
+async function buildTestApp(options: BuildTestAppOptions = {}) {
 	const app = Fastify({ logger: false });
 	app.decorate("drizzleClient", mockDb);
 	app.decorate("redis", new FakeRedisZ() as unknown as FastifyRedis);
-	app.decorate("envConfig", {} as EnvConfig);
+	app.decorate("envConfig", { ...options.envConfig } as EnvConfig);
 	await app.register(fastifyCookie, { secret: TEST_COOKIE_SECRET });
 	await app.register(errorHandlerPlugin);
 	await app.register(rateLimitPlugin);
@@ -72,7 +76,7 @@ describe("auth REST routes", () => {
 	});
 
 	describe("POST /auth/signup", () => {
-		it("returns 200 and sets cookies with user id and email", async () => {
+		it("returns 201 and sets cookies with user id and email", async () => {
 			mockSignUp.mockResolvedValue({ user: mockUser });
 			mockSignIn.mockResolvedValue({
 				user: mockUser,
@@ -86,7 +90,7 @@ describe("auth REST routes", () => {
 				payload: validSignUpPayload,
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(201);
 			const body = res.json();
 			expect(body.user).toBeDefined();
 			expect(body.user.id).toBe(mockUser.id);
@@ -145,6 +149,69 @@ describe("auth REST routes", () => {
 			expect(res.statusCode).toBe(400);
 			expect(res.json().error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
 		});
+
+		it("returns 500 when signUp throws an unexpected exception", async () => {
+			mockSignUp.mockRejectedValue(new Error("database connection lost"));
+
+			const res = await app.inject({
+				method: "POST",
+				url: "/auth/signup",
+				payload: validSignUpPayload,
+			});
+
+			expect(res.statusCode).toBe(500);
+		});
+
+		it("sets secure cookies when envConfig.API_IS_SECURE_COOKIES is default (true)", async () => {
+			mockSignUp.mockResolvedValue({ user: mockUser });
+			mockSignIn.mockResolvedValue({
+				user: mockUser,
+				access: "access-token",
+				refresh: "refresh-token",
+			});
+			const res = await app.inject({
+				method: "POST",
+				url: "/auth/signup",
+				payload: validSignUpPayload,
+			});
+			expect(res.statusCode).toBe(201);
+			const accessCookie = res.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const refreshCookie = res.cookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+			expect(accessCookie?.secure).toBe(true);
+			expect(refreshCookie?.secure).toBe(true);
+		});
+
+		it("sets non-secure cookies when envConfig.API_IS_SECURE_COOKIES is false", async () => {
+			const appInsecure = await buildTestApp({
+				envConfig: { API_IS_SECURE_COOKIES: false },
+			});
+			mockSignUp.mockResolvedValue({ user: mockUser });
+			mockSignIn.mockResolvedValue({
+				user: mockUser,
+				access: "access-token",
+				refresh: "refresh-token",
+			});
+			const res = await appInsecure.inject({
+				method: "POST",
+				url: "/auth/signup",
+				payload: validSignUpPayload,
+			});
+			await appInsecure.close();
+			expect(res.statusCode).toBe(201);
+			const accessCookie = res.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const refreshCookie = res.cookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+			// When API_IS_SECURE_COOKIES is false, secure may be false or omitted
+			expect(accessCookie?.secure).not.toBe(true);
+			expect(refreshCookie?.secure).not.toBe(true);
+		});
 	});
 
 	describe("POST /auth/signin", () => {
@@ -186,6 +253,18 @@ describe("auth REST routes", () => {
 			expect(res.statusCode).toBe(401);
 			expect(res.json().error.code).toBe(ErrorCode.UNAUTHENTICATED);
 			expect(res.json().error.message).toBe("Invalid credentials");
+		});
+
+		it("returns 500 when signIn throws an unexpected exception", async () => {
+			mockSignIn.mockRejectedValue(new Error("database unavailable"));
+
+			const res = await app.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: "a@b.co", password: "P@ssword1!" },
+			});
+
+			expect(res.statusCode).toBe(500);
 		});
 	});
 
@@ -357,7 +436,7 @@ describe("auth REST routes", () => {
 			url: "/auth/signup",
 			payload: validSignUpPayload,
 		});
-		expect(signupRes.statusCode).toBe(200);
+		expect(signupRes.statusCode).toBe(201);
 
 		const cookies = Object.fromEntries(
 			signupRes.cookies.map((c) => [c.name, c.value]),

@@ -48,23 +48,32 @@ function getUserAgent(
 }
 
 /**
+ * Masks an email for safe logging (avoids PII). Keeps first character and domain.
+ * @example "a@b.co" -> "a***@b.co"; "user@example.com" -> "u***@example.com"
+ */
+function maskEmailForLog(email: string): string {
+	const at = email.indexOf("@");
+	if (at <= 0 || at === email.length - 1) return "[redacted]";
+	return `${email[0]}***@${email.slice(at + 1)}`;
+}
+
+/**
  * Fastify plugin that registers REST auth routes: POST /auth/signup, /auth/signin,
  * /auth/refresh, and /auth/logout. All routes use the "auth" rate limit, request
  * validation via zReplyParsed and auth validators, and the auth service for
  * sign-up, sign-in, token rotation, and cookie handling.
  *
  * @param fastify - Fastify instance. Must provide drizzleClient and rateLimit("auth").
- *   Optional envConfig shape: { API_COOKIE_DOMAIN?: string; API_IS_SECURE_COOKIES?: boolean }.
+ *   Optional envConfig with API_COOKIE_DOMAIN (string) and API_IS_SECURE_COOKIES (boolean).
  *   When present, used to build cookie options for setAuthCookies/clearAuthCookies.
  * @returns Promise that resolves when the plugin is registered (FastifyPluginAsync).
  */
 const authRoutes: FastifyPluginAsync = async (fastify) => {
 	const cookieOptions = getCookieOptionsFromApp(fastify);
-	const authRateLimit = fastify.rateLimit("auth");
 
 	fastify.post(
 		"/auth/signup",
-		{ preHandler: authRateLimit },
+		{ preHandler: fastify.rateLimit("auth") },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, signUpBody, req.body);
 			if (body === undefined) return;
@@ -86,7 +95,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 			if ("error" in signInResult) {
 				req.log.warn(
 					{
-						email: body.email,
+						emailMasked: maskEmailForLog(body.email),
 						createdUserId: signUpResult.user.id,
 						ip: req.ip,
 						signInError: signInResult.error,
@@ -108,7 +117,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 				},
 				cookieOptions,
 			);
-			return reply.send({
+			return reply.code(201).send({
 				user: {
 					id: signInResult.user.id,
 					email: signInResult.user.emailAddress,
@@ -119,7 +128,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/signin",
-		{ preHandler: authRateLimit },
+		{ preHandler: fastify.rateLimit("auth") },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, signInBody, req.body);
 			if (body === undefined) return;
@@ -152,7 +161,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/refresh",
-		{ preHandler: authRateLimit },
+		{ preHandler: fastify.rateLimit("auth") },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, refreshBody, req.body ?? {});
 			if (body === undefined) return;
@@ -185,7 +194,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/logout",
-		{ preHandler: authRateLimit },
+		{ preHandler: fastify.rateLimit("auth") },
 		async (req, reply) => {
 			const rt = req.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
 			if (rt) {
