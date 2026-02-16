@@ -17,7 +17,12 @@ import {
 	vi,
 } from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
-import { createContext, graphql } from "~/src/routes/graphql";
+import {
+	createContext,
+	extractZodMessage,
+	getPublicErrorMessage,
+	graphql,
+} from "~/src/routes/graphql";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -4505,6 +4510,1426 @@ describe("GraphQL Routes", () => {
 			expect(result.response.errors?.[0]?.extensions?.code).toBe(
 				ErrorCode.INTERNAL_SERVER_ERROR,
 			);
+		});
+	});
+
+	describe("getPublicErrorMessage", () => {
+		it("should return default message when error has no message", () => {
+			expect(getPublicErrorMessage({}, "default")).toBe("default");
+			expect(getPublicErrorMessage({ message: undefined }, "fallback")).toBe(
+				"fallback",
+			);
+		});
+
+		it("should return allowlisted messages as-is", () => {
+			expect(
+				getPublicErrorMessage({ message: "Minio removal error" }, "default"),
+			).toBe("Minio removal error");
+			expect(
+				getPublicErrorMessage({ message: "Invalid UUID" }, "default"),
+			).toBe("Invalid UUID");
+			expect(
+				getPublicErrorMessage({ message: "database_error" }, "default"),
+			).toBe("database_error");
+			expect(
+				getPublicErrorMessage(
+					{ message: "An error occurred while fetching users" },
+					"default",
+				),
+			).toBe("An error occurred while fetching users");
+			expect(
+				getPublicErrorMessage(
+					{ message: "An error occurred while fetching events" },
+					"default",
+				),
+			).toBe("An error occurred while fetching events");
+		});
+
+		it("should return allowlisted messages with trailing period stripped", () => {
+			expect(
+				getPublicErrorMessage({ message: "Invalid UUID." }, "default"),
+			).toBe("Invalid UUID");
+			expect(
+				getPublicErrorMessage({ message: "database_error." }, "default"),
+			).toBe("database_error");
+		});
+
+		it("should mask sensitive messages starting with Database", () => {
+			expect(
+				getPublicErrorMessage(
+					{ message: "Database connection failed" },
+					"safe",
+				),
+			).toBe("safe");
+		});
+
+		it("should mask sensitive messages containing query:", () => {
+			expect(
+				getPublicErrorMessage(
+					{ message: "Failed at query: SELECT * FROM users" },
+					"safe",
+				),
+			).toBe("safe");
+		});
+
+		it("should mask sensitive messages containing boom", () => {
+			expect(
+				getPublicErrorMessage({ message: "Something went boom" }, "safe"),
+			).toBe("safe");
+		});
+
+		it("should return default message for unknown messages", () => {
+			expect(
+				getPublicErrorMessage({ message: "some random error" }, "default"),
+			).toBe("default");
+		});
+	});
+
+	describe("extractZodMessage", () => {
+		it("should handle string normalizedDetails by JSON-parsing them", () => {
+			const details = JSON.stringify({
+				properties: {
+					id: { errors: ["Invalid UUID"] },
+				},
+			});
+			expect(extractZodMessage(details, {}, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should handle treeified Zod error format with Invalid UUID", () => {
+			const details = {
+				properties: {
+					id: { errors: ["Invalid UUID"] },
+				},
+			};
+			expect(extractZodMessage(details, {}, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should handle treeified Zod error format without Invalid UUID", () => {
+			const details = {
+				properties: {
+					id: { errors: ["some other error"] },
+				},
+			};
+			// Doesn't match "Invalid UUID" → falls through to fallback
+			expect(extractZodMessage(details, {}, "fallback")).toBe("fallback");
+		});
+
+		it("should handle treeified format without id property", () => {
+			const details = {
+				properties: {
+					name: { errors: ["Required"] },
+				},
+			};
+			expect(extractZodMessage(details, {}, "fallback")).toBe("fallback");
+		});
+
+		it("should handle array format with Invalid UUID message", () => {
+			const details = [{ message: "Invalid UUID" }];
+			expect(extractZodMessage(details, {}, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should handle array format with lowercase Invalid uuid message", () => {
+			const details = [{ message: "Invalid uuid" }];
+			expect(extractZodMessage(details, {}, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should handle array format with non-UUID message", () => {
+			const details = [{ message: "Field is required" }];
+			expect(extractZodMessage(details, {}, "fallback")).toBe(
+				"Field is required",
+			);
+		});
+
+		it("should handle array format with empty first error object", () => {
+			const details = [{ notMessage: "something" }];
+			// firstError has no 'message' key → falls through
+			expect(extractZodMessage(details, {}, "fallback")).toBe("fallback");
+		});
+
+		it("should handle empty array details", () => {
+			expect(extractZodMessage([], {}, "fallback")).toBe("fallback");
+		});
+
+		it("should return Invalid uuid when error.message includes Invalid UUID", () => {
+			const error = { message: "Zod: Invalid UUID provided" };
+			expect(extractZodMessage(null, error, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should return Invalid uuid when originalError.message includes Invalid UUID", () => {
+			const error = {
+				message: "Something",
+				originalError: { message: "Invalid UUID" },
+			};
+			expect(extractZodMessage(null, error, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should handle JSON parse error in string details gracefully", () => {
+			// Invalid JSON string should trigger catch block
+			expect(extractZodMessage("{invalid-json", {}, "fallback")).toBe(
+				"fallback",
+			);
+		});
+
+		it("should use getPublicErrorMessage as final fallback", () => {
+			const error = { message: "Invalid UUID" };
+			// null details → skip try block → check error.message → includes Invalid UUID
+			expect(extractZodMessage(null, error, "fallback")).toBe("Invalid uuid");
+		});
+
+		it("should fall through to getPublicErrorMessage for non-matching errors", () => {
+			const error = { message: "some random error" };
+			expect(extractZodMessage(null, error, "fallback")).toBe("fallback");
+		});
+
+		it("should handle falsy error message and originalError message", () => {
+			expect(extractZodMessage(null, {}, "fallback")).toBe("fallback");
+			expect(
+				extractZodMessage(null, { message: "", originalError: {} }, "fallback"),
+			).toBe("fallback");
+		});
+	});
+
+	describe("createContext - Auth logging fallbacks", () => {
+		it("should use info logger when debug is not available for header auth failure", async () => {
+			const infoSpy = vi.fn();
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: {},
+				log: {
+					info: infoSpy,
+					warn: vi.fn(),
+					error: vi.fn(),
+					child: vi.fn().mockReturnThis(),
+					level: "info",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: { sign: vi.fn() } as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+			expect(infoSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		});
+
+		it("should use warn logger when debug and info are not available for header auth failure", async () => {
+			const warnSpy = vi.fn();
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: {},
+				log: {
+					warn: warnSpy,
+					error: vi.fn(),
+					child: vi.fn().mockReturnThis(),
+					level: "warn",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: { sign: vi.fn() } as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		});
+
+		it("should use error logger when debug, info, and warn are not available for header auth failure", async () => {
+			const errorSpy = vi.fn();
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: {},
+				log: {
+					error: errorSpy,
+					child: vi.fn().mockReturnThis(),
+					level: "error",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: { sign: vi.fn() } as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+			expect(errorSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		});
+
+		it("should use info logger for cookie auth failure when debug is not available", async () => {
+			const infoSpy = vi.fn();
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: { [COOKIE_NAMES.ACCESS_TOKEN]: "bad-cookie" },
+				log: {
+					info: infoSpy,
+					warn: vi.fn(),
+					error: vi.fn(),
+					child: vi.fn().mockReturnThis(),
+					level: "info",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: {
+					sign: vi.fn(),
+					verify: vi.fn().mockRejectedValue(new Error("Bad cookie")),
+				} as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+			// info is called for both header and cookie failure
+			expect(infoSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"Cookie token verification failed; treating request as unauthenticated",
+			);
+		});
+
+		it("should use warn logger for cookie auth failure when debug and info are not available", async () => {
+			const warnSpy = vi.fn();
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: { [COOKIE_NAMES.ACCESS_TOKEN]: "bad-cookie" },
+				log: {
+					warn: warnSpy,
+					error: vi.fn(),
+					child: vi.fn().mockReturnThis(),
+					level: "warn",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: {
+					sign: vi.fn(),
+					verify: vi.fn().mockRejectedValue(new Error("Bad cookie")),
+				} as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"Cookie token verification failed; treating request as unauthenticated",
+			);
+		});
+
+		it("should use error logger for cookie auth failure when debug, info, and warn are not available", async () => {
+			const errorSpy = vi.fn();
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: { [COOKIE_NAMES.ACCESS_TOKEN]: "bad-cookie" },
+				log: {
+					error: errorSpy,
+					child: vi.fn().mockReturnThis(),
+					level: "error",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: {
+					sign: vi.fn(),
+					verify: vi.fn().mockRejectedValue(new Error("Bad cookie")),
+				} as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+			expect(errorSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"Cookie token verification failed; treating request as unauthenticated",
+			);
+		});
+
+		it("should handle no logging methods at all for header auth failure", async () => {
+			const mockReq: Partial<FastifyRequest> = {
+				jwtVerify: vi.fn().mockRejectedValue(new Error("No header")),
+				ip: "127.0.0.1",
+				cookies: {},
+				log: {
+					child: vi.fn().mockReturnThis(),
+					level: "silent",
+					fatal: vi.fn(),
+					trace: vi.fn(),
+					silent: vi.fn(),
+				} as unknown as FastifyRequest["log"],
+			};
+
+			const mockFastifyLocal: Partial<FastifyInstance> = {
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				cache: {} as unknown as FastifyInstance["cache"],
+				envConfig: {
+					API_JWT_EXPIRES_IN: 900000,
+				} as FastifyInstance["envConfig"],
+				jwt: { sign: vi.fn() } as unknown as FastifyInstance["jwt"],
+				log: mockReq.log as unknown as FastifyInstance["log"],
+				minio: {} as FastifyInstance["minio"],
+			};
+
+			const context = await createContext({
+				fastify: mockFastifyLocal as FastifyInstance,
+				request: mockReq as FastifyRequest,
+				isSubscription: false,
+				reply: { setCookie: vi.fn() } as unknown as FastifyReply,
+			});
+
+			expect(context.currentClient.isAuthenticated).toBe(false);
+		});
+	});
+
+	describe("preExecution Hook - Auth logging fallbacks", () => {
+		let mockFastifyInstance: {
+			register: ReturnType<typeof vi.fn>;
+			envConfig: {
+				API_IS_GRAPHIQL: boolean;
+				API_GRAPHQL_MUTATION_BASE_COST: number;
+				API_RATE_LIMIT_BUCKET_CAPACITY: number;
+				API_RATE_LIMIT_REFILL_RATE: number;
+			};
+			log: {
+				info: ReturnType<typeof vi.fn>;
+				error: ReturnType<typeof vi.fn>;
+			};
+			graphql: {
+				replaceSchema: ReturnType<typeof vi.fn>;
+				addHook: ReturnType<typeof vi.fn>;
+			};
+		};
+		let mockSchema: GraphQLSchema;
+		let preExecutionHook: (
+			schema: GraphQLSchema,
+			context: { definitions: Array<{ kind: string; operation?: string }> },
+			document: {
+				__currentQuery: Record<string, unknown>;
+				reply: {
+					request: {
+						ip?: string;
+						jwtVerify: ReturnType<typeof vi.fn>;
+						log?: unknown;
+					};
+				};
+			},
+			variables: Record<string, unknown>,
+		) => Promise<void>;
+
+		beforeEach(async () => {
+			mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: true,
+					API_GRAPHQL_MUTATION_BASE_COST: 10,
+					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+					API_RATE_LIMIT_REFILL_RATE: 1,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			mockSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						hello: { type: GraphQLString, resolve: () => "Hello" },
+					},
+				}),
+			});
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
+			vi.mocked(complexityFromQuery).mockReturnValue({
+				complexity: 5,
+				breadth: 1,
+				depth: 1,
+			});
+			vi.mocked(complexityLeakyBucket).mockResolvedValue(true);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const addHookCall = mockFastifyInstance.graphql.addHook.mock.calls.find(
+				(call: unknown[]) => call?.[0] === "preExecution",
+			);
+			preExecutionHook = addHookCall?.[1] as typeof preExecutionHook;
+		});
+
+		it("should use debug logger when available during preExecution JWT failure", async () => {
+			const debugSpy = vi.fn();
+			const mockDocument = {
+				__currentQuery: {},
+				reply: {
+					request: {
+						ip: "192.168.1.1",
+						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
+						log: {
+							debug: debugSpy,
+							info: vi.fn(),
+							warn: vi.fn(),
+							error: vi.fn(),
+						},
+					},
+				},
+			};
+
+			await preExecutionHook(
+				mockSchema,
+				{ definitions: [{ kind: "OperationDefinition", operation: "query" }] },
+				mockDocument,
+				{},
+			);
+
+			expect(debugSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"JWT verification failed during preExecution; using unauthenticated rate limits",
+			);
+		});
+
+		it("should use info logger when debug is not available during preExecution JWT failure", async () => {
+			const infoSpy = vi.fn();
+			const mockDocument = {
+				__currentQuery: {},
+				reply: {
+					request: {
+						ip: "192.168.1.1",
+						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
+						log: { info: infoSpy, warn: vi.fn(), error: vi.fn() },
+					},
+				},
+			};
+
+			await preExecutionHook(
+				mockSchema,
+				{ definitions: [{ kind: "OperationDefinition", operation: "query" }] },
+				mockDocument,
+				{},
+			);
+
+			expect(infoSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"JWT verification failed during preExecution; using unauthenticated rate limits",
+			);
+		});
+
+		it("should use warn logger when debug and info are not available during preExecution JWT failure", async () => {
+			const warnSpy = vi.fn();
+			const mockDocument = {
+				__currentQuery: {},
+				reply: {
+					request: {
+						ip: "192.168.1.1",
+						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
+						log: { warn: warnSpy, error: vi.fn() },
+					},
+				},
+			};
+
+			await preExecutionHook(
+				mockSchema,
+				{ definitions: [{ kind: "OperationDefinition", operation: "query" }] },
+				mockDocument,
+				{},
+			);
+
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"JWT verification failed during preExecution; using unauthenticated rate limits",
+			);
+		});
+
+		it("should use error logger when debug, info, and warn are not available during preExecution JWT failure", async () => {
+			const errorSpy = vi.fn();
+			const mockDocument = {
+				__currentQuery: {},
+				reply: {
+					request: {
+						ip: "192.168.1.1",
+						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
+						log: { error: errorSpy },
+					},
+				},
+			};
+
+			await preExecutionHook(
+				mockSchema,
+				{ definitions: [{ kind: "OperationDefinition", operation: "query" }] },
+				mockDocument,
+				{},
+			);
+
+			expect(errorSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.any(Error) }),
+				"JWT verification failed during preExecution; using unauthenticated rate limits",
+			);
+		});
+
+		it("should handle no logging methods during preExecution JWT failure", async () => {
+			const mockDocument = {
+				__currentQuery: {},
+				reply: {
+					request: {
+						ip: "192.168.1.1",
+						jwtVerify: vi.fn().mockRejectedValue(new Error("fail")),
+						log: {},
+					},
+				},
+			};
+
+			await expect(
+				preExecutionHook(
+					mockSchema,
+					{
+						definitions: [{ kind: "OperationDefinition", operation: "query" }],
+					},
+					mockDocument,
+					{},
+				),
+			).resolves.not.toThrow();
+		});
+	});
+
+	describe("Error Formatter - Additional branch coverage", () => {
+		let errorFormatter: (
+			execution: { data?: unknown; errors: unknown[] },
+			context: unknown,
+		) => {
+			statusCode: number;
+			response: {
+				data: unknown;
+				errors?: Array<{
+					message: string;
+					extensions?: Record<string, unknown>;
+				}>;
+			};
+		};
+
+		beforeEach(async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: true,
+					API_GRAPHQL_MUTATION_BASE_COST: 10,
+					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+					API_RATE_LIMIT_REFILL_RATE: 1,
+				},
+				log: { info: vi.fn(), error: vi.fn() },
+				graphql: { replaceSchema: vi.fn(), addHook: vi.fn() },
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: { hello: { type: GraphQLString } },
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"schema" in (call[1] as Record<string, unknown>),
+			);
+			errorFormatter = (
+				mercuriusCall?.[1] as { errorFormatter: typeof errorFormatter }
+			).errorFormatter;
+		});
+
+		it("should handle TalawaGraphQLError with empty/falsy message", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "",
+							extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+						}),
+					],
+				},
+				{ reply: { request: { id: "req-1", log: { error: vi.fn() } } } },
+			);
+
+			// Empty message should fall back to "An error occurred"
+			expect(result.response.errors?.[0]?.message).toBe("An error occurred");
+		});
+
+		it("should handle MER_ERR_GQL_VALIDATION error code from originalError", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "Mercurius validation error",
+							locations: [{ line: 1, column: 1 }],
+							path: ["test"],
+							extensions: { someField: "value" },
+							originalError: { code: "MER_ERR_GQL_VALIDATION" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							toJSON: () => ({ message: "Mercurius validation error" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-mer", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.statusCode).toBe(400);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(400);
+		});
+
+		it("should handle validation error with falsy message", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "",
+							extensions: { code: "GRAPHQL_VALIDATION_FAILED" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-empty", log: { error: vi.fn() } } } },
+			);
+
+			// Empty message should fall back to "GraphQL validation error"
+			expect(result.response.errors?.[0]?.message).toBe(
+				"GraphQL validation error",
+			);
+		});
+
+		it("should handle valid ErrorCode with all message sources empty", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "",
+							extensions: {
+								code: ErrorCode.NOT_FOUND,
+								message: "",
+							},
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-nomsg", log: { error: vi.fn() } } } },
+			);
+
+			// All sources empty → normalizeError returns "Internal Server Error"
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Internal Server Error",
+			);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.NOT_FOUND,
+			);
+		});
+
+		it("should handle error with extensions containing Invalid UUID in message", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "Invalid UUID provided",
+							extensions: {
+								code: "SOME_INVALID_CODE",
+							},
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "Invalid UUID provided" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-uuid", log: { error: vi.fn() } } } },
+			);
+
+			// normalizeError returns INTERNAL_SERVER_ERROR and message includes "Invalid UUID"
+			expect(result.response.errors?.[0]?.message).toBe("Invalid uuid");
+		});
+
+		it("should handle error with extensions and INVALID_ARGUMENTS code plus Zod details", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "Validation error",
+							extensions: {
+								code: "SOME_INVALID_CODE",
+							},
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "Validation error" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-zod", log: { error: vi.fn() } } } },
+			);
+
+			// Goes through normalizeError path → extensions with invalid code
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+		});
+
+		it("should handle error with extensions and normalized details for Zod extraction", () => {
+			// This specifically tests the branch:
+			// if ((normalized.code === INTERNAL_SERVER_ERROR || INVALID_ARGUMENTS) && normalized.details)
+			// We need a ZodError or an error that normalizeError returns with details
+			const { ZodError: ZodErrorClass } = require("zod");
+			const zodError = new ZodErrorClass([
+				{
+					code: "invalid_string",
+					validation: "uuid",
+					message: "Invalid UUID",
+					path: ["id"],
+				},
+			]);
+			// Wrap the ZodError in an object with extensions (invalid code) so it takes the
+			// "extensions but invalid code" path, and normalizeError recognizes it as ZodError
+			const wrappedError = Object.assign(zodError, {
+				extensions: { code: "WRONG_CODE" },
+				name: "ZodError",
+				nodes: undefined,
+				source: undefined,
+				positions: undefined,
+				originalError: undefined,
+				locations: undefined,
+				path: undefined,
+				toJSON: () => ({ message: zodError.message }),
+				[Symbol.toStringTag]: "GraphQLError",
+			});
+
+			const result = errorFormatter(
+				{ data: null, errors: [wrappedError] },
+				{ reply: { request: { id: "req-zod2", log: { error: vi.fn() } } } },
+			);
+
+			// normalizeError detects ZodError → code=INVALID_ARGUMENTS, details present
+			// extractZodMessage extracts the "Invalid uuid" message
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+			expect(result.response.errors?.[0]?.message).toBe("Invalid uuid");
+		});
+
+		it("should handle error without extensions with normalized INVALID_ARGUMENTS code and Zod details", () => {
+			// Create a ZodError without extensions to hit the !error.extensions path
+			const { ZodError: ZodErrorClass } = require("zod");
+			const zodError = new ZodErrorClass([
+				{
+					code: "invalid_string",
+					validation: "uuid",
+					message: "Invalid UUID",
+					path: ["id"],
+				},
+			]);
+			// Remove extensions to trigger the !error.extensions branch
+			const errorWithNoExtensions = Object.assign(zodError, {
+				name: "ZodError",
+				nodes: undefined,
+				source: undefined,
+				positions: undefined,
+				originalError: undefined,
+				locations: undefined,
+				path: undefined,
+				toJSON: () => ({ message: zodError.message }),
+				[Symbol.toStringTag]: "GraphQLError",
+			});
+
+			const result = errorFormatter(
+				{ data: null, errors: [errorWithNoExtensions] },
+				{ reply: { request: { id: "req-noe", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+			expect(result.response.errors?.[0]?.message).toBe("Invalid uuid");
+		});
+
+		it("should handle error without extensions using getPublicErrorMessage for non-Zod errors", () => {
+			const plainError = {
+				message: "Minio removal error",
+				name: "Error",
+				nodes: undefined,
+				source: undefined,
+				positions: undefined,
+				originalError: undefined,
+				locations: undefined,
+				path: undefined,
+				toJSON: () => ({ message: "Minio removal error" }),
+				[Symbol.toStringTag]: "GraphQLError",
+			};
+
+			const result = errorFormatter(
+				{ data: null, errors: [plainError] },
+				{ reply: { request: { id: "req-pub", log: { error: vi.fn() } } } },
+			);
+
+			// getPublicErrorMessage returns "Minio removal error" since it's in allowlist
+			expect(result.response.errors?.[0]?.message).toBe("Minio removal error");
+		});
+
+		it("should handle error without extensions with falsy normalized message", () => {
+			const errorNoMsg = {
+				message: "",
+				name: "Error",
+				nodes: undefined,
+				source: undefined,
+				positions: undefined,
+				originalError: undefined,
+				locations: undefined,
+				path: undefined,
+				toJSON: () => ({ message: "" }),
+				[Symbol.toStringTag]: "GraphQLError",
+			};
+
+			const result = errorFormatter(
+				{ data: null, errors: [errorNoMsg] },
+				{ reply: { request: { id: "req-nmsg", log: { error: vi.fn() } } } },
+			);
+
+			// normalized.message is "Internal Server Error", which getPublicErrorMessage maps to default
+			expect(result.response.errors?.[0]?.message).toBeDefined();
+			expect(result.response.errors?.[0]?.message.length).toBeGreaterThan(0);
+		});
+
+		it("should handle normalized.code falsy fallback to INTERNAL_SERVER_ERROR", () => {
+			// Ensure error without extensions gets INTERNAL_SERVER_ERROR as fallback
+			const nullishError = {
+				message: "some error",
+				name: "Error",
+				nodes: undefined,
+				source: undefined,
+				positions: undefined,
+				originalError: undefined,
+				locations: undefined,
+				path: undefined,
+				toJSON: () => ({ message: "some error" }),
+				[Symbol.toStringTag]: "GraphQLError",
+			};
+
+			const result = errorFormatter(
+				{ data: null, errors: [nullishError] },
+				{ reply: { request: { id: "req-ncode", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(500);
+		});
+
+		it("should handle error with extensions INTERNAL_SERVER_ERROR + details for Zod extraction", () => {
+			// This tests the branch in the "extensions but invalid codes" path:
+			// if (normalized.code === INTERNAL_SERVER_ERROR && normalized.details)
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "Something failed",
+							extensions: {
+								code: "UNKNOWN_CODE",
+							},
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "Something failed" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-ise", log: { error: vi.fn() } } } },
+			);
+
+			// normalizeError returns INTERNAL_SERVER_ERROR with details (in non-production)
+			// Then extractZodMessage is called OR getPublicErrorMessage is called
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+		});
+
+		it("should handle error with extensions and falsy normalized.message", () => {
+			// Tests the String(normalized.message || "An error occurred") branch when
+			// normalized.message is empty
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "",
+							extensions: {
+								code: "UNKNOWN_CODE",
+							},
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-fm", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.message).toBeDefined();
+			expect(result.response.errors?.[0]?.message.length).toBeGreaterThan(0);
+		});
+
+		it("should handle 'graphql validation error' message (lowercase)", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "graphql validation error",
+							extensions: { someField: "value" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "graphql validation error" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-gql", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+			expect(result.statusCode).toBe(400);
+		});
+
+		it("should handle 'Cannot query field' message as validation error", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: 'Cannot query field "xyz" on type "Query"',
+							extensions: { someField: "value" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: 'Cannot query field "xyz"' }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-cqf", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+		});
+
+		it("should handle 'Unknown field' message as validation error", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "Unknown field 'test'",
+							extensions: { someField: "value" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "Unknown field 'test'" }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-uf", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+		});
+
+		it("should handle 'Must provide query string.' message as validation error", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: "Must provide query string.",
+							extensions: { someField: "value" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: "Must provide query string." }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-mpq", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+		});
+
+		it("should handle 'Unknown argument' message as validation error", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: 'Unknown argument "bad" on field "Query.hello"',
+							extensions: { someField: "value" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: 'Unknown argument "bad"' }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-ua", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+		});
+
+		it('should handle Variable "$..." message as validation error', () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						{
+							message: 'Variable "$input" is not defined',
+							extensions: { someField: "value" },
+							name: "GraphQLError",
+							nodes: undefined,
+							source: undefined,
+							positions: undefined,
+							originalError: undefined,
+							locations: undefined,
+							path: undefined,
+							toJSON: () => ({ message: 'Variable "$input" is not defined' }),
+							[Symbol.toStringTag]: "GraphQLError",
+						},
+					],
+				},
+				{ reply: { request: { id: "req-var", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INVALID_ARGUMENTS,
+			);
+		});
+
+		it("should handle context with log but no reply for error logging", () => {
+			const logErrorSpy = vi.fn();
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Error",
+							extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+						}),
+					],
+				},
+				{ log: { error: logErrorSpy } },
+			);
+
+			expect(logErrorSpy).toHaveBeenCalledWith(
+				expect.objectContaining({ msg: "GraphQL error" }),
+			);
+			expect(result.statusCode).toBe(500);
+		});
+
+		it("should handle context without any logger", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Error",
+							extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+						}),
+					],
+				},
+				{ reply: { request: {} } },
+			);
+
+			expect(result.statusCode).toBe(500);
+		});
+
+		it("should handle NOT_FOUND status code mapping", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Resource not found",
+							extensions: { code: ErrorCode.NOT_FOUND },
+						}),
+					],
+				},
+				{ reply: { request: { id: "req-nf", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.statusCode).toBe(404);
+		});
+
+		it("should handle ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND status code mapping", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Associated resource not found",
+							extensions: {
+								code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+							},
+						}),
+					],
+				},
+				{ reply: { request: { id: "req-aarnf", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.statusCode).toBe(404);
+		});
+
+		it("should handle TOKEN_EXPIRED status code mapping to 401", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Token expired",
+							extensions: { code: ErrorCode.TOKEN_EXPIRED },
+						}),
+					],
+				},
+				{ reply: { request: { id: "req-te", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.statusCode).toBe(401);
+		});
+
+		it("should handle INVALID_INPUT status code mapping to 400", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Invalid input",
+							extensions: { code: ErrorCode.INVALID_INPUT },
+						}),
+					],
+				},
+				{ reply: { request: { id: "req-ii", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.statusCode).toBe(400);
+		});
+
+		it("should handle FORBIDDEN_ACTION status code mapping to 403", () => {
+			const result = errorFormatter(
+				{
+					data: null,
+					errors: [
+						new TalawaGraphQLError({
+							message: "Forbidden action",
+							extensions: { code: ErrorCode.FORBIDDEN_ACTION },
+						}),
+					],
+				},
+				{ reply: { request: { id: "req-fa", log: { error: vi.fn() } } } },
+			);
+
+			expect(result.statusCode).toBe(403);
 		});
 	});
 });
