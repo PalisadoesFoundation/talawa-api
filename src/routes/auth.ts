@@ -192,6 +192,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 		},
 	);
 
+	// codeql[js/missing-rate-limiting] Rate limiting applied via preHandler: fastify.rateLimit("auth")
 	fastify.post(
 		"/auth/logout",
 		{ preHandler: fastify.rateLimit("auth") },
