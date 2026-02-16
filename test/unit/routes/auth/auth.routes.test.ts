@@ -29,6 +29,11 @@ vi.mock("~/src/services/auth", async (importOriginal) => {
 const TEST_COOKIE_SECRET = "test-cookie-secret-at-least-32-characters";
 const mockDb = {} as unknown as DrizzleClient;
 
+/** True if the cookie is set to be cleared (maxAge 0 or "0"), handling mixed types from inject response. */
+function isCookieCleared(cookie: { maxAge?: number | string }): boolean {
+	return Number(cookie.maxAge) === 0 || cookie.maxAge === "0";
+}
+
 type BuildTestAppOptions = {
 	envConfig?: Partial<EnvConfig>;
 };
@@ -388,9 +393,7 @@ describe("auth REST routes", () => {
 				mockDb,
 				"rt-to-revoke",
 			);
-			const clearCookies = res.cookies.filter(
-				(c) => c.maxAge === 0 || String(c.maxAge) === "0",
-			);
+			const clearCookies = res.cookies.filter(isCookieCleared);
 			expect(
 				clearCookies.some((c) => c.name === COOKIE_NAMES.ACCESS_TOKEN),
 			).toBe(true);
@@ -421,9 +424,7 @@ describe("auth REST routes", () => {
 
 			expect(res.statusCode).toBe(200);
 			expect(res.json()).toEqual({ ok: true });
-			const clearCookies = res.cookies.filter(
-				(c) => c.maxAge === 0 || String(c.maxAge) === "0",
-			);
+			const clearCookies = res.cookies.filter(isCookieCleared);
 			expect(
 				clearCookies.some((c) => c.name === COOKIE_NAMES.ACCESS_TOKEN),
 			).toBe(true);
@@ -458,6 +459,9 @@ describe("auth REST routes", () => {
 			signupRes.cookies.map((c) => [c.name, c.value]),
 		);
 
+		// Refresh step intentionally omits payload; the route reads the refresh token from
+		// cookies (set by signup). mockRotateRefresh/mockRevokeRefreshToken drive the flow;
+		// logout then revokes using the token from refreshRes cookies.
 		const refreshRes = await app.inject({
 			method: "POST",
 			url: "/auth/refresh",

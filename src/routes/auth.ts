@@ -202,7 +202,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 				try {
 					await revokeRefreshToken(fastify.drizzleClient, rt);
 				} catch (err) {
-					req.log.warn({ err, msg: "revokeRefreshToken failed on logout" });
+					req.log.warn({ err }, "revokeRefreshToken failed on logout");
 				}
 			}
 			clearAuthCookies(reply, cookieOptions);
