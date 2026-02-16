@@ -23,6 +23,16 @@ import {
 	type SetupAnswers,
 	type SetupKey,
 } from "./services/sharedSetup";
+
+export {
+	backupState,
+	envBackupFile,
+	envFileName,
+	envTempFile,
+	handlePromptError,
+	type SetupAnswers,
+	type SetupKey,
+} from "./services/sharedSetup";
 export { administratorEmail };
 
 import { apiSetup } from "./services/apiSetup";

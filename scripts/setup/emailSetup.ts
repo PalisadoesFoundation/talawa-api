@@ -5,7 +5,8 @@ import {
 	promptList,
 	promptPassword,
 } from "./promptHelpers";
-import { type SetupAnswers, validateEmail } from "./setup";
+import { handlePromptError, type SetupAnswers } from "./services/sharedSetup";
+import { validateEmail } from "./validators";
 
 /**
  * Interactive setup for email configuration.
