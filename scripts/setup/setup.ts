@@ -14,12 +14,26 @@ import {
 } from "./envFileManager";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { administratorEmail } from "./services/administratorSetup";
+export { administratorEmail };
+
 import { apiSetup } from "./services/apiSetup";
+export { apiSetup };
+
 import { caddySetup } from "./services/caddySetup";
+export { caddySetup };
+
 import { setCI } from "./services/ciSetup";
+export { setCI };
+
 import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
+export { cloudbeaverSetup };
+
 import { minioSetup } from "./services/minioSetup";
+export { minioSetup };
+
 import { postgresSetup } from "./services/postgresSetup";
+export { postgresSetup };
+
 import { updateEnvVariable } from "./updateEnvVariable";
 import { validatePositiveInteger } from "./validators";
 
