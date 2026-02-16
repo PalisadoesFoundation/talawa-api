@@ -278,6 +278,7 @@ jobs:
         id: check-labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
           if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
@@ -287,7 +288,7 @@ jobs:
           fi
 
       - name: Get changed files
-        id: changed-files
+        id: sensitive-changed-files
         if: steps.check-labels.outputs.skip != 'true'
         env:
           BASE_REF_SHA: ${{ github.event.pull_request.base.sha }}
@@ -311,19 +312,24 @@ jobs:
       - name: Run sensitive files check
         if: steps.check-labels.outputs.skip != 'true'
         env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          ALL_CHANGED_FILES: ${{ steps.sensitive-changed-files.outputs.all_changed_files }}
         run: |
           if [ -z "$ALL_CHANGED_FILES" ]; then
             echo "No changed files. Skipping sensitive file check."
             exit 0
           fi
 
-          if ! python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
+          python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
             --config .github/workflows/config/sensitive-files.txt \
-            --files $ALL_CHANGED_FILES; then
-            echo "::notice::This PR modifies sensitive files. Add 'ignore-sensitive-files-pr' label to proceed."
-            exit 1
-          fi
+            --files $ALL_CHANGED_FILES
+
+      - name: List all changed unauthorized files
+        if: failure()
+        run: |
+          echo "::error::Unauthorized changes detected in sensitive files."
+          echo ""
+          echo "To override:"
+          echo "Add the 'ignore-sensitive-files-pr' label to this PR."
 
 
   Check-AutoDocs:
@@ -890,5 +896,3 @@ jobs:
       - name: Cleanup - Free ports by stopping containers
         if: always()
         run: docker compose down
-# test
-# test
