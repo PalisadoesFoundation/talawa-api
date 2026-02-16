@@ -5898,7 +5898,7 @@ enum UserMaritalStatus {
   divorced
   engaged
   married
-  seperated
+  separated
   single
   widowed
 }

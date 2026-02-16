@@ -4,7 +4,7 @@
 
 # Function: maritalStatusResolver()
 
-> **maritalStatusResolver**(`parent`, `_args`, `ctx`): `Promise`\<`"divorced"` \| `"engaged"` \| `"married"` \| `"seperated"` \| `"single"` \| `"widowed"` \| `null`\>
+> **maritalStatusResolver**(`parent`, `_args`, `ctx`): `Promise`\<`"divorced"` \| `"engaged"` \| `"married"` \| `"separated"` \| `"single"` \| `"widowed"` \| `null`\>
 
 Defined in: [src/graphql/types/User/maritalStatus.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/maritalStatus.ts#L23)
 
@@ -158,7 +158,7 @@ The GraphQL context containing authentication and database client
 
 ## Returns
 
-`Promise`\<`"divorced"` \| `"engaged"` \| `"married"` \| `"seperated"` \| `"single"` \| `"widowed"` \| `null`\>
+`Promise`\<`"divorced"` \| `"engaged"` \| `"married"` \| `"separated"` \| `"single"` \| `"widowed"` \| `null`\>
 
 The user's marital status or null if not set
 

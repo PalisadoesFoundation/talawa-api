@@ -38,15 +38,19 @@
 		"noImplicitAny": true,
 		"strictNullChecks": true
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts"],
 	"exclude": [
-		"**/node_modules/**",
+		"docs/*",
+		"docs/.docusaurus",
+		"docs/build",
 		"node_modules",
-		"docs/**/*",
-		"dist/**/*",
-		"coverage/**/*",
-		".git/**/*",
-		"**/*.spec.ts",
-		"**/*.test.ts"
+		"docs/node_modules",
+		"docs/src/vite-env.d.ts",
+		"docs/**/*.spec.ts",
+		"docs/**/*.test.ts",
+		"docs/**/*.spec.tsx",
+		"docs/**/*.test.tsx",
+		"docs/**/__tests__/**",
+		"docs/**/__mocks__/**",
+		"docs/**/README.md"
 	]
 }
