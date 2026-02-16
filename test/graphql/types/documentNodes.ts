@@ -3046,3 +3046,11 @@ export const Query_venue_updatedAt = gql(`
     }
   }
 `);
+
+export const Query_user_homePhoneNumber = gql(`
+  query Query_user_homePhoneNumber($input: QueryUserInput!) {
+    user(input: $input) {
+      homePhoneNumber
+    }
+  }
+`);

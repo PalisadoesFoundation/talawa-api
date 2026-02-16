@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, expect, suite, test, vi } from "vitest";
-import {
-	type TalawaGraphQLFormattedError,
-	type UnauthenticatedExtensions,
-	type UnauthorizedActionExtensions,
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -12,55 +12,50 @@ import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_signIn,
+	Query_user_homePhoneNumber,
 } from "../documentNodes";
-
-const Query_user_homePhoneNumber = /* GraphQL */ `
-	query Query_user_homePhoneNumber($input: QueryUserInput!) {
-		user(input: $input) {
-			homePhoneNumber
-		}
-	}
-`;
 
 suite("User field homePhoneNumber", () => {
 	const createdUserIds: string[] = [];
 
 	afterEach(async () => {
-		if (createdUserIds.length > 0) {
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress:
-							server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		try {
+			if (createdUserIds.length > 0) {
+				const adminSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
 					},
-				},
-			});
+				});
 
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+				assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+				const token = adminSignIn.data.signIn.authenticationToken;
 
-			for (const id of createdUserIds) {
-				try {
-					await mercuriusClient.mutate(Mutation_deleteUser, {
-						headers: { authorization: `bearer ${token}` },
-						variables: { input: { id } },
-					});
-				} catch {}
+				for (const id of createdUserIds) {
+					try {
+						await mercuriusClient.mutate(Mutation_deleteUser, {
+							headers: {
+								authorization: `bearer ${token}`,
+							},
+							variables: { input: { id } },
+						});
+					} catch {}
+				}
 			}
-
+		} finally {
 			createdUserIds.length = 0;
+			vi.restoreAllMocks();
 		}
-
-		vi.restoreAllMocks();
 	});
 
 	test('returns "unauthenticated" when client is not authenticated', async () => {
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress:
-						server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
@@ -90,7 +85,9 @@ suite("User field homePhoneNumber", () => {
 			variables: { input: { id: targetUserId } },
 		});
 
-		expect(result.data.user).toEqual({ homePhoneNumber: null });
+		expect(result.data.user).toEqual({
+			homePhoneNumber: null,
+		});
 		expect(result.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining({
@@ -107,8 +104,7 @@ suite("User field homePhoneNumber", () => {
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress:
-						server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
@@ -154,10 +150,14 @@ suite("User field homePhoneNumber", () => {
 			headers: {
 				authorization: `bearer ${userA.data.createUser.authenticationToken}`,
 			},
-			variables: { input: { id: userB.data.createUser.user.id } },
+			variables: {
+				input: { id: userB.data.createUser.user.id },
+			},
 		});
 
-		expect(result.data.user).toEqual({ homePhoneNumber: null });
+		expect(result.data.user).toEqual({
+			homePhoneNumber: null,
+		});
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -174,8 +174,7 @@ suite("User field homePhoneNumber", () => {
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress:
-						server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
@@ -206,19 +205,22 @@ suite("User field homePhoneNumber", () => {
 			headers: {
 				authorization: `bearer ${userRes.data.createUser.authenticationToken}`,
 			},
-			variables: { input: { id: userRes.data.createUser.user.id } },
+			variables: {
+				input: {
+					id: userRes.data.createUser.user.id,
+				},
+			},
 		});
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data.user?.homePhoneNumber).toBe("111-222-3333");
 	});
 
-	test("returns homePhoneNumber when administrator accesses another user", async () => {
+	test("returns null when homePhoneNumber was never set", async () => {
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress:
-						server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
@@ -231,25 +233,31 @@ suite("User field homePhoneNumber", () => {
 			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
-					emailAddress: `target-${faker.string.uuid()}@example.com`,
+					emailAddress: `noset-${faker.string.uuid()}@example.com`,
 					isEmailAddressVerified: false,
-					name: "Target User",
+					name: "No Phone User",
 					password: "password123",
 					role: "regular",
-					homePhoneNumber: "999-888-7777",
 				},
 			},
 		});
 
 		assertToBeNonNullish(userRes.data.createUser?.user?.id);
+		assertToBeNonNullish(userRes.data.createUser?.authenticationToken);
 		createdUserIds.push(userRes.data.createUser.user.id);
 
 		const result = await mercuriusClient.query(Query_user_homePhoneNumber, {
-			headers: { authorization: `bearer ${token}` },
-			variables: { input: { id: userRes.data.createUser.user.id } },
+			headers: {
+				authorization: `bearer ${userRes.data.createUser.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					id: userRes.data.createUser.user.id,
+				},
+			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data.user?.homePhoneNumber).toBe("999-888-7777");
+		expect(result.data.user?.homePhoneNumber).toBeNull();
 	});
 });
