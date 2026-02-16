@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">Installation | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/installation"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Installation | Talawa API Documentation"><meta data-rh="true" name="description" content="Installation is not difficult, but there are many steps. This is a brief explanation of what needs to be done:"><meta data-rh="true" property="og:description" content="Installation is not difficult, but there are many steps. This is a brief explanation of what needs to be done:"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/installation"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/installation" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/installation" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Installation","item":"https://docs-api.talawa.io/docs/installation"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.adbcf15c.js" defer="defer"></script>
-<script src="/assets/js/main.c87edcf5.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.25274b82.js" defer="defer"></script>
+<script src="/assets/js/main.160f8cc4.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -244,6 +244,19 @@ follow these steps carefully in forking and cloning the <code>talawa-api</code> 
 <li class="">Using the Docker documentation, you must ensure that Docker will restart after your next reboot.</li>
 </ol>
 </li>
+</ol>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="docker-engine-rootless-mode-linux">Docker Engine Rootless Mode (Linux)<a href="#docker-engine-rootless-mode-linux" class="hash-link" aria-label="Direct link to Docker Engine Rootless Mode (Linux)" title="Direct link to Docker Engine Rootless Mode (Linux)" translate="no">​</a></h4>
+<p>Docker can be installed in <a href="https://docs.docker.com/engine/security/rootless/" target="_blank" rel="noopener noreferrer" class="">Rootless mode</a> on Linux to run the daemon and containers without root privileges.</p>
+<p><strong>Important notes:</strong></p>
+<ol>
+<li class="">The <code>dockerd-rootless-setuptool.sh install</code> command <strong>MUST NOT</strong> be run using <code>sudo</code>.</li>
+<li class="">Ensure <code>DOCKER_HOST</code> uses <code>$UID</code> so it works for any user:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">export DOCKER_HOST=unix:///run/user/$UID/docker.sock</span><br></span></code></pre></div></div>
+</li>
+<li class="">Verify the daemon is running in rootless mode:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker info --format &#x27;{{.SecurityOptions}}&#x27;</span><br></span></code></pre></div></div>
+<!-- -->The output should include <code>rootless</code>.</li>
+<li class="">When testing rootless mode, make sure the user is <strong>not</strong> a member of the operating system <code>docker</code> group.</li>
 </ol>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="docker-devcontainer-modes">Docker Devcontainer Modes<a href="#docker-devcontainer-modes" class="hash-link" aria-label="Direct link to Docker Devcontainer Modes" title="Direct link to Docker Devcontainer Modes" translate="no">​</a></h3>
 <p>This project provides two devcontainer configurations to support different Docker setups:</p>
