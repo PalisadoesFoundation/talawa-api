@@ -60,10 +60,11 @@ function getUserAgent(
  */
 const authRoutes: FastifyPluginAsync = async (fastify) => {
 	const cookieOptions = getCookieOptionsFromApp(fastify);
+	const authRateLimit = fastify.rateLimit("auth");
 
 	fastify.post(
 		"/auth/signup",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, signUpBody, req.body);
 			if (body === undefined) return;
@@ -83,6 +84,16 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 				userAgent: getUserAgent(req.headers["user-agent"]),
 			});
 			if ("error" in signInResult) {
+				req.log.warn(
+					{
+						email: body.email,
+						createdUserId: signUpResult.user.id,
+						ip: req.ip,
+						signInError: signInResult.error,
+						msg: "signIn failed after signUp — user created but session not established; may need to reconcile orphaned account",
+					},
+					"signIn failed after signUp",
+				);
 				throw new TalawaRestError({
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: "Failed to sign in after signup",
@@ -108,7 +119,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/signin",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, signInBody, req.body);
 			if (body === undefined) return;
@@ -141,7 +152,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/refresh",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const body = await zReplyParsed(reply, refreshBody, req.body ?? {});
 			if (body === undefined) return;
@@ -174,11 +185,15 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
 	fastify.post(
 		"/auth/logout",
-		{ preHandler: fastify.rateLimit("auth") },
+		{ preHandler: authRateLimit },
 		async (req, reply) => {
 			const rt = req.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
 			if (rt) {
-				await revokeRefreshToken(fastify.drizzleClient, rt);
+				try {
+					await revokeRefreshToken(fastify.drizzleClient, rt);
+				} catch (err) {
+					req.log.warn({ err, msg: "revokeRefreshToken failed on logout" });
+				}
 			}
 			clearAuthCookies(reply, cookieOptions);
 			return reply.send({ ok: true });
