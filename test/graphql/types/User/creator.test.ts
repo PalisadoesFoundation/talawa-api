@@ -457,7 +457,7 @@ describe("User field creator resolver (unit)", () => {
 			createdAt: new Date("2025-01-01T10:00:00Z"),
 			updatedAt: null,
 			updaterId: null,
-		} as UserType;
+		} as UserType; // partial UserType for testing
 	});
 
 	afterEach(() => {
@@ -580,7 +580,7 @@ describe("User field creator resolver (unit)", () => {
 		);
 	});
 
-	it("rethrows TalawaGraphQLError from database layer without logging", async () => {
+	it("rethrows TalawaGraphQLError from currentUser lookup without logging", async () => {
 		const talawaError = new TalawaGraphQLError({
 			extensions: { code: "unauthenticated" },
 		});
@@ -592,6 +592,32 @@ describe("User field creator resolver (unit)", () => {
 		await expect(creatorResolver(parent, {}, ctx)).rejects.toBe(talawaError);
 
 		expect(ctx.log.error).not.toHaveBeenCalled();
+	});
+
+	it("rethrows TalawaGraphQLError from creator lookup without logging", async () => {
+		const creatorId = faker.string.ulid();
+		const talawaError = new TalawaGraphQLError({
+			extensions: { code: "unexpected" },
+		});
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce({ id: currentUserId, role: "administrator" })
+			.mockRejectedValueOnce(talawaError);
+
+		const parentWithCreator = {
+			...parent,
+			id: faker.string.ulid(),
+			creatorId,
+		} as UserType; // partial UserType for testing
+
+		await expect(creatorResolver(parentWithCreator, {}, ctx)).rejects.toBe(
+			talawaError,
+		);
+
+		expect(ctx.log.error).not.toHaveBeenCalled();
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(2);
 	});
 
 	it("logs and wraps unknown database errors as unexpected", async () => {
