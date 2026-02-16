@@ -146,189 +146,164 @@ builder.mutationField("createEventVolunteer", (t) =>
 
 			if (scope === "ENTIRE_SERIES") {
 				const targetEventId = baseEvent.id;
+				return await ctx.drizzleClient.transaction(async (tx) => {
+					await tx
+						.select()
+						.from(eventsTable)
+						.where(eq(eventsTable.id, targetEventId))
+						.for("update");
+					await tx
+						.delete(eventVolunteersTable)
+						.where(
+							and(
+								eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+								eq(eventVolunteersTable.eventId, targetEventId),
+								eq(eventVolunteersTable.isTemplate, false),
+							),
+						);
+					// check if a template volunteer already exists for this user and event
+					const existingTemplate =
+						await tx.query.eventVolunteersTable.findFirst({
+							where: and(
+								eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+								eq(eventVolunteersTable.eventId, targetEventId),
+								eq(eventVolunteersTable.isTemplate, true),
+							),
+						});
+					let volunteer: typeof eventVolunteersTable.$inferSelect | null = null;
+					if (existingTemplate) {
+						volunteer = existingTemplate ?? null;
+					} else {
+						const [created] = await tx
+							.insert(eventVolunteersTable)
+							.values({
+								userId: parsedArgs.data.userId,
+								eventId: targetEventId,
+								creatorId: currentUserId,
+								hasAccepted: false,
+								isPublic: true,
+								hoursVolunteered: "0",
+								isTemplate: true,
+								recurringEventInstanceId: null,
+							})
+							.returning();
 
-				// Check if template volunteer already exists
-				const existingTemplate = await ctx.drizzleClient
-					.select()
-					.from(eventVolunteersTable)
-					.where(
-						and(
-							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-							eq(eventVolunteersTable.eventId, targetEventId),
-							eq(eventVolunteersTable.isTemplate, true),
-						),
-					)
-					.limit(1);
-
-				// Check for any instance-specific volunteers that need to be converted
-				const existingInstanceSpecific = await ctx.drizzleClient
-					.select()
-					.from(eventVolunteersTable)
-					.where(
-						and(
-							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-							eq(eventVolunteersTable.eventId, targetEventId),
-							eq(eventVolunteersTable.isTemplate, false),
-						),
-					);
-
-				let volunteer: typeof eventVolunteersTable.$inferSelect;
-
-				if (existingTemplate.length > 0) {
-					// Template already exists
-					const templateVolunteer = existingTemplate[0];
-					if (!templateVolunteer) {
+						volunteer = created ?? null;
+					}
+					if (!volunteer) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unexpected",
 							},
 						});
 					}
-					volunteer = templateVolunteer;
-
-					// Remove any instance-specific volunteers (conversion to template)
-					if (existingInstanceSpecific.length > 0) {
-						await ctx.drizzleClient
-							.delete(eventVolunteersTable)
-							.where(
-								and(
-									eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-									eq(eventVolunteersTable.eventId, targetEventId),
-									eq(eventVolunteersTable.isTemplate, false),
-								),
-							);
-					}
-				} else {
-					// No template exists - create one
-					// First, remove any instance-specific volunteers
-					if (existingInstanceSpecific.length > 0) {
-						await ctx.drizzleClient
-							.delete(eventVolunteersTable)
-							.where(
-								and(
-									eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-									eq(eventVolunteersTable.eventId, targetEventId),
-									eq(eventVolunteersTable.isTemplate, false),
-								),
-							);
-					}
-
-					// Create new template volunteer
-					const [createdVolunteer] = await ctx.drizzleClient
-						.insert(eventVolunteersTable)
-						.values({
-							userId: parsedArgs.data.userId,
-							eventId: targetEventId,
-							creatorId: currentUserId,
-							hasAccepted: false,
-							isPublic: true,
-							hoursVolunteered: "0",
-							isTemplate: true,
-							recurringEventInstanceId: null,
-						})
-						.returning();
-
-					if (!createdVolunteer) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
+					const existingMembership =
+						await tx.query.eventVolunteerMembershipsTable.findFirst({
+							where: and(
+								eq(eventVolunteerMembershipsTable.volunteerId, volunteer.id),
+								eq(eventVolunteerMembershipsTable.eventId, targetEventId),
+							),
 						});
-					}
-
-					volunteer = createdVolunteer;
-
-					// Create volunteer membership record
-					await ctx.drizzleClient
-						.insert(eventVolunteerMembershipsTable)
-						.values({
+					if (!existingMembership) {
+						// Create volunteer membership record
+						await tx.insert(eventVolunteerMembershipsTable).values({
 							volunteerId: volunteer.id,
 							groupId: null,
 							eventId: targetEventId,
 							status: "invited",
 							createdBy: currentUserId,
 						});
-				}
+					}
 
-				return volunteer;
+					return volunteer;
+				});
 			}
 
 			if (scope === "THIS_INSTANCE_ONLY") {
-				// Create instance-specific volunteer directly in the main table
-				if (!recurringInstance || !parsedArgs.data.recurringEventInstanceId) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{
-									argumentPath: ["data", "recurringEventInstanceId"],
-									message:
-										"recurringEventInstanceId is required for THIS_INSTANCE_ONLY scope",
-								},
-							],
-						},
-					});
-				}
-
 				const targetEventId = baseEvent.id;
+				return await ctx.drizzleClient.transaction(async (tx) => {
+					// Create instance-specific volunteer directly in the main table
+					if (!recurringInstance || !parsedArgs.data.recurringEventInstanceId) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["data", "recurringEventInstanceId"],
+										message:
+											"recurringEventInstanceId is required for THIS_INSTANCE_ONLY scope",
+									},
+								],
+							},
+						});
+					}
+					// Lock the event row to prevent concurrent modifications
+					await tx
+						.select()
+						.from(eventsTable)
+						.where(eq(eventsTable.id, targetEventId))
+						.for("update");
 
-				// Check if instance-specific volunteer already exists
-				const existingVolunteer = await ctx.drizzleClient
-					.select()
-					.from(eventVolunteersTable)
-					.where(
-						and(
-							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-							eq(eventVolunteersTable.eventId, targetEventId),
-							eq(
-								eventVolunteersTable.recurringEventInstanceId,
-								parsedArgs.data.recurringEventInstanceId,
+					// Check if a volunteer record already exists for this user and event instance
+					let volunteer =
+						(await tx.query.eventVolunteersTable.findFirst({
+							where: and(
+								eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+								eq(eventVolunteersTable.eventId, targetEventId),
+								eq(
+									eventVolunteersTable.recurringEventInstanceId,
+									parsedArgs.data.recurringEventInstanceId,
+								),
+								eq(eventVolunteersTable.isTemplate, false),
 							),
-							eq(eventVolunteersTable.isTemplate, false),
-						),
-					)
-					.limit(1);
+						})) ?? null;
+					// If no instance-specific volunteer exists, create one (even if a template exists, since this is instance-specific)
+					if (!volunteer) {
+						const [created] = await tx
+							.insert(eventVolunteersTable)
+							.values({
+								userId: parsedArgs.data.userId,
+								eventId: targetEventId,
+								creatorId: currentUserId,
+								hasAccepted: false,
+								isPublic: true,
+								hoursVolunteered: "0",
+								isTemplate: false,
+								recurringEventInstanceId:
+									parsedArgs.data.recurringEventInstanceId,
+							})
+							.returning();
 
-				if (existingVolunteer.length > 0) {
-					// Instance-specific volunteer already exists
-					return existingVolunteer[0] as NonNullable<
-						(typeof existingVolunteer)[0]
-					>;
-				}
+						volunteer = created ?? null;
+					}
 
-				// Create new instance-specific volunteer
-				const [createdVolunteer] = await ctx.drizzleClient
-					.insert(eventVolunteersTable)
-					.values({
-						userId: parsedArgs.data.userId,
-						eventId: targetEventId,
-						creatorId: currentUserId,
-						hasAccepted: false,
-						isPublic: true,
-						hoursVolunteered: "0",
-						isTemplate: false,
-						recurringEventInstanceId: parsedArgs.data.recurringEventInstanceId,
-					})
-					.returning();
+					if (!volunteer) {
+						throw new TalawaGraphQLError({
+							extensions: { code: "unexpected" },
+						});
+					}
 
-				if (!createdVolunteer) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
+					// Create volunteer membership record if it doesn't exist
+					const existingMembership =
+						await tx.query.eventVolunteerMembershipsTable.findFirst({
+							where: and(
+								eq(eventVolunteerMembershipsTable.volunteerId, volunteer.id),
+								eq(eventVolunteerMembershipsTable.eventId, targetEventId),
+							),
+						});
 
-				// Create volunteer membership record
-				await ctx.drizzleClient.insert(eventVolunteerMembershipsTable).values({
-					volunteerId: createdVolunteer.id,
-					groupId: null,
-					eventId: targetEventId,
-					status: "invited",
-					createdBy: currentUserId,
+					if (!existingMembership) {
+						await tx.insert(eventVolunteerMembershipsTable).values({
+							volunteerId: volunteer.id,
+							groupId: null,
+							eventId: targetEventId,
+							status: "invited",
+							createdBy: currentUserId,
+						});
+					}
+
+					return volunteer;
 				});
-
-				return createdVolunteer;
 			}
 		},
 	}),
