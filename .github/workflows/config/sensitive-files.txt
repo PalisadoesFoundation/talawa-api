@@ -15,10 +15,9 @@ init-mongo.sh$
 .prettierignore$
 .prettierrc.json$
 .pylintrc$
-^.github/.*
+^.github/workflows/(?!config/).*
 biome.jsonc$
 renovate.json$
-requirements.txt$
 schema.graphql$
 CODEOWNERS$
 LICENSE$
@@ -37,14 +36,6 @@ setup.ts$
 tsconfig.build.json$
 vite.config.mts$
 CNAME$
-CODE_OF_CONDUCT.md$
-CODE_STYLE.md$
-CONTRIBUTING.md$
-DOCUMENTATION.md$
-INSTALLATION.md$
-ISSUE_GUIDELINES.md$
-PR_GUIDELINES.md$
-README.md$
 .*\.md$
 .*\.txt$
 .*\.TXT$

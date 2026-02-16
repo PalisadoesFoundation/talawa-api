@@ -441,6 +441,9 @@ jobs:
           repository: PalisadoesFoundation/.github
           ref: main
           path: .github-central
+      
+      - name: Make sensitive file checker executable
+        run: chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -450,11 +453,11 @@ jobs:
       - name: Get PR labels
         id: check-labels
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
           if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
+            echo "::notice::Skipping sensitive files check due to 'ignore-sensitive-files-pr' label."
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "skip=false" >> $GITHUB_OUTPUT
@@ -467,20 +470,26 @@ jobs:
           BASE_REF_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_REF_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if [ -z "$BASE_REF_SHA" ]; then
-            echo "all_changed_files=" >> $GITHUB_OUTPUT
-            exit 0
+          set -euo pipefail
+
+          if [ -z "$BASE_REF_SHA" ] || [ -z "$HEAD_REF_SHA" ]; then
+            echo "::error::Missing BASE_REF_SHA or HEAD_REF_SHA"
+            exit 1
           fi
 
-          BASE_SHA=$(git merge-base "$BASE_REF_SHA" "$HEAD_REF_SHA" || true)
+          echo "Base SHA: $BASE_REF_SHA"
+          echo "Head SHA: $HEAD_REF_SHA"
 
-          if [ -z "$BASE_SHA" ]; then
-            ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_REF_SHA" "$HEAD_REF_SHA" || true)
+          BASE_SHA=$(git merge-base "$BASE_REF_SHA" "$HEAD_REF_SHA")
+          echo "Merge base: $BASE_SHA"
+
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_REF_SHA")
+
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "all_changed_files=" >> "$GITHUB_OUTPUT"
           else
-            ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_REF_SHA" || true)
+            echo "all_changed_files=$(echo "$ALL_CHANGED_FILES" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
           fi
-
-          echo "all_changed_files=$(echo "$ALL_CHANGED_FILES" | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: Run sensitive files check
         if: steps.check-labels.outputs.skip != 'true'
@@ -494,10 +503,10 @@ jobs:
 
           python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
             --config .github/workflows/config/sensitive-files.txt \
-            --files $ALL_CHANGED_FILES
+             --files $(set -f; echo $ALL_CHANGED_FILES)
 
       - name: List all changed unauthorized files
-        if: failure()
+        if: steps.sensitive-check.outcome == 'failure'
         run: |
           echo "::error::Unauthorized changes detected in sensitive files."
           echo ""
@@ -571,6 +580,7 @@ jobs:
         Check_unused_code,
         Generate-Schema-Docs,
         Python-Compliance,
+        Check-Sensitive-Files
       ]
     steps:
       - name: This job intentionally does nothing
