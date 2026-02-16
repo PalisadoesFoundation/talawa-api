@@ -97,7 +97,6 @@ builder.mutationField("createEventVolunteer", (t) =>
 						),
 					});
 			}
-
 			// Get the target event (base event)
 			const targetEvent = await ctx.drizzleClient.query.eventsTable.findFirst({
 				where: eq(eventsTable.id, parsedArgs.data.eventId),
@@ -115,7 +114,30 @@ builder.mutationField("createEventVolunteer", (t) =>
 					},
 				});
 			}
+			async function ensureVolunteerMembership(
+				tx: typeof ctx.drizzleClient,
+				volunteerId: string,
+				eventId: string,
+				createdBy: string,
+			) {
+				const existingMembership =
+					await tx.query.eventVolunteerMembershipsTable.findFirst({
+						where: and(
+							eq(eventVolunteerMembershipsTable.volunteerId, volunteerId),
+							eq(eventVolunteerMembershipsTable.eventId, eventId),
+						),
+					});
 
+				if (!existingMembership) {
+					await tx.insert(eventVolunteerMembershipsTable).values({
+						volunteerId,
+						groupId: null,
+						eventId,
+						status: "invited",
+						createdBy,
+					});
+				}
+			}
 			const baseEvent = targetEvent;
 
 			// Check if current user is authorized (organization admin or event creator)
@@ -197,23 +219,12 @@ builder.mutationField("createEventVolunteer", (t) =>
 							},
 						});
 					}
-					const existingMembership =
-						await tx.query.eventVolunteerMembershipsTable.findFirst({
-							where: and(
-								eq(eventVolunteerMembershipsTable.volunteerId, volunteer.id),
-								eq(eventVolunteerMembershipsTable.eventId, targetEventId),
-							),
-						});
-					if (!existingMembership) {
-						// Create volunteer membership record
-						await tx.insert(eventVolunteerMembershipsTable).values({
-							volunteerId: volunteer.id,
-							groupId: null,
-							eventId: targetEventId,
-							status: "invited",
-							createdBy: currentUserId,
-						});
-					}
+					await ensureVolunteerMembership(
+						tx,
+						volunteer.id,
+						targetEventId,
+						currentUserId,
+					);
 
 					return volunteer;
 				});
@@ -283,24 +294,12 @@ builder.mutationField("createEventVolunteer", (t) =>
 						});
 					}
 
-					// Create volunteer membership record if it doesn't exist
-					const existingMembership =
-						await tx.query.eventVolunteerMembershipsTable.findFirst({
-							where: and(
-								eq(eventVolunteerMembershipsTable.volunteerId, volunteer.id),
-								eq(eventVolunteerMembershipsTable.eventId, targetEventId),
-							),
-						});
-
-					if (!existingMembership) {
-						await tx.insert(eventVolunteerMembershipsTable).values({
-							volunteerId: volunteer.id,
-							groupId: null,
-							eventId: targetEventId,
-							status: "invited",
-							createdBy: currentUserId,
-						});
-					}
+					await ensureVolunteerMembership(
+						tx,
+						volunteer.id,
+						targetEventId,
+						currentUserId,
+					);
 
 					return volunteer;
 				});

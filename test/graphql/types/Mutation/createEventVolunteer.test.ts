@@ -1829,7 +1829,6 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			})
 			.returning();
 		assertToBeNonNullish(recurrenceRule);
-		assertToBeNonNullish(template);
 		const [instance] = await server.drizzleClient
 			.insert(recurringEventInstancesTable)
 			.values({
