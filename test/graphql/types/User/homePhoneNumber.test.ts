@@ -23,7 +23,8 @@ suite("User field homePhoneNumber", () => {
 				const adminSignIn = await mercuriusClient.query(Query_signIn, {
 					variables: {
 						input: {
-							emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 						},
 					},
@@ -130,7 +131,9 @@ suite("User field homePhoneNumber", () => {
 		createdUserIds.push(userRes.data.createUser.user.id);
 
 		const result = await mercuriusClient.query(Query_user_homePhoneNumber, {
-			headers: { authorization: `bearer ${userRes.data.createUser.authenticationToken}` },
+			headers: {
+				authorization: `bearer ${userRes.data.createUser.authenticationToken}`,
+			},
 			variables: { input: { id: userRes.data.createUser.user.id } },
 		});
 
@@ -169,7 +172,9 @@ suite("User field homePhoneNumber", () => {
 		createdUserIds.push(userRes.data.createUser.user.id);
 
 		const result = await mercuriusClient.query(Query_user_homePhoneNumber, {
-			headers: { authorization: `bearer ${userRes.data.createUser.authenticationToken}` },
+			headers: {
+				authorization: `bearer ${userRes.data.createUser.authenticationToken}`,
+			},
 			variables: { input: { id: userRes.data.createUser.user.id } },
 		});
 
