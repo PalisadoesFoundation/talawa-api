@@ -195,22 +195,26 @@ describe("auth REST routes", () => {
 				access: "access-token",
 				refresh: "refresh-token",
 			});
-			const res = await appInsecure.inject({
-				method: "POST",
-				url: "/auth/signup",
-				payload: validSignUpPayload,
-			});
-			await appInsecure.close();
-			expect(res.statusCode).toBe(201);
-			const accessCookie = res.cookies.find(
-				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
-			);
-			const refreshCookie = res.cookies.find(
-				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
-			);
-			// When API_IS_SECURE_COOKIES is false, secure may be false or omitted
-			expect(accessCookie?.secure).not.toBe(true);
-			expect(refreshCookie?.secure).not.toBe(true);
+			let res: Awaited<ReturnType<typeof appInsecure.inject>>;
+			try {
+				res = await appInsecure.inject({
+					method: "POST",
+					url: "/auth/signup",
+					payload: validSignUpPayload,
+				});
+				expect(res.statusCode).toBe(201);
+				const accessCookie = res.cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				const refreshCookie = res.cookies.find(
+					(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+				);
+				// When API_IS_SECURE_COOKIES is false, secure may be false or omitted
+				expect(accessCookie?.secure).not.toBe(true);
+				expect(refreshCookie?.secure).not.toBe(true);
+			} finally {
+				await appInsecure.close();
+			}
 		});
 	});
 
