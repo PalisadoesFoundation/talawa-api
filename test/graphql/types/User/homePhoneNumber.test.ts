@@ -181,4 +181,70 @@ suite("User field homePhoneNumber", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data.user?.homePhoneNumber).toBeNull();
 	});
+
+	test('returns "unauthenticated" when authenticated user no longer exists', async () => {
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+		const adminToken = adminSignIn.data.signIn.authenticationToken;
+
+		// Create user A (will be deleted)
+		const userA = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `ghost-${faker.string.uuid()}@example.com`,
+					isEmailAddressVerified: false,
+					name: "Ghost User",
+					password: "password123",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(userA.data.createUser?.user?.id);
+		assertToBeNonNullish(userA.data.createUser?.authenticationToken);
+
+		const userAId = userA.data.createUser.user.id;
+		const userAToken = userA.data.createUser.authenticationToken;
+
+		// Create target user
+		const target = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `target-${faker.string.uuid()}@example.com`,
+					isEmailAddressVerified: false,
+					name: "Target User",
+					password: "password123",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(target.data.createUser?.user?.id);
+		createdUserIds.push(target.data.createUser.user.id);
+
+		// Delete user A so it no longer exists
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: userAId } },
+		});
+
+		// Try querying with deleted user's token
+		const result = await mercuriusClient.query(Query_user_homePhoneNumber, {
+			headers: { authorization: `bearer ${userAToken}` },
+			variables: { input: { id: target.data.createUser.user.id } },
+		});
+
+		expect(result.data.user).toEqual({ homePhoneNumber: null });
+		expect(result.errors).toBeDefined();
+	});
 });
