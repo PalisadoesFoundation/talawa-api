@@ -330,6 +330,7 @@ jobs:
           echo ""
           echo "To override:"
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
+          exit 1
 
 
   Check-AutoDocs:
