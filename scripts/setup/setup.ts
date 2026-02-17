@@ -80,7 +80,10 @@ let exitCalled = false;
  * Idempotent - safe to call multiple times.
  * @internal Exported for testing purposes
  */
-export async function gracefulCleanup(signal?: string): Promise<void> {
+export async function gracefulCleanup(
+	signal?: string,
+	exitFn: (code: number) => never = (code) => process.exit(code),
+): Promise<void> {
 	// Atomic check-and-set to prevent race conditions
 	if (cleaningUp) {
 		return; // Already cleaning up, exit silently
@@ -93,6 +96,7 @@ export async function gracefulCleanup(signal?: string): Promise<void> {
 			: `\n\n⚠️  Setup interrupted by signal ${signal}. Cleaning up...`,
 	);
 
+	let exitCode = 0;
 	try {
 		// Clean up temporary file
 		try {
@@ -109,17 +113,14 @@ export async function gracefulCleanup(signal?: string): Promise<void> {
 		} else {
 			console.log("✓ Cleanup complete. No backup to restore.");
 		}
-
-		if (!exitCalled) {
-			exitCalled = true;
-			process.exit(0);
-		}
 	} catch (e) {
 		console.error("✗ Cleanup encountered errors:", e);
-		if (!exitCalled) {
-			exitCalled = true;
-			process.exit(1);
-		}
+		exitCode = 1;
+	}
+
+	if (!exitCalled) {
+		exitCalled = true;
+		exitFn(exitCode);
 	}
 }
 
