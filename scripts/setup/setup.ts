@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
-import process from "node:process";
+import * as process from "node:process";
 import { pathToFileURL } from "node:url";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import {
 	restoreBackup as atomicRestoreBackup,
 	cleanupTemp,
@@ -13,45 +13,48 @@ import {
 	initializeEnvFile as initializeEnvFileInternal,
 } from "./envFileManager";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
-import { administratorEmail } from "./services/administratorSetup";
 import {
-	backupState,
 	envBackupFile,
 	envFileName,
 	envTempFile,
 	handlePromptError,
+	isBackupCreated,
+	markBackupCreated,
 	type SetupAnswers,
 	type SetupKey,
+	setBackupCreated,
 } from "./services/sharedSetup";
 
+// Re-export shared setup infrastructure
 export {
-	backupState,
 	envBackupFile,
 	envFileName,
 	envTempFile,
 	handlePromptError,
+	isBackupCreated,
+	markBackupCreated,
 	type SetupAnswers,
 	type SetupKey,
+	setBackupCreated,
 } from "./services/sharedSetup";
-export { administratorEmail };
 
+import { administratorEmail } from "./services/administratorSetup";
+// Service imports
 import { apiSetup } from "./services/apiSetup";
-export { apiSetup };
-
 import { caddySetup } from "./services/caddySetup";
-export { caddySetup };
-
 import { setCI } from "./services/ciSetup";
-export { setCI };
-
 import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
-export { cloudbeaverSetup };
-
 import { minioSetup } from "./services/minioSetup";
-export { minioSetup };
-
 import { postgresSetup } from "./services/postgresSetup";
-export { postgresSetup };
+
+// Service re-exports
+export { apiSetup } from "./services/apiSetup";
+export { caddySetup } from "./services/caddySetup";
+export { setCI } from "./services/ciSetup";
+export { cloudbeaverSetup } from "./services/cloudbeaverSetup";
+export { minioSetup } from "./services/minioSetup";
+export { postgresSetup } from "./services/postgresSetup";
+export { administratorEmail };
 
 import { updateEnvVariable } from "./updateEnvVariable";
 import { validatePositiveInteger } from "./validators";
@@ -100,7 +103,7 @@ export async function gracefulCleanup(signal?: string): Promise<void> {
 		}
 
 		// Restore backup if one was created
-		if (backupState.created) {
+		if (isBackupCreated()) {
 			await atomicRestoreBackup(envFileName, envBackupFile);
 			console.log("✅ Original configuration restored successfully");
 		} else {
@@ -128,7 +131,7 @@ export function resetCleanupState(options?: {
 	backupCreated?: boolean;
 	cleaning?: boolean;
 }): void {
-	backupState.created = options?.backupCreated ?? false;
+	setBackupCreated(options?.backupCreated ?? false);
 	cleaningUp = options?.cleaning ?? false;
 	exitCalled = false;
 }
@@ -427,7 +430,7 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 			tempFile: envTempFile,
 			templateCiFile: "envFiles/.env.ci",
 			templateDevcontainerFile: "envFiles/.env.devcontainer",
-			restoreFromBackup: backupState.created,
+			restoreFromBackup: isBackupCreated(),
 		});
 		console.log(
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
@@ -649,7 +652,7 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 export async function setup(): Promise<SetupAnswers> {
 	// Reset state variables at the start of each setup call
 	// This ensures clean state for tests and multiple setup() calls
-	backupState.created = false;
+	setBackupCreated(false);
 	cleaningUp = false;
 	exitCalled = false;
 
@@ -698,7 +701,7 @@ export async function setup(): Promise<SetupAnswers> {
 		if (shouldBackup) {
 			try {
 				await ensureBackup(envFileName, envBackupFile);
-				backupState.created = true;
+				markBackupCreated();
 			} catch (err) {
 				if (process.env.NODE_ENV === "production" || initialCI === "true") {
 					console.error("Backup creation failed (fatal):", err);
@@ -792,7 +795,7 @@ export async function setup(): Promise<SetupAnswers> {
 		backupFile: envBackupFile,
 		tempFile: envTempFile,
 		createBackup: false,
-		restoreFromBackup: backupState.created,
+		restoreFromBackup: isBackupCreated(),
 	});
 	console.log("Configuration complete.");
 
@@ -804,7 +807,8 @@ export async function setup(): Promise<SetupAnswers> {
 }
 if (
 	process.argv[1] &&
-	import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+	(import.meta as { url: string }).url ===
+		pathToFileURL(resolve(process.argv[1])).href
 ) {
 	setup().catch((err) => {
 		console.error("Setup failed:", err);

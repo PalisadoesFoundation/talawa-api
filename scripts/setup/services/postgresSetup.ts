@@ -1,3 +1,4 @@
+import * as process from "node:process";
 import { promptInput } from "../promptHelpers";
 import { validatePort } from "../validators";
 import { handlePromptError, type SetupAnswers } from "./sharedSetup";

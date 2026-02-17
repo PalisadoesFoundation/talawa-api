@@ -140,13 +140,28 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		if (existingMinioPassword !== undefined) {
 			// Configured non-empty password found, validate against it
 			const minioPassword = existingMinioPassword;
+			const MAX_RETRIES = 3;
+			let attempts = 0;
 			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
-				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
+				attempts++;
+				if (attempts >= MAX_RETRIES) {
+					throw new Error(
+						"Maximum attempts exceeded. API_MINIO_SECRET_KEY must match the existing MINIO_ROOT_PASSWORD. Aborting setup.",
+					);
+				}
+				console.warn(
+					`⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD. (Attempt ${attempts}/${MAX_RETRIES})`,
+				);
+				console.info("Tip: Type 'exit' to cancel setup.");
 				answers.API_MINIO_SECRET_KEY = await promptInput(
 					"API_MINIO_SECRET_KEY",
 					"Minio secret key:",
 					minioPassword, // Use configured password as default
 				);
+
+				if (answers.API_MINIO_SECRET_KEY?.toLowerCase() === "exit") {
+					throw new Error("Setup cancelled by user.");
+				}
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
 		} else {
@@ -187,18 +202,33 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
-			postgresPassword ?? "password",
+			"password",
 		);
 		if (postgresPassword !== undefined) {
 			// Configured non-empty password found, validate against it
 			const postgresPasswordLocal = postgresPassword;
+			const MAX_RETRIES = 3;
+			let attempts = 0;
 			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
-				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
+				attempts++;
+				if (attempts >= MAX_RETRIES) {
+					throw new Error(
+						"Maximum attempts exceeded. API_POSTGRES_PASSWORD must match the existing POSTGRES_PASSWORD. Aborting setup.",
+					);
+				}
+				console.warn(
+					`⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD. (Attempt ${attempts}/${MAX_RETRIES})`,
+				);
+				console.info("Tip: Type 'exit' to cancel setup.");
 				answers.API_POSTGRES_PASSWORD = await promptInput(
 					"API_POSTGRES_PASSWORD",
 					"Postgres password:",
 					postgresPasswordLocal, // Use configured password as default
 				);
+
+				if (answers.API_POSTGRES_PASSWORD?.toLowerCase() === "exit") {
+					throw new Error("Setup cancelled by user.");
+				}
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
 		} else {

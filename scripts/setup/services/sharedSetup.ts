@@ -1,4 +1,4 @@
-import process from "node:process";
+import * as process from "node:process";
 import { restoreBackup as atomicRestoreBackup } from "../AtomicEnvWriter";
 
 /**
@@ -89,32 +89,68 @@ export type SetupKey =
 	| "API_METRICS_AGGREGATION_ENABLED"
 	| "API_METRICS_AGGREGATION_CRON_SCHEDULE"
 	| "API_METRICS_AGGREGATION_WINDOW_MINUTES"
-	| "API_METRICS_SNAPSHOT_RETENTION_COUNT";
+	| "API_METRICS_SNAPSHOT_RETENTION_COUNT"
+	| "API_SMTP_HOST"
+	| "API_SMTP_PORT"
+	| "API_SMTP_USER"
+	| "API_SMTP_PASSWORD"
+	| "API_SMTP_SECURE"
+	| "API_SMTP_FROM_EMAIL"
+	| "API_SMTP_FROM_NAME"
+	| "API_SMTP_NAME"
+	| "API_SMTP_LOCAL_ADDRESS";
 
 /**
- * Type for the answers object collected during setup
+ * Type for the answers object collected during setup.
+ * Uses Partial<Record<SetupKey, string>> to ensure only allowed keys are used.
  */
-export type SetupAnswers = Partial<Record<SetupKey, string>> & {
-	[key: string]: string | undefined;
-};
+export type SetupAnswers = Partial<Record<SetupKey, string>>;
 
 export const envFileName = ".env";
 export const envBackupFile = ".env.backup";
 export const envTempFile = ".env.tmp";
 
 /**
- * Shared state for backup status
+ * Internal state for tracking if a backup has been created.
+ * Protected by accessor functions to avoid direct mutation from other modules.
  */
-export const backupState = {
-	created: false,
-};
+let backupCreated = false;
 
 /**
- * Shared error handler for prompt failures
+ * Sets the backup status.
+ * Useful for resetting state between tests or at the start of setup.
  */
-export async function handlePromptError(err: unknown): Promise<never> {
+export function setBackupCreated(status: boolean): void {
+	backupCreated = status;
+}
+
+/**
+ * Marks that a backup has been successfully created.
+ */
+export function markBackupCreated(): void {
+	setBackupCreated(true);
+}
+
+/**
+ * Returns whether a backup has been created.
+ */
+export function isBackupCreated(): boolean {
+	return backupCreated;
+}
+
+/**
+ * Shared error handler for prompt failures.
+ *
+ * @param err - The encountered error.
+ * @param exitFn - Optional injectable exit strategy (defaults to process.exit).
+ *                 Useful for unit tests to prevent thread termination.
+ */
+export async function handlePromptError(
+	err: unknown,
+	exitFn: (code: number) => never = (code) => process.exit(code),
+): Promise<never> {
 	console.error(err);
-	if (backupState.created) {
+	if (isBackupCreated()) {
 		try {
 			await atomicRestoreBackup(envFileName, envBackupFile);
 			console.log("✅ Original configuration restored successfully");
@@ -122,5 +158,5 @@ export async function handlePromptError(err: unknown): Promise<never> {
 			console.error("❌ Failed to restore backup:", restoreErr);
 		}
 	}
-	process.exit(1);
+	return exitFn(1);
 }

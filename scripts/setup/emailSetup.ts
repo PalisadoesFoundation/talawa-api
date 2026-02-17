@@ -5,7 +5,7 @@ import {
 	promptList,
 	promptPassword,
 } from "./promptHelpers";
-import type { SetupAnswers } from "./services/sharedSetup";
+import { handlePromptError, type SetupAnswers } from "./services/sharedSetup";
 import { validateEmail } from "./validators";
 
 /**
@@ -455,8 +455,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 		}
 	} catch (err) {
-		console.error("Error during email setup:", err);
-		throw err;
+		await handlePromptError(err);
 	}
 	return answers;
 }

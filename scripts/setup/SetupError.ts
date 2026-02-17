@@ -24,7 +24,7 @@ export interface SetupErrorContext {
 export class SetupError extends Error {
 	public readonly code: SetupErrorCode;
 	public readonly context: SetupErrorContext;
-	public override readonly cause?: Error;
+	public readonly cause?: Error;
 
 	constructor(
 		code: SetupErrorCode,
@@ -32,7 +32,7 @@ export class SetupError extends Error {
 		context: SetupErrorContext = {},
 		cause?: Error,
 	) {
-		super(message, { cause });
+		super(message);
 		this.name = "SetupError";
 		this.code = code;
 		this.context = context;

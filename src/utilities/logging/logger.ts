@@ -1,4 +1,9 @@
-import pino, { type Logger, type LoggerOptions } from "pino";
+import * as pinoModule from "pino";
+
+// biome-ignore lint/suspicious/noExplicitAny: Normalize pino module for ESM/CJS interop
+const pino = (pinoModule as any).default || pinoModule;
+
+import type { Logger, LoggerOptions } from "pino";
 
 const level = process.env.LOG_LEVEL ?? "info";
 const nodeEnv = process.env.NODE_ENV ?? "development";
