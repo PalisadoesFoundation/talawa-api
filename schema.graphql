@@ -2227,7 +2227,7 @@ type Mutation {
     input: MutationAdminUpdateUserPasswordInput!
   ): Boolean
   """Admin-only mutation to create on-spot event attendees with auto-verified email."""
-  adminCreateOnSpotAttendee(input: MutationSignUpInput!): AuthenticationPayload
+  adminCreateOnSpotAttendee(input: MutationSignUpInput!): User
 
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean

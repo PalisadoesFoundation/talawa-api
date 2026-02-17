@@ -108,15 +108,11 @@ export const Mutation_signUp =
 export const Mutation_adminCreateOnSpotAttendee = gql(`
   mutation Mutation_adminCreateOnSpotAttendee($input: MutationSignUpInput!) {
     adminCreateOnSpotAttendee(input: $input) {
-      user {
-        id
-        name
-        emailAddress
-        isEmailAddressVerified
-        role
-      }
-      authenticationToken
-      refreshToken
+      id
+      name
+      emailAddress
+      isEmailAddressVerified
+      role
     }
   }
 `);
