@@ -347,25 +347,24 @@ jobs:
           # Use `sg` to drop the docker group from the current session's supplementary
           # groups without requiring a full re-login. The inner shell inherits every
           # group EXCEPT docker, which accurately models a non-docker-group user.
-          sg "$USER" -c '
-            set -euxo pipefail
-
+          # NOTE: `sg` invokes /bin/sh by default; wrap in `bash -c` so pipefail works.
+          sg "$USER" -c 'exec bash -euxo pipefail -c "
             # Confirm the docker group is no longer active.
-            if id -nG | tr " " "\n" | grep -qx docker; then
-              echo "::error::docker group is still active after deluser; cannot validate non-docker-group scenario."
+            if id -nG | tr \" \" \"\\n\" | grep -qx docker; then
+              echo \"::error::docker group is still active after deluser; cannot validate non-docker-group scenario.\"
               exit 1
             fi
 
             # The rootless daemon must still be reachable via DOCKER_HOST.
             docker info >/dev/null 2>&1
-            echo "Rootless Docker is reachable without docker group membership ✓"
+            echo \"Rootless Docker is reachable without docker group membership ✓\"
 
             # Validate compose config still parses correctly.
             docker compose --env-file ./envFiles/.env.rootless.production \
               -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
               config -q
-            echo "Compose config valid without docker group ✓"
-          '
+            echo \"Compose config valid without docker group ✓\"
+          "'
 
       - name: Set CI-safe secrets for rootless production template
         run: |
