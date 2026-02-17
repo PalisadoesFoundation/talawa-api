@@ -13,7 +13,7 @@ import {
 	MutationSignUpInput,
 	mutationSignUpInputSchema,
 } from "~/src/graphql/inputs/MutationSignUpInput";
-import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
+import { User } from "~/src/graphql/types/User/User";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import {
 	getOnSpotAttendeeWelcomeEmailHtml,
@@ -21,12 +21,7 @@ import {
 } from "~/src/utilities/emailTemplates";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import {
-	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
-	generateRefreshToken,
-	hashRefreshToken,
-	storeRefreshToken,
-} from "~/src/utilities/refreshTokenUtils";
+// Token generation removed - admin attendees do not receive auto-generated tokens
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -318,38 +313,9 @@ builder.mutationField("adminCreateOnSpotAttendee", (t) =>
 					}
 				}
 
-				// Note: We don't set ctx.currentClient here because the admin user
-				// remains authenticated as themselves, not as the newly created attendee
-
-				// Generate refresh token for the new attendee
-				const rawRefreshToken = generateRefreshToken();
-				const refreshTokenHash = hashRefreshToken(rawRefreshToken);
-
-				const refreshTokenExpiresIn =
-					ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
-					DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
-				const refreshTokenExpiresAt = new Date(
-					Date.now() + refreshTokenExpiresIn,
-				);
-
-				await storeRefreshToken(
-					tx,
-					createdUser.id,
-					refreshTokenHash,
-					refreshTokenExpiresAt,
-				);
-
-				const accessToken = ctx.jwt.sign({
-					user: {
-						id: createdUser.id,
-					},
-				});
-
-				return {
-					authenticationToken: accessToken,
-					refreshToken: rawRefreshToken,
-					user: createdUser,
-				};
+				// Note: On-spot attendees do not receive auto-generated tokens.
+				// They must authenticate using their email and temporary password.
+				return createdUser;
 			});
 
 			// ========================================
@@ -357,9 +323,9 @@ builder.mutationField("adminCreateOnSpotAttendee", (t) =>
 			// ========================================
 			try {
 				const emailContext = {
-					userName: result.user.name,
+					userName: result.name,
 					communityName: ctx.envConfig.API_COMMUNITY_NAME,
-					emailAddress: result.user.emailAddress,
+					emailAddress: result.emailAddress,
 					temporaryPassword: parsedArgs.input.password,
 					loginLink: `${ctx.envConfig.API_FRONTEND_URL}/login`,
 				};
@@ -367,11 +333,11 @@ builder.mutationField("adminCreateOnSpotAttendee", (t) =>
 				emailService
 					.sendEmail({
 						id: ulid(),
-						email: result.user.emailAddress,
+						email: result.emailAddress,
 						subject: `Welcome to ${ctx.envConfig.API_COMMUNITY_NAME} - Your Account is Ready`,
 						htmlBody: getOnSpotAttendeeWelcomeEmailHtml(emailContext),
 						textBody: getOnSpotAttendeeWelcomeEmailText(emailContext),
-						userId: result.user.id,
+						userId: result.id,
 					})
 					.catch((err) =>
 						ctx.log.error(
@@ -382,9 +348,8 @@ builder.mutationField("adminCreateOnSpotAttendee", (t) =>
 			} catch (err) {
 				ctx.log.error({ error: err }, "Failed to send on-spot welcome email");
 			}
-
 			return result;
 		},
-		type: AuthenticationPayload,
+		type: User,
 	}),
 );

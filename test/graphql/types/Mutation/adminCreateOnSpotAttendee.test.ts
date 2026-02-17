@@ -1,6 +1,13 @@
-import { beforeEach } from "node:test";
 import { faker } from "@faker-js/faker";
-import { afterAll, afterEach, expect, suite, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -15,18 +22,12 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-interface AdminOnSpotUser {
+interface AdminCreateOnSpotAttendeePayload {
 	id: string;
 	name: string;
 	emailAddress: string;
 	isEmailAddressVerified: boolean;
 	role: string;
-}
-
-interface AdminCreateOnSpotAttendeePayload {
-	user: AdminOnSpotUser;
-	authenticationToken: string;
-	refreshToken: string;
 }
 
 let authToken: string;
@@ -66,7 +67,7 @@ async function cleanupTrackedEntities(): Promise<void> {
 	for (const orgId of trackedEntityIds.organizationIds) {
 		try {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: { id: orgId },
 				},
@@ -84,7 +85,7 @@ async function cleanupTrackedEntities(): Promise<void> {
 	for (const userId of trackedEntityIds.userIds) {
 		try {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: { id: userId },
 				},
@@ -152,7 +153,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: "Test Attendee",
@@ -189,7 +190,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Duplicate Email Test Org ${faker.string.ulid()}`,
@@ -212,7 +213,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: adminUserId,
@@ -243,7 +244,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: "Duplicate Email Attendee",
@@ -281,7 +282,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Non-Admin Test Org ${faker.string.ulid()}`,
@@ -311,7 +312,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: regularUserId,
@@ -329,7 +330,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${regularUserToken}` },
+					headers: { authorization: `Bearer ${regularUserToken}` },
 					variables: {
 						input: {
 							name: "Test Attendee",
@@ -363,7 +364,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `No Membership Test Org ${faker.string.ulid()}`,
@@ -393,7 +394,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${regularUserToken}` },
+					headers: { authorization: `Bearer ${regularUserToken}` },
 					variables: {
 						input: {
 							name: "Test Attendee",
@@ -434,7 +435,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Success Test Org ${faker.string.ulid()}`,
@@ -458,7 +459,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: adminUserId,
@@ -480,7 +481,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: attendeeName,
@@ -498,21 +499,14 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			expect(createdAttendee).toBeDefined();
 
 			// Track the created user ID
-			const createdUserId = createdAttendee?.user?.id;
+			const createdUserId = createdAttendee?.id;
 			if (createdUserId) trackedEntityIds.userIds.push(createdUserId);
 
 			// Verify user properties
-			expect(createdAttendee?.user?.name).toBe(attendeeName);
-			expect(createdAttendee?.user?.emailAddress).toBe(attendeeEmail);
-			expect(createdAttendee?.user?.isEmailAddressVerified).toBe(true); // CRITICAL: Auto-verified
-			expect(createdAttendee?.user?.role).toBe("regular");
-
-			// Verify authentication tokens returned
-			expect(createdAttendee?.authenticationToken).toBeDefined();
-			expect(createdAttendee?.authenticationToken).toMatch(
-				/^[\w-]+\.[\w-]+\.[\w-]+$/,
-			); // JWT format
-			expect(createdAttendee?.refreshToken).toBeDefined();
+			expect(createdAttendee?.name).toBe(attendeeName);
+			expect(createdAttendee?.emailAddress).toBe(attendeeEmail);
+			expect(createdAttendee?.isEmailAddressVerified).toBe(true); // CRITICAL: Auto-verified
+			expect(createdAttendee?.role).toBe("regular");
 
 			// Verify user exists in database with verified email
 			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
@@ -554,7 +548,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Registration Required Org ${faker.string.ulid()}`,
@@ -578,7 +572,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: adminUserId,
@@ -598,7 +592,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: faker.person.fullName(),
@@ -616,7 +610,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			expect(createdAttendee).toBeDefined();
 
 			// Track the created user ID
-			const createdUserId = createdAttendee?.user?.id;
+			const createdUserId = createdAttendee?.id;
 			if (createdUserId) trackedEntityIds.userIds.push(createdUserId);
 
 			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
@@ -657,7 +651,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Direct Membership Org ${faker.string.ulid()}`,
@@ -681,7 +675,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: adminUserId,
@@ -701,7 +695,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: faker.person.fullName(),
@@ -758,7 +752,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Direct Membership Org ${faker.string.ulid()}`,
@@ -782,7 +776,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: adminUserId,
@@ -801,7 +795,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: faker.person.fullName(),
@@ -823,7 +817,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 
 			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
-					operators.eq(fields.emailAddress, createdAttendee.user.emailAddress),
+					operators.eq(fields.emailAddress, createdAttendee.emailAddress),
 			});
 			expect(dbUser).toBeDefined();
 		});
@@ -835,7 +829,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: `Validation Test Org ${faker.string.ulid()}`,
@@ -858,7 +852,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const membershipResult = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							memberId: adminUserId,
@@ -876,7 +870,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							name: "Test Attendee",
