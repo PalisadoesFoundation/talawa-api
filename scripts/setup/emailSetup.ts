@@ -455,6 +455,11 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 		}
 	} catch (err) {
+		// In production, handle the error gracefully with backup restoration
+		// In tests, rethrow to allow proper error assertions
+		if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+			throw err;
+		}
 		await handlePromptError(err);
 	}
 	return answers;
