@@ -4,9 +4,14 @@ import { mercuriusClient } from "./client";
 const DEPRECATION_INTROSPECTION_QUERY = `
 	query DeprecationIntrospection {
 		__schema {
-			types {
-				name
-				fields {
+			queryType {
+				fields(includeDeprecated: true) {
+					name
+					deprecationReason
+				}
+			}
+			mutationType {
+				fields(includeDeprecated: true) {
 					name
 					deprecationReason
 				}
@@ -20,27 +25,20 @@ suite("GraphQL signIn/signUp deprecation (introspection)", () => {
 		const result = await mercuriusClient.query(DEPRECATION_INTROSPECTION_QUERY);
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.__schema?.types).toBeDefined();
+		expect(result.data?.__schema).toBeDefined();
 
-		const types = result.data?.__schema?.types as
-			| Array<{
-					fields?: Array<{ name: string; deprecationReason?: string | null }>;
-					name: string;
-			  }>
+		const queryType = result.data?.__schema?.queryType as
+			| { fields?: Array<{ name: string; deprecationReason?: string | null }> }
 			| undefined;
-		expect(types).toBeDefined();
-		expect(Array.isArray(types)).toBe(true);
+		const mutationType = result.data?.__schema?.mutationType as
+			| { fields?: Array<{ name: string; deprecationReason?: string | null }> }
+			| undefined;
 
-		const queryType = types?.find((t) => t.name === "Query");
-		const mutationType = types?.find((t) => t.name === "Mutation");
-
-		expect(queryType).toBeDefined();
 		expect(queryType?.fields).toBeDefined();
 		const signInField = queryType?.fields?.find((f) => f.name === "signIn");
 		expect(signInField).toBeDefined();
 		expect(signInField?.deprecationReason).toBe("Use REST POST /auth/signin");
 
-		expect(mutationType).toBeDefined();
 		expect(mutationType?.fields).toBeDefined();
 		const signUpField = mutationType?.fields?.find((f) => f.name === "signUp");
 		expect(signUpField).toBeDefined();
