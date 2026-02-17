@@ -6,14 +6,16 @@
 
 > **addressLine2Resolver**(`parent`, `_args`, `ctx`): `Promise`\<`string` \| `null`\>
 
-Defined in: [src/graphql/types/User/addressLine2.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/addressLine2.ts#L12)
+Defined in: [src/graphql/types/User/addressLine2.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/addressLine2.ts#L18)
 
-Resolver for the addressLine2 field on the User type.
+Resolver for the `addressLine2` field on the `User` type.
 Checks authentication and authorization before returning the escaped value.
 
 ## Parameters
 
 ### parent
+
+The parent `User` object containing the raw addressLine2 value.
 
 #### addressLine1
 
@@ -143,10 +145,20 @@ Checks authentication and authorization before returning the escaped value.
 
 `Record`\<`string`, `never`\>
 
+The arguments for the field (unused).
+
 ### ctx
 
 [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md)
 
+The GraphQL context containing the current client and Drizzle client.
+
 ## Returns
 
 `Promise`\<`string` \| `null`\>
+
+The HTML-escaped addressLine2 string, or null if not set.
+
+## Throws
+
+if the user is unauthenticated or unauthorized.
