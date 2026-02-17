@@ -332,6 +332,7 @@ jobs:
 
           # Override sentinel placeholders so the rootless production stack can start in CI.
           echo "API_JWT_SECRET=ci_jwt_secret_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_AUTH_JWT_SECRET=ci_auth_jwt_secret_0123456789abcdef" >> "$GITHUB_ENV"
           echo "API_COOKIE_SECRET=ci_cookie_secret_0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
           echo "API_ADMINISTRATOR_USER_PASSWORD=ci_admin_password_0123456789abcdef" >> "$GITHUB_ENV"
 
