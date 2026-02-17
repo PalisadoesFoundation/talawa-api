@@ -33,14 +33,18 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			// Use name-based mocking to provide realistic responses for each prompt
 			mockPromptInput.mockImplementation((name: string) => {
-				if (name === "API_MINIO_SECRET_KEY") return Promise.resolve("correct_password");
-				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				if (name === "API_MINIO_SECRET_KEY")
+					return Promise.resolve("correct_password");
+				if (name === "API_BASE_URL")
+					return Promise.resolve("http://localhost:4000");
 				if (name === "API_HOST") return Promise.resolve("localhost");
 				if (name === "API_PORT") return Promise.resolve("4000");
 				if (name === "API_SMTP_PROVIDER") return Promise.resolve("gmail");
 				if (name === "API_JWT_SECRET") return Promise.resolve("testsecret123");
-				if (name === "API_JWT_REFRESH_SECRET") return Promise.resolve("refreshsecret123");
-				if (name === "API_POSTGRES_PASSWORD") return Promise.resolve("postgres_pass");
+				if (name === "API_JWT_REFRESH_SECRET")
+					return Promise.resolve("refreshsecret123");
+				if (name === "API_POSTGRES_PASSWORD")
+					return Promise.resolve("postgres_pass");
 				if (name === "API_POSTGRES_USER") return Promise.resolve("talawa");
 				return Promise.resolve("");
 			});
@@ -69,7 +73,8 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 					if (minioCallCount === 3) return Promise.resolve("wrong3");
 				}
 				// Provide defaults for other prompts so they complete
-				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				if (name === "API_BASE_URL")
+					return Promise.resolve("http://localhost:4000");
 				if (name === "API_PORT") return Promise.resolve("4000");
 				if (name === "API_POSTGRES_PASSWORD") return Promise.resolve("pass");
 				if (name === "API_POSTGRES_USER") return Promise.resolve("talawa");
@@ -78,10 +83,10 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -106,16 +111,17 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 					if (minioCallCount === 1) return Promise.resolve("wrong_password");
 					return Promise.resolve("exit");
 				}
-				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				if (name === "API_BASE_URL")
+					return Promise.resolve("http://localhost:4000");
 				return Promise.resolve("");
 			});
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -138,16 +144,17 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 					if (minioCallCount === 1) return Promise.resolve("wrong_password");
 					return Promise.resolve("EXIT");
 				}
-				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				if (name === "API_BASE_URL")
+					return Promise.resolve("http://localhost:4000");
 				return Promise.resolve("");
 			});
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -199,10 +206,10 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -230,10 +237,10 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -254,7 +261,7 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await apiSetup(answers);
 
@@ -281,7 +288,7 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			await apiSetup(answers);
 

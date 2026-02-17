@@ -26,10 +26,10 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			// Mock responses: browser, api_ip, api_port, console_ip, console_port (same), console_port (different), root_password, root_user
 			mockPromptInput
@@ -60,7 +60,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			mockPromptInput
 				.mockResolvedValueOnce("off") // MINIO_BROWSER
@@ -87,7 +87,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			mockPromptInput
 				.mockResolvedValueOnce("off") // MINIO_BROWSER
@@ -116,7 +116,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			mockPromptInput
 				.mockResolvedValueOnce("off") // MINIO_BROWSER
@@ -145,7 +145,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => { });
+				.mockImplementation(() => {});
 
 			// Vitest automatically intercepts process.exit and throws
 			await expect(minioSetup(answers)).rejects.toThrow();
