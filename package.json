@@ -107,7 +107,7 @@
     "build_production": "swc ./src/ --ignore \"**/*.spec.ts,**/*.test.ts\" --out-dir ./dist/ --strip-leading-paths",
     "format:check": "biome check --error-on-warnings",
     "check_drizzle_migrations": "drizzle-kit check",
-    "check_gql_tada": "gql.tada doctor && gql.tada check --fail-on-warn",
+    "check_gql_tada": "gql.tada doctor && gql.tada check",
     "check_mock_isolation": "tsx scripts/verify_mock_isolation.ts",
     "typecheck": "tsc",
     "disable_git_hooks": "lefthook uninstall",

@@ -33,6 +33,7 @@ builder.queryField("signIn", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		deprecationReason: "Use REST POST /auth/signin",
 		description: "Query field for a client to sign in to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
