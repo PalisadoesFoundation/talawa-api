@@ -161,4 +161,24 @@ describe("Setup -> postgresSetup", () => {
 			consoleLogSpy.mockRestore();
 		});
 	});
+	describe("Error Handling", () => {
+		it("should handle prompt errors gracefully", async () => {
+			const { postgresSetup } = await import(
+				"scripts/setup/services/postgresSetup"
+			);
+			const answers: SetupAnswers = { CI: "true" };
+
+			// Mock first prompt to fail
+			mockPromptInput.mockRejectedValueOnce(new Error("Prompt failed"));
+
+			const consoleErrorSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			await expect(postgresSetup(answers)).rejects.toThrow();
+
+			expect(consoleErrorSpy).toHaveBeenCalled();
+			consoleErrorSpy.mockRestore();
+		});
+	});
 });
