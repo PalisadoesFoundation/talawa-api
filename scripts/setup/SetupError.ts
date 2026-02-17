@@ -24,7 +24,7 @@ export interface SetupErrorContext {
 export class SetupError extends Error {
 	public readonly code: SetupErrorCode;
 	public readonly context: SetupErrorContext;
-	public readonly cause?: Error;
+	public override readonly cause?: Error;
 
 	constructor(
 		code: SetupErrorCode,

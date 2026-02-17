@@ -202,7 +202,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			postgresPassword ?? "password",
 		);
 		if (postgresPassword !== undefined) {
 			// Configured non-empty password found, validate against it

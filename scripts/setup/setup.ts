@@ -38,7 +38,6 @@ export {
 	setBackupCreated,
 } from "./services/sharedSetup";
 
-import { administratorEmail } from "./services/administratorSetup";
 // Service imports
 import { apiSetup } from "./services/apiSetup";
 import { caddySetup } from "./services/caddySetup";
@@ -47,6 +46,7 @@ import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 import { minioSetup } from "./services/minioSetup";
 import { postgresSetup } from "./services/postgresSetup";
 
+export { administratorEmail } from "./services/administratorSetup";
 // Service re-exports
 export { apiSetup } from "./services/apiSetup";
 export { caddySetup } from "./services/caddySetup";
@@ -54,7 +54,6 @@ export { setCI } from "./services/ciSetup";
 export { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 export { minioSetup } from "./services/minioSetup";
 export { postgresSetup } from "./services/postgresSetup";
-export { administratorEmail };
 
 import { updateEnvVariable } from "./updateEnvVariable";
 import { validatePositiveInteger } from "./validators";
@@ -807,8 +806,7 @@ export async function setup(): Promise<SetupAnswers> {
 }
 if (
 	process.argv[1] &&
-	(import.meta as { url: string }).url ===
-		pathToFileURL(resolve(process.argv[1])).href
+	import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
 	setup().catch((err) => {
 		console.error("Setup failed:", err);

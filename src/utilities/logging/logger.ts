@@ -1,7 +1,10 @@
 import * as pinoModule from "pino";
 
-// biome-ignore lint/suspicious/noExplicitAny: Normalize pino module for ESM/CJS interop
-const pino = (pinoModule as any).default || pinoModule;
+const pino = (
+	"default" in pinoModule
+		? (pinoModule as unknown as { default: typeof pinoModule.default }).default
+		: pinoModule
+) as typeof pinoModule.default;
 
 import type { Logger, LoggerOptions } from "pino";
 

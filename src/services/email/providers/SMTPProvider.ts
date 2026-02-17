@@ -65,8 +65,8 @@ export class SMTPProvider implements IEmailProvider {
 	}> {
 		if (!this.transporter) {
 			const ns = await import("nodemailer");
-			// biome-ignore lint/suspicious/noExplicitAny: Normalize namespace for ESM/CJS interop
-			const nodemailer = (ns as any).default ?? ns;
+			const nodemailer = ((ns as unknown as { default?: typeof ns }).default ??
+				ns) as typeof ns;
 
 			// Validate host
 			if (!this.config.host) {

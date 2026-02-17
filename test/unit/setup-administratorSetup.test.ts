@@ -36,7 +36,7 @@ describe("Setup -> administratorSetup", () => {
 			"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
 			"Enter administrator user email address:",
 			"administrator@email.com",
-			expect.objectContaining({}), // validator function passed (we don't need to check its type)
+			expect.any(Function), // validator function
 		);
 	});
 
