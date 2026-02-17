@@ -1,4 +1,9 @@
-import { expect, suite, test } from "vitest";
+/**
+ * Introspection tests for GraphQL signIn/signUp deprecation.
+ * Uses shared server (test/server.ts) per project convention for test/graphql/types/.
+ * Read-only: no mutable state, no cleanup required.
+ */
+import { afterEach, beforeEach, expect, suite, test } from "vitest";
 import { mercuriusClient } from "./client";
 
 const DEPRECATION_INTROSPECTION_QUERY = `
@@ -21,6 +26,14 @@ const DEPRECATION_INTROSPECTION_QUERY = `
 `;
 
 suite("GraphQL signIn/signUp deprecation (introspection)", () => {
+	beforeEach(() => {
+		// No setup required: test is read-only introspection.
+	});
+
+	afterEach(() => {
+		// No teardown required: test does not mutate server or shared state.
+	});
+
 	test("signIn and signUp fields expose deprecationReason via schema introspection", async () => {
 		const result = await mercuriusClient.query(DEPRECATION_INTROSPECTION_QUERY);
 

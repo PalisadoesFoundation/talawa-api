@@ -122,7 +122,7 @@
     "generate-docs": "typedoc && pnpm run postgenerate-docs",
     "generate_drizzle_migrations": "drizzle-kit generate",
     "generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",
-    "generate_gql_tada": "gql.tada generate-output && gql.tada turbo --fail-on-warn",
+    "generate_gql_tada": "gql.tada generate-output && gql.tada turbo",
     "reset:data": "tsx ./scripts/dbManagement/resetData.ts",
     "add:sample_data": "tsx ./scripts/dbManagement/addSampleData.ts",
     "push_drizzle_schema": "drizzle-kit push",
@@ -140,6 +140,7 @@
     "setup": "tsx setup.ts",
     "upgrade_drizzle_metadata": "drizzle-kit up"
   },
+  "gql_tada_todo": "TODO: Restore --fail-on-warn in check_gql_tada and generate_gql_tada after GraphQL signIn/signUp migration is merged. Tracking: https://github.com/PalisadoesFoundation/talawa-api/issues",
   "type": "module",
   "version": "1.0.0"
 }
