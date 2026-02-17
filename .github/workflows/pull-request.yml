@@ -268,8 +268,10 @@ jobs:
           # The !override YAML tag in compose.rootless.production.yaml requires
           # Docker Compose v2.24.4+; the runner's pre-installed version may be older.
           # Pin to a minimum version that supports the !override tag.
-          sudo apt-get install -y docker-ce-rootless-extras 'docker-compose-plugin=2.24.4-*' || \
+          if ! sudo apt-get install -y docker-ce-rootless-extras 'docker-compose-plugin=2.24.4-*'; then
+            echo "::notice::Pinned docker-compose-plugin=2.24.4-* not available; installing latest and will verify version below."
             sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
+          fi
 
           echo "Docker Compose version:"
           docker compose version
