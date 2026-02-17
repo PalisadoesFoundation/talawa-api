@@ -62,6 +62,14 @@ describe("Setup -> cloudbeaverSetup", () => {
 		await cloudbeaverSetup(answers);
 
 		expect(answers.CLOUDBEAVER_ADMIN_PASSWORD).toBe("env_password");
+		// Verify env password was passed as default (2nd call = password prompt)
+		expect(mockPromptInput).toHaveBeenNthCalledWith(
+			2,
+			"CLOUDBEAVER_ADMIN_PASSWORD",
+			expect.any(String),
+			"env_password",
+			expect.any(Function),
+		);
 	});
 
 	it("should handle prompt errors", async () => {
