@@ -109,7 +109,7 @@ describe("User field addressLine2 resolver (unit)", () => {
 		const parentWithUndefined = {
 			...parent,
 			addressLine2: undefined,
-		} as UserType; // partial UserType for testing
+		} as unknown as UserType; // partial UserType for testing
 
 		const result = await addressLine2Resolver(parentWithUndefined, {}, ctx);
 
