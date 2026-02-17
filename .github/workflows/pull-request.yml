@@ -267,10 +267,24 @@ jobs:
           # Always install/upgrade rootless extras AND compose plugin.
           # The !override YAML tag in compose.rootless.production.yaml requires
           # Docker Compose v2.24.4+; the runner's pre-installed version may be older.
-          sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
+          # Pin to a minimum version that supports the !override tag.
+          sudo apt-get install -y docker-ce-rootless-extras 'docker-compose-plugin=2.24.4-*' || \
+            sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
 
           echo "Docker Compose version:"
           docker compose version
+
+          # Verify that the installed Compose version satisfies the minimum requirement.
+          COMPOSE_MIN="2.24.4"
+          compose_version=$(docker compose version --short 2>/dev/null || echo "0.0.0")
+          version_gte() {
+            printf '%s\n%s' "$2" "$1" | sort -V -C
+          }
+          if ! version_gte "$compose_version" "$COMPOSE_MIN"; then
+            echo "::error::Docker Compose v${COMPOSE_MIN}+ required for !override tag, found v${compose_version}"
+            exit 1
+          fi
+          echo "Docker Compose v${compose_version} >= v${COMPOSE_MIN} ✓"
 
       - name: Start rootless Docker daemon
         run: |
@@ -321,6 +335,37 @@ jobs:
 
           docker info --format '{{json .SecurityOptions}}' | tee "$RUNNER_TEMP/rootless-security-options.json"
           grep -qi rootless "$RUNNER_TEMP/rootless-security-options.json"
+
+      - name: Verify rootless works without docker group membership
+        run: |
+          set -euxo pipefail
+
+          # Remove the current user from the docker group to simulate a pure rootless
+          # environment where the user has no access to the rootful daemon socket.
+          sudo deluser "$USER" docker || true
+
+          # Use `sg` to drop the docker group from the current session's supplementary
+          # groups without requiring a full re-login. The inner shell inherits every
+          # group EXCEPT docker, which accurately models a non-docker-group user.
+          sg "$USER" -c '
+            set -euxo pipefail
+
+            # Confirm the docker group is no longer active.
+            if id -nG | tr " " "\n" | grep -qx docker; then
+              echo "::error::docker group is still active after deluser; cannot validate non-docker-group scenario."
+              exit 1
+            fi
+
+            # The rootless daemon must still be reachable via DOCKER_HOST.
+            docker info >/dev/null 2>&1
+            echo "Rootless Docker is reachable without docker group membership ✓"
+
+            # Validate compose config still parses correctly.
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+              config -q
+            echo "Compose config valid without docker group ✓"
+          '
 
       - name: Set CI-safe secrets for rootless production template
         run: |
