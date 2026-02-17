@@ -195,13 +195,13 @@ describe("User field maritalStatus", () => {
 
 		describe("marital status enum values", () => {
 			it.each([
-				["single", "single"],
-				["married", "married"],
-				["divorced", "divorced"],
-				["engaged", "engaged"],
-				["separated", "separated"],
-				["widowed", "widowed"],
-			])("returns '%s' maritalStatus", async (status, expected) => {
+				"single",
+				"married",
+				"divorced",
+				"engaged",
+				"separated",
+				"widowed",
+			])("returns '%s' maritalStatus", async (status) => {
 				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 					role: "regular",
 				});
@@ -217,7 +217,7 @@ describe("User field maritalStatus", () => {
 					ctx,
 				);
 
-				expect(result).toBe(expected);
+				expect(result).toBe(status);
 			});
 		});
 	});
