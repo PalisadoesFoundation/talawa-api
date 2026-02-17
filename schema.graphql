@@ -2598,7 +2598,7 @@ type Mutation {
   ): AuthenticationPayload
 
   """Mutation field to sign up to talawa."""
-  signUp(input: MutationSignUpInput!): AuthenticationPayload
+  signUp(input: MutationSignUpInput!): AuthenticationPayload @deprecated(reason: "Use REST POST /auth/signup")
 
   """Unassign a tag from a user within an organization."""
   unassignUserTag(assigneeId: ID!, tagId: ID!): Boolean
@@ -5238,7 +5238,7 @@ type Query {
   renewAuthenticationToken: String
 
   """Query field for a client to sign in to talawa."""
-  signIn(input: QuerySignInInput!): AuthenticationPayload
+  signIn(input: QuerySignInInput!): AuthenticationPayload @deprecated(reason: "Use REST POST /auth/signin")
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
