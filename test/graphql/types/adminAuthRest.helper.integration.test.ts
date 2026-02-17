@@ -10,6 +10,7 @@ import { getAdminAuthViaRest } from "../../helpers/adminAuthRest";
 import { server } from "../../server";
 
 suite("getAdminAuthViaRest helper", () => {
+	// TODO(PR 4b): Add error-path tests for getAdminAuthViaRest (non-200 status, missing ACCESS_TOKEN cookie, missing REFRESH_TOKEN cookie) with mocked server.inject; assert helper throws expected errors.
 	/** Refresh token from the last getAdminAuthViaRest call in this suite; revoked in afterEach. */
 	let lastRefreshToken: string | undefined;
 
@@ -22,11 +23,11 @@ suite("getAdminAuthViaRest helper", () => {
 
 	test("returns access token and cookies for valid admin credentials", async () => {
 		const result = await getAdminAuthViaRest(server);
+		lastRefreshToken = result.refreshToken;
 
 		expect(result.refreshToken).toBeDefined();
 		expect(typeof result.refreshToken).toBe("string");
 		expect(result.refreshToken.length).toBeGreaterThan(0);
-		lastRefreshToken = result.refreshToken;
 
 		expect(result.accessToken).toBeDefined();
 		expect(typeof result.accessToken).toBe("string");
