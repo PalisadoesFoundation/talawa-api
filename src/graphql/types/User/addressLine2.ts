@@ -6,8 +6,14 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
 /**
- * Resolver for the addressLine2 field on the User type.
+ * Resolver for the `addressLine2` field on the `User` type.
  * Checks authentication and authorization before returning the escaped value.
+ *
+ * @param parent - The parent `User` object containing the raw addressLine2 value.
+ * @param _args - The arguments for the field (unused).
+ * @param ctx - The GraphQL context containing the current client and Drizzle client.
+ * @returns The HTML-escaped addressLine2 string, or null if not set.
+ * @throws {TalawaGraphQLError} if the user is unauthenticated or unauthorized.
  */
 export const addressLine2Resolver = async (
 	parent: UserType,
