@@ -204,18 +204,3 @@ beforeEach(()=>{
             expect(ctx.log.error).toHaveBeenCalledWith(unknownError);
         });
 });
-//
-//});
-
-
-/*
-1- test  for unauth [1]
-2- test for non exist [1]
-3- test for non admin try to get anther user addres[1]
-4- test for  Successful data retrieval[1]
-5- test for null [1]
-6- test for undefined[1]
-7- test for admin retrive data[1]
-8- test for escape HTML [1]
-9- test for rest
-*/
