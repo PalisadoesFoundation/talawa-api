@@ -195,7 +195,6 @@ suite("User field homePhoneNumber", () => {
 		assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
 		const adminToken = adminSignIn.data.signIn.authenticationToken;
 
-		// Create user A (will be deleted)
 		const userA = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -215,7 +214,6 @@ suite("User field homePhoneNumber", () => {
 		const userAId = userA.data.createUser.user.id;
 		const userAToken = userA.data.createUser.authenticationToken;
 
-		// Create target user
 		const target = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -232,13 +230,11 @@ suite("User field homePhoneNumber", () => {
 		assertToBeNonNullish(target.data.createUser?.user?.id);
 		createdUserIds.push(target.data.createUser.user.id);
 
-		// Delete user A so it no longer exists
 		await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: { input: { id: userAId } },
 		});
 
-		// Try querying with deleted user's token
 		const result = await mercuriusClient.query(Query_user_homePhoneNumber, {
 			headers: { authorization: `bearer ${userAToken}` },
 			variables: { input: { id: target.data.createUser.user.id } },
@@ -246,6 +242,14 @@ suite("User field homePhoneNumber", () => {
 
 		expect(result.data.user).toEqual({ homePhoneNumber: null });
 		expect(result.errors).toBeDefined();
+		assertToBeNonNullish(result.errors);
+		expect(result.errors.length).toBeGreaterThan(0);
+
+		const error = result.errors[0];
+		assertToBeNonNullish(error);
+
+		expect(error.extensions.code).toBe("unauthenticated");
+		expect(error.path).toEqual(["user", "homePhoneNumber"]);
 	});
 
 	test('returns "unauthorized_action" when non-admin accesses another user', async () => {
@@ -261,7 +265,6 @@ suite("User field homePhoneNumber", () => {
 		assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
 		const adminToken = adminSignIn.data.signIn.authenticationToken;
 
-		// Create user A (requester)
 		const userA = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -279,7 +282,6 @@ suite("User field homePhoneNumber", () => {
 		assertToBeNonNullish(userA.data.createUser?.authenticationToken);
 		createdUserIds.push(userA.data.createUser.user.id);
 
-		// Create user B (target)
 		const userB = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -304,6 +306,14 @@ suite("User field homePhoneNumber", () => {
 		});
 
 		expect(result.data.user).toEqual({ homePhoneNumber: null });
-		expect(result.errors).toBeDefined();
+		assertToBeNonNullish(result.errors);
+		assertToBeNonNullish(result.errors);
+		expect(result.errors.length).toBeGreaterThan(0);
+
+		const error = result.errors[0];
+		assertToBeNonNullish(error);
+
+		expect(error.extensions.code).toBe("unauthorized_action");
+		expect(error.path).toEqual(["user", "homePhoneNumber"]);
 	});
 });
