@@ -246,6 +246,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y uidmap dbus-user-session slirp4netns fuse-overlayfs ca-certificates curl gnupg
 
+          # Ensure the Docker apt repo is configured so we can install/upgrade packages.
           if ! command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
             sudo install -m 0755 -d /etc/apt/keyrings
             if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
@@ -259,10 +260,13 @@ jobs:
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
             sudo apt-get update
-            sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
           fi
 
-          # The !override YAML tag requires Docker Compose v2.24.4+.
+          # Always install/upgrade rootless extras AND compose plugin.
+          # The !override YAML tag in compose.rootless.production.yaml requires
+          # Docker Compose v2.24.4+; the runner's pre-installed version may be older.
+          sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
+
           echo "Docker Compose version:"
           docker compose version
 
@@ -341,52 +345,81 @@ jobs:
         run: |
           set -euo pipefail
 
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
+
           echo "=== Docker Compose version ==="
           docker compose version
 
-          echo "=== Resolved compose config (services + healthchecks) ==="
-          docker compose --env-file ./envFiles/.env.rootless.production \
-            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
-            config --services
+          echo "=== Resolved compose config ==="
+          dc config -q
 
-          docker compose --env-file ./envFiles/.env.rootless.production \
-            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
-            up -d --build
+          # 1. Build all images first so build failures surface clearly.
+          dc build
 
-      - name: Wait for API to be healthy and reachable via Caddy
+          # 2. Start infrastructure (postgres, redis, minio) and wait for them.
+          echo "=== Starting infrastructure services ==="
+          dc up -d postgres redis minio
+          dc exec postgres pg_isready -U talawa --timeout=60 || true
+          echo "Infrastructure status:"
+          dc ps
+
+          # 3. Start API separately so we can capture its logs if it crashes.
+          echo "=== Starting API ==="
+          dc up -d api
+
+          # 4. Wait for API healthcheck.
+          api_id="$(dc ps -q api)"
+          TIMEOUT=120
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
+            # If the container exited, stop waiting immediately.
+            if [ "$(docker inspect -f '{{.State.Status}}' "$api_id" 2>/dev/null)" = "exited" ]; then
+              echo "::error::API container exited unexpectedly."
+              break
+            fi
+            echo "Waiting for API health... ($TIMEOUT s remaining)"
+            sleep 3
+            TIMEOUT=$((TIMEOUT - 3))
+          done
+
+          if [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" != "healthy" ]; then
+            echo "::error::API did not become healthy."
+            echo "=== API container state ==="
+            docker inspect -f '{{json .State}}' "$api_id" || true
+            echo ""
+            echo "=== API healthcheck log ==="
+            docker inspect -f '{{json .State.Health}}' "$api_id" || true
+            echo ""
+            echo "=== API application logs ==="
+            dc logs --tail 300 api
+            echo "=== All services ==="
+            dc ps
+            exit 1
+          fi
+
+          echo "API is healthy. Starting Caddy..."
+          dc up -d caddy
+
+      - name: Verify API reachable via Caddy
         run: |
           set -euo pipefail
 
-          api_id="$(docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps -q api)"
-          if [ -z "$api_id" ]; then
-            echo "::error::API container not found."
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
-            exit 1
-          fi
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
 
-          TIMEOUT=120
-          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id")" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
-            echo "Waiting for API health... ($TIMEOUT seconds remaining)"
-            sleep 2
-            TIMEOUT=$((TIMEOUT - 2))
-          done
-
-          if [ "$TIMEOUT" -le 0 ]; then
-            echo "::error::API did not become healthy in time."
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml logs --tail 200 api
-            exit 1
-          fi
-
-          http_port="$(docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml port caddy 80 | head -n 1 | awk -F: '{print $2}')"
+          http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')"
           if [ -z "$http_port" ]; then
             echo "::error::Failed to determine published HTTP port for Caddy."
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
+            dc ps
             exit 1
           fi
 
           echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
-          curl -fsS --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+          curl -fsS --retry 5 --retry-delay 3 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
 
       - name: Stop rootless production stack
         if: always()
