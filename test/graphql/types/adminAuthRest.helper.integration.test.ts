@@ -3,7 +3,7 @@
  * Uses shared server (test/server.ts) per project convention for test/graphql/types/.
  * Cleans up the refresh token created by getAdminAuthViaRest in afterEach.
  */
-import { afterEach, beforeEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import { revokeRefreshToken } from "~/src/services/auth";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { getAdminAuthViaRest } from "../../helpers/adminAuthRest";
@@ -12,10 +12,6 @@ import { server } from "../../server";
 suite("getAdminAuthViaRest helper", () => {
 	/** Refresh token from the last getAdminAuthViaRest call in this suite; revoked in afterEach. */
 	let lastRefreshToken: string | undefined;
-
-	beforeEach(() => {
-		// No setup required: uses existing admin credentials from server.envConfig.
-	});
 
 	afterEach(async () => {
 		if (lastRefreshToken) {
@@ -26,6 +22,10 @@ suite("getAdminAuthViaRest helper", () => {
 
 	test("returns access token and cookies for valid admin credentials", async () => {
 		const result = await getAdminAuthViaRest(server);
+
+		expect(result.refreshToken).toBeDefined();
+		expect(typeof result.refreshToken).toBe("string");
+		expect(result.refreshToken.length).toBeGreaterThan(0);
 		lastRefreshToken = result.refreshToken;
 
 		expect(result.accessToken).toBeDefined();

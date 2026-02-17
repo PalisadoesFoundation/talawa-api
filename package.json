@@ -140,7 +140,7 @@
     "setup": "tsx setup.ts",
     "upgrade_drizzle_metadata": "drizzle-kit up"
   },
-  "gql_tada_todo": "TODO: Restore --fail-on-warn in check_gql_tada and generate_gql_tada after GraphQL signIn/signUp migration is merged. Tracking: https://github.com/PalisadoesFoundation/talawa-api/issues",
+  "gql_tada_todo": "TODO: Restore --fail-on-warn in check_gql_tada and generate_gql_tada after GraphQL signIn/signUp migration. Tracking: https://github.com/PalisadoesFoundation/talawa-api/issues/4129",
   "type": "module",
   "version": "1.0.0"
 }
