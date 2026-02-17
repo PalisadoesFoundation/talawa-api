@@ -10,8 +10,8 @@ vi.mock("scripts/setup/promptHelpers", () => ({
 }));
 
 describe("Setup -> minioSetup", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
+	afterEach(() => {
+		vi.restoreAllMocks();
 		delete process.env.MINIO_ROOT_PASSWORD;
 	});
 
