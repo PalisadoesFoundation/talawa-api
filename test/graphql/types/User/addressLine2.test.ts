@@ -61,7 +61,6 @@ describe("User field addressLine2 resolver (unit)", () => {
 
 	it("throws unauthorized_action when non-admin accesses another user's addressLine2", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: currentUserId,
 			role: "regular",
 		});
 
@@ -79,7 +78,6 @@ describe("User field addressLine2 resolver (unit)", () => {
 
 	it("returns escaped addressLine2 when user accesses own data", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: currentUserId,
 			role: "regular",
 		});
 
@@ -90,7 +88,6 @@ describe("User field addressLine2 resolver (unit)", () => {
 
 	it("returns null when addressLine2 is null", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: currentUserId,
 			role: "regular",
 		});
 
@@ -104,9 +101,23 @@ describe("User field addressLine2 resolver (unit)", () => {
 		expect(result).toBeNull();
 	});
 
+	it("returns null when addressLine2 is undefined", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "regular",
+		});
+
+		const parentWithUndefined = {
+			...parent,
+			addressLine2: undefined,
+		} as UserType; // partial UserType for testing
+
+		const result = await addressLine2Resolver(parentWithUndefined, {}, ctx);
+
+		expect(result).toBeNull();
+	});
+
 	it("returns escaped addressLine2 when admin accesses another user's data", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: currentUserId,
 			role: "administrator",
 		});
 
@@ -123,7 +134,6 @@ describe("User field addressLine2 resolver (unit)", () => {
 
 	it("escapes HTML characters in addressLine2 to prevent XSS", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: currentUserId,
 			role: "regular",
 		});
 

@@ -48,7 +48,7 @@ export const addressLine2Resolver = async (
 			});
 		}
 
-		return escapeHTML(parent.addressLine2);
+		return escapeHTML(parent.addressLine2) ?? null;
 	} catch (error) {
 		if (error instanceof TalawaGraphQLError) {
 			throw error;
