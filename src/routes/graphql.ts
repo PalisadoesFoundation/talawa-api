@@ -27,7 +27,11 @@ import {
 } from "../utilities/errors/errorCodes";
 import { normalizeError } from "../utilities/errors/errorTransformer";
 import { complexityLeakyBucket } from "../utilities/leakyBucket";
-import { type AppLogger, withFields } from "../utilities/logging/logger";
+import {
+	type AppLogger,
+	rootLogger,
+	withFields,
+} from "../utilities/logging/logger";
 import {
 	isPerformanceTracker,
 	type PerformanceTracker,
@@ -147,7 +151,14 @@ export const createContext: CreateContext = async (initialContext) => {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (_headerError) {
+	} catch (headerError) {
+		if (request?.log?.debug) {
+			request.log.debug(
+				{ err: headerError },
+				"Authorization token verification failed; falling back to cookie auth",
+			);
+		}
+
 		// If no Authorization header, try to get token from cookie (web clients)
 		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 		if (accessTokenFromCookie) {
@@ -160,7 +171,13 @@ export const createContext: CreateContext = async (initialContext) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (_cookieError) {
+			} catch (cookieError) {
+				if (request?.log?.debug) {
+					request.log.debug(
+						{ err: cookieError },
+						"Cookie token verification failed; treating request as unauthenticated",
+					);
+				}
 				currentClient = {
 					isAuthenticated: false,
 				};
@@ -230,7 +247,7 @@ export const createContext: CreateContext = async (initialContext) => {
 
 	return {
 		cache: request.perf
-			? metricsCacheProxy(fastify.cache, request.perf)
+			? metricsCacheProxy(fastify.cache, request.perf, opLogger)
 			: fastify.cache,
 		currentClient,
 		dataloaders: createDataloaders(
@@ -319,8 +336,11 @@ export function extractZodMessage(
 				return zodMessage;
 			}
 		}
-	} catch {
-		// ignore parsing errors
+	} catch (parseError) {
+		rootLogger.debug(
+			{ err: parseError },
+			"Failed to parse validation details; falling back to public error message",
+		);
 	}
 
 	// Fallback: Check for Zod patterns in original error messages
@@ -859,7 +879,13 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (_error) {
+			} catch (authError) {
+				if (request?.log?.debug) {
+					request.log.debug(
+						{ err: authError },
+						"JWT verification failed during preExecution; using unauthenticated rate limits",
+					);
+				}
 				currentClient = {
 					isAuthenticated: false,
 				};

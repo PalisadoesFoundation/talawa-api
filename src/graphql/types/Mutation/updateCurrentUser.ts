@@ -11,6 +11,11 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -143,7 +148,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 					}
 				: null;
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const updateResult = await tx
 					.update(usersTable)
 					.set({
@@ -219,6 +224,17 @@ builder.mutationField("updateCurrentUser", (t) =>
 
 				return updatedCurrentUser;
 			});
+
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "user", currentUserId),
+					invalidateEntityLists(ctx.cache, "user"),
+				],
+				"user",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: User,
 	}),
