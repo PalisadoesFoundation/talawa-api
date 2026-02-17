@@ -40,5 +40,11 @@ suite("getAdminAuthViaRest helper", () => {
 		);
 		expect(accessCookie).toBeDefined();
 		expect(accessCookie?.value).toBe(result.accessToken);
+
+		const refreshCookie = result.cookies.find(
+			(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+		);
+		expect(refreshCookie).toBeDefined();
+		expect(refreshCookie?.value).toBe(result.refreshToken);
 	});
 });
