@@ -67,8 +67,9 @@ describe("Setup -> sharedSetup", () => {
 			expect(mockExit).toHaveBeenCalledTimes(1);
 		});
 
+
 		it("should use default exit (process.exit) when no exit function provided", async () => {
-			// Since vitest intercepts process.exit, we just verify the function throws
+			// Vitest automatically intercepts process.exit and throws, so we verify the function throws
 			await expect(
 				handlePromptError(new Error("Test error")),
 			).rejects.toThrow();
@@ -103,7 +104,7 @@ describe("Setup -> sharedSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await expect(
 				handlePromptError(new Error("Test error"), mockExit),

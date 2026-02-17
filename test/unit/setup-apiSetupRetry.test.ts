@@ -31,12 +31,25 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			// Set existing password
 			process.env.MINIO_ROOT_PASSWORD = "correct_password";
 
-			// Mock user providing correct password on first try
-			mockPromptInput.mockResolvedValue("correct_password");
+			// Use name-based mocking to provide realistic responses for each prompt
+			mockPromptInput.mockImplementation((name: string) => {
+				if (name === "API_MINIO_SECRET_KEY") return Promise.resolve("correct_password");
+				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				if (name === "API_HOST") return Promise.resolve("localhost");
+				if (name === "API_PORT") return Promise.resolve("4000");
+				if (name === "API_SMTP_PROVIDER") return Promise.resolve("gmail");
+				if (name === "API_JWT_SECRET") return Promise.resolve("testsecret123");
+				if (name === "API_JWT_REFRESH_SECRET") return Promise.resolve("refreshsecret123");
+				if (name === "API_POSTGRES_PASSWORD") return Promise.resolve("postgres_pass");
+				if (name === "API_POSTGRES_USER") return Promise.resolve("talawa");
+				return Promise.resolve("");
+			});
 
 			await apiSetup(answers);
 
 			expect(answers.API_MINIO_SECRET_KEY).toBe("correct_password");
+			expect(answers.API_BASE_URL).toBe("http://localhost:4000");
+			expect(answers.API_JWT_SECRET).toBeDefined();
 		});
 
 		it("should throw error after 3 failed MinIO password attempts", async () => {
@@ -46,26 +59,33 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			// Set existing password
 			process.env.MINIO_ROOT_PASSWORD = "correct_password";
 
-			// Mock user providing wrong password 3 times
-			mockPromptInput
-				.mockResolvedValueOnce("wrong1")
-				.mockResolvedValueOnce("wrong2")
-				.mockResolvedValueOnce("wrong3");
+			// Use name-based mocking: return wrong passwords specifically for MinIO prompt
+			let minioCallCount = 0;
+			mockPromptInput.mockImplementation((name: string) => {
+				if (name === "API_MINIO_SECRET_KEY") {
+					minioCallCount++;
+					if (minioCallCount === 1) return Promise.resolve("wrong1");
+					if (minioCallCount === 2) return Promise.resolve("wrong2");
+					if (minioCallCount === 3) return Promise.resolve("wrong3");
+				}
+				// Provide defaults for other prompts so they complete
+				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				if (name === "API_PORT") return Promise.resolve("4000");
+				if (name === "API_POSTGRES_PASSWORD") return Promise.resolve("pass");
+				if (name === "API_POSTGRES_USER") return Promise.resolve("talawa");
+				return Promise.resolve("");
+			});
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => {});
-			// Mock console.error to suppress error output
+				.mockImplementation(() => { });
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
-			// The error will be caught by handlePromptError which calls process.exit
-			// Vitest intercepts process.exit and throws, so we just verify it throws
 			await expect(apiSetup(answers)).rejects.toThrow();
 
 			// The loop runs: first wrong attempt (warn), second wrong attempt (warn), third attempt throws
-			// So we get 2 warnings, not 3
 			expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
 			consoleWarnSpy.mockRestore();
 			consoleErrorSpy.mockRestore();
@@ -78,17 +98,24 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			// Set existing password
 			process.env.MINIO_ROOT_PASSWORD = "correct_password";
 
-			// Mock user typing wrong password then 'exit'
-			mockPromptInput
-				.mockResolvedValueOnce("wrong_password")
-				.mockResolvedValueOnce("exit");
+			// Use name-based mocking: wrong password then 'exit' specifically for MinIO prompt
+			let minioCallCount = 0;
+			mockPromptInput.mockImplementation((name: string) => {
+				if (name === "API_MINIO_SECRET_KEY") {
+					minioCallCount++;
+					if (minioCallCount === 1) return Promise.resolve("wrong_password");
+					return Promise.resolve("exit");
+				}
+				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				return Promise.resolve("");
+			});
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -103,17 +130,24 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			// Set existing password
 			process.env.MINIO_ROOT_PASSWORD = "correct_password";
 
-			// Mock user typing wrong password then 'EXIT' (uppercase)
-			mockPromptInput
-				.mockResolvedValueOnce("wrong_password")
-				.mockResolvedValueOnce("EXIT");
+			// Use name-based mocking: wrong password then 'EXIT' specifically for MinIO prompt
+			let minioCallCount = 0;
+			mockPromptInput.mockImplementation((name: string) => {
+				if (name === "API_MINIO_SECRET_KEY") {
+					minioCallCount++;
+					if (minioCallCount === 1) return Promise.resolve("wrong_password");
+					return Promise.resolve("EXIT");
+				}
+				if (name === "API_BASE_URL") return Promise.resolve("http://localhost:4000");
+				return Promise.resolve("");
+			});
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -165,10 +199,10 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -196,10 +230,10 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await expect(apiSetup(answers)).rejects.toThrow();
 
@@ -220,7 +254,7 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await apiSetup(answers);
 
@@ -247,7 +281,7 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			await apiSetup(answers);
 

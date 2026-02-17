@@ -1,7 +1,7 @@
 vi.mock("inquirer");
 
 import type { SetupAnswers } from "scripts/setup/services/sharedSetup";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock promptInput
 const mockPromptInput = vi.fn();
@@ -10,6 +10,10 @@ vi.mock("scripts/setup/promptHelpers", () => ({
 }));
 
 describe("Setup -> minioSetup", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 		delete process.env.MINIO_ROOT_PASSWORD;
@@ -22,10 +26,10 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleWarnSpy = vi
 				.spyOn(console, "warn")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			// Mock responses: browser, api_ip, api_port, console_ip, console_port (same), console_port (different), root_password, root_user
 			mockPromptInput
@@ -56,7 +60,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			mockPromptInput
 				.mockResolvedValueOnce("off") // MINIO_BROWSER
@@ -83,7 +87,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			mockPromptInput
 				.mockResolvedValueOnce("off") // MINIO_BROWSER
@@ -112,7 +116,7 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleLogSpy = vi
 				.spyOn(console, "log")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			mockPromptInput
 				.mockResolvedValueOnce("off") // MINIO_BROWSER
@@ -141,10 +145,12 @@ describe("Setup -> minioSetup", () => {
 
 			const consoleErrorSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
+			// Vitest automatically intercepts process.exit and throws
 			await expect(minioSetup(answers)).rejects.toThrow();
 
+			expect(consoleErrorSpy).toHaveBeenCalled();
 			consoleErrorSpy.mockRestore();
 		});
 	});
