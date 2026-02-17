@@ -37,9 +37,7 @@ describe("User.countryCode resolver", () => {
 			countryCode: "us",
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-			undefined,
-		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		await expect(
 			UserCountryCodeResolver(parent as UserType, {}, context),
@@ -50,6 +48,10 @@ describe("User.countryCode resolver", () => {
 				}),
 			}),
 		);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should throw 'unauthorized_action' error if regular user accesses another user's countryCode", async () => {
@@ -70,6 +72,10 @@ describe("User.countryCode resolver", () => {
 				}),
 			}),
 		);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return countryCode if user is administrator", async () => {
@@ -87,6 +93,10 @@ describe("User.countryCode resolver", () => {
 			context,
 		);
 		expect(result).toBe("us");
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return countryCode if user accesses their own data", async () => {
@@ -104,6 +114,10 @@ describe("User.countryCode resolver", () => {
 			context,
 		);
 		expect(result).toBe("gb");
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 
 	it("should return null when countryCode is null", async () => {
@@ -121,5 +135,9 @@ describe("User.countryCode resolver", () => {
 			context,
 		);
 		expect(result).toBeNull();
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledOnce();
 	});
 });
