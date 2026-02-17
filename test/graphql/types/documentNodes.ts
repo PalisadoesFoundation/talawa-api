@@ -401,6 +401,13 @@ export const Query_user_emailAddress =
     }
 }`);
 
+export const Query_user_maritalStatus =
+	gql(`query Query_user_maritalStatus($input: QueryUserInput!) {
+    user(input: $input) {
+        maritalStatus
+    }
+}`);
+
 export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
