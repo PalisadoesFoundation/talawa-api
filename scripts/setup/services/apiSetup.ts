@@ -2,6 +2,14 @@ import { promptInput, promptList } from "../promptHelpers";
 import { generateJwtSecret, validatePort, validateURL } from "../validators";
 import { handlePromptError, type SetupAnswers } from "./sharedSetup";
 
+/**
+ * Configures API-specific environment variables for the Talawa API.
+ * Prompts the user for API base URL, port, email provider settings, MinIO credentials,
+ * and PostgreSQL credentials with password validation and synchronization.
+ *
+ * @param answers - The setup answers object containing configuration values
+ * @returns Promise resolving to the updated SetupAnswers with API configuration
+ */
 export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
 		answers.API_BASE_URL = await promptInput(
@@ -143,6 +151,9 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			const MAX_RETRIES = 3;
 			let attempts = 0;
 			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
+				if (answers.API_MINIO_SECRET_KEY?.toLowerCase() === "exit") {
+					throw new Error("Setup cancelled by user.");
+				}
 				attempts++;
 				if (attempts >= MAX_RETRIES) {
 					throw new Error(
@@ -158,10 +169,6 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"Minio secret key:",
 					minioPassword, // Use configured password as default
 				);
-
-				if (answers.API_MINIO_SECRET_KEY?.toLowerCase() === "exit") {
-					throw new Error("Setup cancelled by user.");
-				}
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
 		} else {
@@ -210,6 +217,9 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			const MAX_RETRIES = 3;
 			let attempts = 0;
 			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
+				if (answers.API_POSTGRES_PASSWORD?.toLowerCase() === "exit") {
+					throw new Error("Setup cancelled by user.");
+				}
 				attempts++;
 				if (attempts >= MAX_RETRIES) {
 					throw new Error(
@@ -225,10 +235,6 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"Postgres password:",
 					postgresPasswordLocal, // Use configured password as default
 				);
-
-				if (answers.API_POSTGRES_PASSWORD?.toLowerCase() === "exit") {
-					throw new Error("Setup cancelled by user.");
-				}
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
 		} else {
@@ -265,6 +271,9 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		);
 	} catch (err) {
 		await handlePromptError(err);
+		// handlePromptError calls process.exit and never returns,
+		// but throw here satisfies TypeScript and guards against mocked exits
+		throw err;
 	}
 	return answers;
 }

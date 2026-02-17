@@ -131,12 +131,8 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			process.env.POSTGRES_PASSWORD = "pg_correct";
 
 			// Mock user providing correct password on first try
-			let callCount = 0;
-			mockPromptInput.mockImplementation(() => {
-				callCount++;
-				// Return correct password for Postgres prompts
-				if (callCount >= 5) {
-					// After MinIO prompts
+			mockPromptInput.mockImplementation((name: string) => {
+				if (name === "API_POSTGRES_PASSWORD") {
 					return Promise.resolve("pg_correct");
 				}
 				return Promise.resolve("default_value");
@@ -155,15 +151,14 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			process.env.POSTGRES_PASSWORD = "pg_correct";
 
 			// Mock various inputs, with wrong Postgres passwords
-			let callCount = 0;
-			mockPromptInput.mockImplementation(() => {
-				callCount++;
-				// For Postgres password prompts (after MinIO setup)
-				if (callCount >= 5) {
-					// Return wrong passwords
-					if (callCount === 5) return Promise.resolve("wrong1");
-					if (callCount === 6) return Promise.resolve("wrong2");
-					if (callCount === 7) return Promise.resolve("wrong3");
+			let postgresAttempt = 0;
+			mockPromptInput.mockImplementation((name: string) => {
+				// For Postgres password prompts
+				if (name === "API_POSTGRES_PASSWORD") {
+					postgresAttempt++;
+					if (postgresAttempt === 1) return Promise.resolve("wrong1");
+					if (postgresAttempt === 2) return Promise.resolve("wrong2");
+					if (postgresAttempt === 3) return Promise.resolve("wrong3");
 				}
 				return Promise.resolve("default_value");
 			});
@@ -189,12 +184,12 @@ describe("Setup -> apiSetup -> Password Retry Limits", () => {
 			process.env.POSTGRES_PASSWORD = "pg_correct";
 
 			// Mock inputs with 'exit' for Postgres
-			let callCount = 0;
-			mockPromptInput.mockImplementation(() => {
-				callCount++;
-				if (callCount >= 5) {
-					if (callCount === 5) return Promise.resolve("wrong");
-					if (callCount === 6) return Promise.resolve("exit");
+			let postgresAttempt = 0;
+			mockPromptInput.mockImplementation((name: string) => {
+				if (name === "API_POSTGRES_PASSWORD") {
+					postgresAttempt++;
+					if (postgresAttempt === 1) return Promise.resolve("wrong");
+					if (postgresAttempt === 2) return Promise.resolve("exit");
 				}
 				return Promise.resolve("default_value");
 			});

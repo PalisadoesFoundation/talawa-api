@@ -1,7 +1,7 @@
 vi.mock("inquirer");
 
 import type { SetupAnswers } from "scripts/setup/services/sharedSetup";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Mock promptInput
 const mockPromptInput = vi.fn();
@@ -13,10 +13,6 @@ describe("Setup -> minioSetup", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 		delete process.env.MINIO_ROOT_PASSWORD;
-	});
-
-	afterEach(() => {
-		vi.restoreAllMocks();
 	});
 
 	describe("Port Conflict Detection", () => {
@@ -133,6 +129,23 @@ describe("Setup -> minioSetup", () => {
 			);
 
 			consoleLogSpy.mockRestore();
+		});
+	});
+
+	describe("Error Handling", () => {
+		it("should handle prompt errors", async () => {
+			const { minioSetup } = await import("scripts/setup/services/minioSetup");
+			const answers: SetupAnswers = { CI: "true" };
+
+			mockPromptInput.mockRejectedValueOnce(new Error("prompt failed"));
+
+			const consoleErrorSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			await expect(minioSetup(answers)).rejects.toThrow();
+
+			consoleErrorSpy.mockRestore();
 		});
 	});
 });

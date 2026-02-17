@@ -1,3 +1,5 @@
+// Note: vi.mock calls are hoisted by vitest and execute before imports,
+// so the order here (vi.mock before vi import) is intentional and works correctly
 vi.mock("inquirer");
 
 import type { SetupAnswers } from "scripts/setup/services/sharedSetup";
@@ -41,6 +43,9 @@ describe("Setup -> administratorSetup", () => {
 	});
 
 	it("should handle prompt errors", async () => {
+		const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
 		const { administratorEmail } = await import(
 			"scripts/setup/services/administratorSetup"
 		);
@@ -54,5 +59,6 @@ describe("Setup -> administratorSetup", () => {
 		await expect(administratorEmail(answers)).rejects.toThrow();
 
 		consoleErrorSpy.mockRestore();
+		exitSpy.mockRestore();
 	});
 });

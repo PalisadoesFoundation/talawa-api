@@ -87,5 +87,34 @@ describe("Setup -> sharedSetup", () => {
 
 			expect(mockExit).toHaveBeenCalledWith(1);
 		});
+
+		it("should attempt restore when backup is created", async () => {
+			const mockExit = vi.fn(() => {
+				throw new Error("Exit called");
+			}) as never;
+
+			// Mock the atomicRestoreBackup function
+			const mockAtomicRestore = vi.fn().mockResolvedValue(undefined);
+			vi.doMock("../AtomicEnvWriter", () => ({
+				restoreBackup: mockAtomicRestore,
+			}));
+
+			setBackupCreated(true);
+
+			const consoleLogSpy = vi
+				.spyOn(console, "log")
+				.mockImplementation(() => {});
+
+			await expect(
+				handlePromptError(new Error("Test error"), mockExit),
+			).rejects.toThrow("Exit called");
+
+			expect(mockExit).toHaveBeenCalledWith(1);
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Original configuration restored"),
+			);
+
+			consoleLogSpy.mockRestore();
+		});
 	});
 });

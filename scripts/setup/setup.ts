@@ -39,6 +39,7 @@ export {
 } from "./services/sharedSetup";
 
 // Service imports
+import { administratorEmail } from "./services/administratorSetup";
 import { apiSetup } from "./services/apiSetup";
 import { caddySetup } from "./services/caddySetup";
 import { setCI } from "./services/ciSetup";
@@ -444,7 +445,8 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 }
 // The implementations for setup functions like setCI, apiSetup, etc.,
 // have been moved to their respective service modules in scripts/setup/services/.
-// Only their exports remain here for backward compatibility.
+// Re-exports for the public API surface and list of re-exported symbols like setCI
+// and apiSetup are kept here so it's clear which modules are part of the public interface.
 
 export async function reCaptchaSetup(
 	answers: SetupAnswers,
