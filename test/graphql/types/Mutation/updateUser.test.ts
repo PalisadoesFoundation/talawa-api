@@ -273,7 +273,6 @@ suite("Mutation field updateUser", () => {
 	    		length of the value of the argument "input.city" is less than 1.
 	    		length of the value of the argument "input.description" is less than 1.
 	    		length of the value of the argument "input.name" is less than 1.
-	    		length of the value of the argument "input.password" is less than 1.
 	    		length of the value of the argument "input.postalCode" is less than 1.
 	    		length of the value of the argument "input.state" is less than 1.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -327,7 +326,6 @@ suite("Mutation field updateUser", () => {
 								description: "",
 								id: createUserResult.data.createUser.user.id,
 								name: "",
-								password: "",
 								postalCode: "",
 								state: "",
 							},
@@ -365,10 +363,6 @@ suite("Mutation field updateUser", () => {
 										message: expect.any(String),
 									},
 									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-									{
 										argumentPath: ["input", "postalCode"],
 										message: expect.any(String),
 									},
@@ -390,7 +384,6 @@ suite("Mutation field updateUser", () => {
 	    		length of the value of the argument "input.city" is more than 64.
 	    		length of the value of the argument "input.description" is more than 2048.
 	    		length of the value of the argument "input.name" is more than 256.
-	    		length of the value of the argument "input.password" is more than 64.
 	    		length of the value of the argument "input.postalCode" is more than 32.
 	    		length of the value of the argument "input.state" is more than 64.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -444,7 +437,6 @@ suite("Mutation field updateUser", () => {
 								description: `description${faker.string.alpha(2049)}`,
 								id: createUserResult.data.createUser.user.id,
 								name: `name${faker.string.alpha(257)}`,
-								password: `password${faker.string.alpha(65)}`,
 								postalCode: `postalCode${faker.string.alpha(33)}`,
 								state: `state${faker.string.alpha(65)}`,
 							},
@@ -482,10 +474,6 @@ suite("Mutation field updateUser", () => {
 										message: expect.any(String),
 									},
 									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-									{
 										argumentPath: ["input", "postalCode"],
 										message: expect.any(String),
 									},
@@ -505,7 +493,6 @@ suite("Mutation field updateUser", () => {
 			test(`value of the argument "input.emailAddress" is "null".
 				value of the argument "input.isEmailAddressVerified" is "null".
 				value of the argument "input.name" is "null".
-				value of the argument "input.password" is "null".
 				value of the argument "input.role" is "null".`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
@@ -556,7 +543,6 @@ suite("Mutation field updateUser", () => {
 								id: createUserResult.data.createUser.user.id,
 								isEmailAddressVerified: null,
 								name: null,
-								password: null,
 								role: null,
 							},
 						},
@@ -582,10 +568,6 @@ suite("Mutation field updateUser", () => {
 									},
 									{
 										argumentPath: ["input", "name"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "password"],
 										message: expect.any(String),
 									},
 									{
@@ -654,6 +636,12 @@ suite("Mutation field updateUser", () => {
 				});
 				expect(result.data).toBeNull();
 				expect(result.errors).toBeDefined();
+
+				// cleanup
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
 			});
 		},
 	);
@@ -975,7 +963,6 @@ suite("Mutation field updateUser", () => {
 						mobilePhoneNumber: null,
 						name: "new name",
 						natalSex: null,
-						password: "new password",
 						postalCode: null,
 						role: "administrator",
 						state: null,
@@ -1024,7 +1011,7 @@ suite("Mutation field updateUser", () => {
 				);
 			});
 
-			test("should update user successfully when password is not provided", async () => {
+			test("should update user successfully when optional fields are omitted", async () => {
 				const signIn = await mercuriusClient.query(Query_signIn, {
 					variables: {
 						input: {
@@ -1074,6 +1061,11 @@ suite("Mutation field updateUser", () => {
 				assertToBeNonNullish(result.data.updateUser);
 
 				expect(result.data.updateUser.name).toBe("updated name");
+
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
 			});
 		},
 	);
