@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 ##############################################################################
 # Talawa - Shared Package Manager Library
@@ -13,7 +12,7 @@ set -euo pipefail
 # Depends on:
 #   - os-detection.sh
 #   - logging.sh
-#   - validation.sh (for run_cmd + helpers)
+#   - validation.sh
 ##############################################################################
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,15 +39,45 @@ _require_package_name() {
     return 0
 }
 
+# Return codes:
+#   0 -> sudo required and available
+#   1 -> already root (no sudo needed)
+#   2 -> not root and sudo unavailable (fatal)
 _use_sudo() {
-    if [ "$(id -u)" -ne 0 ]; then
-        if command_exists sudo; then
-            return 0
-        fi
-        error "Root privileges required but sudo is not available"
+    if [ "$(id -u)" -eq 0 ]; then
         return 1
     fi
-    return 1
+
+    if command_exists sudo; then
+        return 0
+    fi
+
+    return 2
+}
+
+_run_privileged() {
+    local sudo_status
+    _use_sudo
+    sudo_status=$?
+
+    case "${sudo_status}" in
+        0)
+            run_cmd sudo "$@"
+            ;;
+        1)
+            run_cmd "$@"
+            ;;
+        2)
+            error "Root privileges required but sudo is not available"
+            return 1
+            ;;
+        *)
+            error "Unexpected privilege escalation state"
+            return 1
+            ;;
+    esac
+
+    return $?
 }
 
 _pm_cmd() {
@@ -89,7 +118,7 @@ get_package_manager() {
 }
 
 update_package_index() {
-    local pm
+    local pm status=0
     pm="$(_pm_cmd)"
 
     if [ "${pm}" = "unknown" ]; then
@@ -101,41 +130,35 @@ update_package_index() {
 
     case "${pm}" in
         apt)
-            if _use_sudo; then
-                run_cmd sudo apt-get update -y
-            else
-                run_cmd apt-get update -y
-            fi
+            _run_privileged apt-get update -y
+            status=$?
             ;;
         dnf)
-            if _use_sudo; then
-                run_cmd sudo dnf makecache -y
-            else
-                run_cmd dnf makecache -y
-            fi
+            _run_privileged dnf makecache -y
+            status=$?
             ;;
         yum)
-            if _use_sudo; then
-                run_cmd sudo yum makecache -y
-            else
-                run_cmd yum makecache -y
-            fi
+            _run_privileged yum makecache -y
+            status=$?
             ;;
         pacman)
-            if _use_sudo; then
-                run_cmd sudo pacman -Sy --noconfirm
-            else
-                run_cmd pacman -Sy --noconfirm
-            fi
+            _run_privileged pacman -Sy --noconfirm
+            status=$?
             ;;
         brew)
             run_cmd brew update
+            status=$?
             ;;
         *)
             error "Unsupported package manager: ${pm}"
             return 1
             ;;
     esac
+
+    if [ "${status}" -ne 0 ]; then
+        error "Failed to update package index using ${pm}"
+        return "${status}"
+    fi
 
     success "Package index updated"
     return 0
@@ -150,7 +173,7 @@ is_package_installed() {
 
     case "${pm}" in
         apt)
-            dpkg -s "${pkg}" >/dev/null 2>&1
+            dpkg-query -W -f='${db:Status-Status}' "${pkg}" 2>/dev/null | grep -q '^installed$'
             ;;
         dnf|yum)
             rpm -q "${pkg}" >/dev/null 2>&1
@@ -162,7 +185,8 @@ is_package_installed() {
             brew list --versions "${pkg}" >/dev/null 2>&1
             ;;
         *)
-            return 1
+            error "Unknown package manager: ${pm}"
+            return 2
             ;;
     esac
 }
@@ -171,7 +195,7 @@ install_package() {
     local pkg="${1:-}"
     _require_package_name "${pkg}" || return 1
 
-    local pm
+    local pm status=0
     pm="$(_pm_cmd)"
 
     if [ "${pm}" = "unknown" ]; then
@@ -188,41 +212,35 @@ install_package() {
 
     case "${pm}" in
         apt)
-            if _use_sudo; then
-                run_cmd sudo apt-get install -y "${pkg}"
-            else
-                run_cmd apt-get install -y "${pkg}"
-            fi
+            _run_privileged apt-get install -y "${pkg}"
+            status=$?
             ;;
         dnf)
-            if _use_sudo; then
-                run_cmd sudo dnf install -y "${pkg}"
-            else
-                run_cmd dnf install -y "${pkg}"
-            fi
+            _run_privileged dnf install -y "${pkg}"
+            status=$?
             ;;
         yum)
-            if _use_sudo; then
-                run_cmd sudo yum install -y "${pkg}"
-            else
-                run_cmd yum install -y "${pkg}"
-            fi
+            _run_privileged yum install -y "${pkg}"
+            status=$?
             ;;
         pacman)
-            if _use_sudo; then
-                run_cmd sudo pacman -S --noconfirm "${pkg}"
-            else
-                run_cmd pacman -S --noconfirm "${pkg}"
-            fi
+            _run_privileged pacman -S --noconfirm "${pkg}"
+            status=$?
             ;;
         brew)
             run_cmd brew install "${pkg}"
+            status=$?
             ;;
         *)
             error "Unsupported package manager: ${pm}"
             return 1
             ;;
     esac
+
+    if [ "${status}" -ne 0 ]; then
+        error "Failed to install ${pkg}"
+        return "${status}"
+    fi
 
     success "${pkg} installed successfully"
     return 0
