@@ -344,27 +344,38 @@ jobs:
           # environment where the user has no access to the rootful daemon socket.
           sudo deluser "$USER" docker || true
 
-          # Use `sg` to drop the docker group from the current session's supplementary
-          # groups without requiring a full re-login. The inner shell inherits every
-          # group EXCEPT docker, which accurately models a non-docker-group user.
-          # NOTE: `sg` invokes /bin/sh by default; wrap in `bash -c` so pipefail works.
-          sg "$USER" -c 'exec bash -euxo pipefail -c "
-            # Confirm the docker group is no longer active.
-            if id -nG | tr \" \" \"\\n\" | grep -qx docker; then
-              echo \"::error::docker group is still active after deluser; cannot validate non-docker-group scenario.\"
-              exit 1
-            fi
+          # Write test commands to a temp script so we can execute them in a
+          # fresh login shell that re-reads /etc/group via initgroups().
+          cat > "$RUNNER_TEMP/test-no-docker-group.sh" << 'TESTSCRIPT'
+          #!/usr/bin/env bash
+          set -euxo pipefail
 
-            # The rootless daemon must still be reachable via DOCKER_HOST.
-            docker info >/dev/null 2>&1
-            echo \"Rootless Docker is reachable without docker group membership ✓\"
+          # Confirm the docker group is no longer active.
+          if id -nG | tr " " "\n" | grep -qx docker; then
+            echo "::error::docker group is still active; cannot validate non-docker-group scenario."
+            exit 1
+          fi
 
-            # Validate compose config still parses correctly.
-            docker compose --env-file ./envFiles/.env.rootless.production \
-              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
-              config -q
-            echo \"Compose config valid without docker group ✓\"
-          "'
+          # The rootless daemon must still be reachable via DOCKER_HOST.
+          docker info >/dev/null 2>&1
+          echo "Rootless Docker is reachable without docker group membership ✓"
+
+          # Validate compose config still parses correctly.
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+          echo "Compose config valid without docker group ✓"
+          TESTSCRIPT
+          chmod +x "$RUNNER_TEMP/test-no-docker-group.sh"
+
+          # `su --login` calls initgroups() which re-reads /etc/group, so the
+          # docker supplementary group is actually dropped (unlike sg which
+          # only changes the effective GID). Pass required env vars explicitly.
+          sudo su --login "$USER" -c "\
+            export DOCKER_HOST='$DOCKER_HOST' \
+                   XDG_RUNTIME_DIR='$XDG_RUNTIME_DIR' \
+                   PATH='$PATH'; \
+            bash '$RUNNER_TEMP/test-no-docker-group.sh'"
 
       - name: Set CI-safe secrets for rootless production template
         run: |
