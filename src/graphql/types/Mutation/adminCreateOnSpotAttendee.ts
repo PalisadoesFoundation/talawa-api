@@ -361,7 +361,7 @@ builder.mutationField("adminCreateOnSpotAttendee", (t) =>
 					communityName: ctx.envConfig.API_COMMUNITY_NAME,
 					emailAddress: result.user.emailAddress,
 					temporaryPassword: parsedArgs.input.password,
-					loginLink: `${ctx.envConfig.FRONTEND_URL}/login`,
+					loginLink: `${ctx.envConfig.API_FRONTEND_URL}/login`,
 				};
 
 				emailService
