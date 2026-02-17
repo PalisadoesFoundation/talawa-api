@@ -1,4 +1,5 @@
 import fastifyPlugin from "fastify-plugin";
+import auth from "./auth";
 import backgroundWorkers from "./backgroundWorkers";
 import cacheService from "./cacheService";
 import drizzleClient from "./drizzleClient";
@@ -16,6 +17,7 @@ export const plugins = fastifyPlugin(async (fastify) => {
 	await fastify.register(drizzleClient);
 	await fastify.register(cacheService); // Register cache service (uses Redis from createServer)
 	await fastify.register(rateLimit); // Register rate limit plugin
+	await fastify.register(auth); // Sets request.currentUser from JWT; provides requireAuth()
 	await fastify.register(minioClient);
 	await fastify.register(oauthProviderRegistry); // Register OAuth provider registry
 	await fastify.register(pluginSystem); // Initialize plugin system after database

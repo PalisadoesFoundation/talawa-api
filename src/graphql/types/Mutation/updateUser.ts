@@ -1,4 +1,3 @@
-import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
@@ -186,10 +185,6 @@ builder.mutationField("updateUser", (t) =>
 						name: parsedArgs.input.name,
 						natalSex: parsedArgs.input.natalSex,
 						naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
-						passwordHash:
-							parsedArgs.input.password !== undefined
-								? await hash(parsedArgs.input.password)
-								: undefined,
 						postalCode: parsedArgs.input.postalCode,
 						state: parsedArgs.input.state,
 						role: parsedArgs.input.role,

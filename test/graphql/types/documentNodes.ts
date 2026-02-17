@@ -1052,6 +1052,18 @@ export const Mutation_updateAgendaItem = gql(`
   }
 `);
 
+export const Mutation_updateUserPassword = gql(`
+    mutation Mutation_updateUserPassword($input: MutationUpdateUserPasswordInput!) {
+      updateUserPassword(input: $input)
+  }
+`);
+
+export const Mutation_adminUpdateUserPassword = gql(`
+    mutation Mutation_adminUpdateUserPassword($input: MutationAdminUpdateUserPasswordInput!) {
+      adminUpdateUserPassword(input: $input)
+  }
+`);
+
 export const Mutation_deleteAgendaCategory = gql(`
   mutation Mutation_deleteAgendaCategory($input: MutationDeleteAgendaCategoryInput!) {
     deleteAgendaCategory(input: $input) {

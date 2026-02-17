@@ -194,7 +194,9 @@ jobs:
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check drizzle migrations
-        run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
+        run: |
+          JWT_SECRET=$(openssl rand -hex 32)
+          docker container run --env-file ./envFiles/.env.ci -e "API_JWT_SECRET=$JWT_SECRET" -e "API_AUTH_JWT_SECRET=$JWT_SECRET" talawa_api pnpm check_drizzle_migrations
 
   check_type_errors:
     name: Check type errors
@@ -475,23 +477,31 @@ jobs:
     name: Checks if sensitive files have been changed without authorization
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout centralized CI/CD scripts
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
+          repository: PalisadoesFoundation/.github
+          ref: main
+          path: .github-central
+      
+      - name: Make sensitive file checker executable
+        run: chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
 
       - name: Get PR labels
         id: check-labels
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -z "${{ github.event.pull_request.number }}" ]; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
           LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
-
           if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
             echo "::notice::Skipping sensitive files check due to 'ignore-sensitive-files-pr' label."
             echo "skip=true" >> $GITHUB_OUTPUT
@@ -499,127 +509,57 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Get Changed Unauthorized files
+      - name: Get changed files
+        id: sensitive-changed-files
         if: steps.check-labels.outputs.skip != 'true'
-        id: changed-unauth-files
+        env:
+          BASE_REF_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -e
+          set -euo pipefail
 
-          # Skip if not in PR context
-          if [ -z "${{ github.event.pull_request.base.sha }}" ]; then
-            echo "any_changed=false" >> $GITHUB_OUTPUT
+          if [ -z "$BASE_REF_SHA" ] || [ -z "$HEAD_REF_SHA" ]; then
+            echo "::error::Missing BASE_REF_SHA or HEAD_REF_SHA"
+            exit 1
+          fi
+
+          echo "Base SHA: $BASE_REF_SHA"
+          echo "Head SHA: $HEAD_REF_SHA"
+
+          BASE_SHA=$(git merge-base "$BASE_REF_SHA" "$HEAD_REF_SHA")
+          echo "Merge base: $BASE_SHA"
+
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_REF_SHA")
+
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "all_changed_files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "all_changed_files=$(echo "$ALL_CHANGED_FILES" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run sensitive files check
+        if: steps.check-labels.outputs.skip != 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.sensitive-changed-files.outputs.all_changed_files }}
+        run: |
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "No changed files. Skipping sensitive file check."
             exit 0
           fi
 
-          # Determine base and head commits for comparison
-          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
-          BASE_SHA=$(git merge-base "${{ github.event.pull_request.base.sha }}" "$HEAD_SHA" 2>&1) || {
-            echo "::error::Failed to find merge base between ${{ github.event.pull_request.base.sha }} and $HEAD_SHA" >&2
-            exit 1
-          }
-
-          # Verify BASE_SHA is not empty
-          if [ -z "$BASE_SHA" ]; then
-            echo "::error::BASE_SHA is empty after git merge-base command" >&2
-            exit 1
-          fi
-
-          # Define sensitive files patterns as a bash array
-          SENSITIVE_PATTERNS=(
-            '.coderabbit.yaml$'
-            '^.coderabbit/.*'            
-            'Caddyfile$'
-            'codegen.ts$'
-            '^Dockerfile.*'
-            '^docker/.*'
-            '^docker-compose.*'
-            '^drizzle_migrations/.*'
-            '^scripts/.*'
-            '.dockerignore$'
-            '.env.sample$'
-            '.env_test$'
-            'eslint.config.mjs$'
-            '^envFiles/.*'
-            '.gitignore$'
-            'init-mongo.sh$'
-            '.prettierignore$'
-            '.prettierrc.json$'
-            '.pylintrc$'
-            '^.github/.*'            
-            'biome.jsonc$'
-            'renovate.json$'
-            'requirements.txt$'
-            'schema.graphql$'
-            'CODEOWNERS$'
-            'LICENSE$'
-            'tsconfig.json$'
-            'vitest.config.ts$'
-            'vitest.*.config.ts$'
-            'codecov.yml$'
-            'pnpm-lock.yaml$'
-            'package.json$'
-            'package-lock.json$'
-            '.nojekyll$'
-            'knip.json$'
-            'docs/docusaurus.config.ts$'
-            '^docs/sidebar.*'
-            'setup.ts$'
-            '^src/graphql/types/Mutation/.*'
-            '^src/graphql/types/Query/.*'
-            'tsconfig.build.json$'
-            'vite.config.mts$'
-            'CNAME$'
-            'CODE_OF_CONDUCT.md$'
-            'CODE_STYLE.md$'
-            'CONTRIBUTING.md$'
-            'DOCUMENTATION.md$'
-            'INSTALLATION.md$'
-            'ISSUE_GUIDELINES.md$'
-            'PR_GUIDELINES.md$'
-            'README.md$'
-            '^./*md'
-            '^./*txt'
-            '^./*TXT'
-          )
-
-          # Check for changes in sensitive files
-          CHANGED_UNAUTH_FILES=""
-          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-            FILES=$(git diff --name-only --diff-filter=ACMRD "$BASE_SHA" "$HEAD_SHA" | grep -E "$pattern" || true)
-            if [ ! -z "$FILES" ]; then
-              CHANGED_UNAUTH_FILES="$CHANGED_UNAUTH_FILES $FILES"
-            fi
-          done
-
-          # Deduplicate and format output
-          # Convert to newline-separated, deduplicate, then rejoin as space-separated
-          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
-            CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
-          fi
-
-          echo "all_changed_files=$CHANGED_UNAUTH_FILES" >> $GITHUB_OUTPUT
-
-          # Check if any unauthorized files changed
-          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
-            echo "any_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "any_changed=false" >> $GITHUB_OUTPUT
-          fi
+          python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
+            --config .github/workflows/config/sensitive-files.txt \
+             --files $(set -f; echo $ALL_CHANGED_FILES)
 
       - name: List all changed unauthorized files
-        if: steps.changed-unauth-files.outputs.any_changed == 'true'
-        env:
-          CHANGED_UNAUTH_FILES: ${{ steps.changed-unauth-files.outputs.all_changed_files }}
+        if: steps.sensitive-check.outcome == 'failure'
         run: |
-          echo "::error::Unauthorized changes detected in sensitive files:"
-          echo ""
-          for file in $CHANGED_UNAUTH_FILES; do
-            echo "- $file"
-          done
+          echo "::error::Unauthorized changes detected in sensitive files."
           echo ""
           echo "To override:"
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
+
 
   Check-AutoDocs:
     needs: [Code-Quality-Checks]
@@ -691,6 +631,44 @@ jobs:
       - name: This job intentionally does nothing
         run: echo "This job intentionally does nothing"
 
+  Install-Script-Tests:
+    name: Run install script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [Pre-Test-Checks-Pass]
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      # simplecov 0.21.x pulls simplecov-html 0.11.0 which requires Ruby ~> 2.4; use
+      # a patched simplecov so we can use simplecov-html 0.12.3 (Ruby 3.2 compatible)
+      - name: Prepare simplecov for Ruby 3.2
+        run: |
+          mkdir -p tests/install/vendor
+          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git tests/install/vendor/simplecov
+          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' tests/install/vendor/simplecov/simplecov.gemspec
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: tests/install
+      - name: Run install script tests with coverage
+        working-directory: tests/install
+        run: |
+          chmod +x run-all.sh
+          bundle exec bashcov --root ../.. -- ./run-all.sh
+      # Upload only when coverage file exists so the install flag gets data and shows in Codecov
+      - name: Upload install coverage to Codecov
+        if: "!cancelled() && hashFiles('tests/install/coverage/coverage.xml') != ''"
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+          files: tests/install/coverage/coverage.xml
+          flags: install
+
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
     timeout-minutes: 10
@@ -706,7 +684,12 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
       - name: Create .env file for talawa api testing environment
-        run: cp ./envFiles/.env.ci ./.env
+        run: |
+          cp ./envFiles/.env.ci ./.env
+          echo "NODE_ENV=production" >> .env
+          JWT_SECRET=$(openssl rand -hex 32)
+          echo "API_JWT_SECRET=$JWT_SECRET" >> .env
+          echo "API_AUTH_JWT_SECRET=$JWT_SECRET" >> .env
       - name: Build talawa api compose testing environment
         run: docker compose build
       - name: Start test services (postgres-test, minio-test, redis-test, mailpit)
@@ -1072,24 +1055,22 @@ jobs:
 
       - name: Wait for Backend to be Ready
         run: |
-          echo "Waiting for backend at http://localhost:4000/healthcheck"
-
-          TIMEOUT=60
+          set -euo pipefail
+          echo "Waiting for backend at http://127.0.0.1:4000/healthcheck"
+          TIMEOUT=90
           INTERVAL=3
           ELAPSED=0
-
-          until docker exec talawa-api-1 curl -sf http://localhost:4000/healthcheck > /dev/null; do
+          until docker exec talawa-api-1 curl -sf http://127.0.0.1:4000/healthcheck >/dev/null; do
             if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
               echo "Backend failed to start within ${TIMEOUT}s"
-              echo "=== Backend container logs ==="
-              docker logs talawa-api-1 --tail 100
+              echo "=== Backend container logs (last 150 lines) ==="
+              docker logs talawa-api-1 --tail 150
               exit 1
             fi
             echo "Backend not ready yet... (${ELAPSED}s)"
             sleep $INTERVAL
             ELAPSED=$((ELAPSED + INTERVAL))
           done
-
           echo "Backend is up and responding"
 
       - name: Seed Sample Data
@@ -1152,35 +1133,55 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
+      - name: Resolve API container
+        id: api-container
+        run: |
+          API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E '\-api\-1$' | head -1 || true)
+          fi
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER="talawa-api-1"
+          fi
+          echo "name=$API_CONTAINER" >> "$GITHUB_OUTPUT"
+          echo "Resolved API container: $API_CONTAINER"
       - name: Install dependencies inside the container
-        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
-      - name: Start server and monitor logs
-        run: |
-          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
-          sleep 10
+        run: docker exec ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm install'
+      - name: Start server
+        run: docker exec -d ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm run start_development_server'
       - name: Wait for GraphQL endpoint to become available
-        if: always()
         run: |
-          echo "Waiting for the GraphQL endpoint to become available..."
-          for i in {1..60}; do
-            # Check if container exists first
-            if ! docker ps | grep -q talawa-api-1; then
-              echo "Container talawa-api-1 not found. Waiting..."
+          set -euo pipefail
+          API_CONTAINER="${{ steps.api-container.outputs.name }}"
+          echo "Waiting for the GraphQL endpoint to become available (container: $API_CONTAINER)..."
+          RESPONSE="Connection failed"
+          for i in $(seq 1 60); do
+            if ! docker exec "$API_CONTAINER" true 2>/dev/null; then
+              echo "Container $API_CONTAINER not found or not running. Waiting... (attempt $i/60)"
               sleep 2
               continue
             fi
-            docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
-              docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
-            }
-            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+            if ! docker exec "$API_CONTAINER" which curl >/dev/null 2>&1; then
+              docker exec "$API_CONTAINER" sh -c 'command -v wget >/dev/null || (apt-get update -qq && apt-get install -y -qq curl)' || true
+            fi
+            RESPONSE=$(docker exec "$API_CONTAINER" curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
             if echo "$RESPONSE" | grep -q '__typename'; then
               echo "GraphQL endpoint is available!"
               exit 0
             fi
-            echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
+            echo "GraphQL endpoint not ready (attempt $i/60). Retrying in 2 seconds..."
             sleep 2
           done
           echo "GraphQL endpoint did not become available within the expected time."
+          echo "=== Last response ==="
+          echo "${RESPONSE:-Connection failed}"
+          if docker exec "$API_CONTAINER" true 2>/dev/null; then
+            echo "=== Backend container logs (tail 80) ==="
+            docker logs "$API_CONTAINER" --tail 80
+          else
+            echo "=== Container $API_CONTAINER not running; docker ps -a ==="
+            docker ps -a
+          fi
           exit 1
       - name: Cleanup - Free ports by stopping containers
         if: always()
