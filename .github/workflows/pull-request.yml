@@ -259,8 +259,12 @@ jobs:
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
             sudo apt-get update
-            sudo apt-get install -y docker-ce-rootless-extras
+            sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
           fi
+
+          # The !override YAML tag requires Docker Compose v2.24.4+.
+          echo "Docker Compose version:"
+          docker compose version
 
       - name: Start rootless Docker daemon
         run: |
@@ -336,6 +340,15 @@ jobs:
       - name: Start rootless production stack
         run: |
           set -euo pipefail
+
+          echo "=== Docker Compose version ==="
+          docker compose version
+
+          echo "=== Resolved compose config (services + healthchecks) ==="
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config --services
+
           docker compose --env-file ./envFiles/.env.rootless.production \
             -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
             up -d --build
