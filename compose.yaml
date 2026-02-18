@@ -58,6 +58,7 @@ services:
       - API_IS_PINO_PRETTY=${API_IS_PINO_PRETTY:?error}
       - API_JWT_EXPIRES_IN=${API_JWT_EXPIRES_IN:?error}
       - API_JWT_SECRET=${API_JWT_SECRET:?error}
+      - API_AUTH_JWT_SECRET=${API_AUTH_JWT_SECRET:-}
       - API_LOG_LEVEL=${API_LOG_LEVEL:?error}
       - API_MINIO_ACCESS_KEY=${API_MINIO_ACCESS_KEY:?error}
       - API_MINIO_END_POINT=${API_MINIO_END_POINT:?error}
@@ -84,7 +85,7 @@ services:
       - API_RATE_LIMIT_REFILL_RATE=${API_RATE_LIMIT_REFILL_RATE:?error}
       - CI=${CI:?error}
       - NODE_ENV=${NODE_ENV:?error}
-      - FRONTEND_URL=${FRONTEND_URL:?error}
+      - API_FRONTEND_URL=${API_FRONTEND_URL:?error}
 
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
     # https://docs.docker.com/reference/compose-file/build/#publishing-built-images

@@ -32,5 +32,5 @@ The date before which all instances will be deleted.
 
 `Promise`\<\{ `instancesDeleted`: `number`; `organizationsAffected`: `number`; \}\>
 
-A promise that resolves to an object with the number of deleted instances
+- A promise that resolves to an object with the number of deleted instances
          and the number of affected organizations.

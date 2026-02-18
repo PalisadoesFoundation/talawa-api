@@ -1,9 +1,13 @@
-import { inArray } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { usersTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
+import {
+	type EventWithAttachments,
+	filterInviteOnlyEvents,
+} from "~/src/graphql/types/Query/eventQueries";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -12,39 +16,6 @@ type UserType = InferSelectModel<typeof usersTable>;
 const usersByIdsInputSchema = z.object({
 	ids: z.array(z.string().uuid()).min(1),
 });
-
-interface EventType {
-	id: string;
-	name: string;
-	description: string | null;
-	createdAt: Date;
-	updatedAt: Date | null;
-	creatorId: string | null;
-	updaterId: string | null;
-	startAt: Date;
-	endAt: Date;
-	organizationId: string;
-	allDay: boolean;
-	isPublic: boolean;
-	isRegisterable: boolean;
-	location: string | null;
-	isRecurringEventTemplate: boolean;
-	attachments: Array<{
-		name: string;
-		createdAt: Date;
-		creatorId: string | null;
-		updatedAt: Date | null;
-		updaterId: string | null;
-		eventId: string;
-		mimeType:
-			| "image/avif"
-			| "image/jpeg"
-			| "image/png"
-			| "image/webp"
-			| "video/mp4"
-			| "video/webm";
-	}>;
-}
 
 const eventsByOrganizationIdInputSchema = z.object({
 	organizationId: z.string().uuid(),
@@ -87,7 +58,7 @@ builder.queryField("usersByIds", (t) =>
 			const userIds = parsedArgs.data.ids;
 
 			const users = await ctx.drizzleClient.query.usersTable.findMany({
-				where: (fields, operators) => inArray(fields.id, userIds),
+				where: (fields, _operators) => inArray(fields.id, userIds),
 			});
 
 			return users;
@@ -117,12 +88,15 @@ builder.queryField("usersByOrganizationId", (t) =>
 				if (userIds.length === 0) return [];
 
 				const users = await ctx.drizzleClient.query.usersTable.findMany({
-					where: (fields, operators) => inArray(fields.id, userIds),
+					where: (fields, _operators) => inArray(fields.id, userIds),
 				});
 
 				return users;
 			} catch (error) {
-				console.error("Error fetching users for organization:", error);
+				ctx.log.error(
+					{ error, organizationId: args.organizationId },
+					"Error fetching users for organization",
+				);
 				throw new Error("An error occurred while fetching users.");
 			}
 		},
@@ -143,13 +117,12 @@ builder.queryField("eventsByOrganizationId", (t) =>
 				required: true,
 			}),
 		},
-		resolve: async (_parent, args, ctx): Promise<EventType[]> => {
+		resolve: async (_parent, args, ctx): Promise<EventWithAttachments[]> => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
 				});
 			}
-			console.log("Input args:", args.input);
 
 			const parsedArgs = eventsByOrganizationIdInputSchema.safeParse(
 				args.input,
@@ -165,28 +138,78 @@ builder.queryField("eventsByOrganizationId", (t) =>
 					},
 				});
 			}
-			console.log("Drizzle Client:", !!ctx.drizzleClient);
-			console.log("Events Table Query:", !!ctx.drizzleClient.query.eventsTable);
+			const currentUserId = ctx.currentClient.user.id;
+
+			// Get current user and organization membership for filtering
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				with: {
+					organizationMembershipsWhereMember: {
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.data.organizationId,
+							),
+					},
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
+			const currentUserOrganizationMembership =
+				currentUser.organizationMembershipsWhereMember[0];
+
 			try {
 				const events = await ctx.drizzleClient.query.eventsTable.findMany({
 					with: {
 						attachmentsWhereEvent: true,
 					},
 					where: (fields, operators) =>
-						operators.eq(fields.organizationId, parsedArgs.data.organizationId),
+						operators.and(
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.data.organizationId,
+							),
+						),
 				});
 
-				console.log("Found events:", events);
+				// Transform to EventWithAttachments format
+				const eventsWithAttachments: EventWithAttachments[] = events.map(
+					(event) => ({
+						...event,
+						attachments:
+							event.attachmentsWhereEvent?.map((attachment) => ({
+								...attachment,
+							})) || [],
+						eventType: "standalone" as const,
+					}),
+				);
 
-				return events.map((event) => ({
-					...event,
-					attachments:
-						event.attachmentsWhereEvent?.map((attachment) => ({
-							...attachment,
-						})) || [],
-				})) as EventType[];
+				// Filter invite-only events based on visibility rules
+				const filteredEvents = await filterInviteOnlyEvents({
+					events: eventsWithAttachments,
+					currentUserId,
+					currentUserRole: currentUser.role,
+					currentUserOrgMembership: currentUserOrganizationMembership,
+					drizzleClient: ctx.drizzleClient,
+				});
+
+				return filteredEvents;
 			} catch (error) {
-				console.error("Error fetching events for organization:", error);
+				ctx.log.error(
+					{ error, organizationId: parsedArgs.data.organizationId },
+					"Error fetching events for organization",
+				);
 				throw new Error("An error occurred while fetching events.");
 			}
 		},

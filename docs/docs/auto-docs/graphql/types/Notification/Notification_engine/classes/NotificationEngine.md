@@ -32,6 +32,49 @@ GraphQL context containing database connections and user info
 
 ## Methods
 
+### createDirectEmailNotification()
+
+> **createDirectEmailNotification**(`eventType`, `variables`, `receiverMail`, `channelType`): `Promise`\<`string`\>
+
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:331](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L331)
+
+Creates a direct email notification for external recipients (non-users).
+Uses the template system with provided variables for rendering.
+
+#### Parameters
+
+##### eventType
+
+`string`
+
+Type of event (e.g., "send_event_invite")
+
+##### variables
+
+[`NotificationVariables`](../interfaces/NotificationVariables.md)
+
+Variables to render in the template
+
+##### receiverMail
+
+Email address of the recipient(s)
+
+`string` | `string`[]
+
+##### channelType
+
+[`NotificationChannelType`](../enumerations/NotificationChannelType.md) = `NotificationChannelType.EMAIL`
+
+Channel type (defaults to EMAIL)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+- The created email notification ID
+
+***
+
 ### createNotification()
 
 > **createNotification**(`eventType`, `variables`, `audience`, `channelType`): `Promise`\<`string`\>
@@ -70,4 +113,4 @@ Channel to deliver notification (in_app, email)
 
 `Promise`\<`string`\>
 
-The created notification log ID
+- The created notification log ID

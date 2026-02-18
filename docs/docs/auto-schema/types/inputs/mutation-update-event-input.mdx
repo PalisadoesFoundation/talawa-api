@@ -77,6 +77,7 @@ input MutationUpdateEventInput {
   description: String
   endAt: DateTime
   id: ID!
+  isInviteOnly: Boolean
   isPublic: Boolean
   isRegisterable: Boolean
   location: String
@@ -102,6 +103,10 @@ Date time at the time the event ends at.
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Global identifier of the event.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>isInviteOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates if the event is invite-only
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

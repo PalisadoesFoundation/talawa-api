@@ -7,8 +7,9 @@ import {
 	mutationUpdateCommentVoteInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCommentVoteInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateCommentVoteArgumentsSchema = z.object({
 	input: mutationUpdateCommentVoteInputSchema,
 });
@@ -119,7 +120,7 @@ builder.mutationField("updateCommentVote", (t) =>
 				});
 			}
 
-			let voteResult = undefined;
+			let voteResult: typeof commentVotesTable.$inferSelect | undefined;
 
 			if (parsedArgs.input.type === null) {
 				// DELETE the vote if type is null
@@ -139,8 +140,8 @@ builder.mutationField("updateCommentVote", (t) =>
 						id: "",
 						creatorId: currentUserId,
 						commentId: parsedArgs.input.commentId,
-						type: null,
-					};
+						type: "down_vote", // Placeholder value; vote doesn't exist
+					} as typeof commentVotesTable.$inferSelect;
 				}
 			} else if (existingVote) {
 				// UPDATE the vote if type is not null

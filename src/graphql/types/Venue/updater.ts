@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Venue } from "./Venue";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Venue as VenueType } from "./Venue";
+import { Venue } from "./Venue";
 
 export const resolveUpdater = async (
 	parent: VenueType,

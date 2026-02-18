@@ -1,10 +1,10 @@
+vi.mock("inquirer");
+
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { postgresSetup, setup } from "scripts/setup/setup";
-import { afterEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("inquirer");
+import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
 describe("Setup -> postgresSetup", () => {
 	const originalEnv = { ...process.env };
@@ -80,7 +80,15 @@ describe("Setup -> postgresSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
+		});
+		(
+			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
+				(path: fs.PathLike) => string[]
+			>
+		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -93,8 +101,10 @@ describe("Setup -> postgresSetup", () => {
 		await postgresSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { MockInstance } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { NotificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import {
@@ -557,9 +557,242 @@ describe("NotificationEventBus", () => {
 		});
 	});
 
+	describe("emitMembershipRequestRejected", () => {
+		it("should emit 'membership_request.rejected' event with correct data", async () => {
+			const data = {
+				userId: "user-123",
+				userName: "John Doe",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			const eventListener = vi.fn();
+			bus.on("membership_request.rejected", eventListener);
+
+			await bus.emitMembershipRequestRejected(data, mockCtx);
+
+			expect(eventListener).toHaveBeenCalledWith(data);
+		});
+
+		it("should call NotificationEngine.createNotification with correct parameters", async () => {
+			const data = {
+				userId: "user-123",
+				userName: "John Doe",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			await bus.emitMembershipRequestRejected(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(createNotificationSpy).toHaveBeenCalledWith(
+				"membership_request_rejected",
+				{
+					userName: "John Doe",
+					organizationName: "Test Organization",
+					organizationId: "org-456",
+				},
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: ["user-123"],
+				},
+				NotificationChannelType.IN_APP,
+			);
+		});
+
+		it("should log success message", async () => {
+			const data = {
+				userId: "user-123",
+				userName: "John Doe",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			await bus.emitMembershipRequestRejected(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(infoSpy).toHaveBeenCalledWith(
+				"Membership request rejection notification sent to user user-123 for organization org-456",
+			);
+		});
+
+		it("should log error when notification creation fails", async () => {
+			const error = new Error("Database connection failed");
+			createNotificationSpy.mockRejectedValueOnce(error);
+
+			const data = {
+				userId: "user-123",
+				userName: "John Doe",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			await bus.emitMembershipRequestRejected(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(errorSpy).toHaveBeenCalledWith(
+				error,
+				"Failed to send membership request rejection notification:",
+			);
+		});
+	});
+	describe("emitSendEventInvite", () => {
+		let createDirectEmailNotificationSpy: MockInstance;
+
+		beforeEach(() => {
+			createDirectEmailNotificationSpy = vi
+				.spyOn(NotificationEngine.prototype, "createDirectEmailNotification")
+				.mockResolvedValue("mock-email-notification-id");
+		});
+
+		it("should emit 'send_event_invite' event with correct data", async () => {
+			const data = {
+				inviteeEmail: "invitee@example.com",
+				inviteeName: "Jane Smith",
+				eventId: "event-123",
+				eventName: "Annual Conference",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			const eventListener = vi.fn();
+			bus.on("send_event_invite", eventListener);
+
+			await bus.emitSendEventInvite(data, mockCtx);
+
+			expect(eventListener).toHaveBeenCalledWith(data);
+		});
+
+		it("should call NotificationEngine.createDirectEmailNotification with correct parameters", async () => {
+			const data = {
+				inviteeEmail: "invitee@example.com",
+				inviteeName: "Jane Smith",
+				eventId: "event-123",
+				eventName: "Annual Conference",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			await bus.emitSendEventInvite(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(createDirectEmailNotificationSpy).toHaveBeenCalledWith(
+				"send_event_invite",
+				{
+					inviteeName: "Jane Smith",
+					eventName: "Annual Conference",
+					invitationUrl: "https://example.com/invite/token-abc123",
+					invitationToken: "token-abc123",
+				},
+				"invitee@example.com",
+				NotificationChannelType.EMAIL,
+			);
+		});
+
+		it("should handle missing optional fields gracefully", async () => {
+			const data = {
+				inviteeEmail: "invitee@example.com",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			await bus.emitSendEventInvite(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(createDirectEmailNotificationSpy).toHaveBeenCalledWith(
+				"send_event_invite",
+				{
+					inviteeName: "",
+					eventName: "an event",
+					invitationUrl: "https://example.com/invite/token-abc123",
+					invitationToken: "token-abc123",
+				},
+				"invitee@example.com",
+				NotificationChannelType.EMAIL,
+			);
+		});
+
+		it("should log success message with correct data", async () => {
+			const data = {
+				inviteeEmail: "invitee@example.com",
+				inviteeName: "Jane Smith",
+				eventId: "event-123",
+				eventName: "Annual Conference",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			await bus.emitSendEventInvite(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(infoSpy).toHaveBeenCalledWith(
+				{
+					inviteeEmail: "invitee@example.com",
+					inviterId: "user-789",
+					eventId: "event-123",
+				},
+				"Send event invite notification created",
+			);
+		});
+
+		it("should log success message with missing eventId", async () => {
+			const data = {
+				inviteeEmail: "invitee@example.com",
+				inviteeName: "Jane Smith",
+				eventName: "Annual Conference",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			await bus.emitSendEventInvite(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(infoSpy).toHaveBeenCalledWith(
+				{
+					inviteeEmail: "invitee@example.com",
+					inviterId: "user-789",
+					eventId: undefined,
+				},
+				"Send event invite notification created",
+			);
+		});
+
+		it("should log error when email notification creation fails", async () => {
+			const error = new Error("Email service unavailable");
+			createDirectEmailNotificationSpy.mockRejectedValueOnce(error);
+			const data = {
+				inviteeEmail: "invitee@example.com",
+				inviteeName: "Jane Smith",
+				eventId: "event-123",
+				eventName: "Annual Conference",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			await bus.emitSendEventInvite(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(errorSpy).toHaveBeenCalledWith(
+				error,
+				"Failed to send event invite notification:",
+			);
+		});
+	});
+
 	describe("additional error handling coverage", () => {
 		it("should handle all event methods gracefully when notifications fail", async () => {
-			// Mock all notification calls to fail
 			const commonError = new Error("Notification service down");
 			createNotificationSpy.mockRejectedValue(commonError);
 
@@ -621,6 +854,54 @@ describe("NotificationEventBus", () => {
 				commonError,
 				"Failed to send user blocked notification:",
 			);
+		});
+
+		it("should handle emitMembershipRequestRejected and emitSendEventInvite failures", async () => {
+			const commonError = new Error("Notification service down");
+			createNotificationSpy.mockRejectedValue(commonError);
+
+			// Mock createDirectEmailNotification to also fail
+			const createDirectEmailNotificationSpy = vi
+				.spyOn(NotificationEngine.prototype, "createDirectEmailNotification")
+				.mockRejectedValue(commonError);
+
+			const rejectionData = {
+				userId: "user-reject",
+				userName: "Rejected User",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			const inviteData = {
+				inviteeEmail: "invitee@example.com",
+				inviteeName: "Invitee Name",
+				eventId: "event-123",
+				eventName: "Test Event",
+				organizationId: "org-456",
+				inviterId: "user-789",
+				invitationToken: "token-abc123",
+				invitationUrl: "https://example.com/invite/token-abc123",
+			};
+
+			// Execute both methods
+			await Promise.all([
+				bus.emitMembershipRequestRejected(rejectionData, mockCtx),
+				bus.emitSendEventInvite(inviteData, mockCtx),
+			]);
+
+			await waitForSetImmediate();
+
+			// Both should log errors appropriately
+			expect(errorSpy).toHaveBeenCalledWith(
+				commonError,
+				"Failed to send membership request rejection notification:",
+			);
+			expect(errorSpy).toHaveBeenCalledWith(
+				commonError,
+				"Failed to send event invite notification:",
+			);
+
+			createDirectEmailNotificationSpy.mockRestore();
 		});
 	});
 });

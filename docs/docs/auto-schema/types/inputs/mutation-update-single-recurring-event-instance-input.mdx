@@ -79,6 +79,7 @@ input MutationUpdateSingleRecurringEventInstanceInput {
   description: String
   endAt: DateTime
   id: ID!
+  isInviteOnly: Boolean
   isPublic: Boolean
   isRegisterable: Boolean
   location: String
@@ -104,6 +105,10 @@ Updated end time for this specific event instance.
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Global identifier of the recurring event instance to update.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>isInviteOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Whether this specific event instance is invite-only.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

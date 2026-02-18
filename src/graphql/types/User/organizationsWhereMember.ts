@@ -10,13 +10,13 @@ import type {
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
 interface OrganizationMembershipRawNode {
@@ -39,6 +39,12 @@ const cursorSchema = organizationMembershipsTableInsertSchema
 		organizationId: arg.organizationId,
 	}));
 
+export type OrganizationsWhereMemberArgs = z.input<
+	typeof defaultGraphQLConnectionArgumentsSchema
+> & {
+	filter?: string | null;
+};
+
 const organizationsWhereMemberArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema
 		.extend({
@@ -53,7 +59,7 @@ const organizationsWhereMemberArgumentsSchema =
 						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 					);
 				}
-			} catch (error) {
+			} catch (_error) {
 				ctx.addIssue({
 					code: "custom",
 					message: "Not a valid cursor.",
@@ -61,14 +67,7 @@ const organizationsWhereMemberArgumentsSchema =
 				});
 			}
 			return {
-				cursor: cursorObj
-					? Buffer.from(
-							JSON.stringify({
-								createdAt: cursorObj.createdAt.toISOString(),
-								organizationId: cursorObj.organizationId,
-							}),
-						).toString("base64url")
-					: undefined,
+				cursor: cursorObj,
 				isInversed: arg.isInversed,
 				limit: arg.limit,
 				filter: arg.filter,
@@ -153,58 +152,25 @@ export const resolveOrganizationsWhereMember = async (
 					? isInversed
 						? or(
 								and(
-									eq(
-										organizationMembershipsTable.createdAt,
-
-										new Date(
-											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8"),
-											).createdAt,
-										),
-									),
+									eq(organizationMembershipsTable.createdAt, cursor.createdAt),
 									gt(
 										organizationMembershipsTable.organizationId,
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).organizationId,
+										cursor.organizationId,
 									),
 								),
 
-								gt(
-									organizationMembershipsTable.createdAt,
-									new Date(
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).createdAt,
-									),
-								),
+								gt(organizationMembershipsTable.createdAt, cursor.createdAt),
 							)
 						: or(
 								and(
-									eq(
-										organizationMembershipsTable.createdAt,
-										new Date(
-											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8"),
-											).createdAt,
-										),
-									),
+									eq(organizationMembershipsTable.createdAt, cursor.createdAt),
 									lt(
 										organizationMembershipsTable.organizationId,
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).organizationId,
+										cursor.organizationId,
 									),
 								),
 
-								lt(
-									organizationMembershipsTable.createdAt,
-									new Date(
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).createdAt,
-									),
-								),
+								lt(organizationMembershipsTable.createdAt, cursor.createdAt),
 							)
 					: sql`TRUE`,
 			),
@@ -217,15 +183,13 @@ export const resolveOrganizationsWhereMember = async (
 	// Transform the raw nodes into a connection.
 	return transformToDefaultGraphQLConnection<
 		OrganizationMembershipRawNode,
-		Organization
+		Organization,
+		{ createdAt: Date; organizationId: string }
 	>({
-		createCursor: (row) =>
-			Buffer.from(
-				JSON.stringify({
-					createdAt: row.membershipCreatedAt.toISOString(),
-					organizationId: row.membershipOrganizationId,
-				}),
-			).toString("base64url"),
+		createCursor: (row) => ({
+			createdAt: row.membershipCreatedAt,
+			organizationId: row.membershipOrganizationId,
+		}),
 
 		createNode: (row) => row.organization,
 		parsedArgs,

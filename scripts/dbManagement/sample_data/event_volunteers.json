@@ -1,16 +1,16 @@
 [
-  {
-    "id": "019a1fa6-7e1e-7947-ba84-fbe66849acf8",
-    "userId": "0194e194-c6b3-7802-b074-362efea24dbc",
-    "isTemplate": true,
-    "recurringEventInstanceId": null,
-    "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
-    "hasAccepted": true,
-    "isPublic": true,
-    "hoursVolunteered": 0,
-    "createdAt": "2025-10-26T07:40:11.819Z",
-    "updatedAt": "2025-10-26T07:40:29.853Z",
-    "updaterId": "0194e194-c6b3-7802-b074-362efea24dbc",
-    "eventId": "01960b97-00c0-7508-915b-7f4875a3d84a"
-  }
+	{
+		"id": "019a1fa6-7e1e-7947-ba84-fbe66849acf8",
+		"userId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"isTemplate": true,
+		"recurringEventInstanceId": null,
+		"creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"hasAccepted": true,
+		"isPublic": true,
+		"hoursVolunteered": 0,
+		"createdAt": "2025-10-26T07:40:11.819Z",
+		"updatedAt": "2025-10-26T07:40:29.853Z",
+		"updaterId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"eventId": "01960b97-00c0-7508-915b-7f4875a3d84a"
+	}
 ]

@@ -4,18 +4,18 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 
 /**
- * @description Defines the input parameters for querying standalone events.
+ * Defines the input parameters for querying standalone events.
  */
 export interface GetStandaloneEventsInput {
 	organizationId: string;
 	startDate: Date;
 	endDate: Date;
 	/**
-	 * @description An optional array of event IDs to filter by.
+	 * An optional array of event IDs to filter by.
 	 */
 	eventIds?: string[];
 	/**
-	 * @description An optional limit on the number of events to return.
+	 * An optional limit on the number of events to return.
 	 */
 	limit?: number;
 }
@@ -28,7 +28,7 @@ export interface GetStandaloneEventsInput {
  * @param input - The input object containing organizationId, date range, and optional filters.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of standalone event objects, including their attachments.
+ * @returns - A promise that resolves to an array of standalone event objects, including their attachments.
  */
 export async function getStandaloneEventsInDateRange(
 	input: GetStandaloneEventsInput,
@@ -113,33 +113,45 @@ export async function getStandaloneEventsInDateRange(
 }
 
 /**
- * Retrieves standalone events by a list of specific IDs.
- * This function is designed for the `eventsByIds` query, ensuring that only standalone events
- * (not recurring templates or instances) are returned.
+ * Retrieves standalone events (and optionally recurring templates) by a list of specific IDs.
+ * This function is designed for the `eventsByIds` query. By default, only standalone events
+ * (not recurring templates or instances) are returned. When `options.includeTemplates` is true,
+ * recurring event templates matching the IDs are also included.
  *
  * @param eventIds - An array of event IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of the requested standalone event objects,
- *          including their attachments.
+ * @param options - Optional. `includeTemplates`: when true, includes recurring event templates in the result; default false.
+ * @returns - A promise that resolves to an array of the requested event objects, including their attachments.
  */
 export async function getStandaloneEventsByIds(
 	eventIds: string[],
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
+	options?: { includeTemplates?: boolean },
 ): Promise<
 	(typeof eventsTable.$inferSelect & {
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 	})[]
 > {
+	// Early return for empty array to avoid inArray with empty list
+	if (eventIds.length === 0) {
+		return [];
+	}
+
 	try {
+		const includeTemplates = options?.includeTemplates ?? false;
+		const whereClause = includeTemplates
+			? inArray(eventsTable.id, eventIds)
+			: and(
+					inArray(eventsTable.id, eventIds),
+					eq(eventsTable.isRecurringEventTemplate, false),
+				);
+
 		const standaloneEvents: (typeof eventsTable.$inferSelect & {
 			attachmentsWhereEvent: (typeof eventAttachmentsTable.$inferSelect)[];
 		})[] = await drizzleClient.query.eventsTable.findMany({
-			where: and(
-				inArray(eventsTable.id, eventIds),
-				eq(eventsTable.isRecurringEventTemplate, false),
-			),
+			where: whereClause,
 			with: {
 				attachmentsWhereEvent: true,
 			},

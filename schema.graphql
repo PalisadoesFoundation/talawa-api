@@ -1,3 +1,8 @@
+input AcceptEventInvitationInput {
+  """Invitation token from the invite link"""
+  invitationToken: String!
+}
+
 type AcceptMembershipResponse {
   """Success or error message"""
   message: String
@@ -154,17 +159,47 @@ input AdvertisementWhereInput {
   isCompleted: Boolean
 }
 
-type AgendaFolder {
-  """
-  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
-  """
-  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+type AgendaCategory {
+  """Date time at the time the agenda category was created."""
+  createdAt: DateTime
 
+  """User who created the agenda category."""
+  creator: User
+
+  """Custom information about the agenda category."""
+  description: String
+
+  """Event for which the agenda category constitutes a part of the agenda."""
+  event: Event
+
+  """Global identifier of the agenda category."""
+  id: ID!
+
+  """Boolean to tell if agenda category is default or not"""
+  isDefaultCategory: Boolean!
+
+  """Name of the agenda category."""
+  name: String!
+
+  """Organization which the agenda item category belongs to."""
+  organization: Organization
+
+  """Date time at the time the agenda category was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda category."""
+  updater: User
+}
+
+type AgendaFolder {
   """Date time at the time the agenda folder was created."""
   createdAt: DateTime
 
   """User who created the agenda folder."""
   creator: User
+
+  """Custom information about the agenda folder."""
+  description: String
 
   """
   Event for which the agenda folder contains agenda items constituting a part of the agenda.
@@ -174,10 +209,8 @@ type AgendaFolder {
   """Global identifier of the agenda folder."""
   id: ID!
 
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
-  """
-  isAgendaItemFolder: Boolean
+  """Boolean to tell if agenda folder is default or not"""
+  isDefaultFolder: Boolean!
 
   """
   GraphQL connection to traverse through the agenda items contained within the agenda folder.
@@ -187,26 +220,17 @@ type AgendaFolder {
   """Name of the agenda folder."""
   name: String
 
-  """Agenda folder that is a parent folder to the agenda folder."""
-  parentFolder: AgendaFolder
+  """Organization which the agenda folder belongs to."""
+  organization: Organization
+
+  """Sequence of agenda folder."""
+  sequence: Int
 
   """Date time at the time the agenda folder was last updated."""
   updatedAt: DateTime
 
   """User who last updated the agenda folder."""
   updater: User
-}
-
-""""""
-type AgendaFolderChildFoldersConnection {
-  edges: [AgendaFolderChildFoldersConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderChildFoldersConnectionEdge {
-  cursor: String!
-  node: AgendaFolder
 }
 
 """"""
@@ -222,7 +246,13 @@ type AgendaFolderItemsConnectionEdge {
 }
 
 type AgendaItem {
-  """Date time at the time the agenda item was last created."""
+  """Attachments for the agenda item"""
+  attachments: [AgendaItemAttachment!]
+
+  """Agenda category"""
+  category: AgendaCategory
+
+  """Date time when the agenda item was created."""
   createdAt: DateTime
 
   """User who created the agenda item."""
@@ -234,8 +264,11 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
+  """Event for which the agenda item constituting a part of the agenda."""
+  event: Event
+
   """Agenda folder within which the agenda item in contained."""
-  event: AgendaFolder
+  folder: AgendaFolder
 
   """Global identifier of the agenda item."""
   id: ID!
@@ -248,6 +281,12 @@ type AgendaItem {
   """Name of the agenda item."""
   name: String
 
+  """Notes for the agenda item."""
+  notes: String
+
+  """Sequence order of the agenda item."""
+  sequence: Int
+
   """Type of the agenda item."""
   type: AgendaItemType
 
@@ -256,6 +295,35 @@ type AgendaItem {
 
   """User who last updated the agenda item."""
   updater: User
+
+  """URLs associated with the agenda item"""
+  url: [AgendaItemUrl!]
+}
+
+"""Attachment of the agenda items."""
+type AgendaItemAttachment {
+  """Unique file hash identifier for the attachment."""
+  fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+}
+
+"""Attachment data for an agenda item"""
+input AgendaItemAttachmentInput {
+  fileHash: String!
+  mimeType: PostAttachmentMimeType!
+  name: String!
+  objectName: String!
 }
 
 """Possible variants of the type of an agenda item."""
@@ -266,12 +334,47 @@ enum AgendaItemType {
   song
 }
 
+"""URLs associated with an agenda item."""
+type AgendaItemUrl {
+  """Date time at which the URL was created."""
+  createdAt: DateTime!
+
+  """Global identifier of the agenda item URL."""
+  id: ID!
+
+  """Date time at which the URL was last updated."""
+  updatedAt: DateTime
+
+  """URL associated with the agenda item."""
+  url: String!
+}
+
+"""URL associated with an agenda item"""
+input AgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
+}
+
+"""Represents a tag assigned to a user."""
+type AssignUserTag {
+  """Unique identifier of the assigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
+}
+
 """"""
 type AuthenticationPayload {
   """
-  This is the authentication token using which a user can sign in to talawa.
+  This is the short-lived access token using which a user can authenticate API requests.
   """
   authenticationToken: String
+
+  """
+  This is the long-lived refresh token used to obtain new access tokens without re-authentication.
+  """
+  refreshToken: String
 
   """"""
   user: User
@@ -589,6 +692,21 @@ type Community {
   youtubeURL: String
 }
 
+"""
+Input type for defining a complexity range filter. Both min and max must be non-negative numbers, and min must be less than or equal to max.
+"""
+input ComplexityRangeInput {
+  """
+  Maximum complexity score (inclusive). Must be non-negative and greater than or equal to min.
+  """
+  max: Float!
+
+  """
+  Minimum complexity score (inclusive). Must be non-negative and less than or equal to max.
+  """
+  min: Float!
+}
+
 input CreateActionItemInput {
   assignedAt: String
   categoryId: ID!
@@ -661,7 +779,7 @@ type Event {
   allDay: Boolean
 
   """
-  A list of attachments associated with the event, such as images or documents.
+  A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.
   """
   attachments: [EventAttachment!]
 
@@ -673,6 +791,11 @@ type Event {
 
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
+
+  """
+  The ID of the base recurring event template if this is a generated instance.
+  """
+  baseRecurringEventId: ID
 
   """Date time at the time the event was created."""
   createdAt: DateTime
@@ -699,6 +822,17 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
+
+  """A boolean flag indicating if this instance has been cancelled."""
+  isCancelled: Boolean
+
+  """
+  A boolean flag indicating if this event was generated from a recurrence template.
+  """
+  isGenerated: Boolean
+
+  """A boolean flag indicating if the event is invite-only."""
+  isInviteOnly: Boolean
 
   """A boolean flag indicating if the event is visible to the public."""
   isPublic: Boolean
@@ -814,7 +948,9 @@ type EventAttendee {
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
-  """The event the attendee is associated with."""
+  """
+  The event the attendee is associated with. Supports both standalone events and recurring event instances.
+  """
   event: Event
 
   """Indicates if the attendee has submitted feedback for the event."""
@@ -852,6 +988,55 @@ input EventAttendeeInput {
 
   """The ID of the user."""
   userId: ID!
+}
+
+"""An invitation to an event sent to an email address."""
+type EventInvitation {
+  """Date and time when the invitation was created."""
+  createdAt: DateTime
+
+  """ID of the associated event (if applicable)."""
+  eventId: String
+
+  """Date and time when the invitation expires."""
+  expiresAt: DateTime
+
+  """Unique identifier of the invitation."""
+  id: ID
+
+  """Unique token used to accept the invitation."""
+  invitationToken: String
+
+  """ID of the user who sent the invitation."""
+  invitedBy: String
+
+  """Email address of the invitee."""
+  inviteeEmail: String
+
+  """Name of the invitee."""
+  inviteeName: String
+
+  """Additional metadata associated with the invitation (JSON string)."""
+  metadata: String
+
+  """ID of the associated recurring event instance (if applicable)."""
+  recurringEventInstanceId: String
+
+  """
+  Date and time when the invitation was responded to (accepted or declined).
+  """
+  respondedAt: DateTime
+
+  """
+  Current status of the invitation (pending, accepted, declined, expired, cancelled).
+  """
+  status: String
+
+  """Date and time when the invitation was last updated."""
+  updatedAt: DateTime
+
+  """ID of the user who was invited (if they are a registered user)."""
+  userId: String
 }
 
 """"""
@@ -1086,11 +1271,13 @@ input EventsByOrganizationIdInput {
 
 """Metadata for files uploaded via presigned URL"""
 input FileMetadataInput {
-  """Hash of the file for deduplication"""
+  """
+  SHA-256 hash for integrity verification (not DB-enforced deduplication)
+  """
   fileHash: String!
 
   """MIME type of the file"""
-  mimetype: PostAttachmentMimeType!
+  mimeType: PostAttachmentMimeType!
 
   """Name of the file"""
   name: String!
@@ -1120,6 +1307,12 @@ type Fund {
   """Global identifier of the fund."""
   id: ID!
 
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean
 
@@ -1129,6 +1322,9 @@ type Fund {
   """Organization which the fund belongs to."""
   organization: Organization
 
+  """Reference number of the fund."""
+  referenceNumber: String
+
   """Date time at the time the fund was last updated."""
   updatedAt: DateTime
 
@@ -1137,6 +1333,9 @@ type Fund {
 }
 
 type FundCampaign {
+  """The amount of money raised so far for the fund campaign."""
+  amountRaised: Int
+
   """Date time at the time the fund campaign was created."""
   createdAt: DateTime
 
@@ -1233,6 +1432,8 @@ type FundCampaignsConnectionEdge {
 }
 
 input GetPostsByOrgInput {
+  limit: Int
+  offset: Int
   organizationId: String!
   sortOrder: String
 }
@@ -1890,6 +2091,12 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Result of a logout operation"""
+type LogoutResult {
+  """Whether the logout was successful"""
+  success: Boolean!
+}
+
 input MarkActionItemAsPendingInput {
   id: ID!
 }
@@ -1945,7 +2152,66 @@ input MembershipRequestWhereInput {
   user: UserWhereInput
 }
 
+"""
+Input type for advanced metrics filtering. Supports filtering by operation names, slow operations, cache hit rate, and complexity range.
+"""
+input MetricsFilterInput {
+  """
+  Optional complexity range filter. Only metrics with complexity scores within this range will be returned.
+  """
+  complexityRange: ComplexityRangeInput
+
+  """
+  Optional minimum cache hit rate filter (0-1). Only metrics with a cache hit rate greater than or equal to this value will be returned.
+  """
+  minCacheHitRate: Float
+
+  """
+  Optional array of operation names to filter by. If provided, only metrics for these operations will be returned.
+  """
+  operationNames: [String!]
+
+  """
+  If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.
+  """
+  slowOperationsOnly: Boolean! = false
+}
+
+"""
+Input type for querying metrics data. Supports time range filtering, operation type filtering, and duration-based filtering.
+"""
+input MetricsInput {
+  """The end time for the metrics query. Must be after startTime."""
+  endTime: DateTime!
+
+  """
+  Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.
+  """
+  includeCacheMetrics: Boolean! = true
+
+  """
+  Optional maximum duration filter in milliseconds. Must be positive and greater than minDuration if both are provided.
+  """
+  maxDuration: Float
+
+  """
+  Optional minimum duration filter in milliseconds. Must be positive and less than maxDuration if both are provided.
+  """
+  minDuration: Float
+
+  """Optional filter to limit results to a specific operation type."""
+  operationType: String
+
+  """The start time for the metrics query. Must be a valid DateTime."""
+  startTime: DateTime!
+}
+
 type Mutation {
+  """
+  Accept an event invitation. Links the current user to the invitation, joins the organization if needed and registers the user as an attendee. This is performed atomically.
+  """
+  acceptEventInvitation(input: AcceptEventInvitationInput!): EventInvitation
+
   """Mutation field to accept a membership request by an admin."""
   acceptMembershipRequest(
     """Input to accept a membership request"""
@@ -1954,6 +2220,12 @@ type Mutation {
 
   """Mutation field to add an event attendee."""
   addEventAttendee(data: EventAttendeeInput!): User
+
+  """Mutation to allow an administrator to reset another user's password."""
+  adminUpdateUserPassword(
+    """Input for updating a member's password by an admin."""
+    input: MutationAdminUpdateUserPasswordInput!
+  ): Boolean
 
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
@@ -1987,6 +2259,12 @@ type Mutation {
 
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
+
+  """Mutation field to create an agenda category."""
+  createAgendaCategory(
+    """Input for creating a new agenda category."""
+    input: MutationCreateAgendaCategoryInput!
+  ): AgendaCategory
 
   """Mutation field to create an agenda folder."""
   createAgendaFolder(input: MutationCreateAgendaFolderInput!): AgendaFolder
@@ -2082,6 +2360,12 @@ type Mutation {
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
 
+  """Mutation field to delete an agenda category."""
+  deleteAgendaCategory(
+    """Input containing the ID of the agenda category to delete."""
+    input: MutationDeleteAgendaCategoryInput!
+  ): AgendaCategory
+
   """Mutation field to delete an agenda folder."""
   deleteAgendaFolder(input: MutationDeleteAgendaFolderInput!): AgendaFolder
 
@@ -2089,7 +2373,10 @@ type Mutation {
   deleteAgendaItem(input: MutationDeleteAgendaItemInput!): AgendaItem
 
   """Mutation field to delete a chat."""
-  deleteChat(input: MutationDeleteChatInput!): Chat
+  deleteChat(
+    """Input containing the UUID `id` of the chat to delete (required)."""
+    input: MutationDeleteChatInput!
+  ): Chat
 
   """Mutation field to delete a chat membership."""
   deleteChatMembership(input: MutationDeleteChatMembershipInput!): Chat
@@ -2209,6 +2496,17 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """Link an OAuth provider to the current authenticated user."""
+  linkOAuthAccount(
+    """Input containing OAuth provider details and authorization code."""
+    input: OAuthLoginInput!
+  ): User
+
+  """
+  Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.
+  """
+  logout: LogoutResult
+
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
 
@@ -2224,6 +2522,16 @@ type Mutation {
     input: MutationMarkChatAsReadInput!
   ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
+
+  """
+  Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens. Web clients can omit the refreshToken argument as it will be read from HTTP-Only cookies.
+  """
+  refreshToken(
+    """
+    The refresh token to use for obtaining a new access token. Optional for web clients using HTTP-Only cookies.
+    """
+    refreshToken: String
+  ): AuthenticationPayload
 
   """Mutation field to register a user for an event."""
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee
@@ -2243,20 +2551,66 @@ type Mutation {
   """Mutation field to remove an event attendee."""
   removeEventAttendee(data: EventAttendeeInput!): User
 
+  """
+  Request a password reset. If the email exists, a reset link will be sent. Returns the same response whether the email exists or not to prevent user enumeration.
+  """
+  requestPasswordReset(
+    """Input for requesting a password reset."""
+    input: MutationRequestPasswordResetInput!
+  ): PasswordResetRequestPayload
+
+  """
+  Reset password using a valid password reset token. Returns authentication tokens for auto-login.
+  """
+  resetPassword(
+    """Input for resetting password with a valid token."""
+    input: MutationResetPasswordInput!
+  ): PasswordResetPayload
+
+  """
+  Mutation to revoke a refresh token. Use this for logout functionality to invalidate the refresh token.
+  """
+  revokeRefreshToken(
+    """The refresh token to revoke."""
+    refreshToken: String!
+  ): Boolean
+
+  """Send email invitations to one or more addresses for an event."""
+  sendEventInvitations(input: SendEventInvitationsInput!): [EventInvitation!]
+
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
     """Input to send a membership request"""
     input: MutationSendMembershipRequestInput!
   ): MembershipRequest
 
+  """
+  Send a verification email to the authenticated user. Returns same response whether email was sent or not.
+  """
+  sendVerificationEmail: SendEmailVerificationPayload
+
+  """
+  Sign in or sign up using an OAuth provider. Exchanges an authorization code for tokens, creates/links user, and returns AuthenticationPayload.
+  """
+  signInWithOAuth(
+    """Input containing OAuth provider details and authorization code."""
+    input: OAuthLoginInput!
+  ): AuthenticationPayload
+
   """Mutation field to sign up to talawa."""
-  signUp(input: MutationSignUpInput!): AuthenticationPayload
+  signUp(input: MutationSignUpInput!): AuthenticationPayload @deprecated(reason: "Use REST POST /auth/signup")
 
   """Unassign a tag from a user within an organization."""
   unassignUserTag(assigneeId: ID!, tagId: ID!): Boolean
 
   """Mutation field to unblock a user from an organization."""
   unblockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Unlink an OAuth provider from the current authenticated user."""
+  unlinkOAuthAccount(
+    """The OAuth provider to unlink from the user account."""
+    provider: OAuthProvider!
+  ): User
 
   """Mutation field to unregister current user from an event."""
   unregisterForEventByUser(
@@ -2282,11 +2636,23 @@ type Mutation {
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
 
+  """Mutation field to update an agenda category."""
+  updateAgendaCategory(
+    """Input containing the agenda category fields to update."""
+    input: MutationUpdateAgendaCategoryInput!
+  ): AgendaCategory
+
   """Mutation field to update an agenda folder."""
   updateAgendaFolder(input: MutationUpdateAgendaFolderInput!): AgendaFolder
 
   """Mutation field to update an agenda item."""
   updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
+
+  """Mutation field to update the sequence of an agenda item."""
+  updateAgendaItemSequence(
+    """Input containing the agenda item ID and new sequence value."""
+    input: MutationUpdateAgendaItemSequenceInput!
+  ): AgendaItem
 
   """Mutation field to update a chat."""
   updateChat(input: MutationUpdateChatInput!): Chat
@@ -2392,6 +2758,12 @@ type Mutation {
   """Mutation field to update a user."""
   updateUser(input: MutationUpdateUserInput!): User
 
+  """Mutation field to update a user password."""
+  updateUserPassword(
+    """Input for updating the current user's password."""
+    input: MutationUpdateUserPasswordInput!
+  ): Boolean
+
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
 
@@ -2406,11 +2778,36 @@ type Mutation {
 
   """Upload and install a plugin from a zip file"""
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
+
+  """
+  Verify a user's email address using the token sent to their email. Returns success even if already verified (idempotent).
+  """
+  verifyEmail(
+    """Input for verifying an email address with a token."""
+    input: MutationVerifyEmailInput!
+  ): VerifyEmailPayload
+
+  """
+  Public preview of an event invitation. Returns masked email and minimal event/org info. Rate-limited.
+  """
+  verifyEventInvitation(input: VerifyEventInvitationInput!): VerifyEventInvitationPreview
 }
 
 input MutationAcceptMembershipRequestInput {
   """ID of the membership request to accept"""
   membershipRequestId: ID!
+}
+
+"""Input for updating a member's password."""
+input MutationAdminUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """ID of the member whose password is being updated."""
+  id: ID!
+
+  """New password"""
+  newPassword: String!
 }
 
 """Input to block a user from an organization"""
@@ -2451,8 +2848,8 @@ input MutationCreateActionItemCategoryInput {
 
 """"""
 input MutationCreateAdvertisementInput {
-  """Attachments of the advertisement."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Custom information about the advertisement."""
   description: String
@@ -2473,37 +2870,57 @@ input MutationCreateAdvertisementInput {
   type: AdvertisementType!
 }
 
-""""""
-input MutationCreateAgendaFolderInput {
-  """Global identifier of the event the agenda folder is associated to."""
+"""Input for creating an agenda category."""
+input MutationCreateAgendaCategoryInput {
+  """Description of the agenda category."""
+  description: String
+
+  """Global identifier of the event the agenda category is associated to."""
   eventId: ID!
 
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
-  """
-  isAgendaItemFolder: Boolean!
+  """Name of the agenda category."""
+  name: String!
+}
+
+"""Input type for creating a new agenda folder."""
+input MutationCreateAgendaFolderInput {
+  """Description of Agenda Folder"""
+  description: String
+
+  """Global identifier of the event the agenda folder is associated to."""
+  eventId: ID!
 
   """Name of the agenda folder."""
   name: String!
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """ID of the organization this folder belongs to."""
+  organizationId: ID!
+
+  """Sequence of the Agenda Folder."""
+  sequence: Int
 }
 
-""""""
+"""Input type for creating a new agenda item."""
 input MutationCreateAgendaItemInput {
+  """Attachments for the agenda items."""
+  attachments: [AgendaItemAttachmentInput!]
+
+  """Category id"""
+  categoryId: ID
+
   """Custom information about the agenda item."""
   description: String
 
   """Duration of the agenda item."""
   duration: String
 
+  """Global identifier of the event the agenda item is associated to."""
+  eventId: ID!
+
   """
   Global identifier of the agenda folder the agenda item is associated to.
   """
-  folderId: ID!
+  folderId: ID
 
   """
   Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
@@ -2513,8 +2930,17 @@ input MutationCreateAgendaItemInput {
   """Name of the agenda item."""
   name: String!
 
+  """Notes for the agenda item"""
+  notes: String
+
+  """Sequence of the AgendaItem."""
+  sequence: Int!
+
   """Type of the agenda item."""
   type: AgendaItemType!
+
+  """URLs associated with the agenda item."""
+  url: [AgendaItemUrlInput!]
 }
 
 """"""
@@ -2588,6 +3014,9 @@ input MutationCreateEventInput {
   """Date time at the time the event ends at."""
   endAt: DateTime!
 
+  """Indicates if the event is invite-only"""
+  isInviteOnly: Boolean
+
   """Indicates if the event is publicly visible"""
   isPublic: Boolean
 
@@ -2650,6 +3079,12 @@ input MutationCreateFundCampaignPledgeInput {
 
 """"""
 input MutationCreateFundInput {
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean!
 
@@ -2658,6 +3093,9 @@ input MutationCreateFundInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """Reference number of the fund."""
+  referenceNumber: String
 }
 
 """Input for getting a presigned URL for file download"""
@@ -2678,7 +3116,7 @@ input MutationCreateOrganizationInput {
   addressLine2: String
 
   """Avatar of the organization."""
-  avatar: Upload
+  avatar: FileMetadataInput
 
   """Name of the city where the organization resides in."""
   city: String
@@ -2718,8 +3156,11 @@ input MutationCreateOrganizationMembershipInput {
 
 """Input for creating a new post"""
 input MutationCreatePostInput {
-  """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  """Direct file upload"""
+  attachment: Upload
+
+  """Body content of the post."""
+  body: String
 
   """Caption about the post."""
   caption: String!
@@ -2865,8 +3306,8 @@ input MutationCreateVenueBookingInput {
 
 """"""
 input MutationCreateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -2901,6 +3342,12 @@ input MutationDeleteActionItemInput {
 """"""
 input MutationDeleteAdvertisementInput {
   """Global identifier of the advertisement."""
+  id: ID!
+}
+
+"""Input for deleting an agenda category."""
+input MutationDeleteAgendaCategoryInput {
+  """Global identifier of the agenda category."""
   id: ID!
 }
 
@@ -3102,6 +3549,21 @@ input MutationRejectMembershipRequestInput {
   membershipRequestId: ID!
 }
 
+"""Input type for requesting a password reset."""
+input MutationRequestPasswordResetInput {
+  """Email address of the user requesting password reset."""
+  emailAddress: EmailAddress!
+}
+
+"""Input type for resetting password with a valid token."""
+input MutationResetPasswordInput {
+  """The new password to set. Must be 8-64 characters."""
+  newPassword: String!
+
+  """The password reset token."""
+  token: String!
+}
+
 """Input type for sending a membership request."""
 input MutationSendMembershipRequestInput {
   """Global identifier of the organization."""
@@ -3162,6 +3624,11 @@ input MutationSignUpInput {
 
   """Postal code of the user."""
   postalCode: String
+
+  """
+  Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)
+  """
+  recaptchaToken: String
 
   """The organization the user is signing up for"""
   selectedOrganization: ID!
@@ -3240,7 +3707,7 @@ input MutationUpdateAdvertisementInput {
   """Date time at which the advertised event ends."""
   endAt: DateTime
 
-  """Global identifier of the associated organization."""
+  """ID of the advertisement to update."""
   id: ID!
 
   """Name of the advertisement."""
@@ -3253,22 +3720,41 @@ input MutationUpdateAdvertisementInput {
   type: AdvertisementType
 }
 
-""""""
+"""Input for updating an agenda category."""
+input MutationUpdateAgendaCategoryInput {
+  """Description of the agenda category."""
+  description: String
+
+  """Global identifier of the agenda category."""
+  id: ID!
+
+  """Name of the agenda category."""
+  name: String
+}
+
+"""Input type for updating an agenda folder."""
 input MutationUpdateAgendaFolderInput {
+  """Description of the agenda folder."""
+  description: String
+
   """Global identifier of the agenda folder."""
   id: ID!
 
   """Name of the agenda folder."""
   name: String
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """Sequence number of folder"""
+  sequence: Int
 }
 
 """"""
 input MutationUpdateAgendaItemInput {
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
+
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
+
   """Custom information about the agenda item."""
   description: String
 
@@ -3288,6 +3774,19 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+
+  """Notes of the agenda item."""
+  notes: String
+  url: [UpdateAgendaItemUrlInput!]
+}
+
+""""""
+input MutationUpdateAgendaItemSequenceInput {
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """Sequence of agenda item."""
+  sequence: Int!
 }
 
 """"""
@@ -3349,7 +3848,7 @@ input MutationUpdateCommunityInput {
   """URL to the facebook account of the community."""
   facebookURL: String
 
-  """URL to the gitGub account of the community."""
+  """URL to the GitHub account of the community."""
   githubURL: String
 
   """
@@ -3363,8 +3862,8 @@ input MutationUpdateCommunityInput {
   """URL to the linkedin account of the community."""
   linkedinURL: String
 
-  """Mime type of the logo of the community."""
-  logo: Upload
+  """Logo of the community."""
+  logo: FileMetadataInput
 
   """Name of the community."""
   name: String
@@ -3480,6 +3979,9 @@ input MutationUpdateEventInput {
   """Global identifier of the event."""
   id: ID!
 
+  """Indicates if the event is invite-only"""
+  isInviteOnly: Boolean
+
   """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
@@ -3531,11 +4033,20 @@ input MutationUpdateFundInput {
   """Global identifier of the associated organization."""
   id: ID!
 
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean
 
   """Name of the fund."""
   name: String
+
+  """Reference number of the fund."""
+  referenceNumber: String
 }
 
 """"""
@@ -3588,8 +4099,11 @@ input MutationUpdateOrganizationMembershipInput {
 
 """Input for updating a post."""
 input MutationUpdatePostInput {
-  """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  """Direct file upload"""
+  attachment: Upload
+
+  """Body content of the post."""
+  body: String
 
   """Caption about the post."""
   caption: String
@@ -3623,6 +4137,9 @@ input MutationUpdateSingleRecurringEventInstanceInput {
 
   """Global identifier of the recurring event instance to update."""
   id: ID!
+
+  """Whether this specific event instance is invite-only."""
+  isInviteOnly: Boolean
 
   """Whether this specific event instance is publicly visible."""
   isPublic: Boolean
@@ -3679,6 +4196,9 @@ input MutationUpdateThisAndFollowingEventsInput {
   Global identifier of the recurring event instance from which to update this and following instances.
   """
   id: ID!
+
+  """Whether this and following event instances are invite-only."""
+  isInviteOnly: Boolean
 
   """Whether this and following event instances are publicly visible."""
   isPublic: Boolean
@@ -3759,9 +4279,6 @@ input MutationUpdateUserInput {
   """Language code of the user's preferred natural language."""
   naturalLanguageCode: Iso639Set1LanguageCode
 
-  """Password of the user to sign in to the application."""
-  password: String
-
   """Postal code of the user."""
   postalCode: String
 
@@ -3777,10 +4294,22 @@ input MutationUpdateUserInput {
   workPhoneNumber: PhoneNumber
 }
 
+"""Input for updating the current user's password."""
+input MutationUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """New password"""
+  newPassword: String!
+
+  """User's current password"""
+  oldPassword: String!
+}
+
 """"""
 input MutationUpdateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -3793,6 +4322,11 @@ input MutationUpdateVenueInput {
 
   """Name of the venue."""
   name: String
+}
+
+input MutationVerifyEmailInput {
+  """The email verification token received in the verification email."""
+  token: String!
 }
 
 """Minimal notification data for user interfaces."""
@@ -3820,6 +4354,43 @@ type Notification {
 
   """Notification title for display."""
   title: String!
+}
+
+"""Linked OAuth account info for a user."""
+type OAuthAccountInfo {
+  """Email address associated with the OAuth account."""
+  email: String
+
+  """Date and time when the OAuth account was last used for authentication."""
+  lastUsedAt: DateTime
+
+  """Date and time when the OAuth account was linked."""
+  linkedAt: DateTime
+
+  """The OAuth provider."""
+  provider: OAuthProvider
+}
+
+"""Input for OAuth login and account linking."""
+input OAuthLoginInput {
+  """
+  The authorization code received from the OAuth provider after user authorization.
+  """
+  authorizationCode: String!
+
+  """The OAuth provider to authenticate with."""
+  provider: OAuthProvider!
+
+  """
+  The redirect URI used in the OAuth flow. Must match the URI registered with the provider.
+  """
+  redirectUri: String!
+}
+
+"""OAuth providers supported by the platform."""
+enum OAuthProvider {
+  GITHUB
+  GOOGLE
 }
 
 type Organization {
@@ -4180,6 +4751,36 @@ type PageInfo {
   startCursor: String
 }
 
+"""Payload returned after successfully resetting a password."""
+type PasswordResetPayload {
+  """The new authentication token for auto-login after password reset."""
+  authenticationToken: String
+
+  """The new refresh token for auto-login after password reset."""
+  refreshToken: String
+
+  """Whether the password was successfully reset."""
+  success: Boolean
+}
+
+"""Payload returned from a password reset request."""
+type PasswordResetRequestPayload {
+  """A message describing the result of the request."""
+  message: String
+
+  """Whether the request was processed successfully."""
+  success: Boolean
+}
+
+"""Payload returned from verifying a password reset token."""
+type PasswordResetTokenVerification {
+  """The expiration time of the token (null if token is invalid)."""
+  expiresAt: DateTime
+
+  """Whether the token is valid and can be used for password reset."""
+  valid: Boolean
+}
+
 """
 A field whose value conforms to the standard E.164 format as specified in: https://en.wikipedia.org/wiki/E.164. Basically this is +17895551234.
 """
@@ -4212,8 +4813,14 @@ type Plugin {
 }
 
 type Post {
+  """URL to the media attachment (image or video) of the post."""
+  attachmentURL: String
+
   """Array of attachments."""
   attachments: [PostAttachment!]
+
+  """Body for the post."""
+  body: String
 
   """Caption for the post."""
   caption: String
@@ -4290,13 +4897,14 @@ type PostAttachment {
   objectName: String
 }
 
-"""MIME types supported for post attachments"""
+"""Possible MIME types for post/agenda item attachments."""
 enum PostAttachmentMimeType {
   IMAGE_AVIF
   IMAGE_JPEG
   IMAGE_PNG
   IMAGE_WEBP
   VIDEO_MP4
+  VIDEO_QUICKTIME
   VIDEO_WEBM
 }
 
@@ -4381,11 +4989,20 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
+  """Query field to get all agenda categories for a specific event."""
+  agendaCategoriesByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaCategory!]
+
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
 
-  """Query field to read an agenda item."""
-  agendaItem(input: QueryAgendaItemInput!): AgendaItem
+  """Query field to get all Agenda Folders for a specific event."""
+  agendaFoldersByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaFolder!]
 
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
@@ -4420,12 +5037,64 @@ type Query {
   ): Event
 
   """
+  Query field to fetch all events where a user is an administrator (via organization role).
+  """
+  eventsByAdmin(
+    """Number of events to return (Max limit: 100)"""
+    limit: Int = 100
+
+    """Number of events to skip (Max offset: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose admin events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
+  Query field to fetch all events a user is registered for or has attended.
+  """
+  eventsByAttendee(
+    """Number of events to return (max: 100)"""
+    limit: Int = 100
+
+    """Number of events to skip (max: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose attended events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """Query field to fetch all events created by a specific user."""
+  eventsByCreator(
+    """Number of events to return (default: 100, max: 100)"""
+    limit: Int
+
+    """Number of events to skip (default: 0, max: 10000)"""
+    offset: Int
+
+    """ID of the user whose created events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
   Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.
   """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 
   """Fetch all events that belong to a given organization."""
   eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
+
+  """Query field to fetch all events a user is volunteering for."""
+  eventsByVolunteer(
+    """The maximum number of events to return (default: 100, max: 100)"""
+    limit: Int = 100
+
+    """The number of events to skip (default: 0, max: 10000)"""
+    offset: Int = 0
+
+    """ID of the user whose volunteer events to fetch"""
+    userId: ID!
+  ): [Event!]!
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
@@ -4516,6 +5185,15 @@ type Query {
   getRecurringEvents(
     """The ID of the base recurring event template"""
     baseRecurringEventId: ID!
+
+    """Whether to include cancelled instances. Defaults to false."""
+    includeCancelled: Boolean = false
+
+    """Number of events to return. Defaults to 1000. Max 1000."""
+    limit: Int = 1000
+
+    """Number of events to skip. Defaults to 0. Max 10000."""
+    offset: Int = 0
   ): [Event!]
 
   """Query field to get volunteer memberships."""
@@ -4560,7 +5238,7 @@ type Query {
   renewAuthenticationToken: String
 
   """Query field for a client to sign in to talawa."""
-  signIn(input: QuerySignInInput!): AuthenticationPayload
+  signIn(input: QuerySignInInput!): AuthenticationPayload @deprecated(reason: "Use REST POST /auth/signin")
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
@@ -4574,6 +5252,12 @@ type Query {
   """Query field to read a user."""
   user(input: QueryUserInput!): User
 
+  """Fetch tags assigned to a specific user"""
+  userTags(
+    """User ID to fetch assigned tags for"""
+    userId: ID!
+  ): [Tag!]!
+
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]
 
@@ -4582,6 +5266,14 @@ type Query {
 
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
+
+  """
+  Verify if a password reset token is valid and not expired. Use this before showing the password reset form.
+  """
+  verifyPasswordResetToken(
+    """Input for verifying a password reset token."""
+    input: QueryVerifyPasswordResetTokenInput!
+  ): PasswordResetTokenVerification
 }
 
 input QueryActionCategoriesByOrganizationInput {
@@ -4625,12 +5317,6 @@ input QueryAdvertisementInput {
 """"""
 input QueryAgendaFolderInput {
   """Global id of the agenda folder."""
-  id: String!
-}
-
-""""""
-input QueryAgendaItemInput {
-  """Global id of the agenda item."""
   id: String!
 }
 
@@ -4768,6 +5454,11 @@ input QuerySignInInput {
 
   """Password of the user to sign in to talawa."""
   password: String!
+
+  """
+  Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)
+  """
+  recaptchaToken: String
 }
 
 """"""
@@ -4794,9 +5485,20 @@ input QueryVenueInput {
   id: String!
 }
 
+"""Input type for verifying a password reset token."""
+input QueryVerifyPasswordResetTokenInput {
+  """The password reset token to verify."""
+  token: String!
+}
+
 type ReadNotificationResponse {
   message: String
   success: Boolean!
+}
+
+input RecipientInput {
+  email: String!
+  name: String
 }
 
 """
@@ -4857,6 +5559,26 @@ type RejectMembershipResponse {
   success: Boolean
 }
 
+"""
+Response payload for sendVerificationEmail mutation. Returns same response whether email was sent or not to prevent email enumeration.
+"""
+type SendEmailVerificationPayload {
+  """User-friendly message about the request."""
+  message: String
+
+  """Indicates if the request was processed successfully."""
+  success: Boolean
+}
+
+input SendEventInvitationsInput {
+  emails: [String!]
+  eventId: ID
+  expiresInDays: Int
+  message: String
+  recipients: [RecipientInput!]
+  recurringEventInstanceId: ID
+}
+
 type Subscription {
   """
   Subscription field to subscribe to the event of creation of a message in a chat.
@@ -4891,7 +5613,7 @@ type Tag {
   """Name of the tag."""
   name: String
 
-  """Organization the tag belong to."""
+  """Organization the tag belongs to."""
   organization: Organization
 
   """Date time at the time the tag was last updated."""
@@ -4971,6 +5693,21 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+"""Represents a tag unassigned from a user."""
+type UnassignUserTag {
+  """Unique identifier of the unassigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
+}
+
+"""URL associated with an agenda item"""
+input UpdateAgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
 }
 
 """Input for updating an event volunteer group."""
@@ -5105,6 +5842,11 @@ type User {
     input: QueryNotificationInput
   ): [Notification!]
 
+  """
+  Linked OAuth accounts for this user. Only visible to the authenticated user.
+  """
+  oauthAccounts: [OAuthAccountInfo!]!
+
   """The organization ID where the user requested membership."""
   orgIdWhereMembershipRequested: [String!]!
 
@@ -5112,6 +5854,11 @@ type User {
   GraphQL connection to traverse through the organizations the user is a member of.
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
+
+  """
+  GraphQL connection to retrieve organizations where the user is blocked.
+  """
+  orgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
 
   """Postal code of the user."""
   postalCode: String
@@ -5166,7 +5913,7 @@ enum UserMaritalStatus {
   divorced
   engaged
   married
-  seperated
+  separated
   single
   widowed
 }
@@ -5188,6 +5935,21 @@ type UserOrganizationsWhereMemberConnection {
 type UserOrganizationsWhereMemberConnectionEdge {
   cursor: String!
   node: Organization
+}
+
+type UserOrgsWhereUserIsBlockedConnection {
+  """Edge containing a BlockedUser record and cursor."""
+  edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserOrgsWhereUserIsBlockedConnectionEdge {
+  cursor: String!
+
+  """
+  BlockedUser record including the organization where the user is blocked.
+  """
+  node: BlockedUser
 }
 
 """Possible variants of the role assigned to a user."""
@@ -5260,6 +6022,32 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+"""Response payload for verifyEmail mutation."""
+type VerifyEmailPayload {
+  """User-friendly message about the verification result."""
+  message: String
+
+  """
+  Indicates if the email was successfully verified. Returns true even if already verified (idempotent).
+  """
+  success: Boolean
+}
+
+input VerifyEventInvitationInput {
+  invitationToken: String!
+}
+
+type VerifyEventInvitationPreview {
+  eventId: String
+  expiresAt: String
+  invitationToken: String
+  inviteeEmailMasked: String
+  inviteeName: String
+  organizationId: String
+  recurringEventInstanceId: String
+  status: String
 }
 
 enum VolunteerGroupScope {

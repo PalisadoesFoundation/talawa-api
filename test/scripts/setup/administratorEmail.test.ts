@@ -1,10 +1,19 @@
-import fs from "node:fs";
-import inquirer from "inquirer";
-import { administratorEmail, validateEmail } from "scripts/setup/setup";
-import * as SetupModule from "scripts/setup/setup";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type MockInstance,
+	vi,
+} from "vitest";
 
 vi.mock("inquirer");
+
+import fs from "node:fs";
+import inquirer from "inquirer";
+import * as SetupModule from "scripts/setup/setup";
+import { administratorEmail, validateEmail } from "scripts/setup/setup";
 
 describe("Setup -> askForAdministratorEmail", () => {
 	const originalEmail = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
@@ -47,30 +56,38 @@ describe("Setup -> askForAdministratorEmail", () => {
 		);
 	});
 
-	it("should restore from backup and exit when inquirer fails with existing backup", async () => {
-		const consoleErrorSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
-		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
+	it("should handle prompt errors correctly", async () => {
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
 		});
+		(
+			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
+				(path: fs.PathLike) => string[]
+			>
+		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => undefined);
 
-		vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
+		const mockError = new Error("Prompt failed");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
 
-		const promptError = new Error("inquirer failure");
-		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
+		const consoleErrorSpy = vi.spyOn(console, "error");
 
-		await expect(SetupModule.administratorEmail({})).rejects.toThrow(
-			"process.exit called",
+		await administratorEmail({});
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
 		);
-		expect(consoleErrorSpy).toHaveBeenCalledWith(promptError);
-		expect(fs.existsSync).toHaveBeenCalledWith(".env.backup");
-		expect(fs.copyFileSync).toHaveBeenCalledWith(".env.backup", ".env");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
-		processExitSpy.mockRestore();
-		consoleErrorSpy.mockRestore();
+		vi.clearAllMocks();
 	});
 
 	it("should handle inquirer failure gracefully when no backup exists", async () => {
@@ -90,7 +107,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		);
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(promptError);
-		expect(fs.existsSync).toHaveBeenCalledWith(".env.backup");
+		expect(fs.existsSync).toHaveBeenCalledWith(".backup");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		processExitSpy.mockRestore();

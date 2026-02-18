@@ -2,8 +2,8 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { tagAssignmentsTable } from "~/src/drizzle/tables/tagAssignments";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertOrganizationAdmin } from "~/src/utilities/authorization";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUnassignUserTagSchema = z.object({
 	assigneeId: z.string().min(1, "User ID is required."),

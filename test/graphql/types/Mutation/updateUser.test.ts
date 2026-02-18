@@ -1,3 +1,22 @@
+/**
+ * NOTE ON AVATAR UPLOAD / REMOVAL TESTING
+ *
+ * The updateUser mutation includes avatar upload and removal logic that relies on:
+ * - GraphQL multipart Upload scalar handling
+ * - MinIO side-effect operations (putObject / removeObject)
+ *
+ * The current test harness (mercuriusClient) does not support multipart uploads,
+ * making it impossible to execute the successful avatar upload or removal paths
+ * in unit or integration tests.
+ *
+ * As a result:
+ * - Invalid avatar mime types are tested (error path)
+ * - Successful avatar upload/removal paths are intentionally excluded
+ *
+ * These paths are expected to be covered by dedicated integration or E2E tests.
+ */
+
+import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test } from "vitest";
@@ -254,7 +273,6 @@ suite("Mutation field updateUser", () => {
 	    		length of the value of the argument "input.city" is less than 1.
 	    		length of the value of the argument "input.description" is less than 1.
 	    		length of the value of the argument "input.name" is less than 1.
-	    		length of the value of the argument "input.password" is less than 1.
 	    		length of the value of the argument "input.postalCode" is less than 1.
 	    		length of the value of the argument "input.state" is less than 1.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -308,7 +326,6 @@ suite("Mutation field updateUser", () => {
 								description: "",
 								id: createUserResult.data.createUser.user.id,
 								name: "",
-								password: "",
 								postalCode: "",
 								state: "",
 							},
@@ -346,10 +363,6 @@ suite("Mutation field updateUser", () => {
 										message: expect.any(String),
 									},
 									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-									{
 										argumentPath: ["input", "postalCode"],
 										message: expect.any(String),
 									},
@@ -371,7 +384,6 @@ suite("Mutation field updateUser", () => {
 	    		length of the value of the argument "input.city" is more than 64.
 	    		length of the value of the argument "input.description" is more than 2048.
 	    		length of the value of the argument "input.name" is more than 256.
-	    		length of the value of the argument "input.password" is more than 64.
 	    		length of the value of the argument "input.postalCode" is more than 32.
 	    		length of the value of the argument "input.state" is more than 64.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -425,7 +437,6 @@ suite("Mutation field updateUser", () => {
 								description: `description${faker.string.alpha(2049)}`,
 								id: createUserResult.data.createUser.user.id,
 								name: `name${faker.string.alpha(257)}`,
-								password: `password${faker.string.alpha(65)}`,
 								postalCode: `postalCode${faker.string.alpha(33)}`,
 								state: `state${faker.string.alpha(65)}`,
 							},
@@ -463,10 +474,6 @@ suite("Mutation field updateUser", () => {
 										message: expect.any(String),
 									},
 									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-									{
 										argumentPath: ["input", "postalCode"],
 										message: expect.any(String),
 									},
@@ -486,7 +493,6 @@ suite("Mutation field updateUser", () => {
 			test(`value of the argument "input.emailAddress" is "null".
 				value of the argument "input.isEmailAddressVerified" is "null".
 				value of the argument "input.name" is "null".
-				value of the argument "input.password" is "null".
 				value of the argument "input.role" is "null".`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
@@ -537,7 +543,6 @@ suite("Mutation field updateUser", () => {
 								id: createUserResult.data.createUser.user.id,
 								isEmailAddressVerified: null,
 								name: null,
-								password: null,
 								role: null,
 							},
 						},
@@ -566,10 +571,6 @@ suite("Mutation field updateUser", () => {
 										message: expect.any(String),
 									},
 									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-									{
 										argumentPath: ["input", "role"],
 										message: expect.any(String),
 									},
@@ -580,6 +581,67 @@ suite("Mutation field updateUser", () => {
 						}),
 					]),
 				);
+			});
+
+			test("should return invalid_arguments when avatar mime type is not allowed", async () => {
+				const signIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
+
+				assertToBeNonNullish(signIn.data);
+				assertToBeNonNullish(signIn.data.signIn);
+				assertToBeNonNullish(signIn.data.signIn.authenticationToken);
+
+				const adminToken = signIn.data.signIn.authenticationToken;
+
+				const createUser = await mercuriusClient.mutate(Mutation_createUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							emailAddress: `email${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				});
+
+				const fakeUpload = Promise.resolve({
+					filename: "avatar.txt",
+					mimetype: "text/plain",
+					createReadStream: () => Readable.from("dummy"),
+				});
+				assertToBeNonNullish(createUser.data);
+				assertToBeNonNullish(createUser.data.createUser);
+				assertToBeNonNullish(createUser.data.createUser.user);
+				assertToBeNonNullish(createUser.data.createUser.user.id);
+
+				const userId = createUser.data.createUser.user.id;
+
+				const result = await mercuriusClient.mutate(Mutation_updateUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: userId,
+							avatar: fakeUpload,
+						},
+					},
+				});
+				expect(result.data).toBeNull();
+				expect(result.errors).toBeDefined();
+
+				// cleanup
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
 			});
 		},
 	);
@@ -901,7 +963,6 @@ suite("Mutation field updateUser", () => {
 						mobilePhoneNumber: null,
 						name: "new name",
 						natalSex: null,
-						password: "new password",
 						postalCode: null,
 						role: "administrator",
 						state: null,
@@ -948,6 +1009,63 @@ suite("Mutation field updateUser", () => {
 						workPhoneNumber: updateUserVariables.input.workPhoneNumber,
 					}),
 				);
+			});
+
+			test("should update user successfully when optional fields are omitted", async () => {
+				const signIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
+				assertToBeNonNullish(signIn.data);
+				assertToBeNonNullish(signIn.data.signIn);
+				assertToBeNonNullish(signIn.data.signIn.authenticationToken);
+
+				const adminToken = signIn.data.signIn.authenticationToken;
+
+				const createUser = await mercuriusClient.mutate(Mutation_createUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							emailAddress: `email${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				});
+				assertToBeNonNullish(createUser.data);
+				assertToBeNonNullish(createUser.data.createUser);
+				assertToBeNonNullish(createUser.data.createUser.user);
+				assertToBeNonNullish(createUser.data.createUser.user.id);
+
+				const userId = createUser.data.createUser.user.id;
+				const result = await mercuriusClient.mutate(Mutation_updateUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: userId,
+							name: "updated name",
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+
+				assertToBeNonNullish(result.data);
+				assertToBeNonNullish(result.data.updateUser);
+
+				expect(result.data.updateUser.name).toBe("updated name");
+
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
 			});
 		},
 	);

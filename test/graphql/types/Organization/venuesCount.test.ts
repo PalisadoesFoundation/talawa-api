@@ -1,8 +1,12 @@
 import { count, eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { venuesTable } from "~/src/drizzle/schema";
 import { venuesCountResolver } from "~/src/graphql/types/Organization/venuesCount";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 // Parent organization mock
 const mockParent = {

@@ -1,5 +1,7 @@
+// check-sanitization-disable: URL field - validated by URL constructor, escaping would break query parameters
 import envConfig from "~/src/utilities/graphqLimits";
 import { AdvertisementAttachment } from "./AdvertisementAttachment";
+
 AdvertisementAttachment.implement({
 	fields: (t) => ({
 		url: t.field({

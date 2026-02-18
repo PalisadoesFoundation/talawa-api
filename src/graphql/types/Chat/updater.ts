@@ -4,10 +4,11 @@ import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import { Chat } from "./Chat";
+
 type ChatsTable = typeof chatsTable.$inferSelect;
 
 export const resolveUpdater = async (

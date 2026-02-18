@@ -42,7 +42,7 @@ export const eventExceptionsTable = pgTable(
 		/**
 		 * JSON object storing the field differences from the template.
 		 * Only stores fields that are different from the base event.
-		 * Example: { "name": "Special Meeting", "startAt": "2024-01-15T15:00:00Z" }
+		 * Example: \\{ "name": "Special Meeting", "startAt": "2024-01-15T15:00:00Z" \\}
 		 */
 		exceptionData: jsonb("exception_data").notNull(),
 
@@ -59,12 +59,10 @@ export const eventExceptionsTable = pgTable(
 		/**
 		 * Foreign key reference to the user who created the exception.
 		 */
-		creatorId: uuid("creator_id")
-			.notNull()
-			.references(() => usersTable.id, {
-				onDelete: "set null",
-				onUpdate: "cascade",
-			}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		/**
 		 * Foreign key reference to the user who last updated the exception.
@@ -152,10 +150,6 @@ export const eventExceptionsTableRelations = relations(
 export const recurringEventExceptionsTableInsertSchema = createInsertSchema(
 	eventExceptionsTable,
 	{
-		exceptionData: z.record(z.any()), // JSON object with any structure
-		recurringEventInstanceId: z.string().uuid(),
-		organizationId: z.string().uuid(),
-		creatorId: z.string().uuid(),
-		updaterId: z.string().uuid().optional(),
+		exceptionData: z.record(z.string(), z.unknown()),
 	},
 );

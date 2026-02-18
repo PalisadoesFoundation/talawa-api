@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
@@ -6,15 +6,16 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
-		.pick({
-			description: true,
-		})
+		.pick({})
 		.extend({
-			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
+			description: z.string().trim().min(1).max(2048).nullable().optional(),
+			endAt: advertisementsTableInsertSchema.shape.endAt.nullable().optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
-			name: advertisementsTableInsertSchema.shape.name.optional(),
-			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
-			type: advertisementsTableInsertSchema.shape.type.optional(),
+			name: z.string().trim().min(1).max(256).nullable().optional(),
+			startAt: advertisementsTableInsertSchema.shape.startAt
+				.nullable()
+				.optional(),
+			type: advertisementsTableInsertSchema.shape.type.nullable().optional(),
 		})
 		.superRefine(({ id, ...remainingArg }, ctx) => {
 			if (!Object.values(remainingArg).some((value) => value !== undefined)) {
@@ -46,24 +47,29 @@ export const MutationUpdateAdvertisementInput = builder
 		fields: (t) => ({
 			description: t.string({
 				description: "Custom information about the advertisement.",
+				required: false,
 			}),
 			endAt: t.field({
 				description: "Date time at which the advertised event ends.",
+				required: false,
 				type: "DateTime",
 			}),
 			id: t.id({
-				description: "Global identifier of the associated organization.",
+				description: "ID of the advertisement to update.",
 				required: true,
 			}),
 			name: t.string({
 				description: "Name of the advertisement.",
+				required: false,
 			}),
 			startAt: t.field({
 				description: "Date time at which the advertised event starts.",
+				required: false,
 				type: "DateTime",
 			}),
 			type: t.field({
 				description: "Type of the advertisement.",
+				required: false,
 				type: AdvertisementType,
 			}),
 		}),

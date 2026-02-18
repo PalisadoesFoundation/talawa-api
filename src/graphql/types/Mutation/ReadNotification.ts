@@ -6,8 +6,8 @@ import {
 	MutationReadNotificationInput,
 	mutationReadNotificationInputSchema,
 } from "~/src/graphql/inputs/MutationReadNotificationinput";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ReadNotificationResponse } from "../Notification/ReadNotificationResponse";
 
 const MutationReadNotificationArgumentSchema = z.object({
@@ -95,7 +95,7 @@ builder.mutationField("readNotification", (t) =>
 							eq(notificationAudienceTable.userId, currentUserid),
 						),
 					);
-			} catch (error) {
+			} catch (_error) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",

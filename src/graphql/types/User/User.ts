@@ -1,3 +1,5 @@
+import type { z } from "zod";
+import type { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 
@@ -27,8 +29,9 @@ User.implement({
 		name: t.exposeString("name", {
 			description: "Name of the user.",
 		}),
-		role: t.expose("role", {
+		role: t.field({
 			description: "Role assigned to the user in the application.",
+			resolve: (user) => user.role as z.infer<typeof userRoleEnum>,
 			type: UserRole,
 		}),
 	}),

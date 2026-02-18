@@ -1,5 +1,4 @@
 import {
-	type SQL,
 	and,
 	asc,
 	desc,
@@ -9,20 +8,22 @@ import {
 	ilike,
 	lt,
 	or,
+	type SQL,
 } from "drizzle-orm";
 import { z } from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
-	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	createGraphQLConnectionWithWhereSchema,
 	type defaultGraphQLConnectionArgumentsSchema,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 // Define the where schema for user filtering
 const userWhereSchema = z
 	.object({
@@ -43,7 +44,7 @@ const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 		ctx,
 	);
 
-	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	let cursor: z.infer<typeof cursorSchema> | undefined;
 	try {
 		if (transformedArg.cursor !== undefined) {
 			cursor = cursorSchema.parse(
@@ -52,7 +53,7 @@ const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 				),
 			);
 		}
-	} catch (error) {
+	} catch (_error) {
 		ctx.addIssue({
 			code: "custom",
 			message: "Not a valid cursor.",
@@ -236,13 +237,10 @@ builder.queryField("allUsers", (t) =>
 				}
 
 				return transformToDefaultGraphQLConnection({
-					createCursor: (user) =>
-						Buffer.from(
-							JSON.stringify({
-								createdAt: user.createdAt.toISOString(),
-								id: user.id,
-							}),
-						).toString("base64url"),
+					createCursor: (user) => ({
+						createdAt: user.createdAt,
+						id: user.id,
+					}),
 					createNode: (user) => user,
 					parsedArgs,
 					rawNodes: users,

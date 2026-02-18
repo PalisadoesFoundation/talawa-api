@@ -8,46 +8,312 @@ on:
 
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
-  
+  TOTAL_SHARDS: 12
+
 jobs:
-  test-and-upload-coverage:
+  Merge-Conflict-Check:
     runs-on: ubuntu-latest
+    name: Find merge conflicts
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge conflict finder
+        uses: olivernybroe/action-conflict-finder@v4.1
+
+  check_rootless_production_config:
+    name: Check rootless production Docker config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Ensure rootless production files exist
+        run: |
+          test -f ./envFiles/.env.rootless.production
+          test -f ./docker/compose.rootless.production.yaml
+      - name: Validate docker compose config (rootless env, no interpolation)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config --no-interpolate -q
+      - name: Validate docker compose config (rootless env, interpolated)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+
+  test-and-upload-coverage:
+    name: Run tests (Shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    needs: [Merge-Conflict-Check]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
 
       # Create .env file for Talawa API testing environment
       - name: Create .env file for Talawa API testing environment
-        run: cp ./envFiles/.env.ci ./.env
+        run: |
+          cp ./envFiles/.env.ci ./.env
+          echo "NODE_ENV=production" >> .env
+          JWT_SECRET=$(openssl rand -hex 32)
+          echo "API_JWT_SECRET=$JWT_SECRET" >> .env
+          echo "API_AUTH_JWT_SECRET=$JWT_SECRET" >> .env
 
       # Build Talawa API compose testing environment
       - name: Build Talawa API compose testing environment
         run: docker compose build
 
-      # Run tests
-      - name: Run tests
-        run: docker compose up --exit-code-from api
+      # Start test services (postgres-test, minio-test, redis-test, mailpit)
+      - name: Start test services
+        run: docker compose up -d postgres-test minio-test redis-test mailpit
 
-      # Copy coverage from container
-      - name: Copy coverage from container
+      # Wait for test services to be healthy
+      - name: Wait for test services to be ready
         run: |
-          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+          set -euo pipefail
+          echo "Waiting for Postgres test service..."
+          timeout=90
+          until docker compose exec -T postgres-test pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres-test
+            docker compose down -v
+            exit 1
+          fi
+          echo "Postgres is ready."
+
+          # Wait for minio-test health check
+          echo "Waiting for Minio test service..."
+          timeout=60
+          until docker compose exec -T minio-test mc ready local >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Minio not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Minio health check timed out, continuing anyway"
+          else
+            echo "Minio is ready."
+          fi
+
+          # Wait for redis-test health check
+          echo "Waiting for Redis test service..."
+          timeout=60
+          until docker compose exec -T redis-test redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Redis not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Redis health check timed out, continuing anyway"
+          else
+            echo "Redis is ready."
+          fi
+
+          # Wait for mailpit health check
+          echo "Waiting for Mailpit service..."
+          timeout=60
+          until curl -f http://localhost:8025/api/v1/info >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Mailpit not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Mailpit health check timed out, continuing anyway"
+          else
+            echo "Mailpit is ready."
+          fi
+
+          echo "All test services are ready."
+
+      - name: Test Mailpit email service
+        run: |
+          echo "Testing Mailpit email service..."
           
-      #######################################################################
-      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
-      # section. They are required for accurate calculations
-      #######################################################################
-      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+          # Test Mailpit API is responding
+          MAILPIT_INFO=$(curl -s http://localhost:8025/api/v1/info 2>/dev/null || echo '{}')
+          echo "Mailpit info: $MAILPIT_INFO"
+          
+          # Check if Mailpit API is responding with valid data
+          if echo "$MAILPIT_INFO" | grep -q '"version"'; then
+            echo "SUCCESS: Mailpit API is responding correctly"
+            echo "SUCCESS: Mailpit is ready to capture emails"
+          else
+            echo "::warning::Mailpit API may not be responding properly"
+          fi
+          
+          # Note: Email functionality will be tested during the actual test suite execution
+          # The API container will use Mailpit as configured in .env.ci
+
+      # Run tests with sharding
+      - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ env.TOTAL_SHARDS }}
+        run: |
+          # Run tests without --rm to allow coverage extraction
+          docker compose run --name talawa-api-test-shard-${{ matrix.shard }} \
+            -e SHARD_INDEX=$SHARD_INDEX \
+            -e SHARD_COUNT=$SHARD_COUNT \
+            api /bin/sh -c "node scripts/run-shard.js --coverage -c vitest.unit.config.ts --coverage.reportsDirectory=./coverage/unit && node scripts/run-shard.js --coverage -c vitest.integration.config.ts --coverage.reportsDirectory=./coverage/integration"
+
+      - name: Copy coverage from container
+        if: always()
+        run: |
+          # Copy coverage from the named container
+          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
+
+      - name: Cleanup test container
+        if: always()
+        run: |
+          # Remove the test container
+          docker rm -f talawa-api-test-shard-${{ matrix.shard }} || true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: ./coverage/
+          retention-days: 1
+
+  merge-coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [test-and-upload-coverage]
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Download all coverage artifacts
+        id: download-artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: ./coverage-shards/
+          merge-multiple: false
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install dependencies (offline)
+        run: pnpm install --frozen-lockfile --offline
+
+      - name: Check if artifacts were downloaded
+        id: check-artifacts
+        run: |
+          # Check if any coverage files exist
+          if find coverage-shards -name "lcov.info" -type f | grep -q .; then
+            echo "artifacts_found=true" >> $GITHUB_OUTPUT
+            echo "Coverage artifacts found"
+          else
+            echo "artifacts_found=false" >> $GITHUB_OUTPUT
+            echo "No coverage artifacts found - tests may have been skipped"
+          fi
+
+      - name: Merge and Upload Coverage
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        run: |
+          # Function to merge and upload coverage for a specific type (unit or integration)
+          merge_and_upload() {
+            TYPE=$1
+            FLAG=$2
+            echo "Processing $TYPE coverage with flag $FLAG..."
+
+            mkdir -p ./coverage/$TYPE
+            mkdir -p .nyc_output_$TYPE
+
+            # Find all coverage-final.json files for this type
+            # Expected path: coverage-shards/coverage-shard-*/$TYPE/coverage-final.json
+            find coverage-shards -path "*/$TYPE/coverage-final.json" -type f > json-files-$TYPE.txt
+
+            JSON_COUNT=$(wc -l < json-files-$TYPE.txt)
+            echo "Found $JSON_COUNT JSON files for $TYPE"
+
+            if [ "$JSON_COUNT" -eq 0 ]; then
+              echo "::warning::No coverage files found for $TYPE"
+              return
+            fi
+
+            # Copy to unique names
+            SHARD_NUM=0
+            while IFS= read -r file; do
+              cp "$file" ".nyc_output_$TYPE/coverage-shard-${SHARD_NUM}.json"
+              SHARD_NUM=$((SHARD_NUM + 1))
+            done < json-files-$TYPE.txt
+
+            # Merge
+            pnpm exec nyc merge .nyc_output_$TYPE ./coverage/$TYPE/coverage-final.json
+
+            # Path rewrite
+            DOCKER_PATH="/home/talawa/api"
+            RUNNER_PATH="$GITHUB_WORKSPACE"
+            sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/$TYPE/coverage-final.json
+
+            # Report
+            # nyc report uses .nyc_output by default.
+            
+            # Clean .nyc_output first
+            rm -rf .nyc_output
+            mkdir -p .nyc_output
+            cp ./coverage/$TYPE/coverage-final.json .nyc_output/coverage-final.json
+            
+            pnpm exec nyc report --reporter=lcov --report-dir=./coverage/$TYPE
+
+            # Upload
+             # We use the codecov action separately? No, cannot use 'uses' inside 'run'.
+             # Must return here and use steps unless we use the codecov CLI wrapper?
+             # But the action is cleaner. We will assume the lcov.info is ready at ./coverage/$TYPE/lcov.info
+          }
+
+          merge_and_upload "unit" "unit"
+          merge_and_upload "integration" "integration"
+
+      - name: Upload Unit Coverage to Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
         uses: codecov/codecov-action@v5
         with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}"
+          name: "${{env.CODECOV_UNIQUE_NAME}}-unit"
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
-          exclude: 'docs/'
-          gcov_ignore: 'docs/'
-          path: "./coverage/lcov.info"
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/unit/lcov.info
+          flags: unit
+
+      - name: Upload Integration Coverage to Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-integration"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/integration/lcov.info
+          flags: integration
+
 

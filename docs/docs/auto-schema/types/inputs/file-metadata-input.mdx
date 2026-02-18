@@ -76,7 +76,7 @@ Metadata for files uploaded via presigned URL
 ```graphql
 input FileMetadataInput {
   fileHash: String!
-  mimetype: PostAttachmentMimeType!
+  mimeType: PostAttachmentMimeType!
   name: String!
   objectName: String!
 }
@@ -86,9 +86,9 @@ input FileMetadataInput {
 
 #### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>fileHash</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-Hash of the file for deduplication
+SHA-256 hash for integrity verification (not DB-enforced deduplication)
 
-#### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>mimetype</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PostAttachmentMimeType!</b></code>](/auto-schema/types/enums/post-attachment-mime-type.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="enum"/>
+#### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>mimeType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PostAttachmentMimeType!</b></code>](/auto-schema/types/enums/post-attachment-mime-type.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="enum"/>
 
 MIME type of the file
 
@@ -102,4 +102,4 @@ Object name used in storage
 
 ### Member Of
 
-[`MutationCreatePostInput`](/auto-schema/types/inputs/mutation-create-post-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdatePostInput`](/auto-schema/types/inputs/mutation-update-post-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>
+[`MutationCreateAdvertisementInput`](/auto-schema/types/inputs/mutation-create-advertisement-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateOrganizationInput`](/auto-schema/types/inputs/mutation-create-organization-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateVenueInput`](/auto-schema/types/inputs/mutation-create-venue-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateAgendaItemInput`](/auto-schema/types/inputs/mutation-update-agenda-item-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCommunityInput`](/auto-schema/types/inputs/mutation-update-community-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateVenueInput`](/auto-schema/types/inputs/mutation-update-venue-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>

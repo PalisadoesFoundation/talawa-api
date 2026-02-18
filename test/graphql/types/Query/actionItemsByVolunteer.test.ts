@@ -20,6 +20,8 @@ import {
 } from "../documentNodes";
 
 const SUITE_TIMEOUT = 30_000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_DAY_PLUS_ONE_HOUR_MS = 25 * 60 * 60 * 1000;
 
 let globalAuth: { authToken: string; userId: string };
 
@@ -144,8 +146,8 @@ suite("Query: actionItemsByVolunteer", () => {
 					organizationId,
 					name: "Test Event",
 					description: "Test event for action items",
-					startAt: new Date().toISOString(),
-					endAt: new Date(Date.now() + 3600000).toISOString(),
+					startAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
+					endAt: new Date(Date.now() + ONE_DAY_PLUS_ONE_HOUR_MS).toISOString(),
 					location: "Test Location",
 				},
 			},
@@ -405,8 +407,10 @@ suite("Query: actionItemsByVolunteer", () => {
 						organizationId: otherOrgId,
 						name: "Other Test Event",
 						description: "Test event for action items in other org",
-						startAt: new Date().toISOString(),
-						endAt: new Date(Date.now() + 3600000).toISOString(),
+						startAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
+						endAt: new Date(
+							Date.now() + ONE_DAY_PLUS_ONE_HOUR_MS,
+						).toISOString(),
 						location: "Other Test Location",
 					},
 				},

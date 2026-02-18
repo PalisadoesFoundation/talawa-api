@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -18,9 +18,13 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+afterEach(() => {
+	vi.clearAllMocks();
+});
+
 suite("Mutation field updateChatMessage", () => {
 	suite(
-		`results in a graphql error with \"unauthenticated\" extensions code in the \"errors\" field and \"null\" as the value of \"data.updateChatMessage\" field if`,
+		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateChatMessage" field if`,
 		() => {
 			test("client triggering the graphql operation is not authenticated.", async () => {
 				const updateChatMessageResult = await mercuriusClient.mutate(

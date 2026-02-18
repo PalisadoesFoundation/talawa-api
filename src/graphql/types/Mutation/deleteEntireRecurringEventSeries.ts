@@ -11,8 +11,8 @@ import {
 	mutationDeleteEntireRecurringEventSeriesInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteEntireRecurringEventSeriesInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteEntireRecurringEventSeriesArgumentsSchema = z.object({
 	input: mutationDeleteEntireRecurringEventSeriesInputSchema,

@@ -1,106 +1,114 @@
 [
-  {
-    "name": "Membership Request Accepted",
-    "eventType": "membership_request_accepted",
-    "title": "Your membership request has been accepted!",
-    "body": "Congratulations! Your request to join {organizationName} has been approved.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organization/{organizationId}"
-  },
-  {
-    "name": "Membership Request Accepted Email",
-    "eventType": "membership_request_accepted",
-    "title": "Your membership was accepted in {organizationName}",
-    "body": "<html><body><h2>Welcome to {organizationName}</h2><p>Your membership request has been approved.</p><p><a href='/organization/{organizationId}' style='background:#16a34a;color:#ffffff;padding:10px 16px;border-radius:6px;text-decoration:none;'>Open organization</a></p><p>— Talawa</p></body></html>",
-    "channelType": "email",
-    "linkedRouteName": "/organization/{organizationId}"
-  },
-  {
-    "name": "New Event Created",
-    "eventType": "event_created",
-    "title": "New event: {eventName}",
-    "body": "A new event '{eventName}' has been created in {organizationName}. Event starts at {startDate}.",
-    "channelType": "in_app",
-    "linkedRouteName": "/event/{eventId}"
-  },
-  {
-    "name": "New Post Created",
-    "eventType": "post_created",
-    "title": "New post by {authorName}",
-    "body": "{authorName} has created a new post in {organizationName}: \"{postCaption}\"",
-    "channelType": "in_app",
-    "linkedRouteName": "/post/{postId}"
-  },
-  {
-    "name": "Join Request Submitted",
-    "eventType": "join_request_submitted",
-    "title": "New membership request for {organizationName}",
-    "body": "{userName} has requested to join {organizationName}. Please review the request.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organization/{organizationId}/requests"
-  },
-  {
-    "name": "Join Request Submitted Email",
-    "eventType": "join_request_submitted",
-    "title": "New Membership Request - {organizationName}",
-    "body": "<html><body><h2>New Membership Request</h2><p>Hello,</p><p><strong>{userName}</strong> has requested to join <strong>{organizationName}</strong>.</p><p>Please log in to review and approve/reject this request.</p><p><a href='#' style='background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;'>Review Request</a></p><p>Best regards,<br>Talawa Team</p></body></html>",
-    "channelType": "email",
-    "linkedRouteName": "/organization/{organizationId}/requests"
-  },
-  {
-    "name": "New Organization Member",
-    "eventType": "new_member_joined",
-    "title": "New member joined {organizationName}",
-    "body": "{userName} has joined {organizationName} as a new member.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organization/{organizationId}/members"
-  },
-  {
-    "name": "User Removed from Organization",
-    "eventType": "user_removed",
-    "title": "You have been removed from {organizationName}",
-    "body": "You have been removed from {organizationName} by an administrator.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organizations"
-  },
-  {
-    "name": "User Blocked from Organization",
-    "eventType": "user_blocked",
-    "title": "You have been blocked from {organizationName}",
-    "body": "You have been blocked from {organizationName} by an administrator. You can no longer access this organization.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organizations"
-  },
-  {
-    "name": "Membership Request Rejected",
-    "eventType": "membership_request_rejected",
-    "title": "Your membership request has been rejected",
-    "body": "Your request to join {organizationName} has been rejected by an administrator.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organizations"
-  },
-  {
-    "name": "New Fund Created",
-    "eventType": "fund_created",
-    "title": "New fund created: {fundName}",
-    "body": "A new fund '{fundName}' has been created in {organizationName} by {creatorName}.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organization/{organizationId}/funds"
-  },
-  {
-    "name": "New Fund Campaign Created",
-    "eventType": "fund_campaign_created",
-    "title": "New fund campaign: {campaignName}",
-    "body": "A new fund campaign '{campaignName}' has been created for fund '{fundName}' by {creatorName}. Goal: {goalAmount} {currencyCode}.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organization/{organizationId}/campaigns"
-  },
-  {
-    "name": "New Fund Campaign Pledge",
-    "eventType": "fund_campaign_pledge_created",
-    "title": "New pledge for {campaignName}",
-    "body": "{pledgerName} has pledged {amount} {currencyCode} to the campaign '{campaignName}'.",
-    "channelType": "in_app",
-    "linkedRouteName": "/organization/{organizationId}/campaigns"
-  }
+	{
+		"name": "Membership Request Accepted",
+		"eventType": "membership_request_accepted",
+		"title": "Your membership request has been accepted!",
+		"body": "Congratulations! Your request to join {organizationName} has been approved.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organization/{organizationId}"
+	},
+	{
+		"name": "Membership Request Accepted Email",
+		"eventType": "membership_request_accepted",
+		"title": "Your membership was accepted in {organizationName}",
+		"body": "<html><body><h2>Welcome to {organizationName}</h2><p>Your membership request has been approved.</p><p><a href='/organization/{organizationId}' style='background:#16a34a;color:#ffffff;padding:10px 16px;border-radius:6px;text-decoration:none;'>Open organization</a></p><p>— Talawa</p></body></html>",
+		"channelType": "email",
+		"linkedRouteName": "/organization/{organizationId}"
+	},
+	{
+		"name": "New Event Created",
+		"eventType": "event_created",
+		"title": "New event: {eventName}",
+		"body": "A new event '{eventName}' has been created in {organizationName}. Event starts at {startDate}.",
+		"channelType": "in_app",
+		"linkedRouteName": "/event/{eventId}"
+	},
+	{
+		"name": "New Post Created",
+		"eventType": "post_created",
+		"title": "New post by {authorName}",
+		"body": "{authorName} has created a new post in {organizationName}: \"{postCaption}\"",
+		"channelType": "in_app",
+		"linkedRouteName": "/post/{postId}"
+	},
+	{
+		"name": "Join Request Submitted",
+		"eventType": "join_request_submitted",
+		"title": "New membership request for {organizationName}",
+		"body": "{userName} has requested to join {organizationName}. Please review the request.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organization/{organizationId}/requests"
+	},
+	{
+		"name": "Join Request Submitted Email",
+		"eventType": "join_request_submitted",
+		"title": "New Membership Request - {organizationName}",
+		"body": "<html><body><h2>New Membership Request</h2><p>Hello,</p><p><strong>{userName}</strong> has requested to join <strong>{organizationName}</strong>.</p><p>Please log in to review and approve/reject this request.</p><p><a href='#' style='background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;'>Review Request</a></p><p>Best regards,<br>Talawa Team</p></body></html>",
+		"channelType": "email",
+		"linkedRouteName": "/organization/{organizationId}/requests"
+	},
+	{
+		"name": "New Organization Member",
+		"eventType": "new_member_joined",
+		"title": "New member joined {organizationName}",
+		"body": "{userName} has joined {organizationName} as a new member.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organization/{organizationId}/members"
+	},
+	{
+		"name": "User Removed from Organization",
+		"eventType": "user_removed",
+		"title": "You have been removed from {organizationName}",
+		"body": "You have been removed from {organizationName} by an administrator.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organizations"
+	},
+	{
+		"name": "User Blocked from Organization",
+		"eventType": "user_blocked",
+		"title": "You have been blocked from {organizationName}",
+		"body": "You have been blocked from {organizationName} by an administrator. You can no longer access this organization.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organizations"
+	},
+	{
+		"name": "Membership Request Rejected",
+		"eventType": "membership_request_rejected",
+		"title": "Your membership request has been rejected",
+		"body": "Your request to join {organizationName} has been rejected by an administrator.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organizations"
+	},
+	{
+		"name": "New Fund Created",
+		"eventType": "fund_created",
+		"title": "New fund created: {fundName}",
+		"body": "A new fund '{fundName}' has been created in {organizationName} by {creatorName}.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organization/{organizationId}/funds"
+	},
+	{
+		"name": "New Fund Campaign Created",
+		"eventType": "fund_campaign_created",
+		"title": "New fund campaign: {campaignName}",
+		"body": "A new fund campaign '{campaignName}' has been created for fund '{fundName}' by {creatorName}. Goal: {goalAmount} {currencyCode}.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organization/{organizationId}/campaigns"
+	},
+	{
+		"name": "New Fund Campaign Pledge",
+		"eventType": "fund_campaign_pledge_created",
+		"title": "New pledge for {campaignName}",
+		"body": "{pledgerName} has pledged {amount} {currencyCode} to the campaign '{campaignName}'.",
+		"channelType": "in_app",
+		"linkedRouteName": "/organization/{organizationId}/campaigns"
+	},
+	{
+		"name": "Send Event Invite Email",
+		"eventType": "send_event_invite",
+		"title": "{inviteeName}, you're invited to {eventName}",
+		"body": "<html><body><h2>You're Invited!</h2><p>Hello {inviteeName},</p><p>You have been invited to <strong>{eventName}</strong>.</p><p>Click the button below to accept your invitation:</p><p><a href='{invitationUrl}' style='background:#16a34a;color:#ffffff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;'>Accept Invitation</a></p><p>Or copy and paste this link into your browser:</p><p style='color:#666;font-size:14px;'>{invitationUrl}</p><p>— Talawa</p></body></html>",
+		"channelType": "email",
+		"linkedRouteName": "/event/invitation/{invitationToken}"
+	}
 ]

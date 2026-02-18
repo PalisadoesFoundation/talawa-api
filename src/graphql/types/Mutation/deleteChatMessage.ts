@@ -13,9 +13,10 @@ import {
 	mutationDeleteChatMessageInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
+
 const mutationDeleteChatMessageArgumentsSchema = z.object({
 	input: mutationDeleteChatMessageInputSchema,
 });

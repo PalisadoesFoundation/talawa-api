@@ -6,7 +6,7 @@
 
 > **getRecurringEventInstanceById**(`instanceId`, `organizationId`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md) \| `null`\>
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:149](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L149)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:185](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L185)
 
 Retrieves a single resolved recurring event instance by its ID and organization ID.
 
@@ -40,4 +40,4 @@ The logger for logging debug and error messages.
 
 `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md) \| `null`\>
 
-A promise that resolves to the resolved recurring event event instance, or null if not found.
+- A promise that resolves to the resolved recurring event instance, or null if not found.

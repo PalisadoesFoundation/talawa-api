@@ -4,7 +4,7 @@
 
 # Function: executePostProcessing()
 
-> **executePostProcessing**(`executionResults`, `metrics`, `config`, `deps`): `Promise`\<[`PostProcessingResult`](../interfaces/PostProcessingResult.md)\>
+> **executePostProcessing**(`executionResults`, `_metrics`, `config`, `deps`): `Promise`\<[`PostProcessingResult`](../interfaces/PostProcessingResult.md)\>
 
 Defined in: [src/workers/eventGeneration/postProcessor.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/postProcessor.ts#L30)
 
@@ -19,11 +19,9 @@ This includes operations like cleaning up old data and logging final statistics.
 
 An array of results from the materialization execution.
 
-### metrics
+### \_metrics
 
 [`ProcessingMetrics`](../../types/interfaces/ProcessingMetrics.md)
-
-The metrics collected during the materialization process.
 
 ### config
 
@@ -41,4 +39,4 @@ The dependencies required for the worker.
 
 `Promise`\<[`PostProcessingResult`](../interfaces/PostProcessingResult.md)\>
 
-A promise that resolves to the result of the post-processing operations.
+- A promise that resolves to the result of the post-processing operations.

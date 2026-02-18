@@ -4,9 +4,11 @@ import {
 	PostAttachment,
 	type PostAttachment as PostAttachmentType,
 } from "~/src/graphql/types/PostAttachment/PostAttachment";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
-export type Post = typeof postsTable.$inferSelect & {
+export type Post = Omit<typeof postsTable.$inferSelect, "creatorId"> & {
 	attachments: PostAttachmentType[] | null;
+	creatorId: string | null;
 };
 
 export const Post = builder.objectRef<Post>("Post");
@@ -19,8 +21,14 @@ Post.implement({
 			description: "Array of attachments.",
 			type: t.listRef(PostAttachment),
 		}),
-		caption: t.exposeString("caption", {
+		caption: t.string({
 			description: "Caption for the post.",
+			resolve: (root) => escapeHTML(root.caption),
+		}),
+		body: t.string({
+			description: "Body for the post.",
+			nullable: true,
+			resolve: (root) => (root.body ? escapeHTML(root.body) : null),
 		}),
 		createdAt: t.expose("createdAt", {
 			description: "Date time at the time the post was created.",

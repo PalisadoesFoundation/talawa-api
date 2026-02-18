@@ -7,8 +7,9 @@ import {
 	mutationUpdateAdvertisementInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateAdvertisementArgumentsSchema = z.object({
 	input: mutationUpdateAdvertisementInputSchema,
 });
@@ -110,8 +111,8 @@ builder.mutationField("updateAdvertisement", (t) =>
 			}
 
 			if (
-				parsedArgs.input.endAt === undefined &&
-				parsedArgs.input.startAt !== undefined &&
+				parsedArgs.input.endAt == null &&
+				parsedArgs.input.startAt != null &&
 				existingAdvertisement.endAt <= parsedArgs.input.startAt
 			) {
 				throw new TalawaGraphQLError({
@@ -128,8 +129,8 @@ builder.mutationField("updateAdvertisement", (t) =>
 			}
 
 			if (
-				parsedArgs.input.endAt !== undefined &&
-				parsedArgs.input.startAt === undefined &&
+				parsedArgs.input.endAt != null &&
+				parsedArgs.input.startAt == null &&
 				parsedArgs.input.endAt <= existingAdvertisement.startAt
 			) {
 				throw new TalawaGraphQLError({
@@ -145,7 +146,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 				});
 			}
 
-			if (parsedArgs.input.name !== undefined) {
+			if (parsedArgs.input.name != null) {
 				const name = parsedArgs.input.name;
 
 				const existingAdvertisementWithName =
@@ -160,6 +161,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 									fields.organizationId,
 									existingAdvertisement.organizationId,
 								),
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 
@@ -201,11 +203,18 @@ builder.mutationField("updateAdvertisement", (t) =>
 			const [updatedAdvertisement] = await ctx.drizzleClient
 				.update(advertisementsTable)
 				.set({
-					description: parsedArgs.input.description,
-					endAt: parsedArgs.input.endAt,
-					startAt: parsedArgs.input.startAt,
-					name: parsedArgs.input.name,
-					type: parsedArgs.input.type,
+					// Filter out null and undefined values - Drizzle doesn't accept null
+					...(parsedArgs.input.description != null && {
+						description: parsedArgs.input.description,
+					}),
+					...(parsedArgs.input.endAt != null && {
+						endAt: parsedArgs.input.endAt,
+					}),
+					...(parsedArgs.input.startAt != null && {
+						startAt: parsedArgs.input.startAt,
+					}),
+					...(parsedArgs.input.name != null && { name: parsedArgs.input.name }),
+					...(parsedArgs.input.type != null && { type: parsedArgs.input.type }),
 					updaterId: currentUserId,
 				})
 				.where(eq(advertisementsTable.id, parsedArgs.input.id))

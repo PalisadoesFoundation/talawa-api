@@ -31,6 +31,15 @@ Start the server by running the following command:
 docker compose up
 ```
 
+:::note Rootless Docker Engine
+If you are using Docker Engine in rootless mode, ensure `DOCKER_HOST=unix:///run/user/$UID/docker.sock` is set before running `docker compose up`.
+
+If you used `./envFiles/.env.rootless.production`, the default access ports are:
+
+1. HTTP: `http://localhost:8080`
+2. HTTPS: `https://localhost:8443`
+:::
+
 ### Production Server Shutdown
 
 To stop the Docker Server, use this command:

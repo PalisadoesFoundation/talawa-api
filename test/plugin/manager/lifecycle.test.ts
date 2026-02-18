@@ -1,7 +1,8 @@
+import { type ChildProcess, spawn } from "node:child_process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
-import { PluginStatus } from "../../../src/plugin/types";
 import type { IPluginManifest } from "../../../src/plugin/types";
+import { PluginStatus } from "../../../src/plugin/types";
 
 // Type for accessing private methods in tests
 type PluginLifecycleWithPrivate = PluginLifecycle & {
@@ -19,12 +20,17 @@ vi.mock("../../../src/plugin/utils", () => ({
 	dropPluginTables: vi.fn(),
 	safeRequire: vi.fn(),
 	createPluginTables: vi.fn(),
+	isValidPluginId: vi.fn(() => true), // Default to returning true for valid plugin IDs
 }));
 
 vi.mock("../../../src/graphql/schemaManager", () => ({
 	schemaManager: {
 		rebuildSchema: vi.fn(),
 	},
+}));
+
+vi.mock("node:child_process", () => ({
+	spawn: vi.fn(),
 }));
 
 // Type definitions for mocks
@@ -34,6 +40,9 @@ interface MockPluginContext {
 	};
 	logger: {
 		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
 	};
 }
 
@@ -89,9 +98,22 @@ describe("PluginLifecycle", () => {
 	let mockExtensionRegistry: MockExtensionRegistry;
 	let mockPluginManager: MockPluginManager;
 
-	beforeEach(() => {
-		// Reset mocks
-		vi.clearAllMocks();
+	beforeEach(async () => {
+		// Reset mocks - use resetAllMocks to clear implementation queues too
+		vi.resetAllMocks();
+
+		// Re-establish default mock implementations after reset
+		const { isValidPluginId } = await import("../../../src/plugin/utils");
+		(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+		// Default child_process.spawn mock: return an EventEmitter that emits close
+		// (individual tests can override as needed)
+		const { EventEmitter } = require("node:events");
+		vi.mocked(spawn).mockImplementation(() => {
+			const proc = new EventEmitter();
+			setImmediate(() => proc.emit("close", 0));
+			return proc as unknown as ChildProcess;
+		});
 
 		// Setup mock plugin context
 		mockPluginContext = {
@@ -104,6 +126,9 @@ describe("PluginLifecycle", () => {
 			},
 			logger: {
 				info: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
 			},
 		};
 
@@ -404,6 +429,35 @@ describe("PluginLifecycle", () => {
 			// The onInstall hook failure is caught and logged, but doesn't fail the installation
 			expect(result).toBe(true);
 		});
+
+		it("should reject invalid plugin ID during installation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			// Logger already mocked in mockPluginContext
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.installPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			// Verify logger.error was called for the error
+			expect(mockPluginContext.logger.error).toHaveBeenCalled();
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Plugin ../malicious-plugin error during install",
+					),
+					err: expect.any(Error),
+				}),
+			);
+		});
 	});
 
 	describe("uninstallPlugin", () => {
@@ -420,9 +474,12 @@ describe("PluginLifecycle", () => {
 		});
 
 		it("should successfully uninstall a plugin", async () => {
-			const { safeRequire, dropPluginTables } = await import(
+			// Mock isValidPluginId to return true FIRST before any lifecycle calls
+			const { safeRequire, dropPluginTables, isValidPluginId } = await import(
 				"../../../src/plugin/utils"
 			);
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
 			const mockPluginModule: MockPluginModule = {
 				onUninstall: vi.fn(() => Promise.resolve()),
 			};
@@ -433,6 +490,37 @@ describe("PluginLifecycle", () => {
 			(dropPluginTables as ReturnType<typeof vi.fn>).mockResolvedValue(
 				undefined,
 			);
+
+			// Mock private methods called by uninstallPlugin
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"manageDocker",
+			).mockResolvedValue(undefined);
+
+			// Ensure the plugin is in loadedPlugins
+			mockLoadedPlugins.set("test-plugin", {
+				id: "test-plugin",
+				status: PluginStatus.INACTIVE,
+				manifest: {
+					main: "index.js",
+				},
+				databaseTables: { TestTable: {} },
+			});
 
 			const result = await lifecycle.uninstallPlugin(
 				"test-plugin",
@@ -516,6 +604,39 @@ describe("PluginLifecycle", () => {
 
 			expect(result).toBe(true); // Should still succeed despite table removal failure
 		});
+
+		it("should reject invalid plugin ID during uninstallation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			// Logger already mocked in mockPluginContext
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.uninstallPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			expect(mockPluginManager.emit).not.toHaveBeenCalledWith(
+				"plugin:installed",
+				maliciousPluginId,
+			);
+			// Verify logger.error was called for the error
+			expect(mockPluginContext.logger.error).toHaveBeenCalled();
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Plugin ../malicious-plugin error during uninstall",
+					),
+					err: expect.any(Error),
+				}),
+			);
+		});
 	});
 
 	describe("activatePlugin", () => {
@@ -527,6 +648,23 @@ describe("PluginLifecycle", () => {
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
 				mockPluginModule,
 			);
+
+			// Mock private methods called by activatePlugin
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
 
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
@@ -572,6 +710,27 @@ describe("PluginLifecycle", () => {
 				mockPluginModule,
 			);
 
+			// Mock private methods and make them throw
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"manageDocker",
+			).mockResolvedValue(undefined);
+
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
 				mockPluginManager as unknown as Parameters<
@@ -579,7 +738,7 @@ describe("PluginLifecycle", () => {
 				>[1],
 			);
 
-			// The onActivate hook failure is caught and logged, but doesn't fail the activation
+			// The onActivate hook failure is caught and logged, so activation should succeed
 			expect(result).toBe(true);
 			expect(mockLoadedPlugins.get("test-plugin")?.status).toBe(
 				PluginStatus.ACTIVE,
@@ -587,8 +746,32 @@ describe("PluginLifecycle", () => {
 		});
 
 		it("should handle plugin module without onActivate hook", async () => {
-			const { safeRequire } = await import("../../../src/plugin/utils");
+			const { safeRequire, isValidPluginId } = await import(
+				"../../../src/plugin/utils"
+			);
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+			// Mock private methods
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"manageDocker",
+			).mockResolvedValue(undefined);
 
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
@@ -611,8 +794,20 @@ describe("PluginLifecycle", () => {
 				schemaManager.rebuildSchema as ReturnType<typeof vi.fn>
 			).mockRejectedValue(new Error("Schema rebuild failed"));
 
-			const { safeRequire } = await import("../../../src/plugin/utils");
+			const { safeRequire, isValidPluginId } = await import(
+				"../../../src/plugin/utils"
+			);
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+			// Mock private method loadPluginManifest
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
 
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
@@ -638,13 +833,27 @@ describe("PluginLifecycle", () => {
 		});
 
 		it("should successfully deactivate a plugin", async () => {
-			const { safeRequire } = await import("../../../src/plugin/utils");
+			// Mock isValidPluginId to return true FIRST
+			const { safeRequire, isValidPluginId } = await import(
+				"../../../src/plugin/utils"
+			);
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
 			const mockPluginModule: MockPluginModule = {
 				onDeactivate: vi.fn(() => Promise.resolve()),
 			};
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
 				mockPluginModule,
 			);
+
+			// Mock private method loadPluginManifest
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
 
 			const result = await lifecycle.deactivatePlugin(
 				"test-plugin",
@@ -924,10 +1133,7 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Loggers are already mocked
 
 			// Call the private method through reflection
 			await (
@@ -936,12 +1142,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnInstallHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onInstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onInstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -960,10 +1167,7 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Loggers are already mocked
 
 			// Call the private method through reflection
 			await (
@@ -972,12 +1176,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnActivateHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onActivate lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onActivate lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -996,10 +1201,7 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Loggers are already mocked
 
 			// Call the private method through reflection
 			await (
@@ -1008,12 +1210,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnDeactivateHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onDeactivate lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onDeactivate lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -1032,11 +1235,6 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
-
 			// Call the private method through reflection
 			await (
 				lifecycle as unknown as {
@@ -1044,12 +1242,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnUninstallHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onUninstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onUninstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -1066,11 +1265,6 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
-
 			// Call the private method through reflection
 			await (
 				lifecycle as unknown as {
@@ -1078,12 +1272,12 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnUnloadHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onUnload lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onUnload lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
-
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 	});
@@ -1233,6 +1427,216 @@ describe("PluginLifecycle", () => {
 
 				// Test passes if no error is thrown (will fail on docker check but that's expected)
 			}
+		});
+
+		it("should execute docker build command when buildOnInstall is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Covers line 645
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"build",
+				]),
+				expect.any(Object),
+			);
+
+			// Verify structured info log for building docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Building docker container",
+					pluginId,
+					action: "install",
+				}),
+			);
+		});
+
+		it("should execute docker up command when upOnActivate is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					upOnActivate: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "activate");
+
+			// Covers line 650
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"up",
+					"-d",
+				]),
+				expect.any(Object),
+			);
+
+			// Verify structured info log for starting docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Starting docker container",
+					pluginId,
+					action: "activate",
+				}),
+			);
+		});
+
+		it("should execute docker down command when downOnDeactivate is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					downOnDeactivate: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "deactivate");
+
+			// Covers line 655
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"down",
+				]),
+				expect.any(Object),
+			);
+
+			// Verify structured info log for stopping docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Stopping docker container",
+					pluginId,
+					action: "deactivate",
+				}),
+			);
+		});
+
+		it("should execute docker down with volumes when removeOnUninstall is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					removeOnUninstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "uninstall");
+
+			// Covers line 660
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"down",
+					"-v",
+				]),
+				expect.any(Object),
+			);
+
+			// Verify structured info log for removing docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Removing docker container",
+					pluginId,
+					action: "uninstall",
+				}),
+			);
 		});
 	});
 
@@ -1626,9 +2030,7 @@ describe("PluginLifecycle", () => {
 
 	describe("handlePluginError", () => {
 		it("should log plugin errors", () => {
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Logger is already mocked
 			const error = new Error("Test error");
 
 			(
@@ -1641,11 +2043,12 @@ describe("PluginLifecycle", () => {
 				}
 			).handlePluginError("test-plugin", error, "activate");
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Plugin test-plugin error during activate:",
-				error,
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Plugin test-plugin error during activate",
+					err: error,
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1671,9 +2074,7 @@ describe("PluginLifecycle", () => {
 			const { schemaManager } = await import(
 				"../../../src/graphql/schemaManager"
 			);
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Logger is already mocked
 			(
 				schemaManager.rebuildSchema as ReturnType<typeof vi.fn>
 			).mockRejectedValue(new Error("Schema rebuild failed"));
@@ -1684,11 +2085,12 @@ describe("PluginLifecycle", () => {
 				}
 			).triggerSchemaRebuild();
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Schema rebuild failed:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Schema rebuild failed",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1767,6 +2169,13 @@ describe("PluginLifecycle", () => {
 			).createPluginDatabases("test-plugin", mockManifest);
 
 			expect(createPluginTables).toHaveBeenCalled();
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Loading table definition",
+					name: "TestTable",
+					file: "tables.js",
+				}),
+			);
 		});
 
 		it("should handle plugin without database tables", async () => {
@@ -1908,9 +2317,7 @@ describe("PluginLifecycle", () => {
 
 		it("should handle onInstall hook errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+
 			const mockPluginModule: MockPluginModule = {
 				onInstall: vi.fn(() => Promise.reject(new Error("Install failed"))),
 			};
@@ -1924,11 +2331,12 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnInstallHook("test-plugin");
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onInstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onInstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1968,9 +2376,7 @@ describe("PluginLifecycle", () => {
 
 		it("should handle onUninstall hook errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+
 			const mockPluginModule: MockPluginModule = {
 				onUninstall: vi.fn(() => Promise.reject(new Error("Uninstall failed"))),
 			};
@@ -1984,11 +2390,393 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnUninstallHook("test-plugin");
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onUninstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onUninstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("loadPluginManifest validation", () => {
+		it("should throw error for invalid plugin ID in loadPluginManifest", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			await expect(
+				(
+					lifecycle as unknown as {
+						loadPluginManifest: (pluginId: string) => Promise<unknown>;
+					}
+				).loadPluginManifest("../malicious"),
+			).rejects.toThrow("Invalid plugin ID: ../malicious");
+		});
+	});
+
+	describe("manageDocker edge cases", () => {
+		it("should warn and return when Docker command fails (docker not available)", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			// Make docker --version fail
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+				(command: string, args: string[]) => {
+					const proc = new EventEmitter();
+					setImmediate(() => {
+						if (command === "docker" && args[0] === "--version") {
+							proc.emit("close", 1); // Non-zero exit code for docker --version
+						} else {
+							proc.emit("close", 0);
+						}
+					});
+					return proc;
+				},
+			);
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining("Docker not available"),
+					pluginId: "test-plugin",
+					action: "install",
+				}),
+			);
+		});
+
+		it("should warn and return when docker compose is not available", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			let callCount = 0;
+			// Make docker compose version fail but docker --version pass
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+				(command: string, args: string[]) => {
+					const proc = new EventEmitter();
+					setImmediate(() => {
+						callCount++;
+						if (
+							callCount === 2 &&
+							command === "docker" &&
+							args[0] === "compose"
+						) {
+							proc.emit("close", 1); // Non-zero exit code for docker compose
+						} else {
+							proc.emit("close", 0);
+						}
+					});
+					return proc;
+				},
+			);
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining("'docker compose' not available"),
+					pluginId: "test-plugin",
+					action: "install",
+				}),
+			);
+		});
+
+		it("should handle spawn error event as Docker not available", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			// Make spawn emit error - this triggers the Docker availability check failure
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => {
+					proc.emit("error", new Error("Spawn failed"));
+				});
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Spawn error during docker --version check results in "Docker not available" message
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining("Docker not available"),
+					pluginId: "test-plugin",
+					action: "install",
+				}),
+			);
+		});
+
+		it("should log warning when docker compose command fails (covers catch block)", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			let callCount = 0;
+			// First 2 calls (docker --version, docker compose version) succeed,
+			// third call (docker compose build) fails
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				callCount++;
+				setImmediate(() => {
+					if (callCount <= 2) {
+						// docker --version and docker compose version checks succeed
+						proc.emit("close", 0);
+					} else {
+						// docker compose build command fails with non-zero exit code
+						proc.emit("close", 1);
+					}
+				});
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Verify the warning log for docker lifecycle step failure
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Docker lifecycle step 'install' failed",
+					),
+				}),
+			);
+		});
+
+		it("should skip buildOnInstall when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Should not have called build because buildOnInstall is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["build"]),
+				expect.any(Object),
+			);
+		});
+
+		it("should skip upOnActivate when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					upOnActivate: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "activate");
+
+			// Should not have called up because upOnActivate is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["up", "-d"]),
+				expect.any(Object),
+			);
+		});
+
+		it("should skip downOnDeactivate when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					downOnDeactivate: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "deactivate");
+
+			// Should not have called down because downOnDeactivate is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["down"]),
+				expect.any(Object),
+			);
+		});
+
+		it("should skip removeOnUninstall when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					removeOnUninstall: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "uninstall");
+
+			// Should not have called down -v because removeOnUninstall is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["down", "-v"]),
+				expect.any(Object),
+			);
+		});
+	});
+
+	describe("removePluginDatabases error handling", () => {
+		it("should handle database table removal error gracefully", async () => {
+			const { dropPluginTables } = await import("../../../src/plugin/utils");
+			const plugin = mockLoadedPlugins.get("test-plugin");
+			if (plugin) {
+				plugin.databaseTables = { TestTable: {} };
+			}
+
+			(dropPluginTables as ReturnType<typeof vi.fn>).mockRejectedValue(
+				new Error("Drop failed"),
+			);
+
+			await (
+				lifecycle as unknown as {
+					removePluginDatabases: (pluginId: string) => Promise<void>;
+				}
+			).removePluginDatabases("test-plugin");
+
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining("Failed to remove tables"),
+				}),
+			);
 		});
 	});
 });

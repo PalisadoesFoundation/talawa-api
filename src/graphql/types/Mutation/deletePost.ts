@@ -7,8 +7,14 @@ import {
 	mutationDeletePostInputSchema,
 } from "~/src/graphql/inputs/MutationDeletePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationDeletePostArgumentsSchema = z.object({
 	input: mutationDeletePostInputSchema,
 });
@@ -129,7 +135,7 @@ builder.mutationField("deletePost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [deletedPost] = await tx
 					.delete(postsTable)
 					.where(eq(postsTable.id, parsedArgs.input.id))
@@ -155,6 +161,17 @@ builder.mutationField("deletePost", (t) =>
 					attachments: existingPost.attachmentsWherePost,
 				});
 			});
+
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "post", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "post"),
+				],
+				"post",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: Post,
 	}),

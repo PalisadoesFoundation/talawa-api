@@ -18,6 +18,81 @@ Installation is not difficult, but there are many steps. This is a brief explana
 
 These steps are explained in more detail in the sections that follow.
 
+## Quick Start: One-Click Installation
+
+For a simplified setup experience, use our automated installation scripts that handle all prerequisites automatically.
+
+### Linux / macOS / WSL
+
+```bash
+# Clone the repository
+git clone https://github.com/PalisadoesFoundation/talawa-api.git
+cd talawa-api
+
+# Run the installation script
+./scripts/install/install.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Clone the repository
+git clone https://github.com/PalisadoesFoundation/talawa-api.git
+cd talawa-api
+
+# Run the installation script (as Administrator)
+.\scripts\install\install.ps1
+```
+
+### Installation Modes
+
+| Mode             | Command (Linux/macOS)                   | Command (Windows)                       | Use Case                       |
+| ---------------- | --------------------------------------- | --------------------------------------- | ------------------------------ |
+| Docker (default) | `./scripts/install/install.sh --docker` | `.\scripts\install\install.ps1 -Docker` | Production-like, containerized |
+| Local            | `./scripts/install/install.sh --local`  | `.\scripts\install\install.ps1 -Local`  | Development with hot reloading |
+
+After the script completes, run `pnpm run setup` to configure the application.
+
+### Non-interactive / CI Installs
+
+The installation scripts support non-interactive mode for CI/CD pipelines and automated deployments. This mode skips confirmation prompts that would otherwise require user input.
+
+#### Environment Variables
+
+| Variable   | Values           | Description                                                         |
+| ---------- | ---------------- | ------------------------------------------------------------------- |
+| `AUTO_YES` | `true` / `false` | Explicitly enable/disable non-interactive mode                      |
+| `CI`       | `true` / `false` | Standard CI environment variable (auto-detected by most CI systems) |
+
+The script also auto-detects non-interactive environments when stdin is not a terminal.
+
+#### Example: CI Pipeline (GitHub Actions, Jenkins, etc.)
+
+```bash
+# CI=true is typically set automatically by CI systems
+CI=true ./scripts/install/linux/install-linux.sh
+```
+
+#### Example: Automated Local Install
+
+```bash
+# Skip all confirmation prompts
+AUTO_YES=true ./scripts/install/linux/install-linux.sh --docker
+```
+
+:::caution Security Note
+In non-interactive mode, the following confirmation prompts are skipped:
+
+- Docker installer execution (from https://get.docker.com)
+- fnm installer execution (from https://fnm.vercel.app)
+
+The scripts are still downloaded to temporary files first (not piped directly to shell), but you should ensure you trust the source before running in automated environments.
+:::
+
+:::tip
+The one-click scripts automatically install Git, Node.js, pnpm, and Docker if not present. For manual installation steps, continue reading below.
+:::
+
 ## Prerequisites
 
 In this section we'll explain how to set up all the prerequisite software packages to get you up and running.
@@ -78,6 +153,10 @@ Proceed to the next section.
 
 The best way to install and manage `node.js` is making use of node version managers. We recommend using `fnm`, which will be described in more detail later.
 
+:::info
+Talawa API requires **Node.js 24.12.0 (LTS)**. Using the correct Node.js version is essential for the application to work properly. The version managers (`fnm` or `nvm`) will automatically use the correct version when you navigate to the project directory.
+:::
+
 Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
 
 #### For Windows Users
@@ -135,15 +214,140 @@ This command installs TypeScript globally on your system so that it can be acces
 
 Proceed to the next section.
 
+### Install Python (For Developers)
+
+:::note
+Python is required for local pre-commit hooks that validate code quality. If you're contributing code, you'll need to set up Python to ensure your commits pass all validation checks locally before pushing to GitHub.
+:::
+
+The pre-commit hooks use Python scripts to validate code quality and enforce best practices. Follow these steps to set up Python:
+
+#### 1. Install Python 3.9 or Higher
+
+- **Windows**: Download from [python.org](https://www.python.org/downloads/) or use `winget install Python.Python.3.11`
+- **MacOS**: Use Homebrew: `brew install python@3.11` or download from [python.org](https://www.python.org/downloads/)
+- **Linux**: Use your package manager:
+  - Ubuntu/Debian: `sudo apt install python3 python3-pip python3-venv`
+  - Fedora: `sudo dnf install python3 python3-pip python3-venv`
+
+:::tip
+On some Linux distributions, the `venv` module is distributed separately. If you get an error like `No module named 'venv'`, you need to install the `python3-venv` package as shown above.
+:::
+
+#### 2. Verify Python Installation
+
+```bash
+python3 --version
+# Should show Python 3.9 or higher
+```
+
+#### 3. Create and Activate Virtual Environment
+
+```bash
+# Create virtual environment in the repository
+python3 -m venv .venv
+
+# Activate the virtual environment
+# On Linux/MacOS:
+source .venv/bin/activate
+
+# On Windows:
+# - Command Prompt:
+.venv\Scripts\activate.bat
+
+# - PowerShell:
+.venv\Scripts\Activate.ps1
+
+# - Git Bash:
+source .venv/Scripts/activate
+```
+
+#### 4. Install Required Python Packages
+
+```bash
+pip3 install -r .github/workflows/requirements.txt
+```
+
+This installs the following packages needed for code quality checks:
+
+- `black` - Python code formatter
+- `pydocstyle` - Docstring style checker
+- `flake8` and `flake8-docstrings` - Python linter
+- `docstring_parser` - Docstring parsing library
+
+#### 5. Verify Installation
+
+```bash
+pip3 list | grep -E "(black|pydocstyle|flake8|docstring)"
+```
+
+You should see all the packages listed.
+
+#### 6. Install curl or wget (For Downloading Validation Scripts)
+
+:::note
+The pre-commit hooks automatically download the latest validation scripts from the centralized [PalisadoesFoundation/.github](https://github.com/PalisadoesFoundation/.github) repository. This requires `curl` or `wget` to be installed on your system.
+:::
+
+Most systems have `curl` or `wget` pre-installed, but you can verify and install if needed:
+
+**Check if curl is installed:**
+
+```bash
+curl --version
+```
+
+**Check if wget is installed:**
+
+```bash
+wget --version
+```
+
+**Install curl if needed:**
+
+- **Ubuntu/Debian**: `sudo apt install curl`
+- **Fedora/RHEL**: `sudo dnf install curl`
+- **macOS**: curl is pre-installed
+- **Windows 10+**: curl is pre-installed, or use `winget install curl.curl`
+
+**Alternatively, install wget:**
+
+- **Ubuntu/Debian**: `sudo apt install wget`
+- **Fedora/RHEL**: `sudo dnf install wget`
+- **macOS**: `brew install wget`
+- **Windows**: `winget install wget.wget`
+
+:::info
+The pre-commit hooks will use whichever is available (`curl` is tried first, then `wget`). You only need one of them installed.
+:::
+
 ### Install The Required Packages
+
+This section covers how to install additional required packages.
+
+1. All users will need to run the `pnpm install` command
+2. If you are a developer, you will additionally need to install packages in the `docs/` directory.
+
+Both steps are outlined below.
+
+#### All Users
 
 Run the following command to install the packages and dependencies required by the app:
 
-```
+```bash
 pnpm install
 ```
 
-The prerequisites are now installed. The next step will be to get the app up and running.
+#### Additional Step for Developers
+
+:::note
+Developers will also need to install packages in the `docs/` directory.
+:::
+
+```bash
+cd docs/
+pnpm install
+```
 
 ### Install Docker
 
@@ -166,7 +370,87 @@ Follow these steps to install Docker on your system:
       ```
    4. Using the Docker documentation, you must ensure that Docker will restart after your next reboot.
 
-**Note:** Restart the docker if you are getting this error `Cannot connect to the Docker daemon `
+#### Docker Engine Rootless Mode (Linux)
+
+Docker can be installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/) on Linux to run the daemon and containers without root privileges.
+
+**Important notes:**
+
+1. The `dockerd-rootless-setuptool.sh install` command **MUST NOT** be run using `sudo`.
+2. Ensure `DOCKER_HOST` uses `$UID` so it works for any user:
+   ```bash
+   export DOCKER_HOST=unix:///run/user/$UID/docker.sock
+   ```
+3. Verify the daemon is running in rootless mode:
+   ```bash
+   docker info --format '{{.SecurityOptions}}'
+   ```
+   The output should include `rootless`.
+4. When testing rootless mode, make sure the user is **not** a member of the operating system `docker` group.
+
+### Docker Devcontainer Modes
+
+This project provides two devcontainer configurations to support different Docker setups:
+
+| Mode | Configuration | Use Case |
+| --- | --- | --- |
+| **Default** | `.devcontainer/default/devcontainer.json` | Standard Docker (Docker Desktop or Docker Engine with root) |
+| **Rootless** | `.devcontainer/rootless/devcontainer.json` | Docker installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/) |
+
+#### Default Mode (Recommended)
+
+This is the standard configuration for most users running Docker Desktop (Windows/Mac) or Docker Engine with root access (Linux).
+
+**Usage:**
+
+1.  Open VS Code in the `talawa-api` project folder.
+2.  Press `F1` and run **Dev Containers: Reopen in Container**.
+3.  Select the **"talawa_api_default"** configuration if prompted, or use the CLI:
+    ```bash
+    devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+    ```
+4.  Verify the container starts and the API is accessible at [http://localhost:4000](http://localhost:4000).
+
+#### Rootless Mode
+
+Use this configuration when running Docker in rootless mode. This allows you to run the development environment without root privileges on your host machine.
+
+**Prerequisites:**
+
+*   Docker installed in [Rootless mode](https://docs.docker.com/engine/security/rootless/).
+*   The `DOCKER_HOST` environment variable must be set.
+    *   Example: `export DOCKER_HOST=unix:///run/user/$UID/docker.sock`
+    *   It is recommended to add this to your shell configuration (e.g., `.bashrc` or `.zshrc`).
+*   **Environment Variables**: Ensure `UID` and `XDG_RUNTIME_DIR` are set.
+    *   **Bash/Zsh**:
+        ```bash
+        export UID=$(id -u)
+        export XDG_RUNTIME_DIR=/run/user/$UID
+        ```
+    *   These are used to locate the correct Docker socket.
+
+**Technical Details:**
+
+The rootless configuration uses a specific `compose.rootless.devcontainer.yaml` file.
+
+*   **Socket Mounting**: It mounts the host Docker socket from `${XDG_RUNTIME_DIR:-/run/user/${UID}}/docker.sock` to `/var/run/docker.sock` inside the container. This ensures the container can communicate with the host's rootless Docker daemon.
+*   **User Mapping**: The container is configured to run as `root` internally, but due to **User Namespace Remapping** in rootless Docker, this maps to your non-root host user. This allows the container to write to bind-mounted directories (like the workspace) with the correct permissions for your host user.
+
+**Usage:**
+
+1.  Open VS Code in the `talawa-api` project folder.
+2.  Press `F1` and run **Dev Containers: Reopen in Container**.
+3.  Select the **"talawa_api_rootless"** configuration if prompted, or use the CLI:
+    ```bash
+    devcontainer up --workspace-folder . --config .devcontainer/rootless/devcontainer.json
+    ```
+4.  Verify the container starts and the API is accessible at [http://localhost:4000](http://localhost:4000).
+
+:::note
+For troubleshooting Docker Rootless mode issues, see the [Troubleshooting Guide](../developer-resources/testing/troubleshooting.md#docker-rootless-mode).
+:::
+
+**Note:** Restart Docker if you are getting this error `Cannot connect to the Docker daemon`
 
 ## Configuring Talawa API
 

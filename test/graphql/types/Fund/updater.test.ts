@@ -23,6 +23,9 @@ describe("Fund Resolver - Updater Field", () => {
 			updaterId: "id-222",
 			organizationId: "org-01",
 			isTaxDeductible: false,
+			isDefault: false,
+			isArchived: false,
+			referenceNumber: null,
 		};
 
 		vi.clearAllMocks();

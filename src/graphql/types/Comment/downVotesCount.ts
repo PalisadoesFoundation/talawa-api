@@ -2,6 +2,7 @@ import { and, count, eq } from "drizzle-orm";
 import { commentVotesTable } from "~/src/drizzle/tables/commentVotes";
 import envConfig from "~/src/utilities/graphqLimits";
 import { Comment } from "./Comment";
+
 Comment.implement({
 	fields: (t) => ({
 		downVotesCount: t.field({

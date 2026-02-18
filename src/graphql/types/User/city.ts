@@ -1,6 +1,8 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
+
 User.implement({
 	fields: (t) => ({
 		city: t.field({
@@ -36,9 +38,6 @@ User.implement({
 					currentUser.role !== "administrator" &&
 					parent.id !== currentUserId
 				) {
-					console.log("=============================");
-					console.log(currentUser.role);
-					console.log("=============================");
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
@@ -46,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return parent.city;
+				return escapeHTML(parent.city);
 			},
 			type: "String",
 		}),

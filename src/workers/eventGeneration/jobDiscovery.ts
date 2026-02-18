@@ -1,16 +1,16 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import {
 	estimateInstanceCount,
 	normalizeRecurrenceRule,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 import type { EventGenerationJob } from "./executionEngine";
 import type { WorkerDependencies } from "./types";
 
 /**
- * @description Configuration for the job discovery process, defining limits and thresholds.
+ * Configuration for the job discovery process, defining limits and thresholds.
  */
 export interface JobDiscoveryConfig {
 	maxOrganizations: number;
@@ -19,7 +19,7 @@ export interface JobDiscoveryConfig {
 }
 
 /**
- * @description Represents a discovered workload for a single organization, including all
+ * Represents a discovered workload for a single organization, including all
  * recurring events that require EventGeneration.
  */
 export interface DiscoveredWorkload {
@@ -43,7 +43,7 @@ export interface DiscoveredWorkload {
  *
  * @param config - The configuration for the job discovery process.
  * @param deps - The dependencies required for the worker, such as the database client and logger.
- * @returns A promise that resolves to an array of discovered workloads, sorted by priority.
+ * @returns - A promise that resolves to an array of discovered workloads, sorted by priority.
  */
 export async function discoverEventGenerationWorkloads(
 	config: JobDiscoveryConfig,
@@ -113,7 +113,7 @@ export async function discoverEventGenerationWorkloads(
  * This function uses a unified, date-based approach by normalizing recurrence rules.
  *
  * @param workloads - An array of discovered workloads to be converted.
- * @returns An array of EventGeneration jobs ready for execution.
+ * @returns - An array of EventGeneration jobs ready for execution.
  */
 export function createEventGenerationJobs(
 	workloads: DiscoveredWorkload[],
@@ -154,7 +154,7 @@ export function createEventGenerationJobs(
  * @param normalizedRule - The normalized recurrence rule, with count converted to an end date.
  * @param windowConfig - The EventGeneration window configuration for the organization.
  * @param now - The current date, used as a reference for calculations.
- * @returns The calculated end date for the EventGeneration window.
+ * @returns - The calculated end date for the EventGeneration window.
  */
 function calculateWindowEndDateForEvent(
 	normalizedRule: typeof recurrenceRulesTable.$inferSelect,
@@ -188,7 +188,7 @@ function calculateWindowEndDateForEvent(
  *
  * @param config - The job discovery configuration.
  * @param deps - The worker dependencies.
- * @returns A promise that resolves to an array of organization window configurations.
+ * @returns - A promise that resolves to an array of organization window configurations.
  */
 async function findOrganizationsNeedingWork(
 	config: JobDiscoveryConfig,
@@ -215,11 +215,13 @@ async function findOrganizationsNeedingWork(
 }
 
 /**
- * Discovers all recurring events for a given organization that may require EventGeneration.
+ * Discovers all recurring event templates for a given organization that may require
+ * EventGeneration, fetching results in stable, paginated batches and joining each
+ * event to its recurrence rule before returning the aggregated details.
  *
  * @param organizationId - The ID of the organization to discover events for.
  * @param deps - The worker dependencies.
- * @returns A promise that resolves to an array of detailed recurring event information.
+ * @returns - A promise that resolves to an array of detailed recurring event information.
  */
 async function discoverRecurringEventsForOrganization(
 	organizationId: string,
@@ -235,42 +237,48 @@ async function discoverRecurringEventsForOrganization(
 	}>
 > {
 	const { drizzleClient } = deps;
-
-	// Get recurring events
-	const recurringEvents = await drizzleClient.query.eventsTable.findMany({
-		where: and(
-			eq(eventsTable.organizationId, organizationId),
-			eq(eventsTable.isRecurringEventTemplate, true),
-		),
-	});
-
-	// Get recurrence rules
-	const recurrenceRules =
-		await drizzleClient.query.recurrenceRulesTable.findMany({
-			where: eq(recurrenceRulesTable.organizationId, organizationId),
-		});
-
-	const ruleMap = new Map(
-		recurrenceRules.map((rule) => [rule.baseRecurringEventId, rule]),
-	);
-
+	const EVENT_BATCH_SIZE = 500;
+	let offset = 0;
 	const eventDetails = [];
-
-	for (const event of recurringEvents) {
-		const rule = ruleMap.get(event.id);
-		if (!rule) continue;
-
-		const isNeverEnding = !rule.count && !rule.recurrenceEndDate;
-		const estimatedInstances = estimateInstanceCount(rule);
-
-		eventDetails.push({
-			eventId: event.id,
-			eventName: event.name || "Unnamed Event",
-			ruleId: rule.id,
-			isNeverEnding,
-			estimatedInstances,
-			recurrenceRule: rule,
+	while (true) {
+		const recurringEvents = await drizzleClient.query.eventsTable.findMany({
+			where: and(
+				eq(eventsTable.organizationId, organizationId),
+				eq(eventsTable.isRecurringEventTemplate, true),
+			),
+			orderBy: [eventsTable.id], // IMPORTANT (stable pagination)
+			limit: EVENT_BATCH_SIZE,
+			offset,
 		});
+
+		if (recurringEvents.length === 0) break;
+
+		const eventIds = recurringEvents.map((e) => e.id);
+
+		const recurrenceRules =
+			await drizzleClient.query.recurrenceRulesTable.findMany({
+				where: inArray(recurrenceRulesTable.baseRecurringEventId, eventIds),
+			});
+		const ruleMap = new Map(
+			recurrenceRules.map((rule) => [rule.baseRecurringEventId, rule]),
+		);
+		for (const event of recurringEvents) {
+			const rule = ruleMap.get(event.id);
+			if (!rule) continue;
+
+			const isNeverEnding = !rule.count && !rule.recurrenceEndDate;
+			const estimatedInstances = estimateInstanceCount(rule);
+
+			eventDetails.push({
+				eventId: event.id,
+				eventName: event.name || "Unnamed Event",
+				ruleId: rule.id,
+				isNeverEnding,
+				estimatedInstances,
+				recurrenceRule: rule,
+			});
+		}
+		offset += recurringEvents.length;
 	}
 
 	return eventDetails;
@@ -282,7 +290,7 @@ async function discoverRecurringEventsForOrganization(
  *
  * @param windowConfig - The EventGeneration window configuration.
  * @param recurringEvents - An array of recurring events in the workload.
- * @returns A numerical priority score, with higher values indicating higher priority.
+ * @returns - A numerical priority score, with higher values indicating higher priority.
  */
 function calculateWorkloadPriority(
 	windowConfig: typeof eventGenerationWindowsTable.$inferSelect,
@@ -324,7 +332,7 @@ function calculateWorkloadPriority(
  * and the total estimated instances to be created.
  *
  * @param recurringEvents - An array of recurring events in the workload.
- * @returns The estimated duration of the workload in milliseconds.
+ * @returns - The estimated duration of the workload in milliseconds.
  */
 function estimateWorkloadDuration(
 	recurringEvents: Array<{ estimatedInstances: number }>,
@@ -348,7 +356,7 @@ function estimateWorkloadDuration(
 /**
  * Creates a default configuration object for the job discovery process.
  *
- * @returns A default job discovery configuration.
+ * @returns - A default job discovery configuration.
  */
 export function createDefaultJobDiscoveryConfig(): JobDiscoveryConfig {
 	return {
