@@ -10,8 +10,7 @@ import { BaseOAuthProvider } from "./BaseOAuthProvider";
  * ```typescript
  * const provider = new GoogleOAuthProvider({
  *   clientId: "your-client-id.apps.googleusercontent.com",
- *   clientSecret: "your-client-secret",
- *   redirectUri: "http://localhost:3000/auth/google/callback"
+ *   clientSecret: "your-client-secret"
  * });
  *
  * // Exchange authorization code for tokens
@@ -52,9 +51,8 @@ export class GoogleOAuthProvider extends BaseOAuthProvider {
 	 */
 	async exchangeCodeForTokens(
 		code: string,
-		redirectUri?: string,
+		redirectUri: string,
 	): Promise<OAuthProviderTokenResponse> {
-		// Resolve redirect URI from parameter or config
 		const resolvedRedirectUri = redirectUri?.trim();
 
 		// Validate that a non-empty redirect URI is available

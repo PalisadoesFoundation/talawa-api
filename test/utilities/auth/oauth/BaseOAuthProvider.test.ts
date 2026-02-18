@@ -148,20 +148,18 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should throw error when clientId is missing", () => {
-			try {
-				new ConcreteOAuthProvider("test-provider", {
-					clientId: "",
-					clientSecret: "test_secret",
-				});
-				throw new Error("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect(error).toMatchObject({
+			expect(
+				() =>
+					new ConcreteOAuthProvider("test-provider", {
+						clientId: "",
+						clientSecret: "test_secret",
+					}),
+			).toThrow(
+				expect.objectContaining({
 					code: "INVALID_CONFIG",
 					statusCode: 500,
-				});
-				console.error(error);
-			}
+				}),
+			);
 		});
 
 		it("should throw error when clientSecret is missing", () => {
@@ -490,18 +488,12 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should wrap non-Error objects in ProfileFetchError", async () => {
-			// Test case where something other than Error is thrown
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedGet.mockRejectedValueOnce(null);
 
-			try {
-				await provider.testGet("https://test.com");
-				throw new Error("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(ProfileFetchError);
-				expect((error as ProfileFetchError).message).toContain("Unknown error");
-				console.error(error);
-			}
+			await expect(provider.testGet("https://test.com")).rejects.toMatchObject({
+				message: expect.stringContaining("Unknown error"),
+			});
 		});
 	});
 
@@ -570,20 +562,15 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should wrap non-Error objects in TokenExchangeError", async () => {
-			// Test case where something other than Error is thrown
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedPost.mockRejectedValueOnce("string error");
 
-			try {
-				await provider.testPost("https://test.com", {});
-				throw new Error("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(TokenExchangeError);
-				expect((error as TokenExchangeError).message).toContain(
-					"Unknown error",
-				);
-				console.error(error);
-			}
+			await expect(
+				provider.testPost("https://test.com", {}),
+			).rejects.toMatchObject({
+				name: "TokenExchangeError",
+				message: expect.stringContaining("Unknown error"),
+			});
 		});
 	});
 

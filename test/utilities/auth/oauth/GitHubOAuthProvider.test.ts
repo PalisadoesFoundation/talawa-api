@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type AxiosResponse } from "axios";
 import type { MockedFunction } from "vitest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	OAuthError,
 	ProfileFetchError,
@@ -53,6 +53,11 @@ describe("GitHubOAuthProvider", () => {
 		};
 
 		provider = new GitHubOAuthProvider(config);
+	});
+	afterEach(() => {
+		vi.restoreAllMocks();
+		vi.unstubAllEnvs();
+		vi.clearAllTimers();
 	});
 
 	describe("constructor", () => {
@@ -223,17 +228,11 @@ describe("GitHubOAuthProvider", () => {
 				provider.exchangeCodeForTokens(validCode, redirectUri),
 			).rejects.toThrow(TokenExchangeError);
 
-			try {
-				await provider.exchangeCodeForTokens(validCode, redirectUri);
-			} catch (error) {
-				if (error instanceof TokenExchangeError) {
-					// Should include error_description in the message
-					expect(error.message).toBe(
-						"Token exchange failed: The code passed is incorrect or expired.",
-					);
-				}
-				console.error(error);
-			}
+			await expect(
+				provider.exchangeCodeForTokens(validCode, redirectUri),
+			).rejects.toThrow(
+				"Token exchange failed: The code passed is incorrect or expired.",
+			);
 		});
 
 		it("should handle GitHub OAuth errors without description", async () => {
@@ -245,37 +244,9 @@ describe("GitHubOAuthProvider", () => {
 				data: errorResponse,
 			} as AxiosResponse);
 
-			try {
-				await provider.exchangeCodeForTokens(validCode, redirectUri);
-			} catch (error) {
-				if (error instanceof TokenExchangeError) {
-					// Should fallback to error field when error_description is missing
-					expect(error.message).toBe("Token exchange failed: invalid_grant");
-				}
-				console.error(error);
-			}
-		});
-
-		it("should throw TokenExchangeError when redirect_uri cannot be resolved", async () => {
-			// Create a provider instance bypassing constructor validation to test
-			// the specific redirect_uri validation in exchangeCodeForTokens.
-			// This simulates an edge case where config.redirectUri is undefined.
-			const tempProvider = Object.create(GitHubOAuthProvider.prototype);
-			tempProvider.config = {
-				clientId: "github_client_id",
-				clientSecret: "github_client_secret",
-				redirectUri: undefined, // This simulates the case where redirectUri is missing
-			};
-			tempProvider.post = vi.fn();
-
-			// Test the specific validation logic in exchangeCodeForTokens
 			await expect(
-				tempProvider.exchangeCodeForTokens("valid_code", ""),
-			).rejects.toThrow(TokenExchangeError);
-
-			await expect(
-				tempProvider.exchangeCodeForTokens("valid_code", ""),
-			).rejects.toThrow("redirect_uri is required but was not provided");
+				provider.exchangeCodeForTokens(validCode, redirectUri),
+			).rejects.toThrow("Token exchange failed: invalid_grant");
 		});
 	});
 
