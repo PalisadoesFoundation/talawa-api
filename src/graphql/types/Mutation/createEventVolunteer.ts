@@ -18,7 +18,6 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 const mutationCreateEventVolunteerArgumentsSchema = z.object({
 	data: eventVolunteerInputSchema,
 });
-
 /**
  * GraphQL mutation to create an event volunteer.
  * Based on the Talawa API createEventVolunteer mutation.
@@ -60,7 +59,6 @@ builder.mutationField("createEventVolunteer", (t) =>
 					},
 				});
 			}
-
 			const currentUserId = ctx.currentClient.user.id;
 
 			// Check if user exists
@@ -146,24 +144,9 @@ builder.mutationField("createEventVolunteer", (t) =>
 
 			if (scope === "ENTIRE_SERIES") {
 				const targetEventId = baseEvent.id;
-
-				// Check if template volunteer already exists
-				const existingTemplate = await ctx.drizzleClient
-					.select()
-					.from(eventVolunteersTable)
-					.where(
-						and(
-							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-							eq(eventVolunteersTable.eventId, targetEventId),
-							eq(eventVolunteersTable.isTemplate, true),
-						),
-					)
-					.limit(1);
-
-				// Check for any instance-specific volunteers that need to be converted
-				const existingInstanceSpecific = await ctx.drizzleClient
-					.select()
-					.from(eventVolunteersTable)
+				// First, remove any instance-specific volunteers
+				await ctx.drizzleClient
+					.delete(eventVolunteersTable)
 					.where(
 						and(
 							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
@@ -171,84 +154,54 @@ builder.mutationField("createEventVolunteer", (t) =>
 							eq(eventVolunteersTable.isTemplate, false),
 						),
 					);
+				// Then, create or get the template volunteer for the entire series
+				const inserted = await ctx.drizzleClient
+					.insert(eventVolunteersTable)
+					.values({
+						userId: parsedArgs.data.userId,
+						eventId: targetEventId,
+						creatorId: currentUserId,
+						hasAccepted: false,
+						isPublic: true,
+						hoursVolunteered: "0",
+						isTemplate: true,
+						recurringEventInstanceId: null,
+					})
+					.onConflictDoNothing()
+					.returning();
+				let volunteer: typeof eventVolunteersTable.$inferSelect | null = null;
 
-				let volunteer: typeof eventVolunteersTable.$inferSelect;
-
-				if (existingTemplate.length > 0) {
-					// Template already exists
-					const templateVolunteer = existingTemplate[0];
-					if (!templateVolunteer) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
-					volunteer = templateVolunteer;
-
-					// Remove any instance-specific volunteers (conversion to template)
-					if (existingInstanceSpecific.length > 0) {
-						await ctx.drizzleClient
-							.delete(eventVolunteersTable)
-							.where(
-								and(
-									eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-									eq(eventVolunteersTable.eventId, targetEventId),
-									eq(eventVolunteersTable.isTemplate, false),
-								),
-							);
-					}
+				// If no new record was inserted, it means a template volunteer already exists, so we need to fetch it
+				if (inserted.length === 0) {
+					volunteer =
+						(await ctx.drizzleClient.query.eventVolunteersTable.findFirst({
+							where: and(
+								eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+								eq(eventVolunteersTable.eventId, targetEventId),
+								eq(eventVolunteersTable.isTemplate, true),
+							),
+						})) ?? null;
 				} else {
-					// No template exists - create one
-					// First, remove any instance-specific volunteers
-					if (existingInstanceSpecific.length > 0) {
-						await ctx.drizzleClient
-							.delete(eventVolunteersTable)
-							.where(
-								and(
-									eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-									eq(eventVolunteersTable.eventId, targetEventId),
-									eq(eventVolunteersTable.isTemplate, false),
-								),
-							);
-					}
-
-					// Create new template volunteer
-					const [createdVolunteer] = await ctx.drizzleClient
-						.insert(eventVolunteersTable)
-						.values({
-							userId: parsedArgs.data.userId,
-							eventId: targetEventId,
-							creatorId: currentUserId,
-							hasAccepted: false,
-							isPublic: true,
-							hoursVolunteered: "0",
-							isTemplate: true,
-							recurringEventInstanceId: null,
-						})
-						.returning();
-
-					if (!createdVolunteer) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
-
-					volunteer = createdVolunteer;
-
-					// Create volunteer membership record
-					await ctx.drizzleClient
-						.insert(eventVolunteerMembershipsTable)
-						.values({
-							volunteerId: volunteer.id,
-							groupId: null,
-							eventId: targetEventId,
-							status: "invited",
-							createdBy: currentUserId,
-						});
+					volunteer = inserted[0] ?? null;
 				}
+				if (!volunteer) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
+				// ensure volunteer membership exists for the base event
+				await ctx.drizzleClient
+					.insert(eventVolunteerMembershipsTable)
+					.values({
+						volunteerId: volunteer.id,
+						groupId: null,
+						eventId: targetEventId,
+						status: "invited",
+						createdBy: currentUserId,
+					})
+					.onConflictDoNothing();
 
 				return volunteer;
 			}
@@ -272,32 +225,8 @@ builder.mutationField("createEventVolunteer", (t) =>
 
 				const targetEventId = baseEvent.id;
 
-				// Check if instance-specific volunteer already exists
-				const existingVolunteer = await ctx.drizzleClient
-					.select()
-					.from(eventVolunteersTable)
-					.where(
-						and(
-							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-							eq(eventVolunteersTable.eventId, targetEventId),
-							eq(
-								eventVolunteersTable.recurringEventInstanceId,
-								parsedArgs.data.recurringEventInstanceId,
-							),
-							eq(eventVolunteersTable.isTemplate, false),
-						),
-					)
-					.limit(1);
-
-				if (existingVolunteer.length > 0) {
-					// Instance-specific volunteer already exists
-					return existingVolunteer[0] as NonNullable<
-						(typeof existingVolunteer)[0]
-					>;
-				}
-
 				// Create new instance-specific volunteer
-				const [createdVolunteer] = await ctx.drizzleClient
+				const inserted = await ctx.drizzleClient
 					.insert(eventVolunteersTable)
 					.values({
 						userId: parsedArgs.data.userId,
@@ -309,7 +238,27 @@ builder.mutationField("createEventVolunteer", (t) =>
 						isTemplate: false,
 						recurringEventInstanceId: parsedArgs.data.recurringEventInstanceId,
 					})
+					.onConflictDoNothing()
 					.returning();
+				let createdVolunteer: typeof eventVolunteersTable.$inferSelect | null =
+					null;
+				// If no new record was inserted, it means an instance-specific volunteer already exists, so we need to fetch it
+				if (inserted.length === 0) {
+					createdVolunteer =
+						(await ctx.drizzleClient.query.eventVolunteersTable.findFirst({
+							where: and(
+								eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+								eq(eventVolunteersTable.eventId, targetEventId),
+								eq(
+									eventVolunteersTable.recurringEventInstanceId,
+									parsedArgs.data.recurringEventInstanceId,
+								),
+								eq(eventVolunteersTable.isTemplate, false),
+							),
+						})) ?? null;
+				} else {
+					createdVolunteer = inserted[0] ?? null;
+				}
 
 				if (!createdVolunteer) {
 					throw new TalawaGraphQLError({
@@ -318,15 +267,17 @@ builder.mutationField("createEventVolunteer", (t) =>
 						},
 					});
 				}
-
-				// Create volunteer membership record
-				await ctx.drizzleClient.insert(eventVolunteerMembershipsTable).values({
-					volunteerId: createdVolunteer.id,
-					groupId: null,
-					eventId: targetEventId,
-					status: "invited",
-					createdBy: currentUserId,
-				});
+				// ensure volunteer membership exists for the base event
+				await ctx.drizzleClient
+					.insert(eventVolunteerMembershipsTable)
+					.values({
+						volunteerId: createdVolunteer.id,
+						groupId: null,
+						eventId: targetEventId,
+						status: "invited",
+						createdBy: currentUserId,
+					})
+					.onConflictDoNothing();
 
 				return createdVolunteer;
 			}

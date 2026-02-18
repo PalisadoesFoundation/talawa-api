@@ -1,0 +1,3 @@
+DROP INDEX "event_volunteers_user_id_event_id_recurring_event_instance_id_index";--> statement-breakpoint
+CREATE UNIQUE INDEX "event_volunteers_user_id_event_id_index" ON "event_volunteers" USING btree ("user_id","event_id") WHERE "event_volunteers"."is_template" = true;--> statement-breakpoint
+CREATE UNIQUE INDEX "event_volunteers_user_id_event_id_recurring_event_instance_id_index" ON "event_volunteers" USING btree ("user_id","event_id","recurring_event_instance_id") WHERE "event_volunteers"."is_template" = false;
