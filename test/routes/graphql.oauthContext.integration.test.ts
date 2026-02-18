@@ -86,14 +86,12 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -141,14 +139,12 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					enabled: true,
 					clientId: "test-google-client-id",
 					clientSecret: "test-google-client-secret",
-					redirectUri: "https://test.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -157,7 +153,6 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 				enabled: true,
 				clientId: "test-google-client-id",
 				clientSecret: "test-google-client-secret",
-				redirectUri: "https://test.com/auth/google/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -210,14 +205,12 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					enabled: true,
 					clientId: "test-google-client-id",
 					clientSecret: "test-google-client-secret",
-					redirectUri: "https://test.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: true,
 					clientId: "test-github-client-id",
 					clientSecret: "test-github-client-secret",
-					redirectUri: "https://test.com/auth/github/callback",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -284,14 +277,12 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 					enabled: true,
 					clientId: "test-google-client-id",
 					clientSecret: "test-google-client-secret",
-					redirectUri: "https://test.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -300,7 +291,6 @@ describe("GraphQL Context OAuth Provider Registry Integration", () => {
 				enabled: true,
 				clientId: "test-google-client-id",
 				clientSecret: "test-google-client-secret",
-				redirectUri: "https://test.com/auth/google/callback",
 				requestTimeoutMs: 10000,
 			});
 

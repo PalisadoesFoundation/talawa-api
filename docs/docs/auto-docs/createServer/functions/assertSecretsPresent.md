@@ -662,12 +662,6 @@ GitHub OAuth Client ID for authentication.
 
 GitHub OAuth Client Secret for authentication.
 
-#### GITHUB_REDIRECT_URI?
-
-`string` = `...`
-
-GitHub OAuth Redirect URI for authentication callback.
-
 #### GOOGLE_CLIENT_ID?
 
 `string` = `...`
@@ -679,12 +673,6 @@ Google OAuth Client ID for authentication.
 `string` = `...`
 
 Google OAuth Client Secret for authentication.
-
-#### GOOGLE_REDIRECT_URI?
-
-`string` = `...`
-
-Google OAuth Redirect URI for authentication callback.
 
 #### MINIO_ROOT_USER?
 

@@ -50,7 +50,6 @@ describe("GitHubOAuthProvider", () => {
 		config = {
 			clientId: "github_client_id",
 			clientSecret: "github_client_secret",
-			redirectUri: "http://localhost:3000/auth/callback/github",
 		};
 
 		provider = new GitHubOAuthProvider(config);
@@ -117,23 +116,6 @@ describe("GitHubOAuthProvider", () => {
 			expect(urlParams.get("redirect_uri")).toBe(redirectUri);
 		});
 
-		it("should use config redirectUri when redirectUri parameter is not provided", async () => {
-			const mockTokenResponse: OAuthProviderTokenResponse = {
-				access_token: "gho_1234567890abcdef",
-				token_type: "bearer",
-			};
-
-			mockedPost.mockResolvedValueOnce({
-				data: mockTokenResponse,
-			} as AxiosResponse);
-
-			await provider.exchangeCodeForTokens(validCode, "");
-
-			const call = mockedPost.mock.calls[0];
-			const urlParams = call?.[1] as URLSearchParams;
-			expect(urlParams.get("redirect_uri")).toBe(config.redirectUri);
-		});
-
 		it("should handle token exchange without optional fields", async () => {
 			const mockTokenResponse = {
 				access_token: "gho_1234567890abcdef",
@@ -161,7 +143,6 @@ describe("GitHubOAuthProvider", () => {
 			expect(() => {
 				new GitHubOAuthProvider({
 					clientId: "",
-					redirectUri: "http://localhost:3000/auth/callback/github",
 					clientSecret: "secret",
 				});
 			}).toThrow(OAuthError);
@@ -251,6 +232,7 @@ describe("GitHubOAuthProvider", () => {
 						"Token exchange failed: The code passed is incorrect or expired.",
 					);
 				}
+				console.error(error);
 			}
 		});
 
@@ -270,6 +252,7 @@ describe("GitHubOAuthProvider", () => {
 					// Should fallback to error field when error_description is missing
 					expect(error.message).toBe("Token exchange failed: invalid_grant");
 				}
+				console.error(error);
 			}
 		});
 
@@ -697,7 +680,6 @@ describe("GitHubOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "github_client_id",
 				clientSecret: "github_client_secret",
-				redirectUri: "http://localhost:3000/auth/callback/github",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new GitHubOAuthProvider(customConfig);

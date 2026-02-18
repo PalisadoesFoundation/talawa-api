@@ -46,7 +46,7 @@ export class GoogleOAuthProvider extends BaseOAuthProvider {
 	/**
 	 * Exchange authorization code for access tokens
 	 * @param code - Authorization code from Google OAuth callback
-	 * @param redirectUri - Optional redirect URI that was used in the authorization request. If not provided, uses config redirectUri
+	 * @param redirectUri - redirect URI that was used in the authorization request.
 	 * @returns Token response with access token and optional refresh token
 	 * @throws {TokenExchangeError} If token exchange fails (e.g., invalid_grant, invalid_client) or if no redirect URI is available
 	 */
@@ -55,13 +55,13 @@ export class GoogleOAuthProvider extends BaseOAuthProvider {
 		redirectUri?: string,
 	): Promise<OAuthProviderTokenResponse> {
 		// Resolve redirect URI from parameter or config
-		const resolvedRedirectUri = redirectUri || this.config.redirectUri;
+		const resolvedRedirectUri = redirectUri?.trim();
 
 		// Validate that a non-empty redirect URI is available
 		if (!resolvedRedirectUri) {
 			throw new TokenExchangeError(
 				"Token exchange failed",
-				"redirect_uri is required but was not provided in the method parameter or provider configuration",
+				"redirect_uri is required but was not provided in the method parameter",
 			);
 		}
 

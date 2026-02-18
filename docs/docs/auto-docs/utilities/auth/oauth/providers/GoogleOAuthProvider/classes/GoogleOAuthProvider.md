@@ -81,7 +81,7 @@ Authorization code from Google OAuth callback
 
 `string`
 
-Optional redirect URI that was used in the authorization request. If not provided, uses config redirectUri
+redirect URI that was used in the authorization request.
 
 #### Returns
 

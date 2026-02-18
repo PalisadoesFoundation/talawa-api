@@ -84,7 +84,6 @@ describe("GoogleOAuthProvider", () => {
 		config = {
 			clientId: "test_google_client_id.apps.googleusercontent.com",
 			clientSecret: "test_google_client_secret",
-			redirectUri: "http://localhost:3000/auth/google/callback",
 		};
 		provider = new GoogleOAuthProvider(config);
 	});
@@ -233,7 +232,7 @@ describe("GoogleOAuthProvider", () => {
 			await expect(
 				providerNoRedirect.exchangeCodeForTokens("test_code"),
 			).rejects.toThrow(
-				"redirect_uri is required but was not provided in the method parameter or provider configuration",
+				"redirect_uri is required but was not provided in the method parameter",
 			);
 		});
 

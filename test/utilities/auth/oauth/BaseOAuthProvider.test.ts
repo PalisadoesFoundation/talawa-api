@@ -119,7 +119,6 @@ describe("BaseOAuthProvider", () => {
 		config = {
 			clientId: "test_client_id",
 			clientSecret: "test_client_secret",
-			redirectUri: "http://localhost:3000/callback",
 		};
 
 		provider = new ConcreteOAuthProvider("test-provider", config);
@@ -148,22 +147,11 @@ describe("BaseOAuthProvider", () => {
 			expect(() => provider.testValidateConfig()).not.toThrow();
 		});
 
-		it("should not throw error when redirectUri is missing (now optional)", () => {
-			expect(() => {
-				new ConcreteOAuthProvider("test-provider", {
-					clientId: "test_id",
-					redirectUri: "https://example.com/callback",
-					clientSecret: "test_secret",
-				});
-			}).not.toThrow();
-		});
-
 		it("should throw error when clientId is missing", () => {
 			try {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "test_secret",
-					redirectUri: "http://localhost:3000/callback",
 				});
 				throw new Error("Expected error to be thrown");
 			} catch (error) {
@@ -172,6 +160,7 @@ describe("BaseOAuthProvider", () => {
 					code: "INVALID_CONFIG",
 					statusCode: 500,
 				});
+				console.error(error);
 			}
 		});
 
@@ -180,14 +169,12 @@ describe("BaseOAuthProvider", () => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "",
-					redirectUri: "http://localhost:3000/callback",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "",
-					redirectUri: "http://localhost:3000/callback",
 				});
 			}).toThrow(
 				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
@@ -199,14 +186,12 @@ describe("BaseOAuthProvider", () => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(/test-provider/);
 		});
@@ -216,14 +201,12 @@ describe("BaseOAuthProvider", () => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(
 				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
@@ -517,6 +500,7 @@ describe("BaseOAuthProvider", () => {
 			} catch (error) {
 				expect(error).toBeInstanceOf(ProfileFetchError);
 				expect((error as ProfileFetchError).message).toContain("Unknown error");
+				console.error(error);
 			}
 		});
 	});
@@ -598,6 +582,7 @@ describe("BaseOAuthProvider", () => {
 				expect((error as TokenExchangeError).message).toContain(
 					"Unknown error",
 				);
+				console.error(error);
 			}
 		});
 	});
@@ -620,7 +605,6 @@ describe("BaseOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "test_client_id",
 				clientSecret: "test_client_secret",
-				redirectUri: "https://example.com/callback",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new ConcreteOAuthProvider(
@@ -657,7 +641,6 @@ describe("BaseOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "test_client_id",
 				clientSecret: "test_client_secret",
-				redirectUri: "https://example.com/callback",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new ConcreteOAuthProvider(
