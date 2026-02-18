@@ -18,6 +18,7 @@ import {
 	Mutation_deleteAgendaFolder,
 	Mutation_deleteOrganization,
 	Mutation_deleteOrganizationMembership,
+	Mutation_deleteStandaloneEvent,
 	Mutation_deleteUser,
 	Query_agendaFolder,
 	Query_agendaFolder_Restricted,
@@ -48,12 +49,28 @@ suite("Query field agendaFolder", () => {
 
 		// Cleanup in reverse order of creation dependencies
 		for (const id of createdAgendaFolderIds.reverse()) {
-			await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id } },
-			});
+			try {
+				await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id } },
+				});
+			} catch (error) {
+				console.warn("Best effort cleanup failed for agenda folder: ", error);
+			}
 		}
 		createdAgendaFolderIds.length = 0;
+
+		for (const id of createdEventIds.reverse()) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id } },
+				});
+			} catch (error) {
+				console.warn("Best effort cleanup failed for event: ", error);
+			}
+		}
+		createdEventIds.length = 0;
 
 		for (const { organizationId, memberId } of createdMemberships.reverse()) {
 			try {
@@ -68,18 +85,26 @@ suite("Query field agendaFolder", () => {
 		createdMemberships.length = 0;
 
 		for (const id of createdOrganizationIds.reverse()) {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id } },
-			});
+			try {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id } },
+				});
+			} catch (error) {
+				console.warn("Best effort cleanup failed for organization: ", error);
+			}
 		}
 		createdOrganizationIds.length = 0;
 
 		for (const id of createdUserIds.reverse()) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id } },
-			});
+			try {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id } },
+				});
+			} catch (error) {
+				console.warn("Best effort cleanup failed for user: ", error);
+			}
 		}
 		createdUserIds.length = 0;
 	});
@@ -189,6 +214,7 @@ suite("Query field agendaFolder", () => {
 
 				if (!regularUserId || !regularUserToken)
 					throw new Error("Regular user creation failed");
+				createdUserIds.push(regularUserId);
 
 				// Step 3: Delete Regular User
 				await mercuriusClient.mutate(Mutation_deleteUser, {
