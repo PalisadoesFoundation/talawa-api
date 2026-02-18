@@ -3,6 +3,7 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UserCountryCodeResolver } from "~/src/graphql/types/User/countryCode";
 import type { User as UserType } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("User.countryCode resolver", () => {
 	beforeEach(() => {
@@ -139,5 +140,44 @@ describe("User.countryCode resolver", () => {
 		expect(
 			mocks.drizzleClient.query.usersTable.findFirst,
 		).toHaveBeenCalledOnce();
+	});
+
+	it("should rethrow TalawaGraphQLError from database layer without logging", async () => {
+		const { context, mocks } = createMockGraphQLContext(true);
+		const parent = { id: faker.string.uuid(), countryCode: "us" };
+
+		const talawaError = new TalawaGraphQLError({
+			extensions: { code: "unauthenticated" },
+		});
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			talawaError,
+		);
+
+		await expect(
+			UserCountryCodeResolver(parent as UserType, {}, context),
+		).rejects.toBe(talawaError);
+		expect(context.log.error).not.toHaveBeenCalled();
+	});
+
+	it("should log and wrap unknown database errors", async () => {
+		const { context, mocks } = createMockGraphQLContext(true);
+		const parent = { id: faker.string.uuid(), countryCode: "us" };
+
+		const unknownError = new Error("DB crash");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			unknownError,
+		);
+
+		await expect(
+			UserCountryCodeResolver(parent as UserType, {}, context),
+		).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unexpected" }),
+			}),
+		);
+
+		expect(context.log.error).toHaveBeenCalledWith(unknownError);
 	});
 });
