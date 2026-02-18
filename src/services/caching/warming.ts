@@ -63,7 +63,7 @@ export async function warmOrganizations(
 				}
 				return null;
 			})
-			.filter((item) => item !== null);
+			.filter((item): item is { id: string; error: string } => item !== null);
 
 		if (failures.length > 0) {
 			server.log.warn(
