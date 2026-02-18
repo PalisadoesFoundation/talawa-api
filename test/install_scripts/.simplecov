@@ -6,12 +6,12 @@ require 'simplecov-cobertura'
 # Configure only; bashcov calls SimpleCov.start. Calling start here would cause
 # "coverage measurement is already setup" when bashcov starts.
 # root set so Cobertura paths are repo-relative (scripts/install/...) and match codecov.yml flag paths.
-# coverage_dir under root so CI finds tests/install/coverage/coverage.xml and uploads with install flag.
+# coverage_dir under root so CI finds test/install_scripts/coverage/coverage.xml and uploads with install flag.
 SimpleCov.configure do
   command_name 'Install Script Tests'
   root File.expand_path('../..', __dir__)
   formatter SimpleCov::Formatter::CoberturaFormatter
-  coverage_dir 'tests/install/coverage'
+  coverage_dir 'test/install_scripts/coverage'
 
   # Restrict coverage to scripts under scripts/install/
   track_files 'scripts/install/**/*.sh'
