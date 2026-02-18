@@ -62,7 +62,7 @@ Authorization code from OAuth callback
 
 `string`
 
-Optional redirect URI used in authorization request. If not provided, uses config redirectUri
+redirect URI used in authorization request.
 
 #### Returns
 
