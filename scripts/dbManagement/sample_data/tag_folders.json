@@ -1,0 +1,112 @@
+[
+	{
+		"id": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e91",
+		"name": "Community Engagement",
+		"organizationId": "01960b81-bfed-7369-ae96-689dbd4281ba",
+		"creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"updaterId": "0194e194-c6b3-7802-b074-362efea24dbc",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e92",
+		"name": "Volunteer Programs",
+		"organizationId": "01960b81-bfed-7524-bc73-c1a67449d746",
+		"creatorId": "65378abd-8500-4f17-9cf2-990d00000002",
+		"updaterId": "65378abd-8500-4f17-9cf2-990d00000002",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "7c3b8f5a-9d2f-4e4b-9d7a-3b6c1f6a2e62",
+		"name": "Fundraising",
+		"organizationId": "01960b81-bfed-751e-a6e6-eca1c98fc585",
+		"creatorId": "66378abd-8500-4f17-9cf2-990d00000003",
+		"updaterId": "66378abd-8500-4f17-9cf2-990d00000003",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "3b9c7a6e-1c9d-4c7f-9f5b-2a4c8c1e1a01",
+		"name": "General Documents",
+		"organizationId": "01960b81-bfed-7f9c-9226-54446c9d460a",
+		"creatorId": "67378abd-8500-4f17-9cf2-990d00000004",
+		"updaterId": "67378abd-8500-4f17-9cf2-990d00000004",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "7e4b9f2a-8d3c-4a51-91c7-bb5e6a2d9b02",
+		"name": "Project Resources",
+		"organizationId": "01960b81-bfed-7b49-8909-4929ac2f17ec",
+		"creatorId": "67378abd-8500-4f17-9cf2-990d00000005",
+		"updaterId": "67378abd-8500-4f17-9cf2-990d00000005",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "1a6d8e44-52c9-4a6e-bb9f-0b8a7d3e3c03",
+		"name": "Design Files",
+		"organizationId": "01960b81-bfed-7056-a5d9-652e3e8d773a",
+		"creatorId": "67378abd-8500-4f17-9cf2-990d00000006",
+		"updaterId": "67378abd-8500-4f17-9cf2-990d00000006",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "9d2c1f58-1b7e-4c98-8f5d-6e0a4a2c5d04",
+		"name": "Meeting Notes",
+		"organizationId": "01960b81-bfed-70b7-8cbf-174dd4e8f6bd",
+		"creatorId": "67378abd-8500-4f17-9cf2-990d00000007",
+		"updaterId": "67378abd-8500-4f17-9cf2-990d00000007",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "4c8f9b72-0e3d-4f5c-9a7e-3d2c1b5a6e05",
+		"name": "Financial Records",
+		"organizationId": "01960b81-bfed-7f62-82bb-63476301b025",
+		"creatorId": "658930fd-2caa-4d8d-a908-745c00000008",
+		"updaterId": "658930fd-2caa-4d8d-a908-745c00000008",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "b6a3c1e9-7f4a-4b2d-8c5e-9d0f3a2b1c06",
+		"name": "Musical Instruments",
+		"organizationId": "01960b81-bfed-7e12-b93c-7cc06834a043",
+		"creatorId": "6589386a-2caa-4d8d-a908-748400000009",
+		"updaterId": "6589386a-2caa-4d8d-a908-748400000009",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "0f5b8a7d-3c9e-4e21-b1a6-7d8c9e2a4f07",
+		"name": "Languages",
+		"organizationId": "01960b81-bfed-7bfb-a1b8-0edf00c464bc",
+		"creatorId": "6589387e-2caa-4d8d-a908-74850000000a",
+		"updaterId": "6589387e-2caa-4d8d-a908-74850000000a",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	},
+	{
+		"id": "e2c4a9b1-6d8f-4a3c-9b0e-5f7d1a8c2e08",
+		"name": "Professions",
+		"organizationId": "01960b81-bfed-7c22-95a5-a0a4f6881b94",
+		"creatorId": "6589388b-2caa-4d8d-a908-74860000000b",
+		"updaterId": "6589388b-2caa-4d8d-a908-74860000000b",
+		"parentFolderId": null,
+		"createdAt": "2026-02-02T13:05:00Z",
+		"updatedAt": "2026-02-02T13:05:00Z"
+	}
+]

@@ -13,6 +13,7 @@ import {
 	getPasswordResetEmailText,
 } from "~/src/utilities/emailTemplates";
 import envConfig from "~/src/utilities/graphqLimits";
+import { checkPasswordResetRateLimit } from "~/src/utilities/passwordResetRateLimit";
 import {
 	DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
@@ -70,6 +71,16 @@ builder.mutationField("requestPasswordReset", (t) =>
 				});
 			}
 
+			// Check rate limit using email address
+			if (!checkPasswordResetRateLimit(parsedArgs.input.emailAddress)) {
+				throw new TalawaGraphQLError({
+					message: "Too many password reset requests. Please try again later.",
+					extensions: {
+						code: "too_many_requests",
+					},
+				});
+			}
+
 			// Look up user by email - but we'll return the same response regardless
 			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
@@ -110,7 +121,7 @@ builder.mutationField("requestPasswordReset", (t) =>
 				);
 
 				// Build reset link using configured frontend URL
-				const frontendUrl = ctx.envConfig.FRONTEND_URL;
+				const frontendUrl = ctx.envConfig.API_FRONTEND_URL;
 				const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
 
 				// Get community name for email branding

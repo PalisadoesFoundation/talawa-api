@@ -7,6 +7,12 @@ import {
 	mutationDeleteUserInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import { zParseOrThrow } from "~/src/graphql/validators/helpers";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -34,23 +40,10 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = mutationDeleteUserArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
+			const parsedArgs = await zParseOrThrow(
+				mutationDeleteUserArgumentsSchema,
+				args,
+			);
 
 			const currentUserId = ctx.currentClient.user.id;
 
@@ -114,7 +107,7 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [deletedUser] = await tx
 					.delete(usersTable)
 					.where(eq(usersTable.id, parsedArgs.input.id))
@@ -142,6 +135,17 @@ builder.mutationField("deleteUser", (t) =>
 
 				return deletedUser;
 			});
+
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "user", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "user"),
+				],
+				"user",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: User,
 	}),

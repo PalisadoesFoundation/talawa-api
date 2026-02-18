@@ -6,8 +6,13 @@ disable-default-queries: false
 query-filters:
   - exclude:
       id: js/insufficient-password-hash
+  - exclude:
+      id: js/missing-rate-limiting
 
 # Additional documentation
-# This suppresses a false positive where CodeQL flags HMAC-SHA256 hashing
-# of cryptographically random tokens (256 bits entropy) in passwordResetTokenUtils.ts.
-# HMAC-SHA256 is the correct algorithm for random token hashing, not user password hashing.
+# js/insufficient-password-hash: False positive for HMAC-SHA256 hashing of cryptographically
+# random tokens (256 bits entropy) in passwordResetTokenUtils.ts. HMAC-SHA256 is correct for
+# token hashing, not user password hashing.
+# js/missing-rate-limiting: False positive for routes that use Fastify's preHandler with
+# fastify.rateLimit("auth") (e.g. /auth/logout). CodeQL does not recognize this pattern;
+# the implementation is correct and rate-limited.

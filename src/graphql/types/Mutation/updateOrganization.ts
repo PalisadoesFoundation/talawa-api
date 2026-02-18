@@ -10,7 +10,12 @@ import {
 	mutationUpdateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -247,6 +252,15 @@ builder.mutationField("updateOrganization", (t) =>
 						existingOrganization.avatarName,
 					);
 				}
+
+				await runBestEffortInvalidation(
+					[
+						invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+						invalidateEntityLists(ctx.cache, "organization"),
+					],
+					"organization",
+					ctx.log,
+				);
 
 				return updatedOrganization;
 			},

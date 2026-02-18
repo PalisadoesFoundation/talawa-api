@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { CacheService } from "~/src/services/caching";
+import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { AppLogger } from "~/src/utilities/logging/logger";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -68,13 +69,14 @@ export type ExplicitGraphQLContext = {
 		| "API_COOKIE_DOMAIN"
 		| "API_IS_SECURE_COOKIES"
 		| "API_JWT_EXPIRES_IN"
-		| "AWS_ACCESS_KEY_ID"
-		| "AWS_SECRET_ACCESS_KEY"
-		| "AWS_SES_REGION"
-		| "AWS_SES_FROM_EMAIL"
-		| "AWS_SES_FROM_NAME"
-		| "FRONTEND_URL"
+		| "API_AWS_ACCESS_KEY_ID"
+		| "API_AWS_SECRET_ACCESS_KEY"
+		| "API_AWS_SES_REGION"
+		| "API_AWS_SES_FROM_EMAIL"
+		| "API_AWS_SES_FROM_NAME"
+		| "API_FRONTEND_URL"
 		| "RECAPTCHA_SECRET_KEY"
+		| "RECAPTCHA_SCORE_THRESHOLD"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
@@ -101,6 +103,10 @@ export type ExplicitGraphQLContext = {
 	};
 	log: AppLogger;
 	minio: FastifyInstance["minio"];
+	/**
+	 * OAuth provider registry for accessing configured OAuth providers.
+	 */
+	oauthProviderRegistry?: OAuthProviderRegistry;
 	/**
 	 * Per-request notification helper. Implementations may enqueue notifications
 	 * for delivery and support flush() to perform delivery after transaction commit.

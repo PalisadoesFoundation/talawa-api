@@ -14,6 +14,10 @@ set -euo pipefail
 _lower() { printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'; }
 
 command_exists() {
+  # When MOCK_BIN is set (test environment), .hidden marker files indicate "command not installed"
+  if [ -n "${MOCK_BIN:-}" ] && [ -n "${1:-}" ] && [ -f "${MOCK_BIN}/$1.hidden" ]; then
+    return 1
+  fi
   command -v "$1" >/dev/null 2>&1
 }
 

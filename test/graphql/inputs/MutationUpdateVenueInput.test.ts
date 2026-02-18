@@ -157,14 +157,12 @@ describe("MutationUpdateVenueInput Schema", () => {
 		});
 
 		it("should reject attachments array exceeding max length (20)", () => {
-			const tooManyAttachments = Array.from({ length: 21 }, () =>
-				Promise.resolve({
-					filename: "test.jpg",
-					mimetype: "image/jpeg",
-					encoding: "7bit",
-					createReadStream: () => null,
-				}),
-			);
+			const tooManyAttachments = Array.from({ length: 21 }, (_, i) => ({
+				objectName: `test-object-${i}`,
+				mimeType: "image/jpeg",
+				fileHash: "a".repeat(64),
+				name: `test${i}.jpg`,
+			}));
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
 				attachments: tooManyAttachments,
@@ -174,12 +172,12 @@ describe("MutationUpdateVenueInput Schema", () => {
 
 		it("should accept valid attachments array (single item)", () => {
 			const validAttachments = [
-				Promise.resolve({
-					filename: "test.jpg",
-					mimetype: "image/jpeg",
-					encoding: "7bit",
-					createReadStream: () => null,
-				}),
+				{
+					objectName: "test-object-name",
+					mimeType: "image/jpeg",
+					fileHash: "a".repeat(64),
+					name: "test.jpg",
+				},
 			];
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,

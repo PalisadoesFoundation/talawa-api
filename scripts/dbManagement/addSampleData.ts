@@ -14,11 +14,13 @@ type Collection =
 	| "comment_votes"
 	| "action_categories"
 	| "events"
-	| "recurrence_rules"
 	| "recurring_event_templates"
 	| "event_volunteers"
 	| "event_volunteer_memberships"
 	| "action_items"
+	| "tag_folders"
+	| "tags"
+	| "tag_assignments"
 	| "notification_templates";
 
 export async function main(): Promise<void> {
@@ -34,11 +36,13 @@ export async function main(): Promise<void> {
 		"comment_votes",
 		"action_categories",
 		"events",
-		"recurrence_rules",
 		"recurring_event_templates",
 		"event_volunteers",
 		"event_volunteer_memberships",
 		"action_items",
+		"tag_folders",
+		"tags",
+		"tag_assignments",
 		"notification_templates",
 	];
 
@@ -66,9 +70,11 @@ export async function main(): Promise<void> {
 export async function run(): Promise<number> {
 	try {
 		await main();
-	} catch (_error: unknown) {
+	} catch (error: unknown) {
+		console.error("Error running sample data script:", error);
 		return 1;
 	}
+
 	try {
 		await disconnect();
 		console.log(
@@ -76,7 +82,7 @@ export async function run(): Promise<number> {
 		);
 		return 0;
 	} catch (error: unknown) {
-		console.error("Error: Cannot disconnect", error);
+		console.error("Error running sample data script:", error);
 		return 1;
 	}
 }

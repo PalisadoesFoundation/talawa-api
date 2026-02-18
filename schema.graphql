@@ -2221,6 +2221,12 @@ type Mutation {
   """Mutation field to add an event attendee."""
   addEventAttendee(data: EventAttendeeInput!): User
 
+  """Mutation to allow an administrator to reset another user's password."""
+  adminUpdateUserPassword(
+    """Input for updating a member's password by an admin."""
+    input: MutationAdminUpdateUserPasswordInput!
+  ): Boolean
+
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
 
@@ -2592,7 +2598,7 @@ type Mutation {
   ): AuthenticationPayload
 
   """Mutation field to sign up to talawa."""
-  signUp(input: MutationSignUpInput!): AuthenticationPayload
+  signUp(input: MutationSignUpInput!): AuthenticationPayload @deprecated(reason: "Use REST POST /auth/signup")
 
   """Unassign a tag from a user within an organization."""
   unassignUserTag(assigneeId: ID!, tagId: ID!): Boolean
@@ -2752,6 +2758,12 @@ type Mutation {
   """Mutation field to update a user."""
   updateUser(input: MutationUpdateUserInput!): User
 
+  """Mutation field to update a user password."""
+  updateUserPassword(
+    """Input for updating the current user's password."""
+    input: MutationUpdateUserPasswordInput!
+  ): Boolean
+
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
 
@@ -2784,6 +2796,18 @@ type Mutation {
 input MutationAcceptMembershipRequestInput {
   """ID of the membership request to accept"""
   membershipRequestId: ID!
+}
+
+"""Input for updating a member's password."""
+input MutationAdminUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """ID of the member whose password is being updated."""
+  id: ID!
+
+  """New password"""
+  newPassword: String!
 }
 
 """Input to block a user from an organization"""
@@ -2824,8 +2848,8 @@ input MutationCreateActionItemCategoryInput {
 
 """"""
 input MutationCreateAdvertisementInput {
-  """Attachments of the advertisement."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Custom information about the advertisement."""
   description: String
@@ -3092,7 +3116,7 @@ input MutationCreateOrganizationInput {
   addressLine2: String
 
   """Avatar of the organization."""
-  avatar: Upload
+  avatar: FileMetadataInput
 
   """Name of the city where the organization resides in."""
   city: String
@@ -3282,8 +3306,8 @@ input MutationCreateVenueBookingInput {
 
 """"""
 input MutationCreateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -3728,6 +3752,9 @@ input MutationUpdateAgendaItemInput {
   """File metadata for attachments uploaded via MinIO presigned URLs."""
   attachments: [FileMetadataInput!]
 
+  """Global identifier of the associated agenda category."""
+  categoryId: ID
+
   """Custom information about the agenda item."""
   description: String
 
@@ -3747,6 +3774,9 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+
+  """Notes of the agenda item."""
+  notes: String
   url: [UpdateAgendaItemUrlInput!]
 }
 
@@ -3832,8 +3862,8 @@ input MutationUpdateCommunityInput {
   """URL to the linkedin account of the community."""
   linkedinURL: String
 
-  """Mime type of the logo of the community."""
-  logo: Upload
+  """Logo of the community."""
+  logo: FileMetadataInput
 
   """Name of the community."""
   name: String
@@ -4249,9 +4279,6 @@ input MutationUpdateUserInput {
   """Language code of the user's preferred natural language."""
   naturalLanguageCode: Iso639Set1LanguageCode
 
-  """Password of the user to sign in to the application."""
-  password: String
-
   """Postal code of the user."""
   postalCode: String
 
@@ -4267,10 +4294,22 @@ input MutationUpdateUserInput {
   workPhoneNumber: PhoneNumber
 }
 
+"""Input for updating the current user's password."""
+input MutationUpdateUserPasswordInput {
+  """Confirm new password"""
+  confirmNewPassword: String!
+
+  """New password"""
+  newPassword: String!
+
+  """User's current password"""
+  oldPassword: String!
+}
+
 """"""
 input MutationUpdateVenueInput {
-  """Attachments of the venue."""
-  attachments: [Upload!]
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
 
   """Capacity of the venue."""
   capacity: Int
@@ -5199,7 +5238,7 @@ type Query {
   renewAuthenticationToken: String
 
   """Query field for a client to sign in to talawa."""
-  signIn(input: QuerySignInInput!): AuthenticationPayload
+  signIn(input: QuerySignInInput!): AuthenticationPayload @deprecated(reason: "Use REST POST /auth/signin")
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
@@ -5212,6 +5251,12 @@ type Query {
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+
+  """Fetch tags assigned to a specific user"""
+  userTags(
+    """User ID to fetch assigned tags for"""
+    userId: ID!
+  ): [Tag!]!
 
   """Fetch multiple users by their IDs."""
   usersByIds(input: UsersByIdsInput!): [User!]
@@ -5868,7 +5913,7 @@ enum UserMaritalStatus {
   divorced
   engaged
   married
-  seperated
+  separated
   single
   widowed
 }

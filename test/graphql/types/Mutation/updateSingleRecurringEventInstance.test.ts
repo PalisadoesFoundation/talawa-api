@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -11,20 +11,63 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-afterEach(() => {
-	vi.clearAllMocks();
+// Store original database query methods to restore after each test
+const originalDbQueries = {
+	usersTableFindFirst: server.drizzleClient.query.usersTable.findFirst,
+	recurringEventInstancesTableFindFirst:
+		server.drizzleClient.query.recurringEventInstancesTable.findFirst,
+	drizzleTransaction: server.drizzleClient.transaction,
+};
+
+beforeEach(() => {
+	// Ensure all database query methods are restored before each test
+	server.drizzleClient.query.usersTable.findFirst =
+		originalDbQueries.usersTableFindFirst;
+	server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+		originalDbQueries.recurringEventInstancesTableFindFirst;
+	server.drizzleClient.transaction = originalDbQueries.drizzleTransaction;
 });
 
-// Helper function to create a test organization
+afterEach(() => {
+	// Clear all mocks and restore original implementations
+	vi.clearAllMocks();
+	vi.restoreAllMocks();
+
+	// Explicitly restore database query methods to prevent mock leakage
+	server.drizzleClient.query.usersTable.findFirst =
+		originalDbQueries.usersTableFindFirst;
+	server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+		originalDbQueries.recurringEventInstancesTableFindFirst;
+	server.drizzleClient.transaction = originalDbQueries.drizzleTransaction;
+});
+
+// Helper function to get admin authentication token
+async function getAdminAuthToken(): Promise<string> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
+	assertToBeNonNullish(adminToken);
+	return adminToken;
+}
+
+// Helper function to create a test organization with unique name
 async function createTestOrganization(authToken: string) {
+	// Use UUID to ensure unique organization name per test
+	const uniqueId = faker.string.uuid();
 	const createOrgResult = await mercuriusClient.mutate(
 		Mutation_createOrganization,
 		{
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					name: `Test Org ${faker.string.alphanumeric(8)}`,
-					description: "Organization for recurring event tests",
+					name: `Test Org ${uniqueId}`,
+					description: `Organization for recurring event tests ${uniqueId}`,
 					countryCode: "us",
 					state: "CA",
 					city: "San Francisco",
@@ -87,18 +130,6 @@ function mockRecurringEventInstance(
 		},
 	};
 }
-
-// Get admin authentication token
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
-assertToBeNonNullish(adminToken);
 
 suite("Mutation field updateSingleRecurringEventInstance", () => {
 	suite("when the client is not authenticated", () => {
@@ -168,6 +199,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("when the specified recurring event instance does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found", async () => {
+			const adminToken = await getAdminAuthToken();
 			const result = await mercuriusClient.mutate(
 				Mutation_updateSingleRecurringEventInstance,
 				{
@@ -202,6 +234,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("when the recurring event instance is cancelled", () => {
 		test("should return an error with invalid_arguments code", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -263,6 +296,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("when user lacks permission to update the instance", () => {
 		test("should return an error with unauthorized_action_on_arguments_associated_resources for non-admin user", async () => {
+			const adminToken = await getAdminAuthToken();
 			const { authToken: regularToken, userId } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularToken);
@@ -328,6 +362,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("when input validation fails", () => {
 		test("should return an error with invalid_arguments code for invalid UUID", async () => {
+			const adminToken = await getAdminAuthToken();
 			const result = await mercuriusClient.mutate(
 				Mutation_updateSingleRecurringEventInstance,
 				{
@@ -363,6 +398,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error when no update fields are provided", async () => {
+			const adminToken = await getAdminAuthToken();
 			const result = await mercuriusClient.mutate(
 				Mutation_updateSingleRecurringEventInstance,
 				{
@@ -396,6 +432,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error when endAt is before startAt", async () => {
+			const adminToken = await getAdminAuthToken();
 			const startTime = "2024-12-02T14:00:00Z";
 			const endTime = "2024-12-02T12:00:00Z"; // Earlier than start
 
@@ -437,6 +474,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error for field length violations", async () => {
+			const adminToken = await getAdminAuthToken();
 			const result = await mercuriusClient.mutate(
 				Mutation_updateSingleRecurringEventInstance,
 				{
@@ -476,6 +514,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error when isInviteOnly conflicts with existing isPublic state", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -542,6 +581,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error when input explicitly sets both isPublic and isInviteOnly to true", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -611,6 +651,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("when timing validation fails in resolver", () => {
 		test("should return an error when calculated endAt is before startAt", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -681,6 +722,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error when only endAt is provided and it's before existing startAt", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -750,6 +792,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should return an error when endAt exactly equals startAt", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -821,6 +864,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("when update operation fails unexpectedly", () => {
 		test("should return an error with unexpected extensions code", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -902,6 +946,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 
 	suite("successful update scenarios", () => {
 		test("should successfully update basic instance properties", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -991,6 +1036,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should successfully update timing with proper duration maintenance", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -1080,6 +1126,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should successfully update existing exception", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -1168,6 +1215,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should allow organization administrator to update instance", async () => {
+			const adminToken = await getAdminAuthToken();
 			const { authToken: regularToken, userId } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularToken);
@@ -1258,6 +1306,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should update only non-timing fields when timing is not changed", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -1355,6 +1404,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should successfully override isInviteOnly from true to false", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -1443,6 +1493,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should successfully override isInviteOnly from false to true", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -1532,6 +1583,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 		});
 
 		test("should persist isInviteOnly override in exception data", async () => {
+			const adminToken = await getAdminAuthToken();
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 

@@ -1,5 +1,6 @@
 import fastifyPlugin from "fastify-plugin";
 import pluginWebhooks from "../plugin/pluginWebhooks";
+import authRoutes from "./auth";
 import graphql from "./graphql";
 import healthcheck from "./healthcheck";
 import objects from "./objects";
@@ -16,6 +17,7 @@ import objects from "./objects";
 export const routes = fastifyPlugin(async (fastify) => {
 	fastify.register(graphql);
 	fastify.register(healthcheck);
+	fastify.register(authRoutes);
 	fastify.register(objects);
 	fastify.register(pluginWebhooks);
 });

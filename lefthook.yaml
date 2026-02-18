@@ -35,14 +35,21 @@ pre-commit:
       glob: "src/**/*.ts"
       run: pnpm lint:tsdoc {staged_files}
 
-    8_check_type_errors:
+    8_validate_error_handling:
+      run: pnpm run validate:error-handling
+
+    9_check_type_errors:
       run: pnpm typecheck
 
-    9_check_mock_isolation:
+    10_check_mock_isolation:
       glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: pnpm run check_mock_isolation {staged_files}
 
-    10_check_disable_statements:
+    9.5_check_install_test_traps:
+      glob: "test/install_scripts/**/*.test.sh"
+      run: bash test/install_scripts/check-traps.sh
+
+    11_check_disable_statements:
       glob: "**/*.{ts,tsx}"
       run: |
         set -e
@@ -149,7 +156,7 @@ pre-commit:
         fi
 
 
-    10.6_check_python_docstrings:
+    11.6_check_python_docstrings:
       glob: ".github/**/*.py"
       run: |
         set -e
@@ -169,13 +176,13 @@ pre-commit:
         fi
 
 
-    11_generate_docs:
+    12_generate_docs:
       run: |
         set -e
         pnpm generate-docs
         git add ./docs/docs/auto-docs/
 
-    12_api_schema_docs:
+    13_api_schema_docs:
       run: |
         set -e
         cd docs

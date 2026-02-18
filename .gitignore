@@ -43,6 +43,9 @@ tmp/**
 # Code coverage directory
 coverage/**
 
+# Install script tests: vendor/simplecov is cloned in CI (Ruby 3.2 compat)
+test/install_scripts/vendor/
+
 # Certs (Default names)
 serviceAccountKey.json
 cert.pem

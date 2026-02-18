@@ -33,6 +33,7 @@ builder.queryField("signIn", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		deprecationReason: "Use REST POST /auth/signin",
 		description: "Query field for a client to sign in to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
@@ -66,6 +67,8 @@ builder.queryField("signIn", (t) =>
 				parsedArgs.input.recaptchaToken,
 				ctx.envConfig.RECAPTCHA_SECRET_KEY,
 				["input", "recaptchaToken"],
+				"login", // v3 action for login
+				ctx.envConfig.RECAPTCHA_SCORE_THRESHOLD ?? 0.5,
 			);
 
 			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
