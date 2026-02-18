@@ -2085,36 +2085,24 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 
 		const event = await createTestEvent(organization.orgId);
 		testCleanupFunctions.push(event.cleanup);
-
 		/**
 		 * Attempt to create an orphan membership row.
-		 * If foreign key constraints are correctly enforced,
-		 * this insert will throw and the test should fail,
-		 * which indicates proper DB integrity.
+		 * This MUST fail due to foreign key constraints.
+		 * If it does not fail, DB integrity is broken.
 		 */
 		const fakeVolunteerId = faker.string.uuid();
 
-		let orphanInsertFailed = false;
-
-		try {
-			await server.drizzleClient.insert(eventVolunteerMembershipsTable).values({
+		await expect(
+			server.drizzleClient.insert(eventVolunteerMembershipsTable).values({
 				volunteerId: fakeVolunteerId,
 				groupId: null,
 				eventId: event.eventId,
 				status: "invited",
 				createdBy: creatorId,
-			});
-		} catch {
-			orphanInsertFailed = true;
-		}
+			}),
+		).rejects.toThrow();
 
-		// If FK prevents orphan creation, integrity is already guaranteed.
-		if (orphanInsertFailed) {
-			expect(orphanInsertFailed).toBe(true);
-			return;
-		}
-
-		// Execute mutation
+		// Execute mutation (should work normally)
 		const result = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
 			headers: { authorization: `bearer ${adminAuth}` },
 			variables: {
@@ -2137,8 +2125,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			.where(eq(eventVolunteersTable.id, volunteerId));
 
 		expect(volunteerRows).toHaveLength(1);
-
-		// Ensure exactly one valid membership exists for real volunteer
+		// Ensure exactly one valid membership exists for this volunteer
 		const membershipRows = await server.drizzleClient
 			.select()
 			.from(eventVolunteerMembershipsTable)

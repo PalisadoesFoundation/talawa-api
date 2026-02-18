@@ -144,7 +144,19 @@ builder.mutationField("createEventVolunteer", (t) =>
 
 			if (scope === "ENTIRE_SERIES") {
 				const targetEventId = baseEvent.id;
-				// First, remove any instance-specific volunteers
+				// NOTE:
+				// We first delete instance-specific EventVolunteer rows from eventVolunteersTable
+				// where parsedArgs.data.userId + targetEventId match and isTemplate = false.
+				//
+				// This delete + template insert is not atomic. Under rare concurrency,
+				// a THIS_INSTANCE_ONLY request could insert a non-template EventVolunteer
+				// between these operations.
+				//
+				// onConflictDoNothing and unique constraints prevent duplicate inserts,
+				// and the system tolerates this edge case by design.
+				//
+				// Related entities: eventVolunteersTable, EventVolunteer,
+				// VolunteerMembership, parsedArgs.data.userId, targetEventId, isTemplate.
 				await ctx.drizzleClient
 					.delete(eventVolunteersTable)
 					.where(
