@@ -344,7 +344,15 @@ jobs:
 
           # Remove the current user from the docker group to simulate a pure rootless
           # environment where the user has no access to the rootful daemon socket.
-          sudo deluser "$USER" docker || true
+          if ! sudo deluser "$USER" docker 2>/dev/null; then
+            echo "::warning::Could not remove $USER from docker group (may not be a member)."
+          fi
+
+          # Verify removal took effect in /etc/group before proceeding.
+          if getent group docker | grep -qw "$USER"; then
+            echo "::error::$USER is still listed in docker group in /etc/group after deluser."
+            exit 1
+          fi
 
           # Write test commands to a temp script so we can execute them in a
           # fresh login shell that re-reads /etc/group via initgroups().
@@ -373,10 +381,12 @@ jobs:
           # `su --login` calls initgroups() which re-reads /etc/group, so the
           # docker supplementary group is actually dropped (unlike sg which
           # only changes the effective GID). Pass required env vars explicitly.
+          # NOTE: `su --login` resets CWD to $HOME; cd back to the workspace.
           sudo su --login "$USER" -c "\
             export DOCKER_HOST='$DOCKER_HOST' \
                    XDG_RUNTIME_DIR='$XDG_RUNTIME_DIR' \
                    PATH='$PATH'; \
+            cd '$GITHUB_WORKSPACE' && \
             bash '$RUNNER_TEMP/test-no-docker-group.sh'"
 
       - name: Set CI-safe secrets for rootless production template
@@ -422,7 +432,21 @@ jobs:
           # 2. Start infrastructure (postgres, redis, minio) and wait for them.
           echo "=== Starting infrastructure services ==="
           dc up -d postgres redis minio
-          dc exec postgres pg_isready -U talawa --timeout=60 || true
+
+          # Wait for Postgres to accept connections (bounded retry, fail early).
+          PG_RETRIES=30
+          until dc exec postgres pg_isready -U talawa --timeout=2 2>/dev/null; do
+            PG_RETRIES=$((PG_RETRIES - 1))
+            if [ "$PG_RETRIES" -le 0 ]; then
+              echo "::error::Postgres did not become ready within 60 s."
+              dc logs --tail 50 postgres
+              exit 1
+            fi
+            echo "Waiting for Postgres... ($PG_RETRIES retries left)"
+            sleep 2
+          done
+          echo "Postgres is ready ✓"
+
           echo "Infrastructure status:"
           dc ps
 
