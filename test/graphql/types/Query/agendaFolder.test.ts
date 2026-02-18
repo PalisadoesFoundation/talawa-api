@@ -45,7 +45,15 @@ suite("Query field agendaFolder", () => {
 			},
 		});
 		const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!adminToken) return;
+		if (!adminToken) {
+			console.warn("Failed to obtain admin token during afterEach cleanup", {
+				data: adminSignInResult.data,
+				errors: adminSignInResult.errors,
+			});
+			throw new Error(
+				"afterEach cleanup failed because admin authentication token was unavailable",
+			);
+		}
 
 		// Cleanup in reverse order of creation dependencies
 		for (const id of createdAgendaFolderIds.reverse()) {
@@ -139,7 +147,9 @@ suite("Query field agendaFolder", () => {
 			const isResolverInvalidArguments =
 				error.extensions?.code === "invalid_arguments" && hasAgendaFolderPath;
 			const isValidationUuidError =
-				/uuid/i.test(error.message) &&
+				/uuid|got invalid value|id cannot represent|expected id/i.test(
+					error.message,
+				) &&
 				(hasAgendaFolderPath || (error.path?.length ?? 0) === 0);
 			return isResolverInvalidArguments || isValidationUuidError;
 		});
@@ -608,13 +618,20 @@ suite("Query field agendaFolder", () => {
 
 		expect(queriedAgendaFolderResult.errors).toBeUndefined();
 		assertToBeNonNullish(queriedAgendaFolderResult.data.agendaFolder);
-		expect(queriedAgendaFolderResult.data.agendaFolder).toMatchObject({
+		const queriedAgendaFolder = queriedAgendaFolderResult.data.agendaFolder;
+		expect(queriedAgendaFolder).toMatchObject({
 			id: agendaFolder.id,
 			name: "Test Agenda Folder",
 			description: "Test Description",
 			sequence: 1,
 			createdAt: expect.any(String),
 		});
+		assertToBeNonNullish(queriedAgendaFolder.creator);
+		assertToBeNonNullish(queriedAgendaFolder.event);
+		assertToBeNonNullish(queriedAgendaFolder.organization);
+		expect(queriedAgendaFolder.creator.id).toBe(adminUserId);
+		expect(queriedAgendaFolder.event.id).toBe(eventId);
+		expect(queriedAgendaFolder.organization.id).toBe(organizationId);
 	});
 
 	test("results in an empty 'errors' field and the expected value for the 'data.agendaFolder' field when accessed by an organization member", async () => {
