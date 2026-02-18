@@ -10,7 +10,9 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { zParseOrThrow } from "~/src/graphql/validators/helpers";
+import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -131,7 +133,7 @@ builder.mutationField("createPost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [createdPost] = await tx
 					.insert(postsTable)
 					.values({
@@ -236,6 +238,14 @@ builder.mutationField("createPost", (t) =>
 
 				return finalPost;
 			});
+
+			await runBestEffortInvalidation(
+				[invalidateEntityLists(ctx.cache, "post")],
+				"post",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: Post,
 	}),

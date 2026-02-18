@@ -7,6 +7,7 @@ describe("metricsCacheProxy", () => {
 		mget?: ReturnType<typeof vi.fn>;
 		set: ReturnType<typeof vi.fn>;
 		del: ReturnType<typeof vi.fn>;
+		clearByPattern?: ReturnType<typeof vi.fn>;
 	};
 	let mockPerf: {
 		trackCacheHit: ReturnType<typeof vi.fn>;
@@ -19,6 +20,7 @@ describe("metricsCacheProxy", () => {
 			mget: vi.fn(),
 			set: vi.fn(),
 			del: vi.fn(),
+			clearByPattern: vi.fn(),
 		};
 
 		mockPerf = {
@@ -195,6 +197,55 @@ describe("metricsCacheProxy", () => {
 
 			expect(mockPerf.trackCacheHit).not.toHaveBeenCalled();
 			expect(mockPerf.trackCacheMiss).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("clearByPattern", () => {
+		it("delegates to underlying cache", async () => {
+			const proxy = metricsCacheProxy(mockCache, mockPerf);
+
+			await proxy.clearByPattern("test:*");
+
+			expect(mockCache.clearByPattern).toHaveBeenCalledWith("test:*");
+		});
+
+		it("does not track metrics on clearByPattern", async () => {
+			const proxy = metricsCacheProxy(mockCache, mockPerf);
+
+			await proxy.clearByPattern("test:*");
+
+			expect(mockPerf.trackCacheHit).not.toHaveBeenCalled();
+			expect(mockPerf.trackCacheMiss).not.toHaveBeenCalled();
+		});
+
+		it("logs a warning and throws when underlying cache does not support clearByPattern", async () => {
+			const cacheWithoutClearByPattern = {
+				get: vi.fn(),
+				mget: vi.fn(),
+				set: vi.fn(),
+				del: vi.fn(),
+			};
+
+			const mockLogger = {
+				warn: vi.fn(),
+			};
+			const proxy = metricsCacheProxy(
+				cacheWithoutClearByPattern,
+				mockPerf,
+				mockLogger as never,
+			);
+
+			await expect(proxy.clearByPattern("test:*")).rejects.toThrow(
+				/clearByPattern\("test:\*"\) failed/,
+			);
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "cache clearByPattern unsupported",
+					method: "clearByPattern",
+					pattern: "test:*",
+				}),
+				"clearByPattern is not supported by the underlying cache implementation",
+			);
 		});
 	});
 });

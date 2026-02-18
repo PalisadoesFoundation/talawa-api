@@ -71,12 +71,18 @@ export const Details = ({
   );
 };
 
+:::warning[DEPRECATED]
+
+Use REST POST /auth/signin
+
+:::
+
 Query field for a client to sign in to talawa.
 
 ```graphql
 signIn(
   input: QuerySignInInput!
-): AuthenticationPayload
+): AuthenticationPayload @deprecated
 ```
 
 ### Arguments
