@@ -495,35 +495,33 @@ jobs:
       - name: Verify API reachable via Caddy
         run: |
           set -euo pipefail
+
           dc() {
             docker compose --env-file ./envFiles/.env.rootless.production \
               -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
           }
 
-          http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')"
-          if [ -z "$http_port" ]; then
-            echo "::error::Failed to determine published HTTP port for Caddy."
-            dc ps
-            exit 1
-          fi
-
-          # Wait for Caddy to bind to the port
-          echo "Waiting for Caddy to bind to port ${http_port}..."
-          RETRIES=10
-          until nc -z localhost "$http_port" 2>/dev/null || [ "$RETRIES" -le 0 ]; do
-            RETRIES=$((RETRIES - 1))
-            sleep 5
+          # Wait for Caddy port to be published (with retry)
+          CADDY_RETRIES=10
+          until http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')" && [ -n "$http_port" ]; do
+            CADDY_RETRIES=$((CADDY_RETRIES - 1))
+            if [ "$CADDY_RETRIES" -le 0 ]; then
+              echo "::error::Failed to determine published HTTP port for Caddy after 20s."
+              dc ps
+              exit 1
+            fi
+            echo "Waiting for Caddy port mapping... ($CADDY_RETRIES retries left)"
+            sleep 2
           done
 
-          if [ "$RETRIES" -le 0 ]; then
-            echo "::error::Caddy did not bind to port ${http_port} in time."
-            dc logs caddy
-            exit 1
-          fi
+          echo "Caddy port: $http_port"
+
+          # Wait a moment for Caddy to actually start listening
+          echo "Waiting for Caddy to initialize..."
+          sleep 5
 
           echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
-          curl -fsS --retry 5 --retry-delay 3 --max-time 10 \
-            "http://localhost:${http_port}/healthcheck" > /dev/null
+          curl -fsS --retry 10 --retry-delay 2 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
 
       - name: Stop rootless production stack
         if: always()
