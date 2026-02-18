@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { tagFoldersTableInsertSchema } from "~/src/drizzle/tables/tagFolders";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	.pick({
@@ -8,7 +9,8 @@ export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	})
 	.extend({
 		id: tagFoldersTableInsertSchema.shape.id.unwrap(),
-		name: tagFoldersTableInsertSchema.shape.name.optional(),
+		// Use sanitizedStringSchema to store raw name, escaping is done at output time.
+		name: sanitizedStringSchema.min(1).max(256).optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
@@ -31,9 +33,11 @@ export const MutationUpdateTagFolderInput = builder
 			}),
 			name: t.string({
 				description: "Name of the tag folder.",
+				required: false,
 			}),
 			parentFolderId: t.id({
 				description: "Global identifier of associated parent tag folder.",
+				required: false,
 			}),
 		}),
 	});

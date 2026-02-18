@@ -45,9 +45,9 @@ builder.mutationField("deletePlugin", (t) =>
 			const pluginManager = getPluginManagerInstance();
 			if (pluginManager) {
 				try {
-					console.log(
-						"Uninstalling plugin via lifecycle manager:",
-						existingPlugin.pluginId,
+					ctx.log.info(
+						{ pluginId: existingPlugin.pluginId },
+						"Uninstalling plugin via lifecycle manager",
 					);
 
 					// Use the plugin manager to handle uninstallation
@@ -56,19 +56,22 @@ builder.mutationField("deletePlugin", (t) =>
 					);
 
 					if (!success) {
-						console.error(
-							"Plugin uninstallation failed in lifecycle manager:",
-							existingPlugin.pluginId,
+						ctx.log.error(
+							{ pluginId: existingPlugin.pluginId },
+							"Plugin uninstallation failed in lifecycle manager",
 						);
 						// Continue with deletion even if lifecycle fails
 					} else {
-						console.log(
-							"Plugin uninstalled successfully via lifecycle manager:",
-							existingPlugin.pluginId,
+						ctx.log.info(
+							{ pluginId: existingPlugin.pluginId },
+							"Plugin uninstalled successfully via lifecycle manager",
 						);
 					}
 				} catch (error) {
-					console.error("Error during plugin lifecycle uninstallation:", error);
+					ctx.log.error(
+						{ pluginId: existingPlugin.pluginId, err: error },
+						"Error during plugin lifecycle uninstallation",
+					);
 					// Continue with deletion even if lifecycle fails
 				}
 			}
@@ -77,9 +80,9 @@ builder.mutationField("deletePlugin", (t) =>
 			try {
 				await removePluginDirectory(existingPlugin.pluginId);
 			} catch (error) {
-				console.error(
-					`Failed to remove plugin directory for ${existingPlugin.pluginId}:`,
-					error,
+				ctx.log.error(
+					{ pluginId: existingPlugin.pluginId, err: error },
+					"Failed to remove plugin directory",
 				);
 				// If file removal fails, don't proceed with database deletion
 				// This allows user to retry the deletion

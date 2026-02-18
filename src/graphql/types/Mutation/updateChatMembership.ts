@@ -7,8 +7,9 @@ import {
 	mutationUpdateChatMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateChatMembershipInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateChatMembershipArgumentsSchema = z.object({
 	input: mutationUpdateChatMembershipInputSchema,
 });

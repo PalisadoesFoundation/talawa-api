@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "../../../../../src/graphql/builder";
 import { getPluginManagerInstance } from "../../../../../src/plugin/registry";
 import { TalawaGraphQLError } from "../../../../../src/utilities/TalawaGraphQLError";
@@ -50,6 +50,12 @@ type TestCtx = {
 		where: ReturnType<typeof vi.fn>;
 		returning: ReturnType<typeof vi.fn>;
 	};
+	log: {
+		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
+	};
 	[key: string]: unknown;
 };
 
@@ -71,6 +77,12 @@ function makeCtx(overrides: Partial<TestCtx> = {}): TestCtx {
 			set: setMock,
 			where: whereMock,
 			returning: returningMock,
+		},
+		log: {
+			info: vi.fn(),
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
 		},
 		...overrides,
 	};

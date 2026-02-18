@@ -11,10 +11,16 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-const mutationUpdateCurrentUserArgumentsSchema = z.object({
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+export const mutationUpdateCurrentUserArgumentsSchema = z.object({
 	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
@@ -110,13 +116,16 @@ builder.mutationField("updateCurrentUser", (t) =>
 				const existingUserWithEmailAddress =
 					await ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
-							role: true,
+							id: true,
 						},
 						where: (fields, operators) =>
 							operators.eq(fields.emailAddress, emailAddress),
 					});
 
-				if (existingUserWithEmailAddress !== undefined) {
+				if (
+					existingUserWithEmailAddress !== undefined &&
+					existingUserWithEmailAddress.id !== currentUserId
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action_on_arguments_associated_resources",
@@ -131,27 +140,32 @@ builder.mutationField("updateCurrentUser", (t) =>
 				}
 			}
 
-			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let avatarName: string;
+			const avatarUpdate = isNotNullish(parsedArgs.input.avatar)
+				? {
+						avatarName:
+							currentUser.avatarName === null ? ulid() : currentUser.avatarName,
+						avatarMimeType: parsedArgs.input.avatar.mimetype,
+					}
+				: null;
 
-			if (isNotNullish(parsedArgs.input.avatar)) {
-				avatarName =
-					currentUser.avatarName === null ? ulid() : currentUser.avatarName;
-				avatarMimeType = parsedArgs.input.avatar.mimetype;
-			}
-
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [updatedCurrentUser] = await tx
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
+				const updateResult = await tx
 					.update(usersTable)
 					.set({
 						addressLine1: parsedArgs.input.addressLine1,
 						addressLine2: parsedArgs.input.addressLine2,
-						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-							? avatarMimeType
-							: null,
-						avatarName: isNotNullish(parsedArgs.input.avatar)
-							? avatarName
-							: null,
+						avatarMimeType:
+							parsedArgs.input.avatar === undefined
+								? undefined // Do not update if undefined
+								: avatarUpdate !== null
+									? avatarUpdate.avatarMimeType
+									: null, // Set to null if null
+						avatarName:
+							parsedArgs.input.avatar === undefined
+								? undefined // Do not update if undefined
+								: avatarUpdate !== null
+									? avatarUpdate.avatarName
+									: null, // Set to null if null
 						birthDate: parsedArgs.input.birthDate,
 						city: parsedArgs.input.city,
 						countryCode: parsedArgs.input.countryCode,
@@ -178,7 +192,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 					.returning();
 
 				// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
-				if (updatedCurrentUser === undefined) {
+				if (updateResult.length === 0) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
@@ -186,10 +200,12 @@ builder.mutationField("updateCurrentUser", (t) =>
 					});
 				}
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
+				const updatedCurrentUser = updateResult[0];
+
+				if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
 					await ctx.minio.client.putObject(
 						ctx.minio.bucketName,
-						avatarName,
+						avatarUpdate.avatarName,
 						parsedArgs.input.avatar.createReadStream(),
 						undefined,
 						{
@@ -208,6 +224,17 @@ builder.mutationField("updateCurrentUser", (t) =>
 
 				return updatedCurrentUser;
 			});
+
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "user", currentUserId),
+					invalidateEntityLists(ctx.cache, "user"),
+				],
+				"user",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: User,
 	}),

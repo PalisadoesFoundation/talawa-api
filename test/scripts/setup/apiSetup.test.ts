@@ -1,3 +1,5 @@
+vi.mock("inquirer");
+
 import crypto from "node:crypto";
 import fs from "node:fs";
 import dotenv from "dotenv";
@@ -6,13 +8,44 @@ import {
 	apiSetup,
 	checkEnvFile,
 	generateJwtSecret,
+	type SetupAnswers,
 	setup,
 	validatePort,
 	validateURL,
 } from "scripts/setup/setup";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { validateSecurePassword } from "scripts/setup/validators";
+import {
+	afterEach,
+	beforeAll,
+	describe,
+	expect,
+	it,
+	type MockInstance,
+	vi,
+} from "vitest";
 
-vi.mock("inquirer");
+/**
+ * Helper function to wait for a condition to become true by polling
+ * @param condition - A function that returns true when the condition is met
+ * @param timeout - Maximum time to wait in milliseconds (default: 5000)
+ * @param pollInterval - Interval between checks in milliseconds (default: 10)
+ * @throws {Error} If the timeout elapses before the condition becomes true
+ */
+async function waitFor(
+	condition: () => boolean,
+	timeout = 5000,
+	pollInterval = 10,
+): Promise<void> {
+	const startTime = Date.now();
+	while (!condition() && Date.now() - startTime < timeout) {
+		await new Promise((resolve) => setTimeout(resolve, pollInterval));
+	}
+	if (!condition()) {
+		throw new Error(
+			`waitFor: timeout waiting for condition after ${timeout}ms`,
+		);
+	}
+}
 
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
@@ -25,18 +58,17 @@ describe("Setup -> apiSetup", () => {
 		vi.resetAllMocks();
 	});
 
-	const isEnvConfigured = checkEnvFile();
-
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		process.env.MINIO_ROOT_PASSWORD = "password";
 		process.env.POSTGRES_PASSWORD = "password";
+		const isEnvConfigured = await checkEnvFile();
 		const mockResponses = [
 			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
+			{ useDefaultApi: false },
 			{ useDefaultMinio: true },
 			{ useDefaultPostgres: true },
 			{ useDefaultCaddy: true },
-			{ useDefaultApi: false },
 			{ API_BASE_URL: "http://localhost:5000" },
 			{ API_HOST: "127.0.0.1" },
 			{ API_PORT: "5000" },
@@ -49,16 +81,8 @@ describe("Setup -> apiSetup", () => {
 			{ API_MINIO_ACCESS_KEY: "mocked-access-key" },
 			{ API_MINIO_END_POINT: "mocked-endpoint" },
 			{ API_MINIO_PORT: "9001" },
-			{ API_MINIO_SECRET_KEY: "password" },
 			{ API_MINIO_TEST_END_POINT: "mocked-test-endpoint" },
-			{ API_MINIO_USE_SSL: "true" },
-			{ API_POSTGRES_DATABASE: "mocked-database" },
-			{ API_POSTGRES_HOST: "mocked-host" },
-			{ API_POSTGRES_PASSWORD: "password" },
-			{ API_POSTGRES_PORT: "5433" },
-			{ API_POSTGRES_SSL_MODE: "true" },
-			{ API_POSTGRES_TEST_HOST: "mocked-test-host" },
-			{ API_POSTGRES_USER: "mocked-user" },
+			{ API_MINIO_USE_SSL: "false" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -83,16 +107,8 @@ describe("Setup -> apiSetup", () => {
 			API_MINIO_ACCESS_KEY: "mocked-access-key",
 			API_MINIO_END_POINT: "mocked-endpoint",
 			API_MINIO_PORT: "9001",
-			API_MINIO_SECRET_KEY: "password",
 			API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
-			API_MINIO_USE_SSL: "true",
-			API_POSTGRES_DATABASE: "mocked-database",
-			API_POSTGRES_HOST: "mocked-host",
-			API_POSTGRES_PASSWORD: "password",
-			API_POSTGRES_PORT: "5433",
-			API_POSTGRES_SSL_MODE: "true",
-			API_POSTGRES_TEST_HOST: "mocked-test-host",
-			API_POSTGRES_USER: "mocked-user",
+			API_MINIO_USE_SSL: "false",
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		};
 
@@ -105,7 +121,15 @@ describe("Setup -> apiSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
+		});
+		(
+			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
+				(path: fs.PathLike) => string[]
+			>
+		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -118,20 +142,21 @@ describe("Setup -> apiSetup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();
 	});
 
-	it("should prompt the user until mandatory parameters match", async () => {
-		process.env.POSTGRES_PASSWORD = "password";
-		process.env.MINIO_ROOT_PASSWORD = "password";
-
+	it("should not prompt for API_MINIO_SECRET_KEY or API_POSTGRES_* (set in service functions)", async () => {
+		// These values are now set automatically in minioSetup() and postgresSetup()
+		// apiSetup() should NOT prompt for them
 		const promptMock = vi.spyOn(inquirer, "prompt");
 
-		// First response is incorrect, second response is correct
+		// Mock all prompts that apiSetup actually makes (PostgreSQL prompts moved to postgresSetup)
 		promptMock
 			.mockResolvedValueOnce({ API_BASE_URL: "http://localhost:5000" })
 			.mockResolvedValueOnce({ API_HOST: "127.0.0.1" })
@@ -143,36 +168,20 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
-			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-test-endpoint" })
+			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
 			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
-			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "mocked-secret-key" })
-			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "password" })
 			.mockResolvedValueOnce({
 				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
 			})
-			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
-			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
-			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
-			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "postgres-password" })
-			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "password" })
-			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
-			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
-			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
-			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
-		const consoleWarnSpy = vi.spyOn(console, "warn");
+			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" });
 
-		let answers: Record<string, string> = {};
-		answers = await apiSetup(answers);
+		const answers: SetupAnswers = {};
+		await apiSetup(answers);
 
-		// Verify user is prompted twice because first attempt was incorrect
-		expect(promptMock).toHaveBeenCalledTimes(24);
-		expect(answers.API_POSTGRES_PASSWORD).toBe("password");
-
-		// Verify warning message was shown
-		expect(consoleWarnSpy.mock.calls).toEqual([
-			["⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD."],
-			["⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD."],
-		]);
+		// Verify the number of prompts: 14 prompts
+		// API_MINIO_SECRET_KEY is set in minioSetup()
+		// All API_POSTGRES_* are now set in postgresSetup()
+		expect(promptMock).toHaveBeenCalledTimes(14);
 	});
 });
 describe("validateURL", () => {
@@ -281,7 +290,7 @@ describe("generateJwtSecret", () => {
 
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
+			"⚠️ Warning: Failed to generate random bytes for JWT secret. This may indicate a system entropy issue.",
 			expect.any(Error),
 		);
 
@@ -290,7 +299,58 @@ describe("generateJwtSecret", () => {
 	});
 });
 
+describe("validateSecurePassword", () => {
+	it("should return true for valid secure passwords", () => {
+		expect(validateSecurePassword("Password1!")).toBe(true);
+		expect(validateSecurePassword("Abc12345@")).toBe(true);
+		expect(validateSecurePassword("MyStr0ng#Pass")).toBe(true);
+	});
+
+	it("should reject empty passwords", () => {
+		expect(validateSecurePassword("")).toBe("Password is required");
+		expect(validateSecurePassword("   ")).toBe("Password is required");
+	});
+
+	it("should reject passwords shorter than 8 characters", () => {
+		expect(validateSecurePassword("Pass1!")).toBe(
+			"Password must be at least 8 characters long",
+		);
+	});
+
+	it("should reject passwords without uppercase letters", () => {
+		expect(validateSecurePassword("password1!")).toBe(
+			"Password must contain at least one uppercase letter",
+		);
+	});
+
+	it("should reject passwords without lowercase letters", () => {
+		expect(validateSecurePassword("PASSWORD1!")).toBe(
+			"Password must contain at least one lowercase letter",
+		);
+	});
+
+	it("should reject passwords without numbers", () => {
+		expect(validateSecurePassword("Password!@")).toBe(
+			"Password must contain at least one number",
+		);
+	});
+
+	it("should reject passwords without special characters", () => {
+		expect(validateSecurePassword("Password123")).toBe(
+			"Password must contain at least one special character (!@#$%^&*())",
+		);
+	});
+});
+
 describe("Error handling without backup", () => {
+	afterEach(() => {
+		// Remove SIGINT listeners to prevent interference with other tests
+		process.removeAllListeners("SIGINT");
+		// Restore and clear all mocks
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
 	it("should handle prompt errors when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
@@ -308,7 +368,7 @@ describe("Error handling without backup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
@@ -319,22 +379,56 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		const consoleLogSpy = vi.spyOn(console, "log");
+		// Mock file system to indicate no .env file exists (so no backup will be created)
+		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
+		// Mock prompts sequentially to match the order setup() calls them
+		// Order: CI -> useDefaultMinio -> useDefaultCloudbeaver (if CI=false) -> useDefaultPostgres -> useDefaultCaddy -> useDefaultApi -> API_ADMINISTRATOR_USER_EMAIL_ADDRESS
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ CI: "false" }) // From setCI()
+			.mockResolvedValueOnce({ useDefaultMinio: true }) // Line 913
+			.mockResolvedValueOnce({ useDefaultCloudbeaver: true }) // Line 922 (only if CI === "false")
+			.mockResolvedValueOnce({ useDefaultPostgres: true }) // Line 931
+			.mockResolvedValueOnce({ useDefaultCaddy: true }) // Line 939
+			.mockResolvedValueOnce({ useDefaultApi: true }) // Line 947
+			.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			}); // From administratorEmail()
+
+		// Start setup() which will register the SIGINT handler
+		// Don't await it - we'll interrupt it
+		// Attach catch handler immediately to prevent unhandled promise rejections
+		setup().catch(() => {
+			// Expected - setup will be interrupted by SIGINT
+		});
+
+		// Wait deterministically for SIGINT handler to be registered
+		await waitFor(() => process.listenerCount("SIGINT") > 0);
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
+
+		// Emit SIGINT to trigger the handler
 		process.emit("SIGINT");
 
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\nProcess interrupted! Undoing changes...",
-		);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Wait for async handler to complete by polling for process.exit call
+		// The handler calls process.exit, so we wait for that to be called
+		await waitFor(() => processExitSpy.mock.calls.length > 0);
 
-		vi.clearAllMocks();
+		// Verify process.exit was called
+		expect(processExitSpy.mock.calls.length).toBeGreaterThan(0);
+
+		// Check that the new SIGINT handler messages are present
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"📋 No backup was created yet, nothing to restore",
+		);
+		// When no backup exists, it should exit with 0 (success, nothing to restore)
+		expect(processExitSpy).toHaveBeenCalledWith(0);
 	});
 });

@@ -742,29 +742,26 @@ Google Docstring 'Args' and 'Returns' sections.""",
 
     # Process the directories
     for directory in args.directories:
-        # Identify violations
         violations = check_directory(directory, exclude_dirs=None)
 
-        # Create a message for the violation
         if violations:
+            total_violations = sum(
+                len(issues) for issues in violations.values()
+            )
             print("")
             for file, issues in sorted(violations.items()):
                 for issue in issues:
-                    print(
-                        f"""\
+                    print(f"""\
 File Docstring Error: {file}
 Line : {issue.line}
 Function: {issue.function}
 Issue: {issue.issue}
 Corrective Action: {issue.action}
-"""
-                    )
-            print(
-                f"""\
+""")
+            print(f"""\
 Follow the online 'Google Python Style Guide' for our docstring expectations.
-There are {len(violations)} docstring violations
-"""
-            )
+There are {total_violations} docstring violations
+""")
 
             sys.exit(1)
 

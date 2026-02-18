@@ -2,22 +2,26 @@
 {
 	// https://biomejs.dev/reference/configuration/#schema
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	// GritQL plugin for escapeHTML enforcement (see biome_plugins/require_escapeHTML.grit)
+	"plugins": ["./biome_plugins/require_escapeHTML.grit"],
 	// https://biomejs.dev/reference/configuration/#files
 	"files": {
 		// https://biomejs.dev/reference/configuration/#filesignore
-		"ignore": [
-			"./drizzle_migrations",
-			"./node_modules",
-			"./package.json",
-			"./pnpm-lock.yaml",
-			"./schema.graphql",
-			"./test/graphql/types/gql.tada.d.ts",
-			"./test/graphql/types/gql.tada-cache.d.ts",
-			"./docs/tsconfig.json",
-			"./docs/docusaurus.config.ts",
-			"./docs/src/**",
-			"./docs/sidebars.ts",
-			"./sample_data/**"
+		"includes": [
+			"**",
+			"!drizzle_migrations",
+			"!node_modules",
+			"!package.json",
+			"!pnpm-lock.yaml",
+			"!schema.graphql",
+			"!test/graphql/types/gql.tada.d.ts",
+			"!test/graphql/types/gql.tada-cache.d.ts",
+			"!docs/tsconfig.json",
+			"!docs/docusaurus.config.ts",
+			"!docs/src",
+			"!docs/sidebars.ts",
+			"!sample_data",
+			"!**/*.grit"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true
@@ -25,12 +29,43 @@
 	// https://biomejs.dev/reference/configuration/#linter
 	"linter": {
 		// https://biomejs.dev/reference/configuration/#linterenabled
-		"enabled": true
+		"enabled": true,
+		"rules": {
+			"suspicious": {
+				"noConsole": "error"
+			}
+		}
 	},
+	"overrides": [
+		{
+			"includes": [
+				"src/install/**",
+				"src/tracing.ts",
+				"src/observability/**",
+				"src/services/caching/cacheConfig.ts",
+				"scripts/**",
+				"vitest.config.ts",
+				"vite.config.ts",
+				"test/**",
+				"docker/**",
+				"setup.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	],
 	// https://biomejs.dev/reference/configuration/#vcs
-	"organizeImports": {
-		// https://biomejs.dev/reference/configuration/#organizeimportsenabled
-		"enabled": true
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
 	},
 	// https://biomejs.dev/reference/configuration/#vcs
 	"vcs": {

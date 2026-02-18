@@ -11,7 +11,7 @@ import type { ServiceDependencies, WindowManagerConfig } from "./types";
  * @param input - The input object containing the organization ID.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the newly created Generation window configuration.
+ * @returns - A promise that resolves to the newly created Generation window configuration.
  */
 export async function initializeGenerationWindow(
 	input: CreateGenerationWindowInput,
@@ -58,7 +58,7 @@ export async function initializeGenerationWindow(
  * the Generation window and retention period.
  *
  * @param input - The initial input containing the organization ID.
- * @returns A complete window configuration object with all required properties.
+ * @returns - A complete window configuration object with all required properties.
  */
 function buildWindowConfiguration(
 	input: CreateGenerationWindowInput,
@@ -96,7 +96,7 @@ function buildWindowConfiguration(
  * @param additionalMonths - The number of months to extend the window by.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the new end date of the Generation window.
+ * @returns - A promise that resolves to the new end date of the Generation window.
  */
 export async function extendGenerationWindow(
 	organizationId: string,
@@ -153,7 +153,7 @@ export async function extendGenerationWindow(
  * @param organizationId - The ID of the organization for which to clean up instances.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the number of deleted instances.
+ * @returns - A promise that resolves to the number of deleted instances.
  */
 export async function cleanupOldGeneratedInstances(
 	organizationId: string,
@@ -211,7 +211,7 @@ export async function cleanupOldGeneratedInstances(
  *
  * @param organizationId - The ID of the organization to get stats for.
  * @param drizzleClient - The Drizzle ORM client for database access.
- * @returns A promise that resolves to an object containing the cleanup statistics.
+ * @returns - A promise that resolves to an object containing the cleanup statistics.
  */
 export async function getCleanupStats(
 	organizationId: string,

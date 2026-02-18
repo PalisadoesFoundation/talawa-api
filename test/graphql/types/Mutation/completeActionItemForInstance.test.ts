@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -14,6 +14,10 @@ import {
 	Mutation_createUser,
 	Query_signIn,
 } from "../documentNodes";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 // Sign in as admin to get an authentication token and admin user id.
 const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -95,8 +99,8 @@ async function createActionItem(
 				name: "Test Event",
 				description: "Test event for action items",
 				organizationId: organizationId,
-				startAt: new Date().toISOString(),
-				endAt: new Date(Date.now() + 3600000).toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+				endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
 				isPublic: true,
 				isRegisterable: true,
 				location: "Test Location",
@@ -129,7 +133,7 @@ async function createActionItem(
 				categoryId: categoryId,
 				volunteerId: volunteerId,
 				organizationId: organizationId,
-				assignedAt: "2025-04-01T00:00:00Z",
+				assignedAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 			},
 		},
 	});
@@ -289,12 +293,14 @@ suite("Mutation field completeActionItemForInstance", () => {
 						organizationId: orgId,
 						name: "Test Event",
 						description: "Test Event Description",
-						startAt: "2025-01-01T00:00:00Z",
-						endAt: "2025-01-01T01:00:00Z",
+						startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+						endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
 						recurrence: {
 							frequency: "DAILY",
 							interval: 1,
-							endDate: "2025-01-02T00:00:00Z",
+							endDate: new Date(
+								Date.now() + 7 * 24 * 60 * 60 * 1000,
+							).toISOString(),
 						},
 					},
 				},
@@ -340,7 +346,9 @@ suite("Mutation field completeActionItemForInstance", () => {
 							volunteerId: volunteerId,
 							organizationId: orgId,
 							recurringEventInstanceId: instanceId,
-							assignedAt: "2025-04-01T00:00:00Z",
+							assignedAt: new Date(
+								Date.now() + 24 * 60 * 60 * 1000,
+							).toISOString(),
 						},
 					},
 				},
@@ -401,12 +409,14 @@ suite("Mutation field completeActionItemForInstance", () => {
 						organizationId: orgId,
 						name: "Test Event",
 						description: "Test Event Description",
-						startAt: "2025-01-01T00:00:00Z",
-						endAt: "2025-01-01T01:00:00Z",
+						startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+						endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
 						recurrence: {
 							frequency: "DAILY",
 							interval: 1,
-							endDate: "2025-01-02T00:00:00Z",
+							endDate: new Date(
+								Date.now() + 7 * 24 * 60 * 60 * 1000,
+							).toISOString(),
 						},
 					},
 				},
@@ -451,7 +461,9 @@ suite("Mutation field completeActionItemForInstance", () => {
 							volunteerId: volunteerId2,
 							organizationId: orgId,
 							recurringEventInstanceId: instanceId, // Use instance ID instead of template ID
-							assignedAt: "2025-04-01T00:00:00Z",
+							assignedAt: new Date(
+								Date.now() + 24 * 60 * 60 * 1000,
+							).toISOString(),
 						},
 					},
 				},

@@ -1,8 +1,12 @@
 import { eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
 import { membershipRequestCountResolver } from "~/src/graphql/types/Organization/membershipRequestCount";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 // Parent organization mock
 const mockParent = {

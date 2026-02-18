@@ -8,8 +8,8 @@ import {
 	mutationUpdateSingleRecurringEventInstanceInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateSingleRecurringEventInstanceInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateSingleRecurringEventInstanceArgumentsSchema = z.object({
 	input: mutationUpdateSingleRecurringEventInstanceInputSchema,
@@ -74,6 +74,7 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 						actualEndTime: true,
 						baseRecurringEventId: true,
 						recurrenceRuleId: true,
+						originalSeriesId: true,
 						originalInstanceStartTime: true,
 						organizationId: true,
 						generatedAt: true,
@@ -106,6 +107,7 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 								allDay: true,
 								isPublic: true,
 								isRegisterable: true,
+								isInviteOnly: true,
 								creatorId: true,
 								updaterId: true,
 								createdAt: true,
@@ -235,6 +237,9 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 				if (parsedArgs.input.isRegisterable !== undefined) {
 					exceptionData.isRegisterable = parsedArgs.input.isRegisterable;
 				}
+				if (parsedArgs.input.isInviteOnly !== undefined) {
+					exceptionData.isInviteOnly = parsedArgs.input.isInviteOnly;
+				}
 				if (parsedArgs.input.startAt !== undefined) {
 					exceptionData.startAt = parsedArgs.input.startAt.toISOString();
 				}
@@ -252,17 +257,47 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					},
 				);
 
+				let finalExceptionData = exceptionData;
+
 				if (existingException) {
-					const mergedExceptionData = {
+					finalExceptionData = {
 						...(existingException.exceptionData as Record<string, unknown>),
 						...exceptionData,
 					};
+				}
 
+				// Validate visibility consistency (cannot be both public and invite-only)
+				const finalIsPublic =
+					(finalExceptionData.isPublic as boolean | undefined) ??
+					existingInstance.baseRecurringEvent.isPublic;
+				const finalIsInviteOnly =
+					(finalExceptionData.isInviteOnly as boolean | undefined) ??
+					existingInstance.baseRecurringEvent.isInviteOnly;
+
+				if (finalIsPublic && finalIsInviteOnly) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "isPublic"],
+									message: "cannot be both Public and Invite-Only",
+								},
+								{
+									argumentPath: ["input", "isInviteOnly"],
+									message: "cannot be both Public and Invite-Only",
+								},
+							],
+						},
+					});
+				}
+
+				if (existingException) {
 					// Update existing exception
 					await tx
 						.update(eventExceptionsTable)
 						.set({
-							exceptionData: mergedExceptionData,
+							exceptionData: finalExceptionData,
 							updaterId: currentUserId,
 							updatedAt: new Date(),
 						})
@@ -319,19 +354,46 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					),
 				};
 
+				// Construct a properly typed ResolvedRecurringEventInstance
 				return {
-					...existingInstance,
-					...resolvedEventData,
-					...updatedInstance,
+					// Core instance metadata
 					id: updatedInstance.id,
 					baseRecurringEventId: existingInstance.baseRecurringEventId,
-					startAt: updatedInstance.actualStartTime,
-					endAt: updatedInstance.actualEndTime,
-					// The following fields are required for the GraphQL Event type
+					recurrenceRuleId: existingInstance.recurrenceRuleId,
+					originalSeriesId: existingInstance.originalSeriesId,
+					originalInstanceStartTime: existingInstance.originalInstanceStartTime,
+					actualStartTime: updatedInstance.actualStartTime,
+					actualEndTime: updatedInstance.actualEndTime,
+					isCancelled: existingInstance.isCancelled,
+					organizationId: existingInstance.organizationId,
+					generatedAt: existingInstance.generatedAt,
+					lastUpdatedAt: updatedInstance.lastUpdatedAt,
+					version: existingInstance.version,
+					// Sequence metadata
+					sequenceNumber: existingInstance.sequenceNumber,
+					totalCount: existingInstance.totalCount,
+					// Resolved event properties (from base template + exception overrides)
+					name: resolvedEventData.name ?? baseEventData.name,
+					description:
+						resolvedEventData.description ?? baseEventData.description ?? null,
+					location:
+						resolvedEventData.location ?? baseEventData.location ?? null,
+					allDay: resolvedEventData.allDay ?? baseEventData.allDay,
+					isPublic: resolvedEventData.isPublic ?? baseEventData.isPublic,
+					isRegisterable:
+						resolvedEventData.isRegisterable ?? baseEventData.isRegisterable,
+					isInviteOnly:
+						resolvedEventData.isInviteOnly ?? baseEventData.isInviteOnly,
+					creatorId: baseEventData.creatorId,
+					updaterId: baseEventData.updaterId,
+					createdAt: baseEventData.createdAt,
+					updatedAt: baseEventData.updatedAt,
+					// Exception metadata
 					hasExceptions: true,
 					appliedExceptionData: exceptionData,
 					exceptionCreatedBy: currentUserId,
 					exceptionCreatedAt: new Date(),
+					// Attachments for Event type
 					attachments: [], // Recurring event instances don't have direct attachments
 				};
 			});

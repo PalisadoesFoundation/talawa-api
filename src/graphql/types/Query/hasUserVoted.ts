@@ -1,8 +1,9 @@
 import { z } from "zod";
+import type { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
 import { builder } from "~/src/graphql/builder";
 import { HasUserVoted } from "~/src/graphql/types/Post/hasUserVoted";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	QueryHasUserVotedInput,
 	queryHasUserVotedInputSchema,
@@ -128,7 +129,7 @@ builder.queryField("hasUserVoted", (t) =>
 				};
 			}
 			return {
-				voteType: existingPostVote.type,
+				voteType: existingPostVote.type as z.infer<typeof postVoteTypeEnum>,
 				hasVoted: true,
 			};
 		},

@@ -16,7 +16,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:9](https://gith
 
 > **new NotificationEventBus**(`options?`): `NotificationEventBus`
 
-Defined in: node\_modules/.pnpm/@types+node@22.19.0/node\_modules/@types/node/events.d.ts:101
+Defined in: node\_modules/.pnpm/@types+node@22.19.9/node\_modules/@types/node/events.d.ts:101
 
 #### Parameters
 
@@ -389,6 +389,58 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:10](https://git
 `string`
 
 ###### postId
+
+`string`
+
+##### ctx
+
+[`GraphQLContext`](../../../../../context/type-aliases/GraphQLContext.md)
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### emitSendEventInvite()
+
+> **emitSendEventInvite**(`data`, `ctx`): `Promise`\<`void`\>
+
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:429](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L429)
+
+#### Parameters
+
+##### data
+
+###### eventId?
+
+`string`
+
+###### eventName?
+
+`string`
+
+###### invitationToken
+
+`string`
+
+###### invitationUrl
+
+`string`
+
+###### inviteeEmail
+
+`string`
+
+###### inviteeName?
+
+`string`
+
+###### inviterId
+
+`string`
+
+###### organizationId
 
 `string`
 

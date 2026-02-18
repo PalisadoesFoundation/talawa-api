@@ -2,8 +2,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it } from "vitest";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { User as UserType } from "~/src/graphql/types/User/User";
 import { userEventsAttendedResolver } from "~/src/graphql/types/User/eventsAttended";
+import type { User as UserType } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("User EventsAttended Resolver Tests", () => {
@@ -30,6 +30,26 @@ describe("User EventsAttended Resolver Tests", () => {
 		} as UserType;
 	});
 
+	describe("Authentication", () => {
+		it("should throw unauthenticated error when user is not authenticated", async () => {
+			const { context: unauthCtx } = createMockGraphQLContext(false);
+
+			await expect(
+				userEventsAttendedResolver(mockUser, {}, unauthCtx),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			await expect(
+				userEventsAttendedResolver(mockUser, {}, unauthCtx),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+				}),
+			);
+		});
+	});
+
 	describe("Empty Attendances", () => {
 		it("should return empty array when user has no event attendances", async () => {
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
@@ -44,7 +64,11 @@ describe("User EventsAttended Resolver Tests", () => {
 			).toHaveBeenCalledWith({
 				where: expect.any(Object), // eq() function result
 				with: {
-					event: true,
+					event: {
+						with: {
+							attachmentsWhereEvent: true,
+						},
+					},
 					recurringEventInstance: {
 						with: {
 							baseRecurringEvent: true,
@@ -135,6 +159,117 @@ describe("User EventsAttended Resolver Tests", () => {
 			for (const event of result) {
 				expect(event?.attachments).toEqual([]);
 			}
+		});
+
+		it("should handle standalone events with undefined attachmentsWhereEvent", async () => {
+			const mockAttendances = [
+				{
+					id: "attendance-1",
+					userId: "user-789",
+					eventId: "event-123",
+					event: {
+						id: "event-123",
+						name: "Event with undefined attachments",
+						description: "Test event",
+						startAt: new Date("2024-03-15T10:00:00Z"),
+						endAt: new Date("2024-03-15T12:00:00Z"),
+						organizationId: "org-123",
+						isPublic: true,
+						allDay: false,
+						attachmentsWhereEvent: undefined,
+					},
+					recurringEventInstance: null,
+				},
+			];
+
+			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
+				mockAttendances,
+			);
+
+			const result = await userEventsAttendedResolver(mockUser, {}, ctx);
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Event with undefined attachments");
+			expect(result[0]?.attachments).toEqual([]);
+		});
+
+		it("should handle standalone events with null attachmentsWhereEvent", async () => {
+			const mockAttendances = [
+				{
+					id: "attendance-1",
+					userId: "user-789",
+					eventId: "event-123",
+					event: {
+						id: "event-123",
+						name: "Event with null attachments",
+						description: "Test event",
+						startAt: new Date("2024-03-15T10:00:00Z"),
+						endAt: new Date("2024-03-15T12:00:00Z"),
+						organizationId: "org-123",
+						isPublic: true,
+						allDay: false,
+						attachmentsWhereEvent: null,
+					},
+					recurringEventInstance: null,
+				},
+			];
+
+			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
+				mockAttendances,
+			);
+
+			const result = await userEventsAttendedResolver(mockUser, {}, ctx);
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Event with null attachments");
+			expect(result[0]?.attachments).toEqual([]);
+		});
+
+		it("should return attachments when they exist for standalone events", async () => {
+			const mockAttendances = [
+				{
+					id: "attendance-1",
+					userId: "user-789",
+					eventId: "event-123",
+					event: {
+						id: "event-123",
+						name: "Event with Attachments",
+						description: "Test event with attachments",
+						startAt: new Date("2024-03-15T10:00:00Z"),
+						endAt: new Date("2024-03-15T12:00:00Z"),
+						organizationId: "org-123",
+						isPublic: true,
+						allDay: false,
+						attachmentsWhereEvent: [
+							{
+								id: "attach-1",
+								name: "document.pdf",
+								mimeType: "application/pdf",
+							},
+							{
+								id: "attach-2",
+								name: "image.png",
+								mimeType: "image/png",
+							},
+						],
+					},
+					recurringEventInstance: null,
+				},
+			];
+
+			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
+				mockAttendances,
+			);
+
+			const result = await userEventsAttendedResolver(mockUser, {}, ctx);
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Event with Attachments");
+			expect(result[0]?.attachments).toHaveLength(2);
+			expect(result[0]?.attachments[0]?.name).toBe("document.pdf");
+			expect(result[0]?.attachments[0]?.mimeType).toBe("application/pdf");
+			expect(result[0]?.attachments[1]?.name).toBe("image.png");
+			expect(result[0]?.attachments[1]?.mimeType).toBe("image/png");
 		});
 	});
 

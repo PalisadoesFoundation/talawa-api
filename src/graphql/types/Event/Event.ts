@@ -7,6 +7,7 @@ import {
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
 import { RecurrenceRule } from "~/src/graphql/types/RecurrenceRule/RecurrenceRule";
 import { formatRecurrenceDescription } from "~/src/utilities/recurrenceFormatter";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 // Unified Event type supporting both standalone events and materialized instances
 export type Event =
@@ -21,14 +22,42 @@ Event.implement({
 	description:
 		"Represents an event, which can be a standalone occurrence or a materialized instance of a recurring series. This unified type allows for consistent handling of all events.",
 	fields: (t) => ({
-		attachments: t.expose("attachments", {
+		attachments: t.field({
 			description:
-				"A list of attachments associated with the event, such as images or documents.",
+				"A list of attachments associated with the event, such as images or documents. For generated instances, this falls back to the base event's attachments if none are specific to the instance.",
 			type: t.listRef(EventAttachment),
+			resolve: async (event, _args, { drizzleClient }) => {
+				// 1. If the event object already has attachments, return them
+				if (
+					"attachments" in event &&
+					event.attachments &&
+					event.attachments.length > 0
+				) {
+					return event.attachments;
+				}
+
+				// 2. If it's a generated instance (has baseRecurringEventId), fall back to base event attachments
+				const evt = event as { baseRecurringEventId?: string | null };
+				const baseId = evt.baseRecurringEventId;
+				if (baseId) {
+					// Fetch attachments for the base event
+					const baseAttachments =
+						await drizzleClient.query.eventAttachmentsTable.findMany({
+							where: (fields, { eq }) => eq(fields.eventId, baseId),
+						});
+					return baseAttachments;
+				}
+
+				// 3. Otherwise return empty array
+				return [];
+			},
 		}),
-		description: t.exposeString("description", {
+		description: t.string({
 			description:
 				"A detailed description of the event, providing custom information and context.",
+			nullable: true,
+			resolve: (event) =>
+				event.description ? escapeHTML(event.description) : null,
 		}),
 		endAt: t.field({
 			description:
@@ -42,8 +71,9 @@ Event.implement({
 				"The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.",
 			nullable: false,
 		}),
-		name: t.exposeString("name", {
+		name: t.string({
 			description: "The name or title of the event.",
+			resolve: (event) => escapeHTML(event.name),
 		}),
 		startAt: t.field({
 			description:
@@ -56,6 +86,9 @@ Event.implement({
 		allDay: t.exposeBoolean("allDay", {
 			description:
 				"A boolean flag indicating if the event lasts for the entire day.",
+		}),
+		isInviteOnly: t.exposeBoolean("isInviteOnly", {
+			description: "A boolean flag indicating if the event is invite-only.",
 		}),
 		isPublic: t.exposeBoolean("isPublic", {
 			description:
@@ -74,6 +107,11 @@ Event.implement({
 				"A boolean flag indicating if this event serves as a template for a recurring series.",
 			resolve: (event) =>
 				"isRecurringEventTemplate" in event && event.isRecurringEventTemplate,
+		}),
+		isCancelled: t.boolean({
+			description:
+				"A boolean flag indicating if this instance has been cancelled.",
+			resolve: (event) => "isCancelled" in event && !!event.isCancelled,
 		}),
 		baseEvent: t.field({
 			description:
@@ -118,9 +156,9 @@ Event.implement({
 					const sequence = event.sequenceNumber;
 					const total = event.totalCount;
 					if (total) {
-						return `${sequence} of ${total}`;
+						return escapeHTML(`${sequence} of ${total}`);
 					}
-					return `#${sequence}`;
+					return escapeHTML(`#${sequence}`);
 				}
 				return null;
 			},
@@ -206,8 +244,33 @@ Event.implement({
 					return null;
 				}
 
-				return formatRecurrenceDescription(recurrenceRule);
+				return escapeHTML(formatRecurrenceDescription(recurrenceRule));
 			},
+		}),
+		isGenerated: t.boolean({
+			description:
+				"A boolean flag indicating if this event was generated from a recurrence template.",
+			resolve: (event) => {
+				const evt = event as {
+					isGenerated?: boolean;
+					baseRecurringEventId?: string | null;
+				};
+				// If explicitly true, return true
+				if (evt.isGenerated === true) {
+					return true;
+				}
+				// Otherwise, check if baseRecurringEventId is present
+				return Boolean(evt.baseRecurringEventId);
+			},
+		}),
+		baseRecurringEventId: t.id({
+			description:
+				"The ID of the base recurring event template if this is a generated instance.",
+			nullable: true,
+			resolve: (event) =>
+				"baseRecurringEventId" in event && event.baseRecurringEventId
+					? event.baseRecurringEventId
+					: null,
 		}),
 	}),
 });

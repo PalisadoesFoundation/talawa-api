@@ -6,7 +6,7 @@
 
 > **ForbiddenActionOnArgumentsAssociatedResourcesExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:75](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L75)
+Defined in: [src/utilities/TalawaGraphQLError.ts:95](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L95)
 
 When the client tries to perform actions on resources associated to arguments that conflict with real world expectations of the application. One example would be a user trying to follow their own account on a social media application.
 
@@ -36,7 +36,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"forbidden_action_on_arguments_associated_resources"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:76](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L76)
+Defined in: [src/utilities/TalawaGraphQLError.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L96)
 
 ***
 
@@ -44,11 +44,11 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:76](https://github.com/Palisado
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:77](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L77)
+Defined in: [src/utilities/TalawaGraphQLError.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L97)
 
 #### argumentPath
 
-> **argumentPath**: (`string` \| `number`)[]
+> **argumentPath**: `JSONArgumentPathKey`[]
 
 #### message
 

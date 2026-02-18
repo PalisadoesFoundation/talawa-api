@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { AgendaItem } from "./AgendaItem";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { AgendaItem as AgendaItemType } from "./AgendaItem";
+import { AgendaItem } from "./AgendaItem";
 export const resolveUpdater = async (
 	parent: AgendaItemType,
 	_args: Record<string, never>,
@@ -24,20 +24,11 @@ export const resolveUpdater = async (
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-			columns: {
-				isAgendaItemFolder: true,
-			},
 			where: (fields, operators) => operators.eq(fields.id, parent.folderId),
 			with: {
 				event: {
-					columns: {
-						startAt: true,
-					},
 					with: {
 						organization: {
-							columns: {
-								countryCode: true,
-							},
 							with: {
 								membershipsWhereOrganization: {
 									columns: {

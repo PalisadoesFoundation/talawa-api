@@ -9,9 +9,10 @@ import {
 	mutationCreateChatInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateChatArgumentsSchema = z.object({
 	input: mutationCreateChatInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -136,8 +137,11 @@ builder.mutationField("createChat", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			// Allow all users who are members of the organization to create chats
-			if (currentUserOrganizationMembership === undefined) {
+			// Allow system administrators or organization members to create chats
+			if (
+				currentUser.role !== "administrator" &&
+				currentUserOrganizationMembership === undefined
+			) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
@@ -150,8 +154,8 @@ builder.mutationField("createChat", (t) =>
 				});
 			}
 
-			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let avatarName: string;
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | null = null;
+			let avatarName: string | null = null;
 
 			if (isNotNullish(parsedArgs.input.avatar)) {
 				avatarName = ulid();
@@ -183,7 +187,7 @@ builder.mutationField("createChat", (t) =>
 					});
 				}
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== null) {
 					await ctx.minio.client.putObject(
 						ctx.minio.bucketName,
 						avatarName,

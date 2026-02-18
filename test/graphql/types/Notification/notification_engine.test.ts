@@ -11,7 +11,6 @@ import {
 
 // Unit Tests for NotificationEngine
 describe("NotificationEngine (unit tests)", () => {
-	// Helper to create a mock template
 	function createMockTemplate(
 		overrides: Partial<Record<string, unknown>> = {},
 	) {
@@ -26,7 +25,6 @@ describe("NotificationEngine (unit tests)", () => {
 		};
 	}
 
-	// Helper to create a mock GraphQL context
 	function createMockContext(
 		options: {
 			template?: Record<string, unknown>;
@@ -64,7 +62,7 @@ describe("NotificationEngine (unit tests)", () => {
 			) as Record<string, { _col: string }>;
 
 			// Create the and function for complex queries
-			const and = (...args: unknown[]) => {
+			const and = (..._args: unknown[]) => {
 				return {
 					test: (row: InsertRecord) => {
 						return conditions.every(({ field, value, isInArray }) => {
@@ -105,12 +103,10 @@ describe("NotificationEngine (unit tests)", () => {
 				ops as unknown as Record<string, unknown>,
 			);
 
-			// If it's an AND result, return its test function
 			if (predObj && typeof predObj === "object" && "test" in predObj) {
 				return predObj.test as PredicateFn;
 			}
 
-			// Otherwise, create a test function from the tracked conditions
 			return (row: InsertRecord) => {
 				return conditions.every(({ field, value, isInArray }) => {
 					if (isInArray) {
@@ -171,29 +167,31 @@ describe("NotificationEngine (unit tests)", () => {
 							}),
 					},
 					usersTable: {
-						findMany: vi.fn().mockImplementation(
-							(args?: {
-								where?: WhereBuilder;
-								columns?: Record<string, boolean>;
-							}) => {
-								let data: InsertRecord[] = options.users ?? [];
-								if (args?.where) {
-									const pred = buildPredicate(args.where);
-									if (pred) data = data.filter((r) => pred(r));
-								}
-								if (args?.columns) {
-									const cols = args.columns;
-									data = data.map((r) => {
-										const o: InsertRecord = {};
-										for (const key of Object.keys(cols)) {
-											if (cols[key]) o[key] = r[key];
-										}
-										return o;
-									});
-								}
-								return Promise.resolve(data);
-							},
-						),
+						findMany: vi
+							.fn()
+							.mockImplementation(
+								(args?: {
+									where?: WhereBuilder;
+									columns?: Record<string, boolean>;
+								}) => {
+									let data: InsertRecord[] = options.users ?? [];
+									if (args?.where) {
+										const pred = buildPredicate(args.where);
+										if (pred) data = data.filter((r) => pred(r));
+									}
+									if (args?.columns) {
+										const cols = args.columns;
+										data = data.map((r) => {
+											const o: InsertRecord = {};
+											for (const key of Object.keys(cols)) {
+												if (cols[key]) o[key] = r[key];
+											}
+											return o;
+										});
+									}
+									return Promise.resolve(data);
+								},
+							),
 					},
 				},
 				insert: (table: unknown) => {
@@ -228,7 +226,6 @@ describe("NotificationEngine (unit tests)", () => {
 
 	test("throws error when template not found", async () => {
 		const { ctx } = createMockContext();
-		// Mock template not found
 		(
 			ctx.drizzleClient.query.notificationTemplatesTable
 				.findFirst as ReturnType<typeof vi.fn>
@@ -263,7 +260,6 @@ describe("NotificationEngine (unit tests)", () => {
 			},
 		);
 
-		// Check notification log was created
 		const logInsert = inserts.find((i) => i.table === "notificationLogsTable");
 		expect(logInsert?.values).toHaveLength(1);
 		expect(logInsert?.values[0]).toMatchObject({
@@ -272,7 +268,6 @@ describe("NotificationEngine (unit tests)", () => {
 			status: "delivered",
 		});
 
-		// Check audience entry was created (sender should be filtered out)
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -285,7 +280,7 @@ describe("NotificationEngine (unit tests)", () => {
 		const mockMembers = [
 			{ memberId: "member_001", organizationId: "org_001" },
 			{ memberId: "member_002", organizationId: "org_001" },
-			{ memberId: "sender_123", organizationId: "org_001" }, // Should be filtered out
+			{ memberId: "sender_123", organizationId: "org_001" },
 		];
 
 		const { ctx, inserts } = createMockContext({
@@ -306,12 +301,10 @@ describe("NotificationEngine (unit tests)", () => {
 			},
 		);
 
-		// Verify organization members query was called
 		expect(
 			ctx.drizzleClient.query.organizationMembershipsTable.findMany,
 		).toHaveBeenCalled();
 
-		// Check audience entries (sender should be excluded)
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -333,7 +326,7 @@ describe("NotificationEngine (unit tests)", () => {
 				memberId: "sender_123",
 				role: "administrator",
 				organizationId: "org_001",
-			}, // Should be filtered out
+			},
 		];
 
 		const { ctx, inserts } = createMockContext({
@@ -354,7 +347,6 @@ describe("NotificationEngine (unit tests)", () => {
 			},
 		);
 
-		// Check audience entries (only admins, excluding sender)
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -367,7 +359,7 @@ describe("NotificationEngine (unit tests)", () => {
 		const mockUsers = [
 			{ id: "global_admin_001", role: "administrator" },
 			{ id: "global_admin_002", role: "administrator" },
-			{ id: "sender_123", role: "administrator" }, // Should be filtered out
+			{ id: "sender_123", role: "administrator" },
 		];
 
 		const { ctx, inserts } = createMockContext({
@@ -385,7 +377,6 @@ describe("NotificationEngine (unit tests)", () => {
 			{ targetType: NotificationTargetType.ADMIN, targetIds: [] },
 		);
 
-		// Check audience entries (excluding sender)
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -422,12 +413,11 @@ describe("NotificationEngine (unit tests)", () => {
 				{
 					targetType: NotificationTargetType.USER,
 					targetIds: ["user_002", "sender_123"],
-				}, // user_002 duplicate, sender should be excluded
+				},
 			],
 			NotificationChannelType.EMAIL,
 		);
 
-		// Check email notifications were created (deduplicated, sender excluded)
 		const emailInsert = inserts.find(
 			(i) => i.table === "emailNotificationsTable",
 		);
@@ -457,13 +447,11 @@ describe("NotificationEngine (unit tests)", () => {
 			NotificationChannelType.EMAIL,
 		);
 
-		// No email notifications should be created
 		const emailInsert = inserts.find(
 			(i) => i.table === "emailNotificationsTable",
 		);
 		expect(emailInsert).toBeUndefined();
 
-		// Warning should be logged
 		expect(ctx.log.warn).toHaveBeenCalled();
 	});
 
@@ -519,12 +507,10 @@ describe("NotificationEngine (unit tests)", () => {
 			},
 		]);
 
-		// Check that audience entries were created for all target types
 		const audienceInserts = inserts.filter(
 			(i) => i.table === "notificationAudienceTable",
 		);
 
-		// Collect all user IDs from all audience inserts
 		const allValues = audienceInserts.flatMap((insert) => insert.values);
 		expect(allValues).toHaveLength(3);
 
@@ -534,6 +520,48 @@ describe("NotificationEngine (unit tests)", () => {
 			"global_admin_001",
 			"org_member_001",
 		]);
+	});
+
+	test("creates in-app notifications with deduplication across multiple audiences", async () => {
+		// Test that same user appearing in multiple audience specs only gets one entry
+		// This prevents UNIQUE(notificationId, userId) constraint violations
+		const mockMembers = [
+			{ memberId: "user_001", organizationId: "org_001" },
+			{ memberId: "user_002", organizationId: "org_001" },
+		];
+
+		const { ctx, inserts } = createMockContext({
+			orgMembers: mockMembers,
+			template: createMockTemplate({
+				eventType: "multi_audience_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		// user_001 appears in both ORGANIZATION and USER audiences
+		await engine.createNotification("multi_audience_event", {}, [
+			{
+				targetType: NotificationTargetType.ORGANIZATION,
+				targetIds: ["org_001"],
+			},
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["user_001", "user_003"],
+			},
+		]);
+
+		const audienceInserts = inserts.filter(
+			(i) => i.table === "notificationAudienceTable",
+		);
+
+		// Should have only one insert with 3 unique users (user_001 appears only once)
+		const allValues = audienceInserts.flatMap((insert) => insert.values);
+		expect(allValues).toHaveLength(3);
+
+		const userIds = allValues.map((v) => v.userId as string).sort();
+		// user_001 should appear only once, not twice
+		expect(userIds).toEqual(["user_001", "user_002", "user_003"]);
 	});
 
 	test("does not exclude sender when unauthenticated", async () => {
@@ -557,7 +585,6 @@ describe("NotificationEngine (unit tests)", () => {
 			},
 		);
 
-		// When unauthenticated, no sender filtering should occur
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -571,9 +598,9 @@ describe("NotificationEngine (unit tests)", () => {
 
 	test("handles users with empty or null email addresses (line 169-171 coverage)", async () => {
 		const mockUsers = [
-			{ id: "user_001", emailAddress: "" }, // Empty email
-			{ id: "user_002", emailAddress: null }, // Null email
-			{ id: "user_003", emailAddress: "   " }, // Whitespace only
+			{ id: "user_001", emailAddress: "" },
+			{ id: "user_002", emailAddress: null },
+			{ id: "user_003", emailAddress: "   " },
 		];
 
 		const { ctx, inserts } = createMockContext({
@@ -595,13 +622,11 @@ describe("NotificationEngine (unit tests)", () => {
 			NotificationChannelType.EMAIL,
 		);
 
-		// No email notifications should be created due to invalid emails
 		const emailInsert = inserts.find(
 			(i) => i.table === "emailNotificationsTable",
 		);
 		expect(emailInsert).toBeUndefined();
 
-		// Warning should be logged for no valid email addresses
 		expect(ctx.log.warn).toHaveBeenCalledWith(
 			"No users found with valid email addresses",
 		);
@@ -616,17 +641,15 @@ describe("NotificationEngine (unit tests)", () => {
 		});
 		const engine = new NotificationEngine(ctx);
 
-		// Test ORGANIZATION_ADMIN with empty targetIds array
 		await engine.createNotification(
 			"org_event",
 			{},
 			{
 				targetType: NotificationTargetType.ORGANIZATION_ADMIN,
-				targetIds: [], // Empty array - should trigger early return
+				targetIds: [],
 			},
 		);
 
-		// No audience entries should be created
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -642,69 +665,15 @@ describe("NotificationEngine (unit tests)", () => {
 		});
 		const engine = new NotificationEngine(ctx);
 
-		// Test ORGANIZATION with empty targetIds array
 		await engine.createNotification(
 			"org_event",
 			{},
 			{
 				targetType: NotificationTargetType.ORGANIZATION,
-				targetIds: [], // Empty array - should trigger early return
+				targetIds: [],
 			},
 		);
 
-		// No audience entries should be created
-		const audienceInsert = inserts.find(
-			(i) => i.table === "notificationAudienceTable",
-		);
-		expect(audienceInsert).toBeUndefined();
-	});
-
-	test("covers createAudienceEntries with empty organization ID (line 230-272 coverage)", async () => {
-		const { ctx, inserts } = createMockContext({
-			template: createMockTemplate({
-				eventType: "org_admin_event",
-				channelType: "in_app",
-			}),
-		});
-		const engine = new NotificationEngine(ctx);
-
-		// Test ORGANIZATION_ADMIN in createAudienceEntries with empty targetIds
-		await engine.createNotification(
-			"org_admin_event",
-			{},
-			{
-				targetType: NotificationTargetType.ORGANIZATION_ADMIN,
-				targetIds: [], // Empty array - should trigger early return in createAudienceEntries
-			},
-		);
-
-		// No audience entries should be created due to empty orgId
-		const audienceInsert = inserts.find(
-			(i) => i.table === "notificationAudienceTable",
-		);
-		expect(audienceInsert).toBeUndefined();
-	});
-
-	test("covers createAudienceEntries ORGANIZATION path with empty targetIds (line 230-272 coverage)", async () => {
-		const { ctx, inserts } = createMockContext({
-			template: createMockTemplate({
-				eventType: "org_event",
-				channelType: "in_app",
-			}),
-		});
-		const engine = new NotificationEngine(ctx);
-
-		// Test ORGANIZATION in createAudienceEntries with empty targetIds
-		await engine.createNotification(
-			"org_event",
-			{},
-			{
-				targetType: NotificationTargetType.ORGANIZATION,
-				targetIds: [], // Empty array - should trigger early return in createAudienceEntries
-			},
-		);
-
-		// No audience entries should be created due to empty orgId
 		const audienceInsert = inserts.find(
 			(i) => i.table === "notificationAudienceTable",
 		);
@@ -722,23 +691,413 @@ describe("NotificationEngine (unit tests)", () => {
 		const { ctx, inserts } = createMockContext({ template });
 		const engine = new NotificationEngine(ctx);
 
-		// Test with null and undefined values - these should be skipped
 		await engine.createNotification(
 			"test_event",
 			{
 				name: "Alice",
-				greeting: null, // Should be skipped
-				message: undefined, // Should be skipped
-				count: 0, // Should be rendered as "0"
-				status: "", // Should be rendered as empty string
+				greeting: null,
+				message: undefined,
+				count: 0,
+				status: "",
 			},
 			{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
 		);
 
 		const logInsert = inserts.find((i) => i.table === "notificationLogsTable");
 		expect(logInsert?.values?.[0]?.renderedContent).toEqual({
-			title: "Hello Alice! Welcome {greeting}", // null value placeholder not replaced
-			body: "Message: {message}, Count: 0, Status: ", // undefined not replaced, 0 and empty string replaced
+			title: "Hello Alice! Welcome {greeting}",
+			body: "Message: {message}, Count: 0, Status: ",
+		});
+	});
+
+	describe("Additional tests for lines 229-271 (resolveAudienceToUserIds)", () => {
+		test("covers ORGANIZATION_ADMIN target with undefined orgId", async () => {
+			const mockMembers = [
+				{
+					memberId: "admin_001",
+					role: "administrator",
+					organizationId: "org_001",
+				},
+			];
+
+			const { ctx, inserts } = createMockContext({
+				orgMembers: mockMembers,
+				template: createMockTemplate({
+					eventType: "admin_event",
+					channelType: "in_app",
+				}),
+			});
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createNotification(
+				"admin_event",
+				{},
+				{
+					targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+					targetIds: [undefined as unknown as string],
+				},
+			);
+
+			const audienceInsert = inserts.find(
+				(i) => i.table === "notificationAudienceTable",
+			);
+			expect(audienceInsert).toBeUndefined();
+		});
+
+		test("covers ORGANIZATION target with null orgId", async () => {
+			const mockMembers = [
+				{ memberId: "member_001", organizationId: "org_001" },
+			];
+
+			const { ctx, inserts } = createMockContext({
+				orgMembers: mockMembers,
+				template: createMockTemplate({
+					eventType: "org_event",
+					channelType: "in_app",
+				}),
+			});
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createNotification(
+				"org_event",
+				{},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [null as unknown as string],
+				},
+			);
+
+			const audienceInsert = inserts.find(
+				(i) => i.table === "notificationAudienceTable",
+			);
+			expect(audienceInsert).toBeUndefined();
+		});
+
+		test("covers ORGANIZATION_ADMIN with no administrator members", async () => {
+			const mockMembers = [
+				{ memberId: "regular_001", role: "regular", organizationId: "org_001" },
+				{ memberId: "regular_002", role: "member", organizationId: "org_001" },
+			];
+
+			const { ctx, inserts } = createMockContext({
+				orgMembers: mockMembers,
+				template: createMockTemplate({
+					eventType: "admin_event",
+					channelType: "in_app",
+				}),
+			});
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createNotification(
+				"admin_event",
+				{},
+				{
+					targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+					targetIds: ["org_001"],
+				},
+			);
+
+			const audienceInsert = inserts.find(
+				(i) => i.table === "notificationAudienceTable",
+			);
+			expect(audienceInsert).toBeUndefined();
+		});
+
+		test("covers ADMIN target with no administrator users", async () => {
+			const mockUsers = [
+				{ id: "regular_001", role: "user" },
+				{ id: "regular_002", role: "member" },
+			];
+
+			const { ctx, inserts } = createMockContext({
+				users: mockUsers,
+				template: createMockTemplate({
+					eventType: "global_admin_event",
+					channelType: "in_app",
+				}),
+			});
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createNotification(
+				"global_admin_event",
+				{},
+				{ targetType: NotificationTargetType.ADMIN, targetIds: [] },
+			);
+
+			const audienceInsert = inserts.find(
+				(i) => i.table === "notificationAudienceTable",
+			);
+			expect(audienceInsert).toBeUndefined();
+		});
+
+		test("covers USER target with all IDs being sender (should filter out all)", async () => {
+			const { ctx, inserts } = createMockContext({
+				template: createMockTemplate({
+					eventType: "self_event",
+					channelType: "in_app",
+				}),
+			});
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createNotification(
+				"self_event",
+				{},
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: ["sender_123", "sender_123"],
+				},
+			);
+
+			const audienceInsert = inserts.find(
+				(i) => i.table === "notificationAudienceTable",
+			);
+			expect(audienceInsert).toBeUndefined();
+		});
+	});
+
+	describe("Additional tests for lines 385-456 (createDirectEmailNotification)", () => {
+		test("covers createDirectEmailNotification with single email recipient", async () => {
+			const template = createMockTemplate({
+				eventType: "event_invite",
+				channelType: "email",
+				title: "Event Invitation: {eventName}",
+				body: "You are invited to {eventName}",
+			});
+
+			const { ctx, inserts } = createMockContext({ template });
+			const engine = new NotificationEngine(ctx);
+
+			const notificationId = await engine.createDirectEmailNotification(
+				"event_invite",
+				{ eventName: "Annual Conference" },
+				"invitee@example.com",
+			);
+
+			const logInsert = inserts.find(
+				(i) => i.table === "notificationLogsTable",
+			);
+			expect(logInsert?.values).toHaveLength(1);
+			expect(logInsert?.values[0]).toMatchObject({
+				eventType: "event_invite",
+				channel: "email",
+				status: "pending",
+			});
+
+			const emailInsert = inserts.find(
+				(i) => i.table === "emailNotificationsTable",
+			);
+			expect(emailInsert?.values).toHaveLength(1);
+			expect(emailInsert?.values[0]).toMatchObject({
+				userId: null,
+				email: "invitee@example.com",
+				subject: "Event Invitation: Annual Conference",
+				htmlBody: "You are invited to Annual Conference",
+				status: "pending",
+				retryCount: 0,
+				maxRetries: 3,
+			});
+
+			expect(notificationId).toBeDefined();
+			expect(typeof notificationId).toBe("string");
+		});
+
+		test("covers createDirectEmailNotification with multiple email recipients", async () => {
+			const template = createMockTemplate({
+				eventType: "event_invite",
+				channelType: "email",
+				title: "Event Invitation: {eventName}",
+				body: "You are invited to {eventName}",
+			});
+
+			const { ctx, inserts } = createMockContext({ template });
+			const engine = new NotificationEngine(ctx);
+
+			const notificationId = await engine.createDirectEmailNotification(
+				"event_invite",
+				{ eventName: "Annual Conference" },
+				[
+					"invitee1@example.com",
+					"invitee2@example.com",
+					"invitee3@example.com",
+				],
+			);
+
+			const logInsert = inserts.find(
+				(i) => i.table === "notificationLogsTable",
+			);
+			expect(logInsert?.values).toHaveLength(1);
+
+			const emailInsert = inserts.find(
+				(i) => i.table === "emailNotificationsTable",
+			);
+			expect(emailInsert?.values).toHaveLength(3);
+
+			const emails = emailInsert?.values.map((v) => v.email as string).sort();
+			expect(emails).toEqual([
+				"invitee1@example.com",
+				"invitee2@example.com",
+				"invitee3@example.com",
+			]);
+
+			expect(notificationId).toBeDefined();
+			expect(typeof notificationId).toBe("string");
+		});
+
+		test("covers createDirectEmailNotification template not found error", async () => {
+			const { ctx } = createMockContext();
+			(
+				ctx.drizzleClient.query.notificationTemplatesTable
+					.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValueOnce(undefined);
+
+			const engine = new NotificationEngine(ctx);
+
+			await expect(
+				engine.createDirectEmailNotification(
+					"non_existent_event",
+					{ eventName: "Test Event" },
+					"test@example.com",
+				),
+			).rejects.toThrow(
+				/No notification template found for event type "non_existent_event" and channel "email"/,
+			);
+		});
+
+		test("covers createDirectEmailNotification with unauthenticated sender", async () => {
+			const template = createMockTemplate({
+				eventType: "event_invite",
+				channelType: "email",
+				title: "Event Invitation: {eventName}",
+				body: "You are invited to {eventName}",
+			});
+
+			const { ctx, inserts } = createMockContext({
+				currentClient: {
+					isAuthenticated: false,
+				} as GraphQLContext["currentClient"],
+				template,
+			});
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createDirectEmailNotification(
+				"event_invite",
+				{ eventName: "Annual Conference" },
+				"invitee@example.com",
+			);
+
+			const logInsert = inserts.find(
+				(i) => i.table === "notificationLogsTable",
+			);
+			expect(logInsert?.values[0]).toMatchObject({
+				sender: null,
+				eventType: "event_invite",
+				channel: "email",
+			});
+
+			const emailInsert = inserts.find(
+				(i) => i.table === "emailNotificationsTable",
+			);
+			expect(emailInsert?.values).toHaveLength(1);
+			expect(emailInsert?.values[0]).toMatchObject({
+				userId: null,
+				email: "invitee@example.com",
+			});
+		});
+
+		test("covers createDirectEmailNotification with complex template variables", async () => {
+			const template = createMockTemplate({
+				eventType: "event_invite",
+				channelType: "email",
+				title: "Invitation: {eventName} from {inviterName}",
+				body: "Dear {inviteeName},\n\nYou are invited to {eventName} on {eventDate}.\n\nClick here: {invitationUrl}",
+			});
+
+			const { ctx, inserts } = createMockContext({ template });
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createDirectEmailNotification(
+				"event_invite",
+				{
+					eventName: "Annual Conference 2025",
+					inviterName: "John Doe",
+					inviteeName: "Jane Smith",
+					eventDate: "December 15, 2025",
+					invitationUrl: "https://example.com/event/123",
+				},
+				"jane@example.com",
+			);
+			const emailInsert = inserts.find(
+				(i) => i.table === "emailNotificationsTable",
+			);
+			expect(emailInsert?.values[0]).toMatchObject({
+				subject: "Invitation: Annual Conference 2025 from John Doe",
+				htmlBody:
+					"Dear Jane Smith,\n\nYou are invited to Annual Conference 2025 on December 15, 2025.\n\nClick here: https://example.com/event/123",
+			});
+		});
+
+		test("covers createDirectEmailNotification with empty email array", async () => {
+			const template = createMockTemplate({
+				eventType: "event_invite",
+				channelType: "email",
+			});
+
+			const { ctx, inserts } = createMockContext({ template });
+			const engine = new NotificationEngine(ctx);
+
+			await engine.createDirectEmailNotification(
+				"event_invite",
+				{ eventName: "Test Event" },
+				[],
+			);
+
+			const logInsert = inserts.find(
+				(i) => i.table === "notificationLogsTable",
+			);
+			expect(logInsert?.values).toHaveLength(1);
+
+			const emailInsert = inserts.find(
+				(i) => i.table === "emailNotificationsTable",
+			);
+			expect(emailInsert?.values).toHaveLength(0);
+		});
+
+		test("covers createDirectEmailNotification notification log creation failure", async () => {
+			const template = createMockTemplate({
+				eventType: "send_event_invite",
+				channelType: "email",
+				title: "Test Event Invite",
+				body: "Test body",
+			});
+
+			const { ctx } = createMockContext({ template });
+
+			const mockInsert = vi.fn().mockImplementation((table: unknown) => {
+				if (table === notificationLogsTable) {
+					return {
+						values: vi.fn().mockReturnValue({
+							returning: () => Promise.resolve([]),
+						}),
+					};
+				}
+				return {
+					values: vi.fn().mockReturnValue({
+						returning: () => Promise.resolve([]),
+					}),
+				};
+			});
+
+			ctx.drizzleClient.insert = mockInsert;
+
+			const engine = new NotificationEngine(ctx);
+
+			await expect(
+				engine.createDirectEmailNotification(
+					"send_event_invite",
+					{ eventName: "Test Event" },
+					"test@example.com",
+				),
+			).rejects.toThrow("Failed to create notification log for direct email");
 		});
 	});
 });

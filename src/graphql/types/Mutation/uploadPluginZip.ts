@@ -2,9 +2,9 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { installPluginFromZip } from "~/src/utilities/pluginInstaller";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 export const uploadPluginZipInputSchema = z.object({
 	pluginZip: z.custom<Promise<FileUpload>>(),
@@ -90,7 +90,7 @@ builder.mutationField("uploadPluginZip", (t) =>
 
 				return result.plugin as typeof Plugin.$inferType;
 			} catch (error) {
-				console.error("Plugin installation failed:", error);
+				ctx.log.error({ err: error }, "Plugin installation failed");
 
 				if (error instanceof TalawaGraphQLError) {
 					throw error;

@@ -1,25 +1,36 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { ActionItem } from "./ActionItem";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { ActionItem as ActionItemType } from "./ActionItem";
+import { ActionItem } from "./ActionItem";
 
+/**
+ * Resolves the organization that an action item belongs to.
+ *
+ * @param parent - The parent ActionItem object containing the organizationId.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing dataloaders and logging utilities.
+ * @returns The organization the action item belongs to.
+ * @throws TalawaGraphQLError with code "unexpected" if organization is not found (indicates data corruption).
+ */
 // Export the resolver function so it can be tested
 export const resolveOrganization = async (
 	parent: ActionItemType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
-	const existingOrganization =
-		await ctx.drizzleClient.query.organizationsTable.findFirst({
-			where: (fields, operators) =>
-				operators.eq(fields.id, parent.organizationId),
-		});
+	const existingOrganization = await ctx.dataloaders.organization.load(
+		parent.organizationId,
+	);
 
-	if (existingOrganization === undefined) {
+	if (existingOrganization === null) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
+			{
+				actionItemId: parent.id,
+				organizationId: parent.organizationId,
+			},
+			"DataLoader returned null for an action item's organization id that isn't null",
 		);
 
 		throw new TalawaGraphQLError({

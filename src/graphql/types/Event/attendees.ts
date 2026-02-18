@@ -1,11 +1,11 @@
 import { and, eq, or } from "drizzle-orm";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 export const eventAttendeesResolver = async (
 	parent: EventType,
@@ -28,12 +28,20 @@ export const eventAttendeesResolver = async (
 					// For standalone events
 					and(
 						eq(eventAttendeesTable.eventId, parent.id),
-						eq(eventAttendeesTable.isCheckedIn, true),
+						or(
+							eq(eventAttendeesTable.isCheckedIn, true),
+							eq(eventAttendeesTable.isRegistered, true),
+							eq(eventAttendeesTable.isInvited, true),
+						),
 					),
 					// For recurring event instances
 					and(
 						eq(eventAttendeesTable.recurringEventInstanceId, parent.id),
-						eq(eventAttendeesTable.isCheckedIn, true),
+						or(
+							eq(eventAttendeesTable.isCheckedIn, true),
+							eq(eventAttendeesTable.isRegistered, true),
+							eq(eventAttendeesTable.isInvited, true),
+						),
 					),
 				),
 				with: {

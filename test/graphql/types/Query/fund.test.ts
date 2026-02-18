@@ -106,24 +106,18 @@ suite("Query field fund", () => {
 		});
 
 		test("with 'arguments_associated_resources_not_found' extensions code if fund not found", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
+			const adminAuthToken = await getAdminAuthToken();
+			const { fundId, cleanup } = await createFund();
 
-			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+			await cleanup();
 
 			const fundResult = await mercuriusClient.query(Query_fund, {
 				headers: {
-					authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
 					input: {
-						id: faker.string.uuid(),
+						id: fundId,
 					},
 				},
 			});
@@ -260,8 +254,10 @@ suite("Query field fund", () => {
 	});
 
 	test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
-		const fundId = faker.string.uuid();
 		const adminAuthToken = await getAdminAuthToken();
+		const { fundId, cleanup } = await createFund();
+
+		await cleanup();
 
 		const results = await Promise.all(
 			Array.from({ length: 10 }, () =>
@@ -303,13 +299,17 @@ suite("Query field fund", () => {
 		});
 
 		expect(fundResult.errors).toBeUndefined();
-		expect(fundResult.data.fund).toEqual(
-			expect.objectContaining({
-				id: fundId,
-				isTaxDeductible: expect.any(Boolean),
-				name: expect.any(String),
-			}),
-		);
+		const fund = fundResult.data.fund;
+		expect(fund).toBeDefined();
+		expect(fund?.id).toBe(fundId);
+		expect(typeof fund?.isTaxDeductible).toBe("boolean");
+		expect(typeof fund?.name).toBe("string");
+		expect(typeof fund?.isDefault).toBe("boolean");
+		expect(typeof fund?.isArchived).toBe("boolean");
+		expect(
+			fund?.referenceNumber === null ||
+				typeof fund?.referenceNumber === "string",
+		).toBe(true);
 	});
 
 	test("returns fund data if user is an admin", async () => {
@@ -338,13 +338,17 @@ suite("Query field fund", () => {
 		});
 
 		expect(fundResult.errors).toBeUndefined();
-		expect(fundResult.data.fund).toEqual(
-			expect.objectContaining({
-				id: fundId,
-				isTaxDeductible: expect.any(Boolean),
-				name: expect.any(String),
-			}),
-		);
+		const fund = fundResult.data.fund;
+		expect(fund).toBeDefined();
+		expect(fund?.id).toBe(fundId);
+		expect(typeof fund?.isTaxDeductible).toBe("boolean");
+		expect(typeof fund?.name).toBe("string");
+		expect(typeof fund?.isDefault).toBe("boolean");
+		expect(typeof fund?.isArchived).toBe("boolean");
+		expect(
+			fund?.referenceNumber === null ||
+				typeof fund?.referenceNumber === "string",
+		).toBe(true);
 	});
 
 	test("returns fund with expected fields", async () => {
@@ -361,6 +365,9 @@ suite("Query field fund", () => {
 			id: fundId,
 			isTaxDeductible: false,
 			name: expect.any(String),
+			isDefault: false,
+			isArchived: false,
+			referenceNumber: null,
 		});
 	});
 
@@ -1367,9 +1374,12 @@ suite("UUID Validation", () => {
 
 		// Test UUID version validation
 		const invalidVersions = Array.from({ length: 9 }, (_, i) => {
-			// Create UUIDs with different versions (0-8, excluding 7)
 			if (i === 7) return null;
-			return fundId.replace(/-7/, `-${i}`) as string;
+			const hexVersion = i.toString(16);
+			return fundId.replace(
+				/^([0-9a-f]{8}-[0-9a-f]{4}-)7/i,
+				`$1${hexVersion}`,
+			) as string;
 		}).filter((id): id is string => id !== null);
 
 		for (const invalidVersionId of invalidVersions) {
@@ -1384,7 +1394,7 @@ suite("UUID Validation", () => {
 
 			expect(fundResult.errors).toBeDefined();
 			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
+				"invalid_arguments",
 			);
 		}
 	});
@@ -1632,7 +1642,9 @@ async function createFund(): Promise<TestFund> {
 			);
 
 			if (!createFundResult.data?.createFund?.id) {
-				throw new Error("Failed to create fund: Missing fund ID");
+				throw new Error(
+					`Failed to create fund: ${JSON.stringify(createFundResult)}`,
+				);
 			}
 
 			const fundId = createFundResult.data.createFund.id;

@@ -1,3 +1,4 @@
+import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
@@ -9,9 +10,13 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import { zParseOrThrow } from "~/src/graphql/validators/helpers";
+import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
@@ -37,23 +42,10 @@ builder.mutationField("createPost", (t) =>
 				});
 			}
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = await mutationCreatePostArgumentsSchema.safeParseAsync(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
+			const parsedArgs = await zParseOrThrow(
+				mutationCreatePostArgumentsSchema,
+				args,
+			);
 
 			const currentUserId = ctx.currentClient.user.id;
 
@@ -141,12 +133,13 @@ builder.mutationField("createPost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [createdPost] = await tx
 					.insert(postsTable)
 					.values({
 						creatorId: currentUserId,
 						caption: parsedArgs.input.caption,
+						body: parsedArgs.input.body,
 						pinnedAt:
 							parsedArgs.input.isPinned === undefined ||
 							parsedArgs.input.isPinned === false
@@ -166,36 +159,71 @@ builder.mutationField("createPost", (t) =>
 					});
 				}
 
-				let finalPost: typeof createdPost & {
-					attachments: (typeof postAttachmentsTable.$inferSelect)[];
-				};
+				// Handle direct file upload
+				let createdAttachment: typeof postAttachmentsTable.$inferSelect | null =
+					null;
+				if (isNotNullish(parsedArgs.input.attachment)) {
+					const attachment = parsedArgs.input.attachment;
+					const objectName = ulid();
+					try {
+						// Upload media file to MinIO
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							objectName,
+							attachment.createReadStream(),
+							undefined,
+							{
+								"content-type": attachment.mimetype,
+							},
+						);
+					} catch (error) {
+						ctx.log.error(`Error uploading file to MinIO: ${error}`);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
-				if (parsedArgs.input.attachments !== undefined) {
-					const attachments = parsedArgs.input.attachments;
+					// Create attachment record
+					const attachmentRecord = {
+						creatorId: currentUserId,
+						mimeType: attachment.mimetype,
+						id: uuidv7(),
+						name: attachment.filename,
+						postId: createdPost.id,
+						objectName: objectName,
+						fileHash: ulid(), // Placeholder - no deduplication for direct uploads
+					};
 
-					const createdPostAttachments = await tx
+					const [attachmentResult] = await tx
 						.insert(postAttachmentsTable)
-						.values(
-							attachments.map((attachment) => ({
-								creatorId: currentUserId,
-								mimeType: attachment.mimetype,
-								id: uuidv7(),
-								name: attachment.name,
-								postId: createdPost.id,
-								objectName: attachment.objectName,
-								fileHash: attachment.fileHash,
-							})),
-						)
+						.values(attachmentRecord)
 						.returning();
 
-					finalPost = Object.assign(createdPost, {
-						attachments: createdPostAttachments,
-					});
-				} else {
-					finalPost = Object.assign(createdPost, {
-						attachments: [],
-					});
+					if (attachmentResult) {
+						createdAttachment = attachmentResult;
+					} else {
+						//remove MinIO object if DB insert fails
+						await ctx.minio.client.removeObject(
+							ctx.minio.bucketName,
+							objectName,
+						);
+						// Log and throw error
+						ctx.log.error(
+							"Postgres insert operation for post attachment unexpectedly returned an empty array instead of throwing an error.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 				}
+
+				const finalPost = Object.assign(createdPost, {
+					attachments: createdAttachment ? [createdAttachment] : [],
+				});
 
 				notificationEventBus.emitPostCreated(
 					{
@@ -210,6 +238,14 @@ builder.mutationField("createPost", (t) =>
 
 				return finalPost;
 			});
+
+			await runBestEffortInvalidation(
+				[invalidateEntityLists(ctx.cache, "post")],
+				"post",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: Post,
 	}),

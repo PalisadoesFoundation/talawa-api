@@ -73,7 +73,7 @@ export const Details = ({
 
 ```graphql
 input MutationCreateAdvertisementInput {
-  attachments: [Upload!]
+  attachments: [FileMetadataInput!]
   description: String
   endAt: DateTime!
   name: String!
@@ -85,9 +85,9 @@ input MutationCreateAdvertisementInput {
 
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>MutationCreateAdvertisementInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[Upload!]</b></code>](/auto-schema/types/scalars/upload.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateAdvertisementInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FileMetadataInput!]</b></code>](/auto-schema/types/inputs/file-metadata-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
 
-Attachments of the advertisement.
+File metadata for attachments uploaded via MinIO presigned URLs.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateAdvertisementInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

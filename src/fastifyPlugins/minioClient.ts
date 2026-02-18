@@ -19,10 +19,12 @@ declare module "fastify" {
  * Integrates the talawa minio bucket name and a minio client instance on the namespaces `minio.bucketName` and `minio.client` respectively on the global fastify instance.
  *
  * @example
+ * ```typescript
  * import minioClientPlugin from "~src/plugins/minioClient";
  *
  * fastify.register(minioClientPlugin, {});
  * const buckets = await fastify.minio.client.listBuckets();
+ * ```
  */
 export const minioClient = fastifyPlugin(async (fastify) => {
 	let ClientClass = MinioClient;
@@ -68,7 +70,7 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		useSSL: fastify.envConfig.API_MINIO_USE_SSL,
 	});
 
-	let isBucketExists: boolean | undefined = undefined;
+	let isBucketExists: boolean | undefined;
 
 	try {
 		fastify.log.info("Checking the connection to the minio server.");

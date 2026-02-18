@@ -42,7 +42,7 @@ export const fundCampaignsTable = pgTable(
 		 * Currency code of the fund campaign.
 		 */
 		currencyCode: text("currency_code", {
-			enum: iso4217CurrencyCodeEnum.options,
+			enum: iso4217CurrencyCodeEnum.options as [string, ...string[]],
 		}).notNull(),
 		/**
 		 * Date time at the time the fund campaign ends at.
@@ -65,6 +65,10 @@ export const fundCampaignsTable = pgTable(
 		 * Minimum amount of money that is set as the goal for the fund campaign.
 		 */
 		goalAmount: integer("goal_amount").notNull(),
+		/**
+		 * The amount of money raised so far for the fund campaign.
+		 */
+		amountRaised: integer("amount_raised").notNull().default(0),
 		/**
 		 * Primary unique identifier of the fund campaign.
 		 */

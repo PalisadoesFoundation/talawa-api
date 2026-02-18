@@ -11,8 +11,8 @@ import {
 	eventAttendeeInputSchema,
 } from "~/src/graphql/inputs/EventAttendeeInput";
 import { EventAttendee } from "~/src/graphql/types/EventAttendee/EventAttendee";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationRegisterEventAttendeeArgumentsSchema = z.object({
 	data: eventAttendeeInputSchema,

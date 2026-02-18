@@ -7,8 +7,9 @@ import {
 	mutationUpdateFundInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateFundArgumentsSchema = z.object({
 	input: mutationUpdateFundInputSchema,
 });
@@ -121,6 +122,7 @@ builder.mutationField("updateFund", (t) =>
 									fields.organizationId,
 									existingFund.organizationId,
 								),
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 
@@ -165,6 +167,9 @@ builder.mutationField("updateFund", (t) =>
 					isTaxDeductible: parsedArgs.input.isTaxDeductible,
 					name: parsedArgs.input.name,
 					updaterId: currentUserId,
+					isDefault: parsedArgs.input.isDefault,
+					isArchived: parsedArgs.input.isArchived,
+					referenceNumber: parsedArgs.input.referenceNumber,
 				})
 				.where(eq(fundsTable.id, parsedArgs.input.id))
 				.returning();

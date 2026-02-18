@@ -1,22 +1,23 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import {
 	commentsTable,
 	commentsTableInsertSchema,
 } from "~/src/drizzle/tables/comments";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Post } from "./Post";
+
 const commentsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -24,7 +25,7 @@ const commentsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -154,12 +155,9 @@ Post.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (comment) =>
-							Buffer.from(
-								JSON.stringify({
-									id: comment.id,
-								}),
-							).toString("base64url"),
+						createCursor: (comment) => ({
+							id: comment.id,
+						}),
 						createNode: (comment) => comment,
 						parsedArgs,
 						rawNodes: comments,

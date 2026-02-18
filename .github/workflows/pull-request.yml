@@ -37,10 +37,35 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0 # Fetch all history for git diff
+      - name: Get changed files for error handling validation
+        id: changed-files
+        run: |
+          # Skip if not in PR context
+          if [ -z "${{ github.event.pull_request.base.sha }}" ]; then
+            echo "changed_files=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Get the base branch ref
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
+          # Get all changed files
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')
+          echo "changed_files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check code format
         run: docker container run talawa_api pnpm format:check
+      - name: Check TSDoc comments
+        run: docker container run talawa_api pnpm lint:tsdoc
+      - name: Check sanitization
+        run: docker container run talawa_api pnpm lint:sanitization
+      - name: Validate error handling standards
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.changed_files }}
+        run: docker container run -e CHANGED_FILES="$CHANGED_FILES" talawa_api pnpm validate:error-handling
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |
@@ -49,421 +74,20 @@ jobs:
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           echo "Error: Close this PR and try again."
           exit 1
-    
-  Check-AutoDocs:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Generate and Validate Documentation
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout the Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.x'
-          cache: 'pnpm'
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Dependencies (frozen)
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Run documentation generation
-        run: pnpm run generate:docs
-
-      - name: Check for uncommitted doc changes
+      - name: Lint shell scripts (shellcheck)
+        shell: bash
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Documentation files are outdated or missing."
-            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
+          shopt -s globstar nullglob
+          files=(scripts/**/*.sh)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No shell scripts found to lint."
           else
-            echo "Documentation is up to date."
+            shellcheck -x --severity=error "${files[@]}"
           fi
-
-  python_checks:
-    name: Run Python Checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get changed files
-        id: changed-files
-        run: |
-          echo "all_changed_files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.9
-
-      - name: Run Biome Ignore Check
-        run: |
-          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run Code Coverage Disable Check
-        run: |
-          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run TS Ignore Check
-        run: |
-          python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-  check_gql_tada:
-    name: Check gql tada files and configuration
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check gql tada
-        run: docker container run talawa_api pnpm check_gql_tada
-
-  check_drizzle_migrations:
-    name: Check drizzle migration files
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check drizzle migrations
-        run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
-
-  check_type_errors:
-    name: Check type errors
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check type errors
-        run: docker container run talawa_api pnpm typecheck
-  Generate-Schema-Docs:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Generate GraphQL Schema Documentation
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.x'
-          cache: 'pnpm'
-
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Docs dependencies
-        working-directory: ./docs
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Generate GraphQL Schema Markdown
-        working-directory: ./docs
-        run: pnpm docusaurus graphql-to-doc
-      - name: Check for uncommitted schema changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Schema files are outdated or missing."
-            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "Schema is up to date."
-          fi
-  Check_unused_code:
-    name: Check for unused files, exports and dependencies
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2     
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile 
-      - name: Run Knip for files and exports
-        run: pnpm knip --include files,exports
-        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
-        env:
-          API_POSTGRES_DATABASE: dummy_db
-          API_POSTGRES_PASSWORD: dummy_password
-          API_POSTGRES_HOST: localhost
-          API_POSTGRES_PORT: '5432'
-          API_POSTGRES_USER: dummy_user
-          API_POSTGRES_SSL_MODE: 'false' 
-      - name: Run Knip for dependencies
-        run: pnpm knip --config knip.deps.json --include dependencies
-        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
-        env:
-          API_POSTGRES_DATABASE: dummy_db
-          API_POSTGRES_PASSWORD: dummy_password
-          API_POSTGRES_HOST: localhost
-          API_POSTGRES_PORT: '5432'
-          API_POSTGRES_USER: dummy_user
-          API_POSTGRES_SSL_MODE: 'false' 
-
-  Check-Sensitive-Files:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Checks if sensitive files have been changed without authorization
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
-
-      - name: Get PR labels
-        id: check-labels
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ -z "${{ github.event.pull_request.number }}" ]; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
-
-          if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
-            echo "::notice::Skipping sensitive files check due to 'ignore-sensitive-files-pr' label."
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Get Changed Unauthorized files
-        if: steps.check-labels.outputs.skip != 'true'
-        id: changed-unauth-files
-        run: |
-          set -e
-
-          # Skip if not in PR context
-          if [ -z "${{ github.event.pull_request.base.sha }}" ]; then
-            echo "any_changed=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Determine base and head commits for comparison
-          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
-          BASE_SHA=$(git merge-base "${{ github.event.pull_request.base.sha }}" "$HEAD_SHA" 2>&1) || {
-            echo "::error::Failed to find merge base between ${{ github.event.pull_request.base.sha }} and $HEAD_SHA" >&2
-            exit 1
-          }
-
-          # Verify BASE_SHA is not empty
-          if [ -z "$BASE_SHA" ]; then
-            echo "::error::BASE_SHA is empty after git merge-base command" >&2
-            exit 1
-          fi
-
-          # Define sensitive files patterns as a bash array
-          SENSITIVE_PATTERNS=(
-            '.coderabbit.yaml$'
-            'Caddyfile$'
-            'codegen.ts$'
-            '^Dockerfile.*'
-            '^docker-compose.*'
-            '^drizzle_migrations/.*'
-            '.dockerignore$'
-            '.env.sample$'
-            '.env_test$'
-            'eslint.config.mjs$'
-            '^envFiles/.*'
-            '.gitignore$'
-            'init-mongo.sh$'
-            '.prettierignore$'
-            '.prettierrc.json$'
-            '.pylintrc$'
-            '^.github/.*'
-            'biome.jsonc$'
-            'renovate.json$'
-            'requirements.txt$'
-            'schema.graphql$'
-            'CODEOWNERS$'
-            'LICENSE$'
-            'tsconfig.json$'
-            'vitest.config.ts$'
-            'pnpm-lock.yaml$'
-            'package.json$'
-            'package-lock.json$'
-            '.nojekyll$'
-            'knip.json$'
-            'docs/docusaurus.config.ts$'
-            '^docs/sidebar.*'
-            'setup.ts$'
-            '^src/graphql/types/Mutation/.*'
-            '^src/graphql/types/Query/.*'
-            'tsconfig.build.json$'
-            'vite.config.mts$'
-            'CNAME$'
-            'CODE_OF_CONDUCT.md$'
-            'CODE_STYLE.md$'
-            'CONTRIBUTING.md$'
-            'DOCUMENTATION.md$'
-            'INSTALLATION.md$'
-            'ISSUE_GUIDELINES.md$'
-            'PR_GUIDELINES.md$'
-            'README.md$'
-          )
-
-          # Check for changes in sensitive files
-          CHANGED_UNAUTH_FILES=""
-          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-            FILES=$(git diff --name-only --diff-filter=ACMRD "$BASE_SHA" "$HEAD_SHA" | grep -E "$pattern" || true)
-            if [ ! -z "$FILES" ]; then
-              CHANGED_UNAUTH_FILES="$CHANGED_UNAUTH_FILES $FILES"
-            fi
-          done
-
-          # Deduplicate and format output
-          # Convert to newline-separated, deduplicate, then rejoin as space-separated
-          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
-            CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
-          fi
-          
-          echo "all_changed_files=$CHANGED_UNAUTH_FILES" >> $GITHUB_OUTPUT
-
-          # Check if any unauthorized files changed
-          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
-            echo "any_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "any_changed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: List all changed unauthorized files
-        if: steps.changed-unauth-files.outputs.any_changed == 'true'
-        env:
-          CHANGED_UNAUTH_FILES: ${{ steps.changed-unauth-files.outputs.all_changed_files }}
-        run: |
-          echo "::error::Unauthorized changes detected in sensitive files:"
-          echo ""
-          for file in $CHANGED_UNAUTH_FILES; do
-            echo "- $file"
-          done
-          echo ""
-          echo "To override:"
-          echo "Add the 'ignore-sensitive-files-pr' label to this PR."
-          exit 1
-
-  Run-Tests:
-    name: Run tests for talawa api
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Create .env file for talawa api testing environment
-        run: cp ./envFiles/.env.ci ./.env
-      - name: Build talawa api compose testing environment
-        run: docker compose build
-      - name: Start Postgres service
-        run: docker compose up -d postgres
-      - name: Wait for Postgres to be ready
-        run: |
-          set -euo pipefail
-          echo "Waiting for Postgres (service: postgres)…"
-          timeout=90
-          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
-            echo "Postgres not ready yet... ($timeout seconds remaining)"
-            sleep 1
-            ((timeout--))
-          done
-          if [ $timeout -eq 0 ]; then
-            echo "Error: Postgres failed to start"
-            docker compose ps
-            docker compose logs postgres
-            docker compose down -v
-            exit 1
-          else
-            echo "Postgres is ready."
-          fi
-      - name: Run tests
-        run: docker compose up --exit-code-from api
-      - name: Copy coverage from container
-        run: |
-          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
-
-      #######################################################################
-      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
-      # section. They are required for accurate calculations
-      #######################################################################
-      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v5
-        with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}"
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
-          exclude: 'docs/'      
-
-      - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v3
-        with:
-          path: "./coverage/lcov.info"
-          min_coverage: 68.0
-
-  Test-Docusaurus-Deployment:
-    name: Test Deployment to https://docs-api.talawa.io
-    runs-on: ubuntu-latest
-    needs: [Run-Tests]
-    # Run only if the develop branch and not dependabot
-    if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop' }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          cache: pnpm
-          cache-dependency-path: |
-            docs/pnpm-lock.yaml
-            docs/package.json
-      # Run Docusaurus in the ./docs directory
-      - name: Install dependencies
-        working-directory: ./docs
-        run: pnpm install --frozen-lockfile
-      - name: Test building the website
-        working-directory: ./docs
-        run: pnpm build
 
   Python-Compliance:
     name: Check Python Code Style
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -511,41 +135,1054 @@ jobs:
           python .github/workflows/scripts/check_docstrings.py --directories .github
 
   Count-Changed-Files:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Checks if number of files changed is acceptable
+    uses: PalisadoesFoundation/.github/.github/workflows/count-changed-files.yml@main
+
+  python_checks:
+    name: Run Python Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-depth: 0
+
+      - name: Checkout centralized scripts
+        uses: actions/checkout@v4
+        with:
+          repository: PalisadoesFoundation/.github
+          path: .github-central
+          ref: main
 
       - name: Get changed files
         id: changed-files
         run: |
-          # Get the base branch ref
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          # Skip binary assets that cannot be decoded as UTF-8 by the disable-statements check
+          FILTERED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -Ev '\.(png|jpg|jpeg|gif|webp)$' || true)
+          echo "all_changed_files=$(echo "$FILTERED_FILES" | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
-          # Count all changed files
-          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
-          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
 
-      - name: Echo number of changed files
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+      - name: Run Disable Statements Check
         run: |
-          echo "Number of files changed: $CHANGED_FILES_COUNT"
+          if [ -z "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
+            echo "No eligible text files changed; skipping disable statements check."
+            exit 0
+          fi
+          python .github-central/.github/workflows/scripts/disable_statements_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
-      - name: Check if the number of changed files is less than 100
-        if: steps.changed-files.outputs.all_changed_files_count > 100
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+  check_gql_tada:
+    name: Check gql tada files and configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Build talawa api non production environment docker image
+        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+      - name: Check gql tada
+        run: docker container run talawa_api pnpm check_gql_tada
+
+  check_drizzle_migrations:
+    name: Check drizzle migration files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Build talawa api non production environment docker image
+        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+      - name: Check drizzle migrations
         run: |
-          echo "Error: Too many files (greater than 100) changed in the pull request."
-          echo "Possible issues:"
-          echo "- Contributor may be merging into an incorrect branch."
-          echo "- Source branch may be incorrect please use develop as source branch."
+          JWT_SECRET=$(openssl rand -hex 32)
+          docker container run --env-file ./envFiles/.env.ci -e "API_JWT_SECRET=$JWT_SECRET" -e "API_AUTH_JWT_SECRET=$JWT_SECRET" talawa_api pnpm check_drizzle_migrations
+
+  check_type_errors:
+    name: Check type errors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Build talawa api non production environment docker image
+        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+      - name: Check type errors
+        run: docker container run talawa_api pnpm typecheck
+
+  check_mock_isolation:
+    name: Check mock isolation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Build talawa api non production environment docker image
+        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+      - name: Check mock isolation
+        run: docker container run talawa_api pnpm check_mock_isolation
+
+  check_rootless_production_config:
+    name: Check rootless production Docker config (rootless)
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Ensure rootless production files exist
+        run: |
+          test -f ./envFiles/.env.rootless.production
+          test -f ./docker/compose.rootless.production.yaml
+      - name: Validate docker compose config (rootless env, no interpolation)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config --no-interpolate -q
+      - name: Validate docker compose config (rootless env, interpolated)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+      - name: Install rootless prerequisites
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y uidmap dbus-user-session slirp4netns fuse-overlayfs ca-certificates curl gnupg
+
+          # Ensure the Docker apt repo is configured so we can install/upgrade packages.
+          if ! command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
+            sudo install -m 0755 -d /etc/apt/keyrings
+            if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              sudo chmod a+r /etc/apt/keyrings/docker.gpg
+            fi
+
+            echo \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+              $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
+              sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            sudo apt-get update
+          fi
+
+          # Always install/upgrade rootless extras AND compose plugin.
+          # The !override YAML tag in compose.rootless.production.yaml requires
+          # Docker Compose v2.24.4+; the runner's pre-installed version may be older.
+          # Pin to a minimum version that supports the !override tag.
+          if ! sudo apt-get install -y docker-ce-rootless-extras 'docker-compose-plugin=2.24.4-*'; then
+            echo "::notice::Pinned docker-compose-plugin=2.24.4-* not available; installing latest and will verify version below."
+            sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
+          fi
+
+          echo "Docker Compose version:"
+          docker compose version
+
+          # Verify that the installed Compose version satisfies the minimum requirement.
+          COMPOSE_MIN="2.24.4"
+          compose_version=$(docker compose version --short 2>/dev/null || echo "0.0.0")
+          version_gte() {
+            printf '%s\n%s' "$2" "$1" | sort -V -C
+          }
+          if ! version_gte "$compose_version" "$COMPOSE_MIN"; then
+            echo "::error::Docker Compose v${COMPOSE_MIN}+ required for !override tag, found v${compose_version}"
+            exit 1
+          fi
+          echo "Docker Compose v${compose_version} >= v${COMPOSE_MIN} ✓"
+
+      - name: Start rootless Docker daemon
+        run: |
+          set -euxo pipefail
+          export XDG_RUNTIME_DIR="/run/user/$UID"
+          sudo mkdir -p "$XDG_RUNTIME_DIR"
+          sudo chown "$USER":"$USER" "$XDG_RUNTIME_DIR"
+
+          export PATH="$HOME/bin:$PATH"
+
+          if [ ! -f "$HOME/.config/systemd/user/docker.service" ]; then
+            dockerd-rootless-setuptool.sh install --force
+          fi
+
+          if ! systemctl --user daemon-reload 2>/dev/null; then
+            echo "::notice::systemctl daemon-reload failed (expected on runners without session bus)"
+          fi
+
+          if ! systemctl --user start docker 2>/dev/null; then
+            echo "::notice::systemctl start docker failed (expected on runners without session bus)"
+          fi
+
+          if ! systemctl --user --no-pager status docker >/dev/null 2>&1; then
+            echo "::notice::Falling back to manual dockerd-rootless.sh start"
+            nohup dockerd-rootless.sh > "$RUNNER_TEMP/dockerd-rootless.log" 2>&1 &
+          fi
+
+          chmod +x scripts/docker/resolve-docker-host.sh
+          eval "$(./scripts/docker/resolve-docker-host.sh --mode rootless --emit-export --warn-if-docker-group)"
+          echo "DOCKER_HOST=$DOCKER_HOST" >> "$GITHUB_ENV"
+          echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >> "$GITHUB_ENV"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Verify rootless daemon
+        run: |
+          set -euxo pipefail
+
+          chmod +x scripts/docker/resolve-docker-host.sh
+          eval "$(./scripts/docker/resolve-docker-host.sh --mode rootless --emit-export --warn-if-docker-group)"
+
+          TIMEOUT=60
+          until docker info >/dev/null 2>&1 || [ "$TIMEOUT" -le 0 ]; do
+            sleep 2
+            TIMEOUT=$((TIMEOUT - 2))
+          done
+
+          if ! docker info >/dev/null 2>&1; then
+            echo "Rootless Docker daemon did not start in time."
+            if [ -f "$RUNNER_TEMP/dockerd-rootless.log" ]; then
+              tail -n 200 "$RUNNER_TEMP/dockerd-rootless.log"
+            fi
+            exit 1
+          fi
+
+          docker info --format '{{json .SecurityOptions}}' | tee "$RUNNER_TEMP/rootless-security-options.json"
+          grep -qi rootless "$RUNNER_TEMP/rootless-security-options.json"
+
+      - name: Verify rootless works without docker group membership
+        run: |
+          set -euxo pipefail
+
+          # Remove the current user from the docker group to simulate a pure rootless
+          # environment where the user has no access to the rootful daemon socket.
+          if ! sudo deluser "$USER" docker 2>/dev/null; then
+            echo "::warning::Could not remove $USER from docker group (may not be a member)."
+          fi
+
+          # Verify removal took effect in /etc/group before proceeding.
+          if getent group docker | grep -qw "$USER"; then
+            echo "::error::$USER is still listed in docker group in /etc/group after deluser."
+            exit 1
+          fi
+
+          # Write test commands to a temp script so we can execute them in a
+          # fresh login shell that re-reads /etc/group via initgroups().
+          cat > "$RUNNER_TEMP/test-no-docker-group.sh" << 'TESTSCRIPT'
+          #!/usr/bin/env bash
+          set -euxo pipefail
+
+          # Confirm the docker group is no longer active.
+          if id -nG | tr " " "\n" | grep -qx docker; then
+            echo "::error::docker group is still active; cannot validate non-docker-group scenario."
+            exit 1
+          fi
+
+          # The rootless daemon must still be reachable via DOCKER_HOST.
+          docker info >/dev/null 2>&1
+          echo "Rootless Docker is reachable without docker group membership ✓"
+
+          # Validate compose config still parses correctly.
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+          echo "Compose config valid without docker group ✓"
+          TESTSCRIPT
+          chmod +x "$RUNNER_TEMP/test-no-docker-group.sh"
+
+          # `su --login` calls initgroups() which re-reads /etc/group, so the
+          # docker supplementary group is actually dropped (unlike sg which
+          # only changes the effective GID). Pass required env vars explicitly.
+          # NOTE: `su --login` resets CWD to $HOME; cd back to the workspace.
+          sudo su --login "$USER" -c "\
+            export DOCKER_HOST='$DOCKER_HOST' \
+                   XDG_RUNTIME_DIR='$XDG_RUNTIME_DIR' \
+                   PATH='$PATH'; \
+            cd '$GITHUB_WORKSPACE' && \
+            bash '$RUNNER_TEMP/test-no-docker-group.sh'"
+
+      - name: Set CI-safe secrets for rootless production template
+        run: |
+          set -euo pipefail
+
+          # Align build args with the current runner user to avoid permission mismatches.
+          echo "API_UID=$(id -u)" >> "$GITHUB_ENV"
+          echo "API_GID=$(id -g)" >> "$GITHUB_ENV"
+
+          # Override sentinel placeholders so the rootless production stack can start in CI.
+          echo "API_JWT_SECRET=ci_jwt_secret_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_AUTH_JWT_SECRET=ci_auth_jwt_secret_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_COOKIE_SECRET=ci_cookie_secret_0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_ADMINISTRATOR_USER_PASSWORD=ci_admin_password_0123456789abcdef" >> "$GITHUB_ENV"
+
+          # Ensure API <-> MinIO credentials match.
+          echo "API_MINIO_SECRET_KEY=ci_minio_secret_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "MINIO_ROOT_PASSWORD=ci_minio_secret_0123456789abcdef" >> "$GITHUB_ENV"
+
+          # Ensure API <-> Postgres credentials match.
+          echo "API_POSTGRES_PASSWORD=ci_postgres_password_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "POSTGRES_PASSWORD=ci_postgres_password_0123456789abcdef" >> "$GITHUB_ENV"
+
+      - name: Start rootless production stack
+        run: |
+          set -euo pipefail
+
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
+
+          echo "=== Docker Compose version ==="
+          docker compose version
+
+          echo "=== Resolved compose config ==="
+          dc config -q
+
+          # 1. Build all images first so build failures surface clearly.
+          dc build
+
+          # 2. Start infrastructure (postgres, redis, minio) and wait for them.
+          echo "=== Starting infrastructure services ==="
+          dc up -d postgres redis minio
+
+          # Wait for Postgres to accept connections (bounded retry, fail early).
+          PG_RETRIES=30
+          until dc exec postgres pg_isready -U talawa --timeout=2 2>/dev/null; do
+            PG_RETRIES=$((PG_RETRIES - 1))
+            if [ "$PG_RETRIES" -le 0 ]; then
+              echo "::error::Postgres did not become ready within 60 s."
+              dc logs --tail 50 postgres
+              exit 1
+            fi
+            echo "Waiting for Postgres... ($PG_RETRIES retries left)"
+            sleep 2
+          done
+          echo "Postgres is ready ✓"
+
+          echo "Infrastructure status:"
+          dc ps
+
+          # 3. Start API separately so we can capture its logs if it crashes.
+          echo "=== Starting API ==="
+          dc up -d api
+
+          # 4. Wait for API healthcheck.
+          api_id="$(dc ps -q api)"
+          TIMEOUT=120
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
+            # If the container exited, stop waiting immediately.
+            if [ "$(docker inspect -f '{{.State.Status}}' "$api_id" 2>/dev/null)" = "exited" ]; then
+              echo "::error::API container exited unexpectedly."
+              break
+            fi
+            echo "Waiting for API health... ($TIMEOUT s remaining)"
+            sleep 3
+            TIMEOUT=$((TIMEOUT - 3))
+          done
+
+          if [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" != "healthy" ]; then
+            echo "::error::API did not become healthy."
+            echo "=== API container state ==="
+            docker inspect -f '{{json .State}}' "$api_id" || true
+            echo ""
+            echo "=== API healthcheck log ==="
+            docker inspect -f '{{json .State.Health}}' "$api_id" || true
+            echo ""
+            echo "=== API application logs ==="
+            dc logs --tail 300 api
+            echo "=== All services ==="
+            dc ps
+            exit 1
+          fi
+
+          echo "API is healthy. Starting Caddy..."
+          dc up -d caddy
+
+      - name: Verify API reachable via Caddy
+        run: |
+          set -euo pipefail
+
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
+
+          http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')"
+          if [ -z "$http_port" ]; then
+            echo "::error::Failed to determine published HTTP port for Caddy."
+            dc ps
+            exit 1
+          fi
+
+          echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
+          curl -fsS --retry 5 --retry-delay 3 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+
+      - name: Stop rootless production stack
+        if: always()
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            down -v
+
+      - name: Print rootless daemon logs on failure
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/dockerd-rootless.log" ]; then
+            tail -n 200 "$RUNNER_TEMP/dockerd-rootless.log"
+          fi
+
+  Check_unused_code:
+    name: Check for unused files, exports and dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run Knip for files and exports
+        run: pnpm knip --include files,exports
+        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
+        env:
+          API_POSTGRES_DATABASE: dummy_db
+          API_POSTGRES_PASSWORD: dummy_password
+          API_POSTGRES_HOST: localhost
+          API_POSTGRES_PORT: "5432"
+          API_POSTGRES_USER: dummy_user
+          API_POSTGRES_SSL_MODE: "false"
+      - name: Run Knip for dependencies
+        run: pnpm knip --config knip.deps.json --include dependencies
+        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
+        env:
+          API_POSTGRES_DATABASE: dummy_db
+          API_POSTGRES_PASSWORD: dummy_password
+          API_POSTGRES_HOST: localhost
+          API_POSTGRES_PORT: "5432"
+          API_POSTGRES_USER: dummy_user
+          API_POSTGRES_SSL_MODE: "false"
+
+  Check-Sensitive-Files:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Checks if sensitive files have been changed without authorization
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout centralized CI/CD scripts
+        uses: actions/checkout@v4
+        with:
+          repository: PalisadoesFoundation/.github
+          ref: main
+          path: .github-central
+
+      - name: Make sensitive file checker executable
+        run: chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Get PR labels
+        id: check-labels
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
+          if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
+            echo "::notice::Skipping sensitive files check due to 'ignore-sensitive-files-pr' label."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get changed files
+        id: sensitive-changed-files
+        if: steps.check-labels.outputs.skip != 'true'
+        env:
+          BASE_REF_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$BASE_REF_SHA" ] || [ -z "$HEAD_REF_SHA" ]; then
+            echo "::error::Missing BASE_REF_SHA or HEAD_REF_SHA"
+            exit 1
+          fi
+
+          echo "Base SHA: $BASE_REF_SHA"
+          echo "Head SHA: $HEAD_REF_SHA"
+
+          BASE_SHA=$(git merge-base "$BASE_REF_SHA" "$HEAD_REF_SHA")
+          echo "Merge base: $BASE_SHA"
+
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_REF_SHA")
+
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "all_changed_files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "all_changed_files=$(echo "$ALL_CHANGED_FILES" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run sensitive files check
+        if: steps.check-labels.outputs.skip != 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.sensitive-changed-files.outputs.all_changed_files }}
+        run: |
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "No changed files. Skipping sensitive file check."
+            exit 0
+          fi
+
+          python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
+            --config .github/workflows/config/sensitive-files.txt \
+             --files $(set -f; echo $ALL_CHANGED_FILES)
+
+      - name: List all changed unauthorized files
+        if: steps.sensitive-check.outcome == 'failure'
+        run: |
+          echo "::error::Unauthorized changes detected in sensitive files."
+          echo ""
+          echo "To override:"
+          echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
+
+  Check-AutoDocs:
+    needs: [Code-Quality-Checks]
+    uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
+    with:
+      pnpm-version: "10.26.1"
+  Generate-Schema-Docs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Generate GraphQL Schema Documentation
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Docs dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Generate GraphQL Schema Markdown
+        working-directory: ./docs
+        run: pnpm docusaurus graphql-to-doc
+      - name: Check for uncommitted schema changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Schema files are outdated or missing."
+            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
+            echo ""
+            echo "Changed files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "Schema is up to date."
+          fi
+
+  Pre-Test-Checks-Pass:
+    name: All Pre-Testing Checks Pass
+    runs-on: ubuntu-latest
+    needs:
+      [
+        Code-Quality-Checks,
+        python_checks,
+        check_type_errors,
+        check_mock_isolation,
+        check_drizzle_migrations,
+        check_gql_tada,
+        Check-AutoDocs,
+        Check_unused_code,
+        Generate-Schema-Docs,
+        Python-Compliance,
+      ]
+    steps:
+      - name: This job intentionally does nothing
+        run: echo "This job intentionally does nothing"
+
+  Install-Script-Tests:
+    name: Run install script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [Pre-Test-Checks-Pass]
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      # simplecov 0.21.x pulls simplecov-html 0.11.0 which requires Ruby ~> 2.4; use
+      # a patched simplecov so we can use simplecov-html 0.12.3 (Ruby 3.2 compatible)
+      - name: Prepare simplecov for Ruby 3.2
+        run: |
+          mkdir -p tests/install/vendor
+          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git tests/install/vendor/simplecov
+          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' tests/install/vendor/simplecov/simplecov.gemspec
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: tests/install
+      - name: Run install script tests with coverage
+        working-directory: tests/install
+        run: |
+          chmod +x run-all.sh
+          bundle exec bashcov --root ../.. -- ./run-all.sh
+      # Upload only when coverage file exists so the install flag gets data and shows in Codecov
+      - name: Upload install coverage to Codecov
+        if: "!cancelled() && hashFiles('tests/install/coverage/coverage.xml') != ''"
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-install"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+          files: tests/install/coverage/coverage.xml
+          flags: install
+
+  Run-Tests:
+    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    needs: [Pre-Test-Checks-Pass]
+    env:
+      TOTAL_SHARDS: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Create .env file for talawa api testing environment
+        run: |
+          cp ./envFiles/.env.ci ./.env
+          echo "NODE_ENV=production" >> .env
+          JWT_SECRET=$(openssl rand -hex 32)
+          echo "API_JWT_SECRET=$JWT_SECRET" >> .env
+          echo "API_AUTH_JWT_SECRET=$JWT_SECRET" >> .env
+      - name: Build talawa api compose testing environment
+        run: docker compose build
+      - name: Start test services (postgres-test, minio-test, redis-test, mailpit)
+        run: docker compose up -d postgres-test minio-test redis-test mailpit
+      - name: Wait for test services to be ready
+        run: |
+          set -euo pipefail
+          echo "Waiting for Postgres test service..."
+          timeout=90
+          until docker compose exec -T postgres-test pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres-test
+            docker compose down -v
+            exit 1
+          fi
+          echo "Postgres is ready."
+
+          # Wait for minio-test health check
+          echo "Waiting for Minio test service..."
+          timeout=60
+          until docker compose exec -T minio-test mc ready local >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Minio not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Minio health check timed out, continuing anyway"
+          else
+            echo "Minio is ready."
+          fi
+
+          # Wait for redis-test health check
+          echo "Waiting for Redis test service..."
+          timeout=60
+          until docker compose exec -T redis-test redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Redis not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Redis health check timed out, continuing anyway"
+          else
+            echo "Redis is ready."
+          fi
+
+          # Wait for mailpit health check
+          echo "Waiting for Mailpit service..."
+          timeout=60
+          until curl -f http://localhost:8025/api/v1/info >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Mailpit not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Mailpit health check timed out, continuing anyway"
+          else
+            echo "Mailpit is ready."
+          fi
+
+          echo "All test services are ready."
+
+      - name: Test Mailpit email service
+        run: |
+          echo "Testing Mailpit email service..."
+
+          # Test Mailpit API is responding
+          MAILPIT_INFO=$(curl -s http://localhost:8025/api/v1/info 2>/dev/null || echo '{}')
+          echo "Mailpit info: $MAILPIT_INFO"
+
+          # Check if Mailpit API is responding with valid data
+          if echo "$MAILPIT_INFO" | grep -q '"version"'; then
+            echo "SUCCESS: Mailpit API is responding correctly"
+            echo "SUCCESS: Mailpit is ready to capture emails"
+          else
+            echo "::warning::Mailpit API may not be responding properly"
+          fi
+
+          # Note: Email functionality will be tested during the actual test suite execution
+          # The API container will use Mailpit as configured in .env.ci
+      - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ env.TOTAL_SHARDS }}
+        run: |
+          # Run tests without --rm to allow coverage extraction
+          docker compose run --name talawa-api-test-shard-${{ matrix.shard }} \
+            -e SHARD_INDEX=$SHARD_INDEX \
+            -e SHARD_COUNT=$SHARD_COUNT \
+            api /bin/sh -c "node scripts/run-shard.js --coverage -c vitest.unit.config.ts --coverage.reportsDirectory=./coverage/unit && node scripts/run-shard.js --coverage -c vitest.integration.config.ts --coverage.reportsDirectory=./coverage/integration"
+
+      - name: Copy coverage from container
+        if: always()
+        run: |
+          # Copy coverage from the named container
+          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
+
+      - name: Cleanup test container
+        if: always()
+        run: |
+          # Remove the test container
+          docker rm -f talawa-api-test-shard-${{ matrix.shard }} || true
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: ./coverage/
+          retention-days: 1
+
+  Merge-Coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    if: success()
+    steps:
+      - name: Checkout the Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch for Codecov comparison
+        run: |
+          set -e
+          echo "Fetching base branch: ${{ github.base_ref }}"
+          if ! git fetch origin ${{ github.base_ref }} 2>&1; then
+            echo "ERROR: Failed to fetch base branch '${{ github.base_ref }}' from origin"
+            exit 1
+          fi
+          echo "Successfully fetched base branch"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Download all coverage artifacts
+        id: download-artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: ./coverage-shards/
+          merge-multiple: false
+
+      - name: Check if artifacts were downloaded
+        id: check-artifacts
+        run: |
+          # Check if any coverage files exist
+          if find coverage-shards -name "lcov.info" -type f | grep -q .; then
+            echo "artifacts_found=true" >> $GITHUB_OUTPUT
+            echo "Coverage artifacts found"
+          else
+            echo "artifacts_found=false" >> $GITHUB_OUTPUT
+            echo "No coverage artifacts found - tests may have been skipped"
+          fi
+
+      - name: Prepare Split Coverage Reports
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        run: |
+          # Function to merge and generate report for a specific type (unit or integration)
+          process_coverage() {
+            TYPE=$1
+            echo "Processing $TYPE coverage..."
+
+            mkdir -p ./coverage/$TYPE
+            mkdir -p .nyc_output_$TYPE
+
+            # Find all coverage-final.json files for this type
+            # Expected path: coverage-shards/coverage-shard-*/$TYPE/coverage-final.json
+            find coverage-shards -path "*/$TYPE/coverage-final.json" -type f > json-files-$TYPE.txt
+
+            JSON_COUNT=$(wc -l < json-files-$TYPE.txt)
+            echo "Found $JSON_COUNT JSON files for $TYPE"
+
+            if [ "$JSON_COUNT" -eq 0 ]; then
+              echo "::warning::No coverage files found for $TYPE"
+              return
+            fi
+
+            # Copy to unique names
+            SHARD_NUM=0
+            while IFS= read -r file; do
+              cp "$file" ".nyc_output_$TYPE/coverage-shard-${SHARD_NUM}.json"
+              SHARD_NUM=$((SHARD_NUM + 1))
+            done < json-files-$TYPE.txt
+
+            # Merge
+            pnpm exec nyc merge .nyc_output_$TYPE ./coverage/$TYPE/coverage-final.json
+
+            # Path rewrite
+            DOCKER_PATH="/home/talawa/api"
+            RUNNER_PATH="$GITHUB_WORKSPACE"
+            sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/$TYPE/coverage-final.json
+
+            # Report
+            rm -rf .nyc_output
+            mkdir -p .nyc_output
+            cp ./coverage/$TYPE/coverage-final.json .nyc_output/coverage-final.json
+            
+            pnpm exec nyc report --reporter=lcov --report-dir=./coverage/$TYPE
+
+            rm -rf .nyc_output_$TYPE
+          }
+
+          process_coverage "unit"
+          process_coverage "integration"
+
+          # Create a combined report for local VeryGoodCoverage check
+          echo "Merging ALL coverage for local check..."
+          mkdir -p .nyc_output_all
+          mkdir -p ./coverage/vitest
+
+          find coverage-shards -name "coverage-final.json" -type f > json-files-all.txt
+
+          SHARD_NUM=0
+          while IFS= read -r file; do
+             cp "$file" ".nyc_output_all/coverage-shard-${SHARD_NUM}.json"
+             SHARD_NUM=$((SHARD_NUM + 1))
+          done < json-files-all.txt
+
+          pnpm exec nyc merge .nyc_output_all ./coverage/vitest/coverage-final.json
+
+          # Path rewrite
+          DOCKER_PATH="/home/talawa/api"
+          RUNNER_PATH="$GITHUB_WORKSPACE"
+          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
+
+          # Report
+          rm -rf .nyc_output
+          mkdir -p .nyc_output
+          cp ./coverage/vitest/coverage-final.json .nyc_output/coverage-final.json
+          pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
+
+          rm -rf .nyc_output_all .nyc_output
+
+      - name: Calculate merge base for Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        id: get-merge-base
+        run: |
+          MERGE_BASE=$(git merge-base origin/${{ github.base_ref }} HEAD)
+          echo "Merge base commit: $MERGE_BASE"
+          echo "merge_base=$MERGE_BASE" >> $GITHUB_OUTPUT
+
+          git show -s --format=%ci $MERGE_BASE
+
+      #######################################################################
+      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
+      # section. They are required for accurate calculations
+      #######################################################################
+      - name: Upload Unit Coverage to Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-unit"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/unit/lcov.info
+          flags: unit
+
+      - name: Upload Integration Coverage to Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-integration"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/integration/lcov.info
+          flags: integration
+
+      - name: Test acceptable level of code coverage
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: "./coverage/vitest/lcov.info"
+          min_coverage: 80.0
+
+  Test-Docusaurus-Deployment:
+    name: Test Deployment to https://docs-api.talawa.io
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    # Run only if the develop branch and not dependabot
+    if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          cache: pnpm
+          cache-dependency-path: |
+            docs/pnpm-lock.yaml
+            docs/package.json
+      # Run Docusaurus in the ./docs directory
+      - name: Install dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile
+      - name: Test building the website
+        working-directory: ./docs
+        run: pnpm build
+
+  Check-Sample-Data:
+    name: Check If Sample Data Script Executes Successfully
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    steps:
+      - name: Checkout Backend
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Devcontainer
+        run: |
+          npm install -g @devcontainers/cli
+          cp envFiles/.env.devcontainer .env
+          devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+          echo "Devcontainer started"
+      - name: Wait for Postgres in devcontainer before migrations
+        run: |
+          set -euo pipefail
+          POSTGRES_USER=postgres
+          echo "Waiting for Postgres service via compose..."
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+            echo "Postgres not ready ($timeout s left)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ "$timeout" -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres
+            exit 1
+          fi
+
+      - name: Apply Database Migrations
+        run: |
+          docker exec talawa-api-1 /bin/bash -c 'pnpm apply_drizzle_migrations'
+
+      - name: Start Backend Server
+        run: |
+          docker exec -d talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
+
+      - name: Wait for Backend to be Ready
+        run: |
+          set -euo pipefail
+          echo "Waiting for backend at http://127.0.0.1:4000/healthcheck"
+          TIMEOUT=90
+          INTERVAL=3
+          ELAPSED=0
+          until docker exec talawa-api-1 curl -sf http://127.0.0.1:4000/healthcheck >/dev/null; do
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+              echo "Backend failed to start within ${TIMEOUT}s"
+              echo "=== Backend container logs (last 150 lines) ==="
+              docker logs talawa-api-1 --tail 150
+              exit 1
+            fi
+            echo "Backend not ready yet... (${ELAPSED}s)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+          echo "Backend is up and responding"
+
+      - name: Seed Sample Data
+        run: |
+          set -euo pipefail
+          echo "=== Seeding Sample Data ==="
+          if docker exec talawa-api-1 /bin/bash -c 'set -a; source ./.env; set +a; pnpm run add:sample_data'; then
+            echo "Seeding completed successfully"
+          else
+            echo "Seeding failed"
+            echo "=== Container status ==="
+            docker ps | grep talawa || true
+            echo "=== Backend logs ==="
+            docker logs talawa-api-1 --tail 50
+            echo "=== Users table contents ==="
+            docker exec talawa-postgres-1 psql -U talawa -d talawa \
+              -c "SELECT id, email_address, name, role FROM users;" \
+              2>/dev/null || echo "Could not query users"
+            exit 1
+          fi
+
+      - name: Cleanup - Free ports by stopping containers
+        if: always()
+        run: |
+          docker compose down
 
   Check-App-Startup:
     name: Check App Startup and Health
@@ -559,7 +1196,7 @@ jobs:
       - name: Copy devcontainer environment file
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
-        run: devcontainer up --workspace-folder .
+        run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail
@@ -583,35 +1220,55 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
+      - name: Resolve API container
+        id: api-container
+        run: |
+          API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E '\-api\-1$' | head -1 || true)
+          fi
+          if [ -z "$API_CONTAINER" ]; then
+            API_CONTAINER="talawa-api-1"
+          fi
+          echo "name=$API_CONTAINER" >> "$GITHUB_OUTPUT"
+          echo "Resolved API container: $API_CONTAINER"
       - name: Install dependencies inside the container
-        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
-      - name: Start server and monitor logs
-        run: |
-          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
-          sleep 10
+        run: docker exec ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm install'
+      - name: Start server
+        run: docker exec -d ${{ steps.api-container.outputs.name }} /bin/bash -c 'pnpm run start_development_server'
       - name: Wait for GraphQL endpoint to become available
-        if: always()
         run: |
-          echo "Waiting for the GraphQL endpoint to become available..."
-          for i in {1..60}; do
-            # Check if container exists first
-            if ! docker ps | grep -q talawa-api-1; then
-              echo "Container talawa-api-1 not found. Waiting..."
+          set -euo pipefail
+          API_CONTAINER="${{ steps.api-container.outputs.name }}"
+          echo "Waiting for the GraphQL endpoint to become available (container: $API_CONTAINER)..."
+          RESPONSE="Connection failed"
+          for i in $(seq 1 60); do
+            if ! docker exec "$API_CONTAINER" true 2>/dev/null; then
+              echo "Container $API_CONTAINER not found or not running. Waiting... (attempt $i/60)"
               sleep 2
               continue
             fi
-            docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
-              docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
-            }
-            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+            if ! docker exec "$API_CONTAINER" which curl >/dev/null 2>&1; then
+              docker exec "$API_CONTAINER" sh -c 'command -v wget >/dev/null || (apt-get update -qq && apt-get install -y -qq curl)' || true
+            fi
+            RESPONSE=$(docker exec "$API_CONTAINER" curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
             if echo "$RESPONSE" | grep -q '__typename'; then
               echo "GraphQL endpoint is available!"
               exit 0
             fi
-            echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
+            echo "GraphQL endpoint not ready (attempt $i/60). Retrying in 2 seconds..."
             sleep 2
           done
           echo "GraphQL endpoint did not become available within the expected time."
+          echo "=== Last response ==="
+          echo "${RESPONSE:-Connection failed}"
+          if docker exec "$API_CONTAINER" true 2>/dev/null; then
+            echo "=== Backend container logs (tail 80) ==="
+            docker logs "$API_CONTAINER" --tail 80
+          else
+            echo "=== Container $API_CONTAINER not running; docker ps -a ==="
+            docker ps -a
+          fi
           exit 1
       - name: Cleanup - Free ports by stopping containers
         if: always()

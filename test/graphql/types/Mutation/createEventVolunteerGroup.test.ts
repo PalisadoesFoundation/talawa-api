@@ -1,11 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
 import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
-import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type {

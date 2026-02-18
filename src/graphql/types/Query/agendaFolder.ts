@@ -5,8 +5,9 @@ import {
 	queryAgendaFolderInputSchema,
 } from "~/src/graphql/inputs/QueryAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const queryAgendaFolderArgumentsSchema = z.object({
 	input: queryAgendaFolderInputSchema,
 });

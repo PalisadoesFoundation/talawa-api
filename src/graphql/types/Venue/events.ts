@@ -1,22 +1,27 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
 } from "~/src/drizzle/tables/venueBookings";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import {
+	type EventWithAttachments,
+	filterInviteOnlyEvents,
+} from "~/src/graphql/types/Query/eventQueries";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Venue } from "./Venue";
+
 const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -24,7 +29,7 @@ const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -203,13 +208,18 @@ Venue.implement({
 						}
 					}
 
+					// Fetch more venue bookings than needed to account for invite-only filtering
+					// This ensures we have enough bookings after filtering to fill the requested page
+					// Use 2x the limit or limit + 50, whichever is larger, capped at 200
+					const fetchLimit = Math.min(Math.max(limit * 2, limit + 50), 200);
+
 					const venueBookings =
 						await ctx.drizzleClient.query.venueBookingsTable.findMany({
 							columns: {
 								createdAt: true,
 								eventId: true,
 							},
-							limit,
+							limit: fetchLimit + 1, // +1 for pagination detection
 							orderBy,
 							with: {
 								event: {
@@ -234,20 +244,71 @@ Venue.implement({
 						});
 					}
 
+					// Check which eventIds are recurring instances
+					const eventIds = venueBookings.map((booking) => booking.eventId);
+					const recurringInstances =
+						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
+							{
+								columns: {
+									id: true,
+									baseRecurringEventId: true,
+								},
+								where: (fields, operators) =>
+									operators.inArray(fields.id, eventIds),
+							},
+						);
+					const recurringInstanceIds = new Set(
+						recurringInstances.map((instance) => instance.id),
+					);
+
+					// Transform venue bookings to events with attachments
+					const eventsWithAttachments: EventWithAttachments[] = venueBookings
+						.filter((booking) => booking.event !== null)
+						.map((booking) => {
+							if (!booking.event) {
+								throw new Error("Event should not be null after filter");
+							}
+							const { attachmentsWhereEvent, ...event } = booking.event;
+							const isGenerated = recurringInstanceIds.has(booking.eventId);
+							return {
+								...event,
+								attachments: attachmentsWhereEvent || [],
+								eventType: isGenerated
+									? ("generated" as const)
+									: ("standalone" as const),
+							} as EventWithAttachments;
+						});
+
+					// Filter invite-only events based on visibility rules
+					// This happens before pagination to ensure we have enough events
+					const filteredEvents = await filterInviteOnlyEvents({
+						events: eventsWithAttachments,
+						currentUserId,
+						currentUserRole: currentUser.role,
+						currentUserOrgMembership: currentUserOrganizationMembership,
+						drizzleClient: ctx.drizzleClient,
+					});
+
+					// Map back to venue bookings format for pagination
+					// Preserve limit + 1 items (limit already includes +1 for pagination detection from transformDefaultGraphQLConnectionArguments)
+					// The extra item is needed by transformToDefaultGraphQLConnection to determine hasNextPage/hasPreviousPage
+					const filteredBookings = venueBookings
+						.filter((booking) =>
+							filteredEvents.some((event) => event.id === booking.eventId),
+						)
+						.slice(0, limit + 1);
+
 					return transformToDefaultGraphQLConnection({
-						createCursor: (booking) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: booking.createdAt.toISOString(),
-									eventId: booking.eventId,
-								}),
-							).toString("base64url"),
+						createCursor: (booking) => ({
+							createdAt: booking.createdAt,
+							eventId: booking.eventId,
+						}),
 						createNode: ({ event: { attachmentsWhereEvent, ...event } }) =>
 							Object.assign(event, {
-								attachments: attachmentsWhereEvent,
+								attachments: attachmentsWhereEvent || [],
 							}),
 						parsedArgs,
-						rawNodes: venueBookings,
+						rawNodes: filteredBookings,
 					});
 				},
 				type: Event,

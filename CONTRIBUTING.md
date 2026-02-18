@@ -21,28 +21,21 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 Please read the [Palisadoes Contributing Guidelines](https://developer.palisadoes.org/docs/contributor-guide/contributing).
 
+## Docker Devcontainer
+
+This project provides two devcontainer configurations:
+
+1. **Default mode** (`.devcontainer/default/devcontainer.json`): For standard Docker installations.
+2. **Rootless mode** (`.devcontainer/rootless/devcontainer.json`): For Docker Rootless installations.
+
+For full setup and usage instructions, see the [Installation Guide](docs/docs/docs/getting-started/installation.md). For troubleshooting, see the [Troubleshooting Guide](docs/docs/docs/developer-resources/testing/troubleshooting.md).
+
 ## Testing and Code Quality
 
-For detailed information about testing, linting, formatting, and code coverage, please refer to our comprehensive [Testing Guide](docs/docs/docs/developer-resources/testing.md).
+Testing and code quality documentation can be found at these locations:
 
-### Quick Reference
-
-**Testing:**
-- Run all tests: `pnpm run test`
-- Run specific test: `pnpm run test /path/to/test/file`
-- Run with coverage: `pnpm run test:coverage`
-- Run with sharding: `pnpm run test:shard`
-
-**Linting and Formatting:**
-- Fix linting issues: `pnpm run lint:fix`
-- Fix formatting issues: `pnpm run format:fix`
-- Check linting: `pnpm run lint:check`
-- Check formatting: `pnpm run format:check`
-
-**Cypress E2E Testing:**
-- See the [Cypress Guide](cypress/README.md) for end-to-end testing
-
-For complete documentation including test sharding, code coverage setup, debugging, and git hooks, visit the [Testing Guide](docs/docs/docs/developer-resources/testing.md).
+1. Online at https://docs-api.talawa.io/docs/developer-resources/testing-validation
+1. In the local repository at [testing-validation.md](docs/docs/docs/developer-resources/testing/testing-validation.md) which is the source file for the web page.
 
 ## Making Contributions   
 
@@ -51,4 +44,5 @@ For complete documentation including test sharding, code coverage setup, debuggi
 1. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
 1. Now create a pull request to the Talawa-admin repository from your forked repo. Open an issue regarding the same and link your PR to it.
 1. Ensure the test suite passes, either locally or on CI once a PR has been created.
+2. Changes to code under `scripts/install/` must include or update tests in `tests/install/` in the same relative path.
 1. Review and address comments on your pull request if requested.

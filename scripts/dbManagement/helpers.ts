@@ -104,7 +104,8 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 
 		return true;
-	} catch (error) {
+	} catch (error: unknown) {
+		console.error("Error formatting database:", error);
 		return false;
 	}
 }
@@ -116,14 +117,9 @@ export async function emptyMinioBucket(): Promise<boolean> {
 			(resolve, reject) => {
 				const objects: string[] = [];
 				const stream = minioClient.listObjects(bucketName, "", true);
-				stream.on(
-					"data",
-					(obj: {
-						name: string;
-					}) => {
-						objects.push(obj.name);
-					},
-				);
+				stream.on("data", (obj: { name: string }) => {
+					objects.push(obj.name);
+				});
 				stream.on("error", (err: Error) => {
 					console.error("Error listing objects in bucket:", err);
 					reject(err);
@@ -145,48 +141,13 @@ export async function emptyMinioBucket(): Promise<boolean> {
 }
 
 /**
- * Lists sample data files and their document counts in the sample_data directory.
- */
-export async function listSampleData(): Promise<boolean> {
-	try {
-		const sampleDataPath = path.resolve(dirname, "./sample_data");
-		const files = await fs.readdir(sampleDataPath);
-		console.log(files);
-		console.log("Sample Data Files:\n");
-
-		console.log(
-			`${"| File Name".padEnd(30)}| Document Count |
-${"|".padEnd(30, "-")}|----------------|
-`,
-		);
-
-		for (const file of files) {
-			const filePath = path.resolve(sampleDataPath, file);
-			const stats = await fs.stat(filePath);
-			if (stats.isFile()) {
-				const data = await fs.readFile(filePath, "utf8");
-				const docs = JSON.parse(data);
-				console.log(
-					`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`,
-				);
-			}
-		}
-		console.log();
-	} catch (err) {
-		throw new Error(`\x1b[31mError listing sample data: ${err}\x1b[0m`);
-	}
-
-	return true;
-}
-
-/**
  * Check database connection
  */
 
 export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
-	} catch (error) {
+	} catch (_error) {
 		throw new Error("Unable to connect to the database.");
 	}
 	return true;
@@ -254,10 +215,20 @@ export async function insertCollections(
 						(user: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
+							birthDate: string | number | Date;
+							lockedUntil: string | number | Date | null;
+							lastFailedLoginAt?: string | number | Date | null;
 						}) => ({
 							...user,
-							createdAt: parseDate(user.createdAt),
-							updatedAt: parseDate(user.updatedAt),
+							createdAt: user.createdAt ? parseDate(user.createdAt) : null,
+							updatedAt: user.updatedAt ? parseDate(user.updatedAt) : null,
+							birthDate: user.birthDate ? parseDate(user.birthDate) : null,
+							lockedUntil: user.lockedUntil
+								? parseDate(user.lockedUntil)
+								: null,
+							lastFailedLoginAt: user.lastFailedLoginAt
+								? parseDate(user.lastFailedLoginAt)
+								: null,
 						}),
 					) as (typeof schema.usersTable.$inferInsert)[];
 
@@ -335,9 +306,7 @@ export async function insertCollections(
 
 				case "organization_memberships": {
 					const organizationMemberships = JSON.parse(fileContent).map(
-						(membership: {
-							createdAt: string | number | Date;
-						}) => ({
+						(membership: { createdAt: string | number | Date }) => ({
 							...membership,
 							createdAt: parseDate(membership.createdAt),
 						}),
@@ -394,6 +363,81 @@ export async function insertCollections(
 					);
 					break;
 				}
+
+				case "tag_folders": {
+					const tag_folders = JSON.parse(fileContent).map(
+						(tag_folders: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...tag_folders,
+							createdAt: parseDate(tag_folders.createdAt),
+							updatedAt: parseDate(tag_folders.updatedAt),
+						}),
+					) as (typeof schema.tagFoldersTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.tagFoldersTable,
+						tag_folders,
+						schema.tagFoldersTable.id,
+						100,
+					);
+					console.log(
+						"\x1b[35mAdded: Tag Folders Table Data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "tag_assignments": {
+					const tag_assignments = JSON.parse(fileContent).map(
+						(assignment: {
+							tagId: string;
+							assigneeId: string;
+							creatorId: string;
+							createdAt: string | number | Date;
+						}) => ({
+							tagId: assignment.tagId,
+							assigneeId: assignment.assigneeId,
+							creatorId: assignment.creatorId,
+							createdAt: parseDate(assignment.createdAt),
+						}),
+					) as (typeof schema.tagAssignmentsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.tagAssignmentsTable,
+						tag_assignments,
+						[
+							schema.tagAssignmentsTable.assigneeId,
+							schema.tagAssignmentsTable.tagId,
+						],
+						100,
+					);
+					console.log(
+						"\x1b[35mAdded: Tag Assignments Table Data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "tags": {
+					const tags = JSON.parse(fileContent).map(
+						(tags: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...tags,
+							createdAt: parseDate(tags.createdAt),
+							updatedAt: parseDate(tags.updatedAt),
+						}),
+					) as (typeof schema.tagsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.tagsTable,
+						tags,
+						schema.tagsTable.id,
+						100,
+					);
+					console.log(
+						"\x1b[35mAdded: Tags Table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				case "membership_requests": {
 					const membership_requests = JSON.parse(fileContent).map(
 						(membership_request: { createdAt: string | number | Date }) => ({
@@ -440,7 +484,7 @@ export async function insertCollections(
 								const fileData = await fs.readFile(filePath);
 								await minioClient.putObject(
 									bucketName,
-									attachment.name,
+									attachment.objectName,
 									fileData,
 									undefined,
 									{
@@ -541,6 +585,73 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurring_event_templates": {
+					// PR2: Insert template events only. recurrence_rules and
+					// recurring_event_instances are populated in a follow-up (PR3).
+					const now = new Date();
+					type TemplateRow = {
+						id: string;
+						createdAt: string | number | Date;
+						updatedAt: string | null;
+						updaterId: string | null;
+						startAt: string | number | Date;
+						endAt: string | number | Date;
+						creatorId: string;
+						description: string | null;
+						name: string;
+						organizationId: string;
+						allDay: boolean;
+						isPublic?: boolean;
+						isRecurringEventTemplate?: boolean;
+						isRegisterable?: boolean;
+					};
+					const templates = JSON.parse(fileContent).map(
+						(template: TemplateRow) => {
+							const startRef = parseDate(template.startAt);
+							const endRef = parseDate(template.endAt);
+							const start =
+								startRef != null
+									? getNextOccurrenceOfWeekdayTime(now, startRef)
+									: new Date(now.getTime());
+							let end: Date;
+							if (startRef != null && endRef != null) {
+								const durationMs = endRef.getTime() - startRef.getTime();
+								end = new Date(start.getTime() + durationMs);
+							} else if (endRef != null) {
+								end = getNextOccurrenceOfWeekdayTime(now, endRef);
+								if (end.getTime() < start.getTime()) {
+									end = new Date(end.getTime() + 7 * 24 * 60 * 60 * 1000);
+								}
+							} else {
+								end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+							}
+							const createdAt = parseDate(template.createdAt) ?? start;
+							return {
+								...template,
+								createdAt,
+								startAt: start,
+								endAt: end,
+								updatedAt: null,
+								updaterId: null,
+								isPublic: true,
+								isRecurringEventTemplate: true,
+							};
+						},
+					) as (typeof schema.eventsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventsTable,
+						templates,
+						schema.eventsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurring event templates (skipping duplicates)\x1b[0m",
 					);
 					break;
 				}
@@ -739,6 +850,42 @@ export function parseDate(date: string | number | Date): Date | null {
 }
 
 /**
+ * Returns the next occurrence of the same weekday and time (hours, minutes) as
+ * templateDate, on or after referenceDate. Used for recurring event template start/end.
+ */
+export function getNextOccurrenceOfWeekdayTime(
+	referenceDate: Date,
+	templateDate: Date,
+): Date {
+	const weekday = templateDate.getUTCDay();
+	const hours = templateDate.getUTCHours();
+	const minutes = templateDate.getUTCMinutes();
+	const seconds = templateDate.getUTCSeconds();
+	const ms = templateDate.getUTCMilliseconds();
+
+	// Start from reference date at midnight UTC, then find next matching weekday
+	const ref = new Date(
+		Date.UTC(
+			referenceDate.getUTCFullYear(),
+			referenceDate.getUTCMonth(),
+			referenceDate.getUTCDate(),
+			0,
+			0,
+			0,
+			0,
+		),
+	);
+	ref.setUTCHours(hours, minutes, seconds, ms);
+	const refDay = ref.getUTCDay();
+	let daysToAdd = (weekday - refDay + 7) % 7;
+	if (daysToAdd === 0 && referenceDate.getTime() > ref.getTime()) {
+		daysToAdd = 7;
+	}
+	ref.setUTCDate(ref.getUTCDate() + daysToAdd);
+	return ref;
+}
+
+/**
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
  */
@@ -752,6 +899,9 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 				table: schema.organizationMembershipsTable,
 			},
 			{ name: "posts", table: schema.postsTable },
+			{ name: "tag_folders", table: schema.tagFoldersTable },
+			{ name: "tags", table: schema.tagsTable },
+			{ name: "tag_assignments", table: schema.tagAssignmentsTable },
 			{ name: "post_votes", table: schema.postVotesTable },
 			{ name: "post_attachments", table: schema.postAttachmentsTable },
 			{ name: "comments", table: schema.commentsTable },

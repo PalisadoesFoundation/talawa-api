@@ -61,7 +61,7 @@ export class NotificationEngine {
 	 * @param variables - Object containing variables to be replaced in template
 	 * @param audience - Target audience for the notification
 	 * @param channelType - Channel to deliver notification (in_app, email)
-	 * @returns The created notification log ID
+	 * @returns - The created notification log ID
 	 */
 	async createNotification(
 		eventType: string,
@@ -127,8 +127,30 @@ export class NotificationEngine {
 				variables,
 			);
 		} else {
+			// Collect all user IDs from all audiences (aligns with email notification flow)
+			const allUserIds: string[] = [];
 			for (const audienceSpec of audiences) {
-				await this.createAudienceEntries(notificationLog.id, audienceSpec);
+				const userIds = await this.resolveAudienceToUserIds(
+					audienceSpec,
+					senderId,
+				);
+				allUserIds.push(...userIds);
+			}
+
+			// Deduplicate across all audiences to prevent unique constraint violations
+			const uniqueUserIds = [...new Set(allUserIds)];
+
+			// Insert all audience entries in a single batch
+			if (uniqueUserIds.length > 0) {
+				await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
+					uniqueUserIds.map((userId) => ({
+						notificationId: notificationLog.id,
+						userId,
+						isRead: false,
+					})),
+				);
+			} else {
+				this.ctx.log.warn("No users found for in-app notification");
 			}
 		}
 
@@ -153,16 +175,15 @@ export class NotificationEngine {
 			? this.ctx.currentClient.user.id
 			: null;
 
-		let allUserIds: string[] = [];
+		const allUserIds: string[] = [];
 		for (const audienceSpec of audiences) {
 			const userIds = await this.resolveAudienceToUserIds(
 				audienceSpec,
 				senderId,
 			);
-			allUserIds = [...allUserIds, ...userIds];
+			allUserIds.push(...userIds);
 		}
 
-		// Remove duplicates
 		const uniqueUserIds = [...new Set(allUserIds)];
 
 		if (uniqueUserIds.length === 0) {
@@ -191,7 +212,7 @@ export class NotificationEngine {
 		const subject = renderedTemplate.title;
 		const htmlBody = renderedTemplate.body;
 
-		// Create email notification records
+		// Creating email notification records
 		const emailNotifications = usersWithEmail.map((user) => ({
 			id: uuidv7(),
 			notificationLogId,
@@ -204,7 +225,7 @@ export class NotificationEngine {
 			maxRetries: 3,
 		}));
 
-		// Insert email notifications
+		// Inserting email notifications
 		await this.ctx.drizzleClient
 			.insert(emailNotificationsTable)
 			.values(emailNotifications);
@@ -275,86 +296,11 @@ export class NotificationEngine {
 	}
 
 	/**
-	 * Creates audience entries for a notification
-	 *
-	 * @param notificationId - ID of the notification log
-	 * @param audience - Specification of the target audience
-	 */
-	private async createAudienceEntries(
-		notificationId: string,
-		audience: NotificationAudience,
-	): Promise<void> {
-		const { targetType, targetIds } = audience;
-		const senderId = this.ctx.currentClient.isAuthenticated
-			? this.ctx.currentClient.user.id
-			: null;
-
-		let userIds: string[] = [];
-
-		if (targetType === NotificationTargetType.USER) {
-			userIds = targetIds.filter((id) => id !== senderId);
-		} else if (targetType === NotificationTargetType.ORGANIZATION_ADMIN) {
-			const orgId = targetIds[0];
-			if (!orgId) return;
-
-			const adminMembers =
-				await this.ctx.drizzleClient.query.organizationMembershipsTable.findMany(
-					{
-						columns: { memberId: true },
-						where: (fields, operators) =>
-							and(
-								operators.eq(fields.organizationId, orgId),
-								operators.eq(fields.role, "administrator"),
-							),
-					},
-				);
-
-			userIds = adminMembers
-				.map((member) => member.memberId)
-				.filter((id) => id !== senderId);
-		} else if (targetType === NotificationTargetType.ADMIN) {
-			const admins = await this.ctx.drizzleClient.query.usersTable.findMany({
-				columns: { id: true },
-				where: (fields, operators) =>
-					operators.eq(fields.role, "administrator"),
-			});
-
-			userIds = admins.map((admin) => admin.id).filter((id) => id !== senderId);
-		} else if (targetType === NotificationTargetType.ORGANIZATION) {
-			const orgId = targetIds[0];
-			if (!orgId) return;
-
-			const members =
-				await this.ctx.drizzleClient.query.organizationMembershipsTable.findMany(
-					{
-						columns: { memberId: true },
-						where: (fields, operators) =>
-							operators.eq(fields.organizationId, orgId),
-					},
-				);
-
-			userIds = members
-				.map((member) => member.memberId)
-				.filter((id) => id !== senderId);
-		}
-
-		if (userIds.length > 0) {
-			await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
-				userIds.map((userId) => ({
-					notificationId,
-					userId,
-					isRead: false,
-				})),
-			);
-		}
-	}
-
-	/**
 	 * Renders a template by replacing variables
 	 *
 	 * @param template - The notification template
 	 * @param variables - Variables to replace in the template
-	 * @returns Rendered content object
+	 * @returns - Rendered content object
 	 */
 	private renderTemplate(
 		template: typeof notificationTemplatesTable.$inferSelect,
@@ -370,5 +316,92 @@ export class NotificationEngine {
 			body = body.replace(placeholder, String(value));
 		}
 		return { title, body };
+	}
+
+	/**
+	 * Creates a direct email notification for external recipients (non-users).
+	 * Uses the template system with provided variables for rendering.
+	 *
+	 * @param eventType - Type of event (e.g., "send_event_invite")
+	 * @param variables - Variables to render in the template
+	 * @param receiverMail - Email address of the recipient(s)
+	 * @param channelType - Channel type (defaults to EMAIL)
+	 * @returns - The created email notification ID
+	 */
+	async createDirectEmailNotification(
+		eventType: string,
+		variables: NotificationVariables,
+		receiverMail: string | string[],
+		channelType: NotificationChannelType = NotificationChannelType.EMAIL,
+	): Promise<string> {
+		const senderId = this.ctx.currentClient.isAuthenticated
+			? this.ctx.currentClient.user.id
+			: null;
+		const template =
+			await this.ctx.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (fields, operators) =>
+					and(
+						operators.eq(fields.eventType, eventType),
+						operators.eq(fields.channelType, channelType),
+					),
+			});
+		if (!template) {
+			throw new Error(
+				`No notification template found for event type "${eventType}" and channel "${channelType}"`,
+			);
+		}
+		const renderedContent = this.renderTemplate(template, variables);
+		const initialStatus =
+			channelType === NotificationChannelType.EMAIL ? "pending" : "delivered";
+
+		const [notificationLog] = await this.ctx.drizzleClient
+			.insert(notificationLogsTable)
+			.values({
+				id: uuidv7(),
+				templateId: template.id,
+				variables: variables as Record<
+					string,
+					string | number | boolean | null | undefined
+				>,
+				renderedContent: renderedContent as { title: string; body: string },
+				sender: senderId,
+				navigation: template.linkedRouteName,
+				eventType: eventType,
+				channel: channelType,
+				status: initialStatus,
+			})
+			.returning();
+
+		if (!notificationLog) {
+			throw new Error("Failed to create notification log for direct email");
+		}
+
+		const emails = Array.isArray(receiverMail) ? receiverMail : [receiverMail];
+
+		const emailNotifications = emails.map((email) => ({
+			id: uuidv7(),
+			notificationLogId: notificationLog.id,
+			userId: null,
+			email: email,
+			subject: renderedContent.title,
+			htmlBody: renderedContent.body,
+			status: "pending" as const,
+			retryCount: 0,
+			maxRetries: 3,
+		}));
+
+		await this.ctx.drizzleClient
+			.insert(emailNotificationsTable)
+			.values(emailNotifications);
+
+		this.ctx.log.info(
+			{
+				count: emailNotifications.length,
+				recipientEmails: emails,
+			},
+			"Direct email notification(s) created",
+		);
+
+		return notificationLog.id;
 	}
 }

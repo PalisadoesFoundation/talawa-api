@@ -1,15 +1,20 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries";
+import { getRecurringEventInstanceByBaseId } from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+const MAX_OFFSET = 10_000;
 
 const queryGetRecurringEventsSchema = z.object({
 	baseRecurringEventId: z.string().uuid(),
+	limit: z.number().int().min(1).max(1000).optional(),
+	offset: z.number().int().min(0).max(MAX_OFFSET).optional(),
+	includeCancelled: z.boolean().optional(),
 });
 
 /**
- * @description Defines the 'getRecurringEvents' query field for fetching all recurring event instances
+ * Defines the 'getRecurringEvents' query field for fetching all recurring event instances
  * that belong to a specific base recurring event template.
  * This query is similar to the old talawa-api getRecurringEvents but adapted for the new architecture
  * where event templates are in the events table and instances are in the recurring_event_instances table.
@@ -23,6 +28,22 @@ builder.queryField("getRecurringEvents", (t) =>
 				type: "ID",
 				description: "The ID of the base recurring event template",
 			}),
+			limit: t.arg.int({
+				description: "Number of events to return. Defaults to 1000. Max 1000.",
+				required: false,
+				defaultValue: 1000,
+			}),
+			offset: t.arg.int({
+				description: `Number of events to skip. Defaults to 0. Max ${MAX_OFFSET}.`,
+				required: false,
+				defaultValue: 0,
+			}),
+			includeCancelled: t.arg.boolean({
+				description:
+					"Whether to include cancelled instances. Defaults to false.",
+				required: false,
+				defaultValue: false,
+			}),
 		},
 		description:
 			"Fetches all recurring event instances that belong to a specific base recurring event template.",
@@ -34,6 +55,7 @@ builder.queryField("getRecurringEvents", (t) =>
 			}
 
 			const parsedArgs = queryGetRecurringEventsSchema.safeParse(args);
+
 			if (!parsedArgs.success) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -46,7 +68,17 @@ builder.queryField("getRecurringEvents", (t) =>
 				});
 			}
 
-			const { baseRecurringEventId } = parsedArgs.data;
+			const {
+				baseRecurringEventId,
+				limit: inputLimit,
+				offset: inputOffset,
+				includeCancelled: inputIncludeCancelled,
+			} = parsedArgs.data;
+
+			const limit = inputLimit ?? 1000;
+			const offset = inputOffset ?? 0;
+			const includeCancelled = inputIncludeCancelled ?? false;
+
 			const currentUserId = ctx.currentClient.user.id;
 
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -132,27 +164,27 @@ builder.queryField("getRecurringEvents", (t) =>
 				}
 
 				// Get all recurring event instances for this base event
-				const recurringInstances = await getRecurringEventInstancesByBaseId(
+				const recurringInstances = await getRecurringEventInstanceByBaseId(
 					baseRecurringEventId,
 					ctx.drizzleClient,
 					ctx.log,
+					{
+						limit,
+						offset,
+						includeCancelled,
+					},
 				);
-
-				// Transform recurring instances to include attachments (empty for instances)
-				const eventsWithAttachments = recurringInstances.map((instance) => ({
-					...instance,
-					attachments: [], // Recurring event instances don't have direct attachments
-				}));
 
 				ctx.log.debug(
 					{
 						baseRecurringEventId,
-						instanceCount: eventsWithAttachments.length,
+						instanceCount: recurringInstances.length,
 					},
 					"Retrieved recurring events by base ID",
 				);
 
-				return eventsWithAttachments;
+				// Return instances with inherited attachments from base template
+				return recurringInstances;
 			} catch (error) {
 				ctx.log.error(
 					{

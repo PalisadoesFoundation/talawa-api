@@ -2,14 +2,14 @@ import type { EventGenerationExecutionResult } from "./executionEngine";
 import type { ProcessingMetrics, WorkerDependencies } from "./types";
 
 /**
- * @description Configuration for post-processing operations, allowing features like cleanup to be toggled.
+ * Configuration for post-processing operations, allowing features like cleanup to be toggled.
  */
 export interface PostProcessingConfig {
 	enableCleanup: boolean;
 }
 
 /**
- * @description Represents the result of post-processing operations, including whether cleanup was performed and any errors encountered.
+ * Represents the result of post-processing operations, including whether cleanup was performed and any errors encountered.
  */
 export interface PostProcessingResult {
 	cleanupPerformed: boolean;
@@ -25,11 +25,11 @@ export interface PostProcessingResult {
  * @param metrics - The metrics collected during the materialization process.
  * @param config - The configuration for post-processing.
  * @param deps - The dependencies required for the worker.
- * @returns A promise that resolves to the result of the post-processing operations.
+ * @returns - A promise that resolves to the result of the post-processing operations.
  */
 export async function executePostProcessing(
 	executionResults: EventGenerationExecutionResult[],
-	metrics: ProcessingMetrics,
+	_metrics: ProcessingMetrics,
 	config: PostProcessingConfig,
 	deps: WorkerDependencies,
 ): Promise<PostProcessingResult> {
@@ -91,7 +91,7 @@ async function performCleanupOperations(
 /**
  * Creates a default configuration object for post-processing operations.
  *
- * @returns A default post-processing configuration.
+ * @returns - A default post-processing configuration.
  */
 export function createDefaultPostProcessingConfig(): PostProcessingConfig {
 	return {

@@ -1,18 +1,27 @@
 import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
-import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
+import {
+	EVENT_DESCRIPTION_MAX_LENGTH,
+	EVENT_LOCATION_MAX_LENGTH,
+	EVENT_NAME_MAX_LENGTH,
+	eventsTableInsertSchema,
+} from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
 	.pick({
-		description: true,
 		endAt: true,
-		name: true,
 		organizationId: true,
 		startAt: true,
 	})
 	.extend({
+		description: sanitizedStringSchema
+			.min(1)
+			.max(EVENT_DESCRIPTION_MAX_LENGTH)
+			.optional(),
+		name: sanitizedStringSchema.min(1).max(EVENT_NAME_MAX_LENGTH),
 		attachments: z
 			.custom<Promise<FileUpload>>()
 			.array()
@@ -20,9 +29,13 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 			.max(20)
 			.optional(),
 		allDay: z.boolean().optional(),
+		isInviteOnly: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
-		location: z.string().min(1).max(1024).optional(),
+		location: sanitizedStringSchema
+			.min(1)
+			.max(EVENT_LOCATION_MAX_LENGTH)
+			.optional(),
 		recurrence: recurrenceInputSchema.optional(),
 	})
 	.superRefine((arg, ctx) => {
@@ -71,6 +84,10 @@ export const MutationCreateEventInput = builder
 			}),
 			allDay: t.boolean({
 				description: "Indicates if the event spans the entire day",
+				required: false,
+			}),
+			isInviteOnly: t.boolean({
+				description: "Indicates if the event is invite-only",
 				required: false,
 			}),
 			isPublic: t.boolean({

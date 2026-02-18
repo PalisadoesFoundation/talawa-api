@@ -1,0 +1,83 @@
+// https://containers.dev/implementors/json_reference/
+// https://github.com/orgs/devcontainers/discussions/4
+// Default (non-rootless) Docker devcontainer configuration
+// Use this configuration when running Docker in standard (root) mode
+{
+	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+	"containerUser": "talawa",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"biomejs.biome",
+				"esbenp.prettier-vscode",
+				"GraphQL.vscode-graphql",
+				"GraphQL.vscode-graphql-syntax",
+				"redhat.vscode-yaml"
+			],
+			"settings": {
+				"editor.codeActionsOnSave": {
+					"quickfix.biome": "explicit",
+					"source.organizeImports.biome": "explicit"
+				},
+				"editor.formatOnSave": true,
+				"editor.lineNumbers": "relative",
+				"editor.mouseWheelZoom": true,
+				"editor.wordWrap": "on",
+				"typescript.enablePromptUseWorkspaceTsdk": true,
+				"typescript.tsdk": "./node_modules/typescript/lib",
+				"[graphql]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[javascript]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[json]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[jsonc]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[markdown]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[typescript]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[yaml]": {
+					"editor.defaultFormatter": "redhat.vscode-yaml"
+				}
+			}
+		}
+	},
+	"dockerComposeFile": [
+		"../../compose.yaml",
+		"../../docker/compose.testing.yaml",
+		"../../docker/compose.devcontainer.yaml"
+	],
+	"features": {
+		// https://github.com/devcontainers/features/tree/main/src/common-utils
+		"ghcr.io/devcontainers/features/common-utils": {
+			"installZsh": false,
+			"installOhMyZsh": false,
+			"installOhMyZshConfig": false,
+			"nonFreePackages": true,
+			"username": "talawa"
+		},
+		// https://github.com/devcontainers/features/tree/main/src/git
+		"ghcr.io/devcontainers/features/git": {},
+		// https://github.com/devcontainers/features/tree/main/src/github-cli
+		"ghcr.io/devcontainers/features/github-cli": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"ENABLENONROOTDOCKER": "true"
+		}
+	},
+	"init": true,
+	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
+	"name": "talawa_api_default",
+	"overrideCommand": true,
+	"postCreateCommand": "./.devcontainer/default/post-create.sh",
+	"remoteUser": "talawa",
+	"service": "api",
+	"shutdownAction": "stopCompose",
+	"workspaceFolder": "/home/talawa/api"
+}

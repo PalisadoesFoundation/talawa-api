@@ -1,19 +1,19 @@
-import { type SQL, and, asc, desc, eq, gt, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lt, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
 const blockedUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -21,7 +21,7 @@ const blockedUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -123,13 +123,10 @@ Organization.implement({
 				}
 
 				return transformToDefaultGraphQLConnection({
-					createCursor: (blockedUser) =>
-						Buffer.from(
-							JSON.stringify({
-								createdAt: blockedUser.createdAt.toISOString(),
-								userId: blockedUser.userId,
-							}),
-						).toString("base64url"),
+					createCursor: (blockedUser) => ({
+						createdAt: blockedUser.createdAt.toISOString(),
+						userId: blockedUser.userId,
+					}),
 					createNode: (blockedUser) => blockedUser.user,
 					parsedArgs,
 					rawNodes: blockedUsers,

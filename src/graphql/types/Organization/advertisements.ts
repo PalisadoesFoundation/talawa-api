@@ -1,19 +1,19 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import {
 	advertisementsTable,
 	advertisementsTableInsertSchema,
 } from "~/src/drizzle/tables/advertisements";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
-	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	createGraphQLConnectionWithWhereSchema,
 	type defaultGraphQLConnectionArgumentsSchema,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AdvertisementWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
 
@@ -32,7 +32,7 @@ const advertisementsArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 		> & { where: unknown },
 		ctx,
 	);
-	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	let cursor: z.infer<typeof cursorSchema> | undefined;
 	try {
 		if (transformedArg.cursor !== undefined) {
 			cursor = cursorSchema.parse(
@@ -41,7 +41,7 @@ const advertisementsArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 				),
 			);
 		}
-	} catch (error) {
+	} catch (_error) {
 		ctx.addIssue({
 			code: "custom",
 			message: "Not a valid cursor.",
@@ -307,12 +307,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (advertisement) =>
-							Buffer.from(
-								JSON.stringify({
-									name: advertisement.name,
-								}),
-							).toString("base64url"),
+						createCursor: (advertisement) => ({
+							name: advertisement.name,
+						}),
 						createNode: ({ attachmentsWhereAdvertisement, ...advertisement }) =>
 							Object.assign(advertisement, {
 								attachments: attachmentsWhereAdvertisement,

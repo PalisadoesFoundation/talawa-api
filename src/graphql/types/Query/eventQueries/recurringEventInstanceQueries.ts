@@ -1,4 +1,5 @@
-import { and, asc, eq, gte, inArray, lte, or } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, not, or } from "drizzle-orm";
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
@@ -12,7 +13,7 @@ import {
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 
 /**
- * @description Defines the input parameters for querying recurring event event instances.
+ * Defines the input parameters for querying recurring event instances.
  */
 export interface GetRecurringEventInstancesInput {
 	organizationId: string;
@@ -20,20 +21,32 @@ export interface GetRecurringEventInstancesInput {
 	endDate: Date;
 	includeCancelled?: boolean;
 	/**
-	 * @description An optional limit on the number of instances to return.
+	 * Optional maximum number of instances to return (defaults to 1000).
+	 * Must be a positive integer.
 	 */
 	limit?: number;
+	/**
+	 * Optional number of instances to skip (defaults to 0).
+	 * Must be a non-negative integer.
+	 */
+	offset?: number;
+	/**
+	 * Optional array of instance IDs to exclude from the results.
+	 * Useful for filtering out specific instances that should not be returned,
+	 * such as instances that have already been processed or displayed.
+	 */
+	excludeInstanceIds?: string[];
 }
 
 /**
- * Retrieves recurring event event instances for a given organization within a specified date range.
+ * Retrieves recurring event instances for a given organization within a specified date range.
  * This function resolves each instance by combining data from the base event template
  * with any applicable exceptions, providing a complete and accurate representation of each event instance.
  *
  * @param input - The input object containing organizationId, date range, and optional filters.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of fully resolved recurring event event instances.
+ * @returns - A promise that resolves to an array of fully resolved recurring event instances.
  */
 export async function getRecurringEventInstancesInDateRange(
 	input: GetRecurringEventInstancesInput,
@@ -46,12 +59,35 @@ export async function getRecurringEventInstancesInDateRange(
 		endDate,
 		includeCancelled = false,
 		limit = 1000,
+		offset,
+		excludeInstanceIds,
 	} = input;
+
+	// Defensive validation for limit and offset parameters
+	if (limit !== undefined && limit < 1) {
+		throw new Error(
+			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
+		);
+	}
+
+	if (offset !== undefined && offset < 0) {
+		throw new Error(
+			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
+		);
+	}
 
 	try {
 		// Step 1: Get recurring event instances for the date range
 		const instances = await fetchRecurringEventInstances(
-			{ organizationId, startDate, endDate, includeCancelled, limit },
+			{
+				organizationId,
+				startDate,
+				endDate,
+				includeCancelled,
+				limit,
+				offset,
+				excludeInstanceIds,
+			},
 			drizzleClient,
 		);
 
@@ -91,7 +127,7 @@ export async function getRecurringEventInstancesInDateRange(
  * @param instanceIds - An array of recurring event instance IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of the requested resolved recurring event event instances.
+ * @returns - A promise that resolves to an array of the requested resolved recurring event instances.
  */
 export async function getRecurringEventInstancesByIds(
 	instanceIds: string[],
@@ -144,7 +180,7 @@ export async function getRecurringEventInstancesByIds(
  * @param organizationId - The ID of the organization to which the instance belongs.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the resolved recurring event event instance, or null if not found.
+ * @returns - A promise that resolves to the resolved recurring event instance, or null if not found.
  */
 export async function getRecurringEventInstanceById(
 	instanceId: string,
@@ -166,16 +202,26 @@ export async function getRecurringEventInstanceById(
 			return null;
 		}
 
-		// Get base template
-		const baseTemplate = await drizzleClient.query.eventsTable.findFirst({
+		// Get base template with attachments
+		const baseTemplateResult = await drizzleClient.query.eventsTable.findFirst({
 			where: eq(eventsTable.id, instance.baseRecurringEventId),
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 
-		if (!baseTemplate) {
+		if (!baseTemplateResult) {
 			throw new Error(
 				`Base template not found: ${instance.baseRecurringEventId}`,
 			);
 		}
+
+		// Map attachment relation to standard field
+		const { attachmentsWhereEvent, ...baseTemplateProps } = baseTemplateResult;
+		const baseTemplate = {
+			...baseTemplateProps,
+			attachments: attachmentsWhereEvent || [],
+		};
 
 		// Get exception if exists - now using direct instance ID lookup
 		const exception = await drizzleClient.query.eventExceptionsTable.findFirst({
@@ -194,18 +240,170 @@ export async function getRecurringEventInstanceById(
 	}
 }
 
+// Internal type helper for handling raw query results with attachments relation
+type EventWithAttachmentsRelation = typeof eventsTable.$inferSelect & {
+	attachmentsWhereEvent: (typeof eventAttachmentsTable.$inferSelect)[];
+};
+
+/**
+ * Retrieves recurring event instances for a base template, subject to the optional limit.
+ *
+ * @param baseRecurringEventId - The ID of the base recurring event template.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @param options - Optional parameters: limit (default 1000), offset, includeCancelled, excludeInstanceIds.
+ * @returns - A promise that resolves to an array of fully resolved recurring event instances.
+ */
+export async function getRecurringEventInstanceByBaseId(
+	baseRecurringEventId: string,
+	drizzleClient: ServiceDependencies["drizzleClient"],
+	logger: ServiceDependencies["logger"],
+	options: {
+		limit?: number;
+		offset?: number;
+		includeCancelled?: boolean;
+		excludeInstanceIds?: string[];
+	} = {},
+): Promise<ResolvedRecurringEventInstance[]> {
+	try {
+		// Delegate to the batch helper with options
+		return await getRecurringEventInstancesByBaseIds(
+			[baseRecurringEventId],
+			drizzleClient,
+			logger,
+			options,
+		);
+	} catch (error) {
+		logger.error(
+			error,
+			`Failed to get recurring event instances for base event ${baseRecurringEventId}`,
+		);
+		throw error;
+	}
+}
+
+/**
+ * Retrieves all recurring event instances for multiple base recurring event templates.
+ * This is a batch version of getRecurringEventInstancesByBaseId to avoid N+1 queries.
+ *
+ * @param baseRecurringEventIds - Array of base recurring event template IDs.
+ * @param drizzleClient - The Drizzle ORM client.
+ * @param logger - The logger.
+ * @returns - Promise resolving to array of resolved instances.
+ */
+export async function getRecurringEventInstancesByBaseIds(
+	baseRecurringEventIds: string[],
+	drizzleClient: ServiceDependencies["drizzleClient"],
+	logger: ServiceDependencies["logger"],
+	options: {
+		limit?: number;
+		offset?: number;
+		includeCancelled?: boolean;
+		excludeInstanceIds?: string[];
+	} = {},
+): Promise<ResolvedRecurringEventInstance[]> {
+	const {
+		limit,
+		offset,
+		includeCancelled = false,
+		excludeInstanceIds,
+	} = options;
+
+	if (baseRecurringEventIds.length === 0) {
+		return [];
+	}
+
+	// Enforce default limit if not provided to prevent unbounded queries
+	const DEFAULT_LIMIT = 1000;
+
+	// Defensive validation for limit and offset parameters
+	if (limit !== undefined && limit < 1) {
+		throw new Error(
+			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
+		);
+	}
+
+	if (offset !== undefined && offset < 0) {
+		throw new Error(
+			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
+		);
+	}
+
+	const effectiveLimit = limit ?? DEFAULT_LIMIT;
+
+	try {
+		// Step 1: Get all recurring event instances for these base events
+		const whereConditions = [
+			inArray(
+				recurringEventInstancesTable.baseRecurringEventId,
+				baseRecurringEventIds,
+			),
+		];
+
+		if (!includeCancelled) {
+			whereConditions.push(eq(recurringEventInstancesTable.isCancelled, false));
+		}
+
+		if (excludeInstanceIds && excludeInstanceIds.length > 0) {
+			whereConditions.push(
+				not(inArray(recurringEventInstancesTable.id, excludeInstanceIds)),
+			);
+		}
+
+		const instances =
+			await drizzleClient.query.recurringEventInstancesTable.findMany({
+				where: and(...whereConditions),
+				orderBy: [
+					asc(recurringEventInstancesTable.actualStartTime),
+					asc(recurringEventInstancesTable.id),
+				],
+				limit: effectiveLimit,
+				offset,
+			});
+
+		if (instances.length === 0) {
+			return [];
+		}
+
+		// Step 2: Get base templates and exceptions
+		const [templatesMap, exceptionsMap] = await Promise.all([
+			fetchBaseTemplates(instances, drizzleClient),
+			fetchExceptions(instances, drizzleClient),
+		]);
+
+		// Step 3: Resolve instances
+		return resolveMultipleInstances(
+			instances,
+			templatesMap,
+			exceptionsMap,
+			logger,
+		);
+	} catch (error) {
+		logger.error(error, "Failed to get recurring event instances by base IDs");
+		throw error;
+	}
+}
+
 /**
  * Fetches raw recurring event instances from the database based on the provided input filters.
  *
  * @param input - The input object containing filtering criteria.
  * @param drizzleClient - The Drizzle ORM client for database access.
- * @returns A promise that resolves to an array of raw recurring event event instances.
+ * @returns - A promise that resolves to an array of raw recurring event instances.
  */
 async function fetchRecurringEventInstances(
-	input: GetRecurringEventInstancesInput,
+	input: GetRecurringEventInstancesInput & { excludeInstanceIds?: string[] },
 	drizzleClient: ServiceDependencies["drizzleClient"],
 ): Promise<(typeof recurringEventInstancesTable.$inferSelect)[]> {
-	const { organizationId, startDate, endDate, includeCancelled, limit } = input;
+	const {
+		organizationId,
+		startDate,
+		endDate,
+		includeCancelled,
+		limit,
+		offset,
+		excludeInstanceIds,
+	} = input;
 
 	const whereConditions = [
 		eq(recurringEventInstancesTable.organizationId, organizationId),
@@ -233,6 +431,12 @@ async function fetchRecurringEventInstances(
 		whereConditions.push(eq(recurringEventInstancesTable.isCancelled, false));
 	}
 
+	if (excludeInstanceIds && excludeInstanceIds.length > 0) {
+		whereConditions.push(
+			not(inArray(recurringEventInstancesTable.id, excludeInstanceIds)),
+		);
+	}
+
 	return await drizzleClient.query.recurringEventInstancesTable.findMany({
 		where: and(...whereConditions),
 		orderBy: [
@@ -240,6 +444,7 @@ async function fetchRecurringEventInstances(
 			asc(recurringEventInstancesTable.id),
 		],
 		limit,
+		offset,
 	});
 }
 
@@ -248,18 +453,38 @@ async function fetchRecurringEventInstances(
  *
  * @param instances - An array of recurring event instances.
  * @param drizzleClient - The Drizzle ORM client for database access.
- * @returns A promise that resolves to a map of base event templates, keyed by their IDs.
+ * @returns - A promise that resolves to a map of base event templates, keyed by their IDs.
  */
 async function fetchBaseTemplates(
 	instances: (typeof recurringEventInstancesTable.$inferSelect)[],
 	drizzleClient: ServiceDependencies["drizzleClient"],
-): Promise<Map<string, typeof eventsTable.$inferSelect>> {
+): Promise<
+	Map<
+		string,
+		typeof eventsTable.$inferSelect & {
+			attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+		}
+	>
+> {
 	const baseEventIds = [
 		...new Set(instances.map((instance) => instance.baseRecurringEventId)),
 	];
 
-	const baseTemplates = await drizzleClient.query.eventsTable.findMany({
+	const baseTemplatesResult = await drizzleClient.query.eventsTable.findMany({
 		where: inArray(eventsTable.id, baseEventIds),
+		with: {
+			attachmentsWhereEvent: true,
+		},
+	});
+
+	// Map attachment relation to standard field
+	const baseTemplates = baseTemplatesResult.map((template) => {
+		const { attachmentsWhereEvent, ...props } =
+			template as unknown as EventWithAttachmentsRelation;
+		return {
+			...props,
+			attachments: attachmentsWhereEvent || [],
+		};
 	});
 
 	return createTemplateLookupMap(baseTemplates);
@@ -271,7 +496,7 @@ async function fetchBaseTemplates(
  *
  * @param instances - An array of recurring event instances.
  * @param drizzleClient - The Drizzle ORM client for database access.
- * @returns A promise that resolves to a map of event exceptions, keyed by instance ID.
+ * @returns - A promise that resolves to a map of event exceptions, keyed by instance ID.
  */
 async function fetchExceptions(
 	instances: (typeof recurringEventInstancesTable.$inferSelect)[],
@@ -288,56 +513,4 @@ async function fetchExceptions(
 	});
 
 	return createExceptionLookupMap(exceptions);
-}
-
-/**
- * Retrieves all recurring event instances that belong to a specific base recurring event template.
- *
- * @param baseRecurringEventId - The ID of the base recurring event template.
- * @param drizzleClient - The Drizzle ORM client for database access.
- * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of fully resolved recurring event instances.
- */
-export async function getRecurringEventInstancesByBaseId(
-	baseRecurringEventId: string,
-	drizzleClient: ServiceDependencies["drizzleClient"],
-	logger: ServiceDependencies["logger"],
-): Promise<ResolvedRecurringEventInstance[]> {
-	try {
-		// Step 1: Get all recurring event instances for this base event
-		const instances =
-			await drizzleClient.query.recurringEventInstancesTable.findMany({
-				where: eq(
-					recurringEventInstancesTable.baseRecurringEventId,
-					baseRecurringEventId,
-				),
-				orderBy: asc(recurringEventInstancesTable.actualStartTime),
-			});
-
-		if (instances.length === 0) {
-			return [];
-		}
-
-		// Step 2: Get base templates and exceptions for the found instances
-		const [templatesMap, exceptionsMap] = await Promise.all([
-			fetchBaseTemplates(instances, drizzleClient),
-			fetchExceptions(instances, drizzleClient),
-		]);
-
-		// Step 3: Resolve instances with inheritance + exceptions
-		const resolvedInstances = resolveMultipleInstances(
-			instances,
-			templatesMap,
-			exceptionsMap,
-			logger,
-		);
-
-		return resolvedInstances;
-	} catch (error) {
-		logger.error(
-			error,
-			`Failed to get recurring event instances for base event ${baseRecurringEventId}`,
-		);
-		throw error;
-	}
 }

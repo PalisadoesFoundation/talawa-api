@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Event as EventType } from "~/src/graphql/types/Event/Event";
 import { eventCreatorResolver } from "~/src/graphql/types/Event/creator";
+import type { Event as EventType } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 //mock current user details
@@ -59,21 +59,7 @@ describe("Event Creator Resolver -Test ", () => {
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
 		});
-		it("should throw unauthorized_action for non admin and no organizationMemberShip", async () => {
-			const mockUserData: MockUser = {
-				id: "user-123",
-				role: "member",
-				organizationMembershipsWhereMember: [],
-			};
-
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUserData,
-			);
-			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-			);
-		});
-		it("should throw unauthorized_action for non admin user", async () => {
+		it("should return creator for non admin user", async () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
@@ -82,12 +68,21 @@ describe("Event Creator Resolver -Test ", () => {
 				],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUserData,
-			);
+			const mockCreator: MockUser = {
+				id: "creator-456",
+				role: "member",
+				organizationMembershipsWhereMember: [],
+			};
 
-			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockUserData)
+				.mockResolvedValueOnce(mockCreator);
+
+			const result = await eventCreatorResolver(mockEvent, {}, ctx);
+			expect(result).toEqual(
+				expect.objectContaining({
+					id: "creator-456",
+				}),
 			);
 		});
 	});
@@ -328,19 +323,28 @@ describe("Event Creator Resolver -Test ", () => {
 			expect(ctx.log.error).not.toHaveBeenCalled();
 		});
 
-		it("should handle missing organization membership gracefully", async () => {
+		it("should return creator even with missing organization membership", async () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
 				organizationMembershipsWhereMember: [],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockUserData,
-			);
+			const mockCreator: MockUser = {
+				id: "creator-456",
+				role: "member",
+				organizationMembershipsWhereMember: [],
+			};
 
-			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockUserData)
+				.mockResolvedValueOnce(mockCreator);
+
+			const result = await eventCreatorResolver(mockEvent, {}, ctx);
+			expect(result).toEqual(
+				expect.objectContaining({
+					id: "creator-456",
+				}),
 			);
 		});
 	});

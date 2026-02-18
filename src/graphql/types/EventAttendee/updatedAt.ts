@@ -1,6 +1,6 @@
 import type { GraphQLContext } from "~/src/graphql/context";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	EventAttendee,
 	type EventAttendee as EventAttendeeType,

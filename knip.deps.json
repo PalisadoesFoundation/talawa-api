@@ -3,9 +3,5 @@
 	"project": ["src/**/*.ts", "scripts/**/*.ts", "docs/**/*.{tsx,md,css}"],
 	"ignore": ["src/plugins/**", "**/*.test.ts"],
 	"ignoreExportsUsedInFile": true,
-	"ignoreDependencies": [
-		"graphql-tag",
-		"mercurius-integration-testing",
-		"pino-pretty"
-	]
+	"ignoreDependencies": ["mercurius-integration-testing", "pino-pretty"]
 }

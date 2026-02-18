@@ -75,7 +75,9 @@ No description
 
 ```graphql
 type Post {
+  attachmentURL: String
   attachments: [PostAttachment!]
+  body: String
   caption: String
   comments(
     after: String
@@ -111,9 +113,17 @@ type Post {
 
 ### Fields
 
+#### [<code style={{ fontWeight: 'normal' }}>Post.<b>attachmentURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+URL to the media attachment (image or video) of the post.
+
 #### [<code style={{ fontWeight: 'normal' }}>Post.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[PostAttachment!]</b></code>](/auto-schema/types/objects/post-attachment.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
 
 Array of attachments.
+
+#### [<code style={{ fontWeight: 'normal' }}>Post.<b>body</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Body for the post.
 
 #### [<code style={{ fontWeight: 'normal' }}>Post.<b>caption</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

@@ -5,12 +5,11 @@
  * This ensures that all required dependencies are available before database creation.
  */
 
-import { exec } from "node:child_process";
 import path from "node:path";
-import { promisify } from "node:util";
 import { TalawaGraphQLError } from "./TalawaGraphQLError";
+import { pluginIdSchema } from "./validators";
 
-const execAsync = promisify(exec);
+const MAX_BUFFER = 1_000_000; // 1MB
 
 export interface DependencyInstallationResult {
 	success: boolean;
@@ -22,7 +21,7 @@ export interface DependencyInstallationResult {
  * Install dependencies for a plugin using pnpm
  * @param pluginId - The ID of the plugin
  * @param logger - Optional logger for output
- * @returns Promise<DependencyInstallationResult>
+ * @returns - Promise<DependencyInstallationResult>
  */
 export async function installPluginDependencies(
 	pluginId: string,
@@ -31,6 +30,18 @@ export async function installPluginDependencies(
 		error?: (message: string) => void;
 	},
 ): Promise<DependencyInstallationResult> {
+	// Validate pluginId to prevent command injection
+	const validation = pluginIdSchema.safeParse(pluginId);
+	if (!validation.success) {
+		logger?.error?.(
+			`Plugin ID validation failed: ${JSON.stringify(validation.error.flatten())}`,
+		);
+		return {
+			success: false,
+			error: "Invalid plugin ID",
+		};
+	}
+
 	const pluginPath = path.join(
 		process.cwd(),
 		"src",
@@ -56,26 +67,163 @@ export async function installPluginDependencies(
 
 		logger?.info?.(`Installing dependencies for plugin ${pluginId}...`);
 
-		// Change to plugin directory and run pnpm install
-		const command = `cd "${pluginPath}" && pnpm install --frozen-lockfile`;
+		// Use spawn with args array to avoid shell injection
+		const { spawn } = await import("node:child_process");
+		const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
-		const { stdout, stderr } = await execAsync(command, {
-			cwd: pluginPath,
-			timeout: 300000, // 5 minutes timeout
+		const installResult = await new Promise<{
+			stdout: string;
+			stderr: string;
+		}>((resolve, reject) => {
+			// On Unix, use detached: true to create a new process group
+			// This allows killing all descendants with process.kill(-pid, signal)
+			const isUnix = process.platform !== "win32";
+			const child = spawn(pnpmBin, ["install", "--frozen-lockfile"], {
+				cwd: pluginPath,
+				detached: isUnix,
+			});
+
+			// Unref detached child so it doesn't block the parent from exiting
+			if (isUnix && child.unref) {
+				child.unref();
+			}
+
+			let stdout = "";
+			let stderr = "";
+			let settled = false;
+
+			child.stdout?.on("data", (data) => {
+				if (stdout.length < MAX_BUFFER) {
+					const remaining = MAX_BUFFER - stdout.length;
+					stdout += data.toString().slice(0, remaining);
+				}
+			});
+
+			child.stderr?.on("data", (data) => {
+				if (stderr.length < MAX_BUFFER) {
+					const remaining = MAX_BUFFER - stderr.length;
+					stderr += data.toString().slice(0, remaining);
+				}
+			});
+
+			// Cross-platform process tree kill helper
+			const killProcessTree = (
+				pid: number | undefined,
+				signal: "SIGTERM" | "SIGKILL",
+			): void => {
+				if (pid === undefined || pid === null) return;
+
+				if (process.platform === "win32") {
+					// On Windows, use taskkill with /T flag to kill process tree
+					// /T = Terminates the specified process and any child processes
+					// /F = Forcefully terminate the process(es)
+					const taskkill = spawn(
+						"taskkill",
+						["/PID", String(pid), "/T", "/F"],
+						{
+							stdio: "ignore",
+						},
+					);
+
+					if (taskkill.unref) taskkill.unref();
+
+					// Handle async spawn failures (e.g., ENOENT if taskkill is not available)
+					taskkill.once("error", () => {
+						// Fall back to regular kill if taskkill fails to spawn
+						try {
+							child.kill(signal);
+						} catch {
+							// Ignore - process may already be gone
+						}
+					});
+
+					// Handle non-zero exit codes (taskkill ran but failed)
+					taskkill.once("exit", (code) => {
+						if (code !== 0) {
+							// Fall back to regular kill if taskkill exited with error
+							try {
+								child.kill(signal);
+							} catch {
+								// Ignore - process may already be gone
+							}
+						}
+					});
+				} else {
+					// On Unix-like systems, kill the entire process group
+					// Using negative PID kills all processes in the group
+					try {
+						if (pid !== undefined) {
+							// Kill the process group (negative PID)
+							process.kill(-pid, signal);
+						}
+					} catch {
+						// Fall back to direct child kill if process group kill fails
+						try {
+							child.kill(signal);
+						} catch {
+							// Ignore - process may already be gone
+						}
+					}
+				}
+			};
+
+			// Set timeout
+			const timeout = setTimeout(() => {
+				if (settled) return;
+				settled = true;
+
+				// First attempt: graceful termination
+				killProcessTree(child.pid, "SIGTERM");
+
+				// Force kill after 5 seconds if still running
+				const forceKill = setTimeout(() => {
+					if (child.exitCode === null) {
+						killProcessTree(child.pid, "SIGKILL");
+					}
+				}, 5000);
+				if (forceKill.unref) forceKill.unref();
+
+				reject(new Error("Installation timed out after 5 minutes"));
+			}, 300000); // 5 minutes
+
+			child.once("close", (code) => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(timeout);
+				if (code === 0) {
+					resolve({ stdout, stderr });
+				} else {
+					reject(new Error(`pnpm install failed with exit code ${code}`));
+				}
+			});
+
+			child.once("error", (err) => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(timeout);
+				reject(err);
+			});
 		});
 
-		if (stderr && !stderr.includes("warning")) {
+		const lowerStderr = installResult.stderr.toLowerCase();
+		if (
+			installResult.stderr &&
+			(lowerStderr.includes("warn") || lowerStderr.includes("warning"))
+		) {
 			logger?.error?.(
-				`Dependency installation warnings for ${pluginId}: ${stderr}`,
+				`Dependency installation warnings for ${pluginId}: ${installResult.stderr}`,
 			);
 		}
-
 		logger?.info?.(
 			`Successfully installed dependencies for plugin ${pluginId}`,
 		);
 		return {
 			success: true,
-			output: stdout,
+			output:
+				installResult.stdout.length >= MAX_BUFFER
+					? `${installResult.stdout}
+[output truncated]`
+					: installResult.stdout,
 		};
 	} catch (error) {
 		const errorMessage =

@@ -7,8 +7,9 @@ import {
 } from "~/src/graphql/inputs/MutationCreateFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateFundArgumentsSchema = z.object({
 	input: mutationCreateFundInputSchema,
 });
@@ -152,6 +153,9 @@ builder.mutationField("createFund", (t) =>
 					isTaxDeductible: parsedArgs.input.isTaxDeductible,
 					name: parsedArgs.input.name,
 					organizationId: parsedArgs.input.organizationId,
+					isDefault: parsedArgs.input.isDefault ?? false,
+					isArchived: parsedArgs.input.isArchived ?? false,
+					referenceNumber: parsedArgs.input.referenceNumber,
 				})
 				.returning();
 

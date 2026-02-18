@@ -1,5 +1,6 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
 User.implement({
@@ -44,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return parent.addressLine1;
+				return escapeHTML(parent.addressLine1);
 			},
 			type: "String",
 		}),

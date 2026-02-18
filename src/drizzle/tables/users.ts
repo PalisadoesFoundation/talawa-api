@@ -4,6 +4,7 @@ import {
 	boolean,
 	date,
 	index,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -28,8 +29,8 @@ import { agendaItemsTable } from "./agendaItems";
 import { chatMembershipsTable } from "./chatMemberships";
 import { chatMessagesTable } from "./chatMessages";
 import { chatsTable } from "./chats";
-import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
+import { commentVotesTable } from "./commentVotes";
 import { communitiesTable } from "./communities";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventsTable } from "./events";
@@ -41,8 +42,8 @@ import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { organizationsTable } from "./organizations";
 import { postAttachmentsTable } from "./postAttachments";
-import { postVotesTable } from "./postVotes";
 import { postsTable } from "./posts";
+import { postVotesTable } from "./postVotes";
 import { tagAssignmentsTable } from "./tagAssignments";
 import { tagFoldersTable } from "./tagFolders";
 import { tagsTable } from "./tags";
@@ -68,7 +69,7 @@ export const usersTable = pgTable(
 		 * Mime type of the avatar of the user.
 		 */
 		avatarMimeType: text("avatar_mime_type", {
-			enum: imageMimeTypeEnum.options,
+			enum: imageMimeTypeEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * Primary unique identifier of the user's avatar.
@@ -88,7 +89,7 @@ export const usersTable = pgTable(
 		 * Country code of the country the user is a citizen of.
 		 */
 		countryCode: text("country_code", {
-			enum: iso3166Alpha2CountryCodeEnum.options,
+			enum: iso3166Alpha2CountryCodeEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * Date time at the time the user was created.
@@ -115,7 +116,7 @@ export const usersTable = pgTable(
 		 * Primary education grade of the user.
 		 */
 		educationGrade: text("education_grade", {
-			enum: userEducationGradeEnum.options,
+			enum: userEducationGradeEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * Email address of the user.
@@ -125,8 +126,13 @@ export const usersTable = pgTable(
 		 * Employment status of the user.
 		 */
 		employmentStatus: text("employment_status", {
-			enum: userEmploymentStatusEnum.options,
+			enum: userEmploymentStatusEnum.options as [string, ...string[]],
 		}),
+		/**
+		 * Number of consecutive failed login attempts.
+		 * Reset to 0 on successful login.
+		 */
+		failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
 		/**
 		 * The phone number to use to communicate with the user at their home.
 		 */
@@ -140,10 +146,26 @@ export const usersTable = pgTable(
 		 */
 		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
 		/**
+		 * Timestamp of the last failed login attempt.
+		 */
+		lastFailedLoginAt: timestamp("last_failed_login_at", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}),
+		/**
+		 * Timestamp until which the account is locked due to too many failed login attempts.
+		 */
+		lockedUntil: timestamp("locked_until", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}),
+		/**
 		 * Marital status of the user.
 		 */
 		maritalStatus: text("marital_status", {
-			enum: userMaritalStatusEnum.options,
+			enum: userMaritalStatusEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * The phone number to use to communicate with the user on their mobile phone.
@@ -157,13 +179,13 @@ export const usersTable = pgTable(
 		 * The sex assigned to the user at their birth.
 		 */
 		natalSex: text("natal_sex", {
-			enum: userNatalSexEnum.options,
+			enum: userNatalSexEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * Language code of the user's preferred natural language.
 		 */
 		naturalLanguageCode: text("natural_language_code", {
-			enum: iso639Set1LanguageCodeEnum.options,
+			enum: iso639Set1LanguageCodeEnum.options as [string, ...string[]],
 		}),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
@@ -177,7 +199,7 @@ export const usersTable = pgTable(
 		 * Role assigned to the user.
 		 */
 		role: text("role", {
-			enum: userRoleEnum.options,
+			enum: userRoleEnum.options as [string, ...string[]],
 		}).notNull(),
 		/**
 		 * Name of the state the user resides in within their country.
@@ -558,7 +580,7 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	updater: one(usersTable, {
 		fields: [usersTable.updaterId],
 		references: [usersTable.id],
-		relationName: "users.id:users.updater_id",
+		relationName: "users.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `venues` table.

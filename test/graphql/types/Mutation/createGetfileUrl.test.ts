@@ -135,9 +135,9 @@ suite("Mutation field createGetfileUrl", () => {
 			// Override the minio client's presignedGetObject to simulate success.
 			const originalPresignedGetObject = server.minio.client.presignedGetObject;
 			server.minio.client.presignedGetObject = async (
-				bucket: string,
-				objectName: string,
-				expiry: number,
+				_bucket: string,
+				_objectName: string,
+				_expiry: number,
 			): Promise<string> => {
 				return "https://example.com/get-presigned-url";
 			};

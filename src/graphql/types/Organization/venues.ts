@@ -1,22 +1,23 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import {
 	venuesTable,
 	venuesTableInsertSchema,
 } from "~/src/drizzle/tables/venues";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
+
 const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -24,7 +25,7 @@ const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -198,12 +199,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (venue) =>
-							Buffer.from(
-								JSON.stringify({
-									name: venue.name,
-								}),
-							).toString("base64url"),
+						createCursor: (venue) => ({
+							name: venue.name,
+						}),
 						createNode: ({ attachmentsWhereVenue, ...venue }) =>
 							Object.assign(venue, {
 								attachments: attachmentsWhereVenue,

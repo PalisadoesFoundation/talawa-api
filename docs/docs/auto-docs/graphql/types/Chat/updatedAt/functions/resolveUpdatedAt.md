@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
-Defined in: [src/graphql/types/Chat/updatedAt.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/updatedAt.ts#L8)
+Defined in: [src/graphql/types/Chat/updatedAt.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/updatedAt.ts#L9)
 
 ## Parameters
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/Chat/updatedAt.ts:8](https://github.com/Palisadoe
 
 #### avatarMimeType
 
-`"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"` \| `null`
+`string` \| `null`
 
 #### avatarName
 
