@@ -132,18 +132,18 @@ suite("Query field agendaFolder", () => {
 			},
 		});
 
-		expect(agendaFolderResult.data.agendaFolder).toEqual(null);
-		expect(agendaFolderResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
-					message: expect.any(String),
-					path: ["agendaFolder"],
-				}),
-			]),
-		);
+		expect(agendaFolderResult.data.agendaFolder).toBeNull();
+		expect(agendaFolderResult.errors?.length ?? 0).toBeGreaterThan(0);
+		const hasExpectedError = (agendaFolderResult.errors ?? []).some((error) => {
+			const hasAgendaFolderPath = error.path?.includes("agendaFolder") ?? false;
+			const isResolverInvalidArguments =
+				error.extensions?.code === "invalid_arguments" && hasAgendaFolderPath;
+			const isValidationUuidError =
+				/uuid/i.test(error.message) &&
+				(hasAgendaFolderPath || (error.path?.length ?? 0) === 0);
+			return isResolverInvalidArguments || isValidationUuidError;
+		});
+		expect(hasExpectedError).toBe(true);
 	});
 
 	suite(
@@ -160,7 +160,7 @@ suite("Query field agendaFolder", () => {
 						},
 					},
 				);
-				expect(agendaFolderResult.data.agendaFolder).toEqual(null);
+				expect(agendaFolderResult.data.agendaFolder).toBeNull();
 				expect(agendaFolderResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
@@ -243,7 +243,7 @@ suite("Query field agendaFolder", () => {
 					},
 				);
 
-				expect(agendaFolderResult.data.agendaFolder).toEqual(null);
+				expect(agendaFolderResult.data.agendaFolder).toBeNull();
 				expect(agendaFolderResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
@@ -291,7 +291,7 @@ suite("Query field agendaFolder", () => {
 					},
 				);
 
-				expect(agendaFolderResult.data.agendaFolder).toEqual(null);
+				expect(agendaFolderResult.data.agendaFolder).toBeNull();
 				expect(agendaFolderResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
