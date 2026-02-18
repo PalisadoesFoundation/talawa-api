@@ -2,7 +2,7 @@ import { GraphQLError } from "graphql";
 import envConfig from "~/src/utilities/graphqLimits";
 import { escapeHTML } from "~/src/utilities/sanitizer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import  { GraphQLContext } from "../../context";
+import type { GraphQLContext } from "../../context";
 import { User } from "./User";
 
 /**

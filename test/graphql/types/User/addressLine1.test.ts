@@ -27,7 +27,7 @@ describe("user field addressLine1 resolver", () => {
 	});
 
 	afterEach(() => {
-		vi.clearAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	it("throws unauthenticated error when client is not authenticated", async () => {
@@ -131,13 +131,11 @@ describe("user field addressLine1 resolver", () => {
 		const anotherUser = {
 			...parent,
 			id: faker.string.ulid(),
-			addressLine1: "345 Main St <script>alert('xss')</script>",
+			addressLine1: "345 Main St",
 		};
 
 		const result = await addressLine1Resolver(anotherUser, {}, ctx);
-		expect(result).toBe(
-			"345 Main St &lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;",
-		);
+		expect(result).toBe("345 Main St");
 	});
 
 	it("escapes HTML characters in addressLine1 to prevent XSS", async () => {
@@ -170,21 +168,6 @@ describe("user field addressLine1 resolver", () => {
 		);
 
 		expect(ctx.log.error).not.toHaveBeenCalled();
-	});
-
-	it("wraps unknown database errors as unexpected", async () => {
-		const dbError = new Error("DB crashed");
-
-		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
-
-		await expect(addressLine1Resolver(parent, {}, ctx)).rejects.toThrow(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unexpected",
-				}),
-			}),
-		);
-		expect(ctx.log.error).toHaveBeenCalledWith(dbError);
 	});
 
 	it("logs and wraps unknown database errors", async () => {
