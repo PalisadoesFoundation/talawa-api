@@ -111,8 +111,14 @@ export const eventVolunteerMembershipsTable = pgTable(
 			.$onUpdate(() => new Date()),
 	},
 	(self) => [
-		// Unique constraint: one membership record per volunteer per group (or per event if no group)
-		uniqueIndex().on(self.volunteerId, self.groupId, self.eventId),
+		// Ensures a volunteer has at most one membership per group (groupId IS NOT NULL).
+		uniqueIndex()
+			.on(self.volunteerId, self.groupId, self.eventId)
+			.where(sql`${self.groupId} IS NOT NULL`),
+		// Ensures a volunteer has at most one direct event-level membership when not assigned to any group (groupId IS NULL).
+		uniqueIndex()
+			.on(self.volunteerId, self.eventId)
+			.where(sql`${self.groupId} IS NULL`),
 		index().on(self.createdAt),
 		index().on(self.eventId),
 		index().on(self.volunteerId),
