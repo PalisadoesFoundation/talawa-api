@@ -86,12 +86,12 @@ describe("user field addressLine1 resolver", () => {
 			role: "regular",
 		});
 
-		const userwithNull = {
+		const userWithNull = {
 			...parent,
 			addressLine1: null,
 		};
 
-		const result = await addressLine1Resolver(userwithNull, {}, ctx);
+		const result = await addressLine1Resolver(userWithNull, {}, ctx);
 		expect(result).toBeNull();
 	});
 
@@ -100,12 +100,12 @@ describe("user field addressLine1 resolver", () => {
 			role: "regular",
 		});
 
-		const userwithUndefined = {
+		const userWithUndefined = {
 			...parent,
 			addressLine1: undefined,
 		} as unknown as UserType;
 
-		const result = await addressLine1Resolver(userwithUndefined, {}, ctx);
+		const result = await addressLine1Resolver(userWithUndefined, {}, ctx);
 		expect(result).toBeUndefined();
 	});
 
@@ -114,12 +114,12 @@ describe("user field addressLine1 resolver", () => {
 			role: "regular",
 		});
 
-		const userwithEmptystring = {
+		const userWithEmptyString = {
 			...parent,
 			addressLine1: "",
 		};
 
-		const result = await addressLine1Resolver(userwithEmptystring, {}, ctx);
+		const result = await addressLine1Resolver(userWithEmptyString, {}, ctx);
 		expect(result).toBe("");
 	});
 
