@@ -650,6 +650,14 @@ Optional JSON object to override default cache TTL values per entity type.
 
 src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.
 
+#### CACHE_WARMING_ORG_COUNT?
+
+`number` = `...`
+
+Number of top organizations (by member count) to pre-load into cache at startup.
+Set to 0 to disable cache warming.
+Default: 0 (disabled)
+
 #### GITHUB_CLIENT_ID?
 
 `string` = `...`
