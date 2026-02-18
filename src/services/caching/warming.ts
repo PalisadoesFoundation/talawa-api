@@ -7,6 +7,7 @@ import { createOrganizationLoader } from "~/src/utilities/dataloaders/organizati
 /**
  * Warms the organization cache by loading top N organizations by member count.
  * @param server - The Fastify server instance.
+ * @returns {Promise<void>} Resolves when the organization cache warming has completed.
  */
 export async function warmOrganizations(
 	server: FastifyInstance,
@@ -50,10 +51,8 @@ export async function warmOrganizations(
 		// We don't pass a performance tracker as this is a background warming task
 		const loader = createOrganizationLoader(db, server.cache);
 
-		// Load sequentially to minimize DB spike
-		for (const org of popularOrgs) {
-			await loader.load(org.id);
-		}
+		// Load in batch to optimize DB queries
+		await loader.loadMany(popularOrgs.map((org) => org.id));
 
 		server.log.info("Organization cache warming completed.");
 	} catch (err) {

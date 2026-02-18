@@ -25,6 +25,7 @@ interface MockDb {
 
 interface MockLoader {
 	load: Mock;
+	loadMany: Mock;
 }
 
 describe("warmOrganizations", () => {
@@ -44,6 +45,7 @@ describe("warmOrganizations", () => {
 
 		mockLoader = {
 			load: vi.fn().mockResolvedValue(null),
+			loadMany: vi.fn().mockResolvedValue([null, null]),
 		};
 
 		vi.mocked(createOrganizationLoader).mockReturnValue(mockLoader as never);
@@ -66,7 +68,7 @@ describe("warmOrganizations", () => {
 	});
 
 	afterEach(() => {
-		vi.clearAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	it("should warm top N organizations when count > 0", async () => {
@@ -74,9 +76,8 @@ describe("warmOrganizations", () => {
 
 		expect(mockDb.limit).toHaveBeenCalledWith(5);
 		expect(createOrganizationLoader).toHaveBeenCalledWith(mockDb, server.cache);
-		expect(mockLoader.load).toHaveBeenCalledTimes(2);
-		expect(mockLoader.load).toHaveBeenCalledWith("org-1");
-		expect(mockLoader.load).toHaveBeenCalledWith("org-2");
+		expect(mockLoader.loadMany).toHaveBeenCalledTimes(1);
+		expect(mockLoader.loadMany).toHaveBeenCalledWith(["org-1", "org-2"]);
 		expect(server.log.info).toHaveBeenCalledWith(
 			expect.stringContaining("Warming cache for top 5 organizations"),
 		);

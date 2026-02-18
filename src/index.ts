@@ -10,8 +10,18 @@ const server = await createServer();
 // Makes sure that the server is ready to start listening for requests.
 await server.ready();
 
-// Warm the organization cache.
-await warmOrganizations(server);
+// Warm the organization cache in the background.
+warmOrganizations(server).catch((err) => {
+	server.log.error({ err }, "Background cache warming failed unexpectedly.");
+});
+
+// Set a timeout warning for cache warming
+const WARMING_TIMEOUT_MS = 10000; // 10 seconds
+setTimeout(() => {
+	server.log.warn(
+		"Cache warming is taking longer than expected (> 10 seconds).",
+	);
+}, WARMING_TIMEOUT_MS).unref(); // unref so it doesn't hold the process open
 
 // Makes sure that the server exits gracefully without pending tasks and memory leaks.
 closeWithGrace(async ({ err, signal }) => {
