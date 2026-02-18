@@ -35,7 +35,7 @@ test_fail() {
     echo "  Reason: $message"
 }
 
-# Repo root (tests live in tests/install/macos/)
+# Repo root (tests live in test/install_scripts/macos/)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 # Create a temporary directory for mocks and test state

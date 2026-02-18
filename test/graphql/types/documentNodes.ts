@@ -401,6 +401,13 @@ export const Query_user_emailAddress =
     }
 }`);
 
+export const Query_user_maritalStatus =
+	gql(`query Query_user_maritalStatus($input: QueryUserInput!) {
+    user(input: $input) {
+        maritalStatus
+    }
+}`);
+
 export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
@@ -792,13 +799,57 @@ export const Query_organizations = gql(`
 	query Query_organizations {
 		organizations {
 			id
-      avatarURL
-      name
-      city
-      state
-      countryCode
+			name
+			description
+			addressLine1
+			addressLine2
+			city
+			state
+			postalCode
+			countryCode
+
+			createdAt
 		}
 	}
+`);
+
+export const Query_agendaFolder = gql(`
+  query agendaFolder($input:QueryAgendaFolderInput!) {
+    agendaFolder(input: $input) {
+      id
+      name
+      sequence
+      description
+      createdAt
+      updatedAt
+      creator {
+        id
+      }
+      event {
+        id
+      }
+      organization {
+        id
+      }
+    }
+  }
+`);
+
+export const Query_agendaFolder_Restricted = gql(`
+  query agendaFolder($input:QueryAgendaFolderInput!) {
+    agendaFolder(input: $input) {
+      id
+      name
+      sequence
+      description
+      event {
+        id
+      }
+      organization {
+        id
+      }
+    }
+  }
 `);
 
 export const Query_blockedUsers = gql(`
@@ -1055,6 +1106,12 @@ export const Mutation_updateAgendaItem = gql(`
 export const Mutation_updateUserPassword = gql(`
     mutation Mutation_updateUserPassword($input: MutationUpdateUserPasswordInput!) {
       updateUserPassword(input: $input)
+  }
+`);
+
+export const Mutation_adminUpdateUserPassword = gql(`
+    mutation Mutation_adminUpdateUserPassword($input: MutationAdminUpdateUserPasswordInput!) {
+      adminUpdateUserPassword(input: $input)
   }
 `);
 

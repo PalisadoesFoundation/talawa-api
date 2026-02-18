@@ -83,6 +83,7 @@ builder.mutationField("signUp", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		deprecationReason: "Use REST POST /auth/signup",
 		description: "Mutation field to sign up to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
