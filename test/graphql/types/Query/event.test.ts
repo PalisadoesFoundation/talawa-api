@@ -23,57 +23,36 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Admin auth (fetched once per suite)
-let adminToken: string | null = null;
-let adminUserId: string | null = null;
-async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
-	if (adminToken && adminUserId)
-		return { token: adminToken, userId: adminUserId };
-	if (
-		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-	) {
-		throw new Error("Admin credentials missing in env config");
-	}
-	const res = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	if (
-		res.errors ||
-		!res.data?.signIn?.authenticationToken ||
-		!res.data?.signIn?.user?.id
-	) {
-		throw new Error(
-			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
-		);
-	}
-	adminToken = res.data.signIn.authenticationToken;
-	adminUserId = res.data.signIn.user.id;
-	assertToBeNonNullish(adminToken);
-	assertToBeNonNullish(adminUserId);
-	return { token: adminToken, userId: adminUserId };
-}
-
-beforeAll(async () => {
-	await ensureAdminAuth();
-});
-
 suite("Query field event", () => {
-	// Helper function to get admin auth token and user ID (uses cached values)
+	// Helper function to get admin auth token and user ID
 	async function getAdminTokenAndUserId() {
-		const { token, userId } = await ensureAdminAuth();
-		return { authToken: token, userId };
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const authToken = signInResult.data?.signIn?.authenticationToken;
+		const userId = signInResult.data?.signIn?.user?.id;
+		if (!authToken || !userId) {
+			throw new Error(
+				`Failed to sign in as admin. Errors: ${JSON.stringify(
+					signInResult.errors,
+				)}`,
+			);
+		}
+		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(userId);
+		return { authToken, userId };
 	}
 
-	// Helper function to get admin auth token (uses cached values)
+	// Helper function to get admin auth token
 	async function getAdminToken() {
-		const { token } = await ensureAdminAuth();
-		return token;
+		const { authToken } = await getAdminTokenAndUserId();
+		return authToken;
 	}
 
 	// Helper function to create an organization
@@ -342,18 +321,7 @@ suite("Query field event", () => {
 			});
 
 			test("provided event ID is not a valid ULID.", async () => {
-				const signInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				const authToken = signInResult.data?.signIn?.authenticationToken;
-				assertToBeNonNullish(authToken);
+				const authToken = await getAdminToken();
 
 				const eventResult = await mercuriusClient.query(Query_event, {
 					headers: {
@@ -406,39 +374,54 @@ suite("Query field event", () => {
 		const user = userResult.data?.createUser;
 		assertToBeNonNullish(user);
 		assertToBeNonNullish(user.authenticationToken);
+		assertToBeNonNullish(user.user);
 
-		// Try to access event as regular user
-		const queryResult = await mercuriusClient.query(Query_event, {
-			headers: {
-				authorization: `bearer ${user.authenticationToken}`,
-			},
-			variables: {
-				input: {
-					id: event.id,
+		try {
+			// Try to access event as regular user
+			const queryResult = await mercuriusClient.query(Query_event, {
+				headers: {
+					authorization: `bearer ${user.authenticationToken}`,
 				},
-			},
-		});
+				variables: {
+					input: {
+						id: event.id,
+					},
+				},
+			});
 
-		expect(queryResult.data.event).toBeNull();
-		expect(queryResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions:
-						expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
-							{
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "id"],
-									}),
-								]),
-							},
-						),
-					message: expect.any(String),
-					path: ["event"],
-				}),
-			]),
-		);
+			expect(queryResult.data.event).toBeNull();
+			expect(queryResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+								{
+									code: "unauthorized_action_on_arguments_associated_resources",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "id"],
+										}),
+									]),
+								},
+							),
+						message: expect.any(String),
+						path: ["event"],
+					}),
+				]),
+			);
+		} finally {
+			// Cleanup: delete the created user
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: user.user.id,
+					},
+				},
+			});
+		}
 	});
 
 	// Then refactor the "admin user can access event" test to:
