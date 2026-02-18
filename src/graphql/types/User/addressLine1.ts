@@ -12,7 +12,8 @@ import { User } from "./User";
  * @param parent - The parent User object being resolved
  * @param _args - GraphQL arguments (not used)
  * @param ctx - The GraphQL context
- * @returns The user's address first line or throws an error if unauthorized
+ * @returns The HTML-escaped addressLine1 string, or null if not set.
+ * @throws {TalawaGraphQLError} if the user is unauthenticated or unauthorized.
  */
 export const addressLine1Resolver = async (
   parent: User,
