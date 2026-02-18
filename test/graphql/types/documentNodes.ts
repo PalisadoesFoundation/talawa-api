@@ -807,23 +807,8 @@ export const Query_organizations = gql(`
 			state
 			postalCode
 			countryCode
-			creator {
-				id
-				name
-				emailAddress
-			}
+
 			createdAt
-			updatedAt
-			members(first: 10) {
-				edges {
-					node {
-						id
-						name
-						emailAddress
-						role
-					}
-				}
-			}
 		}
 	}
 `);
