@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { afterEach, expect, suite, test, vi } from "vitest";
-import { eq } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import type {
@@ -241,14 +241,14 @@ suite("Query field event", () => {
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
 				const { authToken, userId } = await getAdminTokenAndUserId();
 				const { event, organization } = await setupTestData(authToken, userId);
-				
+
 				// Register cleanup for organization (cascade deletes event)
 				testCleanupFunctions.push(async () => {
 					await server.drizzleClient
 						.delete(organizationsTable)
 						.where(eq(organizationsTable.id, organization.id));
 				});
-				
+
 				const deletedUser = await createAndDeleteTestUser(authToken);
 
 				// Try to access event with deleted user's token
