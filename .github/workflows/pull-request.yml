@@ -516,9 +516,23 @@ jobs:
 
           echo "Caddy port: $http_port"
 
-          # Wait a moment for Caddy to actually start listening
+          # Poll Caddy until it's ready to accept connections
           echo "Waiting for Caddy to initialize..."
-          sleep 5
+          CADDY_READY_RETRIES=10
+          until curl -fsS -m 2 "http://localhost:${http_port}/" >/dev/null 2>&1 || [ "$CADDY_READY_RETRIES" -le 0 ]; do
+            CADDY_READY_RETRIES=$((CADDY_READY_RETRIES - 1))
+            echo "Caddy not ready yet... ($CADDY_READY_RETRIES retries left)"
+            sleep 1
+          done
+
+          if [ "$CADDY_READY_RETRIES" -le 0 ]; then
+            echo "::error::Caddy failed to become ready after 10s."
+            dc ps
+            dc logs caddy
+            exit 1
+          fi
+
+          echo "Caddy is ready!"
 
           echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
           curl -fsS --retry 10 --retry-delay 2 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
