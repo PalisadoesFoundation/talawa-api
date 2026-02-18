@@ -26,7 +26,7 @@ warn() { echo "⚠ $1"; }
 error() { echo "✗ $1"; }
 success() { echo "✓ $1"; }
 
-# Source the validation functions (scripts live under scripts/install when tests run from tests/install)
+# Source the validation functions (scripts live under scripts/install when tests run from test/install_scripts)
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
 # Clean /tmp/retry_test_$$ on exit (used by retry_command test)

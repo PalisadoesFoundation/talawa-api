@@ -123,7 +123,8 @@ export type SetupKey =
 	| "API_METRICS_AGGREGATION_ENABLED"
 	| "API_METRICS_AGGREGATION_CRON_SCHEDULE"
 	| "API_METRICS_AGGREGATION_WINDOW_MINUTES"
-	| "API_METRICS_SNAPSHOT_RETENTION_COUNT";
+	| "API_METRICS_SNAPSHOT_RETENTION_COUNT"
+	| "CACHE_WARMING_ORG_COUNT";
 
 // Replace the index signature with a constrained mapping
 // Allow string indexing so tests and dynamic access are permitted
@@ -480,6 +481,46 @@ export async function metricsSetup(
 	}
 	return answers;
 }
+
+/**
+ * Sets up caching configuration.
+ * Prompts user to configure cache warming settings.
+ * @param answers - Current setup answers object
+ * @returns Updated answers object with caching configuration
+ */
+export async function cachingSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		console.log("\n--- Caching Configuration ---");
+		console.log("Configure caching behavior for your API.");
+		console.log();
+
+		const enableWarming = await promptList(
+			"enableWarming",
+			"Enable cache warming at startup?",
+			["true", "false"],
+			"false",
+		);
+
+		if (enableWarming === "true") {
+			answers.CACHE_WARMING_ORG_COUNT = await promptInput(
+				"CACHE_WARMING_ORG_COUNT",
+				"Number of top organizations to warm (by member count):",
+				"10",
+				validatePositiveInteger,
+			);
+		} else {
+			answers.CACHE_WARMING_ORG_COUNT = "0";
+		}
+
+		console.log("\nCaching configuration completed!");
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
+}
+
 async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
 	if (backupCreated) {
@@ -1328,6 +1369,15 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupMetrics) {
 		answers = await metricsSetup(answers);
+	}
+
+	const setupCaching = await promptConfirm(
+		"setupCaching",
+		"Do you want to configure caching settings now?",
+		false,
+	);
+	if (setupCaching) {
+		answers = await cachingSetup(answers);
 	}
 	await updateEnvVariable(answers, {
 		envFile: envFileName,

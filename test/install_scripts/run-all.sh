@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ##############################################################################
-# run-all.sh - Run all installation script tests under tests/install
+# run-all.sh - Run all installation script tests under test/install_scripts
 #
 # Discovers and runs every *.test.sh in this tree. Exits non-zero if any
 # test file fails. Intended to be run from repo root (e.g. pnpm test:install).
 #
-# Usage: ./run-all.sh   (from tests/install/) or  tests/install/run-all.sh (from repo root)
+# Usage: ./run-all.sh   (from test/install_scripts/) or  test/install_scripts/run-all.sh (from repo root)
 # Returns: 0 if all tests pass, 1 if any test fails
 ##############################################################################
 
