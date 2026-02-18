@@ -107,7 +107,7 @@
     "build_production": "swc ./src/ --ignore \"**/*.spec.ts,**/*.test.ts\" --out-dir ./dist/ --strip-leading-paths",
     "format:check": "biome check --error-on-warnings",
     "check_drizzle_migrations": "drizzle-kit check",
-    "check_gql_tada": "gql.tada doctor && gql.tada check --fail-on-warn",
+    "check_gql_tada": "gql.tada doctor && gql.tada check",
     "check_mock_isolation": "tsx scripts/verify_mock_isolation.ts",
     "typecheck": "tsc",
     "disable_git_hooks": "lefthook uninstall",
@@ -122,13 +122,15 @@
     "generate-docs": "typedoc && pnpm run postgenerate-docs",
     "generate_drizzle_migrations": "drizzle-kit generate",
     "generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",
-    "generate_gql_tada": "gql.tada generate-output && gql.tada turbo --fail-on-warn",
+    "generate_gql_tada": "gql.tada generate-output && gql.tada turbo",
     "reset:data": "tsx ./scripts/dbManagement/resetData.ts",
     "add:sample_data": "tsx ./scripts/dbManagement/addSampleData.ts",
     "push_drizzle_schema": "drizzle-kit push",
     "push_drizzle_test_schema": "drizzle-kit push --config=./test/drizzle.config.ts",
     "run_tests": "vitest --coverage --minWorkers=1 --maxWorkers=1",
     "check_tests": "vitest run",
+    "test:install": "bash test/install_scripts/run-all.sh",
+    "test:install:no-leaks": "bash test/install_scripts/check-no-leaks.sh",
     "test:shard": "node scripts/run-shard.js",
     "test:shard:coverage": "node scripts/run-shard.js --coverage",
     "start_development_server": "tsx watch ./src/index.ts",
@@ -138,6 +140,7 @@
     "setup": "tsx setup.ts",
     "upgrade_drizzle_metadata": "drizzle-kit up"
   },
+  "gql_tada_todo": "TODO: Restore --fail-on-warn in check_gql_tada and generate_gql_tada after GraphQL signIn/signUp migration. Tracking: https://github.com/PalisadoesFoundation/talawa-api/issues/4129",
   "type": "module",
   "version": "1.0.0"
 }

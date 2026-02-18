@@ -13,20 +13,15 @@
 # Remove set -e to handle test failures explicitly
 set +e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 # Test statistics
 TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Source the os detection functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/os-detection.sh"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+source "$SCRIPTS_INSTALL/common/os-detection.sh"
 
 ##############################################################################
 # Test framework functions
@@ -40,14 +35,14 @@ test_start() {
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo -e "${GREEN}✓ PASS${NC}"
+    echo "✓ PASS"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo -e "${RED}✗ FAIL${NC}"
-    echo -e "  ${RED}Reason: $message${NC}"
+    echo "✗ FAIL"
+    echo "  Reason: $message"
 }
 
 ##############################################################################
@@ -92,6 +87,7 @@ cleanup_mock_files() {
     unset ETC_OS_RELEASE ETC_LSB_RELEASE PROC_VERSION PROC_OSRELEASE
     unset -f uname sw_vers lsb_release cmd.exe 2>/dev/null || true
 }
+trap 'cleanup_mock_files' EXIT
 
 # Test detect_os
 test_start "detect_os - linux"
@@ -176,14 +172,14 @@ echo "========================================================================"
 echo "Test Summary"
 echo "========================================================================"
 echo "Total tests run:    $TESTS_RUN"
-echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
-echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
+echo "Tests passed:       $TESTS_PASSED"
+echo "Tests failed:       $TESTS_FAILED"
 echo ""
 
 if [ $TESTS_FAILED -eq 0 ]; then
-    echo -e "${GREEN}✓ All tests passed!${NC}"
+    echo "✓ All tests passed!"
     exit 0
 else
-    echo -e "${RED}✗ Some tests failed${NC}"
+    echo "✗ Some tests failed"
     exit 1
 fi

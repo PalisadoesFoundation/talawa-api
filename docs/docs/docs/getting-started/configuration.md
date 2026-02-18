@@ -80,11 +80,28 @@ Follow these steps to ensure the minimum configuration is applied:
 
 You'll need to create a configuration file named `.env` in the repository's root directory.
 
-Copy the content of `./envFiles/.env.production` to the `.env` file.
+Choose the correct template based on how your Docker daemon is installed:
+
+1. Standard Docker (root): copy `./envFiles/.env.production`
+2. Docker Engine in rootless mode (Linux): copy `./envFiles/.env.rootless.production`
 
 ```bash
 cp ./envFiles/.env.production ./.env
 ```
+
+For rootless Docker Engine:
+
+```bash
+cp ./envFiles/.env.rootless.production ./.env
+```
+
+:::note Rootless Port Defaults
+Rootless mode defaults to `8080/8443` because publishing privileged ports `80/443` may fail under rootless Docker unless your host is configured to allow it.
+:::
+
+:::note Rootless DOCKER_HOST
+Ensure `DOCKER_HOST=unix:///run/user/$UID/docker.sock` is set in the same shell session where you run `docker compose`.
+:::
 
 #### Add a JWT Secret to .env
 

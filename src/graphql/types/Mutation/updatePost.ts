@@ -10,6 +10,11 @@ import {
 	mutationUpdatePostInputSchema,
 } from "~/src/graphql/inputs/MutationUpdatePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -201,7 +206,7 @@ builder.mutationField("updatePost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [updatedPost] = await tx
 					.update(postsTable)
 					.set({
@@ -343,6 +348,17 @@ builder.mutationField("updatePost", (t) =>
 					attachments: existingPost.attachmentsWherePost,
 				});
 			});
+
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "post", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "post"),
+				],
+				"post",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: Post,
 	}),

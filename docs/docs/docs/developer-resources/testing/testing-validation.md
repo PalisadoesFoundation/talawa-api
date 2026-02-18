@@ -17,10 +17,11 @@ All our workflows use Linux based commands, therefore if you are a developer who
 
 ### The `test/` Directory
 
-The `test/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
+The `test/` directory contains the code for performing API tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently. The `test/install_scripts/` subdirectory contains shell installation script tests, which mirror the layout of `scripts/install/`.
 
 1. Tests for files in the `src/` directory must only be placed in the equivalent subdirectory under the `test/` directory.
-2. Test files must have a `.test.ts` extension.
+2. TypeScript test files must have a `.test.ts` extension.
+3. Changes to `scripts/install/` must include or update tests in `test/install_scripts/` (e.g. `*.test.sh` in the same relative path).
 
 The rest of this page will assist you in being an active contributor to the code base.
 
@@ -46,6 +47,11 @@ pnpm run run_tests
 **Run with test sharding:**
 ```bash
 pnpm run test:shard
+```
+
+**Run install script tests (shell):**
+```bash
+pnpm test:install
 ```
 
 ### Linting and Formatting
@@ -105,7 +111,10 @@ The `unit` flag tracks coverage for:
 The `integration` flag tracks coverage for:
 - `test/drizzle/`: Database integration tests
 - `test/graphql/`: GraphQL API integration tests
-- `test/install/`: Installation and setup tests
+- `test/install/`: Installation and setup tests (TypeScript)
+
+The `install` flag (when coverage is uploaded) tracks coverage for:
+- `scripts/install/`: Shell installation scripts; tests live under `test/install_scripts/`.
 
 These flags allow us to monitor coverage separately on the Codecov dashboard, helping identify gaps in either unit or integration test coverage.
 

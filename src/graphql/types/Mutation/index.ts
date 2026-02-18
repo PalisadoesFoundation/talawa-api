@@ -1,4 +1,5 @@
 import "./Mutation";
+import "./adminUpdateUserPassword";
 import "./acceptMembershipRequest";
 import "./blockUser";
 import "./unblockUser";
@@ -87,7 +88,7 @@ import "./joinPublicOrganization";
 import "./sendMembershipRequest";
 import "./cancelMembershipRequest";
 import "./rejectMembershipRequest";
-
+import "./updateUserPassword";
 import "./updatePost";
 import "./updatePostVote";
 import "./updateTag";

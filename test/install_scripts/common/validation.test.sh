@@ -11,14 +11,9 @@
 # Requirements: bash 4.0+
 ##############################################################################
 
-set -e  # Exit on first failure
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Do not use set -e: many tests intentionally run failing commands (e.g. run_cmd false)
+# and assert on the exit code; set -e would exit the script on those.
+set -u  # Catch undefined variables
 
 # Test statistics
 TESTS_RUN=0
@@ -26,14 +21,17 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Define required functions before sourcing validation.sh
-info() { echo -e "${BLUE}ℹ${NC} $1"; }
-warn() { echo -e "${YELLOW}⚠${NC} $1"; }
-error() { echo -e "${RED}✗${NC} $1"; }
-success() { echo -e "${GREEN}✓${NC} $1"; }
+info() { echo "ℹ $1"; }
+warn() { echo "⚠ $1"; }
+error() { echo "✗ $1"; }
+success() { echo "✓ $1"; }
 
-# Source the validation functions
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/validation.sh"
+# Source the validation functions (scripts live under scripts/install when tests run from test/install_scripts)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SCRIPTS_INSTALL="$REPO_ROOT/scripts/install"
+# Clean /tmp/retry_test_$$ on exit (used by retry_command test)
+trap 'rm -f "/tmp/retry_test_$$"' EXIT
+source "$SCRIPTS_INSTALL/common/validation.sh"
 
 ##############################################################################
 # Test framework functions
@@ -56,14 +54,14 @@ test_start() {
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo -e "${GREEN}✓ PASS${NC}"
+    echo "✓ PASS"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo -e "${RED}✗ FAIL${NC}"
-    echo -e "  ${RED}Reason: $message${NC}"
+    echo "✗ FAIL"
+    echo "  Reason: $message"
 }
 
 ##############################################################################
@@ -77,10 +75,9 @@ guard_stderr=$( (
     warn() { :; }
     error() { :; }
     unset -f success 2>/dev/null || true
-    source "$SCRIPT_DIR/validation.sh"
+    source "$SCRIPTS_INSTALL/common/validation.sh"
 ) 2>&1 )
 guard_exitcode=$?
-set -e
 if [ "$guard_exitcode" -ne 0 ] && echo "$guard_stderr" | grep -q "requires info(), warn(), error(), and success() functions to be defined"; then
     test_pass
 else
@@ -519,7 +516,7 @@ fi
 
 test_start "validate_repository_root succeeds at repo root"
 (
-    cd "$SCRIPT_DIR/../../.." || exit 1
+    cd "$REPO_ROOT" || exit 1
     if validate_repository_root &>/dev/null; then
         exit 0
     else
@@ -650,7 +647,15 @@ test_start "validate_internet_connectivity fails when curl fails"
 
 test_start "validate_internet_connectivity succeeds when curl missing but ping succeeds"
 (
-    unset -f curl 2>/dev/null || true
+    # Hide curl so script uses ping path; hide timeout so script calls ping directly
+    # (otherwise "timeout 5s ping ..." runs the real ping binary, not our mock)
+    command() {
+        if [ "$1" = "-v" ]; then
+            case "$2" in curl|timeout) return 1 ;; esac
+        fi
+        builtin command "$@"
+    }
+    export -f command
     ping() { return 0; }
     export -f ping
 
@@ -735,14 +740,14 @@ echo "========================================================================"
 echo "Test Summary"
 echo "========================================================================"
 echo "Total tests run:    $TESTS_RUN"
-echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
-echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
+echo "Tests passed:       $TESTS_PASSED"
+echo "Tests failed:       $TESTS_FAILED"
 echo ""
 
 if [ "$TESTS_FAILED" -eq 0 ]; then
-    echo -e "${GREEN}✓ All tests passed!${NC}"
+    echo "✓ All tests passed!"
     exit 0
 else
-    echo -e "${RED}✗ Some tests failed${NC}"
+    echo "✗ Some tests failed"
     exit 1
 fi

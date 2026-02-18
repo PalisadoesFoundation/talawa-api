@@ -5,17 +5,22 @@ This directory contains shared validation functions used across different platfo
 ## Files
 
 - **validation.sh** - Security-critical validation functions for preventing command injection
-- **validation.test.sh** - Automated test suite for validation functions
+- **test/install_scripts/common/validation.test.sh** - Automated test suite for validation functions (see [test/install_scripts/README.md](../../../test/install_scripts/README.md))
 
 ## Running Tests
 
-The validation functions include automated tests to ensure security against command injection attacks.
+The validation functions include automated tests to ensure security against command injection attacks. Tests live under `test/install_scripts/` and mirror the layout of `scripts/install/`.
 
-### Run all tests
+### Run all install script tests (from repo root)
 
 ```bash
-cd scripts/install/common
-./validation.test.sh
+pnpm test:install
+```
+
+### Run validation tests only
+
+```bash
+./test/install_scripts/common/validation.test.sh
 ```
 
 ### Expected output
