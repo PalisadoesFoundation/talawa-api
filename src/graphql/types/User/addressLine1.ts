@@ -75,6 +75,7 @@ User.implement({
     addressLine1: t.field({
       description: "Address line 1 of the user's address.",
       complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
+	  nullable: true,
       resolve: addressLine1Resolver,
       type: "String",
     }),
