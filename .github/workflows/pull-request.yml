@@ -525,7 +525,8 @@ jobs:
             sleep 1
           done
 
-          if [ "$CADDY_READY_RETRIES" -le 0 ]; then
+          # Re-probe to determine actual success/failure (fixes off-by-one)
+          if ! curl -fsS -m 2 "http://localhost:${http_port}/" >/dev/null 2>&1; then
             echo "::error::Caddy failed to become ready after 10s."
             dc ps
             dc logs caddy
