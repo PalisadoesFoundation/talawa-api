@@ -1,7 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { initGraphQLTada } from "gql.tada";
-import { expect, suite, test } from "vitest";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { afterEach, expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
@@ -12,83 +10,80 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_createAgendaFolder,
+	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Mutation_deleteAgendaFolder,
+	Mutation_deleteOrganization,
+	Mutation_deleteOrganizationMembership,
+	Mutation_deleteUser,
+	Query_agendaFolder,
+	Query_agendaFolder_Restricted,
 	Query_signIn,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
 
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-const Query_agendaFolder = gql(`
-  query agendaFolder($input:QueryAgendaFolderInput!) {
-    agendaFolder(input: $input) {
-      id
-      name
-      sequence
-      description
-      createdAt
-      updatedAt
-      creator {
-        id
-      }
-      event {
-        id
-      }
-      organization {
-        id
-      }
-    }
-  }
-`);
-
-const Query_agendaFolder_Restricted = gql(`
-  query agendaFolder($input:QueryAgendaFolderInput!) {
-    agendaFolder(input: $input) {
-      id
-      name
-      sequence
-      description
-      event {
-        id
-      }
-      organization {
-        id
-      }
-    }
-  }
-`);
-
-const Mutation_createEvent = gql(`
-  mutation CreateEvent($input:MutationCreateEventInput!) {
-    createEvent(input: $input) {
-      id
-      name
-      organization {
-        id
-      }
-    }
-  }
-`);
-
-const Mutation_createAgendaFolder = gql(`
-  mutation CreateAgendaFolder($input:MutationCreateAgendaFolderInput!) {
-    createAgendaFolder(input: $input) {
-      id
-      name
-      description
-      sequence
-      createdAt
-      updatedAt
-    }
-  }
-`);
+const EVENT_START_AT = "2027-01-01T10:00:00Z";
+const EVENT_END_AT = "2027-01-01T12:00:00Z";
 
 suite("Query field agendaFolder", () => {
+	const createdUserIds: string[] = [];
+	const createdOrganizationIds: string[] = [];
+	const createdEventIds: string[] = [];
+	const createdAgendaFolderIds: string[] = [];
+	const createdMemberships: { organizationId: string; memberId: string }[] = [];
+
+	afterEach(async () => {
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
+		if (!adminToken) return;
+
+		// Cleanup in reverse order of creation dependencies
+		for (const id of createdAgendaFolderIds.reverse()) {
+			await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id } },
+			});
+		}
+		createdAgendaFolderIds.length = 0;
+
+		for (const { organizationId, memberId } of createdMemberships.reverse()) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { organizationId, memberId } },
+				});
+			} catch (error) {
+				console.warn("Best effort cleanup failed for membership: ", error);
+			}
+		}
+		createdMemberships.length = 0;
+
+		for (const id of createdOrganizationIds.reverse()) {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id } },
+			});
+		}
+		createdOrganizationIds.length = 0;
+
+		for (const id of createdUserIds.reverse()) {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id } },
+			});
+		}
+		createdUserIds.length = 0;
+	});
+
 	test("results in a graphql error with 'invalid_arguments' if an invalid id is provided", async () => {
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -196,23 +191,16 @@ suite("Query field agendaFolder", () => {
 					throw new Error("Regular user creation failed");
 
 				// Step 3: Delete Regular User
-				await mercuriusClient.mutate(
-					gql(`mutation deleteUser($input: MutationDeleteUserInput!) {
-            deleteUser(input: $input) {
-              id
-            }
-          }`),
-					{
-						headers: {
-							authorization: `bearer ${adminToken}`,
-						},
-						variables: {
-							input: {
-								id: regularUserId,
-							},
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${adminToken}`,
+					},
+					variables: {
+						input: {
+							id: regularUserId,
 						},
 					},
-				);
+				});
 
 				// Step 4: Attempt to Query Agenda Folder with Deleted User Token
 				const agendaFolderResult = await mercuriusClient.query(
@@ -340,7 +328,10 @@ suite("Query field agendaFolder", () => {
 
 				const regularUserToken =
 					regularUserResult.data?.createUser?.authenticationToken;
-				if (!regularUserToken) throw new Error("Regular user creation failed");
+				const regularUserId = regularUserResult.data?.createUser?.user?.id;
+				if (!regularUserToken || !regularUserId)
+					throw new Error("Regular user creation failed");
+				createdUserIds.push(regularUserId);
 
 				// Step 3: Create Organization
 				const organizationResult = await mercuriusClient.mutate(
@@ -363,20 +354,27 @@ suite("Query field agendaFolder", () => {
 
 				const organizationId = organizationResult.data?.createOrganization?.id;
 				if (!organizationId) throw new Error("Organization ID not found");
+				createdOrganizationIds.push(organizationId);
 
 				const adminUserId = adminSignInResult.data?.signIn?.user?.id;
 				if (!adminUserId) throw new Error("Admin User ID not found");
 
-				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							organizationId,
-							memberId: adminUserId,
-							role: "administrator",
+				const membershipResult = await mercuriusClient.mutate(
+					Mutation_createOrganizationMembership,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								organizationId,
+								memberId: adminUserId,
+								role: "administrator",
+							},
 						},
 					},
-				});
+				);
+				if (membershipResult.data?.createOrganizationMembership?.id) {
+					createdMemberships.push({ organizationId, memberId: adminUserId });
+				}
 
 				// Step 4: Create Event
 				const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
@@ -388,14 +386,15 @@ suite("Query field agendaFolder", () => {
 							organizationId,
 							name: "Test Event",
 							isPublic: true,
-							startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-							endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+							startAt: EVENT_START_AT,
+							endAt: EVENT_END_AT,
 						},
 					},
 				});
 
 				const eventId = eventResult.data?.createEvent?.id;
 				if (!eventId) throw new Error("Event ID not found");
+				createdEventIds.push(eventId);
 
 				// Step 5: Create Agenda Folder
 				const agendaFolderCreationResult = await mercuriusClient.mutate(
@@ -419,6 +418,7 @@ suite("Query field agendaFolder", () => {
 				const agendaFolderId =
 					agendaFolderCreationResult.data?.createAgendaFolder?.id;
 				if (!agendaFolderId) throw new Error("Agenda folder creation failed");
+				createdAgendaFolderIds.push(agendaFolderId);
 
 				// Step 6: Attempt to query agenda folder with regular user (not a member)
 				const agendaFolderQueryResult = await mercuriusClient.query(
@@ -494,20 +494,27 @@ suite("Query field agendaFolder", () => {
 
 		const organizationId = organizationResult.data?.createOrganization?.id;
 		if (!organizationId) throw new Error("Organization data not found");
+		createdOrganizationIds.push(organizationId);
 
 		const adminUserId = adminSignInResult.data?.signIn?.user?.id;
 		if (!adminUserId) throw new Error("Admin User ID not found");
 
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					organizationId,
-					memberId: adminUserId,
-					role: "administrator",
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId,
+						memberId: adminUserId,
+						role: "administrator",
+					},
 				},
 			},
-		});
+		);
+		if (membershipResult.data?.createOrganizationMembership?.id) {
+			createdMemberships.push({ organizationId, memberId: adminUserId });
+		}
 
 		// Step 3: Create Event
 		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
@@ -519,14 +526,15 @@ suite("Query field agendaFolder", () => {
 					organizationId,
 					name: "Test Event",
 					isPublic: true,
-					startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-					endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+					startAt: EVENT_START_AT,
+					endAt: EVENT_END_AT,
 				},
 			},
 		});
 
 		const eventId = eventResult.data?.createEvent?.id;
 		if (!eventId) throw new Error("Event data not found");
+		createdEventIds.push(eventId);
 
 		// Step 4: Create Agenda Folder
 		const agendaFolderResult = await mercuriusClient.mutate(
@@ -555,6 +563,7 @@ suite("Query field agendaFolder", () => {
 
 		const agendaFolder = agendaFolderResult.data?.createAgendaFolder;
 		if (!agendaFolder) throw new Error("Agenda folder data not found");
+		createdAgendaFolderIds.push(agendaFolder.id);
 
 		// Step 5: Query Agenda Folder
 		const queriedAgendaFolderResult = await mercuriusClient.query(
@@ -617,6 +626,7 @@ suite("Query field agendaFolder", () => {
 			regularUserResult.data?.createUser?.authenticationToken;
 		if (!regularUserToken || !regularUserId)
 			throw new Error("Regular user creation failed");
+		createdUserIds.push(regularUserId);
 
 		// Step 3: Create Organization
 		const organizationResult = await mercuriusClient.mutate(
@@ -636,31 +646,44 @@ suite("Query field agendaFolder", () => {
 		);
 		const organizationId = organizationResult.data?.createOrganization?.id;
 		if (!organizationId) throw new Error("Organization creation failed");
+		createdOrganizationIds.push(organizationId);
 
 		const adminUserId = adminSignInResult.data?.signIn?.user?.id;
 		if (!adminUserId) throw new Error("Admin User ID not found");
 
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					organizationId,
-					memberId: adminUserId,
-					role: "administrator",
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId,
+						memberId: adminUserId,
+						role: "administrator",
+					},
 				},
 			},
-		});
+		);
+		if (membershipResult.data?.createOrganizationMembership?.id) {
+			createdMemberships.push({ organizationId, memberId: adminUserId });
+		}
 
 		// Step 4: Add regular user to organization
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					organizationId,
-					memberId: regularUserId,
+		const userMembershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId,
+						memberId: regularUserId,
+					},
 				},
 			},
-		});
+		);
+		if (userMembershipResult.data?.createOrganizationMembership?.id) {
+			createdMemberships.push({ organizationId, memberId: regularUserId });
+		}
 
 		// Step 5: Create Event
 		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
@@ -672,13 +695,14 @@ suite("Query field agendaFolder", () => {
 					organizationId,
 					name: "Test Event",
 					isPublic: true,
-					startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-					endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+					startAt: EVENT_START_AT,
+					endAt: EVENT_END_AT,
 				},
 			},
 		});
 		const eventId = eventResult.data?.createEvent?.id;
 		if (!eventId) throw new Error("Event creation failed");
+		createdEventIds.push(eventId);
 
 		// Step 6: Create Agenda Folder
 		const agendaFolderCreationResult = await mercuriusClient.mutate(
@@ -699,6 +723,7 @@ suite("Query field agendaFolder", () => {
 		const agendaFolderId =
 			agendaFolderCreationResult.data?.createAgendaFolder?.id;
 		if (!agendaFolderId) throw new Error("Agenda folder creation failed");
+		createdAgendaFolderIds.push(agendaFolderId);
 
 		// Step 7: Query Agenda Folder as Regular User (who is org member)
 		const agendaFolderQueryResult = await mercuriusClient.query(

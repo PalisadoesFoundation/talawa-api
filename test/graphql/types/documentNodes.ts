@@ -799,13 +799,72 @@ export const Query_organizations = gql(`
 	query Query_organizations {
 		organizations {
 			id
-      avatarURL
-      name
-      city
-      state
-      countryCode
+			name
+			description
+			addressLine1
+			addressLine2
+			city
+			state
+			postalCode
+			countryCode
+			creator {
+				id
+				name
+				emailAddress
+			}
+			createdAt
+			updatedAt
+			members(first: 10) {
+				edges {
+					node {
+						id
+						name
+						emailAddress
+						role
+					}
+				}
+			}
 		}
 	}
+`);
+
+export const Query_agendaFolder = gql(`
+  query agendaFolder($input:QueryAgendaFolderInput!) {
+    agendaFolder(input: $input) {
+      id
+      name
+      sequence
+      description
+      createdAt
+      updatedAt
+      creator {
+        id
+      }
+      event {
+        id
+      }
+      organization {
+        id
+      }
+    }
+  }
+`);
+
+export const Query_agendaFolder_Restricted = gql(`
+  query agendaFolder($input:QueryAgendaFolderInput!) {
+    agendaFolder(input: $input) {
+      id
+      name
+      sequence
+      description
+      event {
+        id
+      }
+      organization {
+        id
+      }
+    }
+  }
 `);
 
 export const Query_blockedUsers = gql(`
