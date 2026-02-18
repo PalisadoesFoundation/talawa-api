@@ -1764,4 +1764,377 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			]),
 		);
 	});
+	test("Race: THIS_INSTANCE_ONLY is idempotent under concurrent requests", async () => {
+		const {
+			organization,
+			testUser1: testUser,
+			adminAuth,
+			creatorId,
+		} = await setupRecurrenceEventwithInstances();
+		// Admin membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: creatorId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Regular membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		// Setup recurring event + instance
+		const startAt = new Date("2024-12-01T10:00:00Z");
+		const endAt = new Date("2024-12-01T12:00:00Z");
+
+		const [template] = await server.drizzleClient
+			.insert(eventsTable)
+			.values({
+				name: "Race Test Event",
+				description: "Testing concurrency",
+				startAt,
+				endAt,
+				organizationId: organization.orgId,
+				creatorId,
+				isPublic: true,
+				isRegisterable: true,
+				isRecurringEventTemplate: true,
+			})
+			.returning();
+		assertToBeNonNullish(template);
+		const [recurrenceRule] = await server.drizzleClient
+			.insert(recurrenceRulesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				frequency: "DAILY",
+				interval: 1,
+				count: 1,
+				organizationId: organization.orgId,
+				creatorId,
+				recurrenceRuleString: "RRULE:FREQ=DAILY;INTERVAL=1;COUNT=1",
+				recurrenceStartDate: startAt,
+				latestInstanceDate: startAt,
+			})
+			.returning();
+		assertToBeNonNullish(recurrenceRule);
+		const [instance] = await server.drizzleClient
+			.insert(recurringEventInstancesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				recurrenceRuleId: recurrenceRule.id,
+				originalSeriesId: template.id,
+				originalInstanceStartTime: startAt,
+				actualStartTime: startAt,
+				actualEndTime: endAt,
+				organizationId: organization.orgId,
+				sequenceNumber: 1,
+				totalCount: 1,
+			})
+			.returning();
+		assertToBeNonNullish(instance);
+		const instanceId = instance.id;
+
+		const [r1, r2] = await Promise.all([
+			mercuriusClient.mutate(Mutation_createEventVolunteer, {
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						userId: testUser.userId,
+						eventId: template.id,
+						scope: "THIS_INSTANCE_ONLY",
+						recurringEventInstanceId: instanceId,
+					},
+				},
+			}),
+			mercuriusClient.mutate(Mutation_createEventVolunteer, {
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						userId: testUser.userId,
+						eventId: template.id,
+						scope: "THIS_INSTANCE_ONLY",
+						recurringEventInstanceId: instanceId,
+					},
+				},
+			}),
+		]);
+		const volunteerRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteersTable)
+			.where(
+				and(
+					eq(eventVolunteersTable.userId, testUser.userId),
+					eq(eventVolunteersTable.eventId, template.id),
+					eq(eventVolunteersTable.recurringEventInstanceId, instanceId),
+					eq(eventVolunteersTable.isTemplate, false),
+				),
+			);
+
+		expect(volunteerRows).toHaveLength(1);
+		assertToBeNonNullish(volunteerRows[0]);
+		// Verify only one membership row exists
+		const membershipRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteerMembershipsTable)
+			.where(
+				eq(eventVolunteerMembershipsTable.volunteerId, volunteerRows[0].id),
+			);
+
+		expect(membershipRows).toHaveLength(1);
+
+		expect(r1.errors).toBeUndefined();
+		expect(r2.errors).toBeUndefined();
+		assertToBeNonNullish(r1.data?.createEventVolunteer);
+		assertToBeNonNullish(r2.data?.createEventVolunteer);
+		expect(r1.data.createEventVolunteer.id).toBe(
+			r2.data.createEventVolunteer.id,
+		);
+	});
+	test("Race: ENTIRE_SERIES is idempotent under concurrent requests", async () => {
+		const {
+			organization,
+			testUser1: testUser,
+			adminAuth,
+			creatorId,
+		} = await setupRecurrenceEventwithInstances();
+		// Admin membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: creatorId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Regular membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		// Setup recurring event + instances
+		const startAt = new Date("2024-12-01T10:00:00Z");
+		const endAt = new Date("2024-12-01T12:00:00Z");
+
+		const [template] = await server.drizzleClient
+			.insert(eventsTable)
+			.values({
+				name: "Race Test Event",
+				description: "Testing concurrency",
+				startAt,
+				endAt,
+				organizationId: organization.orgId,
+				creatorId,
+				isPublic: true,
+				isRegisterable: true,
+				isRecurringEventTemplate: true,
+			})
+			.returning();
+		assertToBeNonNullish(template);
+		const [recurrenceRule] = await server.drizzleClient
+			.insert(recurrenceRulesTable)
+			.values({
+				baseRecurringEventId: template.id,
+				frequency: "DAILY",
+				interval: 1,
+				count: 2,
+				organizationId: organization.orgId,
+				creatorId,
+				recurrenceRuleString: "RRULE:FREQ=DAILY;INTERVAL=1;COUNT=2",
+				recurrenceStartDate: startAt,
+				latestInstanceDate: startAt,
+			})
+			.returning();
+		assertToBeNonNullish(recurrenceRule);
+
+		const instances = await server.drizzleClient
+			.insert(recurringEventInstancesTable)
+			.values([
+				{
+					baseRecurringEventId: template.id,
+					recurrenceRuleId: recurrenceRule.id,
+					originalSeriesId: template.id,
+					originalInstanceStartTime: startAt,
+					actualStartTime: startAt,
+					actualEndTime: endAt,
+					organizationId: organization.orgId,
+					sequenceNumber: 1,
+					totalCount: 2,
+				},
+				{
+					baseRecurringEventId: template.id,
+					recurrenceRuleId: recurrenceRule.id,
+					originalSeriesId: template.id,
+					originalInstanceStartTime: new Date("2025-01-01T10:00:00Z"),
+					actualStartTime: new Date("2025-01-01T10:00:00Z"),
+					actualEndTime: new Date("2025-01-01T12:00:00Z"),
+					organizationId: organization.orgId,
+					sequenceNumber: 2,
+					totalCount: 2,
+				},
+			])
+			.returning();
+		expect(instances).toHaveLength(2);
+
+		const [r1, r2] = await Promise.all([
+			mercuriusClient.mutate(Mutation_createEventVolunteer, {
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						userId: testUser.userId,
+						eventId: template.id,
+						scope: "ENTIRE_SERIES",
+					},
+				},
+			}),
+			mercuriusClient.mutate(Mutation_createEventVolunteer, {
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						userId: testUser.userId,
+						eventId: template.id,
+						scope: "ENTIRE_SERIES",
+					},
+				},
+			}),
+		]);
+
+		// Verify only one template volunteer row exists
+		const volunteerRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteersTable)
+			.where(
+				and(
+					eq(eventVolunteersTable.userId, testUser.userId),
+					eq(eventVolunteersTable.eventId, template.id),
+					eq(eventVolunteersTable.isTemplate, true),
+				),
+			);
+
+		expect(volunteerRows).toHaveLength(1);
+		assertToBeNonNullish(volunteerRows[0]);
+		const volunteerId = volunteerRows[0].id;
+
+		// Verify only one membership row exists
+		const membershipRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.volunteerId, volunteerId));
+
+		expect(membershipRows).toHaveLength(1);
+
+		expect(r1.errors).toBeUndefined();
+		expect(r2.errors).toBeUndefined();
+		assertToBeNonNullish(r1.data?.createEventVolunteer);
+		assertToBeNonNullish(r2.data?.createEventVolunteer);
+		expect(r1.data.createEventVolunteer.id).toBe(
+			r2.data.createEventVolunteer.id,
+		);
+	});
+	test("Integration: Existing membership without volunteer does not break idempotent creation", async () => {
+		const {
+			organization,
+			testUser1: testUser,
+			adminAuth,
+			creatorId,
+		} = await setupRecurrenceEventwithInstances();
+		// Admin membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: creatorId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Regular membership
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+		/**
+		 * Attempt to create an orphan membership row.
+		 * This MUST fail due to foreign key constraints.
+		 * If it does not fail, DB integrity is broken.
+		 */
+		const fakeVolunteerId = faker.string.uuid();
+
+		await expect(
+			server.drizzleClient.insert(eventVolunteerMembershipsTable).values({
+				volunteerId: fakeVolunteerId,
+				groupId: null,
+				eventId: event.eventId,
+				status: "invited",
+				createdBy: creatorId,
+			}),
+		).rejects.toThrow();
+
+		// Execute mutation (should work normally)
+		const result = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					userId: testUser.userId,
+					eventId: event.eventId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEventVolunteer);
+
+		const volunteerId = result.data.createEventVolunteer.id;
+		assertToBeNonNullish(volunteerId);
+		// Ensure volunteer row exists
+		const volunteerRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteersTable)
+			.where(eq(eventVolunteersTable.id, volunteerId));
+
+		expect(volunteerRows).toHaveLength(1);
+		// Ensure exactly one valid membership exists for this volunteer
+		const membershipRows = await server.drizzleClient
+			.select()
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.eventId, event.eventId));
+
+		const validMemberships = membershipRows.filter(
+			(m) => m.volunteerId === volunteerId,
+		);
+
+		expect(validMemberships).toHaveLength(1);
+	});
 });
