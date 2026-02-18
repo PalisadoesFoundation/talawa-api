@@ -21,24 +21,24 @@ pnpm test:install
 Or run the runner script directly:
 
 ```bash
-./tests/install/run-all.sh
+./test/install_scripts/run-all.sh
 ```
 
 **Run a single test file (from repo root):**
 
 ```bash
-./tests/install/common/validation.test.sh
-./tests/install/macos/install-macos.test.sh
+./test/install_scripts/common/validation.test.sh
+./test/install_scripts/macos/install-macos.test.sh
 ```
 
 **Verify no temp files leaked (run install tests in isolated TMPDIR, then check it is empty):**
 
 ```bash
 pnpm test:install:no-leaks
-# or: bash tests/install/check-no-leaks.sh
+# or: bash test/install_scripts/check-no-leaks.sh
 ```
 
-**Pre-commit:** When you stage any `tests/install/**/*.test.sh` file, lefthook runs `tests/install/check-traps.sh` to ensure every `*.test.sh` has an EXIT trap.
+**Pre-commit:** When you stage any `test/install_scripts/**/*.test.sh` file, lefthook runs `test/install_scripts/check-traps.sh` to ensure every `*.test.sh` has an EXIT trap.
 
 # Execution model
 
@@ -60,7 +60,7 @@ env -i \
     bash --noprofile --norc -c "cd '$TEST_DIR' && './scripts/install/...' ..."
 ```
 
-This ensures the script under test runs with no inherited env from the test process; add or remove variables as needed for the test. See `tests/install/macos/install-macos.test.sh` (e.g. the helper that uses `env -i`) for a full example.
+This ensures the script under test runs with no inherited env from the test process; add or remove variables as needed for the test. See `test/install_scripts/macos/install-macos.test.sh` (e.g. the helper that uses `env -i`) for a full example.
 
 # Coverage
 
@@ -78,11 +78,11 @@ You need Ruby 3.0+ and Bundler. If you see `Could not find 'bundler'` or a Ruby 
 
 1. **Install Ruby 3.2** (pick one):
    - **Homebrew:** `brew install ruby` then ensure the Homebrew Ruby is on your PATH (e.g. add `export PATH="/opt/homebrew/opt/ruby/bin:$PATH"` to your shell profile, or use the full path to `bundle`).
-   - **rbenv:** `brew install rbenv ruby-build`, then `rbenv install 3.2.0`, `cd tests/install`, `rbenv local 3.2.0`.
+   - **rbenv:** `brew install rbenv ruby-build`, then `rbenv install 3.2.0`, `cd test/install_scripts`, `rbenv local 3.2.0`.
 
 2. **Prepare simplecov (same as CI):**
    ```bash
-   cd tests/install
+   cd test/install_scripts
    mkdir -p vendor
    git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git vendor/simplecov
    # macOS: sed -i '' '...'; Linux: sed -i '...'
@@ -97,6 +97,6 @@ You need Ruby 3.0+ and Bundler. If you see `Could not find 'bundler'` or a Ruby 
    bundle exec bashcov --root ../.. -- ./run-all.sh
    ```
 
-Coverage is written to `tests/install/coverage/` (e.g. `coverage.xml` for Codecov).
+Coverage is written to `test/install_scripts/coverage/` (e.g. `coverage.xml` for Codecov).
 
 See also: [scripts/install/common/README.md](../../scripts/install/common/README.md) for script behavior and validation details.
