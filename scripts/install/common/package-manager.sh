@@ -19,10 +19,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/os-detection.sh"
-
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/logging.sh"
-
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/validation.sh"
 
@@ -34,7 +32,7 @@ _require_package_name() {
     local pkg="${1:-}"
     if [ -z "${pkg}" ]; then
         error "Package name is required"
-        return 1
+        return 2
     fi
     return 0
 }
@@ -56,9 +54,10 @@ _use_sudo() {
 }
 
 _run_privileged() {
-    local sudo_status
-    _use_sudo
-    sudo_status=$?
+    local sudo_status=0
+
+    # Safe under set -e: capture non-zero without aborting
+    _use_sudo || sudo_status=$?
 
     case "${sudo_status}" in
         0)
@@ -123,7 +122,7 @@ update_package_index() {
 
     if [ "${pm}" = "unknown" ]; then
         error "Unsupported package manager"
-        return 1
+        return 2
     fi
 
     info "Updating package index using ${pm}..."
@@ -151,7 +150,7 @@ update_package_index() {
             ;;
         *)
             error "Unsupported package manager: ${pm}"
-            return 1
+            return 2
             ;;
     esac
 
@@ -164,9 +163,13 @@ update_package_index() {
     return 0
 }
 
+# Return codes:
+#   0 -> installed
+#   1 -> not installed
+#   2 -> check failure / unknown PM
 is_package_installed() {
     local pkg="${1:-}"
-    _require_package_name "${pkg}" || return 1
+    _require_package_name "${pkg}" || return 2
 
     local pm
     pm="$(_pm_cmd)"
@@ -174,15 +177,19 @@ is_package_installed() {
     case "${pm}" in
         apt)
             dpkg-query -W -f='${db:Status-Status}' "${pkg}" 2>/dev/null | grep -q '^installed$'
+            return $?
             ;;
         dnf|yum)
             rpm -q "${pkg}" >/dev/null 2>&1
+            return $?
             ;;
         pacman)
             pacman -Q "${pkg}" >/dev/null 2>&1
+            return $?
             ;;
         brew)
             brew list --versions "${pkg}" >/dev/null 2>&1
+            return $?
             ;;
         *)
             error "Unknown package manager: ${pm}"
@@ -193,20 +200,28 @@ is_package_installed() {
 
 install_package() {
     local pkg="${1:-}"
-    _require_package_name "${pkg}" || return 1
+    _require_package_name "${pkg}" || return 2
 
     local pm status=0
     pm="$(_pm_cmd)"
 
     if [ "${pm}" = "unknown" ]; then
         error "Unsupported package manager"
-        return 1
+        return 2
     fi
 
-    if is_package_installed "${pkg}"; then
+    # Distinguish installed / not installed / check failure
+    is_package_installed "${pkg}"
+    status=$?
+
+    if [ "${status}" -eq 0 ]; then
         success "${pkg} is already installed"
         return 0
+    elif [ "${status}" -gt 1 ]; then
+        error "Failed to verify installation status for ${pkg}"
+        return "${status}"
     fi
+    # status == 1 -> not installed, proceed
 
     info "Installing ${pkg} using ${pm}..."
 
@@ -233,7 +248,7 @@ install_package() {
             ;;
         *)
             error "Unsupported package manager: ${pm}"
-            return 1
+            return 2
             ;;
     esac
 
