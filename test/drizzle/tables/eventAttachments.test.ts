@@ -288,6 +288,16 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			const result = eventAttachmentsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
+
+		it("should reject invalid mimeType in insert schema", () => {
+			const result = eventAttachmentsTableInsertSchema.safeParse({
+				name: faker.system.fileName(),
+				mimeType: "not/a/real-type",
+				eventId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 
 	describe("Database Operations", () => {
@@ -706,6 +716,24 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			if (result) {
 				expect(result.mimeType).toBe(validMimeType);
 			}
+		});
+
+		it("should reject invalid enum values at the database layer", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const eventId = await createTestEvent();
+			const name = faker.system.fileName();
+			const invalidMimeType = "not/a/real-type";
+			const createdAt = faker.date.recent();
+
+			await expect(
+				server.drizzleClient.insert(eventAttachmentsTable).values({
+					name,
+					creatorId: userId,
+					mimeType: invalidMimeType as "image/png",
+					eventId,
+					createdAt: createdAt,
+				}),
+			).rejects.toThrow();
 		});
 	});
 });

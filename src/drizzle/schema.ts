@@ -77,6 +77,7 @@ export {
 	emailVerificationTokensTableRelations,
 } from "./tables/emailVerificationTokens";
 export {
+	eventAttachmentMimeTypePgEnum,
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
 } from "./tables/eventAttachments";
