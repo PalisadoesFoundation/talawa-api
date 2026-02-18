@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">assertSecretsPresent | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="assertSecretsPresent | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"assertSecretsPresent","item":"https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.4c712a7e.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.142c6144.js" defer="defer"></script>
 <script src="/assets/js/main.ff6007c7.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -377,24 +377,23 @@ A warning is logged via <code>console.warn</code> in <code>src/services/caching/
 </ul>
 <p><strong>See</strong></p>
 <p>src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="cache_warming_org_count">CACHE_WARMING_ORG_COUNT?<a href="#cache_warming_org_count" class="hash-link" aria-label="Direct link to CACHE_WARMING_ORG_COUNT?" title="Direct link to CACHE_WARMING_ORG_COUNT?" translate="no">​</a></h4>
+<p><code>number</code> = <code>...</code></p>
+<p>Number of top organizations (by member count) to pre-load into cache at startup.
+Set to 0 to disable cache warming.
+Default: 0 (disabled)</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="github_client_id">GITHUB_CLIENT_ID?<a href="#github_client_id" class="hash-link" aria-label="Direct link to GITHUB_CLIENT_ID?" title="Direct link to GITHUB_CLIENT_ID?" translate="no">​</a></h4>
 <p><code>string</code> = <code>...</code></p>
 <p>GitHub OAuth Client ID for authentication.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="github_client_secret">GITHUB_CLIENT_SECRET?<a href="#github_client_secret" class="hash-link" aria-label="Direct link to GITHUB_CLIENT_SECRET?" title="Direct link to GITHUB_CLIENT_SECRET?" translate="no">​</a></h4>
 <p><code>string</code> = <code>...</code></p>
 <p>GitHub OAuth Client Secret for authentication.</p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="github_redirect_uri">GITHUB_REDIRECT_URI?<a href="#github_redirect_uri" class="hash-link" aria-label="Direct link to GITHUB_REDIRECT_URI?" title="Direct link to GITHUB_REDIRECT_URI?" translate="no">​</a></h4>
-<p><code>string</code> = <code>...</code></p>
-<p>GitHub OAuth Redirect URI for authentication callback.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="google_client_id">GOOGLE_CLIENT_ID?<a href="#google_client_id" class="hash-link" aria-label="Direct link to GOOGLE_CLIENT_ID?" title="Direct link to GOOGLE_CLIENT_ID?" translate="no">​</a></h4>
 <p><code>string</code> = <code>...</code></p>
 <p>Google OAuth Client ID for authentication.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="google_client_secret">GOOGLE_CLIENT_SECRET?<a href="#google_client_secret" class="hash-link" aria-label="Direct link to GOOGLE_CLIENT_SECRET?" title="Direct link to GOOGLE_CLIENT_SECRET?" translate="no">​</a></h4>
 <p><code>string</code> = <code>...</code></p>
 <p>Google OAuth Client Secret for authentication.</p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="google_redirect_uri">GOOGLE_REDIRECT_URI?<a href="#google_redirect_uri" class="hash-link" aria-label="Direct link to GOOGLE_REDIRECT_URI?" title="Direct link to GOOGLE_REDIRECT_URI?" translate="no">​</a></h4>
-<p><code>string</code> = <code>...</code></p>
-<p>Google OAuth Redirect URI for authentication callback.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="minio_root_user">MINIO_ROOT_USER?<a href="#minio_root_user" class="hash-link" aria-label="Direct link to MINIO_ROOT_USER?" title="Direct link to MINIO_ROOT_USER?" translate="no">​</a></h4>
 <p><code>string</code> = <code>...</code></p>
 <p>More information can be found at: <a href="https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client" target="_blank" rel="noopener noreferrer" class="">https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client</a></p>

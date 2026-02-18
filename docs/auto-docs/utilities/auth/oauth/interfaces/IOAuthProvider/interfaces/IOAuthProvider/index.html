@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">IOAuthProvider | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/utilities/auth/oauth/interfaces/IOAuthProvider/interfaces/IOAuthProvider"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="IOAuthProvider | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/utilities/auth/oauth/interfaces/IOAuthProvider/interfaces/IOAuthProvider"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/utilities/auth/oauth/interfaces/IOAuthProvider/interfaces/IOAuthProvider" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/utilities/auth/oauth/interfaces/IOAuthProvider/interfaces/IOAuthProvider" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"IOAuthProvider","item":"https://docs-api.talawa.io/docs/auto-docs/utilities/auth/oauth/interfaces/IOAuthProvider/interfaces/IOAuthProvider"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.4c712a7e.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.142c6144.js" defer="defer"></script>
 <script src="/assets/js/main.ff6007c7.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -20,7 +20,7 @@ All providers must implement this interface to ensure consistent behavior</p>
 <h2 class="anchor anchorTargetStickyNavbar_vRzG" id="methods">Methods<a href="#methods" class="hash-link" aria-label="Direct link to Methods" title="Direct link to Methods" translate="no">​</a></h2>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="exchangecodefortokens">exchangeCodeForTokens()<a href="#exchangecodefortokens" class="hash-link" aria-label="Direct link to exchangeCodeForTokens()" title="Direct link to exchangeCodeForTokens()" translate="no">​</a></h3>
 <blockquote>
-<p><strong>exchangeCodeForTokens</strong>(<code>code</code>, <code>redirectUri?</code>): <code>Promise</code>&lt;<a class="" href="/docs/auto-docs/utilities/auth/oauth/types/interfaces/OAuthProviderTokenResponse"><code>OAuthProviderTokenResponse</code></a>&gt;</p>
+<p><strong>exchangeCodeForTokens</strong>(<code>code</code>, <code>redirectUri</code>): <code>Promise</code>&lt;<a class="" href="/docs/auto-docs/utilities/auth/oauth/types/interfaces/OAuthProviderTokenResponse"><code>OAuthProviderTokenResponse</code></a>&gt;</p>
 </blockquote>
 <p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/interfaces/IOAuthProvider.ts#L22" target="_blank" rel="noopener noreferrer" class="">src/utilities/auth/oauth/interfaces/IOAuthProvider.ts:22</a></p>
 <p>Exchange authorization code for access tokens</p>
@@ -28,9 +28,9 @@ All providers must implement this interface to ensure consistent behavior</p>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="code">code<a href="#code" class="hash-link" aria-label="Direct link to code" title="Direct link to code" translate="no">​</a></h5>
 <p><code>string</code></p>
 <p>Authorization code from OAuth callback</p>
-<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="redirecturi">redirectUri?<a href="#redirecturi" class="hash-link" aria-label="Direct link to redirectUri?" title="Direct link to redirectUri?" translate="no">​</a></h5>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="redirecturi">redirectUri<a href="#redirecturi" class="hash-link" aria-label="Direct link to redirectUri" title="Direct link to redirectUri" translate="no">​</a></h5>
 <p><code>string</code></p>
-<p>Optional redirect URI used in authorization request. If not provided, uses config redirectUri</p>
+<p>redirect URI used in authorization request.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns">Returns<a href="#returns" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>Promise</code>&lt;<a class="" href="/docs/auto-docs/utilities/auth/oauth/types/interfaces/OAuthProviderTokenResponse"><code>OAuthProviderTokenResponse</code></a>&gt;</p>
 <p>Token response with access token and optional refresh token</p>
