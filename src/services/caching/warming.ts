@@ -22,7 +22,7 @@ export async function warmOrganizations(
 		return;
 	}
 
-	server.log.info(`Warming cache for top ${warmupCount} organizations...`);
+	server.log.info({ warmupCount }, "Warming cache for top organizations...");
 
 	try {
 		const db = server.drizzleClient;
@@ -47,7 +47,8 @@ export async function warmOrganizations(
 		}
 
 		server.log.info(
-			`Found ${popularOrgs.length} organizations to warm. Loading...`,
+			{ count: popularOrgs.length },
+			"Found organizations to warm. Loading...",
 		);
 
 		// Create a temporary loader to populate the cache

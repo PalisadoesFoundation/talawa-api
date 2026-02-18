@@ -77,10 +77,11 @@ describe("warmOrganizations", () => {
 		expect(mockLoader.loadMany).toHaveBeenCalledTimes(1);
 		expect(mockLoader.loadMany).toHaveBeenCalledWith(["org-1", "org-2"]);
 		expect(server.log.info).toHaveBeenCalledWith(
-			expect.stringContaining("Warming cache for top 5 organizations"),
+			{ warmupCount: 5 },
+			"Warming cache for top organizations...",
 		);
 		expect(server.log.info).toHaveBeenCalledWith(
-			expect.stringContaining("Organization cache warming completed"),
+			"Organization cache warming completed.",
 		);
 	});
 
@@ -106,8 +107,6 @@ describe("warmOrganizations", () => {
 
 		expect(mockDb.select).not.toHaveBeenCalled();
 		expect(createOrganizationLoader).not.toHaveBeenCalled();
-		expect(mockDb.select).not.toHaveBeenCalled();
-		expect(createOrganizationLoader).not.toHaveBeenCalled();
 	});
 
 	it("should not warm if server.cache is undefined", async () => {
@@ -121,9 +120,7 @@ describe("warmOrganizations", () => {
 
 		expect(mockDb.limit).not.toHaveBeenCalled();
 		expect(createOrganizationLoader).not.toHaveBeenCalled();
-		expect(server.log.info).not.toHaveBeenCalledWith(
-			expect.stringContaining("Found 2 organizations to warm. Loading..."),
-		);
+		expect(server.log.info).not.toHaveBeenCalled();
 	});
 
 	it("should handle empty results gracefully", async () => {
