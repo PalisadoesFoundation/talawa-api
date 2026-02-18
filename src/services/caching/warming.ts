@@ -18,6 +18,10 @@ export async function warmOrganizations(
 		return;
 	}
 
+	if (!server.cache) {
+		return;
+	}
+
 	server.log.info(`Warming cache for top ${warmupCount} organizations...`);
 
 	try {
@@ -49,9 +53,6 @@ export async function warmOrganizations(
 		// Create a temporary loader to populate the cache
 		// We pass the server's cache instance (which is Redis-backed if configured)
 		// We don't pass a performance tracker as this is a background warming task
-		if (!server.cache) {
-			return;
-		}
 		const loader = createOrganizationLoader(db, server.cache);
 
 		const orgIds = popularOrgs.map((org) => org.id);

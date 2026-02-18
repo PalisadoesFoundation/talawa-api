@@ -119,9 +119,9 @@ describe("warmOrganizations", () => {
 
 		await warmOrganizations(serverWithoutCache);
 
-		expect(mockDb.limit).toHaveBeenCalledWith(5);
+		expect(mockDb.limit).not.toHaveBeenCalled();
 		expect(createOrganizationLoader).not.toHaveBeenCalled();
-		expect(server.log.info).toHaveBeenCalledWith(
+		expect(server.log.info).not.toHaveBeenCalledWith(
 			expect.stringContaining("Found 2 organizations to warm. Loading..."),
 		);
 	});
