@@ -53,7 +53,7 @@ export class GoogleOAuthProvider extends BaseOAuthProvider {
 		code: string,
 		redirectUri: string,
 	): Promise<OAuthProviderTokenResponse> {
-		const resolvedRedirectUri = redirectUri?.trim();
+		const resolvedRedirectUri = redirectUri.trim();
 
 		// Validate that a non-empty redirect URI is available
 		if (!resolvedRedirectUri) {
