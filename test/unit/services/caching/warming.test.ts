@@ -106,6 +106,24 @@ describe("warmOrganizations", () => {
 
 		expect(mockDb.select).not.toHaveBeenCalled();
 		expect(createOrganizationLoader).not.toHaveBeenCalled();
+		expect(mockDb.select).not.toHaveBeenCalled();
+		expect(createOrganizationLoader).not.toHaveBeenCalled();
+	});
+
+	it("should not warm if server.cache is undefined", async () => {
+		// Create a server without cache
+		const serverWithoutCache = {
+			...server,
+			cache: undefined,
+		} as unknown as FastifyInstance;
+
+		await warmOrganizations(serverWithoutCache);
+
+		expect(mockDb.limit).toHaveBeenCalledWith(5);
+		expect(createOrganizationLoader).not.toHaveBeenCalled();
+		expect(server.log.info).toHaveBeenCalledWith(
+			expect.stringContaining("Found 2 organizations to warm. Loading..."),
+		);
 	});
 
 	it("should handle empty results gracefully", async () => {
@@ -144,7 +162,7 @@ describe("warmOrganizations", () => {
 			},
 			"Organization cache warming completed with partial failures.",
 		);
-		expect(server.log.info).toHaveBeenCalledWith(
+		expect(server.log.info).not.toHaveBeenCalledWith(
 			"Organization cache warming completed.",
 		);
 	});

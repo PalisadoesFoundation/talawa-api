@@ -49,6 +49,9 @@ export async function warmOrganizations(
 		// Create a temporary loader to populate the cache
 		// We pass the server's cache instance (which is Redis-backed if configured)
 		// We don't pass a performance tracker as this is a background warming task
+		if (!server.cache) {
+			return;
+		}
 		const loader = createOrganizationLoader(db, server.cache);
 
 		const orgIds = popularOrgs.map((org) => org.id);
@@ -70,9 +73,9 @@ export async function warmOrganizations(
 				{ failures },
 				"Organization cache warming completed with partial failures.",
 			);
+		} else {
+			server.log.info("Organization cache warming completed.");
 		}
-
-		server.log.info("Organization cache warming completed.");
 	} catch (err) {
 		server.log.error({ err }, "Failed to warm organization cache.");
 	}
