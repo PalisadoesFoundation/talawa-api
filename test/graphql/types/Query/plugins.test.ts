@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -25,12 +25,13 @@ async function insertPlugin(
 		.values(values)
 		.returning();
 
-	assertToBeNonNullish(plugin);
+	assertToBeNonNullish(plugin, "Failed to insert test plugin");
 	createdPluginIds.push(plugin.id);
 	return plugin;
 }
 
 afterEach(async () => {
+	vi.restoreAllMocks();
 	for (const id of createdPluginIds) {
 		await server.drizzleClient
 			.delete(pluginsTable)
@@ -124,7 +125,7 @@ suite("Query field getPlugins", () => {
 	test("returns plugins filtered by pluginId", async () => {
 		const targetPluginId = `target_${faker.string.ulid()}`;
 		const targetPlugin = await insertPlugin({ pluginId: targetPluginId });
-		await insertPlugin();
+		const otherPlugin = await insertPlugin();
 
 		const result = await mercuriusClient.query(Query_getPlugins, {
 			variables: {
@@ -135,17 +136,24 @@ suite("Query field getPlugins", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		assertToBeNonNullish(result.data.getPlugins);
-		expect(result.data.getPlugins).toHaveLength(1);
-		expect(result.data.getPlugins[0]).toMatchObject({
-			id: targetPlugin.id,
-			pluginId: targetPluginId,
-		});
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: targetPlugin.id,
+					pluginId: targetPluginId,
+				}),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: otherPlugin.id }),
+			]),
+		);
 	});
 
 	test("returns plugins filtered by isActivated", async () => {
 		const activatedPlugin = await insertPlugin({ isActivated: true });
-		await insertPlugin({ isActivated: false });
+		const deactivatedPlugin = await insertPlugin({ isActivated: false });
 
 		const result = await mercuriusClient.query(Query_getPlugins, {
 			variables: {
@@ -161,11 +169,16 @@ suite("Query field getPlugins", () => {
 				expect.objectContaining({ id: activatedPlugin.id }),
 			]),
 		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: deactivatedPlugin.id }),
+			]),
+		);
 	});
 
 	test("returns plugins filtered by isInstalled", async () => {
 		const installedPlugin = await insertPlugin({ isInstalled: true });
-		await insertPlugin({ isInstalled: false });
+		const notInstalledPlugin = await insertPlugin({ isInstalled: false });
 
 		const result = await mercuriusClient.query(Query_getPlugins, {
 			variables: {
@@ -181,6 +194,11 @@ suite("Query field getPlugins", () => {
 				expect.objectContaining({ id: installedPlugin.id }),
 			]),
 		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: notInstalledPlugin.id }),
+			]),
+		);
 	});
 
 	test("returns plugins filtered by multiple criteria", async () => {
@@ -188,8 +206,14 @@ suite("Query field getPlugins", () => {
 			isActivated: true,
 			isInstalled: true,
 		});
-		await insertPlugin({ isActivated: true, isInstalled: false });
-		await insertPlugin({ isActivated: false, isInstalled: true });
+		const activatedOnlyPlugin = await insertPlugin({
+			isActivated: true,
+			isInstalled: false,
+		});
+		const installedOnlyPlugin = await insertPlugin({
+			isActivated: false,
+			isInstalled: true,
+		});
 
 		const result = await mercuriusClient.query(Query_getPlugins, {
 			variables: {
@@ -204,6 +228,12 @@ suite("Query field getPlugins", () => {
 		expect(result.data.getPlugins).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ id: matchingPlugin.id }),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: activatedOnlyPlugin.id }),
+				expect.objectContaining({ id: installedOnlyPlugin.id }),
 			]),
 		);
 	});
@@ -225,7 +255,7 @@ suite("Query field getPlugins", () => {
 
 	test("returns plugins filtered by isActivated set to false", async () => {
 		const deactivatedPlugin = await insertPlugin({ isActivated: false });
-		await insertPlugin({ isActivated: true });
+		const activatedPlugin = await insertPlugin({ isActivated: true });
 
 		const result = await mercuriusClient.query(Query_getPlugins, {
 			variables: {
@@ -241,11 +271,16 @@ suite("Query field getPlugins", () => {
 				expect.objectContaining({ id: deactivatedPlugin.id }),
 			]),
 		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: activatedPlugin.id }),
+			]),
+		);
 	});
 
 	test("returns plugins filtered by isInstalled set to false", async () => {
 		const notInstalledPlugin = await insertPlugin({ isInstalled: false });
-		await insertPlugin({ isInstalled: true });
+		const installedPlugin = await insertPlugin({ isInstalled: true });
 
 		const result = await mercuriusClient.query(Query_getPlugins, {
 			variables: {
@@ -259,6 +294,11 @@ suite("Query field getPlugins", () => {
 		expect(result.data.getPlugins).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ id: notInstalledPlugin.id }),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: installedPlugin.id }),
 			]),
 		);
 	});
