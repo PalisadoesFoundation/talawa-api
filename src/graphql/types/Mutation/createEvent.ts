@@ -14,7 +14,9 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
+import { invalidateEntityLists } from "~/src/services/caching/invalidation";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
@@ -632,6 +634,12 @@ builder.mutationField("createEvent", (t) =>
 						"Failed to flush notifications after event create",
 					);
 				}
+
+				await runBestEffortInvalidation(
+					[invalidateEntityLists(ctx.cache, "event")],
+					"event",
+					ctx.log,
+				);
 
 				return createdEventResult;
 			},

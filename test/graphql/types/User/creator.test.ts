@@ -1,9 +1,23 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
-import type {
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-	UnauthorizedActionExtensions,
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	suite,
+	test,
+	vi,
+} from "vitest";
+import type { GraphQLContext } from "~/src/graphql/context";
+import { creatorResolver } from "~/src/graphql/types/User/creator";
+import type { User as UserType } from "~/src/graphql/types/User/User";
+import {
+	TalawaGraphQLError,
+	type TalawaGraphQLFormattedError,
+	type UnauthenticatedExtensions,
+	type UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -235,6 +249,28 @@ suite("User field creator", () => {
 						}),
 					]),
 				);
+
+				assertToBeNonNullish(createUserResult0.data.createUser?.user?.id);
+				assertToBeNonNullish(createUserResult1.data.createUser?.user?.id);
+
+				await Promise.all([
+					mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: { id: createUserResult0.data.createUser.user.id },
+						},
+					}),
+					mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: { id: createUserResult1.data.createUser.user.id },
+						},
+					}),
+				]);
 			});
 		},
 	);
@@ -242,7 +278,7 @@ suite("User field creator", () => {
 	suite(
 		`results in an empty "errors" field and the expected value for the "data.user.creator" field where`,
 		() => {
-			test(`"data.user.updater" is "null" when the creator of the user no longer exists.`, async () => {
+			test(`"data.user.creator" is "null" when the creator of the user no longer exists.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -339,9 +375,20 @@ suite("User field creator", () => {
 
 				expect(userCreatorResult.errors).toBeUndefined();
 				expect(userCreatorResult.data.user?.creator).toEqual(null);
+
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: regularUser0CreateUserResult.data.createUser.user.id,
+						},
+					},
+				});
 			});
 
-			test(`"data.user.updater" is non-null when the creator of the user still exists.`, async () => {
+			test(`"data.user.creator" is non-null when the creator of the user still exists.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -383,4 +430,209 @@ suite("User field creator", () => {
 			});
 		},
 	);
+});
+
+describe("User field creator resolver (unit)", () => {
+	let ctx: GraphQLContext;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
+	let currentUserId: string;
+	let parent: UserType;
+
+	beforeEach(() => {
+		currentUserId = faker.string.ulid();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			currentUserId,
+		);
+		ctx = context;
+		mocks = newMocks;
+
+		parent = {
+			id: currentUserId,
+			name: "Test User",
+			emailAddress: "test@example.com",
+			isEmailAddressVerified: true,
+			role: "regular",
+			creatorId: null,
+			createdAt: new Date("2025-01-01T10:00:00Z"),
+			updatedAt: null,
+			updaterId: null,
+		} as UserType; // partial UserType for testing
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("throws unauthenticated error when client is not authenticated", async () => {
+		const { context: unauthCtx } = createMockGraphQLContext(false);
+
+		await expect(creatorResolver(parent, {}, unauthCtx)).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthenticated" }),
+			}),
+		);
+	});
+
+	it("throws unauthenticated error when authenticated user does not exist in database", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+
+		await expect(creatorResolver(parent, {}, ctx)).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthenticated" }),
+			}),
+		);
+	});
+
+	it("throws unauthorized_action when non-admin accesses another user's creator", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: currentUserId,
+			role: "regular",
+		});
+
+		const anotherUser = {
+			...parent,
+			id: faker.string.ulid(),
+		} as UserType;
+
+		await expect(creatorResolver(anotherUser, {}, ctx)).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthorized_action" }),
+			}),
+		);
+	});
+
+	it("returns null when parent creatorId is null", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: currentUserId,
+			role: "regular",
+		});
+
+		const result = await creatorResolver(
+			{ ...parent, creatorId: null } as UserType,
+			{},
+			ctx,
+		);
+
+		expect(result).toBeNull();
+	});
+
+	it("returns currentUser when parent creatorId equals currentUserId", async () => {
+		const currentUser = { id: currentUserId, role: "regular" };
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
+
+		const result = await creatorResolver(
+			{ ...parent, creatorId: currentUserId } as UserType,
+			{},
+			ctx,
+		);
+
+		expect(result).toBe(currentUser);
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(1);
+	});
+
+	it("returns existingUser when admin accesses another user and creatorId differs from currentUserId", async () => {
+		const creatorId = faker.string.ulid();
+		const currentUser = { id: currentUserId, role: "administrator" };
+		const existingUser = { id: creatorId, role: "regular" };
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(currentUser)
+			.mockResolvedValueOnce(existingUser);
+
+		const anotherUser = {
+			...parent,
+			id: faker.string.ulid(),
+			creatorId,
+		} as UserType;
+
+		const result = await creatorResolver(anotherUser, {}, ctx);
+
+		expect(result).toBe(existingUser);
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(2);
+	});
+
+	it("logs error and throws unexpected when creatorId is set but creator user not found in database", async () => {
+		const creatorId = faker.string.ulid();
+		const currentUser = { id: currentUserId, role: "regular" };
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(currentUser)
+			.mockResolvedValueOnce(undefined);
+
+		const parentWithCreator = { ...parent, creatorId } as UserType;
+
+		await expect(creatorResolver(parentWithCreator, {}, ctx)).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unexpected" }),
+			}),
+		);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for a user's creator id that isn't null.",
+		);
+	});
+
+	it("rethrows TalawaGraphQLError from currentUser lookup without logging", async () => {
+		const talawaError = new TalawaGraphQLError({
+			extensions: { code: "unauthenticated" },
+		});
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			talawaError,
+		);
+
+		await expect(creatorResolver(parent, {}, ctx)).rejects.toBe(talawaError);
+
+		expect(ctx.log.error).not.toHaveBeenCalled();
+	});
+
+	it("rethrows TalawaGraphQLError from creator lookup without logging", async () => {
+		const creatorId = faker.string.ulid();
+		const talawaError = new TalawaGraphQLError({
+			extensions: { code: "unexpected" },
+		});
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce({ id: currentUserId, role: "administrator" })
+			.mockRejectedValueOnce(talawaError);
+
+		const parentWithCreator = {
+			...parent,
+			id: faker.string.ulid(),
+			creatorId,
+		} as UserType; // partial UserType for testing
+
+		await expect(creatorResolver(parentWithCreator, {}, ctx)).rejects.toBe(
+			talawaError,
+		);
+
+		expect(ctx.log.error).not.toHaveBeenCalled();
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(2);
+	});
+
+	it("logs and wraps unknown database errors as unexpected", async () => {
+		const unknownError = new Error("DB crash");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			unknownError,
+		);
+
+		await expect(creatorResolver(parent, {}, ctx)).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unexpected" }),
+			}),
+		);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(unknownError);
+	});
 });

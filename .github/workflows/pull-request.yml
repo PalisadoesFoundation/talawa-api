@@ -248,6 +248,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y uidmap dbus-user-session slirp4netns fuse-overlayfs ca-certificates curl gnupg
 
+          # Ensure the Docker apt repo is configured so we can install/upgrade packages.
           if ! command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
             sudo install -m 0755 -d /etc/apt/keyrings
             if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
@@ -261,8 +262,31 @@ jobs:
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
             sudo apt-get update
-            sudo apt-get install -y docker-ce-rootless-extras
           fi
+
+          # Always install/upgrade rootless extras AND compose plugin.
+          # The !override YAML tag in compose.rootless.production.yaml requires
+          # Docker Compose v2.24.4+; the runner's pre-installed version may be older.
+          # Pin to a minimum version that supports the !override tag.
+          if ! sudo apt-get install -y docker-ce-rootless-extras 'docker-compose-plugin=2.24.4-*'; then
+            echo "::notice::Pinned docker-compose-plugin=2.24.4-* not available; installing latest and will verify version below."
+            sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
+          fi
+
+          echo "Docker Compose version:"
+          docker compose version
+
+          # Verify that the installed Compose version satisfies the minimum requirement.
+          COMPOSE_MIN="2.24.4"
+          compose_version=$(docker compose version --short 2>/dev/null || echo "0.0.0")
+          version_gte() {
+            printf '%s\n%s' "$2" "$1" | sort -V -C
+          }
+          if ! version_gte "$compose_version" "$COMPOSE_MIN"; then
+            echo "::error::Docker Compose v${COMPOSE_MIN}+ required for !override tag, found v${compose_version}"
+            exit 1
+          fi
+          echo "Docker Compose v${compose_version} >= v${COMPOSE_MIN} ✓"
 
       - name: Start rootless Docker daemon
         run: |
@@ -277,10 +301,16 @@ jobs:
             dockerd-rootless-setuptool.sh install --force
           fi
 
-          systemctl --user daemon-reload || true
-          systemctl --user start docker || true
+          if ! systemctl --user daemon-reload 2>/dev/null; then
+            echo "::notice::systemctl daemon-reload failed (expected on runners without session bus)"
+          fi
+
+          if ! systemctl --user start docker 2>/dev/null; then
+            echo "::notice::systemctl start docker failed (expected on runners without session bus)"
+          fi
 
           if ! systemctl --user --no-pager status docker >/dev/null 2>&1; then
+            echo "::notice::Falling back to manual dockerd-rootless.sh start"
             nohup dockerd-rootless.sh > "$RUNNER_TEMP/dockerd-rootless.log" 2>&1 &
           fi
 
@@ -314,6 +344,57 @@ jobs:
           docker info --format '{{json .SecurityOptions}}' | tee "$RUNNER_TEMP/rootless-security-options.json"
           grep -qi rootless "$RUNNER_TEMP/rootless-security-options.json"
 
+      - name: Verify rootless works without docker group membership
+        run: |
+          set -euxo pipefail
+
+          # Remove the current user from the docker group to simulate a pure rootless
+          # environment where the user has no access to the rootful daemon socket.
+          if ! sudo deluser "$USER" docker 2>/dev/null; then
+            echo "::warning::Could not remove $USER from docker group (may not be a member)."
+          fi
+
+          # Verify removal took effect in /etc/group before proceeding.
+          if getent group docker | grep -qw "$USER"; then
+            echo "::error::$USER is still listed in docker group in /etc/group after deluser."
+            exit 1
+          fi
+
+          # Write test commands to a temp script so we can execute them in a
+          # fresh login shell that re-reads /etc/group via initgroups().
+          cat > "$RUNNER_TEMP/test-no-docker-group.sh" << 'TESTSCRIPT'
+          #!/usr/bin/env bash
+          set -euxo pipefail
+
+          # Confirm the docker group is no longer active.
+          if id -nG | tr " " "\n" | grep -qx docker; then
+            echo "::error::docker group is still active; cannot validate non-docker-group scenario."
+            exit 1
+          fi
+
+          # The rootless daemon must still be reachable via DOCKER_HOST.
+          docker info >/dev/null 2>&1
+          echo "Rootless Docker is reachable without docker group membership ✓"
+
+          # Validate compose config still parses correctly.
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+          echo "Compose config valid without docker group ✓"
+          TESTSCRIPT
+          chmod +x "$RUNNER_TEMP/test-no-docker-group.sh"
+
+          # `su --login` calls initgroups() which re-reads /etc/group, so the
+          # docker supplementary group is actually dropped (unlike sg which
+          # only changes the effective GID). Pass required env vars explicitly.
+          # NOTE: `su --login` resets CWD to $HOME; cd back to the workspace.
+          sudo su --login "$USER" -c "\
+            export DOCKER_HOST='$DOCKER_HOST' \
+                   XDG_RUNTIME_DIR='$XDG_RUNTIME_DIR' \
+                   PATH='$PATH'; \
+            cd '$GITHUB_WORKSPACE' && \
+            bash '$RUNNER_TEMP/test-no-docker-group.sh'"
+
       - name: Set CI-safe secrets for rootless production template
         run: |
           set -euo pipefail
@@ -324,6 +405,7 @@ jobs:
 
           # Override sentinel placeholders so the rootless production stack can start in CI.
           echo "API_JWT_SECRET=ci_jwt_secret_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_AUTH_JWT_SECRET=ci_auth_jwt_secret_0123456789abcdef" >> "$GITHUB_ENV"
           echo "API_COOKIE_SECRET=ci_cookie_secret_0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
           echo "API_ADMINISTRATOR_USER_PASSWORD=ci_admin_password_0123456789abcdef" >> "$GITHUB_ENV"
 
@@ -338,44 +420,96 @@ jobs:
       - name: Start rootless production stack
         run: |
           set -euo pipefail
-          docker compose --env-file ./envFiles/.env.rootless.production \
-            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
-            up -d --build
 
-      - name: Wait for API to be healthy and reachable via Caddy
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
+
+          echo "=== Docker Compose version ==="
+          docker compose version
+
+          echo "=== Resolved compose config ==="
+          dc config -q
+
+          # 1. Build all images first so build failures surface clearly.
+          dc build
+
+          # 2. Start infrastructure (postgres, redis, minio) and wait for them.
+          echo "=== Starting infrastructure services ==="
+          dc up -d postgres redis minio
+
+          # Wait for Postgres to accept connections (bounded retry, fail early).
+          PG_RETRIES=30
+          until dc exec postgres pg_isready -U talawa --timeout=2 2>/dev/null; do
+            PG_RETRIES=$((PG_RETRIES - 1))
+            if [ "$PG_RETRIES" -le 0 ]; then
+              echo "::error::Postgres did not become ready within 60 s."
+              dc logs --tail 50 postgres
+              exit 1
+            fi
+            echo "Waiting for Postgres... ($PG_RETRIES retries left)"
+            sleep 2
+          done
+          echo "Postgres is ready ✓"
+
+          echo "Infrastructure status:"
+          dc ps
+
+          # 3. Start API separately so we can capture its logs if it crashes.
+          echo "=== Starting API ==="
+          dc up -d api
+
+          # 4. Wait for API healthcheck.
+          api_id="$(dc ps -q api)"
+          TIMEOUT=120
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
+            # If the container exited, stop waiting immediately.
+            if [ "$(docker inspect -f '{{.State.Status}}' "$api_id" 2>/dev/null)" = "exited" ]; then
+              echo "::error::API container exited unexpectedly."
+              break
+            fi
+            echo "Waiting for API health... ($TIMEOUT s remaining)"
+            sleep 3
+            TIMEOUT=$((TIMEOUT - 3))
+          done
+
+          if [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" != "healthy" ]; then
+            echo "::error::API did not become healthy."
+            echo "=== API container state ==="
+            docker inspect -f '{{json .State}}' "$api_id" || true
+            echo ""
+            echo "=== API healthcheck log ==="
+            docker inspect -f '{{json .State.Health}}' "$api_id" || true
+            echo ""
+            echo "=== API application logs ==="
+            dc logs --tail 300 api
+            echo "=== All services ==="
+            dc ps
+            exit 1
+          fi
+
+          echo "API is healthy. Starting Caddy..."
+          dc up -d caddy
+
+      - name: Verify API reachable via Caddy
         run: |
           set -euo pipefail
 
-          api_id="$(docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps -q api)"
-          if [ -z "$api_id" ]; then
-            echo "::error::API container not found."
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
-            exit 1
-          fi
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
 
-          TIMEOUT=120
-          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id")" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
-            echo "Waiting for API health... ($TIMEOUT seconds remaining)"
-            sleep 2
-            TIMEOUT=$((TIMEOUT - 2))
-          done
-
-          if [ "$TIMEOUT" -le 0 ]; then
-            echo "::error::API did not become healthy in time."
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml logs --tail 200 api
-            exit 1
-          fi
-
-          http_port="$(docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml port caddy 80 | head -n 1 | awk -F: '{print $2}')"
+          http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')"
           if [ -z "$http_port" ]; then
             echo "::error::Failed to determine published HTTP port for Caddy."
-            docker compose --env-file ./envFiles/.env.rootless.production -f ./compose.yaml -f ./docker/compose.rootless.production.yaml ps
+            dc ps
             exit 1
           fi
 
           echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
-          curl -fsS --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+          curl -fsS --retry 5 --retry-delay 3 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
 
       - name: Stop rootless production stack
         if: always()
@@ -431,23 +565,31 @@ jobs:
     name: Checks if sensitive files have been changed without authorization
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout centralized CI/CD scripts
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
+          repository: PalisadoesFoundation/.github
+          ref: main
+          path: .github-central
+
+      - name: Make sensitive file checker executable
+        run: chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
 
       - name: Get PR labels
         id: check-labels
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -z "${{ github.event.pull_request.number }}" ]; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
           LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
-
           if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
             echo "::notice::Skipping sensitive files check due to 'ignore-sensitive-files-pr' label."
             echo "skip=true" >> $GITHUB_OUTPUT
@@ -455,123 +597,52 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Get Changed Unauthorized files
+      - name: Get changed files
+        id: sensitive-changed-files
         if: steps.check-labels.outputs.skip != 'true'
-        id: changed-unauth-files
+        env:
+          BASE_REF_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -e
+          set -euo pipefail
 
-          # Skip if not in PR context
-          if [ -z "${{ github.event.pull_request.base.sha }}" ]; then
-            echo "any_changed=false" >> $GITHUB_OUTPUT
+          if [ -z "$BASE_REF_SHA" ] || [ -z "$HEAD_REF_SHA" ]; then
+            echo "::error::Missing BASE_REF_SHA or HEAD_REF_SHA"
+            exit 1
+          fi
+
+          echo "Base SHA: $BASE_REF_SHA"
+          echo "Head SHA: $HEAD_REF_SHA"
+
+          BASE_SHA=$(git merge-base "$BASE_REF_SHA" "$HEAD_REF_SHA")
+          echo "Merge base: $BASE_SHA"
+
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_REF_SHA")
+
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "all_changed_files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "all_changed_files=$(echo "$ALL_CHANGED_FILES" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run sensitive files check
+        if: steps.check-labels.outputs.skip != 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.sensitive-changed-files.outputs.all_changed_files }}
+        run: |
+          if [ -z "$ALL_CHANGED_FILES" ]; then
+            echo "No changed files. Skipping sensitive file check."
             exit 0
           fi
 
-          # Determine base and head commits for comparison
-          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
-          BASE_SHA=$(git merge-base "${{ github.event.pull_request.base.sha }}" "$HEAD_SHA" 2>&1) || {
-            echo "::error::Failed to find merge base between ${{ github.event.pull_request.base.sha }} and $HEAD_SHA" >&2
-            exit 1
-          }
-
-          # Verify BASE_SHA is not empty
-          if [ -z "$BASE_SHA" ]; then
-            echo "::error::BASE_SHA is empty after git merge-base command" >&2
-            exit 1
-          fi
-
-          # Define sensitive files patterns as a bash array
-          SENSITIVE_PATTERNS=(
-            '.coderabbit.yaml$'
-            '^.coderabbit/.*'            
-            'Caddyfile$'
-            'codegen.ts$'
-            '^Dockerfile.*'
-            '^docker/.*'
-            '^docker-compose.*'
-            '^drizzle_migrations/.*'
-            '^scripts/.*'
-            '.dockerignore$'
-            '.env.sample$'
-            '.env_test$'
-            'eslint.config.mjs$'
-            '^envFiles/.*'
-            '.gitignore$'
-            'init-mongo.sh$'
-            '.prettierignore$'
-            '.prettierrc.json$'
-            '.pylintrc$'
-            '^.github/.*'            
-            'biome.jsonc$'
-            'renovate.json$'
-            'requirements.txt$'
-            'schema.graphql$'
-            'CODEOWNERS$'
-            'LICENSE$'
-            'tsconfig.json$'
-            'vitest.config.ts$'
-            'vitest.*.config.ts$'
-            'codecov.yml$'
-            'pnpm-lock.yaml$'
-            'package.json$'
-            'package-lock.json$'
-            '.nojekyll$'
-            'knip.json$'
-            'docs/docusaurus.config.ts$'
-            '^docs/sidebar.*'
-            'setup.ts$'
-            '^src/graphql/types/Mutation/.*'
-            '^src/graphql/types/Query/.*'
-            'tsconfig.build.json$'
-            'vite.config.mts$'
-            'CNAME$'
-            'CODE_OF_CONDUCT.md$'
-            'CODE_STYLE.md$'
-            'CONTRIBUTING.md$'
-            'DOCUMENTATION.md$'
-            'INSTALLATION.md$'
-            'ISSUE_GUIDELINES.md$'
-            'PR_GUIDELINES.md$'
-            'README.md$'
-            '^./*md'
-            '^./*txt'
-            '^./*TXT'
-          )
-
-          # Check for changes in sensitive files
-          CHANGED_UNAUTH_FILES=""
-          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-            FILES=$(git diff --name-only --diff-filter=ACMRD "$BASE_SHA" "$HEAD_SHA" | grep -E "$pattern" || true)
-            if [ ! -z "$FILES" ]; then
-              CHANGED_UNAUTH_FILES="$CHANGED_UNAUTH_FILES $FILES"
-            fi
-          done
-
-          # Deduplicate and format output
-          # Convert to newline-separated, deduplicate, then rejoin as space-separated
-          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
-            CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
-          fi
-
-          echo "all_changed_files=$CHANGED_UNAUTH_FILES" >> $GITHUB_OUTPUT
-
-          # Check if any unauthorized files changed
-          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
-            echo "any_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "any_changed=false" >> $GITHUB_OUTPUT
-          fi
+          python3 .github-central/.github/workflows/scripts/sensitive_file_check.py \
+            --config .github/workflows/config/sensitive-files.txt \
+             --files $(set -f; echo $ALL_CHANGED_FILES)
 
       - name: List all changed unauthorized files
-        if: steps.changed-unauth-files.outputs.any_changed == 'true'
-        env:
-          CHANGED_UNAUTH_FILES: ${{ steps.changed-unauth-files.outputs.all_changed_files }}
+        if: steps.sensitive-check.outcome == 'failure'
         run: |
-          echo "::error::Unauthorized changes detected in sensitive files:"
-          echo ""
-          for file in $CHANGED_UNAUTH_FILES; do
-            echo "- $file"
-          done
+          echo "::error::Unauthorized changes detected in sensitive files."
           echo ""
           echo "To override:"
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
@@ -659,30 +730,30 @@ jobs:
       # a patched simplecov so we can use simplecov-html 0.12.3 (Ruby 3.2 compatible)
       - name: Prepare simplecov for Ruby 3.2
         run: |
-          mkdir -p tests/install/vendor
-          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git tests/install/vendor/simplecov
-          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' tests/install/vendor/simplecov/simplecov.gemspec
+          mkdir -p test/install_scripts/vendor
+          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git test/install_scripts/vendor/simplecov
+          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' test/install_scripts/vendor/simplecov/simplecov.gemspec
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.2"
           bundler-cache: true
-          working-directory: tests/install
+          working-directory: test/install_scripts
       - name: Run install script tests with coverage
-        working-directory: tests/install
+        working-directory: test/install_scripts
         run: |
           chmod +x run-all.sh
           bundle exec bashcov --root ../.. -- ./run-all.sh
       # Upload only when coverage file exists so the install flag gets data and shows in Codecov
       - name: Upload install coverage to Codecov
-        if: "!cancelled() && hashFiles('tests/install/coverage/coverage.xml') != ''"
+        if: "!cancelled() && hashFiles('test/install_scripts/coverage/coverage.xml') != ''"
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
-          files: tests/install/coverage/coverage.xml
+          files: test/install_scripts/coverage/coverage.xml
           flags: install
 
   Run-Tests:
@@ -776,11 +847,11 @@ jobs:
       - name: Test Mailpit email service
         run: |
           echo "Testing Mailpit email service..."
-          
+
           # Test Mailpit API is responding
           MAILPIT_INFO=$(curl -s http://localhost:8025/api/v1/info 2>/dev/null || echo '{}')
           echo "Mailpit info: $MAILPIT_INFO"
-          
+
           # Check if Mailpit API is responding with valid data
           if echo "$MAILPIT_INFO" | grep -q '"version"'; then
             echo "SUCCESS: Mailpit API is responding correctly"
@@ -788,7 +859,7 @@ jobs:
           else
             echo "::warning::Mailpit API may not be responding properly"
           fi
-          
+
           # Note: Email functionality will be tested during the actual test suite execution
           # The API container will use Mailpit as configured in .env.ci
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
