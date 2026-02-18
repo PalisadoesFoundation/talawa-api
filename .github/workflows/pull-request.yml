@@ -495,7 +495,6 @@ jobs:
       - name: Verify API reachable via Caddy
         run: |
           set -euo pipefail
-
           dc() {
             docker compose --env-file ./envFiles/.env.rootless.production \
               -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
@@ -508,8 +507,23 @@ jobs:
             exit 1
           fi
 
+          # Wait for Caddy to bind to the port
+          echo "Waiting for Caddy to bind to port ${http_port}..."
+          RETRIES=10
+          until nc -z localhost "$http_port" 2>/dev/null || [ "$RETRIES" -le 0 ]; do
+            RETRIES=$((RETRIES - 1))
+            sleep 5
+          done
+
+          if [ "$RETRIES" -le 0 ]; then
+            echo "::error::Caddy did not bind to port ${http_port} in time."
+            dc logs caddy
+            exit 1
+          fi
+
           echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
-          curl -fsS --retry 5 --retry-delay 3 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+          curl -fsS --retry 5 --retry-delay 3 --max-time 10 \
+            "http://localhost:${http_port}/healthcheck" > /dev/null
 
       - name: Stop rootless production stack
         if: always()
@@ -653,6 +667,7 @@ jobs:
     uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
     with:
       pnpm-version: "10.26.1"
+
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
