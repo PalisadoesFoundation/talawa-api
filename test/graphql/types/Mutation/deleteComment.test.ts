@@ -513,14 +513,20 @@ suite("Mutation deleteComment", () => {
 		let commentId: string;
 
 		beforeAll(async () => {
-			// Create test data BEFORE mocking
+			// Create test data BEFORE mocking (use unique name to avoid collisions)
 			const org = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: { name: faker.company.name(), countryCode: "in" },
+					input: {
+						name: `Test org ${faker.string.uuid()}`,
+						countryCode: "in",
+					},
 				},
 			});
-			assertToBeNonNullish(org.data?.createOrganization);
+			assertToBeNonNullish(
+				org.data?.createOrganization,
+				`createOrganization failed: ${JSON.stringify(org.errors ?? null)}`,
+			);
 			const organizationId = org.data.createOrganization.id;
 
 			const post = await mercuriusClient.mutate(Mutation_createPost, {
@@ -533,7 +539,10 @@ suite("Mutation deleteComment", () => {
 					},
 				},
 			});
-			assertToBeNonNullish(post.data?.createPost);
+			assertToBeNonNullish(
+				post.data?.createPost,
+				`createPost failed: ${JSON.stringify(post.errors ?? null)}`,
+			);
 			const postId = post.data.createPost.id;
 
 			const comment = await mercuriusClient.mutate(Mutation_createComment, {
@@ -542,7 +551,10 @@ suite("Mutation deleteComment", () => {
 					input: { postId, body: faker.lorem.sentence() },
 				},
 			});
-			assertToBeNonNullish(comment.data?.createComment);
+			assertToBeNonNullish(
+				comment.data?.createComment,
+				`createComment failed: ${JSON.stringify(comment.errors ?? null)}`,
+			);
 			commentId = comment.data.createComment.id;
 		});
 

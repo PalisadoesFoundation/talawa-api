@@ -8,6 +8,11 @@ import {
 	mutationDeleteStandaloneEventInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteStandaloneEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -147,7 +152,7 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				// First, delete any action items associated with the event
 				await tx
 					.delete(actionItemsTable)
@@ -178,6 +183,17 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 					attachments: existingEvent.attachmentsWhereEvent,
 				});
 			});
+
+			await runBestEffortInvalidation(
+				[
+					invalidateEntity(ctx.cache, "event", parsedArgs.input.id),
+					invalidateEntityLists(ctx.cache, "event"),
+				],
+				"event",
+				ctx.log,
+			);
+
+			return result;
 		},
 		type: Event,
 	}),
