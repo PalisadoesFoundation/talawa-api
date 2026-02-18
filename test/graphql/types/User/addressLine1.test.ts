@@ -143,12 +143,12 @@ describe("user field addressLine1 resolver", () => {
 			role: "regular",
 		});
 
-		const UserWithHtml = {
+		const userWithHtml = {
 			...parent,
 			addressLine1: "<script>alert('xss')</script>",
 		} as UserType;
 
-		const result = await addressLine1Resolver(UserWithHtml, {}, ctx);
+		const result = await addressLine1Resolver(userWithHtml, {}, ctx);
 
 		expect(result).not.toContain("<script>");
 		expect(result).toContain("&lt;script&gt;");

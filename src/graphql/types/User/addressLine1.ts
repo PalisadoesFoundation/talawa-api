@@ -14,13 +14,13 @@ import { User } from "./User";
  * @param ctx - The GraphQL context 
  * @returns The user's address first line or throws an error if unauthorized
 */
-export const addressLine1Resolver = async(
-  parent : User,
+export const addressLine1Resolver = async (
+  parent: User,
   _args: Record<string, never>,
   ctx: GraphQLContext
 
-  )=> {
-    try{
+  ) => {
+    try {
 		if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -60,7 +60,7 @@ export const addressLine1Resolver = async(
 				return escapeHTML(parent.addressLine1);
 	}
 
-	catch(error){
+	catch (error) {
        if(error instanceof GraphQLError){
 		throw error
 	   }
@@ -69,8 +69,8 @@ export const addressLine1Resolver = async(
 
        throw new TalawaGraphQLError({
 		message: "internal server error",
-		extensions :{
-         code :"unexpected" 
+		extensions: {
+         code: "unexpected" 
 		 },
 	   });
 	}
@@ -80,7 +80,7 @@ User.implement({
 		addressLine1: t.field({
 			description: "Address line 1 of the user's address.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
-			resolve:addressLine1Resolver,
+			resolve: addressLine1Resolver,
 			type: "String",
 		}),
 	}),
