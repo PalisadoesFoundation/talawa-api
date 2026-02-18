@@ -803,6 +803,18 @@ export const envConfigSchema = Type.Object({
 	),
 
 	/**
+	 * Number of top organizations (by member count) to pre-load into cache at startup.
+	 * Set to 0 to disable cache warming.
+	 * Default: 0 (disabled)
+	 */
+	CACHE_WARMING_ORG_COUNT: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 0,
+		}),
+	),
+
+	/**
 	 * Time-to-live in seconds for cached aggregated metrics.
 	 * Determines how long metrics remain in cache before expiration.
 	 * Default: 300 (5 minutes)

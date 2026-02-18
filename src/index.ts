@@ -2,12 +2,16 @@ import "./tracing";
 import closeWithGrace from "close-with-grace";
 import { createServer } from "./createServer";
 import { shutdownTracing } from "./observability/tracing/bootstrap";
+import { warmOrganizations } from "./services/caching/warming";
 
 // Talawa api server instance.
 const server = await createServer();
 
 // Makes sure that the server is ready to start listening for requests.
 await server.ready();
+
+// Warm the organization cache.
+await warmOrganizations(server);
 
 // Makes sure that the server exits gracefully without pending tasks and memory leaks.
 closeWithGrace(async ({ err, signal }) => {
