@@ -39,7 +39,7 @@ export class GitHubOAuthProvider extends BaseOAuthProvider {
 		code: string,
 		redirectUri: string,
 	): Promise<OAuthProviderTokenResponse> {
-		const resolvedRedirectUri = redirectUri || this.config.redirectUri;
+		const resolvedRedirectUri = redirectUri.trim();
 		if (!resolvedRedirectUri) {
 			throw new TokenExchangeError(
 				"Token exchange failed",

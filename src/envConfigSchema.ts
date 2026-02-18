@@ -662,16 +662,6 @@ export const envConfigSchema = Type.Object({
 	),
 
 	/**
-	 * Google OAuth Redirect URI for authentication callback.
-	 */
-	GOOGLE_REDIRECT_URI: Type.Optional(
-		Type.String({
-			minLength: 1,
-			format: "uri",
-		}),
-	),
-
-	/**
 	 * GitHub OAuth Client ID for authentication.
 	 */
 	GITHUB_CLIENT_ID: Type.Optional(
@@ -686,16 +676,6 @@ export const envConfigSchema = Type.Object({
 	GITHUB_CLIENT_SECRET: Type.Optional(
 		Type.String({
 			minLength: 1,
-		}),
-	),
-
-	/**
-	 * GitHub OAuth Redirect URI for authentication callback.
-	 */
-	GITHUB_REDIRECT_URI: Type.Optional(
-		Type.String({
-			minLength: 1,
-			format: "uri",
 		}),
 	),
 

@@ -650,6 +650,14 @@ Optional JSON object to override default cache TTL values per entity type.
 
 src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.
 
+#### CACHE_WARMING_ORG_COUNT?
+
+`number` = `...`
+
+Number of top organizations (by member count) to pre-load into cache at startup.
+Set to 0 to disable cache warming.
+Default: 0 (disabled)
+
 #### GITHUB_CLIENT_ID?
 
 `string` = `...`
@@ -662,12 +670,6 @@ GitHub OAuth Client ID for authentication.
 
 GitHub OAuth Client Secret for authentication.
 
-#### GITHUB_REDIRECT_URI?
-
-`string` = `...`
-
-GitHub OAuth Redirect URI for authentication callback.
-
 #### GOOGLE_CLIENT_ID?
 
 `string` = `...`
@@ -679,12 +681,6 @@ Google OAuth Client ID for authentication.
 `string` = `...`
 
 Google OAuth Client Secret for authentication.
-
-#### GOOGLE_REDIRECT_URI?
-
-`string` = `...`
-
-Google OAuth Redirect URI for authentication callback.
 
 #### MINIO_ROOT_USER?
 

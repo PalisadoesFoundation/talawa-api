@@ -13,7 +13,7 @@ All providers must implement this interface to ensure consistent behavior
 
 ### exchangeCodeForTokens()
 
-> **exchangeCodeForTokens**(`code`, `redirectUri?`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
+> **exchangeCodeForTokens**(`code`, `redirectUri`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
 
 Defined in: [src/utilities/auth/oauth/interfaces/IOAuthProvider.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/interfaces/IOAuthProvider.ts#L22)
 
@@ -27,11 +27,11 @@ Exchange authorization code for access tokens
 
 Authorization code from OAuth callback
 
-##### redirectUri?
+##### redirectUri
 
 `string`
 
-Optional redirect URI used in authorization request. If not provided, uses config redirectUri
+redirect URI used in authorization request.
 
 #### Returns
 

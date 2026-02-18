@@ -26,16 +26,8 @@ Defined in: [src/utilities/auth/oauth/types.ts:29](https://github.com/Palisadoes
 
 ***
 
-### redirectUri?
-
-> `optional` **redirectUri**: `string`
-
-Defined in: [src/utilities/auth/oauth/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L30)
-
-***
-
 ### requestTimeoutMs?
 
 > `optional` **requestTimeoutMs**: `number`
 
-Defined in: [src/utilities/auth/oauth/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L31)
+Defined in: [src/utilities/auth/oauth/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L30)
