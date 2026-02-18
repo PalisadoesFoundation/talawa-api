@@ -24,7 +24,6 @@ interface MockDb {
 }
 
 interface MockLoader {
-	load: Mock;
 	loadMany: Mock;
 }
 
@@ -44,7 +43,6 @@ describe("warmOrganizations", () => {
 		};
 
 		mockLoader = {
-			load: vi.fn().mockResolvedValue(null),
 			loadMany: vi.fn().mockResolvedValue([null, null]),
 		};
 
@@ -130,6 +128,24 @@ describe("warmOrganizations", () => {
 		expect(server.log.error).toHaveBeenCalledWith(
 			{ err: error },
 			"Failed to warm organization cache.",
+		);
+	});
+
+	it("should log partial failures", async () => {
+		const failures = [new Error("Failed to load org-1"), null];
+		// mocks loadMany returning one error and one success (null)
+		mockLoader.loadMany.mockResolvedValue(failures);
+
+		await warmOrganizations(server);
+
+		expect(server.log.warn).toHaveBeenCalledWith(
+			{
+				failures: [{ id: "org-1", error: "Failed to load org-1" }],
+			},
+			"Organization cache warming completed with partial failures.",
+		);
+		expect(server.log.info).toHaveBeenCalledWith(
+			"Organization cache warming completed.",
 		);
 	});
 });

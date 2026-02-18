@@ -51,8 +51,26 @@ export async function warmOrganizations(
 		// We don't pass a performance tracker as this is a background warming task
 		const loader = createOrganizationLoader(db, server.cache);
 
+		const orgIds = popularOrgs.map((org) => org.id);
+
 		// Load in batch to optimize DB queries
-		await loader.loadMany(popularOrgs.map((org) => org.id));
+		const results = await loader.loadMany(orgIds);
+
+		const failures = results
+			.map((result, index) => {
+				if (result instanceof Error) {
+					return { id: orgIds[index], error: result.message };
+				}
+				return null;
+			})
+			.filter((item) => item !== null);
+
+		if (failures.length > 0) {
+			server.log.warn(
+				{ failures },
+				"Organization cache warming completed with partial failures.",
+			);
+		}
 
 		server.log.info("Organization cache warming completed.");
 	} catch (err) {
