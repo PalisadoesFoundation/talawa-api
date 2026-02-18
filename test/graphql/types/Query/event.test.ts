@@ -64,35 +64,16 @@ beforeAll(async () => {
 });
 
 suite("Query field event", () => {
-	// Helper function to get admin auth token and user ID
+	// Helper function to get admin auth token and user ID (uses cached values)
 	async function getAdminTokenAndUserId() {
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = signInResult.data?.signIn?.authenticationToken;
-		const userId = signInResult.data?.signIn?.user?.id;
-		if (!authToken || !userId) {
-			throw new Error(
-				`Failed to sign in as admin. Errors: ${JSON.stringify(
-					signInResult.errors,
-				)}`,
-			);
-		}
-		assertToBeNonNullish(authToken);
-		assertToBeNonNullish(userId);
-		return { authToken, userId };
+		const { token, userId } = await ensureAdminAuth();
+		return { authToken: token, userId };
 	}
 
-	// Helper function to get admin auth token
+	// Helper function to get admin auth token (uses cached values)
 	async function getAdminToken() {
-		const { authToken } = await getAdminTokenAndUserId();
-		return authToken;
+		const { token } = await ensureAdminAuth();
+		return token;
 	}
 
 	// Helper function to create an organization
