@@ -1,230 +1,305 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	getPluginByIdResolver,
-	getPluginsResolver,
-} from "../../../../src/graphql/types/Query/plugins";
-import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
+import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import { afterEach, expect, suite, test, vi } from "vitest";
+import { pluginsTable } from "~/src/drizzle/tables/plugins";
+import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { Query_getPluginById, Query_getPlugins } from "../documentNodes";
 
-const mockPlugin = {
-	id: "123e4567-e89b-12d3-a456-426614174000",
-	pluginId: "test_plugin",
-	isActivated: true,
-	isInstalled: true,
-	backup: false,
-	createdAt: new Date(),
-	updatedAt: new Date(),
-};
+const createdPluginIds: string[] = [];
 
-const mockPlugin2 = {
-	id: "123e4567-e89b-12d3-a456-426614174001",
-	pluginId: "another_plugin",
-	isActivated: false,
-	isInstalled: true,
-	backup: true,
-	createdAt: new Date(),
-	updatedAt: new Date(),
-};
+async function insertPlugin(
+	overrides: Partial<typeof pluginsTable.$inferInsert> = {},
+) {
+	const values = {
+		pluginId: `plugin_${faker.string.ulid()}`,
+		isActivated: false,
+		isInstalled: false,
+		backup: false,
+		...overrides,
+	};
+	const [plugin] = await server.drizzleClient
+		.insert(pluginsTable)
+		.values(values)
+		.returning();
 
-describe("Plugin GraphQL Queries", () => {
-	let mockContextResult: ReturnType<typeof createMockGraphQLContext>;
-	let ctx: ReturnType<typeof createMockGraphQLContext>["context"];
+	assertToBeNonNullish(plugin, "Failed to insert test plugin");
+	createdPluginIds.push(plugin.id);
+	return plugin;
+}
 
-	beforeEach(() => {
-		vi.clearAllMocks();
-		mockContextResult = createMockGraphQLContext();
-		ctx = mockContextResult.context;
-	});
+afterEach(async () => {
+	vi.restoreAllMocks();
+	for (const id of createdPluginIds) {
+		await server.drizzleClient
+			.delete(pluginsTable)
+			.where(eq(pluginsTable.id, id));
+	}
+	createdPluginIds.length = 0;
+});
 
-	describe("getPluginByIdResolver", () => {
-		it("should return a plugin by ID", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findFirst,
-			).mockResolvedValue(mockPlugin);
-
-			const args = { input: { id: "123e4567-e89b-12d3-a456-426614174000" } };
-			const result = await getPluginByIdResolver(null, args, ctx);
-
-			expect(result).toEqual(mockPlugin);
-			expect(
-				ctx.drizzleClient.query.pluginsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.anything(),
-			});
-		});
-
-		it("should return null if plugin not found", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findFirst,
-			).mockResolvedValue(undefined);
-
-			const args = { input: { id: "123e4567-e89b-12d3-a456-426614174001" } };
-			const result = await getPluginByIdResolver(null, args, ctx);
-
-			expect(result).toBeUndefined();
-		});
-
-		it("should handle database errors gracefully", async () => {
-			const dbError = new Error("Database connection failed");
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findFirst,
-			).mockRejectedValue(dbError);
-
-			const args = { input: { id: "123e4567-e89b-12d3-a456-426614174000" } };
-
-			await expect(getPluginByIdResolver(null, args, ctx)).rejects.toThrow(
-				dbError,
-			);
-		});
-
-		it("should handle invalid input gracefully", async () => {
-			const args = { input: { id: "invalid-uuid" } };
-
-			// Should throw a validation error for invalid UUID
-			await expect(getPluginByIdResolver(null, args, ctx)).rejects.toThrow(
-				"Invalid Plugin ID format",
-			);
-		});
-	});
-
-	describe("getPluginsResolver", () => {
-		it("should return all plugins with no filters", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin, mockPlugin2]);
-
-			const args = { input: {} };
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin, mockPlugin2]);
-			expect(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
-			});
-		});
-
-		it("should return filtered plugins by pluginId", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin]);
-
-			const args = { input: { pluginId: "test_plugin" } };
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin]);
-		});
-
-		it("should return filtered plugins by isActivated", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin]);
-
-			const args = { input: { isActivated: true } };
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin]);
-		});
-
-		it("should return filtered plugins by isInstalled", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin, mockPlugin2]);
-
-			const args = { input: { isInstalled: true } };
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin, mockPlugin2]);
-		});
-
-		it("should return filtered plugins with multiple criteria", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin]);
-
-			const args = {
+suite("Query field getPluginById", () => {
+	test("returns a graphql error when an invalid (non-uuid) id is provided", async () => {
+		const result = await mercuriusClient.query(Query_getPluginById, {
+			variables: {
 				input: {
-					pluginId: "test_plugin",
+					id: "not-a-valid-uuid",
+				},
+			},
+		});
+
+		expect(result.data.getPluginById).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "internal_server_error",
+					}),
+					message: "Internal Server Error",
+					path: ["getPluginById"],
+				}),
+			]),
+		);
+	});
+
+	test("returns null when the plugin with the given id does not exist", async () => {
+		const result = await mercuriusClient.query(Query_getPluginById, {
+			variables: {
+				input: {
+					id: faker.string.uuid(),
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPluginById).toBeNull();
+	});
+
+	test("returns the plugin when it exists", async () => {
+		const plugin = await insertPlugin({
+			isActivated: true,
+			isInstalled: true,
+			backup: true,
+		});
+
+		const result = await mercuriusClient.query(Query_getPluginById, {
+			variables: {
+				input: {
+					id: plugin.id,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPluginById).toMatchObject({
+			id: plugin.id,
+			pluginId: plugin.pluginId,
+			isActivated: true,
+			isInstalled: true,
+			backup: true,
+		});
+		expect(result.data.getPluginById?.createdAt).toBeDefined();
+		expect(result.data.getPluginById?.updatedAt).toBeDefined();
+	});
+});
+
+suite("Query field getPlugins", () => {
+	test("returns all plugins when no input filter is provided", async () => {
+		const plugin1 = await insertPlugin();
+		const plugin2 = await insertPlugin();
+
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: plugin1.id }),
+				expect.objectContaining({ id: plugin2.id }),
+			]),
+		);
+	});
+
+	test("returns plugins filtered by pluginId", async () => {
+		const targetPluginId = `target_${faker.string.ulid()}`;
+		const targetPlugin = await insertPlugin({ pluginId: targetPluginId });
+		const otherPlugin = await insertPlugin();
+
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
+				input: {
+					pluginId: targetPluginId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: targetPlugin.id,
+					pluginId: targetPluginId,
+				}),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: otherPlugin.id }),
+			]),
+		);
+	});
+
+	test("returns plugins filtered by isActivated", async () => {
+		const activatedPlugin = await insertPlugin({ isActivated: true });
+		const deactivatedPlugin = await insertPlugin({ isActivated: false });
+
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
+				input: {
+					isActivated: true,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: activatedPlugin.id }),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: deactivatedPlugin.id }),
+			]),
+		);
+	});
+
+	test("returns plugins filtered by isInstalled", async () => {
+		const installedPlugin = await insertPlugin({ isInstalled: true });
+		const notInstalledPlugin = await insertPlugin({ isInstalled: false });
+
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
+				input: {
+					isInstalled: true,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: installedPlugin.id }),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: notInstalledPlugin.id }),
+			]),
+		);
+	});
+
+	test("returns plugins filtered by multiple criteria", async () => {
+		const matchingPlugin = await insertPlugin({
+			isActivated: true,
+			isInstalled: true,
+		});
+		const activatedOnlyPlugin = await insertPlugin({
+			isActivated: true,
+			isInstalled: false,
+		});
+		const installedOnlyPlugin = await insertPlugin({
+			isActivated: false,
+			isInstalled: true,
+		});
+
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
+				input: {
 					isActivated: true,
 					isInstalled: true,
 				},
-			};
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin]);
+			},
 		});
 
-		it("should return empty array when no plugins match filters", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([]);
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: matchingPlugin.id }),
+			]),
+		);
+		const resultIds = (result.data.getPlugins as { id: string }[]).map(
+			(p) => p.id,
+		);
+		expect(resultIds).not.toContain(activatedOnlyPlugin.id);
+		expect(resultIds).not.toContain(installedOnlyPlugin.id);
+	});
 
-			const args = { input: { pluginId: "non_existent_plugin" } };
-			const result = await getPluginsResolver(null, args, ctx);
+	test("returns an empty array when no plugins match the filter", async () => {
+		const uniquePluginId = `nonexistent_${faker.string.ulid()}`;
 
-			expect(result).toEqual([]);
-		});
-
-		it("should handle null input gracefully", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin, mockPlugin2]);
-
-			const args = { input: null };
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin, mockPlugin2]);
-		});
-
-		it("should handle database errors gracefully", async () => {
-			const dbError = new Error("Database connection failed");
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockRejectedValue(dbError);
-
-			const args = { input: {} };
-
-			await expect(getPluginsResolver(null, args, ctx)).rejects.toThrow(
-				dbError,
-			);
-		});
-
-		it("should handle complex filtering with undefined values", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin]);
-
-			const args = {
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
 				input: {
-					pluginId: "test_plugin",
-					isActivated: undefined,
-					isInstalled: undefined,
+					pluginId: uniquePluginId,
 				},
-			};
-			const result = await getPluginsResolver(null, args, ctx);
-
-			expect(result).toEqual([mockPlugin]);
+			},
 		});
 
-		it("should handle empty string filters", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([]);
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual([]);
+	});
 
-			const args = { input: { pluginId: "" } };
-			const result = await getPluginsResolver(null, args, ctx);
+	test("returns plugins filtered by isActivated set to false", async () => {
+		const deactivatedPlugin = await insertPlugin({ isActivated: false });
+		const activatedPlugin = await insertPlugin({ isActivated: true });
 
-			expect(result).toEqual([]);
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
+				input: {
+					isActivated: false,
+				},
+			},
 		});
 
-		it("should handle boolean false filters", async () => {
-			vi.mocked(
-				ctx.drizzleClient.query.pluginsTable.findMany,
-			).mockResolvedValue([mockPlugin2]);
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: deactivatedPlugin.id }),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: activatedPlugin.id }),
+			]),
+		);
+	});
 
-			const args = { input: { isActivated: false } };
-			const result = await getPluginsResolver(null, args, ctx);
+	test("returns plugins filtered by isInstalled set to false", async () => {
+		const notInstalledPlugin = await insertPlugin({ isInstalled: false });
+		const installedPlugin = await insertPlugin({ isInstalled: true });
 
-			expect(result).toEqual([mockPlugin2]);
+		const result = await mercuriusClient.query(Query_getPlugins, {
+			variables: {
+				input: {
+					isInstalled: false,
+				},
+			},
 		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.getPlugins).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: notInstalledPlugin.id }),
+			]),
+		);
+		expect(result.data.getPlugins).toEqual(
+			expect.not.arrayContaining([
+				expect.objectContaining({ id: installedPlugin.id }),
+			]),
+		);
 	});
 });

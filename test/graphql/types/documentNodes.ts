@@ -3097,3 +3097,31 @@ export const Query_venue_updatedAt = gql(`
     }
   }
 `);
+
+export const Query_getPluginById = gql(`
+  query Query_getPluginById($input: QueryPluginInput!) {
+    getPluginById(input: $input) {
+      id
+      pluginId
+      isActivated
+      isInstalled
+      backup
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Query_getPlugins = gql(`
+  query Query_getPlugins($input: QueryPluginsInput) {
+    getPlugins(input: $input) {
+      id
+      pluginId
+      isActivated
+      isInstalled
+      backup
+      createdAt
+      updatedAt
+    }
+  }
+`);
