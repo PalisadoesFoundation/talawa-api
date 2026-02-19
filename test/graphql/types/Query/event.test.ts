@@ -1023,6 +1023,17 @@ suite("Query field event", () => {
 				);
 			});
 
+			if (createEventResult.errors && createEventResult.errors.length > 0) {
+				throw new Error(
+					`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
+				);
+			}
+			if (!createEventResult.data || !createEventResult.data.createEvent) {
+				throw new Error(
+					`createEvent returned no data. full response: ${JSON.stringify(createEventResult.data, null, 2)}`,
+				);
+			}
+
 			const instancesResult = await mercuriusClient.query(
 				Query_getRecurringEvents,
 				{
