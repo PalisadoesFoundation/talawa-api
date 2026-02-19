@@ -122,7 +122,13 @@ export type SetupKey =
 	| "API_METRICS_AGGREGATION_CRON_SCHEDULE"
 	| "API_METRICS_AGGREGATION_WINDOW_MINUTES"
 	| "API_METRICS_SNAPSHOT_RETENTION_COUNT"
-	| "CACHE_WARMING_ORG_COUNT";
+	| "CACHE_WARMING_ORG_COUNT"
+	| "API_AUTH_JWT_SECRET"
+	| "API_ACCESS_TOKEN_TTL"
+	| "API_REFRESH_TOKEN_TTL"
+	| "API_COOKIE_SECRET"
+	| "API_COOKIE_DOMAIN"
+	| "API_IS_SECURE_COOKIES";
 
 // Replace the index signature with a constrained mapping
 // Allow string indexing so tests and dynamic access are permitted
@@ -230,6 +236,7 @@ export function validateBooleanFields(answers: SetupAnswers): void {
 		"API_IS_PINO_PRETTY",
 		"API_MINIO_USE_SSL",
 		"API_POSTGRES_SSL_MODE",
+		"API_IS_SECURE_COOKIES",
 	];
 	const invalidFields: string[] = [];
 	for (const field of booleanFields) {
@@ -513,6 +520,92 @@ export async function cachingSetup(
 		}
 
 		console.log("\nCaching configuration completed!");
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
+}
+
+/**
+ * Sets up REST auth environment variables.
+ * Prompts for JWT secret, cookie secret, TTLs, and optional cookie domain/secure flag.
+ * @param answers - Current setup answers object
+ * @returns Updated answers object with REST auth configuration
+ */
+export async function restAuthSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		console.log("\n--- REST Authentication Configuration ---");
+		console.log(
+			"Configure environment variables for REST auth (signin, refresh, logout).",
+		);
+		console.log("See docs/getting-started/rest-auth.md for details.");
+		console.log();
+
+		const authJwtSecret = generateJwtSecret();
+		answers.API_AUTH_JWT_SECRET = await promptInput(
+			"API_AUTH_JWT_SECRET",
+			"REST auth JWT secret (min 32 characters):",
+			authJwtSecret.slice(0, 32),
+			(input: string) => {
+				const trimmed = input.trim();
+				if (trimmed.length < 32) {
+					return "REST auth JWT secret must be at least 32 characters.";
+				}
+				return true;
+			},
+		);
+
+		answers.API_ACCESS_TOKEN_TTL = await promptInput(
+			"API_ACCESS_TOKEN_TTL",
+			"Access token TTL in seconds (default 900):",
+			"900",
+			validatePositiveInteger,
+		);
+
+		answers.API_REFRESH_TOKEN_TTL = await promptInput(
+			"API_REFRESH_TOKEN_TTL",
+			"Refresh token TTL in seconds (default 2592000):",
+			"2592000",
+			validatePositiveInteger,
+		);
+
+		const cookieSecret = generateJwtSecret();
+		answers.API_COOKIE_SECRET = await promptInput(
+			"API_COOKIE_SECRET",
+			"Cookie signing secret (min 32 characters):",
+			cookieSecret.slice(0, 32),
+			(input: string) => {
+				const trimmed = input.trim();
+				if (trimmed.length < 32) {
+					return "Cookie secret must be at least 32 characters.";
+				}
+				return true;
+			},
+		);
+
+		const setCookieDomain = await promptConfirm(
+			"setCookieDomain",
+			"Set cookie domain for cross-subdomain auth?",
+			false,
+		);
+		if (setCookieDomain) {
+			answers.API_COOKIE_DOMAIN = await promptInput(
+				"API_COOKIE_DOMAIN",
+				"Cookie domain (e.g. .example.com):",
+				"",
+			);
+		}
+
+		answers.API_IS_SECURE_COOKIES = await promptList(
+			"API_IS_SECURE_COOKIES",
+			"Use secure (HTTPS-only) cookies?",
+			["true", "false"],
+			answers.CI === "true" ? "true" : "false",
+		);
+
+		console.log("\nREST auth configuration completed!");
 	} catch (err) {
 		await handlePromptError(err);
 	}
@@ -1340,6 +1433,14 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupCaching) {
 		answers = await cachingSetup(answers);
+	}
+	const setupRestAuth = await promptConfirm(
+		"setupRestAuth",
+		"Do you want to configure REST auth (signin, refresh, cookies) now?",
+		false,
+	);
+	if (setupRestAuth) {
+		answers = await restAuthSetup(answers);
 	}
 	await updateEnvVariable(answers, {
 		envFile: envFileName,
