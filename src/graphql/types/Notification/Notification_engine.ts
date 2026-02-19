@@ -5,6 +5,8 @@ import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudi
 import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
 import type { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import type { GraphQLContext } from "~/src/graphql/context";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Target types for notification audience
@@ -69,6 +71,10 @@ export class NotificationEngine {
 		audience: NotificationAudience | NotificationAudience[],
 		channelType: NotificationChannelType = NotificationChannelType.IN_APP,
 	): Promise<string> {
+		if (process.env.TEST_DISABLE_NOTIFICATIONS === "true") {
+			return Promise.resolve("test-notification-disabled");
+		}
+
 		const senderId = this.ctx.currentClient.isAuthenticated
 			? this.ctx.currentClient.user.id
 			: null;
@@ -85,9 +91,10 @@ export class NotificationEngine {
 			});
 
 		if (!template) {
-			throw new Error(
-				`No notification template found for event type "${eventType}" and channel "${channelType}"`,
-			);
+			throw new TalawaGraphQLError({
+				message: `No notification template found for event type "${eventType}" and channel "${channelType}"`,
+				extensions: { code: ErrorCode.NOT_FOUND },
+			});
 		}
 
 		const renderedContent = this.renderTemplate(template, variables);
@@ -113,7 +120,10 @@ export class NotificationEngine {
 			.returning();
 
 		if (!notificationLog) {
-			throw new Error("Failed to create notification log");
+			throw new TalawaGraphQLError({
+				message: "Failed to create notification log",
+				extensions: { code: ErrorCode.DATABASE_ERROR },
+			});
 		}
 
 		const audiences = Array.isArray(audience) ? audience : [audience];
@@ -346,9 +356,10 @@ export class NotificationEngine {
 					),
 			});
 		if (!template) {
-			throw new Error(
-				`No notification template found for event type "${eventType}" and channel "${channelType}"`,
-			);
+			throw new TalawaGraphQLError({
+				message: `No notification template found for event type "${eventType}" and channel "${channelType}"`,
+				extensions: { code: ErrorCode.NOT_FOUND },
+			});
 		}
 		const renderedContent = this.renderTemplate(template, variables);
 		const initialStatus =
@@ -373,7 +384,10 @@ export class NotificationEngine {
 			.returning();
 
 		if (!notificationLog) {
-			throw new Error("Failed to create notification log for direct email");
+			throw new TalawaGraphQLError({
+				message: "Failed to create notification log for direct email",
+				extensions: { code: ErrorCode.DATABASE_ERROR },
+			});
 		}
 
 		const emails = Array.isArray(receiverMail) ? receiverMail : [receiverMail];

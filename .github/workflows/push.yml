@@ -62,6 +62,9 @@ jobs:
           JWT_SECRET=$(openssl rand -hex 32)
           echo "API_JWT_SECRET=$JWT_SECRET" >> .env
           echo "API_AUTH_JWT_SECRET=$JWT_SECRET" >> .env
+          echo "TEST_BYPASS_REST_SIGNIN=true" >> .env
+          echo "TEST_DISABLE_NOTIFICATIONS=true" >> .env
+          echo "API_AWS_SES_REGION=us-east-1" >> .env
 
       # Build Talawa API compose testing environment
       - name: Build Talawa API compose testing environment

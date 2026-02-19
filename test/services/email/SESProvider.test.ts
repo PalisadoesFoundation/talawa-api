@@ -25,6 +25,10 @@ describe("SESProvider", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Default mock so every test that triggers send() gets a valid MessageId (avoids undefined at SESProvider line 139).
+		(SESClient as unknown as Mock).prototype.send = vi
+			.fn()
+			.mockResolvedValue({ MessageId: "test-default-id" });
 		sesProvider = new SESProvider(mockConfig);
 	});
 

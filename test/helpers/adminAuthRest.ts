@@ -1,4 +1,9 @@
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import {
+	getOrCreateAdminUserId,
+	type ServerWithAdminEnv,
+} from "./getOrCreateAdminUserId";
+import { mintAccessTokenForUser } from "./mintAccessToken";
 
 /**
  * Cache of admin auth result per server instance so tests do not exceed the
@@ -12,6 +17,7 @@ const adminAuthCache = new WeakMap<
 
 /**
  * Minimal server shape required for REST admin sign-in.
+ * When TEST_BYPASS_REST_SIGNIN=true, server must also have drizzleClient for token minting.
  * Tests pass the same server instance from test/server.ts.
  */
 interface ServerWithAuthEnv {
@@ -28,6 +34,8 @@ interface ServerWithAuthEnv {
 		cookies: Array<{ name: string; value: string }>;
 		statusCode: number;
 	}>;
+	/** Required when TEST_BYPASS_REST_SIGNIN=true (test server from test/server.ts has this). */
+	drizzleClient?: ServerWithAdminEnv["drizzleClient"];
 }
 
 export interface AdminAuthRestResult {
@@ -56,6 +64,23 @@ export async function getAdminAuthViaRest(
 	if (cached) return cached;
 
 	const promise = (async (): Promise<AdminAuthRestResult> => {
+		if (process.env.TEST_BYPASS_REST_SIGNIN === "true") {
+			if (!server.drizzleClient) {
+				throw new Error(
+					"TEST_BYPASS_REST_SIGNIN is set but server.drizzleClient is missing. Use the full test server from test/server.ts.",
+				);
+			}
+			const adminUser = await getOrCreateAdminUserId(
+				server as ServerWithAdminEnv,
+			);
+			const { token } = await mintAccessTokenForUser(server, adminUser);
+			return {
+				accessToken: token,
+				cookies: [{ name: COOKIE_NAMES.ACCESS_TOKEN, value: token }],
+				refreshToken: "test-refresh-token",
+			};
+		}
+
 		const response = await server.inject({
 			method: "POST",
 			url: "/auth/signin",

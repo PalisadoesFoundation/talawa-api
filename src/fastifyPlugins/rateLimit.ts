@@ -54,8 +54,17 @@ export default fp(
 					| keyof typeof import("~/src/config/rateLimits").rateLimitTiers
 					| RateLimitTier,
 			) => {
-				const tier =
+				let tier =
 					typeof tierOrName === "string" ? getTier(tierOrName) : tierOrName;
+
+				// In test, relax auth tier to avoid 429s when REST sign-in is exercised (e.g. without TEST_BYPASS_REST_SIGNIN).
+				if (
+					process.env.NODE_ENV === "test" &&
+					tier.name === "auth" &&
+					Number.isFinite(tier.max)
+				) {
+					tier = { ...tier, max: 10_000 };
+				}
 
 				if (!Number.isFinite(tier.max)) {
 					// open tier: no limiting
