@@ -6,12 +6,13 @@ import type {
 	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
+	Query_currentUser,
 	Query_user_natalSex,
 } from "../documentNodes";
 
@@ -19,28 +20,14 @@ suite("User field natalSex", () => {
 	let adminAuthToken: string;
 	let adminUserId: string;
 
-	// Extract the repeated admin sign-in into a beforeAll block
 	beforeAll(async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
-		assertToBeNonNullish(administratorUserSignInResult.data.signIn.user?.id);
-
-		adminAuthToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		adminUserId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		adminAuthToken = accessToken;
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${accessToken}` },
+		});
+		assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+		adminUserId = currentUserResult.data.currentUser.id;
 	});
 
 	suite(

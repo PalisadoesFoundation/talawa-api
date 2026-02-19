@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -9,20 +10,14 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_inviteEventAttendee,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
 });
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-const adminUserId = signInResult.data.signIn.user?.id;
+const adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
 

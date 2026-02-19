@@ -1,29 +1,20 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createPost,
 	Mutation_joinPublicOrganization,
-	Query_signIn,
 } from "../documentNodes";
 
 let authToken: string;
 
 beforeAll(async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	assertToBeNonNullish(signInResult.data?.signIn);
-	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
-	authToken = signInResult.data.signIn.authenticationToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	authToken = accessToken;
 });
 
 afterEach(() => {

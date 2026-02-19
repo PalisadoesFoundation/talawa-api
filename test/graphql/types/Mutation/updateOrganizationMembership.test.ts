@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
-import { usersTable } from "~/src/drizzle/schema";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -12,34 +12,16 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteCurrentUser,
 	Mutation_updateOrganizationMembership,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminToken}` },
 });
-
-assertToBeNonNullish(signInResult.data?.signIn);
-const adminToken = signInResult.data.signIn.authenticationToken;
+const adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(adminToken);
-
-const [adminUser] = await server.drizzleClient
-	.select({ id: usersTable.id })
-	.from(usersTable)
-	.where(
-		eq(
-			usersTable.emailAddress,
-			server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-		),
-	);
-
-assertToBeNonNullish(adminUser);
-const adminUserId = adminUser.id;
+assertToBeNonNullish(adminUserId);
 
 suite("Mutation field updateOrganizationMembership", () => {
 	afterEach(async () => {

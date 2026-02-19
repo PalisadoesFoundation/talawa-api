@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -17,7 +18,6 @@ import {
 	Mutation_deleteUser,
 	Mutation_markChatAsRead,
 	Query_chat_with_unread,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Mutation markChatAsRead", () => {
@@ -42,16 +42,8 @@ suite("Mutation markChatAsRead", () => {
 	});
 
 	test("full flow: create chat, send message, mark read", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// create two users
 		const user1Res = await mercuriusClient.mutate(Mutation_createUser, {
@@ -231,16 +223,7 @@ suite("Mutation markChatAsRead", () => {
 	});
 
 	test("invalid arguments: non-UUID input yields invalid_arguments", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const res = await mercuriusClient.mutate(Mutation_markChatAsRead, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -253,16 +236,7 @@ suite("Mutation markChatAsRead", () => {
 	});
 
 	test("arguments_associated_resources_not_found: missing chat returns proper error", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const chatId = faker.string.uuid();
 		const messageId = faker.string.uuid();
@@ -290,16 +264,7 @@ suite("Mutation markChatAsRead", () => {
 	});
 
 	test("arguments_associated_resources_not_found: missing message returns proper error", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const memberRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -405,16 +370,7 @@ suite("Mutation markChatAsRead", () => {
 	});
 
 	test("user not found: token for deleted user results in unauthenticated", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const tmpRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -450,16 +406,7 @@ suite("Mutation markChatAsRead", () => {
 	});
 
 	test("unauthorized: non-member cannot mark chat as read", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const outsiderRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },

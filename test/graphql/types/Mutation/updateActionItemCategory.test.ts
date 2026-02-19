@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { describe, expect, test } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -8,7 +10,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_updateActionItemCategory,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 describe("Mutation field updateActionItemCategory", () => {
@@ -40,24 +42,8 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.updateActionItemCategory" field if no action item category exists with ID equal to the value of argument "input.id".', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (!administratorUserSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const updateActionItemCategoryResult = await mercuriusClient.mutate(
 			Mutation_updateActionItemCategory,
@@ -94,28 +80,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.updateActionItemCategory" field if the client triggering the graphql operation is not an administrator of the organization.', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create a test user
 		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
@@ -273,28 +244,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.updateActionItemCategory" field if a category with the new name already exists in the same organization.', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create an organization
 		const uniqueOrgName = `Test Org ${faker.string.ulid()}`;
@@ -420,28 +376,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in "undefined" as the value of "errors" field and the updated action item category as the value of "data.updateActionItemCategory" field if successful when updating name only.', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create an organization
 		const uniqueOrgName = `Test Org ${faker.string.ulid()}`;
@@ -547,28 +488,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in "undefined" as the value of "errors" field and the updated action item category as the value of "data.updateActionItemCategory" field if successful when updating description only.', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create an organization
 		const uniqueOrgName = `Test Org ${faker.string.ulid()}`;
@@ -675,28 +601,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in "undefined" as the value of "errors" field and the updated action item category as the value of "data.updateActionItemCategory" field if successful when updating isDisabled only.', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create an organization
 		const uniqueOrgName = `Test Org ${faker.string.ulid()}`;
@@ -802,28 +713,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test('results in "undefined" as the value of "errors" field and the updated action item category as the value of "data.updateActionItemCategory" field if successful when updating all fields.', async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create an organization
 		const uniqueOrgName = `Test Org ${faker.string.ulid()}`;
@@ -932,28 +828,13 @@ describe("Mutation field updateActionItemCategory", () => {
 	});
 
 	test("allows updating category to the same name it already has without triggering duplicate name error.", async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			!administratorUserSignInResult.data?.signIn?.authenticationToken ||
-			!administratorUserSignInResult.data?.signIn?.user?.id
-		) {
-			throw new Error("Administrator sign in failed");
-		}
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
-		const adminId = administratorUserSignInResult.data.signIn.user.id;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+		});
+		const adminId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminId);
 
 		// Create an organization
 		const uniqueOrgName = `Test Org ${faker.string.ulid()}`;

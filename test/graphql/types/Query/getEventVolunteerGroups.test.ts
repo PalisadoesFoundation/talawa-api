@@ -9,6 +9,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { createRecurringEventWithInstances } from "../../../helpers/recurringEventTestHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -26,8 +27,8 @@ import {
 	Mutation_deleteOrganizationMembership,
 	Mutation_deleteUser,
 	Mutation_updateEventVolunteer,
+	Query_currentUser,
 	Query_getEventVolunteerGroups,
-	Query_signIn,
 } from "../documentNodes";
 
 vi.mock("~/src/utilities/leakyBucket", () => ({
@@ -45,24 +46,13 @@ suite("Query field getEventVolunteerGroups", () => {
 
 	// Minimal setup to reduce rate limiting
 	beforeAll(async () => {
-		// Add delay to avoid rate limiting
-
-		// Sign in as admin
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken } = await getAdminAuthViaRest(server);
+		adminAuthToken = accessToken;
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${accessToken}` },
 		});
-
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.authenticationToken);
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
-		adminUserId = adminSignInResult.data.signIn.user.id;
-
-		// Add delay between requests
+		assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+		adminUserId = currentUserResult.data.currentUser.id;
 
 		// Create organization
 		const orgResult = await mercuriusClient.mutate(

@@ -8,12 +8,12 @@ import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 	Query_verifyPasswordResetToken,
 } from "../documentNodes";
 
@@ -24,23 +24,8 @@ suite("Query field verifyPasswordResetToken", () => {
 	const validRawToken = faker.string.hexadecimal({ length: 64 }).slice(2); // 64 char hex
 
 	beforeAll(async () => {
-		// Sign in as admin
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
-		adminAuth = administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		adminAuth = accessToken;
 
 		// Create a test user
 		const testUserEmail = `verifytoken${faker.string.ulid()}@email.com`;

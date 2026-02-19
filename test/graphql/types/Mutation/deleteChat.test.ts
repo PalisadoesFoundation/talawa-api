@@ -4,6 +4,7 @@ import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -14,7 +15,6 @@ import {
 	Mutation_deleteChat,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Mutation deleteChat", () => {
@@ -39,16 +39,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("successfully deletes chat and avatar", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create Org
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -85,7 +76,7 @@ suite("Mutation deleteChat", () => {
 					variables: { input: { id: chatId } },
 				});
 			} catch (_) {
-				// ignore if already deleted
+				console.error(_);
 			}
 		});
 
@@ -127,16 +118,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("successfully deletes chat without avatar", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create Org
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -171,7 +153,7 @@ suite("Mutation deleteChat", () => {
 					variables: { input: { id: chatId } },
 				});
 			} catch (_) {
-				// ignore if already deleted
+				console.error(_);
 			}
 		});
 
@@ -202,16 +184,7 @@ suite("Mutation deleteChat", () => {
 
 	test("invalid arguments: invalid UUID", async () => {
 		// need token to pass auth check first
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -224,16 +197,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("arguments_associated_resources_not_found: chat does not exist", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -248,16 +212,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("unauthorized: non-admin cannot delete chat", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create Org
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -345,7 +300,7 @@ suite("Mutation deleteChat", () => {
 					variables: { input: { id: chatId } },
 				});
 			} catch (_) {
-				// ignore if already deleted
+				console.error(_);
 			}
 		});
 
@@ -364,16 +319,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("authorized: org-admin can delete chat", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create Org
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -460,7 +406,7 @@ suite("Mutation deleteChat", () => {
 					variables: { input: { id: chatId } },
 				});
 			} catch (_) {
-				// ignore if already deleted
+				console.error(_);
 			}
 		});
 
@@ -482,16 +428,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("authorized: chat-admin can delete chat (non-org-admin member)", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create Org
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -580,7 +517,7 @@ suite("Mutation deleteChat", () => {
 					variables: { input: { id: chatId } },
 				});
 			} catch (_) {
-				// ignore if already deleted
+				console.error(_);
 			}
 		});
 
@@ -622,16 +559,7 @@ suite("Mutation deleteChat", () => {
 	});
 
 	test("unauthorized: regular chat member (non-admin) cannot delete chat", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create Org
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -708,7 +636,7 @@ suite("Mutation deleteChat", () => {
 					variables: { input: { id: chatId } },
 				});
 			} catch (_) {
-				// ignore if already deleted
+				console.error(_);
 			}
 		});
 

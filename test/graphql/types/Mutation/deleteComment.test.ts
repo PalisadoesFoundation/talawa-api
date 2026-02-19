@@ -9,8 +9,10 @@ import {
 	test,
 	vi,
 } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -20,28 +22,16 @@ import {
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_deleteComment,
-	Mutation_signUp,
-	Query_signIn,
 } from "../documentNodes";
 
-/* ---------- sign in once (administrator) ---------- */
-
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-
-assertToBeNonNullish(signInResult.data?.signIn);
-const adminToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(adminToken);
-
-/* -------------------------------------------------- */
-
 suite("Mutation deleteComment", () => {
+	let adminToken: string;
+
+	beforeAll(async () => {
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		adminToken = accessToken;
+	});
 	//// 1. Unauthenticated
 	suite("when the user is not authenticated", () => {
 		test("should return unauthenticated error", async () => {
@@ -354,22 +344,38 @@ suite("Mutation deleteComment", () => {
 			assertToBeNonNullish(org.data?.createOrganization);
 			const organizationId = org.data.createOrganization.id;
 
-			/* ---------- regular user signs up ---------- */
-			const signUp = await mercuriusClient.mutate(Mutation_signUp, {
+			/* ---------- regular user: createUser + org membership + REST signin ---------- */
+			const memberEmail = faker.internet.email();
+			const memberPassword = faker.internet.password();
+			const createUserRes = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						emailAddress: faker.internet.email(),
-						password: faker.internet.password(),
+						emailAddress: memberEmail,
+						password: memberPassword,
 						name: faker.person.fullName(),
-						selectedOrganization: organizationId, // ✅ REQUIRED
+						role: "regular",
+						isEmailAddressVerified: false,
 					},
 				},
 			});
-
-			expect(signUp.errors).toBeUndefined();
-			assertToBeNonNullish(signUp.data?.signUp);
-
-			const userToken = signUp.data.signUp.authenticationToken;
+			const memberId = createUserRes.data?.createUser?.user?.id;
+			assertToBeNonNullish(memberId);
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { organizationId, memberId, role: "regular" },
+				},
+			});
+			const signInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: memberEmail, password: memberPassword },
+			});
+			expect(signInRes.statusCode).toBe(200);
+			const userToken = signInRes.cookies.find(
+				(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			)?.value;
 			assertToBeNonNullish(userToken);
 
 			/* ---------- admin creates post ---------- */
@@ -440,17 +446,22 @@ suite("Mutation deleteComment", () => {
 			const userId = createUserResult.data.createUser.user?.id;
 			assertToBeNonNullish(userId);
 
-			// Sign in to get their token
-			const userSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: testUserEmail,
-						password: "password",
-					},
-				},
+			// Sign in as test user via REST to get their token
+			const signInResponse = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: testUserEmail, password: "password" },
 			});
-			const userToken = userSignIn.data?.signIn?.authenticationToken;
-			assertToBeNonNullish(userToken);
+			if (signInResponse.statusCode !== 200) {
+				throw new Error(
+					`Failed to sign in test user: ${signInResponse.statusCode} ${signInResponse.body}`,
+				);
+			}
+			const accessCookie = signInResponse.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			assertToBeNonNullish(accessCookie?.value);
+			const userToken = accessCookie.value;
 
 			// Create comment before deleting user
 			const org = await mercuriusClient.mutate(Mutation_createOrganization, {

@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -11,7 +12,7 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteTagFolder,
 	Mutation_updateTagFolder,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let cachedAdminAuth: {
@@ -19,29 +20,20 @@ let cachedAdminAuth: {
 	userId: string;
 } | null = null;
 
-// Helper function to get admin authentication token and user id
 async function getAdminAuth() {
 	if (cachedAdminAuth !== null) {
 		return cachedAdminAuth;
 	}
 
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-	assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
-
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
 	cachedAdminAuth = {
-		token: adminSignInResult.data.signIn.authenticationToken,
-		userId: adminSignInResult.data.signIn.user.id,
+		token,
+		userId: currentUserResult.data.currentUser.id,
 	};
-
 	return cachedAdminAuth;
 }
 
@@ -115,8 +107,8 @@ suite("Mutation field updateTagFolder", () => {
 		for (const cleanup of testCleanupFunctions.reverse()) {
 			try {
 				await cleanup();
-			} catch {
-				// Cleanup errors are acceptable in tests
+			} catch (e) {
+				console.error(e);
 			}
 		}
 		testCleanupFunctions.length = 0;
@@ -779,8 +771,8 @@ suite("Mutation field updateTagFolder", () => {
 						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: { input: { id: tagFolderId } },
 					});
-				} catch {
-					// Ignore cleanup error
+				} catch (e) {
+					console.error(e);
 				}
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `bearer ${adminAuthToken}` },

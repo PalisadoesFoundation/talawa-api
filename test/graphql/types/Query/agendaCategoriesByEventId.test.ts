@@ -9,6 +9,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -20,22 +21,14 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
 	Query_agendaCategoriesByEventId,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminAuthToken}` },
 });
-
-assertToBeNonNullish(signInResult.data?.signIn);
-const adminAuthToken = signInResult.data.signIn.authenticationToken;
-const adminUserId = signInResult.data.signIn.user?.id;
-
+const adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(adminAuthToken);
 assertToBeNonNullish(adminUserId);
 

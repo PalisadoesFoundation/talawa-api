@@ -5,13 +5,14 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createUser,
 	Mutation_deleteStandaloneEvent,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 async function addMembership(
@@ -78,16 +79,7 @@ async function createStandaloneEvent(
 	return event.id;
 }
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
 
 suite("Mutation field deleteStandaloneEvent", () => {
@@ -243,17 +235,12 @@ suite("Mutation field deleteStandaloneEvent", () => {
 			const organizationId = await createOrganizationAndGetId(authToken);
 
 			// Get admin user ID
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 			});
-			assertToBeNonNullish(adminSignIn.data?.signIn);
-			assertToBeNonNullish(adminSignIn.data.signIn.user);
-			const adminUserId = adminSignIn.data.signIn.user.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(adminUserId);
 
 			const eventId = await createStandaloneEvent(organizationId, adminUserId);
 
@@ -288,17 +275,12 @@ suite("Mutation field deleteStandaloneEvent", () => {
 			const organizationId = await createOrganizationAndGetId(authToken);
 
 			// Get admin user ID
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 			});
-			assertToBeNonNullish(adminSignIn.data?.signIn);
-			assertToBeNonNullish(adminSignIn.data.signIn.user);
-			const adminUserId = adminSignIn.data.signIn.user.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(adminUserId);
 
 			// Create a recurring event template
 			const [recurringTemplate] = await server.drizzleClient
@@ -348,17 +330,12 @@ suite("Mutation field deleteStandaloneEvent", () => {
 			const organizationId = await createOrganizationAndGetId(authToken);
 
 			// Get admin user ID
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 			});
-			assertToBeNonNullish(adminSignIn.data?.signIn);
-			assertToBeNonNullish(adminSignIn.data.signIn.user);
-			const adminUserId = adminSignIn.data.signIn.user.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(adminUserId);
 
 			const eventId = await createStandaloneEvent(organizationId, adminUserId);
 
@@ -417,17 +394,12 @@ suite("Mutation field deleteStandaloneEvent", () => {
 			const organizationId = await createOrganizationAndGetId(authToken);
 
 			// Get admin user ID
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 			});
-			assertToBeNonNullish(adminSignIn.data?.signIn);
-			assertToBeNonNullish(adminSignIn.data.signIn.user);
-			const adminUserId = adminSignIn.data.signIn.user.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(adminUserId);
 
 			const eventId = await createStandaloneEvent(organizationId, adminUserId);
 
@@ -466,17 +438,12 @@ suite("Mutation field deleteStandaloneEvent", () => {
 			const organizationId = await createOrganizationAndGetId(authToken);
 
 			// Get admin user ID
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 			});
-			assertToBeNonNullish(adminSignIn.data?.signIn);
-			assertToBeNonNullish(adminSignIn.data.signIn.user);
-			const adminUserId = adminSignIn.data.signIn.user.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(adminUserId);
 
 			const eventId = await createStandaloneEvent(organizationId, adminUserId);
 
@@ -516,17 +483,12 @@ suite("Mutation field deleteStandaloneEvent", () => {
 			const organizationId = await createOrganizationAndGetId(authToken);
 
 			// Get admin user ID
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${adminToken}` },
 			});
-			assertToBeNonNullish(adminSignIn.data?.signIn);
-			assertToBeNonNullish(adminSignIn.data.signIn.user);
-			const adminUserId = adminSignIn.data.signIn.user.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(adminUserId);
 
 			// Create event with attachment scenario (simplified)
 			const eventId = await createStandaloneEvent(organizationId, adminUserId);

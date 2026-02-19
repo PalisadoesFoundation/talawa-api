@@ -11,6 +11,7 @@ import type {
 	UnexpectedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -44,20 +45,9 @@ export const Mutation_updateCommunity = gql(`
 import {
 	Mutation_deleteCurrentUser,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
-// Get admin auth token at module level
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const adminAuthToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminAuthToken);
 
 suite("Mutation field updateCommunity", () => {

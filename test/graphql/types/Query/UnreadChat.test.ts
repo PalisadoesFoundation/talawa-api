@@ -15,7 +15,9 @@
 
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -29,7 +31,6 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Mutation_markChatAsRead,
-	Query_signIn,
 	Query_unreadChats,
 } from "../documentNodes";
 
@@ -57,17 +58,8 @@ suite("Query: unreadChats", () => {
 	});
 
 	test("returns chats where member has unread messages", async () => {
-		// sign in admin to create users/orgs
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// create two users: member and outsider
 		const memberRes = await mercuriusClient.mutate(Mutation_createUser, {
@@ -179,16 +171,15 @@ suite("Query: unreadChats", () => {
 			variables: { input: { chatId, body: "m2" } },
 		});
 
-		const memberSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: memberEmail,
-					password: "password123",
-				},
-			},
+		const memberSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: memberEmail, password: "password123" },
 		});
-		assertToBeNonNullish(memberSignIn.data?.signIn?.authenticationToken);
-		const memberToken = memberSignIn.data.signIn.authenticationToken as string;
+		const memberToken = memberSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(memberToken);
 
 		const unreadRes = await mercuriusClient.query(Query_unreadChats, {
 			headers: { authorization: `bearer ${memberToken}` },
@@ -197,17 +188,15 @@ suite("Query: unreadChats", () => {
 		const unreadList = unreadRes.data.unreadChats;
 		expect(unreadList.some((c: { id: string }) => c.id === chatId)).toBe(true);
 
-		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: outsiderEmail,
-					password: "password123",
-				},
-			},
+		const outsiderSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: outsiderEmail, password: "password123" },
 		});
-		assertToBeNonNullish(outsiderSignIn.data?.signIn?.authenticationToken);
-		const outsiderToken = outsiderSignIn.data.signIn
-			.authenticationToken as string;
+		const outsiderToken = outsiderSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(outsiderToken);
 
 		const outsiderUnread = await mercuriusClient.query(Query_unreadChats, {
 			headers: { authorization: `bearer ${outsiderToken}` },
@@ -220,16 +209,8 @@ suite("Query: unreadChats", () => {
 	});
 
 	test("does not count chats where lastReadAt is newer than messages", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -311,16 +292,15 @@ suite("Query: unreadChats", () => {
 		assertToBeNonNullish(msgRes.data?.createChatMessage);
 		const messageId = msgRes.data.createChatMessage.id;
 
-		const signIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: userEmail,
-					password: "password123",
-				},
-			},
+		const userSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: userEmail, password: "password123" },
 		});
-		assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
-		const userToken = signIn.data.signIn.authenticationToken as string;
+		const userToken = userSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(userToken);
 
 		await mercuriusClient.mutate(Mutation_markChatAsRead, {
 			headers: { authorization: `bearer ${userToken}` },

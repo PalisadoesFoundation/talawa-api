@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 
@@ -9,19 +10,10 @@ import {
 	Mutation_createPresignedUrl,
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
-	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
+assertToBeNonNullish(authToken);
 
 suite("Mutation field createPresignedUrl", () => {
 	suite("when the client is not authenticated", () => {
@@ -60,8 +52,8 @@ suite("Mutation field createPresignedUrl", () => {
 					server.envConfig.API_MINIO_PUBLIC_BASE_URL || fallbackBaseUrl;
 				return `${effectiveBaseUrl}/${bucket}/${objectName}`;
 			};
-			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-			const authToken = signInResult.data.signIn.authenticationToken;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(authToken);
 
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
@@ -150,16 +142,8 @@ suite("Mutation field createPresignedUrl", () => {
 
 	suite("when the current user does not exist", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-			const adminToken = adminSignInResult.data.signIn.authenticationToken;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(adminToken);
 
 			// Step 2: Create a new user using admin privileges.
 			const createUserResult = await mercuriusClient.mutate(
@@ -292,16 +276,7 @@ suite("Mutation field createPresignedUrl", () => {
 	});
 	suite("when the file already exists in postAttachmentsTable", () => {
 		test("should return the existing file details without generating a presigned URL", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(signInResult.data.signIn);
-			const authToken = signInResult.data.signIn.authenticationToken;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(authToken);
 
 			const createOrgResult = await mercuriusClient.mutate(

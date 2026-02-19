@@ -10,6 +10,7 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -29,22 +30,12 @@ import {
 	Query_fundCampaign,
 	Query_fundCampaignPledge,
 	Query_getPledgesByUserId,
-	Query_signIn,
 } from "../documentNodes";
 
-// Helper function to get admin auth token
 async function getAdminAuthToken(): Promise<string> {
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-	return adminSignInResult.data.signIn.authenticationToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 suite("Query field fund", () => {
@@ -313,22 +304,13 @@ suite("Query field fund", () => {
 	});
 
 	test("returns fund data if user is an admin", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		const adminToken = await getAdminAuthToken();
 
 		const { fundId } = await createFund();
 
 		const fundResult = await mercuriusClient.query(Query_fund, {
 			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 			variables: {
 				input: {
@@ -445,23 +427,14 @@ suite("Query field fund Campaign", () => {
 	});
 
 	test("returns fund Campaign data if user is an admin", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		const adminToken = await getAdminAuthToken();
 
 		const { fundId } = await createFund();
 		const { fundCampaignId } = await createFundCampaign(fundId);
 
 		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
 			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 			variables: {
 				input: {
@@ -518,17 +491,8 @@ suite("Query field fund Campaign Pledge", () => {
 	});
 
 	test("returns fund Campaign Pledge data if user is an admin", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
+		const adminToken = await getAdminAuthToken();
 		const regularUserResult = await createRegularUser();
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
 
 		const { fundId, orgId } = await createFund();
 		const { fundCampaignId } = await createFundCampaign(fundId);
@@ -542,7 +506,7 @@ suite("Query field fund Campaign Pledge", () => {
 			Query_fundCampaignPledge,
 			{
 				headers: {
-					authorization: `bearer ${adminSignInResult.data.signIn?.authenticationToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 				variables: {
 					input: {
@@ -634,22 +598,13 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		});
 
 		test("with 'arguments_associated_resources_not_found' extensions code if fund Campaign pledge is not found", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+			const adminToken = await getAdminAuthToken();
 
 			const fundCampaignPledgeResult = await mercuriusClient.query(
 				Query_getPledgesByUserId,
 				{
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -1255,22 +1210,13 @@ suite("Funds schema validation and field behavior", () => {
 	});
 
 	test("verifies unique constraint on fund name within organization", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		const adminToken = await getAdminAuthToken();
 
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
 				headers: {
-					authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 				variables: {
 					input: {
@@ -1287,7 +1233,7 @@ suite("Funds schema validation and field behavior", () => {
 
 		const fund1Result = await mercuriusClient.mutate(Mutation_createFund, {
 			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 			variables: {
 				input: {
@@ -1302,7 +1248,7 @@ suite("Funds schema validation and field behavior", () => {
 
 		const fund2Result = await mercuriusClient.mutate(Mutation_createFund, {
 			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 			variables: {
 				input: {

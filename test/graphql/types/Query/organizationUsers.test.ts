@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { beforeAll, beforeEach, expect, suite, test, vi } from "vitest";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -11,8 +12,8 @@ import {
 	Mutation_createUser,
 	Mutation_inviteEventAttendee,
 	Mutation_registerForEvent,
+	Query_currentUser,
 	Query_eventsByOrganizationId,
-	Query_signIn,
 	Query_usersByIds,
 	Query_usersByOrganizationId,
 } from "../documentNodes";
@@ -20,18 +21,12 @@ import {
 const MOCK_ORG_ID = "mock-org-id";
 
 async function globalSignInAndGetToken() {
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: authToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${authToken}` },
 	});
-	assertToBeNonNullish(result.data?.signIn);
-	const authToken = result.data.signIn.authenticationToken;
+	const userId = currentUserResult.data?.currentUser?.id;
 	assertToBeNonNullish(authToken);
-	const userId = result.data.signIn.user?.id;
 	assertToBeNonNullish(userId);
 	return { authToken, userId };
 }
@@ -271,7 +266,7 @@ suite("Query: eventsByOrganizationId", () => {
 				},
 			});
 		} catch (_error) {
-			// Ignore errors - membership might already exist
+			console.error(_error);
 		}
 	});
 

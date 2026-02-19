@@ -6,14 +6,16 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createUser,
 	Mutation_updateThisAndFollowingEvents,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // Clean up after each test to prevent state leakage
@@ -191,18 +193,13 @@ async function createRecurringEventWithInstances(
 	};
 }
 
-// Get admin authentication
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
+});
+const adminUserId = currentUserResult.data?.currentUser?.id;
+assertToBeNonNullish(adminUserId);
 
 suite(
 	"updateThisAndFollowingEvents",
@@ -264,15 +261,11 @@ suite(
 			// Create organization
 			const orgId = await createOrganizationAndGetId(authToken);
 
-			// Get current admin user
-			const currentUser = signInResult.data?.signIn?.user;
-			assertToBeNonNullish(currentUser);
-			await addMembership(orgId, currentUser.id, "administrator");
+			await addMembership(orgId, adminUserId, "administrator");
 
-			// Create recurring event with instances
 			const { instanceIds } = await createRecurringEventWithInstances(
 				orgId,
-				currentUser.id,
+				adminUserId,
 			);
 
 			const targetInstanceId = instanceIds[0];
@@ -317,14 +310,12 @@ suite(
 			const orgId = await createOrganizationAndGetId(authToken);
 
 			// Get current admin user
-			const currentUser = signInResult.data?.signIn?.user;
-			assertToBeNonNullish(currentUser);
-			await addMembership(orgId, currentUser.id, "administrator");
+			await addMembership(orgId, adminUserId, "administrator");
 
 			// Create recurring event with instances (creates event with isPublic: true)
 			const { instanceIds } = await createRecurringEventWithInstances(
 				orgId,
-				currentUser.id,
+				adminUserId,
 			);
 
 			const targetInstanceId = instanceIds[0];
@@ -387,15 +378,11 @@ suite(
 			// Create organization
 			const orgId = await createOrganizationAndGetId(authToken);
 
-			// Get current admin user
-			const currentUser = signInResult.data?.signIn?.user;
-			assertToBeNonNullish(currentUser);
-			await addMembership(orgId, currentUser.id, "administrator");
+			await addMembership(orgId, adminUserId, "administrator");
 
-			// Create recurring event with instances
 			const { instanceIds } = await createRecurringEventWithInstances(
 				orgId,
-				currentUser.id,
+				adminUserId,
 			);
 
 			// Mark the first instance as cancelled
@@ -428,49 +415,48 @@ suite(
 		test("should throw unauthorized_action_on_arguments_associated_resources error for non-admin and non-creator", async () => {
 			const orgId = await createOrganizationAndGetId(authToken);
 
-			const currentUser = signInResult.data?.signIn?.user;
-			assertToBeNonNullish(currentUser);
-			await addMembership(orgId, currentUser.id, "administrator");
+			await addMembership(orgId, adminUserId, "administrator");
 
 			const { instanceIds } = await createRecurringEventWithInstances(
 				orgId,
-				currentUser.id,
+				adminUserId,
 			);
 
 			const regularUserEmail = faker.internet.email();
 			const regularUserPassword = "password123";
-			await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						emailAddress: regularUserEmail,
-						password: regularUserPassword,
-						name: "Regular User",
-						role: "regular",
-						isEmailAddressVerified: true,
-					},
-				},
-			});
-
-			const regularUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
 				{
+					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
 							emailAddress: regularUserEmail,
 							password: regularUserPassword,
+							name: "Regular User",
+							role: "regular",
+							isEmailAddressVerified: true,
 						},
 					},
 				},
 			);
-			assertToBeNonNullish(regularUserSignInResult.data?.signIn);
-			const regularUserAuthToken =
-				regularUserSignInResult.data.signIn.authenticationToken;
-			assertToBeNonNullish(regularUserAuthToken);
-			const regularUser = regularUserSignInResult.data.signIn.user;
-			assertToBeNonNullish(regularUser);
+			const regularUserId = createUserResult.data?.createUser?.user?.id;
+			assertToBeNonNullish(regularUserId);
 
-			await addMembership(orgId, regularUser.id, "regular");
+			const signInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: {
+					email: regularUserEmail,
+					password: regularUserPassword,
+				},
+			});
+			const accessCookie = signInRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const regularUserAuthToken = accessCookie?.value;
+			assertToBeNonNullish(regularUserAuthToken);
+
+			await addMembership(orgId, regularUserId, "regular");
 
 			const result = await mercuriusClient.mutate(
 				Mutation_updateThisAndFollowingEvents,
@@ -498,15 +484,11 @@ test("should successfully update recurrence pattern", async () => {
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
 
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
-	// Create recurring event with instances
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	// Update recurrence pattern of the first instance to be bi-weekly
@@ -566,15 +548,11 @@ test("should handle all-day event updates", async () => {
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
 
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
-	// Create recurring event with instances
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	// Convert to all-day event
@@ -603,15 +581,11 @@ test("should throw invalid_arguments error for invalid recurrence input", async 
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
 
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
-	// Create recurring event with instances
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	// Try to update with invalid recurrence (zero interval)
@@ -662,13 +636,11 @@ test("should properly update the old recurrence rule end date", async () => {
 	const orgId = await createOrganizationAndGetId(authToken);
 
 	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	// Create recurring event with instances
 	const { instanceIds, recurrenceRuleId } =
-		await createRecurringEventWithInstances(orgId, currentUser.id);
+		await createRecurringEventWithInstances(orgId, adminUserId);
 
 	const targetInstanceId = instanceIds[2];
 	assertToBeNonNullish(targetInstanceId);
@@ -716,15 +688,11 @@ test("should not update instances beyond the split point", async () => {
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
 
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
-	// Create recurring event with instances
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	// Split the series at the third instance
@@ -813,15 +781,11 @@ test("should throw invalid_arguments error for invalid recurrence validation", a
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
 
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
-	// Create recurring event with instances
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -867,13 +831,11 @@ test("should throw invalid_arguments error for invalid recurrence validation", a
 test("should throw invalid_arguments error for zero or negative count", async () => {
 	// This test covers count validation in validateRecurrenceInput
 	const orgId = await createOrganizationAndGetId(authToken);
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -908,13 +870,11 @@ test("should throw invalid_arguments error for zero or negative count", async ()
 test("should throw invalid_arguments error for never-ending yearly events", async () => {
 	// This test covers yearly event validation in validateRecurrenceInput
 	const orgId = await createOrganizationAndGetId(authToken);
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -958,13 +918,11 @@ test("should throw invalid_arguments error for never-ending yearly events", asyn
 test("should throw invalid_arguments error for invalid day codes", async () => {
 	// This test covers byDay validation in validateRecurrenceInput
 	const orgId = await createOrganizationAndGetId(authToken);
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -1009,13 +967,11 @@ test("should throw invalid_arguments error for invalid day codes", async () => {
 test("should throw invalid_arguments error for invalid month values", async () => {
 	// This test covers byMonth validation - but values are validated by Zod first
 	const orgId = await createOrganizationAndGetId(authToken);
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -1051,13 +1007,11 @@ test("should throw invalid_arguments error for invalid month values", async () =
 test("should throw invalid_arguments error for invalid month day values", async () => {
 	// This test covers byMonthDay validation - but values are validated by Zod first
 	const orgId = await createOrganizationAndGetId(authToken);
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -1094,13 +1048,11 @@ test("should throw invalid_arguments error for business logic validation failure
 	// This test specifically targets the validateRecurrenceInput function
 	// by using values that pass Zod validation but fail business logic validation
 	const orgId = await createOrganizationAndGetId(authToken);
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	const targetInstanceId = instanceIds[0];
@@ -1158,9 +1110,7 @@ test("should handle missing generation window by initializing new one", async ()
 	const orgId = await createOrganizationAndGetId(authToken);
 
 	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	// Delete any existing generation windows to simulate missing window
 	await server.drizzleClient
@@ -1174,7 +1124,7 @@ test("should handle missing generation window by initializing new one", async ()
 			name: "Test Event",
 			description: "Test event without generation window",
 			organizationId: orgId,
-			creatorId: currentUser.id,
+			creatorId: adminUserId,
 			isRecurringEventTemplate: true,
 			startAt: new Date("2024-01-01T10:00:00Z"),
 			endAt: new Date("2024-01-01T11:00:00Z"),
@@ -1196,7 +1146,7 @@ test("should handle missing generation window by initializing new one", async ()
 			frequency: "WEEKLY",
 			interval: 1,
 			organizationId: orgId,
-			creatorId: currentUser.id,
+			creatorId: adminUserId,
 			recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
 			latestInstanceDate: new Date("2024-01-08"),
 		})
@@ -1250,7 +1200,7 @@ test("should handle missing generation window by initializing new one", async ()
 			where: (fields, operators) => operators.eq(fields.organizationId, orgId),
 		});
 	expect(generationWindow).toBeDefined();
-	expect(generationWindow?.createdById).toBe(currentUser.id);
+	expect(generationWindow?.createdById).toBe(adminUserId);
 }, 15000); // 15 second timeout for this complex test
 
 test("should override isInviteOnly when explicitly provided", async () => {
@@ -1258,14 +1208,12 @@ test("should override isInviteOnly when explicitly provided", async () => {
 	const orgId = await createOrganizationAndGetId(authToken);
 
 	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	// Create recurring event with instances (default isInviteOnly = false)
 	const { instanceIds, templateId } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	// Verify original template has isInviteOnly = false
@@ -1317,9 +1265,7 @@ test("should inherit isInviteOnly from original event when omitted", async () =>
 	const orgId = await createOrganizationAndGetId(authToken);
 
 	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
 	// Create recurring event template with isInviteOnly = true
 	const originalSeriesId = faker.string.uuid();
@@ -1329,7 +1275,7 @@ test("should inherit isInviteOnly from original event when omitted", async () =>
 			name: "Invite-Only Weekly Meeting",
 			description: "Weekly team meeting",
 			organizationId: orgId,
-			creatorId: currentUser.id,
+			creatorId: adminUserId,
 			isRecurringEventTemplate: true,
 			startAt: new Date("2024-01-01T10:00:00Z"),
 			endAt: new Date("2024-01-01T11:00:00Z"),
@@ -1353,7 +1299,7 @@ test("should inherit isInviteOnly from original event when omitted", async () =>
 			frequency: "WEEKLY",
 			interval: 1,
 			organizationId: orgId,
-			creatorId: currentUser.id,
+			creatorId: adminUserId,
 			recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
 			latestInstanceDate: new Date("2024-01-15"),
 		})
@@ -1370,7 +1316,7 @@ test("should inherit isInviteOnly from original event when omitted", async () =>
 
 	await server.drizzleClient.insert(eventGenerationWindowsTable).values({
 		organizationId: orgId,
-		createdById: currentUser.id,
+		createdById: adminUserId,
 		currentWindowEndDate: endDate,
 		retentionStartDate: retentionDate,
 		hotWindowMonthsAhead: 6,
@@ -1430,15 +1376,11 @@ test("should propagate isInviteOnly to generated instances", async () => {
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
 
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
+	await addMembership(orgId, adminUserId, "administrator");
 
-	// Create recurring event with instances
 	const { instanceIds } = await createRecurringEventWithInstances(
 		orgId,
-		currentUser.id,
+		adminUserId,
 	);
 
 	// Update with isInviteOnly = true

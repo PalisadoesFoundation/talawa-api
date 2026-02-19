@@ -6,10 +6,12 @@ import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
+import { Query_currentUser } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -58,20 +60,24 @@ suite("User field oauthAccounts", () => {
 
 		testUser = createdUser;
 
-		// Sign in as test user to get auth token
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: testEmail,
-					password: testPassword,
-				},
-			},
+		// Sign in as test user via REST to get auth token
+		const signInResponse = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: testEmail, password: testPassword },
 		});
-		if (!userSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error("Failed to get authentication token for test user");
+		if (signInResponse.statusCode !== 200) {
+			throw new Error(
+				`Failed to sign in test user: ${signInResponse.statusCode} ${signInResponse.body}`,
+			);
 		}
-
-		testUserToken = userSignInResult.data.signIn.authenticationToken;
+		const accessCookie = signInResponse.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		);
+		if (!accessCookie?.value) {
+			throw new Error("REST sign-in did not set access token cookie");
+		}
+		testUserToken = accessCookie.value;
 
 		// Create second test user (for cross-user access tests)
 		const otherEmail = `oauth-other-${faker.string.uuid()}@example.com`;
@@ -124,20 +130,12 @@ suite("User field oauthAccounts", () => {
 	});
 
 	test("returns empty array for authenticated user", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
 		});
-
-		const adminToken = adminRes.data?.signIn?.authenticationToken;
-		assertToBeNonNullish(adminToken);
-
-		const adminUserId = adminRes.data.signIn?.user?.id;
-		assertToBeNonNullish(adminUserId);
+		assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+		const adminUserId = currentUserResult.data.currentUser.id;
 
 		const res = await mercuriusClient.query(Query_UserOAuthAccounts, {
 			headers: { authorization: `bearer ${adminToken}` },

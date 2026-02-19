@@ -29,42 +29,45 @@ import type {
 	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Mutation_updateUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
+
+async function getAdminToken(): Promise<string> {
+	const { accessToken } = await getAdminAuthViaRest(server);
+	return accessToken;
+}
+
+async function getAdminAuth(): Promise<{ token: string; userId: string }> {
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
+	});
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+	return {
+		token: accessToken,
+		userId: currentUserResult.data.currentUser.id,
+	};
+}
 
 suite("Mutation field updateUser", () => {
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
 		() => {
 			test("client triggering the graphql operation is not authenticated.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -106,28 +109,13 @@ suite("Mutation field updateUser", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -145,7 +133,7 @@ suite("Mutation field updateUser", () => {
 
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -193,28 +181,13 @@ suite("Mutation field updateUser", () => {
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
 		() => {
 			test(`at least one optional argument within the "input" argument is not provided.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -234,7 +207,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -275,28 +248,13 @@ suite("Mutation field updateUser", () => {
 	    		length of the value of the argument "input.name" is less than 1.
 	    		length of the value of the argument "input.postalCode" is less than 1.
 	    		length of the value of the argument "input.state" is less than 1.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -316,7 +274,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -386,28 +344,13 @@ suite("Mutation field updateUser", () => {
 	    		length of the value of the argument "input.name" is more than 256.
 	    		length of the value of the argument "input.postalCode" is more than 32.
 	    		length of the value of the argument "input.state" is more than 64.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -427,7 +370,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -494,28 +437,13 @@ suite("Mutation field updateUser", () => {
 				value of the argument "input.isEmailAddressVerified" is "null".
 				value of the argument "input.name" is "null".
 				value of the argument "input.role" is "null".`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -535,7 +463,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -584,21 +512,7 @@ suite("Mutation field updateUser", () => {
 			});
 
 			test("should return invalid_arguments when avatar mime type is not allowed", async () => {
-				const signIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(signIn.data);
-				assertToBeNonNullish(signIn.data.signIn);
-				assertToBeNonNullish(signIn.data.signIn.authenticationToken);
-
-				const adminToken = signIn.data.signIn.authenticationToken;
+				const adminToken = await getAdminToken();
 
 				const createUser = await mercuriusClient.mutate(Mutation_createUser, {
 					headers: { authorization: `bearer ${adminToken}` },
@@ -650,28 +564,13 @@ suite("Mutation field updateUser", () => {
 		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
 		() => {
 			test("client triggering the graphql operation is not associated to an administrator user.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -727,37 +626,18 @@ suite("Mutation field updateUser", () => {
 		`results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
 		() => {
 			test(`value of the argument "input.id" is equal to the id of the user associated to the client triggering the graphql operation.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn.user?.id,
-				);
+				const adminAuth = await getAdminAuth();
 
 				const updateUserResult = await mercuriusClient.mutate(
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminAuth.token}`,
 						},
 						variables: {
 							input: {
 								addressLine1: null,
-								id: administratorUserSignInResult.data.signIn.user.id,
+								id: adminAuth.userId,
 							},
 						},
 					},
@@ -794,28 +674,13 @@ suite("Mutation field updateUser", () => {
 		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
 		() => {
 			test(`value of the argument "input.id" doesn't correspond to an existing user.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -833,7 +698,7 @@ suite("Mutation field updateUser", () => {
 
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -846,7 +711,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -888,22 +753,7 @@ suite("Mutation field updateUser", () => {
 		() => {
 			test(`nullable user fields have the values of the corresponding nullable arguments if they are provided in the graphql operation.
 				non-nullable user fields have the non-null values of the corresponding nullable arguments if they are provided in the graphql operation.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserVariables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
@@ -934,7 +784,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: createUserVariables,
 					},
@@ -974,7 +824,7 @@ suite("Mutation field updateUser", () => {
 					Mutation_updateUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: updateUserVariables,
 					},
@@ -1012,20 +862,7 @@ suite("Mutation field updateUser", () => {
 			});
 
 			test("should update user successfully when optional fields are omitted", async () => {
-				const signIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				assertToBeNonNullish(signIn.data);
-				assertToBeNonNullish(signIn.data.signIn);
-				assertToBeNonNullish(signIn.data.signIn.authenticationToken);
-
-				const adminToken = signIn.data.signIn.authenticationToken;
+				const adminToken = await getAdminToken();
 
 				const createUser = await mercuriusClient.mutate(Mutation_createUser, {
 					headers: { authorization: `bearer ${adminToken}` },

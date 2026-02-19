@@ -4,10 +4,10 @@ import gql from "graphql-tag";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Query_signIn } from "../documentNodes";
 
 /* -------------------------------------------------- */
 /* GraphQL Query */
@@ -62,17 +62,8 @@ type AllUsersEdge = {
 /* -------------------------------------------------- */
 const createdUserIds: string[] = [];
 async function getAdminAuthToken(): Promise<string> {
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	return result.data.signIn.authenticationToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	return accessToken;
 }
 
 async function createTestUser(

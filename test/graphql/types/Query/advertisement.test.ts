@@ -1,10 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import {
 	Mutation_createAdvertisement,
 	Mutation_createOrganization,
-	Query_signIn,
 } from "../../../routes/graphql/documentNodes";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -45,18 +45,8 @@ const Query_advertisement_simple = /* GraphQL */ `
 let authToken: string;
 
 beforeAll(async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	expect(signInResult.errors).toBeUndefined();
-	assertToBeNonNullish(signInResult.data?.signIn);
-	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
-	authToken = signInResult.data.signIn.authenticationToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	authToken = accessToken;
 });
 
 afterEach(() => {

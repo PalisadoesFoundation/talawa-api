@@ -9,9 +9,10 @@ import {
 	postsTable,
 	usersTable,
 } from "~/src/drizzle/schema";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
+import { Query_currentUser } from "../documentNodes";
 
 // --- GraphQL Query Definition ---
 const Query_comment_upVotesCount = `
@@ -32,24 +33,12 @@ const createdCommentIds: string[] = [];
 // --- Helper Functions ---
 
 async function getAdminAuthToken() {
-	const email = server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	const password = server.envConfig.API_ADMINISTRATOR_USER_PASSWORD;
-
-	if (!email || !password) {
-		throw new Error("Admin credentials missing from environment config");
-	}
-
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: { input: { emailAddress: email, password } },
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const result = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	const token = result.data?.signIn?.authenticationToken;
-	const userId = result.data?.signIn?.user?.id;
-
-	if (!token || !userId) {
-		throw new Error("Failed to authenticate admin user");
-	}
-
+	const userId = result.data?.currentUser?.id;
+	if (!token || !userId) throw new Error("Failed to authenticate admin user");
 	return { token, userId };
 }
 

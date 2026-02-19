@@ -2,7 +2,9 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { expect, suite, test, vi } from "vitest";
 import { usersTable } from "~/src/drizzle/tables/users";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -13,23 +15,12 @@ import {
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_updateCommentVote,
-	Query_signIn,
 } from "../documentNodes";
 
 const SUITE_TIMEOUT = 40_000;
 
-// Sign in as admin and cache credentials
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-assertToBeNonNullish(signInResult.data.signIn?.user?.id);
-const adminAuthToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
+assertToBeNonNullish(adminAuthToken);
 
 /**
  * Creates a test organization
@@ -136,15 +127,13 @@ async function createRegularUser(): Promise<{
 	const userId = createUserResult.data?.createUser?.user?.id;
 	assertToBeNonNullish(userId);
 
-	const signIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: email,
-				password: "password",
-			},
-		},
+	const res = await server.inject({
+		method: "POST",
+		url: "/auth/signin",
+		payload: { email, password: "password" },
 	});
-	const authToken = signIn.data?.signIn?.authenticationToken;
+	const cookie = res.cookies.find((c) => c.name === COOKIE_NAMES.ACCESS_TOKEN);
+	const authToken = cookie?.value;
 	assertToBeNonNullish(authToken);
 
 	return { userId, authToken };
@@ -241,16 +230,15 @@ suite("Mutation field updateCommentVote", () => {
 				const userId = createUserResult.data?.createUser?.user?.id;
 				assertToBeNonNullish(userId);
 
-				// Sign in as that user
-				const userSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: testUserEmail,
-							password: "password",
-						},
-					},
+				const userSignInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: { email: testUserEmail, password: "password" },
 				});
-				const userToken = userSignIn.data?.signIn?.authenticationToken;
+				const userAccessCookie = userSignInRes.cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				const userToken = userAccessCookie?.value;
 				assertToBeNonNullish(userToken);
 
 				// Delete the user from database
@@ -985,16 +973,15 @@ suite("Mutation field updateCommentVote", () => {
 				);
 				assertToBeNonNullish(createAdminResult.data?.createUser?.user?.id);
 
-				const newAdminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: adminEmail,
-							password: "password",
-						},
-					},
+				const newAdminSignInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: { email: adminEmail, password: "password" },
 				});
-				const newAdminToken =
-					newAdminSignIn.data?.signIn?.authenticationToken ?? "";
+				const newAdminCookie = newAdminSignInRes.cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				const newAdminToken = newAdminCookie?.value ?? "";
 				assertToBeNonNullish(newAdminToken);
 
 				// Admin creates vote
@@ -1044,16 +1031,15 @@ suite("Mutation field updateCommentVote", () => {
 				);
 				assertToBeNonNullish(createAdminResult.data?.createUser?.user?.id);
 
-				const newAdminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: adminEmail,
-							password: "password",
-						},
-					},
+				const newAdminSignInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: { email: adminEmail, password: "password" },
 				});
-				const newAdminToken =
-					newAdminSignIn.data?.signIn?.authenticationToken ?? "";
+				const newAdminCookie = newAdminSignInRes.cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				const newAdminToken = newAdminCookie?.value ?? "";
 				assertToBeNonNullish(newAdminToken);
 
 				// Admin creates vote first

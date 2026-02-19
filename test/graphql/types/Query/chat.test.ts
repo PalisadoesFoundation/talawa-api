@@ -8,6 +8,7 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -21,23 +22,13 @@ import {
 	Mutation_deleteUser,
 	Query_chat,
 	Query_chatsByUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-// Helper function to get admin auth token
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	const authToken = signInResult.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(authToken);
-	return authToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 // Helper function to create a test user
@@ -169,28 +160,24 @@ suite("Query field chat", () => {
 		adminAuthToken = await getAdminToken();
 
 		// Get admin user ID
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const adminToken = await getAdminToken();
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
 		});
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		const adminUserId = adminSignInResult.data.signIn.user.id;
+		const adminUserId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminUserId);
 
 		// Create test users
-		const user1 = await createTestUser(adminAuthToken, "regular");
+		const user1 = await createTestUser(adminToken, "regular");
 		regularUser1Id = user1.userId;
 		regularUser1AuthToken = user1.authToken;
 
-		const user2 = await createTestUser(adminAuthToken, "regular");
+		const user2 = await createTestUser(adminToken, "regular");
 		regularUser2Id = user2.userId;
 		regularUser2AuthToken = user2.authToken;
 
 		// Create test organization
-		organizationId = await createTestOrganization(adminAuthToken);
+		organizationId = await createTestOrganization(adminToken);
 
 		// Add admin to organization (needed for chat creation)
 		await createOrganizationMembership(
@@ -223,7 +210,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: testChatId } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 
 		try {
@@ -232,7 +219,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: regularUser1Id } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 
 		try {
@@ -241,7 +228,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: regularUser2Id } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 
 		try {
@@ -250,7 +237,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: organizationId } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 	});
 
@@ -489,28 +476,24 @@ suite("Query field chatsByUser", () => {
 		adminAuthToken = await getAdminToken();
 
 		// Get admin user ID
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const adminToken = await getAdminToken();
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminToken}` },
 		});
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		const adminUserId = adminSignInResult.data.signIn.user.id;
+		const adminUserId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminUserId);
 
 		// Create test users
-		const user1 = await createTestUser(adminAuthToken, "regular");
+		const user1 = await createTestUser(adminToken, "regular");
 		regularUser1Id = user1.userId;
 		regularUser1AuthToken = user1.authToken;
 
-		const user2 = await createTestUser(adminAuthToken, "regular");
+		const user2 = await createTestUser(adminToken, "regular");
 		regularUser2Id = user2.userId;
 		regularUser2AuthToken = user2.authToken;
 
 		// Create test organization
-		organizationId = await createTestOrganization(adminAuthToken);
+		organizationId = await createTestOrganization(adminToken);
 
 		// Add admin to organization as well
 		await createOrganizationMembership(
@@ -543,7 +526,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: testChatId } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 
 		try {
@@ -552,7 +535,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: regularUser1Id } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 
 		try {
@@ -561,7 +544,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: regularUser2Id } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 
 		try {
@@ -570,7 +553,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: organizationId } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors as resources may already be deleted
+			console.error(_error);
 		}
 	});
 

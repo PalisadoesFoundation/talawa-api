@@ -4,9 +4,10 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 import { mercuriusClient } from "test/graphql/types/client";
 import {
 	Mutation_createOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
+import { getAdminAuthViaRest } from "test/helpers/adminAuthRest";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	actionItemCategoriesTable,
@@ -25,36 +26,13 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 	if (adminToken && adminUserId)
 		return { token: adminToken, userId: adminUserId };
 
-	if (
-		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-	) {
-		throw new Error("Admin credentials missing in env config");
-	}
-
-	const res = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-
-	if (
-		res.errors ||
-		!res.data?.signIn?.authenticationToken ||
-		!res.data?.signIn?.user?.id
-	) {
-		throw new Error(
-			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
-		);
-	}
-
-	adminToken = res.data.signIn.authenticationToken;
-	adminUserId = res.data.signIn.user.id;
-	assertToBeNonNullish(adminToken);
-	assertToBeNonNullish(adminUserId);
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+	adminToken = accessToken;
+	adminUserId = currentUserResult.data.currentUser.id;
 	return { token: adminToken, userId: adminUserId };
 }
 

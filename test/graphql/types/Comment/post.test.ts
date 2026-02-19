@@ -9,12 +9,13 @@ import {
 	postsTable,
 } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createComment,
 	Query_comment,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // Track created entities for cleanup
@@ -25,20 +26,12 @@ const createdCommentIds: string[] = [];
 // --- Helpers ---
 
 async function getAdminAuthToken() {
-	const email = server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	const password = server.envConfig.API_ADMINISTRATOR_USER_PASSWORD;
-
-	if (!email || !password) throw new Error("Admin credentials missing");
-
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: { input: { emailAddress: email, password } },
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const result = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	const token = result.data?.signIn?.authenticationToken;
-	const userId = result.data?.signIn?.user?.id;
-
+	const userId = result.data?.currentUser?.id;
 	if (!token || !userId) throw new Error("Failed to get admin token");
-
 	return { token, userId };
 }
 

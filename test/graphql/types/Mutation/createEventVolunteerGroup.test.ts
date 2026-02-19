@@ -17,6 +17,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -29,7 +30,7 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteOrganizationMembership,
 	Mutation_deleteUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 suite("Mutation createEventVolunteerGroup", () => {
@@ -45,20 +46,14 @@ suite("Mutation createEventVolunteerGroup", () => {
 		// Initial delay to prevent rate limiting
 		await new Promise((resolve) => setTimeout(resolve, 800));
 
-		// Sign in as admin
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		adminAuthToken = accessToken;
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
 		});
-
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.authenticationToken);
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
-		adminUserId = adminSignInResult.data.signIn.user.id;
+		adminUserId = currentUserResult.data?.currentUser?.id ?? "";
+		assertToBeNonNullish(adminUserId);
 
 		await new Promise((resolve) => setTimeout(resolve, 600));
 

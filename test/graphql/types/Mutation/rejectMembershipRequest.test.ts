@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -8,7 +9,6 @@ import {
 	Mutation_createOrganization,
 	Mutation_rejectMembershipRequest,
 	Mutation_sendMembershipRequest,
-	Query_signIn,
 } from "../documentNodes";
 
 afterEach(() => {
@@ -38,15 +38,7 @@ suite("rejectMembershipRequest", () => {
 
 	suite("rejectMembershipRequest - invalid arguments", () => {
 		test("should return an error with invalid_arguments code", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const adminToken = signInResult.data?.signIn?.authenticationToken;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(adminToken);
 			const result = await mercuriusClient.mutate(
 				Mutation_rejectMembershipRequest,
@@ -73,15 +65,7 @@ suite("rejectMembershipRequest", () => {
 
 	suite("rejectMembershipRequest - membership request not found", () => {
 		test("should return an error with arguments_associated_resources_not_found", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const adminToken = signInResult.data?.signIn?.authenticationToken;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(adminToken);
 
 			const result = await mercuriusClient.mutate(
@@ -108,15 +92,7 @@ suite("rejectMembershipRequest", () => {
 
 	suite("rejectMembershipRequest - unauthorized action", () => {
 		test("should return an error when current user is not admin", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(adminToken);
 
 			const createOrgResult = await mercuriusClient.mutate(
@@ -186,15 +162,7 @@ suite("rejectMembershipRequest", () => {
 
 	suite("Mutation field rejectMembershipRequest", () => {
 		test("should accept a pending membership request and add the user to the organization", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(adminToken);
 
 			const createOrgResult = await mercuriusClient.mutate(
@@ -258,16 +226,7 @@ suite("rejectMembershipRequest", () => {
 
 		suite("rejectMembershipRequest - request status not pending", () => {
 			test("should return an error with forbidden_action code", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 				assertToBeNonNullish(adminToken);
 
 				const createOrgResult = await mercuriusClient.mutate(
@@ -348,15 +307,7 @@ suite("rejectMembershipRequest", () => {
 	});
 	suite("rejectMembershipRequest - empty update result", () => {
 		test("should return a specific error when update returns empty array", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(adminToken);
 
 			const createOrgResult = await mercuriusClient.mutate(

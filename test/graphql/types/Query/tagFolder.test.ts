@@ -9,6 +9,7 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -16,7 +17,6 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -47,22 +47,18 @@ const Mutation_createTagFolder = gql(`
   }
 `);
 
+async function getAdminToken(): Promise<string> {
+	const { accessToken } = await getAdminAuthViaRest(server);
+	return accessToken;
+}
+
 suite("Query field tagFolder", () => {
 	test("results in a graphql error with 'invalid_arguments' if an invalid id is provided", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		const adminToken = await getAdminToken();
 
 		const tagFolderResult = await mercuriusClient.query(Query_tagFolder, {
 			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 			variables: {
 				input: {
@@ -111,28 +107,13 @@ suite("Query field tagFolder", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -153,7 +134,7 @@ suite("Query field tagFolder", () => {
 
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -193,23 +174,11 @@ suite("Query field tagFolder", () => {
 		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.tagFolder" field if`,
 		() => {
 			test("the specified tag folder does not exist", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const tagFolderResult = await mercuriusClient.query(Query_tagFolder, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -247,18 +216,7 @@ suite("Query field tagFolder", () => {
 		() => {
 			test("regular user tries to access tag folder without organization membership", async () => {
 				// Step 1: Admin Sign-in
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-				if (!adminToken) throw new Error("Admin authentication failed");
+				const adminToken = await getAdminToken();
 
 				// Step 2: Create Regular User
 				const regularUserResult = await mercuriusClient.mutate(
@@ -368,18 +326,7 @@ suite("Query field tagFolder", () => {
 
 			test("regular user tries to access tag folder with organization membership but not as admin", async () => {
 				// Step 1: Admin Sign-in
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-				if (!adminToken) throw new Error("Admin authentication failed");
+				const adminToken = await getAdminToken();
 
 				// Step 2: Create Regular User
 				const regularUserResult = await mercuriusClient.mutate(
@@ -499,24 +446,14 @@ suite("Query field tagFolder", () => {
 
 	test("results in an empty 'errors' field and the expected value for the 'data.tagFolder' field when accessed by administrator", async () => {
 		// Step 1: Admin Sign-in
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!authToken) throw new Error("Admin authentication failed");
+		const adminToken = await getAdminToken();
 
 		// Step 2: Create Organization with unique name
 		const organizationResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
 				headers: {
-					authorization: `bearer ${authToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 				variables: {
 					input: {
@@ -544,7 +481,7 @@ suite("Query field tagFolder", () => {
 			Mutation_createTagFolder,
 			{
 				headers: {
-					authorization: `bearer ${authToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 				variables: {
 					input: {
@@ -569,7 +506,7 @@ suite("Query field tagFolder", () => {
 			Query_tagFolder,
 			{
 				headers: {
-					authorization: `bearer ${authToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 				variables: {
 					input: {
@@ -591,18 +528,7 @@ suite("Query field tagFolder", () => {
 	});
 
 	test("regular user can access tag folder when they are an organization administrator", async () => {
-		// Step 1: Admin Sign-in
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!adminToken) throw new Error("Admin authentication failed");
+		const adminToken = await getAdminToken();
 
 		// Step 2: Create Regular User
 		const regularUserResult = await mercuriusClient.mutate(

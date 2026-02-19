@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -8,7 +9,6 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_updateStandaloneEvent,
-	Query_signIn,
 } from "../documentNodes";
 
 afterEach(() => {
@@ -73,16 +73,7 @@ function mockStandaloneEvent(
 	};
 }
 
-// Get admin authentication token
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
+const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminToken);
 
 suite("Mutation field updateStandaloneEvent", () => {

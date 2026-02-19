@@ -1,8 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "../../helpers";
+import { getAdminAuthViaRest } from "../../helpers/adminAuthRest";
 import { server } from "../../server";
 import { mercuriusClient } from "./client";
-import { Mutation_createUser, Query_signIn } from "./documentNodes";
+import { Mutation_createUser } from "./documentNodes";
 
 /**
  * GraphQL error structure with optional extensions
@@ -66,28 +67,9 @@ export async function createRegularUserUsingAdmin(): Promise<{
 	userId: string;
 	authToken: string;
 }> {
-	// Clear any existing headers to ensure a clean sign-in
 	mercuriusClient.setHeaders({});
 
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	// Check for errors first
-	if (adminSignInResult.errors) {
-		throw new Error(
-			`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
-		);
-	}
-
-	assertToBeNonNullish(adminSignInResult.data?.signIn);
-	assertToBeNonNullish(adminSignInResult.data.signIn.authenticationToken);
-	const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
+	const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
 
 	// Use the admin token to create a regular user with retry logic for rate limits
 	const createUserResult = await retryWithRateLimitCheck(() =>

@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -13,7 +14,7 @@ import {
 	Mutation_deleteChat,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // Custom GraphQL query for testing createdAt field access
@@ -27,20 +28,10 @@ const Query_chat_with_createdAt = `
 	}
 `;
 
-// Helper function to get admin auth token
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	const authToken = signInResult.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(authToken);
-	return authToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 // Helper function to create a test user
@@ -172,19 +163,12 @@ suite("Chat field createdAt", () => {
 	const createdOrganizationIds: string[] = [];
 
 	beforeAll(async () => {
-		// Get admin token and user ID
 		adminAuthToken = await getAdminToken();
-
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
 		});
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		adminUserId = adminSignInResult.data.signIn.user.id;
+		adminUserId = currentUserResult.data?.currentUser?.id ?? "";
+		assertToBeNonNullish(adminUserId);
 
 		// Create test users
 		const user1 = await createTestUser(adminAuthToken, "regular");
@@ -239,7 +223,7 @@ suite("Chat field createdAt", () => {
 				variables: { input: { id: testChatId } },
 			});
 		} catch (_error) {
-			// Ignore cleanup errors
+			console.error(_error);
 		}
 
 		for (const userId of createdUserIds) {
@@ -249,7 +233,7 @@ suite("Chat field createdAt", () => {
 					variables: { input: { id: userId } },
 				});
 			} catch (_error) {
-				// Ignore cleanup errors
+				console.error(_error);
 			}
 		}
 
@@ -260,7 +244,7 @@ suite("Chat field createdAt", () => {
 					variables: { input: { id: orgId } },
 				});
 			} catch (_error) {
-				// Ignore cleanup errors
+				console.error(_error);
 			}
 		}
 	});
@@ -291,7 +275,7 @@ suite("Chat field createdAt", () => {
 				variables: { input: { id: creatorChatId } },
 			});
 		} catch (_error) {
-			// ignore cleanup errors
+			console.error(_error);
 		}
 	});
 

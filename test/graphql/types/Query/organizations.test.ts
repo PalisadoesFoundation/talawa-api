@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -11,7 +13,6 @@ import {
 	Mutation_deleteOrganizationMembership,
 	Mutation_deleteUser,
 	Query_organizations,
-	Query_signIn,
 } from "../documentNodes";
 
 type Organization = {
@@ -33,22 +34,9 @@ suite("Query field organizations", () => {
 	let org2Id = "";
 
 	beforeAll(async () => {
-		// Sign in as administrator
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
-		adminAuth = administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		adminAuth = accessToken;
 
 		// Create regular user 1
 		regularUser1Email = `email${faker.string.ulid()}@email.com`;
@@ -116,39 +104,39 @@ suite("Query field organizations", () => {
 		assertToBeNonNullish(createUser3Result.data.createUser?.user?.id);
 		regularUser3Id = createUser3Result.data.createUser.user.id;
 
-		// Sign in as regular users
-		const user1SignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: regularUser1Email,
-					password: "password",
-				},
-			},
+		// Sign in as regular users (REST)
+		const r1 = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: regularUser1Email, password: "password" },
 		});
-		assertToBeNonNullish(user1SignInResult.data.signIn?.authenticationToken);
-		regularUser1Auth = user1SignInResult.data.signIn.authenticationToken;
+		regularUser1Auth =
+			r1.cookies.find(
+				(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			)?.value ?? "";
+		assertToBeNonNullish(regularUser1Auth);
 
-		const user2SignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: regularUser2Email,
-					password: "password",
-				},
-			},
+		const r2 = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: regularUser2Email, password: "password" },
 		});
-		assertToBeNonNullish(user2SignInResult.data.signIn?.authenticationToken);
-		regularUser2Auth = user2SignInResult.data.signIn.authenticationToken;
+		regularUser2Auth =
+			r2.cookies.find(
+				(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			)?.value ?? "";
+		assertToBeNonNullish(regularUser2Auth);
 
-		const user3SignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: regularUser3Email,
-					password: "password",
-				},
-			},
+		const r3 = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: regularUser3Email, password: "password" },
 		});
-		assertToBeNonNullish(user3SignInResult.data.signIn?.authenticationToken);
-		regularUser3Auth = user3SignInResult.data.signIn.authenticationToken;
+		regularUser3Auth =
+			r3.cookies.find(
+				(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			)?.value ?? "";
+		assertToBeNonNullish(regularUser3Auth);
 
 		// delete user 3
 		await mercuriusClient.mutate(Mutation_deleteUser, {

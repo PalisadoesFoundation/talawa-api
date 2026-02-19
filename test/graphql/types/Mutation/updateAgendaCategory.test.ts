@@ -11,31 +11,31 @@ import {
 } from "~/src/drizzle/schema";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_updateAgendaCategory, Query_signIn } from "../documentNodes";
+import {
+	Mutation_updateAgendaCategory,
+	Query_currentUser,
+} from "../documentNodes";
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
 
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(accessToken);
+	assertToBeNonNullish(userId);
 
 	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
+		token: accessToken,
+		userId,
 	};
 
 	return cachedAdminAuth;

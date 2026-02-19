@@ -5,6 +5,8 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
+import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createActionItem,
@@ -16,7 +18,7 @@ import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_actionItemsByVolunteer,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 const SUITE_TIMEOUT = 30_000;
@@ -26,18 +28,12 @@ const ONE_DAY_PLUS_ONE_HOUR_MS = 25 * 60 * 60 * 1000;
 let globalAuth: { authToken: string; userId: string };
 
 async function globalSignInAndGetToken() {
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ?? "",
-				password: process.env.API_ADMINISTRATOR_USER_PASSWORD ?? "",
-			},
-		},
-	});
-	assertToBeNonNullish(result.data?.signIn);
-	const authToken = result.data.signIn.authenticationToken;
+	const { accessToken: authToken } = await getAdminAuthViaRest(server);
 	assertToBeNonNullish(authToken);
-	const userId = result.data.signIn.user?.id;
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${authToken}` },
+	});
+	const userId = currentUserResult.data?.currentUser?.id;
 	assertToBeNonNullish(userId);
 	return { authToken, userId };
 }

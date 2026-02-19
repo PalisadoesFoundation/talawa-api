@@ -1,15 +1,14 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { assertToBeNonNullish } from "test/helpers";
+import { getAdminAuthViaRest } from "test/helpers/adminAuthRest";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { usersTable } from "~/src/drizzle/tables/users";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import {
-	Mutation_adminUpdateUserPassword,
-	Query_signIn,
-} from "../documentNodes";
+import { Mutation_adminUpdateUserPassword } from "../documentNodes";
 
 suite("Mutation field adminUpdateUserPassword", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
@@ -31,20 +30,8 @@ suite("Mutation field adminUpdateUserPassword", () => {
 	};
 
 	const getAdminAuth = async () => {
-		const signIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(signIn.data);
-		assertToBeNonNullish(signIn.data.signIn);
-		assertToBeNonNullish(signIn.data.signIn.authenticationToken);
-
-		return signIn.data.signIn.authenticationToken;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		return accessToken;
 	};
 
 	afterEach(async () => {
@@ -163,13 +150,14 @@ suite("Mutation field adminUpdateUserPassword", () => {
 				),
 		});
 		assertToBeNonNullish(admin);
+		const adminId = admin.id;
 		const result = await mercuriusClient.mutate(
 			Mutation_adminUpdateUserPassword,
 			{
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						id: admin.id,
+						id: adminId,
 						newPassword: "newPassword123",
 						confirmNewPassword: "newPassword123",
 					},
@@ -277,17 +265,21 @@ suite("Mutation field adminUpdateUserPassword", () => {
 		expect(updatedUser?.failedLoginAttempts).toBe(0);
 		expect(updatedUser?.lockedUntil).toBeNull();
 
-		// Verify the user can sign in with the new password
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: updatedUser?.emailAddress ?? "",
-					password: "brandNewPassword123",
-				},
+		// Verify the user can sign in with the new password via REST
+		const signInResponse = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: updatedUser?.emailAddress ?? "",
+				password: "brandNewPassword123",
 			},
 		});
-		expect(signInResult.errors).toBeUndefined();
-		expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
+		expect(signInResponse.statusCode).toBe(200);
+		expect(
+			signInResponse.cookies.some(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN && c.value,
+			),
+		).toBe(true);
 	});
 
 	test("Admin can reset another admin password", async () => {

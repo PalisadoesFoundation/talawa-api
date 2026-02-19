@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -10,21 +11,12 @@ import {
 	Mutation_createPost,
 	Mutation_deleteCurrentUser,
 	Mutation_deletePost,
-	Query_signIn,
 } from "../documentNodes";
 
 const SUITE_TIMEOUT = 40_000;
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-const adminauthToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: adminauthToken } = await getAdminAuthViaRest(server);
+assertToBeNonNullish(adminauthToken);
 
 suite("Mutation field deletePost", () => {
 	suite("when the client is not authenticated", () => {

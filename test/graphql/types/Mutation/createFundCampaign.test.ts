@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -14,23 +15,13 @@ import {
 	Mutation_deleteFundCampaign,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-// Helper function to get admin auth token
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	const authToken = signInResult.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(authToken);
-	return authToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 // Helper function to create a test user
@@ -141,17 +132,11 @@ suite("Mutation field createFundCampaign", () => {
 
 	beforeAll(async () => {
 		adminAuthToken = await getAdminToken();
-
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
 		});
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		adminUserId = adminSignInResult.data.signIn.user.id;
+		adminUserId = currentUserResult.data?.currentUser?.id ?? "";
+		assertToBeNonNullish(adminUserId);
 
 		const orgAdminUser = await createTestUser(adminAuthToken, "regular");
 		orgAdminUserId = orgAdminUser.userId;
@@ -187,7 +172,7 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: campaignId } },
 				});
 			} catch (_error) {
-				// Ignore cleanup errors
+				console.error(_error);
 			}
 		}
 
@@ -198,7 +183,7 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: fundIdToDelete } },
 				});
 			} catch (_error) {
-				// Ignore cleanup errors
+				console.error(_error);
 			}
 		}
 
@@ -209,7 +194,7 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: userId } },
 				});
 			} catch (_error) {
-				// Ignore cleanup errors
+				console.error(_error);
 			}
 		}
 
@@ -220,7 +205,7 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: orgId } },
 				});
 			} catch (_error) {
-				// Ignore cleanup errors
+				console.error(_error);
 			}
 		}
 	});

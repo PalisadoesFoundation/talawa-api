@@ -1,29 +1,26 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_unblockUser,
 	Query_organization,
-	Query_signIn,
 } from "../../../routes/graphql/documentNodes";
 import { server } from "../../../server";
 import { mercuriusClient } from "../../types/client";
 import { createRegularUserUsingAdmin } from "../../types/createRegularUserUsingAdmin";
+import { Query_currentUser } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
+});
+const adminUserId = currentUserResult.data?.currentUser?.id;
+assertToBeNonNullish(adminUserId);
 
 suite("Organization.blockedUsers Field", () => {
 	suite("when the client is not authenticated", () => {
@@ -93,9 +90,7 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			assertToBeNonNullish(signInResult.data?.signIn);
-			assertToBeNonNullish(signInResult.data.signIn.user);
-			const adminId = signInResult.data.signIn.user.id;
+			const adminId = adminUserId;
 			assertToBeNonNullish(adminId);
 
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -163,9 +158,7 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			assertToBeNonNullish(signInResult.data?.signIn);
-			assertToBeNonNullish(signInResult.data.signIn.user);
-			const adminId = signInResult.data.signIn.user.id;
+			const adminId = adminUserId;
 			assertToBeNonNullish(adminId);
 
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -288,9 +281,7 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			assertToBeNonNullish(signInResult.data?.signIn);
-			assertToBeNonNullish(signInResult.data.signIn.user);
-			const adminId = signInResult.data.signIn.user.id;
+			const adminId = adminUserId;
 			assertToBeNonNullish(adminId);
 
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -432,9 +423,7 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			assertToBeNonNullish(signInResult.data?.signIn);
-			assertToBeNonNullish(signInResult.data.signIn.user);
-			const adminId = signInResult.data.signIn.user.id;
+			const adminId = adminUserId;
 			assertToBeNonNullish(adminId);
 
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -611,9 +600,7 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			assertToBeNonNullish(signInResult.data?.signIn);
-			assertToBeNonNullish(signInResult.data.signIn.user);
-			const adminId = signInResult.data.signIn.user.id;
+			const adminId = adminUserId;
 			assertToBeNonNullish(adminId);
 
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {

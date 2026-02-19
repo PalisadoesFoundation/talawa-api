@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -13,7 +15,6 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Query_chat_members,
-	Query_signIn,
 } from "../documentNodes";
 
 describe("Chat.members integration tests", () => {
@@ -32,15 +33,8 @@ describe("Chat.members integration tests", () => {
 	});
 
 	test("happy path: returns members and supports pagination", async () => {
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -147,16 +141,18 @@ describe("Chat.members integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user.emailAddress,
+				password: "password123",
 			},
 		});
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -233,15 +229,8 @@ describe("Chat.members integration tests", () => {
 	});
 
 	test("invalid cursor and missing-cursor resource errors", async () => {
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -296,16 +285,18 @@ describe("Chat.members integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user.emailAddress,
+				password: "password123",
 			},
 		});
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -363,15 +354,8 @@ describe("Chat.members additional edge cases", () => {
 	});
 
 	test("invalid when both first and last provided", async () => {
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -426,16 +410,18 @@ describe("Chat.members additional edge cases", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user.emailAddress,
+				password: "password123",
 			},
 		});
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -461,15 +447,8 @@ describe("Chat.members additional edge cases", () => {
 	});
 
 	test("inversed pagination with last/before and missing-cursor on before", async () => {
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const u1Res = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -550,12 +529,15 @@ describe("Chat.members additional edge cases", () => {
 		});
 
 		assertToBeNonNullish(u1.user?.emailAddress);
-		const u1SignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: { emailAddress: u1.user.emailAddress, password: "password123" },
-			},
+		const u1SignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: u1.user.emailAddress, password: "password123" },
 		});
-		const u1Token = u1SignIn.data?.signIn?.authenticationToken as string;
+		const u1Token = u1SignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(u1Token);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${u1Token}` },

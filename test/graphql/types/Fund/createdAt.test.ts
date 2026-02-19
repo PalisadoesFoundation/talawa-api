@@ -10,6 +10,7 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { Fund } from "~/src/graphql/types/Fund/Fund";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -18,7 +19,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteFund,
 	Mutation_deleteOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -40,22 +41,14 @@ const Query_fund_createdAt = gql(`
 type AdminAuth = { token: string; userId: string };
 
 async function getAdminAuth(): Promise<AdminAuth> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-
-	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(signInResult.data?.signIn?.user);
-
-	return {
-		token: signInResult.data.signIn.authenticationToken,
-		userId: signInResult.data.signIn.user.id,
-	};
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(accessToken);
+	assertToBeNonNullish(userId);
+	return { token: accessToken, userId };
 }
 
 async function createRegularUser(): Promise<{ token: string; userId: string }> {

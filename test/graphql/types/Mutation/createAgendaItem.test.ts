@@ -5,6 +5,7 @@ import { afterEach, expect, suite, test, vi } from "vitest";
 import { agendaFoldersTable, usersTable } from "~/src/drizzle/schema";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -17,7 +18,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
@@ -25,31 +26,15 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	const {
-		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
-		API_ADMINISTRATOR_USER_PASSWORD: password,
-	} = server.envConfig;
-
-	if (!email || !password) {
-		throw new Error("Missing admin credentials for tests.");
-	}
-
-	const result = await mercuriusClient.query(Query_signIn, {
-		headers: { authorization: "" },
-		variables: {
-			input: { emailAddress: email, password },
-		},
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	expect(result.errors).toBeUndefined();
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
-
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
 	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
+		token,
+		userId: currentUserResult.data.currentUser.id,
 	};
-
 	return cachedAdminAuth;
 }
 
@@ -176,9 +161,8 @@ suite("Mutation field createAgendaItem", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {
-				// Cleanup errors are intentionally swallowed to prevent cascading failures
-				// during teardown. The test result is already determined at this point.
+			} catch (e) {
+				console.error(e);
 			}
 		}
 		cleanupFns.length = 0;

@@ -24,6 +24,7 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -32,7 +33,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 /**
@@ -1486,21 +1487,11 @@ describe("Mutation createEvent - Performance Tracking", () => {
 		});
 
 		it("should execute createEvent mutation through mercuriusClient with schema wiring", async () => {
-			// Sign in as admin to get authentication token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${authToken}` },
 			});
-
-			expect(signInResult.errors).toBeUndefined();
-			expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
-			expect(signInResult.data?.signIn?.user?.id).toBeDefined();
-			const authToken = signInResult.data?.signIn?.authenticationToken;
-			const adminUserId = signInResult.data?.signIn?.user?.id;
+			const adminUserId = currentUserResult.data?.currentUser?.id;
 			if (!authToken || !adminUserId) {
 				throw new Error("Auth token or user ID is undefined");
 			}

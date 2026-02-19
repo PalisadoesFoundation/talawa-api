@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -11,26 +13,14 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
-// Sign in as admin to get an authentication token
 let authToken: string;
 
 beforeAll(async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	expect(signInResult.errors).toBeUndefined();
-	assertToBeNonNullish(signInResult.data?.signIn);
-	const token = signInResult.data.signIn.authenticationToken;
-	assertToBeNonNullish(token);
-	authToken = token;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	authToken = accessToken;
 });
 
 // Helper function to create an organization
@@ -75,21 +65,18 @@ async function createUser(): Promise<{
 	return { id: userId, emailAddress: email };
 }
 
-// Helper function to get auth token for a user
 async function getUserAuthToken(
 	emailAddress: string,
 	password: string,
 ): Promise<string> {
-	const signIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress,
-				password,
-			},
-		},
+	const res = await server.inject({
+		method: "POST",
+		url: "/auth/signin",
+		payload: { email: emailAddress, password },
 	});
-	assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
-	return signIn.data.signIn.authenticationToken;
+	const cookie = res.cookies.find((c) => c.name === COOKIE_NAMES.ACCESS_TOKEN);
+	assertToBeNonNullish(cookie?.value);
+	return cookie.value;
 }
 
 // Helper function to create a chat

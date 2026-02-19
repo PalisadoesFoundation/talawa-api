@@ -4,9 +4,10 @@ import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import {
 	Mutation_createOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
+import { getAdminAuthViaRest } from "test/helpers/adminAuthRest";
 import { server } from "test/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -22,20 +23,8 @@ import { usersTable } from "~/src/drizzle/tables/users";
 //  ==============================
 
 async function createTestOrganization(): Promise<string> {
-	// Clear any existing headers to ensure a clean sign-in
 	mercuriusClient.setHeaders({});
-	const signIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	if (signIn.errors) {
-		throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
-	}
-	const token = signIn.data?.signIn?.authenticationToken;
+	const { accessToken: token } = await getAdminAuthViaRest(server);
 	assertToBeNonNullish(
 		token,
 		"Authentication token is missing from sign-in response",
@@ -68,31 +57,14 @@ async function loginAdminUser(): Promise<{
 	authToken: string;
 }> {
 	mercuriusClient.setHeaders({});
-
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: authToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(authToken);
+	const currentUserRes = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${authToken}` },
 	});
-
-	// Check for errors first
-	if (adminSignInResult.errors) {
-		throw new Error(
-			`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
-		);
-	}
-
-	assertToBeNonNullish(adminSignInResult.data?.signIn);
-	assertToBeNonNullish(adminSignInResult.data.signIn.authenticationToken);
-	assertToBeNonNullish(adminSignInResult.data.signIn.user);
-
-	return {
-		adminId: adminSignInResult.data.signIn.user.id,
-		authToken: adminSignInResult.data.signIn.authenticationToken,
-	};
+	const adminId = currentUserRes.data?.currentUser?.id;
+	assertToBeNonNullish(adminId);
+	return { adminId, authToken };
 }
 
 //  ==============================

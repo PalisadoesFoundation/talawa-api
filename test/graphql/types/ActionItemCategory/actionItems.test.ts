@@ -4,6 +4,7 @@ import { resolveActionItems } from "../../../../src/graphql/types/ActionItemCate
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../../types/client";
 import {
@@ -14,25 +15,20 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Query_actionItems,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
-assertToBeNonNullish(signInResult.data.signIn.user);
-const adminUser = signInResult.data.signIn.user;
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
+});
+const _adminUserId = currentUserResult.data?.currentUser?.id;
+assertToBeNonNullish(_adminUserId);
+const adminUserId: string = _adminUserId;
 
 async function createOrg() {
 	const createOrgResult = await mercuriusClient.mutate(
@@ -61,7 +57,7 @@ async function createOrg() {
 		variables: {
 			input: {
 				organizationId: organization.id,
-				memberId: adminUser.id,
+				memberId: adminUserId,
 				role: "administrator",
 			},
 		},
@@ -115,7 +111,7 @@ async function createEventAndVolunteer(organizationId: string) {
 			variables: {
 				input: {
 					eventId,
-					userId: adminUser.id,
+					userId: adminUserId,
 				},
 			},
 		},

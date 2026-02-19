@@ -15,13 +15,13 @@ import type {
 	ForbiddenActionExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Mutation_requestPasswordReset,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Mutation field requestPasswordReset", () => {
@@ -30,23 +30,9 @@ suite("Mutation field requestPasswordReset", () => {
 	let testUserId = "";
 
 	beforeAll(async () => {
-		// Sign in as admin
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
-		adminAuth = administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		adminAuth = accessToken;
 
 		// Create a test user
 		testUserEmail = `passwordreset${faker.string.ulid()}@email.com`;

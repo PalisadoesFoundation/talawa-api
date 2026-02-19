@@ -17,9 +17,9 @@ import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth";
 import { InvalidAuthorizationCodeError } from "~/src/utilities/auth/oauth/errors";
 import type { OAuthUserProfile } from "~/src/utilities/auth/oauth/types";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -91,21 +91,18 @@ suite("Mutation linkOAuthAccount", () => {
 
 		testUser = createdUser;
 
-		// Sign in as the test user to get their auth token
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: testEmail,
-					password: testPassword,
-				},
-			},
+		const userSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: testEmail, password: testPassword },
 		});
-
-		if (!userSignInResult.data?.signIn?.authenticationToken) {
+		const accessCookie = userSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		);
+		if (!accessCookie?.value) {
 			throw new Error("Failed to get authentication token for test user");
 		}
-
-		authToken = userSignInResult.data.signIn.authenticationToken;
+		authToken = accessCookie.value;
 	});
 
 	afterEach(async () => {
@@ -395,13 +392,15 @@ suite("Mutation linkOAuthAccount", () => {
 
 			if (!tempUser) throw new Error("Failed to create temp user");
 
-			// Sign in as temp user
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: { emailAddress: tempEmail, password: tempPassword },
-				},
+			const tempSignInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: tempEmail, password: tempPassword },
 			});
-			const tempAuthToken = signInResult.data?.signIn?.authenticationToken;
+			const tempAccessCookie = tempSignInRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const tempAuthToken = tempAccessCookie?.value;
 			if (!tempAuthToken) throw new Error("Failed to get temp auth token");
 
 			// Delete the temp user

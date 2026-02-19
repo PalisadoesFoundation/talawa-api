@@ -12,6 +12,7 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -23,39 +24,20 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteOrganizationMembership,
 	Mutation_deleteUser,
+	Query_currentUser,
 	Query_eventWithVolunteers,
-	Query_signIn,
 } from "../documentNodes";
 
 async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
-	if (
-		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-	) {
-		throw new Error("Admin credentials missing in env config");
-	}
-	const res = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-	if (
-		res.errors ||
-		!res.data?.signIn?.authenticationToken ||
-		!res.data?.signIn?.user?.id
-	) {
-		throw new Error(
-			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
-		);
-	}
-	const adminToken: string = res.data.signIn.authenticationToken;
-	const adminUserId: string = res.data.signIn.user.id;
-	assertToBeNonNullish(adminToken);
-	assertToBeNonNullish(adminUserId);
-	return { token: adminToken, userId: adminUserId };
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+	return {
+		token: accessToken,
+		userId: currentUserResult.data.currentUser.id,
+	};
 }
 
 // Helper Types

@@ -6,6 +6,7 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -13,10 +14,22 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Query_currentUser,
 	Query_eventsByIds,
 	Query_getRecurringEvents,
-	Query_signIn,
 } from "../documentNodes";
+
+async function getAdminAuth(): Promise<{ token: string; userId: string }> {
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
+	});
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+	return {
+		token: accessToken,
+		userId: currentUserResult.data.currentUser.id,
+	};
+}
 
 /**
  * Updated test suite with partial matching for error messages
@@ -57,25 +70,8 @@ suite("Query eventsByIds", () => {
 
 	// 2. INVALID ARGUMENTS
 	test("returns 'invalid_arguments' if 'ids' is empty or not valid UUID(s)", async () => {
-		// Attempt to sign in as Admin
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		// If signIn failed, skip test with an error or return early
-		if (!adminSignIn.data?.signIn) {
-			console.error("No admin user found or invalid admin credentials.");
-			// skip or throw:
-			return;
-		}
-
-		const adminToken = adminSignIn.data.signIn.authenticationToken;
-		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
+		const adminAuth = await getAdminAuth();
+		mercuriusClient.setHeaders({ authorization: `Bearer ${adminAuth.token}` });
 
 		// Query with invalid 'ids'
 		const badIdsResult = await mercuriusClient.query(Query_eventsByIds, {
@@ -136,22 +132,8 @@ suite("Query eventsByIds", () => {
 
 	// 3. NO MATCHING EVENTS
 	test("returns 'unexpected' error if no events match the given ids", async () => {
-		// Sign in as Admin
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		if (!adminSignIn.data?.signIn) {
-			console.error("No admin user found or invalid admin credentials.");
-			return;
-		}
-
-		const adminToken = adminSignIn.data.signIn.authenticationToken;
+		const adminAuth = await getAdminAuth();
+		const adminToken = adminAuth.token;
 		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
 		const nonExistentIds = [faker.string.uuid(), faker.string.uuid()];
@@ -181,25 +163,9 @@ suite("Query eventsByIds", () => {
 
 	// 4. SUCCESS
 	test("returns both standalone and generated events as Admin", async () => {
-		// sign in as admin
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignIn.data?.signIn);
-		assertToBeNonNullish(adminSignIn.data.signIn.user);
-
-		assertToBeNonNullish(adminSignIn.data?.signIn?.user);
-
-		const adminUserId = adminSignIn.data.signIn.user.id;
-		const adminToken = adminSignIn.data.signIn.authenticationToken;
-
-		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
+		const adminAuth = await getAdminAuth();
+		const adminUserId = adminAuth.userId;
+		mercuriusClient.setHeaders({ authorization: `Bearer ${adminAuth.token}` });
 
 		// create an organization
 		const orgResult = await mercuriusClient.mutate(
@@ -323,28 +289,9 @@ suite("Query eventsByIds", () => {
 	test("should filter out invite-only events for non-invited users", async () => {
 		mercuriusClient.setHeaders({});
 		// Sign in as admin
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		if (adminSignIn.errors) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(adminSignIn.errors)}`,
-			);
-		}
-
-		assertToBeNonNullish(adminSignIn.data?.signIn);
-		assertToBeNonNullish(adminSignIn.data.signIn.user);
-
-		const adminUserId = adminSignIn.data.signIn.user.id;
-		const adminToken = adminSignIn.data.signIn.authenticationToken;
-
-		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
+		const adminAuth = await getAdminAuth();
+		const adminUserId = adminAuth.userId;
+		mercuriusClient.setHeaders({ authorization: `Bearer ${adminAuth.token}` });
 
 		// Create an organization
 		const orgResult = await mercuriusClient.mutate(
@@ -452,7 +399,7 @@ suite("Query eventsByIds", () => {
 
 		// Add regular user to organization as member (not admin)
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `Bearer ${adminToken}` },
+			headers: { authorization: `Bearer ${adminAuth.token}` },
 			variables: {
 				input: {
 					organizationId: organizationId,
@@ -483,28 +430,9 @@ suite("Query eventsByIds", () => {
 	test("should show invite-only events to event creator", async () => {
 		mercuriusClient.setHeaders({});
 		// Sign in as admin
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		if (adminSignIn.errors) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(adminSignIn.errors)}`,
-			);
-		}
-
-		assertToBeNonNullish(adminSignIn.data?.signIn);
-		assertToBeNonNullish(adminSignIn.data.signIn.user);
-
-		const adminUserId = adminSignIn.data.signIn.user.id;
-		const adminToken = adminSignIn.data.signIn.authenticationToken;
-
-		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
+		const adminAuth = await getAdminAuth();
+		const adminUserId = adminAuth.userId;
+		mercuriusClient.setHeaders({ authorization: `Bearer ${adminAuth.token}` });
 
 		// Create an organization
 		const orgResult = await mercuriusClient.mutate(

@@ -10,6 +10,7 @@ import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venuesTable } from "~/src/drizzle/tables/venues";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -17,7 +18,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // Constants
@@ -49,24 +50,12 @@ async function createTestOrganization(token: string) {
 	return orgId;
 }
 
-// Sign in as admin
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
 });
-if (signInResult.errors) {
-	throw new Error(
-		`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
-	);
-}
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(authToken);
-const adminUserId = signInResult.data.signIn.user?.id;
 assertToBeNonNullish(adminUserId);
 
 suite("Mutation field deleteOrganization", () => {

@@ -7,13 +7,10 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import {
-	Mutation_createUser,
-	Mutation_deleteUser,
-	Query_signIn,
-} from "../documentNodes";
+import { Mutation_createUser, Mutation_deleteUser } from "../documentNodes";
 
 describe("Mutation createUser - Performance Tracking", () => {
 	// Note: We use direct resolver invocation instead of mercuriusClient integration tests
@@ -763,6 +760,7 @@ describe("Mutation createUser - Performance Tracking", () => {
 				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
+				console.error(error);
 				expect(error).toBeInstanceOf(Error);
 				expect((error as Error).message).toContain("Avatar upload failed");
 			}
@@ -848,6 +846,7 @@ describe("Mutation createUser - Performance Tracking", () => {
 				);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
+				console.error(error);
 				expect(error).toBeInstanceOf(Error);
 				expect((error as Error).message).toBe("Failed to store refresh token");
 			}
@@ -1109,19 +1108,7 @@ describe("Mutation createUser - Performance Tracking", () => {
 		});
 
 		it("should execute createUser mutation through mercuriusClient with schema wiring", async () => {
-			// Sign in as admin to get authentication token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			expect(signInResult.errors).toBeUndefined();
-			expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
-			const authToken = signInResult.data?.signIn?.authenticationToken;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
 
 			// Execute createUser mutation through mercuriusClient
 			const uniqueEmail = `smoketest-${faker.string.ulid()}@example.com`;

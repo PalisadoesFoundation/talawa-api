@@ -12,6 +12,7 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -19,9 +20,9 @@ import {
 	Mutation_createUser,
 	Mutation_deletePostVote,
 	Mutation_deleteUser,
+	Query_currentUser,
 	Query_hasUserVoted,
 	Query_postWithHasUserVoted,
-	Query_signIn,
 } from "../documentNodes";
 
 // TypeScript interfaces for GraphQL responses
@@ -49,38 +50,13 @@ async function getAdminAuthToken(): Promise<{
 	}
 
 	try {
-		// Check if admin credentials exist
-		if (
-			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
-		}
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken: token } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(token);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${token}` },
 		});
-		// Check for GraphQL errors
-		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
-			);
-		}
-		// Check for missing data
-		if (!adminSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error(
-				"Admin authentication succeeded but no token was returned",
-			);
-		}
-		assertToBeNonNullish(adminSignInResult.data.signIn.user);
-		const token = adminSignInResult.data.signIn.authenticationToken;
-		const id = adminSignInResult.data.signIn.user.id;
+		const id = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(id);
 		cachedAdminToken = token;
 		cachedAdminUserId = id;
 		return {

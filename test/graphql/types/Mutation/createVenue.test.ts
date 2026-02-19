@@ -11,6 +11,7 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -19,7 +20,6 @@ import {
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
-	Query_signIn,
 } from "../documentNodes";
 
 const Mutation_createVenue = graphql(`
@@ -60,6 +60,11 @@ const Mutation_createVenue = graphql(`
  * Tests follow talawa-api standards with proper cleanup and isolation.
  * Each test creates its own test data and cleans up after execution.
  */
+async function getAdminToken(): Promise<string> {
+	const { accessToken } = await getAdminAuthViaRest(server);
+	return accessToken;
+}
+
 suite("Mutation field createVenue", () => {
 	// Track created resources for cleanup
 	const createdResources: {
@@ -76,17 +81,7 @@ suite("Mutation field createVenue", () => {
 	 * database pollution and test interdependence.
 	 */
 	afterEach(async () => {
-		// Get admin token for cleanup operations
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const adminToken = adminSignInResult.data.signIn?.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		if (adminToken) {
 			// Delete created users
@@ -131,28 +126,13 @@ suite("Mutation field createVenue", () => {
 			 * processing any business logic.
 			 */
 			test("client triggering the graphql operation is not authenticated.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -206,28 +186,13 @@ suite("Mutation field createVenue", () => {
 			 * when the associated user is deleted from the system.
 			 */
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -255,7 +220,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -317,28 +282,13 @@ suite("Mutation field createVenue", () => {
 			 * malformed identifiers before reaching the resolver logic.
 			 */
 			test('value of the argument "input.organizationId" is not a valid UUID/ULID format.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createVenueResult = await mercuriusClient.mutate(
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -371,28 +321,13 @@ suite("Mutation field createVenue", () => {
 			});
 
 			test("rejects negative capacity value", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -414,7 +349,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -455,28 +390,13 @@ suite("Mutation field createVenue", () => {
 			 * Venue name is required and must not be empty.
 			 */
 			test('value of the argument "input.name" is an empty string.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -498,7 +418,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -543,22 +463,7 @@ suite("Mutation field createVenue", () => {
 			 * doesn't correspond to any existing organization in the database.
 			 */
 			test('value of the argument "input.organizationId" does not correspond to an existing organization.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				// Generate a completely random UUID that doesn't exist
 				const nonExistentOrgId = faker.string.uuid();
@@ -567,7 +472,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -616,28 +521,13 @@ suite("Mutation field createVenue", () => {
 			 * confusion and ensure proper venue identification.
 			 */
 			test('value of the argument "input.name" corresponds to an existing venue in the organization.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -661,7 +551,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -680,7 +570,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -731,29 +621,14 @@ suite("Mutation field createVenue", () => {
 			 * able to create venues.
 			 */
 			test("client is a non-admin organization member.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				// Create a regular user
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -779,7 +654,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -800,7 +675,7 @@ suite("Mutation field createVenue", () => {
 				// Add user as non-admin member
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -862,28 +737,13 @@ suite("Mutation field createVenue", () => {
 			 * should be able to create venues in an organization.
 			 */
 			test("client triggering the graphql operation is not an administrator user and is not an administrator member of the organization.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -908,7 +768,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -981,28 +841,13 @@ suite("Mutation field createVenue", () => {
 			 * returns no rows despite successful execution.
 			 */
 			test("database insert operation unexpectedly returns empty array.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1043,7 +888,7 @@ suite("Mutation field createVenue", () => {
 						Mutation_createVenue,
 						{
 							headers: {
-								authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+								authorization: `bearer ${adminToken}`,
 							},
 							variables: {
 								input: {
@@ -1086,28 +931,13 @@ suite("Mutation field createVenue", () => {
 			 * Platform admins should be able to create venues in any organization.
 			 */
 			test("non-nullable venue fields have the non-null values of the corresponding non-nullable arguments.\n\t\t\t\tnullable venue fields have the non-null values of the corresponding nullable arguments.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1138,7 +968,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables,
 					},
@@ -1174,29 +1004,14 @@ suite("Mutation field createVenue", () => {
 			 * in their organization.
 			 */
 			test("organization administrator member can create venue.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				// Create a regular user
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1222,7 +1037,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1243,7 +1058,7 @@ suite("Mutation field createVenue", () => {
 				// Add user as admin member
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -1290,29 +1105,14 @@ suite("Mutation field createVenue", () => {
 			 * uniqueness is scoped per organization. This is a success scenario.
 			 */
 			test('value of the argument "input.name" can be reused across different organizations.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				// Create first organization
 				const createOrganizationResult1 = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1335,7 +1135,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1360,7 +1160,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1380,7 +1180,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1416,28 +1216,13 @@ suite("Mutation field createVenue", () => {
 			 * Validates that nullable fields default to null when not provided.
 			 */
 			test('nullable venue fields have the "null" values if the corresponding nullable arguments are not provided in the graphql operation.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1467,7 +1252,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables,
 					},
@@ -1494,28 +1279,13 @@ suite("Mutation field createVenue", () => {
 			 * and Unicode in venue names.
 			 */
 			test('value of the argument "input.name" contains special characters and Unicode.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1539,7 +1309,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1565,28 +1335,13 @@ suite("Mutation field createVenue", () => {
 			 * Validates that zero is a valid capacity value for venues.
 			 */
 			test('value of the argument "input.capacity" can be zero.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1608,7 +1363,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1635,28 +1390,13 @@ suite("Mutation field createVenue", () => {
 			 * Validates that the system properly handles large capacity values.
 			 */
 			test('value of the argument "input.capacity" can be a very large number.', async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1678,7 +1418,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1699,28 +1439,13 @@ suite("Mutation field createVenue", () => {
 			});
 
 			test("accepts whitespace-only venue name (documents current API behavior)", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const adminToken = await getAdminToken();
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1742,7 +1467,7 @@ suite("Mutation field createVenue", () => {
 					Mutation_createVenue,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -1770,28 +1495,13 @@ suite("Mutation field createVenue", () => {
 		 * Validates that the system rejects attachments with unsupported MIME types.
 		 */
 		test("rejects attachment with invalid MIME type", async () => {
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				administratorUserSignInResult.data.signIn?.authenticationToken,
-			);
+			const adminToken = await getAdminToken();
 
 			const createOrganizationResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -1814,7 +1524,7 @@ suite("Mutation field createVenue", () => {
 				Mutation_createVenue,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -1861,28 +1571,13 @@ suite("Mutation field createVenue", () => {
 		 * then the mutation will verify the file exists.
 		 */
 		test("accepts valid FileMetadataInput for attachments", async () => {
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				administratorUserSignInResult.data.signIn?.authenticationToken,
-			);
+			const adminToken = await getAdminToken();
 
 			const createOrganizationResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -1918,7 +1613,7 @@ suite("Mutation field createVenue", () => {
 				Mutation_createVenue,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -1962,28 +1657,13 @@ suite("Mutation field createVenue", () => {
 		 * Tests that venue creation fails when the referenced file doesn't exist in MinIO.
 		 */
 		test("rejects attachment when file does not exist in MinIO", async () => {
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				administratorUserSignInResult.data.signIn?.authenticationToken,
-			);
+			const adminToken = await getAdminToken();
 
 			const createOrganizationResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -2006,7 +1686,7 @@ suite("Mutation field createVenue", () => {
 				Mutation_createVenue,
 				{
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {

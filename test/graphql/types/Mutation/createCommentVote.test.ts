@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { expect, suite, test, vi } from "vitest";
 import { organizationMembershipsTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -13,20 +14,15 @@ import {
 	Mutation_createPost,
 	Mutation_deleteCurrentUser,
 	Mutation_joinPublicOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminToken}` },
 });
-const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
+const adminUserId = currentUserResult.data?.currentUser?.id ?? null;
 assertToBeNonNullish(adminToken);
-const adminUserId = signInResult.data?.signIn?.user?.id ?? null;
 assertToBeNonNullish(adminUserId);
 
 /**

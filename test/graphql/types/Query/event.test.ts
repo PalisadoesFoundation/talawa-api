@@ -10,6 +10,7 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -23,47 +24,44 @@ import {
 	Mutation_deleteUser,
 	Mutation_inviteEventAttendee,
 	Mutation_registerForEvent,
+	Query_currentUser,
 	Query_event,
 	Query_getRecurringEvents,
-	Query_signIn,
 } from "../documentNodes";
 
-async function signInAsAdmin(): Promise<{ token: string; userId: string }> {
-	if (
-		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-	) {
-		throw new Error("Admin credentials missing in env config");
-	}
-	const res = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+// Admin auth (fetched once per suite)
+let adminToken: string | null = null;
+let adminUserId: string | null = null;
+async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
+	if (adminToken && adminUserId)
+		return { token: adminToken, userId: adminUserId };
+	const { accessToken } = await getAdminAuthViaRest(server);
+	adminToken = accessToken;
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-	if (
-		res.errors ||
-		!res.data?.signIn?.authenticationToken ||
-		!res.data?.signIn?.user?.id
-	) {
-		throw new Error(
-			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
-		);
+	adminUserId = currentUserResult.data?.currentUser?.id ?? null;
+	if (!adminUserId) {
+		throw new Error("Unable to get current user after admin sign-in");
 	}
-	const token = res.data.signIn.authenticationToken;
-	const userId = res.data.signIn.user.id;
-	assertToBeNonNullish(token);
-	assertToBeNonNullish(userId);
-	return { token, userId };
+	assertToBeNonNullish(adminToken);
+	assertToBeNonNullish(adminUserId);
+	return { token: adminToken, userId: adminUserId };
 }
 
 suite("Query field event", () => {
-	// Helper function to get admin auth token and user ID
 	async function getAdminTokenAndUserId() {
-		const { token, userId } = await signInAsAdmin();
-		return { authToken: token, userId };
+		const { accessToken: authToken } = await getAdminAuthViaRest(server);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${authToken}` },
+		});
+		const userId = currentUserResult.data?.currentUser?.id;
+		if (!authToken || !userId) {
+			throw new Error("Failed to get admin auth or current user");
+		}
+		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(userId);
+		return { authToken, userId };
 	}
 
 	// Helper function to get admin auth token

@@ -7,9 +7,10 @@ import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Mutation_revokeRefreshToken, Query_signIn } from "../documentNodes";
+import { Mutation_revokeRefreshToken } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -32,18 +33,8 @@ const Mutation_refreshToken =
 suite("Mutation field revokeRefreshToken", () => {
 	suite("successful scenarios", () => {
 		test("should return true when revoking a valid refresh token", async () => {
-			// Sign in to get a valid refresh token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(refreshToken);
 
 			// Revoke the token
 			const result = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
@@ -57,18 +48,8 @@ suite("Mutation field revokeRefreshToken", () => {
 		});
 
 		test("should prevent using a revoked token to get new access tokens", async () => {
-			// Sign in to get a valid refresh token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(refreshToken);
 
 			// Revoke the token
 			const revokeResult = await mercuriusClient.mutate(
@@ -114,18 +95,8 @@ suite("Mutation field revokeRefreshToken", () => {
 		});
 
 		test("should return false when revoking an already revoked token", async () => {
-			// Sign in to get a valid refresh token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(refreshToken);
 
 			// Revoke the token first time
 			const firstRevoke = await mercuriusClient.mutate(
@@ -176,19 +147,10 @@ suite("Mutation field revokeRefreshToken", () => {
 
 	suite("logout functionality", () => {
 		test("should effectively logout user by revoking their refresh token", async () => {
-			// Sign in to get tokens
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-			const refreshToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken, accessToken: authenticationToken } =
+				await getAdminAuthViaRest(server);
+			assertToBeNonNullish(refreshToken);
+			assertToBeNonNullish(authenticationToken);
 
 			// Logout by revoking refresh token
 			const logoutResult = await mercuriusClient.mutate(

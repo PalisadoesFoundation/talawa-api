@@ -10,19 +10,20 @@ import {
 	test,
 	vi,
 } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { hashPasswordResetToken } from "~/src/utilities/passwordResetTokenUtils";
 import type {
 	ForbiddenActionExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Mutation_resetPassword,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Mutation field resetPassword", () => {
@@ -33,23 +34,9 @@ suite("Mutation field resetPassword", () => {
 	const validRawToken = faker.string.hexadecimal({ length: 64 }).slice(2);
 
 	beforeAll(async () => {
-		// Sign in as admin
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
-		adminAuth = administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		adminAuth = accessToken;
 
 		// Create a test user
 		testUserEmail = `resetpw${faker.string.ulid()}@email.com`;
@@ -382,18 +369,17 @@ suite("Mutation field resetPassword", () => {
 				refreshToken: expect.any(String),
 			});
 
-			// Verify the new password works by signing in
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: testUserEmail,
-						password: newPassword,
-					},
-				},
+			// Verify the new password works via REST signin
+			const signInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: testUserEmail, password: newPassword },
 			});
-
-			expect(signInResult.errors).toBeUndefined();
-			expect(signInResult.data.signIn?.authenticationToken).toBeDefined();
+			expect(signInRes.statusCode).toBe(200);
+			const accessCookie = signInRes.cookies.find(
+				(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			expect(accessCookie?.value).toBeDefined();
 		});
 	});
 

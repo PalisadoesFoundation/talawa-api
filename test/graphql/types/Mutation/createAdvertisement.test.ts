@@ -2,13 +2,13 @@ import { faker } from "@faker-js/faker";
 import { gql } from "graphql-tag";
 import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_joinPublicOrganization,
-	Query_signIn,
 } from "../documentNodes";
 
 const Mutation_createAdvertisement = gql`
@@ -61,16 +61,7 @@ async function createTestOrganization(token: string) {
 	return orgId;
 }
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
 
 suite("Mutation field createAdvertisement", () => {

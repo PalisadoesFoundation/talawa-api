@@ -7,6 +7,7 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -16,26 +17,17 @@ import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_organization,
-	Query_signIn,
 	Query_tag,
 } from "../documentNodes";
 
 suite("Query field tag", () => {
 	test("results in a graphql error with 'invalid_arguments' if an invalid id is provided", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const tagResult = await mercuriusClient.query(Query_tag, {
 			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 			variables: {
 				input: {
@@ -84,28 +76,14 @@ suite("Query field tag", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -126,7 +104,7 @@ suite("Query field tag", () => {
 
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -162,16 +140,8 @@ suite("Query field tag", () => {
 		},
 	);
 	test("returns error when a non-admin user without organization membership tries to fetch a tag", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// Step 1: Create a regular user who does NOT belong to any organization
 
@@ -179,7 +149,7 @@ suite("Query field tag", () => {
 			Mutation_createUser,
 			{
 				headers: {
-					authorization: `bearer ${adminSignInResult?.data?.signIn?.authenticationToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 				variables: {
 					input: {
@@ -199,7 +169,7 @@ suite("Query field tag", () => {
 		//get a tag ID
 		const existingTagResult = await mercuriusClient.query(Query_tag, {
 			headers: {
-				authorization: `bearer ${adminSignInResult?.data?.signIn?.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 		});
 
@@ -231,23 +201,12 @@ suite("Query field tag", () => {
 		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.tag" field if`,
 		() => {
 			test("the specified tag does not exist", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const tagResult = await mercuriusClient.query(Query_tag, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -285,18 +244,8 @@ suite("Query field tag", () => {
 		() => {
 			test("regular user tries to access tag without organization membership", async () => {
 				// Step 1: Admin Sign-in
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-				if (!adminToken) throw new Error("Admin authentication failed");
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				// Step 2: Create Regular User
 				const regularUserResult = await mercuriusClient.mutate(
@@ -405,17 +354,8 @@ suite("Query field tag", () => {
 
 	test("results in an empty 'errors' field and the expected value for the 'data.tag' field when accessed by administrator", async () => {
 		// Step 1: Admin Sign-in
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!authToken) throw new Error("Admin authentication failed");
+		const { accessToken: authToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(authToken);
 
 		// Step 2: Create Organization with unique name
 		const organizationResult = await mercuriusClient.mutate(
@@ -495,17 +435,8 @@ suite("Query field tag", () => {
 
 	test("regular user can access tag when they are a member of the organization", async () => {
 		// Step 1: Admin Sign-in (unchanged)
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!adminToken) throw new Error("Admin authentication failed");
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// Step 2: Create Regular User (unchanged)
 		const regularUserResult = await mercuriusClient.mutate(
@@ -623,17 +554,8 @@ suite("Query field tag", () => {
 	});
 
 	test("results in a graphql error with 'unauthenticated' if user ID in token doesn't exist in database", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!authToken) throw new Error("Admin authentication failed");
+		const { accessToken: authToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(authToken);
 
 		// Create a token with a non-existent user ID
 		const nonExistentUserToken = authToken.replace(
@@ -718,17 +640,8 @@ suite("Query field tag", () => {
 
 	// Test invalid UUID format
 	test("results in a graphql error with 'invalid_arguments' for malformed UUID", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!authToken) throw new Error("Admin authentication failed");
+		const { accessToken: authToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(authToken);
 
 		const tagResult = await mercuriusClient.query(Query_tag, {
 			headers: {

@@ -4,6 +4,7 @@ import { expect, suite, test } from "vitest";
 
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
 
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -11,23 +12,11 @@ import {
 	Mutation_cancelMembershipRequest,
 	Mutation_createOrganization,
 	Mutation_sendMembershipRequest,
-	Query_signIn,
 } from "../documentNodes";
 
 /** Helper to create an organization */
 async function createTestOrganization() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	expect(signInResult.errors ?? []).toEqual([]);
-
-	const adminToken = signInResult.data?.signIn?.authenticationToken;
+	const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 	expect(adminToken).toBeDefined();
 
 	const createOrgResult = await mercuriusClient.mutate(

@@ -6,28 +6,17 @@ import {
 	chatsTable,
 } from "~/src/drizzle/schema";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createOrganization,
 	Query_chatMessage,
-	Query_signIn,
 } from "../documentNodes";
 
 async function createTestOrganization(): Promise<string> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	expect(signInResult.errors ?? []).toEqual([]);
-
-	const adminToken = signInResult.data?.signIn?.authenticationToken;
+	const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 	expect(adminToken).toBeDefined();
 
 	const createOrgResult = await mercuriusClient.mutate(

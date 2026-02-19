@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { organizationsTable, postsTable, usersTable } from "src/drizzle/schema";
 import { uuidv7 } from "uuidv7";
 import { beforeEach, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -11,9 +12,10 @@ import type {
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_post, Query_signIn } from "../documentNodes";
+import { Query_post } from "../documentNodes";
 
 suite("Query field post", () => {
 	let adminUserId: string;
@@ -79,20 +81,13 @@ suite("Query field post", () => {
 	});
 
 	const getAuthToken = async () => {
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		if (!signInResult.data?.signIn?.authenticationToken) {
+		const { accessToken } = await getAdminAuthViaRest(server);
+		if (!accessToken) {
 			throw new Error(
 				"Failed to get authentication token: Sign-in operation failed",
 			);
 		}
-		return signInResult.data.signIn?.authenticationToken;
+		return accessToken;
 	};
 
 	const createTestPost = async (creatorId: string) => {
@@ -230,16 +225,14 @@ suite("Query field post", () => {
 			test("authenticated user exists in token but not in database.", async () => {
 				const { userId, email, password } =
 					await createTestUser("administrator");
-				const signInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: email,
-							password: password,
-						},
-					},
+				const signInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: { email, password },
 				});
-
-				const authToken = signInResult.data?.signIn?.authenticationToken;
+				const authToken = signInRes.cookies.find(
+					(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				)?.value;
 				if (!authToken)
 					throw new Error(
 						"Failed to get authentication token from sign-in result",
@@ -281,24 +274,15 @@ suite("Query field post", () => {
 				const { email, password } = await createTestUser();
 				// Create a different user's post
 				const { postId } = await createTestPost(adminUserId);
-				// Sign in with plain password
-				const signInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: email,
-							password: password,
-						},
-					},
+				const signInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: { email, password },
 				});
-				const authToken = signInResult.data?.signIn?.authenticationToken;
-				// validation for authentication token
-				if (!authToken) {
-					console.error(
-						"SignIn Result:",
-						JSON.stringify(signInResult, null, 2),
-					);
-					throw new Error("Failed to get authentication token");
-				}
+				const authToken = signInRes.cookies.find(
+					(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				)?.value;
+				if (!authToken) throw new Error("Failed to get authentication token");
 				// Attempt to access post
 				const result = await mercuriusClient.query(Query_post, {
 					headers: {

@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -11,23 +12,17 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
-// Sign in as admin to get an authentication token and admin user id.
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
-assertToBeNonNullish(signInResult.data.signIn.user);
-const adminUser = signInResult.data.signIn.user;
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
+});
+const _adminUserId = currentUserResult.data?.currentUser?.id;
+assertToBeNonNullish(_adminUserId);
+const adminUserId: string = _adminUserId;
 
 // Helper to create an organization with a unique name and return its id.
 async function createOrganizationAndGetId(): Promise<string> {
@@ -55,7 +50,7 @@ async function createActionItemCategory(
 		variables: {
 			input: {
 				organizationId,
-				memberId: adminUser.id,
+				memberId: adminUserId,
 				role: "administrator",
 			},
 		},
@@ -209,7 +204,7 @@ suite("Mutation field createActionItem", () => {
 				variables: {
 					input: {
 						organizationId: orgId,
-						memberId: adminUser.id,
+						memberId: adminUserId,
 						role: "administrator",
 					},
 				},

@@ -11,12 +11,13 @@ import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -42,20 +43,15 @@ suite("Mutation field refreshToken", () => {
 	let userId: string;
 
 	beforeAll(async () => {
-		// Sign in to get a valid refresh token
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { refreshToken: rt, accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(rt);
+		validRefreshToken = rt;
+		const currentUserRes = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${accessToken}` },
 		});
-
-		assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-		assertToBeNonNullish(signInResult.data.signIn?.user?.id);
-		validRefreshToken = signInResult.data.signIn.refreshToken as string;
-		userId = signInResult.data.signIn.user.id as string;
+		const id = currentUserRes.data?.currentUser?.id;
+		assertToBeNonNullish(id);
+		userId = id;
 	});
 
 	suite("successful scenarios", () => {
@@ -86,17 +82,9 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should return user information with the new tokens", async () => {
-			// Get a fresh token first
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const tokenToRefresh = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken: tokenToRefresh } =
+				await getAdminAuthViaRest(server);
+			assertToBeNonNullish(tokenToRefresh);
 
 			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
 				variables: {
@@ -114,17 +102,8 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should implement token rotation - old token should not work after refresh", async () => {
-			// Get a fresh token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const originalToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken: originalToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(originalToken);
 
 			// Use the token to get new tokens
 			const firstRefresh = await mercuriusClient.mutate(Mutation_refreshToken, {
@@ -154,22 +133,15 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should rotate cookies when refreshing tokens", async () => {
-			// Get a fresh token via server.inject to get cookies
 			const signInResponse = await server.inject({
 				method: "POST",
-				url: "/graphql",
+				url: "/auth/signin",
 				payload: {
-					query: print(Query_signIn),
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
+					email: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			});
-
+			expect(signInResponse.statusCode).toBe(200);
 			const signInCookies = signInResponse.cookies;
 			const refreshTokenCookie = signInCookies.find(
 				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
@@ -217,23 +189,15 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should refresh tokens using only HTTP-Only cookie (no variable) for web clients", async () => {
-			// This test verifies cookie-based auth for web clients that don't pass the token as a variable
-			// Get a fresh token via server.inject to get cookies
 			const signInResponse = await server.inject({
 				method: "POST",
-				url: "/graphql",
+				url: "/auth/signin",
 				payload: {
-					query: print(Query_signIn),
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
+					email: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			});
-
+			expect(signInResponse.statusCode).toBe(200);
 			const signInCookies = signInResponse.cookies;
 			const refreshTokenCookie = signInCookies.find(
 				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
@@ -373,17 +337,8 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should return unauthenticated error when user has been deleted (cascades to delete tokens)", async () => {
-			// Get admin auth token first
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const adminAuth = adminSignIn.data.signIn.authenticationToken as string;
+			const { accessToken: adminAuth } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(adminAuth);
 
 			// Create a new user
 			const testEmail = `test-refresh-${faker.string.ulid()}@email.com`;
@@ -454,33 +409,16 @@ suite("Mutation field refreshToken", () => {
 
 	suite("token format validation", () => {
 		test("should generate a 64-character hex refresh token", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(refreshToken);
 
 			expect(refreshToken).toHaveLength(64);
 			expect(/^[a-f0-9]+$/.test(refreshToken)).toBe(true);
 		});
 
 		test("should generate a valid JWT access token", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const tokenForJwt = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken: tokenForJwt } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(tokenForJwt);
 
 			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
 				variables: {
@@ -508,38 +446,13 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should generate tokens with consistent expiration behavior", async () => {
-			// Sign in multiple times and verify tokens are generated consistently
-			const signInResult1 = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			const signInResult2 = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			assertToBeNonNullish(signInResult1.data.signIn?.refreshToken);
-			assertToBeNonNullish(signInResult2.data.signIn?.refreshToken);
-
-			// Both tokens should be valid (different but both usable)
-			expect(signInResult1.data.signIn?.refreshToken).not.toBe(
-				signInResult2.data.signIn?.refreshToken,
-			);
-
-			// Verify first token is still valid by refreshing
+			const { refreshToken: token1 } = await getAdminAuthViaRest(server);
+			const { refreshToken: token2 } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(token1);
+			assertToBeNonNullish(token2);
+			expect(token1).not.toBe(token2);
 			const refresh1 = await mercuriusClient.mutate(Mutation_refreshToken, {
-				variables: {
-					refreshToken: signInResult1.data.signIn?.refreshToken as string,
-				},
+				variables: { refreshToken: token1 },
 			});
 			expect(refresh1.errors).toBeUndefined();
 		});
@@ -547,17 +460,8 @@ suite("Mutation field refreshToken", () => {
 
 	suite("transaction atomicity", () => {
 		test("should ensure token rotation is atomic - new token only exists if old token is revoked", async () => {
-			// Get a fresh token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const originalToken = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken: originalToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(originalToken);
 
 			// Perform refresh - this should atomically revoke old and create new
 			const refreshResult = await mercuriusClient.mutate(
@@ -601,17 +505,8 @@ suite("Mutation field refreshToken", () => {
 		});
 
 		test("should maintain database consistency under concurrent refresh attempts", async () => {
-			// Get a fresh token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const token = signInResult.data.signIn?.refreshToken as string;
+			const { refreshToken: token } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(token);
 
 			// Attempt concurrent refreshes with the same token
 			// Only one should succeed due to atomic token rotation

@@ -5,13 +5,13 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_currentUser,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Query field currentUser", () => {
@@ -37,28 +37,14 @@ suite("Query field currentUser", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -79,7 +65,7 @@ suite("Query field currentUser", () => {
 
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -114,33 +100,19 @@ suite("Query field currentUser", () => {
 	);
 
 	test(`results in an empty "errors" field and the expected value for the "data.currentUser" field.`, async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminToken}`,
 			},
 		});
 
-		assertToBeNonNullish(administratorUserSignInResult.data.signIn.user);
+		const adminUser = currentUserResult.data?.currentUser;
+		assertToBeNonNullish(adminUser);
 
 		expect(currentUserResult.errors).toBeUndefined();
-		expect(currentUserResult.data.currentUser).toEqual(
-			administratorUserSignInResult.data.signIn.user,
-		);
+		expect(currentUserResult.data.currentUser).toEqual(adminUser);
 	});
 });

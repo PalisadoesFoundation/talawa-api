@@ -11,46 +11,31 @@ import {
 } from "~/src/drizzle/schema";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_updateAgendaFolder, Query_signIn } from "../documentNodes";
+import {
+	Mutation_updateAgendaFolder,
+	Query_currentUser,
+} from "../documentNodes";
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
 
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	mercuriusClient.setHeaders({});
-
-	const {
-		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
-		API_ADMINISTRATOR_USER_PASSWORD: password,
-	} = server.envConfig;
-
-	if (!email || !password) {
-		throw new Error(
-			"Missing admin credentials for tests. " +
-				"Please set API_ADMINISTRATOR_USER_EMAIL_ADDRESS and " +
-				"API_ADMINISTRATOR_USER_PASSWORD in your environment.",
-		);
-	}
-
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: email,
-				password: password,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(accessToken);
+	assertToBeNonNullish(userId);
 
 	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
+		token: accessToken,
+		userId,
 	};
 
 	return cachedAdminAuth;
@@ -128,8 +113,8 @@ suite("Mutation field updateAgendaFolder", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {
-				// Cleanup errors intentionally swallowed
+			} catch (e) {
+				console.error(e);
 			}
 		}
 		cleanupFns.length = 0;

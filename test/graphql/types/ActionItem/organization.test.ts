@@ -7,6 +7,7 @@ import "~/src/graphql/types/ActionItem/organization";
 import { resolveOrganization } from "~/src/graphql/types/ActionItem/organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -17,7 +18,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -52,22 +53,14 @@ const Query_ActionItem_Organization = gql(`
 type AdminAuth = { token: string; userId: string };
 
 async function getAdminAuth(): Promise<AdminAuth> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(token);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(signInResult.data?.signIn?.user);
-
-	return {
-		token: signInResult.data.signIn.authenticationToken,
-		userId: signInResult.data.signIn.user.id,
-	};
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(userId);
+	return { token, userId };
 }
 
 async function createTestOrganization(authToken: string) {
@@ -1354,6 +1347,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
 				);
 			} catch (error) {
+				console.error(error);
 				thrownError = error;
 			}
 

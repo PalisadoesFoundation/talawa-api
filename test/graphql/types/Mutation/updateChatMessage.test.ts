@@ -5,6 +5,7 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -15,7 +16,7 @@ import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Mutation_updateChatMessage,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 afterEach(() => {
@@ -54,30 +55,15 @@ suite("Mutation field updateChatMessage", () => {
 			});
 
 			test("client triggering the GraphQL operation has no existing user associated to their authentication context.", async () => {
-				// Sign in as Administrator
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				// Create a new user
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -102,7 +88,7 @@ suite("Mutation field updateChatMessage", () => {
 				// Delete the user
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: { id: userId },
@@ -147,31 +133,14 @@ suite("Mutation field updateChatMessage", () => {
 		() => {
 			test("returns an authorization error if user has a non-admin org membership but is not in the chat", async () => {
 				// Sign in as Administrator
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
+				const currentUserResult = await mercuriusClient.query(
+					Query_currentUser,
+					{ headers: { authorization: `bearer ${adminToken}` } },
 				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				const adminToken =
-					administratorUserSignInResult.data.signIn.authenticationToken;
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.user?.id,
-				);
-
-				const adminUserId = administratorUserSignInResult.data.signIn.user.id;
+				const adminUserId = currentUserResult.data?.currentUser?.id;
+				assertToBeNonNullish(adminUserId);
 
 				// Create a non-admin user
 				const createUserResult = await mercuriusClient.mutate(
@@ -333,16 +302,8 @@ suite("Mutation field updateChatMessage", () => {
 	);
 
 	test(`returns "arguments_associated_resources_not_found" error when trying to update a non-existing message`, async () => {
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const userToken = userSignInResult.data?.signIn?.authenticationToken;
-		if (!userToken) throw new Error("User authentication failed");
+		const { accessToken: userToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(userToken);
 
 		const updateChatMessageResult = await mercuriusClient.mutate(
 			Mutation_updateChatMessage,
@@ -377,17 +338,8 @@ suite("Mutation field updateChatMessage", () => {
 	});
 
 	test(`returns an "invalid_arguments" error when the message body is empty`, async () => {
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const userToken = userSignInResult.data?.signIn?.authenticationToken;
-		if (!userToken) throw new Error("User authentication failed");
+		const { accessToken: userToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(userToken);
 
 		const updateChatMessageResult = await mercuriusClient.mutate(
 			Mutation_updateChatMessage,
@@ -417,22 +369,13 @@ suite("Mutation field updateChatMessage", () => {
 	});
 
 	test(`returns an "unexpected" error if updatedMessage is undefined (unexpected case)`, async () => {
-		// Sign in as an administrator
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken: userToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(userToken);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${userToken}` },
 		});
-
-		const userData = userSignInResult.data?.signIn;
-		assertToBeNonNullish(userData?.authenticationToken);
-		assertToBeNonNullish(userData?.user?.id);
-
-		const userToken = userData.authenticationToken;
-		const userId = userData.user.id;
+		const userId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(userId);
 
 		// Create an organization
 		const organizationResult = await mercuriusClient.mutate(
@@ -547,23 +490,13 @@ suite("Mutation field updateChatMessage", () => {
 
 	test("ensures message content with updatedChatMessage returned , updated correctly", async () => {
 		try {
-			// Sign in as an administrator
-			const userSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
+			const { accessToken: userToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(userToken);
+			const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+				headers: { authorization: `bearer ${userToken}` },
 			});
-
-			const userData = userSignInResult.data?.signIn;
-			if (!userData || !userData.authenticationToken || !userData.user?.id) {
-				throw new Error("User authentication failed");
-			}
-
-			const userToken = userData.authenticationToken;
-			const userId = userData.user.id;
+			const userId = currentUserResult.data?.currentUser?.id;
+			assertToBeNonNullish(userId);
 
 			// Create an organization
 			const organizationResult = await mercuriusClient.mutate(

@@ -16,37 +16,17 @@ import { createRegularUserUsingAdmin } from "../graphql/types/createRegularUserU
 import {
 	Mutation_createChat,
 	Mutation_createOrganization,
-	Query_signIn,
 } from "../graphql/types/documentNodes";
+import { getAdminAuthViaRest } from "../helpers/adminAuthRest";
 import { server } from "../server";
 
 describe("GraphQL Error Formatting Integration", () => {
 	let adminToken: string;
 
 	beforeAll(async () => {
-		// Clear any existing headers
 		mercuriusClient.setHeaders({});
-
-		// Sign in as admin
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		if (signInResult.errors) {
-			throw new Error(
-				`Failed to sign in as admin: ${JSON.stringify(signInResult.errors)}`,
-			);
-		}
-
-		adminToken = signInResult.data?.signIn?.authenticationToken as string;
-		if (!adminToken) {
-			throw new Error("Admin token not found in response");
-		}
+		const { accessToken } = await getAdminAuthViaRest(server);
+		adminToken = accessToken;
 	});
 
 	it("should return 400 with INVALID_ARGUMENTS for malformed query string (parse error)", async () => {

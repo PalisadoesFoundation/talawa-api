@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { beforeAll, beforeEach, expect, suite, test } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -9,22 +10,13 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	const authToken = signInResult.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(authToken);
-	return authToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 async function createTestUser(
@@ -108,16 +100,10 @@ suite("Mutation field blockUser", () => {
 
 	beforeAll(async () => {
 		adminAuthToken = await getAdminToken();
-
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
 		});
-		adminUserId = signInResult.data?.signIn?.user?.id ?? "";
+		adminUserId = currentUserResult.data?.currentUser?.id ?? "";
 		assertToBeNonNullish(adminUserId);
 	});
 

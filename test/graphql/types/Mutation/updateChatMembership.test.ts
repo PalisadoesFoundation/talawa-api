@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -13,7 +15,6 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Mutation_updateChatMembership,
-	Query_signIn,
 } from "../documentNodes";
 
 describe("Mutation: updateChatMembership", () => {
@@ -31,16 +32,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("chat-local admin (not org member) cannot set non-regular role (role argument issue)", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -145,17 +138,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(creator.user);
 		assertToBeNonNullish(creator.user.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user?.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data.signIn
-			.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -242,16 +236,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("cannot set non-regular role when actor is not org member", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const actorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -318,16 +304,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(target.user);
 		assertToBeNonNullish(target.user.emailAddress);
-		const targetSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: target.user?.emailAddress,
-					password: "password123",
-				},
+		const targetSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: target.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(targetSignIn.data?.signIn?.authenticationToken);
-		const targetToken = targetSignIn.data.signIn.authenticationToken as string;
+		const targetToken = targetSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(targetToken);
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -375,16 +363,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(actor.user);
 		assertToBeNonNullish(actor.user.emailAddress);
-		const actorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: actor.user?.emailAddress,
-					password: "password123",
-				},
+		const actorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: actor.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(actorSignIn.data?.signIn?.authenticationToken);
-		const actorToken = actorSignIn.data.signIn.authenticationToken as string;
+		const actorToken = actorSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(actorToken);
 
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${actorToken}` },
@@ -399,16 +389,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("returns arguments_associated_resources_not_found when member not in chat", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -473,17 +455,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(creator.user);
 		assertToBeNonNullish(creator.user.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user?.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data.signIn
-			.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -513,17 +496,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(outsider.user);
 		assertToBeNonNullish(outsider.user.emailAddress);
-		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: outsider.user?.emailAddress,
-					password: "password123",
-				},
+		const outsiderSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: outsider.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(outsiderSignIn.data?.signIn?.authenticationToken);
-		const outsiderToken = outsiderSignIn.data.signIn
-			.authenticationToken as string;
+		const outsiderToken = outsiderSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(outsiderToken);
 
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${outsiderToken}` },
@@ -538,16 +522,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("invalid arguments: malformed UUID yields invalid_arguments", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -565,16 +541,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("arguments_associated_resources_not_found when both chat and member missing", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const randomChatId = faker.string.uuid();
 		const randomMemberId = faker.string.uuid();
@@ -597,16 +565,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("unauthenticated when authenticated user record was deleted", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// create a user and sign in as them
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
@@ -626,16 +586,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(user.user);
 		assertToBeNonNullish(user.user.emailAddress);
-		const signIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: user.user?.emailAddress,
-					password: "password123",
-				},
+		const userSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: user.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
-		const userToken = signIn.data.signIn.authenticationToken as string;
+		const userToken = userSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(userToken);
 
 		// delete the user record using admin so the authenticated token no longer maps to a DB user
 		await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -659,16 +621,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("arguments_associated_resources_not_found when member user record missing but chat exists", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -723,17 +677,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(creator.user);
 		assertToBeNonNullish(creator.user.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user?.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data.signIn
-			.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -787,16 +742,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("arguments associated resources not found when chat/member missing", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -839,16 +786,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("unauthorized when non-admin non-owner tries to update role", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -936,17 +875,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(creator.user);
 		assertToBeNonNullish(creator.user.emailAddress);
-		const creatorSignInRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user?.emailAddress,
-					password: "password123",
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(creatorSignInRes.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignInRes.data.signIn
-			.authenticationToken as string;
+		const creatorToken = creatorSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(creatorToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -983,16 +923,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(victim.user);
 		assertToBeNonNullish(victim.user.emailAddress);
-		const victimSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: victim.user?.emailAddress,
-					password: "password123",
-				},
+		const victimSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: victim.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(victimSignIn.data?.signIn?.authenticationToken);
-		const victimToken = victimSignIn.data.signIn.authenticationToken as string;
+		const victimToken = victimSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(victimToken);
 
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${victimToken}` },
@@ -1007,16 +949,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test("administrator can update another member's role", async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -1103,16 +1037,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(target.user);
 		assertToBeNonNullish(target.user.emailAddress);
-		const targetSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: target.user?.emailAddress,
-					password: "password123",
-				},
+		const targetSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: target.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(targetSignIn.data?.signIn?.authenticationToken);
-		const targetToken = targetSignIn.data.signIn.authenticationToken as string;
+		const targetToken = targetSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(targetToken);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${targetToken}` },
@@ -1164,16 +1100,8 @@ describe("Mutation: updateChatMembership", () => {
 	});
 
 	test('returns "unexpected" when update returns no rows', async () => {
-		const admin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
-		const adminToken = admin.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// create user and org and chat + memberships so update would normally succeed
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
@@ -1227,16 +1155,18 @@ describe("Mutation: updateChatMembership", () => {
 
 		assertToBeNonNullish(user.user);
 		assertToBeNonNullish(user.user.emailAddress);
-		const signIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: user.user?.emailAddress,
-					password: "password123",
-				},
+		const signInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: user.user?.emailAddress,
+				password: "password123",
 			},
 		});
-		assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
-		const token = signIn.data.signIn.authenticationToken as string;
+		const token = signInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(token);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${token}` },

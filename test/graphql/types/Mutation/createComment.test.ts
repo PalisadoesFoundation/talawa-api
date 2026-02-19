@@ -9,8 +9,10 @@ import {
 	test,
 	vi,
 } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -19,7 +21,6 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createPost,
 	Mutation_createUser,
-	Query_signIn,
 } from "../documentNodes";
 
 afterEach(() => {
@@ -73,21 +74,9 @@ async function createPost(organizationId: string): Promise<string> {
 
 suite("Mutation field createComment", () => {
 	beforeAll(async () => {
-		// Sign in as admin to get authentication token
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(signInResult.data?.signIn);
-
-		// Add ! here to assert it's not null
-		const token = signInResult.data.signIn.authenticationToken;
-		assertToBeNonNullish(token);
-		authToken = token;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		authToken = accessToken;
 	});
 
 	suite("when the client is not authenticated", () => {
@@ -134,16 +123,16 @@ suite("Mutation field createComment", () => {
 			const userId = createUserResult.data?.createUser?.user?.id;
 			assertToBeNonNullish(userId);
 
-			// Sign in as that user to get their token
-			const userSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: testUserEmail,
-						password: "password",
-					},
-				},
+			// Sign in as that user via REST to get their token
+			const userSignInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: testUserEmail, password: "password" },
 			});
-			const userToken = userSignIn.data?.signIn?.authenticationToken;
+			const accessCookie = userSignInRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const userToken = accessCookie?.value;
 			assertToBeNonNullish(userToken);
 
 			// Delete the user from database
@@ -249,15 +238,15 @@ suite("Mutation field createComment", () => {
 			);
 			expect(createUserResult.errors).toBeUndefined();
 
-			const nonMemberSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: newUserEmail,
-						password: "password",
-					},
-				},
+			const nonMemberSignInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: newUserEmail, password: "password" },
 			});
-			const nonMemberToken = nonMemberSignIn.data?.signIn?.authenticationToken;
+			const nonMemberAccessCookie = nonMemberSignInRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const nonMemberToken = nonMemberAccessCookie?.value;
 			assertToBeNonNullish(nonMemberToken);
 
 			const result = await mercuriusClient.mutate(Mutation_createComment, {
@@ -370,15 +359,15 @@ suite("Mutation field createComment", () => {
 			);
 			expect(membershipResult.errors).toBeUndefined();
 
-			const memberSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: newUserEmail,
-						password: "password",
-					},
-				},
+			const memberSignInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: { email: newUserEmail, password: "password" },
 			});
-			const memberToken = memberSignIn.data?.signIn?.authenticationToken;
+			const memberAccessCookie = memberSignInRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const memberToken = memberAccessCookie?.value;
 			assertToBeNonNullish(memberToken);
 
 			const postId = await createPost(orgId);

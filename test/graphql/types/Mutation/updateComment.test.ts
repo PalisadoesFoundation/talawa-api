@@ -2,18 +2,19 @@ import { initGraphQLTada } from "gql.tada";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createComment,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_deleteOrganization,
-	Mutation_signUp,
-	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -40,25 +41,9 @@ suite("Mutation field updateComment", () => {
 	let commentId: string;
 
 	beforeAll(async () => {
-		// Sign in to get admin token
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		if (signInResult.errors?.length) {
-			throw new Error(`signIn failed: ${JSON.stringify(signInResult.errors)}`);
-		}
-		const token = signInResult.data?.signIn?.authenticationToken ?? null;
-		assertToBeNonNullish(token);
-		// Verify token is a non-empty string (not just non-nullish)
-		if (typeof token !== "string" || token.trim() === "") {
-			throw new Error("signIn returned empty or invalid authenticationToken");
-		}
-		adminToken = token;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		adminToken = accessToken;
 
 		// Create a shared organization for tests
 		const createOrgResult = await mercuriusClient.mutate(
@@ -192,21 +177,37 @@ suite("Mutation field updateComment", () => {
 
 	test("should allow regular organization member to update their own comment", async () => {
 		const { faker } = await import("@faker-js/faker");
-
-		// Create a regular user and add them to the organization via signUp
-		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+		const memberEmail = faker.internet.email();
+		const memberPassword = faker.internet.password();
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { Authorization: `Bearer ${adminToken}` },
 			variables: {
 				input: {
-					emailAddress: faker.internet.email(),
-					password: faker.internet.password(),
+					emailAddress: memberEmail,
+					password: memberPassword,
 					name: faker.person.fullName(),
-					selectedOrganization: orgId,
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
 			},
 		});
-
-		assertToBeNonNullish(signUpResult.data?.signUp);
-		const memberToken = signUpResult.data.signUp.authenticationToken;
+		const memberId = createUserResult.data?.createUser?.user?.id;
+		assertToBeNonNullish(memberId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { Authorization: `Bearer ${adminToken}` },
+			variables: {
+				input: { organizationId: orgId, memberId, role: "regular" },
+			},
+		});
+		const signInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: memberEmail, password: memberPassword },
+		});
+		expect(signInRes.statusCode).toBe(200);
+		const memberToken = signInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
 		assertToBeNonNullish(memberToken);
 
 		// Create a comment as this member
@@ -468,21 +469,37 @@ suite("Mutation field updateComment", () => {
 
 	test("should return unauthorized error when org member tries to update another user's comment", async () => {
 		const { faker } = await import("@faker-js/faker");
-
-		// Create a regular user via signUp (automatically joins the org)
-		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+		const memberEmail = faker.internet.email();
+		const memberPassword = faker.internet.password();
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { Authorization: `Bearer ${adminToken}` },
 			variables: {
 				input: {
-					emailAddress: faker.internet.email(),
-					password: faker.internet.password(),
+					emailAddress: memberEmail,
+					password: memberPassword,
 					name: faker.person.fullName(),
-					selectedOrganization: orgId,
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
 			},
 		});
-
-		assertToBeNonNullish(signUpResult.data?.signUp);
-		const userToken = signUpResult.data.signUp.authenticationToken;
+		const memberId = createUserResult.data?.createUser?.user?.id;
+		assertToBeNonNullish(memberId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { Authorization: `Bearer ${adminToken}` },
+			variables: {
+				input: { organizationId: orgId, memberId, role: "regular" },
+			},
+		});
+		const signInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: memberEmail, password: memberPassword },
+		});
+		expect(signInRes.statusCode).toBe(200);
+		const userToken = signInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
 		assertToBeNonNullish(userToken);
 
 		// Try to update admin's comment with this user's token (org member but not creator)
@@ -538,16 +555,16 @@ suite("Mutation field updateComment", () => {
 		const userId = createUserResult.data.createUser.user?.id;
 		assertToBeNonNullish(userId);
 
-		// Sign in to get their token
-		const userSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: testUserEmail,
-					password: "password123",
-				},
-			},
+		// Sign in as that user via REST to get their token
+		const userSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: testUserEmail, password: "password123" },
 		});
-		const userToken = userSignIn.data?.signIn?.authenticationToken;
+		const accessCookie = userSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		);
+		const userToken = accessCookie?.value;
 		assertToBeNonNullish(userToken);
 
 		// Delete the user from database using server's drizzle client

@@ -4,29 +4,25 @@ import { resolveActionItemCategories } from "../../../../src/graphql/types/Organ
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../../types/client";
 import {
 	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Query_currentUser,
 	Query_organizationActionItemCategories,
-	Query_signIn,
 } from "../documentNodes";
 
-const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(adminSignInResult.data?.signIn);
-const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminAuthToken);
-assertToBeNonNullish(adminSignInResult.data.signIn.user);
-const adminUser = adminSignInResult.data.signIn.user;
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminAuthToken}` },
+});
+const adminUser = currentUserResult.data?.currentUser;
+assertToBeNonNullish(adminUser);
+const adminUserId: string = adminUser.id;
 
 async function createOrg() {
 	const createOrgResult = await mercuriusClient.mutate(
@@ -55,7 +51,7 @@ async function createOrg() {
 		variables: {
 			input: {
 				organizationId: organization.id,
-				memberId: adminUser.id,
+				memberId: adminUserId,
 				role: "administrator",
 			},
 		},

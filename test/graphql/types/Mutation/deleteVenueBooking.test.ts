@@ -10,6 +10,7 @@ import type {
 	UnexpectedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -17,7 +18,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 afterEach(() => {
@@ -64,21 +65,14 @@ const Mutation_deleteVenueBooking = graphql(`
 	}
 `);
 
-// Sign in as admin once at the module level for test efficiency
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminToken}` },
 });
-
-assertToBeNonNullish(signInResult.data?.signIn);
-const adminToken = signInResult.data.signIn.authenticationToken;
+const _adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(adminToken);
-assertToBeNonNullish(signInResult.data.signIn.user?.id);
-const adminUserId = signInResult.data.signIn.user.id;
+assertToBeNonNullish(_adminUserId);
+const adminUserId: string = _adminUserId;
 
 /**
  * Helper function to create an organization with the admin as a member.

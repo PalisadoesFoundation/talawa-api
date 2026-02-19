@@ -5,18 +5,20 @@ import { describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 // Import the actual implementation to ensure it's loaded for coverage
 import "~/src/graphql/types/Tag/createdAt";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createTag,
+	Mutation_createUser,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Mutation_signUp,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -38,21 +40,14 @@ const Query_tag_createdAt = gql(`
 type AdminAuth = { token: string; userId: string };
 
 async function getAdminAuth(): Promise<AdminAuth> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(signInResult.data?.signIn?.user);
-
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
 	return {
-		token: signInResult.data.signIn.authenticationToken,
-		userId: signInResult.data.signIn.user.id,
+		token,
+		userId: currentUserResult.data.currentUser.id,
 	};
 }
 
@@ -172,22 +167,42 @@ describe("Tag.createdAt resolver - Integration", () => {
 			adminAuth.userId,
 		);
 
-		const regularUserResult = await mercuriusClient.mutate(Mutation_signUp, {
+		const regularEmail = `regular-user-${Date.now()}@test.com`;
+		const regularPassword = "Password123!";
+		const createUserRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
 			variables: {
 				input: {
-					emailAddress: `regular-user-${Date.now()}@test.com`,
-					password: "Password123!",
+					emailAddress: regularEmail,
+					password: regularPassword,
 					name: "Regular User",
-					selectedOrganization: orgId,
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
 			},
 		});
-
-		assertToBeNonNullish(regularUserResult.data?.signUp?.authenticationToken);
-		assertToBeNonNullish(regularUserResult.data?.signUp?.user?.id);
-
-		const regularUserToken = regularUserResult.data.signUp.authenticationToken;
-		const regularUserId = regularUserResult.data.signUp.user.id;
+		const regularUserId = createUserRes.data?.createUser?.user?.id;
+		assertToBeNonNullish(regularUserId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: regularUserId,
+					role: "regular",
+				},
+			},
+		});
+		const signInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: regularEmail, password: regularPassword },
+		});
+		expect(signInRes.statusCode).toBe(200);
+		const regularUserToken = signInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(regularUserToken);
 
 		try {
 			const result = await mercuriusClient.query(Query_tag_createdAt, {
@@ -245,23 +260,35 @@ describe("Tag.createdAt resolver - Integration", () => {
 			adminAuth.userId,
 		);
 
-		const orgAdminResult = await mercuriusClient.mutate(Mutation_signUp, {
+		const orgAdminEmail = `org-admin-${Date.now()}@test.com`;
+		const orgAdminPassword = "Password123!";
+		const createOrgAdminRes = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						emailAddress: orgAdminEmail,
+						password: orgAdminPassword,
+						name: "Org Admin",
+						role: "regular",
+						isEmailAddressVerified: false,
+					},
+				},
+			},
+		);
+		const orgAdminUserId = createOrgAdminRes.data?.createUser?.user?.id;
+		assertToBeNonNullish(orgAdminUserId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
 			variables: {
 				input: {
-					emailAddress: `org-admin-${Date.now()}@test.com`,
-					password: "Password123!",
-					name: "Org Admin",
-					selectedOrganization: tempOrgId,
+					organizationId: tempOrgId,
+					memberId: orgAdminUserId,
+					role: "regular",
 				},
 			},
 		});
-
-		assertToBeNonNullish(orgAdminResult.data?.signUp?.authenticationToken);
-		assertToBeNonNullish(orgAdminResult.data?.signUp?.user?.id);
-
-		const orgAdminToken = orgAdminResult.data.signUp.authenticationToken;
-		const orgAdminUserId = orgAdminResult.data.signUp.user.id;
-
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuth.token}` },
 			variables: {
@@ -272,6 +299,16 @@ describe("Tag.createdAt resolver - Integration", () => {
 				},
 			},
 		});
+		const orgAdminSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: orgAdminEmail, password: orgAdminPassword },
+		});
+		expect(orgAdminSignInRes.statusCode).toBe(200);
+		const orgAdminToken = orgAdminSignInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(orgAdminToken);
 
 		try {
 			const result = await mercuriusClient.query(Query_tag_createdAt, {

@@ -5,14 +5,16 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createUser,
 	Mutation_updateEntireRecurringEventSeries,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // Helper to safely get instance ID with assertion
@@ -237,19 +239,12 @@ async function createSplitSeriesScenario(
 	};
 }
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
-
-const adminUserId = signInResult.data.signIn.user?.id;
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
+});
+const adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(adminUserId);
 
 suite("Mutation field updateEntireRecurringEventSeries", () => {
@@ -430,39 +425,37 @@ suite("Mutation field updateEntireRecurringEventSeries", () => {
 			// Create a regular user
 			const regularUserEmail = faker.internet.email();
 			const regularUserPassword = "password123";
-			await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						emailAddress: regularUserEmail,
-						password: regularUserPassword,
-						name: "Regular User",
-						role: "regular",
-						isEmailAddressVerified: true,
-					},
-				},
-			});
-
-			// Sign in as regular user
-			const regularUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
+			const regularUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
 				{
+					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
 							emailAddress: regularUserEmail,
 							password: regularUserPassword,
+							name: "Regular User",
+							role: "regular",
+							isEmailAddressVerified: true,
 						},
 					},
 				},
 			);
-			assertToBeNonNullish(regularUserSignInResult.data?.signIn);
-			const regularUserAuthToken =
-				regularUserSignInResult.data.signIn.authenticationToken;
-			assertToBeNonNullish(regularUserAuthToken);
-			const regularUser = regularUserSignInResult.data.signIn.user;
+			const regularUser = regularUserResult.data?.createUser?.user;
 			assertToBeNonNullish(regularUser);
+			const signInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: {
+					email: regularUserEmail,
+					password: regularUserPassword,
+				},
+			});
+			const accessCookie = signInRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const regularUserAuthToken = accessCookie?.value;
+			assertToBeNonNullish(regularUserAuthToken);
 
-			// Add regular user as non-admin member to organization
 			await addMembership(organizationId, regularUser.id, "regular");
 
 			// Try to update event series as regular user (not creator, not admin)
@@ -522,21 +515,18 @@ suite("Mutation field updateEntireRecurringEventSeries", () => {
 				},
 			});
 
-			// Sign in as outsider user
-			const outsiderUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress: outsiderUserEmail,
-							password: outsiderUserPassword,
-						},
-					},
+			const signInOutsiderRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: {
+					email: outsiderUserEmail,
+					password: outsiderUserPassword,
 				},
+			});
+			const outsiderCookie = signInOutsiderRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
 			);
-			assertToBeNonNullish(outsiderUserSignInResult.data?.signIn);
-			const outsiderUserAuthToken =
-				outsiderUserSignInResult.data.signIn.authenticationToken;
+			const outsiderUserAuthToken = outsiderCookie?.value;
 			assertToBeNonNullish(outsiderUserAuthToken);
 
 			// Note: We don't add this user to the organization membership
@@ -598,21 +588,18 @@ suite("Mutation field updateEntireRecurringEventSeries", () => {
 			const creatorUser = creatorUserResult.data?.createUser?.user;
 			assertToBeNonNullish(creatorUser);
 
-			// Sign in as creator user
-			const creatorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress: creatorUserEmail,
-							password: creatorUserPassword,
-						},
-					},
+			const signInCreatorRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: {
+					email: creatorUserEmail,
+					password: creatorUserPassword,
 				},
+			});
+			const creatorCookie = signInCreatorRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
 			);
-			assertToBeNonNullish(creatorUserSignInResult.data?.signIn);
-			const creatorUserAuthToken =
-				creatorUserSignInResult.data.signIn.authenticationToken;
+			const creatorUserAuthToken = creatorCookie?.value;
 			assertToBeNonNullish(creatorUserAuthToken);
 
 			// Add creator user as regular member to organization
@@ -722,18 +709,18 @@ suite("Mutation field updateEntireRecurringEventSeries", () => {
 			const adminUser = adminUserResult.data?.createUser?.user;
 			assertToBeNonNullish(adminUser);
 
-			// Sign in as admin user
-			const adminUserSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: adminUserEmail,
-						password: adminUserPassword,
-					},
+			const signInAdminRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: {
+					email: adminUserEmail,
+					password: adminUserPassword,
 				},
 			});
-			assertToBeNonNullish(adminUserSignInResult.data?.signIn);
-			const adminUserAuthToken =
-				adminUserSignInResult.data.signIn.authenticationToken;
+			const adminCookie = signInAdminRes.cookies.find(
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			);
+			const adminUserAuthToken = adminCookie?.value;
 			assertToBeNonNullish(adminUserAuthToken);
 
 			// Add admin user as administrator to organization

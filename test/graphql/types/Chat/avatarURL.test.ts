@@ -4,6 +4,7 @@ import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { schemaManager } from "~/src/graphql/schemaManager";
 import envConfig from "~/src/utilities/graphqLimits";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -12,7 +13,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteChat,
 	Mutation_deleteOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 const Query_chat_with_avatarURL = `
@@ -26,17 +27,11 @@ const Query_chat_with_avatarURL = `
 `;
 
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: authToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${authToken}` },
 	});
-
-	const authToken = signInResult.data?.signIn?.authenticationToken;
-	const userId = signInResult.data?.signIn?.user?.id;
+	const userId = currentUserResult.data?.currentUser?.id;
 	assertToBeNonNullish(authToken);
 	assertToBeNonNullish(userId);
 	return { authToken, userId };
@@ -143,14 +138,18 @@ suite("Chat field avatarURL", () => {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (_error) {}
+		} catch (_error) {
+			console.error(_error);
+		}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: organizationId } },
 			});
-		} catch (_error) {}
+		} catch (_error) {
+			console.error(_error);
+		}
 	});
 
 	function createTestContext() {

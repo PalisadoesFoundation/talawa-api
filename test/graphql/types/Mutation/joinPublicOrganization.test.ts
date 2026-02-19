@@ -11,6 +11,7 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -18,7 +19,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteOrganization,
 	Mutation_joinPublicOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 /**
@@ -37,42 +38,16 @@ async function getAdminAuthTokenAndId(): Promise<{
 	}
 
 	try {
-		// Check if admin credentials exist
-		if (
-			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
-		}
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken: token } = await getAdminAuthViaRest(server);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${token}` },
 		});
-		// Check for GraphQL errors
-		if (adminSignInResult.errors) {
+		const id = currentUserResult.data?.currentUser?.id;
+		if (!id) {
 			throw new Error(
-				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
+				"Admin sign-in succeeded but current user id was not returned",
 			);
 		}
-		// Check for missing data
-		if (!adminSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error(
-				"Admin authentication succeeded but no token was returned",
-			);
-		}
-		if (!adminSignInResult.data?.signIn?.user?.id) {
-			throw new Error(
-				"Admin authentication succeeded but no user id was returned",
-			);
-		}
-		const token = adminSignInResult.data.signIn.authenticationToken;
-		const id = adminSignInResult.data.signIn.user.id;
 		cachedAdminToken = token;
 		cachedAdminId = id;
 		return { cachedAdminToken: token, cachedAdminId: id };

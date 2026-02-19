@@ -2,11 +2,9 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
-import {
-	Mutation_createOrganization,
-	Query_signIn,
-} from "test/graphql/types/documentNodes";
+import { Mutation_createOrganization } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
+import { getAdminAuthViaRest } from "test/helpers/adminAuthRest";
 import { describe, expect, it } from "vitest";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import {
@@ -38,20 +36,8 @@ import { server } from "../../server";
  */
 
 async function createTestOrganization(): Promise<string> {
-	// Clear any existing headers to ensure a clean sign-in
 	mercuriusClient.setHeaders({});
-	const signIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	if (signIn.errors) {
-		throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
-	}
-	const token = signIn.data?.signIn?.authenticationToken;
+	const { accessToken: token } = await getAdminAuthViaRest(server);
 	assertToBeNonNullish(
 		token,
 		"Authentication token is missing from sign-in response",

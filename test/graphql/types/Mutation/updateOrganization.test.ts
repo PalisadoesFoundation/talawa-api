@@ -4,6 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { afterEach, expect, suite, test } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -15,23 +16,7 @@ import {
 	Mutation_updateOrganization,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(
-	`query Query_signIn($input: QuerySignInInput!) {
-		signIn(input: $input) {
-			authenticationToken
-		}
-	}`,
-	{
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	},
-);
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
 
 suite("Mutation field updateOrganization", () => {

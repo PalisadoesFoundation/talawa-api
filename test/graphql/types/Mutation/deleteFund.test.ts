@@ -7,10 +7,11 @@ import { fundsTable } from "~/src/drizzle/tables/funds";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
+import { Mutation_createOrganization } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -32,18 +33,7 @@ const Mutation_deleteFund = gql(`
  * Scoped to this test file intentionally.
  */
 async function createTestOrganization(): Promise<string> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	expect(signInResult.errors ?? []).toEqual([]);
-
-	const adminToken = signInResult.data?.signIn?.authenticationToken;
+	const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 	expect(adminToken).toBeDefined();
 
 	const createOrgResult = await mercuriusClient.mutate(

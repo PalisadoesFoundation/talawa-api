@@ -10,12 +10,12 @@ import {
 	type UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 	Query_user_mobilePhoneNumber,
 } from "../documentNodes";
 
@@ -26,16 +26,7 @@ suite("User field mobilePhoneNumber", () => {
 		afterEach(async () => {
 			try {
 				if (createdUserIds.length > 0) {
-					const adminSignIn = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					const token = adminSignIn.data.signIn?.authenticationToken;
+					const { accessToken: token } = await getAdminAuthViaRest(server);
 					assertToBeNonNullish(token, "Admin sign-in failed during cleanup");
 
 					for (const id of createdUserIds) {
@@ -55,17 +46,7 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns unauthenticated error when client is not authenticated", async () => {
-			// 1. Sign in as admin to create a target user
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			const createUser = await mercuriusClient.mutate(Mutation_createUser, {
 				headers: { authorization: `bearer ${token}` },
@@ -107,17 +88,7 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns unauthorized_action error when non-admin accesses another user's data", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User A (the requester)
 			const userA = await mercuriusClient.mutate(Mutation_createUser, {
@@ -178,17 +149,7 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns mobilePhoneNumber when user accesses their own data", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User
 			const expectedPhoneNumber = "1234567890";
@@ -226,17 +187,7 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns mobilePhoneNumber when administrator accesses another user's data", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User
 			const expectedPhoneNumber = "9876543210";
@@ -270,17 +221,7 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns null when user has no mobilePhoneNumber set", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User without mobilePhoneNumber
 			const userRes = await mercuriusClient.mutate(Mutation_createUser, {
@@ -316,17 +257,7 @@ suite("User field mobilePhoneNumber", () => {
 		});
 
 		test("returns error when querying non-existent user", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Query with non-existent user ID
 			const nonExistentId = faker.string.uuid();

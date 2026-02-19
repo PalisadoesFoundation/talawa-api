@@ -11,6 +11,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -22,7 +23,7 @@ import {
 	Mutation_deleteAgendaItem,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
@@ -30,25 +31,15 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	const result = await mercuriusClient.query(Query_signIn, {
-		headers: { authorization: "" },
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	expect(result.errors).toBeUndefined();
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
-
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
 	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
+		token,
+		userId: currentUserResult.data.currentUser.id,
 	};
-
 	return cachedAdminAuth;
 }
 

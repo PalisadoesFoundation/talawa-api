@@ -18,7 +18,9 @@
 
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -33,7 +35,6 @@ import {
 	Mutation_deleteUser,
 	Mutation_markChatAsRead,
 	Query_chat_with_unread,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Chat computed fields", () => {
@@ -60,16 +61,8 @@ suite("Chat computed fields", () => {
 	});
 
 	test("computed unread fields reflect message/read state", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		const aliceRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -234,16 +227,9 @@ suite("Chat computed fields", () => {
 		let adminToken: string;
 
 		beforeAll(async () => {
-			const adminRes = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-			adminToken = adminRes.data.signIn.authenticationToken as string;
+			const { accessToken } = await getAdminAuthViaRest(server);
+			assertToBeNonNullish(accessToken);
+			adminToken = accessToken;
 		});
 
 		test("non-member sees zero/false/null for unread fields", async () => {
@@ -289,20 +275,21 @@ suite("Chat computed fields", () => {
 			const outsider = outsiderRes.data.createUser;
 			assertToBeNonNullish(outsider.user);
 			assertToBeNonNullish(outsider.user.emailAddress);
-			const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: outsider.user?.emailAddress,
-						password: "password123",
-					},
+			const outsiderSignInRes = await server.inject({
+				method: "POST",
+				url: "/auth/signin",
+				payload: {
+					email: outsider.user?.emailAddress,
+					password: "password123",
 				},
 			});
-			assertToBeNonNullish(outsiderSignIn.data?.signIn?.authenticationToken);
+			const outsiderToken = outsiderSignInRes.cookies.find(
+				(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+			)?.value;
+			assertToBeNonNullish(outsiderToken);
 			assertToBeNonNullish(outsider.user);
 			assertToBeNonNullish(outsider.user.id);
 			const outsiderId = outsider.user.id;
-			const outsiderToken = outsiderSignIn.data.signIn
-				.authenticationToken as string;
 			cleanupFns.push(async () => {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `bearer ${adminToken}` },

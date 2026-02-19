@@ -3,6 +3,7 @@ import { afterEach, beforeAll, expect, it, suite, test } from "vitest";
 import { eventInvitationsTable } from "~/src/drizzle/tables/eventInvitations";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -10,7 +11,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_verifyEventInvitation,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let adminToken: string | null = null;
@@ -19,33 +20,15 @@ let adminUserId: string | null = null;
 async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 	if (adminToken && adminUserId)
 		return { token: adminToken, userId: adminUserId };
-	if (
-		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-	) {
-		throw new Error("Admin credentials missing in env config");
-	}
-	const res = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-	if (
-		res.errors ||
-		!res.data?.signIn?.authenticationToken ||
-		!res.data?.signIn?.user?.id
-	) {
-		throw new Error(
-			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
-		);
-	}
-	adminToken = res.data.signIn.authenticationToken;
-	adminUserId = res.data.signIn.user.id;
-	assertToBeNonNullish(adminToken);
-	assertToBeNonNullish(adminUserId);
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(accessToken);
+	assertToBeNonNullish(userId);
+	adminToken = accessToken;
+	adminUserId = userId;
 	return { token: adminToken, userId: adminUserId };
 }
 
@@ -74,11 +57,7 @@ async function createTestOrganization(): Promise<TestOrganization> {
 	return {
 		orgId,
 		cleanup: async () => {
-			try {
-				// Cleanup organization (cascade deletes related records)
-			} catch (_error) {
-				// Silently ignore cleanup errors
-			}
+			// Cleanup organization (cascade deletes related records)
 		},
 	};
 }
@@ -142,7 +121,7 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			try {
 				await cleanup();
 			} catch (_error) {
-				// Silently ignore cleanup errors
+				console.error(_error);
 			}
 		}
 

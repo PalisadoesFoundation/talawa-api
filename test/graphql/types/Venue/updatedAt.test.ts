@@ -11,6 +11,7 @@ import {
 import { resolveUpdatedAt } from "~/src/graphql/types/Venue/updatedAt";
 import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -18,7 +19,6 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createVenue,
-	Query_signIn,
 	Query_venue_updatedAt,
 } from "../documentNodes";
 
@@ -27,18 +27,8 @@ const createdVenueIds: string[] = [];
 const createdUserIds: string[] = [];
 
 const getAdminToken = async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	expect(signInResult.errors).toBeUndefined();
-	assertToBeNonNullish(signInResult.data?.signIn);
-	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
-	return signInResult.data.signIn.authenticationToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	return accessToken;
 };
 
 afterEach(async () => {

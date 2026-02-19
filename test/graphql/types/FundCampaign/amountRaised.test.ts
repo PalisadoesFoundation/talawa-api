@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -16,25 +17,16 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Mutation_updateFundCampaignPledge,
+	Query_currentUser,
 	Query_fundCampaign,
-	Query_signIn,
 } from "../documentNodes";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	const authToken = signInResult.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(authToken);
-	return authToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 async function createTestUser(
@@ -171,17 +163,11 @@ suite("FundCampaign amountRaised logic", () => {
 
 	beforeAll(async () => {
 		adminAuthToken = await getAdminToken();
-
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
 		});
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		adminUserId = adminSignInResult.data.signIn.user.id;
+		adminUserId = currentUserResult.data?.currentUser?.id ?? "";
+		assertToBeNonNullish(adminUserId);
 
 		organizationId = await createTestOrganization(adminAuthToken);
 		createdOrganizationIds.push(organizationId);
@@ -215,7 +201,9 @@ suite("FundCampaign amountRaised logic", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: pledgeId } },
 				});
-			} catch (_error) {}
+			} catch (_error) {
+				console.error(_error);
+			}
 		}
 
 		for (const campaignId of createdCampaignIds) {
@@ -224,7 +212,9 @@ suite("FundCampaign amountRaised logic", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: campaignId } },
 				});
-			} catch (_error) {}
+			} catch (_error) {
+				console.error(_error);
+			}
 		}
 
 		for (const fundIdToDelete of createdFundIds) {
@@ -233,7 +223,9 @@ suite("FundCampaign amountRaised logic", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: fundIdToDelete } },
 				});
-			} catch (_error) {}
+			} catch (_error) {
+				console.error(_error);
+			}
 		}
 
 		for (const userId of createdUserIds) {
@@ -242,7 +234,9 @@ suite("FundCampaign amountRaised logic", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: userId } },
 				});
-			} catch (_error) {}
+			} catch (_error) {
+				console.error(_error);
+			}
 		}
 
 		for (const orgId of createdOrganizationIds) {
@@ -251,7 +245,9 @@ suite("FundCampaign amountRaised logic", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch (_error) {}
+			} catch (_error) {
+				console.error(_error);
+			}
 		}
 	});
 

@@ -1,8 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
 import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -12,18 +14,9 @@ import {
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
 	Mutation_updatePost,
-	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
+const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminToken);
 
 suite("Mutation field updatePost", () => {
@@ -51,15 +44,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("when the specified post does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const authToken = signInResult.data?.signIn?.authenticationToken ?? null;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(authToken);
 
 			const result = await mercuriusClient.mutate(Mutation_updatePost, {
@@ -90,15 +75,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("when current user is administrator but not the creator", () => {
 		test("should return an error with unauthorized_arguments code", async () => {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const authToken = signInResult.data?.signIn?.authenticationToken ?? null;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(authToken);
 
 			const createOrgResult = await mercuriusClient.mutate(
@@ -653,17 +630,7 @@ suite("Mutation field updatePost", () => {
 				assertToBeNonNullish(regularUserToken);
 				assertToBeNonNullish(userId);
 
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const adminToken =
-					adminSignInResult.data?.signIn?.authenticationToken ?? null;
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 				assertToBeNonNullish(adminToken);
 
 				const createOrgResult = await mercuriusClient.mutate(
@@ -815,18 +782,11 @@ suite("Mutation field updatePost", () => {
 			const { authToken: regularUserToken, userId } =
 				await createRegularUserUsingAdmin();
 
+			let newUserToken: string | null | undefined;
+			let newUserId: string | null | undefined;
 			if (!regularUserToken || !userId) {
 				console.log("Helper function failed, creating user manually");
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 				assertToBeNonNullish(adminToken);
 
 				const email = `testuser-${faker.string.ulid()}@example.com`;
@@ -846,22 +806,20 @@ suite("Mutation field updatePost", () => {
 					},
 				);
 
-				const newUserId = createUserResult.data?.createUser?.user?.id;
+				newUserId = createUserResult.data?.createUser?.user?.id;
 				assertToBeNonNullish(newUserId);
-				const userSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: email,
-							password: "password123",
-						},
-					},
+				const signInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: { email, password: "password123" },
 				});
-				const newUserToken = userSignInResult.data?.signIn?.authenticationToken;
+				const accessCookie = signInRes.cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				newUserToken = accessCookie?.value;
 				assertToBeNonNullish(newUserToken);
 			}
 
-			let newUserToken: string | null | undefined;
-			let newUserId: string | null | undefined;
 			const userToken = regularUserToken || newUserToken;
 			const userIdToUse = userId || newUserId;
 			assertToBeNonNullish(userToken);
@@ -986,15 +944,7 @@ suite("Mutation field updatePost", () => {
 suite("updatePost - MinIO operations", () => {
 	test("successfully updates post with valid image attachment", async () => {
 		// Admin login
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const token = adminSignIn.data.signIn?.authenticationToken;
+		const { accessToken: token } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(token);
 
 		// Create org
@@ -1092,15 +1042,7 @@ suite("updatePost - MinIO operations", () => {
 
 	test("should remove existing attachment when attachment is explicitly null", async () => {
 		// Step 1: Admin login
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const token = adminSignIn.data.signIn?.authenticationToken;
+		const { accessToken: token } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(token);
 
 		// Step 2: Create organization
@@ -1202,16 +1144,7 @@ suite("updatePost - MinIO operations", () => {
 	});
 
 	test("should preserve existing attachment when attachment field is omitted (undefined)", async () => {
-		// 1. Admin login
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const token = adminSignIn.data?.signIn?.authenticationToken;
+		const { accessToken: token } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(token);
 
 		// 2. Create organization
@@ -1322,15 +1255,7 @@ suite("updatePost - MinIO operations", () => {
 
 		try {
 			// Admin login
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			const token = adminSignIn.data.signIn?.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(token);
 
 			// Create org
@@ -1433,15 +1358,7 @@ suite("updatePost - MinIO operations", () => {
 	});
 	test("should return unexpected error when MinIO object removal fails", async () => {
 		// Admin login
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const token = adminSignIn.data.signIn?.authenticationToken;
+		const { accessToken: token } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(token);
 
 		// Create organization
@@ -1596,15 +1513,7 @@ suite("updatePost - MinIO operations", () => {
 
 	test("should return unexpected error when MinIO removal fails while explicitly removing attachment", async () => {
 		// Admin login
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const token = adminSignIn.data.signIn?.authenticationToken;
+		const { accessToken: token } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(token);
 
 		// Create organization

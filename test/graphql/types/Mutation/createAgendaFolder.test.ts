@@ -4,6 +4,7 @@ import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -14,7 +15,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let cachedAdminAuth: {
@@ -25,37 +26,15 @@ let cachedAdminAuth: {
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	mercuriusClient.setHeaders({});
-
-	const {
-		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
-		API_ADMINISTRATOR_USER_PASSWORD: password,
-	} = server.envConfig;
-
-	if (!email || !password) {
-		throw new Error(
-			"Missing admin credentials for tests. " +
-				"Please set API_ADMINISTRATOR_USER_EMAIL_ADDRESS and " +
-				"API_ADMINISTRATOR_USER_PASSWORD in your environment.",
-		);
-	}
-
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(accessToken);
+	assertToBeNonNullish(userId);
 
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
-
-	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
-	};
+	cachedAdminAuth = { token: accessToken, userId };
 
 	return cachedAdminAuth;
 }
@@ -154,9 +133,8 @@ suite("Mutation field createAgendaFolder", () => {
 		for (const cleanup of testCleanupFunctions.reverse()) {
 			try {
 				await cleanup();
-			} catch {
-				// Cleanup errors are intentionally swallowed to prevent cascading failures
-				// during teardown. The test result is already determined at this point.
+			} catch (e) {
+				console.error(e);
 			}
 		}
 		testCleanupFunctions.length = 0;

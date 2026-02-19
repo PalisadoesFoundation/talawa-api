@@ -8,12 +8,14 @@ import {
 	postsTable,
 	usersTable,
 } from "~/src/drizzle/schema";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -22,7 +24,7 @@ import {
 	Mutation_createUser,
 	Mutation_deleteCommentVote,
 	Query_commentWithHasUserVoted,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // TypeScript interfaces for GraphQL responses
@@ -51,35 +53,13 @@ async function getAdminAuthToken(): Promise<{
 	}
 
 	try {
-		if (
-			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
-		}
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
+		const { accessToken: token } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(token);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${token}` },
 		});
-		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
-			);
-		}
-		if (!adminSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error(
-				"Admin authentication succeeded but no token was returned",
-			);
-		}
-		assertToBeNonNullish(adminSignInResult.data.signIn.user);
-		const token = adminSignInResult.data.signIn.authenticationToken;
-		const id = adminSignInResult.data.signIn.user.id;
+		const id = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(id);
 		cachedAdminToken = token;
 		cachedAdminUserId = id;
 		return {
@@ -134,21 +114,16 @@ async function createRegularUser(): Promise<{
 	const userId = createUserResult.data.createUser.user.id;
 	createdUserIds.push(userId);
 
-	// Sign in to get auth token
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress,
-				password,
-			},
-		},
+	const response = await server.inject({
+		method: "POST",
+		url: "/auth/signin",
+		payload: { email: emailAddress, password },
 	});
-
-	assertToBeNonNullish(signInResult.data);
-	assertToBeNonNullish(signInResult.data.signIn);
-
-	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
-	const authToken = signInResult.data.signIn.authenticationToken;
+	const cookie = response.cookies.find(
+		(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+	);
+	assertToBeNonNullish(cookie?.value);
+	const authToken = cookie.value;
 
 	return { userId, authToken, emailAddress };
 }

@@ -11,6 +11,7 @@ import {
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -22,7 +23,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_updateAgendaItem,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
@@ -30,23 +31,15 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-
-	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(signInResult.data?.signIn?.user?.id);
-
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
 	cachedAdminAuth = {
-		token: signInResult.data.signIn.authenticationToken,
-		userId: signInResult.data.signIn.user.id,
+		token: accessToken,
+		userId: currentUserResult.data.currentUser.id,
 	};
-
 	return cachedAdminAuth;
 }
 

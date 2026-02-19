@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -8,7 +9,6 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_updateSingleRecurringEventInstance,
-	Query_signIn,
 } from "../documentNodes";
 
 // Store original database query methods to restore after each test
@@ -41,19 +41,9 @@ afterEach(() => {
 	server.drizzleClient.transaction = originalDbQueries.drizzleTransaction;
 });
 
-// Helper function to get admin authentication token
 async function getAdminAuthToken(): Promise<string> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
-	assertToBeNonNullish(adminToken);
-	return adminToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	return accessToken;
 }
 
 // Helper function to create a test organization with unique name

@@ -22,9 +22,9 @@ import {
 import type { OAuthProviderRegistry } from "~/src/utilities/auth/oauth/OAuthProviderRegistry";
 import type { OAuthUserProfile } from "~/src/utilities/auth/oauth/types";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -535,22 +535,7 @@ suite("Mutation signInWithOAuth", () => {
 		});
 
 		test("should throw error when user is already authenticated", async () => {
-			// First, sign in to get a valid authentication token
-			const administratorUserSignInResult = await mercuriusClient.query(
-				Query_signIn,
-				{
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				},
-			);
-
-			const authToken =
-				administratorUserSignInResult.data?.signIn?.authenticationToken;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
 			if (!authToken) {
 				throw new Error("Failed to get authentication token for test");
 			}

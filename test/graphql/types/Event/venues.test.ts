@@ -10,6 +10,7 @@ import { venuesTable } from "~/src/drizzle/tables/venues";
 import { schema } from "~/src/graphql/schema";
 import envConfig from "~/src/utilities/graphqLimits";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -18,9 +19,9 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createVenue,
 	Mutation_createVenueBooking,
+	Query_currentUser,
 	Query_eventVenues,
 	Query_eventVenuesWithAttachments,
-	Query_signIn,
 } from "../documentNodes";
 
 let authToken: string;
@@ -32,20 +33,13 @@ const createdEventIds: string[] = [];
 const createdVenueIds: string[] = [];
 
 beforeAll(async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken } = await getAdminAuthViaRest(server);
+	authToken = accessToken;
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
 	});
-	expect(signInResult.errors).toBeUndefined();
-	assertToBeNonNullish(signInResult.data?.signIn);
-	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
-	assertToBeNonNullish(signInResult.data.signIn.user?.id);
-	authToken = signInResult.data.signIn.authenticationToken;
-	adminUserId = signInResult.data.signIn.user.id;
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
+	adminUserId = currentUserResult.data.currentUser.id;
 });
 
 afterEach(async () => {

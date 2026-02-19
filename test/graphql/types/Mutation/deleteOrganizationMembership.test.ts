@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -9,7 +10,6 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganizationMembership,
-	Query_signIn,
 } from "../documentNodes";
 
 // Constants
@@ -69,22 +69,7 @@ async function createTestMembership(
 	return result.data?.createOrganizationMembership?.id;
 }
 
-// Sign in as admin
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-if (signInResult.errors) {
-	throw new Error(
-		`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
-	);
-}
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(authToken);
 
 suite("Mutation field deleteOrganizationMembership", () => {

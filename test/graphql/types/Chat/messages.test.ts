@@ -2,6 +2,8 @@ import { faker } from "@faker-js/faker";
 import { graphql } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, describe, expect, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -14,7 +16,6 @@ import {
 	Mutation_deleteChat,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
 // GraphQL query for Chat.messages connection
@@ -48,17 +49,26 @@ const Query_chat_messages = graphql(`
 
 const TEST_PASSWORD = "password123";
 
-async function signinAdmin() {
-	const adminSignIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+async function getTokenViaRest(
+	email: string,
+	password: string,
+): Promise<string> {
+	const res = await server.inject({
+		method: "POST",
+		url: "/auth/signin",
+		payload: { email, password },
 	});
-	assertToBeNonNullish(adminSignIn.data?.signIn?.authenticationToken);
-	return adminSignIn;
+	const cookie = res.cookies.find((c) => c.name === COOKIE_NAMES.ACCESS_TOKEN);
+	assertToBeNonNullish(cookie?.value);
+	return cookie.value;
+}
+
+async function signinAdmin() {
+	const accessToken = (await getAdminAuthViaRest(server)).accessToken;
+	assertToBeNonNullish(accessToken);
+	return { data: { signIn: { authenticationToken: accessToken } } } as {
+		data: { signIn: { authenticationToken: string } };
+	};
 }
 
 async function createCreator(adminToken: string) {
@@ -151,17 +161,10 @@ describe("Chat.messages integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);
@@ -345,17 +348,10 @@ describe("Chat.messages integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);
@@ -427,17 +423,10 @@ describe("Chat.messages integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);
@@ -520,17 +509,10 @@ describe("Chat.messages integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);
@@ -630,17 +612,10 @@ describe("Chat.messages integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);
@@ -652,19 +627,11 @@ describe("Chat.messages integration tests", () => {
 			});
 		});
 
-		// Outsider Signin
 		assertToBeNonNullish(outsider.user?.emailAddress);
-		const outsiderSignin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: outsider.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(outsiderSignin.data?.signIn?.authenticationToken);
-		const outsiderToken = outsiderSignin.data?.signIn
-			?.authenticationToken as string;
+		const outsiderToken = await getTokenViaRest(
+			outsider.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		// Try to access messages as non-member
 		const result = await mercuriusClient.query(Query_chat_messages, {
@@ -744,17 +711,10 @@ describe("Chat.messages integration tests", () => {
 
 		// Creator signin
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);
@@ -777,19 +737,11 @@ describe("Chat.messages integration tests", () => {
 			variables: { input: { chatId: chat.id, body: "Test message" } },
 		});
 
-		// Non org member signin
 		assertToBeNonNullish(nonOrgMember.user?.emailAddress);
-		const nonOrgMemberSignin = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: nonOrgMember.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(nonOrgMemberSignin.data?.signIn?.authenticationToken);
-		const nonOrgMemberToken = nonOrgMemberSignin.data?.signIn
-			?.authenticationToken as string;
+		const nonOrgMemberToken = await getTokenViaRest(
+			nonOrgMember.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		// Fetch message from non-org member should result in error
 		const result = await mercuriusClient.query(Query_chat_messages, {
@@ -884,30 +836,16 @@ describe("Chat.messages integration tests", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorToken = await getTokenViaRest(
+			creator.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		assertToBeNonNullish(orgAdmin.user?.emailAddress);
-		const orgAdminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: orgAdmin.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(orgAdminSignIn.data?.signIn?.authenticationToken);
-		const orgAdminToken = orgAdminSignIn.data?.signIn
-			?.authenticationToken as string;
+		const orgAdminToken = await getTokenViaRest(
+			orgAdmin.user.emailAddress,
+			TEST_PASSWORD,
+		);
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);

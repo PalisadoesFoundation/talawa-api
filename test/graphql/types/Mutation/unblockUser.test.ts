@@ -9,6 +9,7 @@ import type {
 	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -17,7 +18,6 @@ import {
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
-	Query_signIn,
 } from "../documentNodes";
 
 const Mutation_blockUser = graphql(`
@@ -63,17 +63,7 @@ suite("Mutation field unblockUser", () => {
 	 * database pollution and test interdependence.
 	 */
 	afterEach(async () => {
-		// Get admin token for cleanup operations
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const adminToken = adminSignInResult.data.signIn?.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 
 		// Delete created users
@@ -83,7 +73,7 @@ suite("Mutation field unblockUser", () => {
 					headers: { authorization: `bearer ${userToken}` },
 				});
 			} catch (_error) {
-				// User might already be deleted, continue
+				console.error(_error);
 			}
 		}
 
@@ -95,7 +85,7 @@ suite("Mutation field unblockUser", () => {
 					variables: { input: { id: orgId } },
 				});
 			} catch (_error) {
-				// Organization might already be deleted, continue
+				console.error(_error);
 			}
 		}
 
@@ -111,25 +101,14 @@ suite("Mutation field unblockUser", () => {
 			 * Tests that unauthenticated requests are properly rejected.
 			 */
 			test("client triggering the graphql operation is not authenticated.", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -170,25 +149,14 @@ suite("Mutation field unblockUser", () => {
 			 * Tests that deleted user tokens are properly invalidated.
 			 */
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -216,7 +184,7 @@ suite("Mutation field unblockUser", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -265,25 +233,14 @@ suite("Mutation field unblockUser", () => {
 			 * Tests validation of non-existent organization reference.
 			 */
 			test('value of the argument "organizationId" does not correspond to an existing organization.', async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const nonExistentOrgId = faker.string.uuid();
 
 				const result = await mercuriusClient.mutate(Mutation_unblockUser, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						organizationId: nonExistentOrgId,
@@ -319,25 +276,14 @@ suite("Mutation field unblockUser", () => {
 			 * Tests validation of non-existent user reference.
 			 */
 			test('value of the argument "userId" does not correspond to an existing user.', async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -357,7 +303,7 @@ suite("Mutation field unblockUser", () => {
 
 				const result = await mercuriusClient.mutate(Mutation_unblockUser, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						organizationId: createOrgResult.data.createOrganization.id,
@@ -398,25 +344,14 @@ suite("Mutation field unblockUser", () => {
 			 * Tests validation that user must be blocked before unblocking.
 			 */
 			test("user is not currently blocked in the organization.", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -442,7 +377,7 @@ suite("Mutation field unblockUser", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -461,7 +396,7 @@ suite("Mutation field unblockUser", () => {
 				// Try to unblock a user who is not blocked
 				const result = await mercuriusClient.mutate(Mutation_unblockUser, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						organizationId: createOrgResult.data.createOrganization.id,
@@ -492,26 +427,15 @@ suite("Mutation field unblockUser", () => {
 			 * Tests authorization for non-admin organization member.
 			 */
 			test("client is a non-admin organization member.", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				// Create a regular user (non-admin)
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -538,7 +462,7 @@ suite("Mutation field unblockUser", () => {
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -564,7 +488,7 @@ suite("Mutation field unblockUser", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -583,7 +507,7 @@ suite("Mutation field unblockUser", () => {
 				// Add both users as non-admin members
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -596,7 +520,7 @@ suite("Mutation field unblockUser", () => {
 
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -610,7 +534,7 @@ suite("Mutation field unblockUser", () => {
 				// Block the target user as admin
 				await mercuriusClient.mutate(Mutation_blockUser, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						organizationId: createOrgResult.data.createOrganization.id,
@@ -654,26 +578,15 @@ suite("Mutation field unblockUser", () => {
 			 * Tests successful user unblock.
 			 */
 			test("all conditions are met and the user is successfully unblocked.", async () => {
-				const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					adminSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				// Create user to be blocked
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -699,7 +612,7 @@ suite("Mutation field unblockUser", () => {
 					Mutation_createOrganization,
 					{
 						headers: {
-							authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -718,7 +631,7 @@ suite("Mutation field unblockUser", () => {
 				// Add user as member
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -732,7 +645,7 @@ suite("Mutation field unblockUser", () => {
 				// Block the user first
 				await mercuriusClient.mutate(Mutation_blockUser, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						organizationId: createOrgResult.data.createOrganization.id,
@@ -743,7 +656,7 @@ suite("Mutation field unblockUser", () => {
 				// Now unblock the user
 				const result = await mercuriusClient.mutate(Mutation_unblockUser, {
 					headers: {
-						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						organizationId: createOrgResult.data.createOrganization.id,

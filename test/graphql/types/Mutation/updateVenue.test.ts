@@ -6,13 +6,19 @@ import { afterEach, expect, suite, test, vi } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { venuesTable } from "~/src/drizzle/tables/venues";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import {
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+} from "../documentNodes";
 
 const Mutation_updateVenue = graphql(`
   mutation UpdateVenue($input: MutationUpdateVenueInput!) {
@@ -36,40 +42,8 @@ const Mutation_createVenue = graphql(`
   }
 `);
 
-const Query_signIn = graphql(`
-  query SignIn($input: QuerySignInInput!) {
-    signIn(input: $input) {
-      authenticationToken
-      user {
-        id
-      }
-    }
-  }
-`);
-
-const Mutation_signUp = graphql(`
-  mutation SignUp($input: MutationSignUpInput!) {
-    signUp(input: $input) {
-      authenticationToken
-      user {
-        id
-      }
-    }
-  }
-`);
-
 async function createOrgAndVenue() {
-	const signIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
-	const token = signIn.data.signIn.authenticationToken;
+	const { accessToken: token } = await getAdminAuthViaRest(server);
 
 	const orgRes = await mercuriusClient.mutate(
 		graphql(`
@@ -169,25 +143,11 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("rejects invalid venue id format", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
+		const { accessToken } = await getAdminAuthViaRest(server);
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${accessToken}`,
 			},
 			variables: {
 				input: {
@@ -212,27 +172,45 @@ suite("Mutation field updateVenue", () => {
 		const env = await createOrgAndVenue();
 		cleanupFns.push(env.cleanup);
 
-		const { orgId, venueId } = env;
+		const { orgId, venueId, token: adminToken } = env;
 
-		// Create a non-admin user
+		// Create a non-admin user (createUser + org membership + REST signin)
 		const nonAdminUserEmail = `user_${faker.string.ulid()}@test.com`;
 		const nonAdminUserPassword = faker.internet.password({ length: 16 });
-		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+		const createUserRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
 					emailAddress: nonAdminUserEmail,
-					name: `${faker.person.firstName()} ${faker.person.lastName()}`,
 					password: nonAdminUserPassword,
-					selectedOrganization: orgId,
+					name: `${faker.person.firstName()} ${faker.person.lastName()}`,
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
 			},
 		});
-
-		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
-		assertToBeNonNullish(signUpResult.data?.signUp?.user?.id);
-		const nonAdminToken = signUpResult.data.signUp.authenticationToken;
-
-		const nonAdminUserId = signUpResult.data.signUp.user.id;
+		const nonAdminUserId = createUserRes.data?.createUser?.user?.id;
+		assertToBeNonNullish(nonAdminUserId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: nonAdminUserId,
+					role: "regular",
+				},
+			},
+		});
+		const signInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: nonAdminUserEmail, password: nonAdminUserPassword },
+		});
+		expect(signInRes.statusCode).toBe(200);
+		const nonAdminToken = signInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(nonAdminToken);
 
 		cleanupFns.push(async () => {
 			try {
@@ -404,25 +382,11 @@ suite("Mutation field updateVenue", () => {
 	});
 
 	test("rejects with non-existent but valid UUID venue id", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data?.signIn?.authenticationToken,
-		);
+		const { accessToken } = await getAdminAuthViaRest(server);
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${accessToken}`,
 			},
 			variables: {
 				input: {
@@ -1073,26 +1037,41 @@ suite("Mutation field updateVenue", () => {
 		const env = await createOrgAndVenue();
 		cleanupFns.push(env.cleanup);
 
-		const { orgId, venueId } = env;
+		const { orgId, venueId, token: adminToken } = env;
 
-		// create temp user via signup
+		// create temp user via createUser + org membership + REST signin
 		const tempEmail = `temp-${faker.string.ulid()}@example.com`;
-
-		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+		const tempPassword = "Passw0rd!23";
+		const createUserRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
 					emailAddress: tempEmail,
-					password: "Passw0rd!23",
+					password: tempPassword,
 					name: "Temp User",
-					selectedOrganization: orgId,
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
 			},
 		});
-		assertToBeNonNullish(signUpResult.data?.signUp?.user);
-		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
-		const tempUserToken = signUpResult.data.signUp.authenticationToken;
-
-		const tempUserId = signUpResult.data.signUp.user.id;
+		const tempUserId = createUserRes.data?.createUser?.user?.id;
+		assertToBeNonNullish(tempUserId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { organizationId: orgId, memberId: tempUserId, role: "regular" },
+			},
+		});
+		const signInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: tempEmail, password: tempPassword },
+		});
+		expect(signInRes.statusCode).toBe(200);
+		const tempUserToken = signInRes.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		)?.value;
+		assertToBeNonNullish(tempUserToken);
 
 		cleanupFns.push(async () => {
 			try {
@@ -1107,7 +1086,7 @@ suite("Mutation field updateVenue", () => {
 		// delete user from DB
 		await server.drizzleClient
 			.delete(usersTable)
-			.where(eq(usersTable.id, signUpResult.data.signUp.user.id));
+			.where(eq(usersTable.id, tempUserId));
 
 		// call mutation using now-invalid user token
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {

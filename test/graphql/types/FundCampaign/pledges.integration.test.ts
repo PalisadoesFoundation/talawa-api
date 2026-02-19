@@ -3,6 +3,7 @@ import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../../types/client";
 import {
@@ -12,7 +13,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -55,20 +56,14 @@ const Query_FundCampaign_Pledges = gql(`
   }
 `);
 
-// Sign in as admin user for setup
-const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(adminSignInResult.data?.signIn);
-const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminAuthToken);
-assertToBeNonNullish(adminSignInResult.data.signIn.user);
-const adminUser = adminSignInResult.data.signIn.user;
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminAuthToken}` },
+});
+const adminUser = currentUserResult.data?.currentUser;
+assertToBeNonNullish(adminUser);
+const adminUserId: string = adminUser.id;
 
 /**
  * Helper to create a unique organization for testing
@@ -101,7 +96,7 @@ async function createTestOrganization() {
 		variables: {
 			input: {
 				organizationId: organization.id,
-				memberId: adminUser.id,
+				memberId: adminUserId,
 				role: "administrator",
 			},
 		},

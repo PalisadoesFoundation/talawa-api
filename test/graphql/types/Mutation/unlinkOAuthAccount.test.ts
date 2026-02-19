@@ -4,13 +4,13 @@ import { afterEach, expect, suite, test, vi } from "vitest";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Mutation_unlinkOAuthAccount,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Mutation unlinkOAuthAccount", () => {
@@ -30,16 +30,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 
 	test("unlinkOAuthAccount successfully unlinks a provider", async () => {
 		// 1. Create admin and regular user
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
-		const adminToken = adminRes.data.signIn.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -97,15 +88,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 	});
 
 	test("unlinkOAuthAccount throws error when provider not found", async () => {
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -144,15 +127,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 
 	test("unlinkOAuthAccount throws error if unlinking last auth method", async () => {
 		// Setup user
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -219,15 +194,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 
 	test("unlinkOAuthAccount successfully unlinks when user has no password but multiple OAuth accounts", async () => {
 		// 1. Create user
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -332,15 +299,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 			) as unknown as FindFirstReturn;
 		}) as unknown as FindFirstFn);
 
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -433,15 +392,7 @@ suite("Mutation unlinkOAuthAccount", () => {
 			) as unknown as FindFirstReturn;
 		}) as unknown as FindFirstFn);
 
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminRes.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },

@@ -6,13 +6,13 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_renewAuthenticationToken,
-	Query_signIn,
 } from "../documentNodes";
 
 suite("Query field renewAuthenticationToken", () => {
@@ -41,28 +41,14 @@ suite("Query field renewAuthenticationToken", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				assertToBeNonNullish(adminToken);
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							authorization: `bearer ${adminToken}`,
 						},
 						variables: {
 							input: {
@@ -83,7 +69,7 @@ suite("Query field renewAuthenticationToken", () => {
 
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						authorization: `bearer ${adminToken}`,
 					},
 					variables: {
 						input: {
@@ -120,21 +106,8 @@ suite("Query field renewAuthenticationToken", () => {
 	);
 
 	test(`results in an empty "errors" field and the expected value for the "data.renewAuthenticationToken" field.`, async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(adminToken);
 
 		// Since the `exp` field of a json web token must be a unix timestamp, at the very least a delay of 1 second is required to introduce a difference in the expiration time of the token for comparision between two or more tokens.
 		await setTimeout(1000);
@@ -143,7 +116,7 @@ suite("Query field renewAuthenticationToken", () => {
 			Query_renewAuthenticationToken,
 			{
 				headers: {
-					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${adminToken}`,
 				},
 			},
 		);
@@ -158,7 +131,7 @@ suite("Query field renewAuthenticationToken", () => {
 
 		const olderDecodedAuthenticationToken = server.jwt.decode<{
 			exp: number;
-		}>(administratorUserSignInResult.data.signIn.authenticationToken);
+		}>(adminToken);
 		const newerDecodedAuthenticationToken = server.jwt.decode<{
 			exp: number;
 		}>(renewAuthenticationTokenResult.data.renewAuthenticationToken);

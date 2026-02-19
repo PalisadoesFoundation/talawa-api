@@ -5,12 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_deleteOrganization,
-	Query_signIn,
 } from "../documentNodes";
 
 describe("Mutation createOrganization - Performance Tracking", () => {
@@ -1030,19 +1030,7 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 		});
 
 		it("should execute createOrganization mutation through mercuriusClient with schema wiring", async () => {
-			// Sign in as admin to get authentication token
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			expect(signInResult.errors).toBeUndefined();
-			expect(signInResult.data?.signIn?.authenticationToken).toBeDefined();
-			const authToken = signInResult.data?.signIn?.authenticationToken;
+			const { accessToken: authToken } = await getAdminAuthViaRest(server);
 
 			// Execute createOrganization mutation through mercuriusClient
 			const orgName = `Smoke Test Org ${faker.string.ulid()}`;

@@ -10,9 +10,9 @@ import {
 import { beforeEach, expect, suite, test } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -69,20 +69,8 @@ suite("Query field postsByOrganization - sorting", () => {
 	});
 
 	const getAuthToken = async () => {
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		if (!signInResult.data?.signIn?.authenticationToken) {
-			throw new Error(
-				"Failed to get authentication token: Sign-in operation failed",
-			);
-		}
-		return signInResult.data.signIn?.authenticationToken;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		return accessToken;
 	};
 
 	const createTestOrganization = async () => {

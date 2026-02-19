@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -10,7 +12,6 @@ import {
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 	Query_user_notifications,
 } from "../documentNodes";
 
@@ -44,16 +45,8 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 			hasPostCreatedTemplate = true;
 		}
 
-		// Get admin token once
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		adminToken = accessToken ?? null;
 	});
 
 	afterEach(async () => {
@@ -125,15 +118,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -194,15 +179,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -252,15 +229,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const user1Res = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -338,15 +307,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -402,15 +363,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -455,15 +408,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -483,15 +428,15 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 		assertToBeNonNullish(userEmail);
 
 		// Sign in the user separately to get a fresh token
-		const userSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: userEmail,
-					password: "password",
-				},
-			},
+		const userSignInResponse = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: { email: userEmail, password: "password" },
 		});
-		const userToken = userSignIn.data?.signIn?.authenticationToken as string;
+		const userCookie = userSignInResponse.cookies.find(
+			(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		);
+		const userToken = userCookie?.value;
 		assertToBeNonNullish(userId);
 		assertToBeNonNullish(userToken);
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -553,15 +498,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -644,15 +581,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -742,15 +671,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -825,15 +746,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 		assertToBeNonNullish(adminToken);
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },

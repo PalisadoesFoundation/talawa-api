@@ -16,6 +16,7 @@ import type {
 	UnexpectedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -23,7 +24,7 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 // Specific type for createEvent mutation response using ExecutionResult
@@ -31,18 +32,12 @@ type CreateEventMutationResponse = ExecutionResult<{
 	createEvent: ResultOf<typeof Mutation_createEvent>["createEvent"] | null;
 }>;
 
-// Setup admin authentication for tests
-const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminAuthToken}` },
 });
-assertToBeNonNullish(adminSignInResult.data?.signIn?.authenticationToken);
-const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
-const adminUserId = adminSignInResult.data.signIn.user?.id;
+const adminUserId = currentUserResult.data?.currentUser?.id;
+assertToBeNonNullish(adminAuthToken);
 assertToBeNonNullish(adminUserId);
 
 // Helpers to improve maintainability

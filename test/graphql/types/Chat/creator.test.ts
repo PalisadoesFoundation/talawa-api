@@ -10,6 +10,7 @@ import type {
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -22,21 +23,16 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Query_chat_with_creator,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 async function getAdminToken() {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	const token = signInResult.data?.signIn?.authenticationToken;
-	const userId = signInResult.data?.signIn?.user?.id;
+	const { accessToken: token } = await getAdminAuthViaRest(server);
 	assertToBeNonNullish(token);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
+	});
+	const userId = currentUserResult.data?.currentUser?.id;
 	assertToBeNonNullish(userId);
 	return { token, userId };
 }
@@ -125,28 +121,36 @@ suite("Chat field creator", () => {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (_e) {}
+		} catch (_e) {
+			console.error(_e);
+		}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: regularUserId } },
 			});
-		} catch (_e) {}
+		} catch (_e) {
+			console.error(_e);
+		}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: outsiderUserId } },
 			});
-		} catch (_e) {}
+		} catch (_e) {
+			console.error(_e);
+		}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: organizationId } },
 			});
-		} catch (_e) {}
+		} catch (_e) {
+			console.error(_e);
+		}
 	});
 
 	test("unauthenticated caller results in unauthenticated error for creator field", async () => {

@@ -10,12 +10,12 @@ import {
 	type UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 	Query_user_workPhoneNumber,
 } from "../documentNodes";
 
@@ -25,16 +25,7 @@ suite("User field workPhoneNumber", () => {
 
 		afterEach(async () => {
 			if (createdUserIds.length > 0) {
-				const adminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const token = adminSignIn.data.signIn?.authenticationToken;
+				const { accessToken: token } = await getAdminAuthViaRest(server);
 
 				if (!token) {
 					console.error(
@@ -59,17 +50,7 @@ suite("User field workPhoneNumber", () => {
 		});
 
 		test('results in a graphql error with "unauthenticated" extensions code when client is not authenticated', async () => {
-			// 1. Sign in as admin to create a target user
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			const createUser = await mercuriusClient.mutate(Mutation_createUser, {
 				headers: { authorization: `bearer ${token}` },
@@ -111,17 +92,7 @@ suite("User field workPhoneNumber", () => {
 		});
 
 		test('results in a graphql error with "unauthenticated" extension code when authenticated user does not exist', async () => {
-			// 1. Sign in as admin to get a valid token
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User A (who will be deleted)
 			const userA = await mercuriusClient.mutate(Mutation_createUser, {
@@ -188,17 +159,7 @@ suite("User field workPhoneNumber", () => {
 		});
 
 		test('results in "unauthorized_action" error when non-admin accesses another user\'s workPhoneNumber', async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User A (the requester)
 			const userA = await mercuriusClient.mutate(Mutation_createUser, {
@@ -256,17 +217,7 @@ suite("User field workPhoneNumber", () => {
 		});
 
 		test("returns workPhoneNumber when user accesses their own data", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User
 			const userRes = await mercuriusClient.mutate(Mutation_createUser, {
@@ -299,17 +250,7 @@ suite("User field workPhoneNumber", () => {
 		});
 
 		test("returns workPhoneNumber when administrator accesses another user's data", async () => {
-			// 1. Sign in as admin
-			const adminSignIn = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-			const token = adminSignIn.data.signIn.authenticationToken;
+			const { accessToken: token } = await getAdminAuthViaRest(server);
 
 			// 2. Create User
 			const userRes = await mercuriusClient.mutate(Mutation_createUser, {

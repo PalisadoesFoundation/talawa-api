@@ -2,12 +2,14 @@ import { faker } from "@faker-js/faker";
 import type { GraphQLFormattedError } from "graphql";
 import { beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
+import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createFundCampaign,
 	Mutation_createUser,
+	Query_currentUser,
 	Query_getMyPledgesForCampaign,
-	Query_signIn,
 } from "../documentNodes";
 
 let adminAuth: { authToken: string; userId: string };
@@ -15,18 +17,12 @@ let regularUser: { authToken: string; userId: string };
 let campaignId: string;
 
 async function globalSignInAndGetToken() {
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ?? "",
-				password: process.env.API_ADMINISTRATOR_USER_PASSWORD ?? "",
-			},
-		},
-	});
-	assertToBeNonNullish(result.data?.signIn);
-	const authToken = result.data.signIn.authenticationToken;
+	const { accessToken: authToken } = await getAdminAuthViaRest(server);
 	assertToBeNonNullish(authToken);
-	const userId = result.data.signIn.user?.id;
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${authToken}` },
+	});
+	const userId = currentUserResult.data?.currentUser?.id;
 	assertToBeNonNullish(userId);
 	return { authToken, userId };
 }

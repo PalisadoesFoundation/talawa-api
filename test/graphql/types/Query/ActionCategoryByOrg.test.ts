@@ -1,16 +1,17 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	ACTION_ITEM_CATEGORY,
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
 const SUITE_TIMEOUT = 30_000;
@@ -58,19 +59,8 @@ suite("Query field actionCategoriesByOrganization", () => {
 			test(
 				'value of the argument "input.organizationId" is not a valid UUID.',
 				async () => {
-					const adminSignIn = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn.data?.signIn) {
-						throw new Error("Failed to sign in as admin");
-					}
-					const adminToken = adminSignIn.data.signIn.authenticationToken;
+					const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+					if (!adminToken) throw new Error("Failed to sign in as admin");
 					mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
 					const userPassword = faker.internet.password();
@@ -95,20 +85,21 @@ suite("Query field actionCategoriesByOrganization", () => {
 
 					mercuriusClient.setHeaders({});
 
-					const signInResult = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress: createdUser?.emailAddress ?? "",
-								password: userPassword,
-							},
+					const userSignInRes = await server.inject({
+						method: "POST",
+						url: "/auth/signin",
+						payload: {
+							email: createdUser?.emailAddress ?? "",
+							password: userPassword,
 						},
 					});
-					if (!signInResult.data?.signIn) {
+					const userAuthToken = userSignInRes.cookies.find(
+						(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+					)?.value;
+					if (!userAuthToken)
 						throw new Error("Failed to sign in with newly created user");
-					}
-					const { authenticationToken } = signInResult.data.signIn;
 					mercuriusClient.setHeaders({
-						authorization: `Bearer ${authenticationToken}`,
+						authorization: `Bearer ${userAuthToken}`,
 					});
 
 					const result = await mercuriusClient.query(ACTION_ITEM_CATEGORY, {
@@ -138,19 +129,10 @@ suite("Query field actionCategoriesByOrganization", () => {
 					);
 
 					mercuriusClient.setHeaders({});
-					const adminSignIn2 = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn2.data?.signIn) {
+					const { accessToken: adminToken2 } =
+						await getAdminAuthViaRest(server);
+					if (!adminToken2)
 						throw new Error("Failed to sign in as admin for cleanup");
-					}
-					const adminToken2 = adminSignIn2.data.signIn.authenticationToken;
 					mercuriusClient.setHeaders({
 						authorization: `Bearer ${adminToken2}`,
 					});
@@ -178,19 +160,8 @@ suite("Query field actionCategoriesByOrganization", () => {
 			test(
 				'organization with ID provided in "input.organizationId" does not exist.',
 				async () => {
-					const adminSignIn = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn.data?.signIn) {
-						throw new Error("Failed to sign in as admin");
-					}
-					const adminToken = adminSignIn.data.signIn.authenticationToken;
+					const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+					if (!adminToken) throw new Error("Failed to sign in as admin");
 					mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
 					const userPassword = faker.internet.password();
@@ -215,18 +186,19 @@ suite("Query field actionCategoriesByOrganization", () => {
 
 					mercuriusClient.setHeaders({});
 
-					const signInResult = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress: createdUser?.emailAddress ?? "",
-								password: userPassword,
-							},
+					const signInRes = await server.inject({
+						method: "POST",
+						url: "/auth/signin",
+						payload: {
+							email: createdUser?.emailAddress ?? "",
+							password: userPassword,
 						},
 					});
-					if (!signInResult.data?.signIn) {
+					const authenticationToken = signInRes.cookies.find(
+						(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+					)?.value;
+					if (!authenticationToken)
 						throw new Error("Failed to sign in with test user");
-					}
-					const { authenticationToken } = signInResult.data.signIn;
 					mercuriusClient.setHeaders({
 						authorization: `Bearer ${authenticationToken}`,
 					});
@@ -259,19 +231,10 @@ suite("Query field actionCategoriesByOrganization", () => {
 					);
 
 					mercuriusClient.setHeaders({});
-					const adminSignIn2 = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn2.data?.signIn) {
+					const { accessToken: adminToken2 } =
+						await getAdminAuthViaRest(server);
+					if (!adminToken2)
 						throw new Error("Failed to sign in as admin for cleanup");
-					}
-					const adminToken2 = adminSignIn2.data.signIn.authenticationToken;
 					mercuriusClient.setHeaders({
 						authorization: `Bearer ${adminToken2}`,
 					});
@@ -294,19 +257,8 @@ suite("Query field actionCategoriesByOrganization", () => {
 		"returns the correct action item categories for a valid organization id",
 		() => {
 			test("returns an empty array when no action categories exist for the organization", async () => {
-				const adminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				if (!adminSignIn.data?.signIn) {
-					throw new Error("Failed to sign in as admin");
-				}
-				const adminToken = adminSignIn.data.signIn.authenticationToken;
+				const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+				if (!adminToken) throw new Error("Failed to sign in as admin");
 				mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
 				const userPassword = faker.internet.password();
@@ -331,18 +283,18 @@ suite("Query field actionCategoriesByOrganization", () => {
 
 				mercuriusClient.setHeaders({});
 
-				const userSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: createdUser?.emailAddress ?? "",
-							password: userPassword,
-						},
+				const userSignInRes = await server.inject({
+					method: "POST",
+					url: "/auth/signin",
+					payload: {
+						email: createdUser?.emailAddress ?? "",
+						password: userPassword,
 					},
 				});
-				if (!userSignIn.data?.signIn) {
-					throw new Error("Failed to sign in with test user");
-				}
-				const userToken = userSignIn.data.signIn.authenticationToken;
+				const userToken = userSignInRes.cookies.find(
+					(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				)?.value;
+				if (!userToken) throw new Error("Failed to sign in with test user");
 				mercuriusClient.setHeaders({ authorization: `Bearer ${userToken}` });
 
 				const emptyOrgId = faker.string.uuid();
@@ -366,19 +318,9 @@ suite("Query field actionCategoriesByOrganization", () => {
 				}
 
 				mercuriusClient.setHeaders({});
-				const adminSignIn2 = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				if (!adminSignIn2.data?.signIn) {
+				const { accessToken: adminToken2 } = await getAdminAuthViaRest(server);
+				if (!adminToken2)
 					throw new Error("Failed to sign in as admin for cleanup");
-				}
-				const adminToken2 = adminSignIn2.data.signIn.authenticationToken;
 				mercuriusClient.setHeaders({
 					authorization: `Bearer ${adminToken2}`,
 				});
@@ -396,19 +338,8 @@ suite("Query field actionCategoriesByOrganization", () => {
 			test(
 				"returns all action categories for the organization",
 				async () => {
-					const adminSignIn = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn.data?.signIn) {
-						throw new Error("Failed to sign in as admin");
-					}
-					const adminToken = adminSignIn.data.signIn.authenticationToken;
+					const { accessToken: adminToken } = await getAdminAuthViaRest(server);
+					if (!adminToken) throw new Error("Failed to sign in as admin");
 					mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
 					const userPassword = faker.internet.password();
@@ -433,18 +364,18 @@ suite("Query field actionCategoriesByOrganization", () => {
 
 					mercuriusClient.setHeaders({});
 
-					const signInResult = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress: createdUser?.emailAddress ?? "",
-								password: userPassword,
-							},
+					const signInRes = await server.inject({
+						method: "POST",
+						url: "/auth/signin",
+						payload: {
+							email: createdUser?.emailAddress ?? "",
+							password: userPassword,
 						},
 					});
-					if (!signInResult.data?.signIn) {
-						throw new Error("Failed to sign in with test user");
-					}
-					const userToken = signInResult.data.signIn.authenticationToken;
+					const userToken = signInRes.cookies.find(
+						(c: { name: string }) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+					)?.value;
+					if (!userToken) throw new Error("Failed to sign in with test user");
 					mercuriusClient.setHeaders({ authorization: `Bearer ${userToken}` });
 
 					const orgId = faker.string.uuid();
@@ -488,19 +419,10 @@ suite("Query field actionCategoriesByOrganization", () => {
 					}
 
 					mercuriusClient.setHeaders({});
-					const adminSignIn2 = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn2.data?.signIn) {
+					const { accessToken: adminToken2 } =
+						await getAdminAuthViaRest(server);
+					if (!adminToken2)
 						throw new Error("Failed to sign in as admin for cleanup");
-					}
-					const adminToken2 = adminSignIn2.data.signIn.authenticationToken;
 					mercuriusClient.setHeaders({
 						authorization: `Bearer ${adminToken2}`,
 					});

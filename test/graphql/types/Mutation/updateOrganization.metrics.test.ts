@@ -18,6 +18,7 @@ import { schema } from "~/src/graphql/schema";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -25,7 +26,6 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteOrganization,
 	Mutation_updateOrganization,
-	Query_signIn,
 } from "../documentNodes";
 
 async function createTestOrganization(token: string): Promise<string> {
@@ -57,23 +57,9 @@ let authToken: string;
 
 describe("Mutation updateOrganization - Performance Tracking", () => {
 	beforeAll(async () => {
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		if (signInResult.errors) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
-			);
-		}
-		assertToBeNonNullish(signInResult.data?.signIn);
-		const token = signInResult.data.signIn.authenticationToken;
-		assertToBeNonNullish(token);
-		authToken = token;
+		const { accessToken } = await getAdminAuthViaRest(server);
+		assertToBeNonNullish(accessToken);
+		authToken = accessToken;
 	});
 
 	describe("integration (mercuriusClient)", () => {

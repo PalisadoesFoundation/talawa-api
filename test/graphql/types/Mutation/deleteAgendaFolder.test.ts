@@ -12,6 +12,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -23,7 +24,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
@@ -47,26 +48,15 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	// Ensure clean client state before authentication
-	mercuriusClient.setHeaders({});
-
-	const result = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
+	const { accessToken: token } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${token}` },
 	});
-
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
-
+	assertToBeNonNullish(currentUserResult.data?.currentUser?.id);
 	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
+		token,
+		userId: currentUserResult.data.currentUser.id,
 	};
-
 	return cachedAdminAuth;
 }
 
@@ -176,9 +166,8 @@ suite("Mutation field deleteAgendaFolder", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {
-				// Cleanup errors are intentionally swallowed to prevent cascading failures.
-				// The test result is already determined at this point.
+			} catch (e) {
+				console.error(e);
 			}
 		}
 		cleanupFns.length = 0;

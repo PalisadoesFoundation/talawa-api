@@ -9,6 +9,8 @@ import {
 	usersTable,
 } from "~/src/drizzle/schema";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
+import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -17,7 +19,7 @@ import {
 	Mutation_createTag,
 	Mutation_createTagFolder,
 	Mutation_createUser,
-	Query_signIn,
+	Query_currentUser,
 	Query_userTags,
 } from "../documentNodes";
 
@@ -78,30 +80,7 @@ afterEach(async () => {
 
 suite("Query field userTags", () => {
 	test("results in a graphql error with 'invalid_arguments' if an invalid userId is provided", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		// Check if sign-in was successful
-		if (
-			administratorUserSignInResult.errors ||
-			!administratorUserSignInResult.data?.signIn?.authenticationToken
-		) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
-			);
-		}
-
-		const authToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken: authToken } = await getAdminAuthViaRest(server);
 
 		const userTagsResult = await mercuriusClient.query(Query_userTags, {
 			headers: {
@@ -130,29 +109,7 @@ suite("Query field userTags", () => {
 	});
 
 	test("results in an empty array when user has no tags assigned", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			administratorUserSignInResult.errors ||
-			!administratorUserSignInResult.data?.signIn?.authenticationToken
-		) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
-			);
-		}
-
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Create a regular user
 		const regularUserResult = await mercuriusClient.mutate(
@@ -199,30 +156,12 @@ suite("Query field userTags", () => {
 	});
 
 	test("results in an empty 'errors' field and the expected tags for a user with assigned tags", async () => {
-		// Step 1: Admin Sign-in
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			administratorUserSignInResult.errors ||
-			!administratorUserSignInResult.data?.signIn?.authenticationToken
-		) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
-			);
-		}
-
-		const authToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken: authToken } = await getAdminAuthViaRest(server);
+		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+			headers: { authorization: `bearer ${authToken}` },
+		});
+		const adminUserId = currentUserResult.data?.currentUser?.id;
+		assertToBeNonNullish(adminUserId);
 
 		// Step 2: Create Organization
 		const organizationResult = await mercuriusClient.mutate(
@@ -411,39 +350,13 @@ suite("Query field userTags", () => {
 
 		expect(tag2.assignees.edges.map((e) => e.node.id)).toContain(regularUserId);
 
-		// Capture admin ID after sign-in
-		const adminUserId = administratorUserSignInResult.data.signIn.user?.id;
-
 		// In assertions:
 		expect(tag1.creator.id).toBe(adminUserId); // Tags created by admin
 		expect(tag2.creator.id).toBe(adminUserId);
 	});
 
 	test("regular user can query their own tags", async () => {
-		// Step 1: Admin Sign-in
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			administratorUserSignInResult.errors ||
-			!administratorUserSignInResult.data?.signIn?.authenticationToken
-		) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
-			);
-		}
-
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Step 2: Create Organization
 		const organizationResult = await mercuriusClient.mutate(
@@ -594,29 +507,7 @@ suite("Query field userTags", () => {
 	});
 
 	test("results in empty array when querying tags for a non-existent user", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			},
-		);
-
-		if (
-			administratorUserSignInResult.errors ||
-			!administratorUserSignInResult.data?.signIn?.authenticationToken
-		) {
-			throw new Error(
-				`Admin sign-in failed: ${JSON.stringify(administratorUserSignInResult.errors)}`,
-			);
-		}
-
-		const adminToken =
-			administratorUserSignInResult.data.signIn.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		const nonExistentUserId = faker.string.uuid();
 
@@ -634,22 +525,7 @@ suite("Query field userTags", () => {
 	});
 
 	test("results in error when regular user queries another user's tags", async () => {
-		// Step 1: Admin sign-in
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		if (adminSignIn.errors || !adminSignIn.data?.signIn?.authenticationToken) {
-			console.error("Admin sign-in failed:", adminSignIn.errors);
-			return;
-		}
-
-		const adminToken = adminSignIn.data.signIn.authenticationToken;
+		const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 
 		// Step 2: Create organization
 		const orgResult = await mercuriusClient.mutate(

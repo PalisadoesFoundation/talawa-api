@@ -9,10 +9,10 @@ import {
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Mutation_readNotification,
-	Query_signIn,
 	Query_user_notifications,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
+import { getAdminAuthViaRest } from "test/helpers/adminAuthRest";
 import { afterEach, describe, expect, it } from "vitest";
 import {
 	notificationAudienceTable,
@@ -162,23 +162,7 @@ describe("src/drizzle/tables/NotificationAudience.ts", () => {
 		it("exposes audience read state via GraphQL and updates readAt on read", async () => {
 			await ensureInAppPostCreatedTemplate();
 
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			if (adminSignInResult.errors) {
-				throw new Error(
-					`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
-				);
-			}
-
-			const adminToken =
-				adminSignInResult.data?.signIn?.authenticationToken ?? null;
+			const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 			assertToBeNonNullish(adminToken);
 
 			const { userId, authToken } = await createRegularUserUsingAdmin();

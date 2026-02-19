@@ -4,6 +4,7 @@ import { resolveActionItemsPaginated } from "../../../../src/graphql/types/Event
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../../types/client";
 import {
@@ -13,8 +14,8 @@ import {
 	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Query_currentUser,
 	Query_eventActionItems,
-	Query_signIn,
 } from "../documentNodes";
 
 // Extended type for action items with dynamically added exception properties
@@ -37,19 +38,14 @@ type ActionItemWithException = {
 	isInstanceException?: boolean;
 };
 
-const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(adminSignInResult.data?.signIn);
-const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
+const { accessToken: adminAuthToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminAuthToken);
-assertToBeNonNullish(adminSignInResult.data.signIn.user);
-const adminUser = adminSignInResult.data.signIn.user;
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${adminAuthToken}` },
+});
+const _adminUserId = currentUserResult.data?.currentUser?.id;
+assertToBeNonNullish(_adminUserId);
+const adminUserId: string = _adminUserId;
 
 async function createOrg() {
 	const createOrgResult = await mercuriusClient.mutate(
@@ -78,7 +74,7 @@ async function createOrg() {
 		variables: {
 			input: {
 				organizationId: organization.id,
-				memberId: adminUser.id,
+				memberId: adminUserId,
 				role: "administrator",
 			},
 		},
@@ -145,7 +141,7 @@ suite("Event.actionItems", () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);
 		const event = await createEvent(organization.id);
-		const volunteer = await createVolunteer(event.id, adminUser.id);
+		const volunteer = await createVolunteer(event.id, adminUserId);
 
 		for (let i = 0; i < 5; i++) {
 			await mercuriusClient.mutate(Mutation_createActionItem, {

@@ -7,9 +7,11 @@ import { expect, suite, test, vi } from "vitest";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import { Query_currentUser } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -17,7 +19,6 @@ const gql = initGraphQLTada<{
 	scalars: ClientCustomScalars;
 }>();
 
-// Inline definitions to avoid coverage issues
 const Mutation_createEvent =
 	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
     createEvent(input: $input) {
@@ -55,36 +56,6 @@ const Mutation_createOrganizationMembership =
     }
   }`);
 
-const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
-    signIn(input: $input) {
-        authenticationToken
-        refreshToken
-        user {
-            addressLine1
-            addressLine2
-            birthDate
-            city
-            countryCode
-            createdAt
-            description
-            educationGrade
-            emailAddress
-            employmentStatus
-            homePhoneNumber
-            id
-            isEmailAddressVerified
-            maritalStatus
-            mobilePhoneNumber
-            name
-            natalSex
-            postalCode
-            role
-            state
-            workPhoneNumber
-        }
-    }
-}`);
-
 const Query_eventsByCreator = gql(`
 	query Query_eventsByCreator($userId: ID!, $limit: Int, $offset: Int) {
 		eventsByCreator(userId: $userId, limit: $limit, offset: $offset) {
@@ -112,17 +83,11 @@ const Query_eventsByCreator = gql(`
 	}
 `);
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
+const { accessToken: authToken } = await getAdminAuthViaRest(server);
+const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+	headers: { authorization: `bearer ${authToken}` },
 });
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-const adminUserId = signInResult.data.signIn.user?.id;
+const adminUserId = currentUserResult.data?.currentUser?.id;
 assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
 

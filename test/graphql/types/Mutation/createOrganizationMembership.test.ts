@@ -4,25 +4,15 @@ import { organizationMembershipsTable } from "src/drizzle/tables/organizationMem
 import { expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-
-assertToBeNonNullish(signInResult.data?.signIn);
-const adminToken = signInResult.data.signIn.authenticationToken;
+const { accessToken: adminToken } = await getAdminAuthViaRest(server);
 assertToBeNonNullish(adminToken);
 
 suite("Mutation field createOrganizationMembership", () => {

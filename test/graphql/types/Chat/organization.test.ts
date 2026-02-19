@@ -4,7 +4,9 @@ import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { schemaManager } from "~/src/graphql/schemaManager";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { createDataloaders } from "~/src/utilities/dataloaders";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -15,7 +17,6 @@ import {
 	Mutation_deleteChat,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
 const Query_chat_organization = graphql(`
@@ -33,16 +34,11 @@ const Query_chat_organization = graphql(`
 const TEST_PASSWORD = "password123";
 
 async function signinAdmin() {
-	const adminSignIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	assertToBeNonNullish(adminSignIn.data?.signIn?.authenticationToken);
-	return adminSignIn;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return { data: { signIn: { authenticationToken: accessToken } } } as {
+		data: { signIn: { authenticationToken: string } };
+	};
 }
 
 async function createCreator(adminToken: string) {
@@ -135,17 +131,19 @@ describe("Chat.organization integration test", () => {
 		});
 
 		assertToBeNonNullish(creator.user?.emailAddress);
-		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: creator.user.emailAddress,
-					password: TEST_PASSWORD,
-				},
+		const creatorSignInRes = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: creator.user.emailAddress,
+				password: TEST_PASSWORD,
 			},
 		});
-		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
-		const creatorToken = creatorSignIn.data?.signIn
-			?.authenticationToken as string;
+		const creatorAccessCookie = creatorSignInRes.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		);
+		assertToBeNonNullish(creatorAccessCookie?.value);
+		const creatorToken = creatorAccessCookie.value;
 
 		const chatRes = await createChatMutation(creatorToken, org.id);
 		assertToBeNonNullish(chatRes.data?.createChat);

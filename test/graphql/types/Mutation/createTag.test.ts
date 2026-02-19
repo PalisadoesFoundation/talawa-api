@@ -4,6 +4,7 @@ import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -13,7 +14,7 @@ import {
 	Mutation_createTag,
 	Mutation_createTagFolder,
 	Mutation_deleteOrganization,
-	Query_signIn,
+	Query_currentUser,
 } from "../documentNodes";
 
 let cachedAdminAuth: {
@@ -21,53 +22,17 @@ let cachedAdminAuth: {
 	userId: string;
 } | null = null;
 
-// Helper function to get admin authentication token and user id
 async function getAdminAuth() {
-	if (cachedAdminAuth !== null) {
-		return cachedAdminAuth;
-	}
-	try {
-		if (
-			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
-		}
-
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${
-					adminSignInResult.errors[0]?.message || "Unknown error"
-				}`,
-			);
-		}
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-		assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
-
-		cachedAdminAuth = {
-			token: adminSignInResult.data.signIn.authenticationToken,
-			userId: adminSignInResult.data.signIn.user.id,
-		};
-
-		return cachedAdminAuth;
-	} catch (error) {
-		throw new Error(
-			`Failed to get admin authentication token: ${
-				error instanceof Error ? error.message : "Unknown error"
-			}`,
-		);
-	}
+	if (cachedAdminAuth !== null) return cachedAdminAuth;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	const currentUserResult = await mercuriusClient.query(Query_currentUser, {
+		headers: { authorization: `bearer ${accessToken}` },
+	});
+	const userId = currentUserResult.data?.currentUser?.id;
+	assertToBeNonNullish(accessToken);
+	assertToBeNonNullish(userId);
+	cachedAdminAuth = { token: accessToken, userId };
+	return cachedAdminAuth;
 }
 
 // Helper function to create an organization
@@ -130,8 +95,8 @@ suite("Mutation field createTag", () => {
 		for (const cleanup of testCleanupFunctions.reverse()) {
 			try {
 				await cleanup();
-			} catch {
-				// Cleanup errors are acceptable in tests
+			} catch (e) {
+				console.error(e);
 			}
 		}
 		testCleanupFunctions.length = 0;

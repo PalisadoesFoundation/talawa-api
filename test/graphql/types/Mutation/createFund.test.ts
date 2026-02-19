@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { getAdminAuthViaRest } from "../../../helpers/adminAuthRest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -11,22 +12,12 @@ import {
 	Mutation_deleteFund,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Query_signIn,
 } from "../documentNodes";
 
-// Helper function to get admin auth token
 async function getAdminAuthToken(): Promise<string> {
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-	return adminSignInResult.data.signIn.authenticationToken;
+	const { accessToken } = await getAdminAuthViaRest(server);
+	assertToBeNonNullish(accessToken);
+	return accessToken;
 }
 
 // Helper function to create organization
@@ -63,8 +54,8 @@ async function cleanupFundAndOrg(
 			headers: { authorization: `bearer ${adminAuthToken}` },
 			variables: { input: { id: orgId } },
 		});
-	} catch {
-		// Cleanup errors are acceptable in tests
+	} catch (e) {
+		console.error(e);
 	}
 }
 
@@ -470,8 +461,8 @@ suite("Mutation field createFund - New Fields", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 
@@ -519,8 +510,8 @@ suite("Mutation field createFund - New Fields", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 	});
@@ -580,8 +571,8 @@ suite("Mutation field createFund - New Fields", () => {
 						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: { input: { id: createFundResult1.data.createFund.id } },
 					});
-				} catch {
-					// Ignore
+				} catch (e) {
+					console.error(e);
 				}
 			}
 			if (createFundResult2.data?.createFund?.id) {
@@ -706,8 +697,8 @@ suite("Mutation field createFund - Error Handling", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 	});
@@ -743,8 +734,8 @@ suite("Mutation field createFund - Error Handling", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 
@@ -777,8 +768,8 @@ suite("Mutation field createFund - Error Handling", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 	});
@@ -1018,8 +1009,8 @@ suite("Mutation field createFund - Error Handling", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 
@@ -1093,8 +1084,8 @@ suite("Mutation field createFund - Error Handling", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {
-				/* ignore */
+			} catch (e) {
+				console.error(e);
 			}
 		});
 	});
