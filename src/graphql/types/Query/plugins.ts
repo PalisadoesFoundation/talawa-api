@@ -3,6 +3,7 @@ import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	QueryPluginInput,
 	QueryPluginsInput,
@@ -18,9 +19,22 @@ export const getPluginByIdResolver = async (
 	args: { input: { id: string } },
 	ctx: GraphQLContext,
 ) => {
-	const { id } = queryPluginInputSchema.parse(args.input);
+	const { data: parsedArgs, error, success } = queryPluginInputSchema.safeParse(args.input);
+
+	if (!success) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "invalid_arguments",
+				issues: error.issues.map((issue) => ({
+					argumentPath: issue.path,
+					message: issue.message,
+				})),
+			},
+		});
+	}
+
 	const plugin = await ctx.drizzleClient.query.pluginsTable.findFirst({
-		where: eq(pluginsTable.id, id),
+		where: eq(pluginsTable.id, parsedArgs.id),
 	});
 	return plugin;
 };

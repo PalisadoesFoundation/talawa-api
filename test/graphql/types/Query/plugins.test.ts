@@ -55,9 +55,9 @@ suite("Query field getPluginById", () => {
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
 					extensions: expect.objectContaining({
-						code: "internal_server_error",
+						code: "invalid_arguments",
 					}),
-					message: "Internal Server Error",
+					message: expect.any(String),
 					path: ["getPluginById"],
 				}),
 			]),
