@@ -1,6 +1,16 @@
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 
 /**
+ * Cache of admin auth result per server instance so tests do not exceed the
+ * auth rate limit (20 req/min). All tests share the same server; one sign-in
+ * per run is enough.
+ */
+const adminAuthCache = new WeakMap<
+	ServerWithAuthEnv,
+	Promise<AdminAuthRestResult>
+>();
+
+/**
  * Minimal server shape required for REST admin sign-in.
  * Tests pass the same server instance from test/server.ts.
  */
@@ -42,38 +52,46 @@ export interface AdminAuthRestResult {
 export async function getAdminAuthViaRest(
 	server: ServerWithAuthEnv,
 ): Promise<AdminAuthRestResult> {
-	const response = await server.inject({
-		method: "POST",
-		url: "/auth/signin",
-		payload: {
-			email: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	});
+	const cached = adminAuthCache.get(server);
+	if (cached) return cached;
 
-	if (response.statusCode !== 200) {
-		throw new Error(
-			`REST admin sign-in failed: ${response.statusCode} ${response.body}`,
+	const promise = (async (): Promise<AdminAuthRestResult> => {
+		const response = await server.inject({
+			method: "POST",
+			url: "/auth/signin",
+			payload: {
+				email: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		});
+
+		if (response.statusCode !== 200) {
+			throw new Error(
+				`REST admin sign-in failed: ${response.statusCode} ${response.body}`,
+			);
+		}
+
+		const accessCookie = response.cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
 		);
-	}
+		if (!accessCookie?.value) {
+			throw new Error("REST admin sign-in did not set access token cookie");
+		}
 
-	const accessCookie = response.cookies.find(
-		(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
-	);
-	if (!accessCookie?.value) {
-		throw new Error("REST admin sign-in did not set access token cookie");
-	}
+		const refreshCookie = response.cookies.find(
+			(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+		);
+		if (!refreshCookie?.value) {
+			throw new Error("REST admin sign-in did not set refresh token cookie");
+		}
 
-	const refreshCookie = response.cookies.find(
-		(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
-	);
-	if (!refreshCookie?.value) {
-		throw new Error("REST admin sign-in did not set refresh token cookie");
-	}
+		return {
+			accessToken: accessCookie.value,
+			cookies: [...response.cookies],
+			refreshToken: refreshCookie.value,
+		};
+	})();
 
-	return {
-		accessToken: accessCookie.value,
-		cookies: [...response.cookies],
-		refreshToken: refreshCookie.value,
-	};
+	adminAuthCache.set(server, promise);
+	return promise;
 }
