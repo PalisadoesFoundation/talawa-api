@@ -100,8 +100,8 @@ suite("Query field getVolunteerMembership", () => {
 				input: {
 					name: `VolMembershipTestEvent ${faker.string.alphanumeric(6)}`,
 					description: "Test event for membership queries",
-					startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-					endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+					startAt: "2027-01-01T10:00:00Z",
+					endAt: "2027-01-01T11:00:00Z",
 					organizationId,
 				},
 			},
@@ -674,7 +674,8 @@ suite("Query field getVolunteerMembership", () => {
 				expect(membership?.group).toBeNull();
 			}
 
-			// Cleanup: delete the individual volunteer
+			// Cleanup: deleting the event volunteer cascade-deletes its associated volunteer
+			// memberships (deleteEventVolunteer.ts deletes memberships WHERE volunteerId = id).
 			try {
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
 					headers: {
@@ -709,8 +710,10 @@ suite("Query field getVolunteerMembership", () => {
 			// Verify ascending order: each item's createdAt should be >= previous
 			const memberships = result.data?.getVolunteerMembership ?? [];
 			for (let i = 1; i < memberships.length; i++) {
-				const prev = new Date(memberships[i - 1]?.createdAt ?? 0).getTime();
-				const curr = new Date(memberships[i]?.createdAt ?? 0).getTime();
+				assertToBeNonNullish(memberships[i - 1]?.createdAt);
+				assertToBeNonNullish(memberships[i]?.createdAt);
+				const prev = new Date(memberships[i - 1]?.createdAt).getTime();
+				const curr = new Date(memberships[i]?.createdAt).getTime();
 				expect(curr).toBeGreaterThanOrEqual(prev);
 			}
 		});
@@ -735,8 +738,10 @@ suite("Query field getVolunteerMembership", () => {
 			// Verify descending order: each item's createdAt should be <= previous
 			const memberships = result.data?.getVolunteerMembership ?? [];
 			for (let i = 1; i < memberships.length; i++) {
-				const prev = new Date(memberships[i - 1]?.createdAt ?? 0).getTime();
-				const curr = new Date(memberships[i]?.createdAt ?? 0).getTime();
+				assertToBeNonNullish(memberships[i - 1]?.createdAt);
+				assertToBeNonNullish(memberships[i]?.createdAt);
+				const prev = new Date(memberships[i - 1]?.createdAt).getTime();
+				const curr = new Date(memberships[i]?.createdAt).getTime();
 				expect(curr).toBeLessThanOrEqual(prev);
 			}
 		});
@@ -843,7 +848,7 @@ suite("Query field getVolunteerMembership", () => {
 				adminUserId,
 				{
 					instanceCount: 2,
-					startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+					startDate: new Date("2027-01-08T10:00:00Z"),
 				},
 			);
 
