@@ -68,6 +68,7 @@ describe("GraphQL Error Formatting Integration", () => {
 				headers: { authorization: `Bearer ${adminToken}` },
 				variables: {
 					input: {
+						countryCode: "us",
 						name: `Test Org ${uuidv7()}`,
 						description: "Desc",
 					},
@@ -75,7 +76,14 @@ describe("GraphQL Error Formatting Integration", () => {
 			},
 		);
 		const orgId = orgResult.data?.createOrganization?.id;
-		if (!orgId) throw new Error("Failed to create org");
+		if (!orgId) {
+			throw new Error(
+				`Failed to create org: ${JSON.stringify({
+					errors: orgResult.errors,
+					data: orgResult.data,
+				})}`,
+			);
+		}
 
 		// Create Chat (Admin)
 		const chatResult = await mercuriusClient.mutate(Mutation_createChat, {

@@ -147,7 +147,7 @@ export const createContext: CreateContext = async (initialContext) => {
 	// (jose, { sub, typ: "access" }) produced by POST /auth/signin.
 	let currentClient: CurrentClient = { isAuthenticated: false };
 
-	const authHeader = (request.headers.authorization ?? "").trim();
+	const authHeader = (request.headers?.authorization ?? "").trim();
 	const BEARER_RE = /^Bearer\s+/i;
 	const bearerToken = BEARER_RE.test(authHeader)
 		? authHeader.replace(BEARER_RE, "").trim()
@@ -512,12 +512,22 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				}
 
 				// Fallback for all other errors
-				// First check if the error already has a valid ErrorCode in extensions
+				// First check if the error (or originalError) has a valid ErrorCode in extensions.
+				// Use originalError.extensions?.code when instanceof TalawaGraphQLError failed
+				// (e.g. class identity mismatch across module boundaries).
+				const extensionsCode =
+					error.extensions?.code ??
+					(originalError &&
+					typeof originalError === "object" &&
+					"extensions" in originalError
+						? (originalError as { extensions?: { code?: string } }).extensions
+								?.code
+						: undefined);
 				if (
-					error.extensions?.code &&
-					Object.values(ErrorCode).includes(error.extensions.code as ErrorCode)
+					extensionsCode &&
+					Object.values(ErrorCode).includes(extensionsCode as ErrorCode)
 				) {
-					const existingCode = error.extensions.code as ErrorCode;
+					const existingCode = extensionsCode as ErrorCode;
 					const httpStatus = ERROR_CODE_TO_HTTP_STATUS[existingCode] ?? 500;
 
 					// For valid ErrorCode, preserve meaningful messages but use normalizeError for details
