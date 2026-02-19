@@ -708,9 +708,30 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				} else if (errorCodes.includes(ErrorCode.RATE_LIMIT_EXCEEDED)) {
 					statusCode = 429;
 				} else {
-					// Fall back to the first error's httpStatus or 500
-					statusCode =
-						(formattedErrors[0]?.extensions?.httpStatus as number) ?? 500;
+					// Fall back to the first error's httpStatus or 500.
+					// If formatter did not set code (e.g. instanceof failed), check raw errors
+					// for NOT_FOUND so we still return 404.
+					const notFoundCodes = [
+						ErrorCode.NOT_FOUND,
+						ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+					];
+					const rawHasNotFound = errors.some((err) => {
+						const code =
+							err.extensions?.code ??
+							(err.originalError &&
+							typeof err.originalError === "object" &&
+							"extensions" in err.originalError
+								? (err.originalError as { extensions?: { code?: string } })
+										.extensions?.code
+								: undefined);
+						return code && notFoundCodes.includes(code as ErrorCode);
+					});
+					if (rawHasNotFound) {
+						statusCode = 404;
+					} else {
+						statusCode =
+							(formattedErrors[0]?.extensions?.httpStatus as number) ?? 500;
+					}
 				}
 			}
 

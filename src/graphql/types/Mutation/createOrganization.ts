@@ -41,6 +41,15 @@ builder.mutationField("createOrganization", (t) =>
 					});
 				}
 
+				const currentUserId = ctx.currentClient.user?.id;
+				if (!currentUserId) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
 				const {
 					data: parsedArgs,
 					error,
@@ -60,8 +69,6 @@ builder.mutationField("createOrganization", (t) =>
 						},
 					});
 				}
-
-				const currentUserId = ctx.currentClient.user.id;
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {

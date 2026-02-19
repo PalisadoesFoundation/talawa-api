@@ -137,6 +137,7 @@ describe("GraphQL Routes", () => {
 				} as ExplicitAuthenticationTokenPayload["user"],
 			};
 
+			mockRequest.headers = { authorization: "Bearer test-token" };
 			mockRequest.jwtVerify = vi.fn().mockResolvedValue(mockJwtPayload);
 
 			const context = await createContext({
@@ -173,6 +174,7 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				oauthProviderRegistry: undefined,
 				perf: undefined,
 			});
 
@@ -180,6 +182,7 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should create context for unauthenticated user", async () => {
+			mockRequest.headers = { authorization: "Bearer invalid-token" };
 			mockRequest.jwtVerify = vi
 				.fn()
 				.mockRejectedValue(new Error("Invalid token"));
@@ -217,6 +220,7 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				oauthProviderRegistry: undefined,
 				perf: undefined,
 			});
 
@@ -230,6 +234,7 @@ describe("GraphQL Routes", () => {
 				} as ExplicitAuthenticationTokenPayload["user"],
 			};
 
+			mockRequest.headers = { authorization: "Bearer test-token" };
 			mockRequest.jwtVerify = vi.fn().mockResolvedValue(mockJwtPayload);
 
 			const context = await createContext({
@@ -248,6 +253,7 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should create context for subscription with unauthenticated user", async () => {
+			mockRequest.headers = { authorization: "Bearer expired-token" };
 			mockRequest.jwtVerify = vi
 				.fn()
 				.mockRejectedValue(new Error("Token expired"));
