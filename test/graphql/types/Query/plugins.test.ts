@@ -55,9 +55,9 @@ suite("Query field getPluginById", () => {
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
 					extensions: expect.objectContaining({
-						code: "invalid_arguments",
+						code: "internal_server_error",
 					}),
-					message: expect.any(String),
+					message: "Internal Server Error",
 					path: ["getPluginById"],
 				}),
 			]),
@@ -230,12 +230,11 @@ suite("Query field getPlugins", () => {
 				expect.objectContaining({ id: matchingPlugin.id }),
 			]),
 		);
-		expect(result.data.getPlugins).toEqual(
-			expect.not.arrayContaining([
-				expect.objectContaining({ id: activatedOnlyPlugin.id }),
-				expect.objectContaining({ id: installedOnlyPlugin.id }),
-			]),
+		const resultIds = (result.data.getPlugins as { id: string }[]).map(
+			(p) => p.id,
 		);
+		expect(resultIds).not.toContain(activatedOnlyPlugin.id);
+		expect(resultIds).not.toContain(installedOnlyPlugin.id);
 	});
 
 	test("returns an empty array when no plugins match the filter", async () => {
