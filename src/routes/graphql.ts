@@ -12,6 +12,8 @@ import type {
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
 import { observabilityConfig } from "../config/observability";
+import type { AccessClaims } from "../services/auth/tokens";
+import { verifyToken } from "../services/auth/tokens";
 import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import {
 	COOKIE_NAMES,
@@ -140,28 +142,50 @@ export type CreateContext = (
 export const createContext: CreateContext = async (initialContext) => {
 	const { fastify, request } = initialContext;
 
-	// Try to authenticate from Authorization header first, then fall back to cookie
-	let currentClient: CurrentClient;
+	// Try to authenticate from Authorization header first, then fall back to cookie.
+	// Supports both legacy @fastify/jwt tokens ({ user: { id } }) and REST tokens
+	// (jose, { sub, typ: "access" }) produced by POST /auth/signin.
+	let currentClient: CurrentClient = { isAuthenticated: false };
 
-	try {
-		// First try Authorization header (existing behavior for mobile clients)
-		const jwtPayload =
-			await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
-		currentClient = {
-			isAuthenticated: true,
-			user: jwtPayload.user,
-		};
-	} catch (headerError) {
-		if (request?.log?.debug) {
-			request.log.debug(
-				{ err: headerError },
-				"Authorization token verification failed; falling back to cookie auth",
-			);
+	const authHeader = (request.headers.authorization ?? "").trim();
+	const BEARER_RE = /^Bearer\s+/i;
+	const bearerToken = BEARER_RE.test(authHeader)
+		? authHeader.replace(BEARER_RE, "").trim()
+		: "";
+
+	if (bearerToken) {
+		// Step 1: try legacy @fastify/jwt Bearer (expects { user: { id } }).
+		try {
+			const jwtPayload =
+				await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
+			currentClient = {
+				isAuthenticated: true,
+				user: jwtPayload.user,
+			};
+		} catch (_legacyBearerErr) {
+			// Step 2: fallback — try REST-format Bearer (jose, { sub, typ: "access" }).
+			try {
+				const restPayload = await verifyToken<AccessClaims>(bearerToken);
+				if (restPayload.typ === "access" && restPayload.sub) {
+					currentClient = {
+						isAuthenticated: true,
+						user: { id: restPayload.sub },
+					};
+				}
+			} catch (restBearerErr) {
+				if (request?.log?.debug) {
+					request.log.debug(
+						{ err: restBearerErr },
+						"Bearer token verification failed (both JWT formats); treating as unauthenticated",
+					);
+				}
+			}
 		}
-
-		// If no Authorization header, try to get token from cookie (web clients)
+	} else {
+		// No Bearer header — try cookie auth (web clients).
 		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 		if (accessTokenFromCookie) {
+			// Step 3a: try legacy @fastify/jwt cookie.
 			try {
 				const jwtPayload =
 					await fastify.jwt.verify<ExplicitAuthenticationTokenPayload>(
@@ -171,21 +195,27 @@ export const createContext: CreateContext = async (initialContext) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (cookieError) {
-				if (request?.log?.debug) {
-					request.log.debug(
-						{ err: cookieError },
-						"Cookie token verification failed; treating request as unauthenticated",
+			} catch (_legacyCookieErr) {
+				// Step 3b: fallback — try REST-format cookie (jose, { sub, typ: "access" }).
+				try {
+					const restPayload = await verifyToken<AccessClaims>(
+						accessTokenFromCookie,
 					);
+					if (restPayload.typ === "access" && restPayload.sub) {
+						currentClient = {
+							isAuthenticated: true,
+							user: { id: restPayload.sub },
+						};
+					}
+				} catch (cookieErr) {
+					if (request?.log?.debug) {
+						request.log.debug(
+							{ err: cookieErr },
+							"Cookie token verification failed; treating request as unauthenticated",
+						);
+					}
 				}
-				currentClient = {
-					isAuthenticated: false,
-				};
 			}
-		} else {
-			currentClient = {
-				isAuthenticated: false,
-			};
 		}
 	}
 
