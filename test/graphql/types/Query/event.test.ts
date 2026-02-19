@@ -217,7 +217,10 @@ suite("Query field event", () => {
 					},
 				});
 			} catch (error) {
-				console.error("Failed to cleanup user in createUserAndReturnStaleToken:", error);
+				console.error(
+					"Failed to cleanup user in createUserAndReturnStaleToken:",
+					error,
+				);
 			}
 		});
 
@@ -410,9 +413,13 @@ suite("Query field event", () => {
 		assertToBeNonNullish(adminUserId);
 		const adminAuthToken = adminToken;
 		const adminUserIdValue = adminUserId;
-		let organization;
-		let event;
-		let user;
+		let organization: Awaited<ReturnType<typeof createTestOrganization>>;
+		let event: Awaited<ReturnType<typeof createTestEvent>>;
+		let user: NonNullable<
+			Awaited<
+				ReturnType<typeof mercuriusClient.mutate<typeof Mutation_createUser>>
+			>["data"]
+		>["createUser"];
 
 		try {
 			organization = await createTestOrganization(
@@ -510,8 +517,8 @@ suite("Query field event", () => {
 		const adminAuthToken = adminToken;
 		const adminUserIdValue = adminUserId;
 
-		let organization;
-		let event;
+		let organization: Awaited<ReturnType<typeof createTestOrganization>>;
+		let event: Awaited<ReturnType<typeof createTestEvent>>;
 
 		try {
 			// Create test organization
@@ -655,7 +662,9 @@ suite("Query field event", () => {
 					variables: {
 						input: {
 							description: "Multi-day Conference",
-							startAt: new Date(baseDate.getTime() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+							startAt: new Date(
+								baseDate.getTime() + 24 * 60 * 60 * 1000,
+							).toISOString(), // Tomorrow
 							endAt: new Date(
 								baseDate.getTime() + 3 * 24 * 60 * 60 * 1000,
 							).toISOString(), // 3 days from now
@@ -714,8 +723,12 @@ suite("Query field event", () => {
 			});
 
 			const baseDate = new Date("2030-01-01T00:00:00Z");
-			const startAt = new Date(baseDate.getTime() + 24 * 60 * 60 * 1000).toISOString();
-			const endAt = new Date(baseDate.getTime() + 25 * 60 * 60 * 1000).toISOString();
+			const startAt = new Date(
+				baseDate.getTime() + 24 * 60 * 60 * 1000,
+			).toISOString();
+			const endAt = new Date(
+				baseDate.getTime() + 25 * 60 * 60 * 1000,
+			).toISOString();
 
 			// Create never-ending recurring event
 			const createEventResult = await mercuriusClient.mutate(
@@ -849,7 +862,9 @@ suite("Query field event", () => {
 				const startAt = new Date(
 					baseDate.getTime() + 24 * 60 * 60 * 1000,
 				).toISOString();
-				const endAt = new Date(baseDate.getTime() + 25 * 60 * 60 * 1000).toISOString();
+				const endAt = new Date(
+					baseDate.getTime() + 25 * 60 * 60 * 1000,
+				).toISOString();
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -983,7 +998,9 @@ suite("Query field event", () => {
 				const startAt = new Date(
 					baseDate.getTime() + 24 * 60 * 60 * 1000,
 				).toISOString();
-				const endAt = new Date(baseDate.getTime() + 25 * 60 * 60 * 1000).toISOString();
+				const endAt = new Date(
+					baseDate.getTime() + 25 * 60 * 60 * 1000,
+				).toISOString();
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -1104,7 +1121,9 @@ suite("Query field event", () => {
 				const startAt = new Date(
 					baseDate.getTime() + 24 * 60 * 60 * 1000,
 				).toISOString();
-				const endAt = new Date(baseDate.getTime() + 25 * 60 * 60 * 1000).toISOString();
+				const endAt = new Date(
+					baseDate.getTime() + 25 * 60 * 60 * 1000,
+				).toISOString();
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -1160,27 +1179,27 @@ suite("Query field event", () => {
 					},
 				});
 
-			expect(queryResult.data?.event).toBeNull();
-			expect(queryResult.errors).toBeDefined();
-			expect(queryResult.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions:
-							expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
-								{
-									code: "unauthorized_action_on_arguments_associated_resources",
-									issues: expect.arrayContaining([
-										expect.objectContaining({
-											argumentPath: ["input", "id"],
-										}),
-									]),
-								},
-							),
-						message: expect.any(String),
-						path: ["event"],
-					}),
-				]),
-			);
+				expect(queryResult.data?.event).toBeNull();
+				expect(queryResult.errors).toBeDefined();
+				expect(queryResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+									{
+										code: "unauthorized_action_on_arguments_associated_resources",
+										issues: expect.arrayContaining([
+											expect.objectContaining({
+												argumentPath: ["input", "id"],
+											}),
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["event"],
+						}),
+					]),
+				);
 			});
 
 			test("event creator can access invite-only event", async () => {
@@ -1208,7 +1227,9 @@ suite("Query field event", () => {
 				const startAt = new Date(
 					baseDate.getTime() + 24 * 60 * 60 * 1000,
 				).toISOString();
-				const endAt = new Date(baseDate.getTime() + 25 * 60 * 60 * 1000).toISOString();
+				const endAt = new Date(
+					baseDate.getTime() + 25 * 60 * 60 * 1000,
+				).toISOString();
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
@@ -1333,7 +1354,9 @@ suite("Query field event", () => {
 				const startAt = new Date(
 					baseDate.getTime() + 24 * 60 * 60 * 1000,
 				).toISOString();
-				const endAt = new Date(baseDate.getTime() + 25 * 60 * 60 * 1000).toISOString();
+				const endAt = new Date(
+					baseDate.getTime() + 25 * 60 * 60 * 1000,
+				).toISOString();
 
 				const createEventResult = await mercuriusClient.mutate(
 					Mutation_createEvent,
