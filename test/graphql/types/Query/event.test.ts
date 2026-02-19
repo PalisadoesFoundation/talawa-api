@@ -187,11 +187,7 @@ suite("Query field event", () => {
 		return event;
 	}
 
-	async function setupTestData(authToken: string, userId: string) {
-		const organization = await createTestOrganization(authToken, userId);
-		const event = await createTestEvent(authToken, organization.id);
-		return { organization, event };
-	}
+
 
 	// Helper function to create a user and return stale token (user is deleted)
 	// Returns token for a deleted user to test authentication edge cases
@@ -1057,7 +1053,6 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminToken);
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
-					const adminUserIdValue = adminUserId;
 
 					const { eventId, regularUserToken } = await setupInviteOnlyTestScenario(
 						adminAuthToken,
@@ -1095,7 +1090,6 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminToken);
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
-					const adminUserIdValue = adminUserId;
 
 					const { eventId, regularUserId, regularUserToken } =
 						await setupInviteOnlyTestScenario(
@@ -1137,7 +1131,6 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminToken);
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
-					const adminUserIdValue = adminUserId;
 
 					const { eventId, regularUserToken } = await setupInviteOnlyTestScenario(
 						adminAuthToken,
@@ -1167,12 +1160,11 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminToken);
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
-					const adminUserIdValue = adminUserId;
 
 					// Create test organization
 					const organization = await createTestOrganization(
 						adminAuthToken,
-						adminUserIdValue,
+						adminUserId,
 					);
 
 					// Cleanup: Delete organization
@@ -1246,12 +1238,11 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminToken);
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
-					const adminUserIdValue = adminUserId;
 
 					// Create test organization
 					const organization = await createTestOrganization(
 						adminAuthToken,
-						adminUserIdValue,
+						adminUserId,
 					);
 
 					// Cleanup: Delete organization
