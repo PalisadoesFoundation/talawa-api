@@ -51,16 +51,7 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 
 suite("Query field event", () => {
 	async function getAdminTokenAndUserId() {
-		const { accessToken: authToken } = await getAdminAuthViaRest(server);
-		const currentUserResult = await mercuriusClient.query(Query_currentUser, {
-			headers: { authorization: `bearer ${authToken}` },
-		});
-		const userId = currentUserResult.data?.currentUser?.id;
-		if (!authToken || !userId) {
-			throw new Error("Failed to get admin auth or current user");
-		}
-		assertToBeNonNullish(authToken);
-		assertToBeNonNullish(userId);
+		const { token: authToken, userId } = await ensureAdminAuth();
 		return { authToken, userId };
 	}
 
