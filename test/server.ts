@@ -46,5 +46,6 @@ export const server = await createServer({
 		 */
 		API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 		API_RATE_LIMIT_REFILL_RATE: 10000,
+		API_FRONTEND_URL: "http://localhost:3000",
 	},
 });

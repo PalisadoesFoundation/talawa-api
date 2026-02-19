@@ -27,14 +27,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -54,14 +52,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -70,7 +66,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "google-client-id",
 				clientSecret: "google-client-secret",
-				redirectUri: "https://example.com/auth/google/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -88,14 +83,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -104,7 +97,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "google-client-id",
 				clientSecret: "google-client-secret",
-				redirectUri: "https://example.com/auth/google/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -123,14 +115,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: true,
 					clientId: "github-client-id",
 					clientSecret: "github-client-secret",
-					redirectUri: "https://example.com/auth/github/callback",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -139,7 +129,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "github-client-id",
 				clientSecret: "github-client-secret",
-				redirectUri: "https://example.com/auth/github/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -157,14 +146,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: true,
 					clientId: "github-client-id",
 					clientSecret: "github-client-secret",
-					redirectUri: "https://example.com/auth/github/callback",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -173,7 +160,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "github-client-id",
 				clientSecret: "github-client-secret",
-				redirectUri: "https://example.com/auth/github/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -192,14 +178,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: true,
 					clientId: "github-client-id",
 					clientSecret: "github-client-secret",
-					redirectUri: "https://example.com/auth/github/callback",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -210,14 +194,12 @@ describe("buildOAuthProviderRegistry", () => {
 							enabled: true,
 							clientId: "google-client-id",
 							clientSecret: "google-client-secret",
-							redirectUri: "https://example.com/auth/google/callback",
 							requestTimeoutMs: 10000,
 						}
 					: {
 							enabled: true,
 							clientId: "github-client-id",
 							clientSecret: "github-client-secret",
-							redirectUri: "https://example.com/auth/github/callback",
 							requestTimeoutMs: 10000,
 						},
 			);
@@ -237,14 +219,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: true,
 					clientId: "github-client-id",
 					clientSecret: "github-client-secret",
-					redirectUri: "https://example.com/auth/github/callback",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -255,14 +235,12 @@ describe("buildOAuthProviderRegistry", () => {
 							enabled: true,
 							clientId: "google-client-id",
 							clientSecret: "google-client-secret",
-							redirectUri: "https://example.com/auth/google/callback",
 							requestTimeoutMs: 10000,
 						}
 					: {
 							enabled: true,
 							clientId: "github-client-id",
 							clientSecret: "github-client-secret",
-							redirectUri: "https://example.com/auth/github/callback",
 							requestTimeoutMs: 10000,
 						},
 			);
@@ -284,14 +262,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -300,7 +276,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "google-client-id",
 				clientSecret: "google-client-secret",
-				redirectUri: "https://example.com/auth/google/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -315,14 +290,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: true,
 					clientId: "github-client-id",
 					clientSecret: "github-client-secret",
-					redirectUri: "https://example.com/auth/github/callback",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -331,7 +304,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "github-client-id",
 				clientSecret: "github-client-secret",
-				redirectUri: "https://example.com/auth/github/callback",
 				requestTimeoutMs: 10000,
 			});
 
@@ -347,14 +319,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -373,14 +343,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 30000, // Custom timeout
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -389,7 +357,6 @@ describe("buildOAuthProviderRegistry", () => {
 				enabled: true,
 				clientId: "google-client-id",
 				clientSecret: "google-client-secret",
-				redirectUri: "https://example.com/auth/google/callback",
 				requestTimeoutMs: 30000,
 			});
 
@@ -405,14 +372,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "google-client-id",
 					clientSecret: "google-client-secret",
-					redirectUri: "https://example.com/auth/google/callback",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -434,14 +399,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 				github: {
 					enabled: false,
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 					requestTimeoutMs: 10000,
 				},
 			});
@@ -459,14 +422,12 @@ describe("buildOAuthProviderRegistry", () => {
 					enabled: true,
 					clientId: "prod-google-client-id",
 					clientSecret: "prod-google-client-secret",
-					redirectUri: "https://production.com/auth/google/callback",
 					requestTimeoutMs: 15000,
 				},
 				github: {
 					enabled: true,
 					clientId: "prod-github-client-id",
 					clientSecret: "prod-github-client-secret",
-					redirectUri: "https://production.com/auth/github/callback",
 					requestTimeoutMs: 15000,
 				},
 			});
@@ -477,14 +438,12 @@ describe("buildOAuthProviderRegistry", () => {
 							enabled: true,
 							clientId: "prod-google-client-id",
 							clientSecret: "prod-google-client-secret",
-							redirectUri: "https://production.com/auth/google/callback",
 							requestTimeoutMs: 15000,
 						}
 					: {
 							enabled: true,
 							clientId: "prod-github-client-id",
 							clientSecret: "prod-github-client-secret",
-							redirectUri: "https://production.com/auth/github/callback",
 							requestTimeoutMs: 15000,
 						},
 			);

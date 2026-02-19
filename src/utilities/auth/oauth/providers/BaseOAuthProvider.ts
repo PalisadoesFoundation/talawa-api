@@ -35,7 +35,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 
 	abstract exchangeCodeForTokens(
 		code: string,
-		redirectUri?: string,
+		redirectUri: string,
 	): Promise<OAuthProviderTokenResponse>;
 	abstract getUserProfile(accessToken: string): Promise<OAuthUserProfile>;
 

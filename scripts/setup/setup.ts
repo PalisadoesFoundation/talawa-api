@@ -110,10 +110,8 @@ export type SetupKey =
 	| "MAILPIT_SMTP_MAPPED_PORT"
 	| "GOOGLE_CLIENT_ID"
 	| "GOOGLE_CLIENT_SECRET"
-	| "GOOGLE_REDIRECT_URI"
 	| "GITHUB_CLIENT_ID"
 	| "GITHUB_CLIENT_SECRET"
-	| "GITHUB_REDIRECT_URI"
 	| "API_OAUTH_REQUEST_TIMEOUT_MS"
 	| "API_METRICS_ENABLED"
 	| "API_METRICS_API_KEY"
@@ -682,24 +680,6 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					return true;
 				},
 			);
-
-			answers.GOOGLE_REDIRECT_URI = await promptInput(
-				"GOOGLE_REDIRECT_URI",
-				"Enter Google OAuth Redirect URI:",
-				answers.GOOGLE_REDIRECT_URI ||
-					"http://localhost:4000/auth/google/callback",
-				(input: string) => {
-					if (input.trim().length < 1) {
-						return "Google Redirect URI cannot be empty.";
-					}
-					try {
-						new URL(input.trim());
-						return true;
-					} catch {
-						return "Please enter a valid URL.";
-					}
-				},
-			);
 		}
 
 		if (setupGitHub) {
@@ -732,24 +712,6 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						return "GitHub Client Secret cannot be empty.";
 					}
 					return true;
-				},
-			);
-
-			answers.GITHUB_REDIRECT_URI = await promptInput(
-				"GITHUB_REDIRECT_URI",
-				"Enter GitHub OAuth Redirect URI:",
-				answers.GITHUB_REDIRECT_URI ||
-					"http://localhost:4000/auth/github/callback",
-				(input: string) => {
-					if (input.trim().length < 1) {
-						return "GitHub Redirect URI cannot be empty.";
-					}
-					try {
-						new URL(input.trim());
-						return true;
-					} catch {
-						return "Please enter a valid URL.";
-					}
 				},
 			);
 		}

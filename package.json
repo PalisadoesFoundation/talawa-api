@@ -27,7 +27,7 @@
     "@pothos/plugin-complexity": "^4.1.2",
     "@pothos/plugin-relay": "^4.3.0",
     "ajv-formats": "^3.0.1",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "close-with-grace": "^2.3.0",
     "dataloader": "^2.2.3",
     "dotenv": "^17.2.3",
@@ -96,7 +96,7 @@
   "license": "GNU General Public License v3.0",
   "main": "./dist/index.js",
   "name": "talawa-api",
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.28.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/PalisadoesFoundation/talawa-api"

@@ -501,15 +501,42 @@ jobs:
               -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
           }
 
-          http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')"
-          if [ -z "$http_port" ]; then
-            echo "::error::Failed to determine published HTTP port for Caddy."
+          # Wait for Caddy port to be published (with retry)
+          CADDY_RETRIES=10
+          until http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')" && [ -n "$http_port" ]; do
+            CADDY_RETRIES=$((CADDY_RETRIES - 1))
+            if [ "$CADDY_RETRIES" -le 0 ]; then
+              echo "::error::Failed to determine published HTTP port for Caddy after 20s."
+              dc ps
+              exit 1
+            fi
+            echo "Waiting for Caddy port mapping... ($CADDY_RETRIES retries left)"
+            sleep 2
+          done
+
+          echo "Caddy port: $http_port"
+
+          # Poll Caddy until it's ready to accept connections
+          echo "Waiting for Caddy to initialize..."
+          CADDY_READY_RETRIES=10
+          until curl -fsS -m 2 "http://localhost:${http_port}/" >/dev/null 2>&1 || [ "$CADDY_READY_RETRIES" -le 0 ]; do
+            CADDY_READY_RETRIES=$((CADDY_READY_RETRIES - 1))
+            echo "Caddy not ready yet... ($CADDY_READY_RETRIES retries left)"
+            sleep 1
+          done
+
+          # Re-probe to determine actual success/failure (fixes off-by-one)
+          if ! curl -fsS -m 2 "http://localhost:${http_port}/" >/dev/null 2>&1; then
+            echo "::error::Caddy failed to become ready after 10s."
             dc ps
+            dc logs caddy
             exit 1
           fi
 
+          echo "Caddy is ready!"
+
           echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
-          curl -fsS --retry 5 --retry-delay 3 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+          curl -fsS --retry 10 --retry-delay 2 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
 
       - name: Stop rootless production stack
         if: always()
@@ -652,7 +679,7 @@ jobs:
     needs: [Code-Quality-Checks]
     uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
     with:
-      pnpm-version: "10.26.1"
+      pnpm-version: "10.28.1" # This version should match package.json packageManager field
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
@@ -1114,6 +1141,15 @@ jobs:
           cp envFiles/.env.devcontainer .env
           devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
+          
+      - name: Validate Devcontainer Environment
+        run: |
+          echo "Running environment validation checks..."
+          # Run ONLY the validation script (lightweight, doesn't reinstall everything)
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/validate-setup.sh"
+          # If validation fails, this step will fail
+          echo "Environment validation passed"
+
       - name: Wait for Postgres in devcontainer before migrations
         run: |
           set -euo pipefail
@@ -1197,6 +1233,15 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+        
+      - name: Validate Devcontainer Environment
+        run: |
+          echo "Running environment validation checks..."
+          # Run ONLY the validation script (lightweight, doesn't reinstall everything)
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/validate-setup.sh"
+          # If validation fails, this step will fail
+          echo "Environment validation passed"
+
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail
@@ -1220,8 +1265,7 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
-      - name: Resolve API container
-        id: api-container
+      - name: Start server and monitor logs
         run: |
           API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
           if [ -z "$API_CONTAINER" ]; then

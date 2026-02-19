@@ -121,8 +121,14 @@ export const eventVolunteersTable = pgTable(
 		}),
 	},
 	(self) => [
-		// Unique constraint: one volunteer record per user per event per instance (or template)
-		uniqueIndex().on(self.userId, self.eventId, self.recurringEventInstanceId),
+		// Unique constraint: one volunteer record per user per event per instance
+		uniqueIndex()
+			.on(self.userId, self.eventId, self.recurringEventInstanceId)
+			.where(sql`${self.isTemplate} = false`),
+		// Unique constraint: only one template volunteer record per user per event
+		uniqueIndex()
+			.on(self.userId, self.eventId)
+			.where(sql`${self.isTemplate} = true`),
 		index().on(self.createdAt),
 		index().on(self.eventId),
 		index().on(self.userId),
