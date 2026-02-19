@@ -199,11 +199,11 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 			expect(tableConfig.indexes).toBeDefined();
 			expect(tableConfig.indexes.length).toBeGreaterThan(0);
 
-			// Verify we have the expected number of indexes (5 regular + 1 unique)
-			expect(tableConfig.indexes.length).toBe(6);
+			// Verify we have the expected number of indexes (5 regular + 2 unique)
+			expect(tableConfig.indexes.length).toBe(7);
 		});
 
-		it("should have unique index on userId, eventId, and recurringEventInstanceId", () => {
+		it("should enforce unique instance-specific volunteer using userId, eventId and recurringEventInstanceId", () => {
 			const tableConfig = getTableConfig(eventVolunteersTable);
 			const uniqueIndex = tableConfig.indexes.find((idx) => idx.config.unique);
 
@@ -217,6 +217,26 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 				"event_id",
 				"recurring_event_instance_id",
 			]);
+		});
+
+		it("should have partial unique index on userId and eventId where isTemplate is true", () => {
+			const { indexes } = getTableConfig(eventVolunteersTable);
+
+			const uniqueIndex = indexes.find((idx) => {
+				if (!idx.config.unique || !idx.config.where) return false;
+
+				const columnNames = idx.config.columns.map((col) =>
+					"name" in col ? col.name : col,
+				);
+
+				return (
+					columnNames.length === 2 &&
+					columnNames.includes("user_id") &&
+					columnNames.includes("event_id")
+				);
+			});
+
+			expect(uniqueIndex).toBeDefined();
 		});
 
 		it("should have index on createdAt", () => {

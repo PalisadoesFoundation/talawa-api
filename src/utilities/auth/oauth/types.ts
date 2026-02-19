@@ -27,7 +27,6 @@ export interface OAuthUserProfile {
 export interface OAuthConfig {
 	clientId: string;
 	clientSecret: string;
-	redirectUri?: string;
 	requestTimeoutMs?: number;
 }
 /**

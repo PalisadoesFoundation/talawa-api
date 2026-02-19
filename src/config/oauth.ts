@@ -29,25 +29,15 @@ export function loadOAuthConfig(env = process.env): OAuthProvidersConfig {
 	}
 	const cfg: OAuthProvidersConfig = {
 		google: {
-			enabled: !!(
-				env.GOOGLE_CLIENT_ID &&
-				env.GOOGLE_CLIENT_SECRET &&
-				env.GOOGLE_REDIRECT_URI
-			),
+			enabled: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
 			clientId: env.GOOGLE_CLIENT_ID ?? "",
 			clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
-			redirectUri: env.GOOGLE_REDIRECT_URI ?? "",
 			requestTimeoutMs: validTimeout,
 		},
 		github: {
-			enabled: !!(
-				env.GITHUB_CLIENT_ID &&
-				env.GITHUB_CLIENT_SECRET &&
-				env.GITHUB_REDIRECT_URI
-			),
+			enabled: !!(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
 			clientId: env.GITHUB_CLIENT_ID ?? "",
 			clientSecret: env.GITHUB_CLIENT_SECRET ?? "",
-			redirectUri: env.GITHUB_REDIRECT_URI ?? "",
 			requestTimeoutMs: validTimeout,
 		},
 	};
@@ -62,14 +52,13 @@ export function getProviderConfig(
 	env = process.env,
 ): Required<OAuthProviderConfig> {
 	const cfg = loadOAuthConfig(env)[provider];
-	if (!cfg.enabled || !cfg.clientId || !cfg.clientSecret || !cfg.redirectUri) {
+	if (!cfg.enabled || !cfg.clientId || !cfg.clientSecret) {
 		throw new Error(`OAuth provider "${provider}" is not properly configured`);
 	}
 	return {
 		enabled: true,
 		clientId: cfg.clientId,
 		clientSecret: cfg.clientSecret,
-		redirectUri: cfg.redirectUri,
 		requestTimeoutMs: cfg.requestTimeoutMs as number,
 	};
 }

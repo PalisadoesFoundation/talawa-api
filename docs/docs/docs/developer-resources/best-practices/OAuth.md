@@ -743,7 +743,6 @@ Configuration object for OAuth providers:
 interface OAuthConfig {
   clientId: string; // Required: OAuth client ID
   clientSecret: string; // Required: OAuth client secret
-  redirectUri?: string; // Optional: Redirect URI
   requestTimeoutMs?: number; // Optional: Request timeout (default: 10000ms)
 }
 ```
@@ -799,7 +798,6 @@ Store OAuth credentials securely in environment variables:
 const config: OAuthConfig = {
   clientId: process.env.OAUTH_CLIENT_ID!,
   clientSecret: process.env.OAUTH_CLIENT_SECRET!,
-  redirectUri: process.env.OAUTH_REDIRECT_URI,
   requestTimeoutMs: parseInt(process.env.OAUTH_TIMEOUT_MS || "10000"),
 };
 ```
@@ -875,7 +873,6 @@ import { GoogleOAuthProvider } from "~/src/utilities/auth/oauth";
 const googleProvider = new GoogleOAuthProvider({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri: process.env.GOOGLE_REDIRECT_URI,
 });
 
 // Exchange authorization code for access token
@@ -903,4 +900,3 @@ The following environment variables must be configured:
 
 - `GOOGLE_CLIENT_ID`: Your Google OAuth application's client ID
 - `GOOGLE_CLIENT_SECRET`: Your Google OAuth application's client secret
-- `GOOGLE_REDIRECT_URI`: The authorized redirect URI configured in your Google OAuth app
