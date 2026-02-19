@@ -27,10 +27,22 @@ mkdir -p .pnpm-store node_modules
 # Note: In rootless Docker mode running as root, permissions should already be correct
 # because root inside container maps to the host user who owns the files
 
+# Read pnpm version from package.json
+if [ -f "package.json" ]; then
+  PNPM_VERSION=$(grep -o '"packageManager": *"pnpm@[^"]*"' package.json | sed 's/.*pnpm@\([^"]*\).*/\1/')
+  if [ -z "$PNPM_VERSION" ]; then
+    echo "Warning: Could not extract pnpm version from package.json, using default 10.28.1"
+    PNPM_VERSION="10.28.1"
+  fi
+else
+  echo "Warning: package.json not found, using default pnpm 10.28.1"
+  PNPM_VERSION="10.28.1"
+fi
+
 # Install node version and enable corepack (which provides pnpm)
 fnm install
 fnm use
-corepack enable
+corepack prepare "pnpm@$PNPM_VERSION" --activate
 
 # Now check for pnpm (only available after corepack enable)
 if ! command -v pnpm >/dev/null 2>&1; then
@@ -39,3 +51,10 @@ if ! command -v pnpm >/dev/null 2>&1; then
 fi
 
 pnpm install
+
+# Add a small pause to ensure file system consistency
+sleep 2
+
+# Source validation checks
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+. "$SCRIPT_DIR/../validate-setup.sh"

@@ -2,7 +2,7 @@
 set -eu
 
 # Preflight checks
-for cmd in fnm corepack pnpm; do
+for cmd in fnm corepack; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "Error: Required command '$cmd' is not installed." >&2
     exit 1
@@ -38,5 +38,19 @@ fi
 fnm install "$NODE_VERSION"
 fnm use "$NODE_VERSION"
 fnm default "$NODE_VERSION"
-corepack enable
+corepack prepare pnpm@10.28.1 --activate
+
+# Check pnpm is available after corepack activation
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "Error: Required command 'pnpm' is not installed after enabling corepack." >&2
+  exit 1
+fi
+
 pnpm install
+
+# Add a small pause to ensure file system consistency
+sleep 2
+
+# Source validation checks
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+. "$SCRIPT_DIR/../validate-setup.sh"
