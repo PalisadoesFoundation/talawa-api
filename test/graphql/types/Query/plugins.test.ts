@@ -33,13 +33,9 @@ async function insertPlugin(
 afterEach(async () => {
 	vi.restoreAllMocks();
 	for (const id of createdPluginIds) {
-		try {
-			await server.drizzleClient
-				.delete(pluginsTable)
-				.where(eq(pluginsTable.id, id));
-		} catch {
-			// Best-effort cleanup; ignore individual failures
-		}
+		await server.drizzleClient
+			.delete(pluginsTable)
+			.where(eq(pluginsTable.id, id));
 	}
 	createdPluginIds.length = 0;
 });
