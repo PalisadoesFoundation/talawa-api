@@ -1,0 +1,12 @@
+name: Merge Conflict Detector
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+  push:
+    branches: [main, develop]
+
+jobs:
+  detect-merge-conflicts:
+    uses: PalisadoesFoundation/.github/.github/workflows/merge-conflict-detector.yml@main
