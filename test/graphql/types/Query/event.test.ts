@@ -187,8 +187,6 @@ suite("Query field event", () => {
 		return event;
 	}
 
-
-
 	// Helper function to create a user and return stale token (user is deleted)
 	// Returns token for a deleted user to test authentication edge cases
 	async function createUserAndReturnStaleToken(
@@ -850,9 +848,10 @@ suite("Query field event", () => {
 						.where(eq(eventsTable.id, pastEventId));
 				});
 
-				const pastEvent = await server.drizzleClient.query.eventsTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, pastEventId),
-				});
+				const pastEvent =
+					await server.drizzleClient.query.eventsTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.id, pastEventId),
+					});
 				assertToBeNonNullish(pastEvent); // Assert exists since we just created it
 
 				// Query the past event
@@ -876,7 +875,9 @@ suite("Query field event", () => {
 				expect(new Date(queriedEvent.startAt).getTime()).toBe(
 					pastStartAt.getTime(),
 				);
-				expect(new Date(queriedEvent.endAt).getTime()).toBe(pastEndAt.getTime());
+				expect(new Date(queriedEvent.endAt).getTime()).toBe(
+					pastEndAt.getTime(),
+				);
 			});
 
 			test("handles multi-day events correctly", async () => {
@@ -1054,11 +1055,12 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
 
-					const { eventId, regularUserToken } = await setupInviteOnlyTestScenario(
-						adminAuthToken,
-						adminUserId,
-						testCleanupFunctions,
-					);
+					const { eventId, regularUserToken } =
+						await setupInviteOnlyTestScenario(
+							adminAuthToken,
+							adminUserId,
+							testCleanupFunctions,
+						);
 
 					// Register the regular user for the event (but don't invite)
 					// Use the regular user's token so they are the registered attendee
@@ -1132,11 +1134,13 @@ suite("Query field event", () => {
 					assertToBeNonNullish(adminUserId);
 					const adminAuthToken = adminToken;
 
-					const { eventId, regularUserToken } = await setupInviteOnlyTestScenario(
+					const result = await setupInviteOnlyTestScenario(
 						adminAuthToken,
 						adminUserId,
 						testCleanupFunctions,
 					);
+					const eventId = result.eventId;
+					const regularUserToken = result.regularUserToken;
 
 					// Unauthorized regular member cannot access the invite-only event
 					const queryResult = await mercuriusClient.query(Query_event, {
