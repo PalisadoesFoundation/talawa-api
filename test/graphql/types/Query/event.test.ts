@@ -823,559 +823,557 @@ suite("Query field event", () => {
 			const pastEndAt = new Date("2025-01-02T10:00:00Z");
 			const pastEventId = uuidv7();
 
-			// Register cleanup immediately after resource creation
+			// Insert the past event directly into the database
+			await server.drizzleClient.insert(eventsTable).values({
+				id: pastEventId,
+				name: "Past Event",
+				description: "Past Event",
+				startAt: pastStartAt,
+				endAt: pastEndAt,
+				organizationId: organization.id,
+				creatorId: userId,
+				allDay: false,
+				isInviteOnly: false,
+				isPublic: true,
+				isRegisterable: true,
+				isRecurringEventTemplate: false,
+			});
+
+			// Cleanup: Delete the directly-inserted event
 			testCleanupFunctions.push(async () => {
-				// Delete organization (cascade deletes event)
-				await server.drizzleClient.insert(eventsTable).values({
-					id: pastEventId,
-					name: "Past Event",
-					description: "Past Event",
-					startAt: pastStartAt,
-					endAt: pastEndAt,
-					organizationId: organization.id,
-					creatorId: userId,
-					allDay: false,
-					isInviteOnly: false,
-					isPublic: true,
-					isRegisterable: true,
-					isRecurringEventTemplate: false,
+				await server.drizzleClient
+					.delete(eventsTable)
+					.where(eq(eventsTable.id, pastEventId));
+			});
+
+			const pastEvent =
+				await server.drizzleClient.query.eventsTable.findFirst({
+					where: (fields, operators) => operators.eq(fields.id, pastEventId),
 				});
+			assertToBeNonNullish(pastEvent); // Assert exists since we just created it
 
-				// Cleanup: Delete the directly-inserted event
-				testCleanupFunctions.push(async () => {
-					await server.drizzleClient
-						.delete(eventsTable)
-						.where(eq(eventsTable.id, pastEventId));
+			// Query the past event
+			const queryResult = await mercuriusClient.query(Query_event, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: pastEvent.id,
+					},
+				},
+			});
+
+			const queriedEvent = queryResult.data.event;
+			expect(queriedEvent).not.toBeNull();
+			assertToBeNonNullish(queriedEvent);
+			expect(queriedEvent.id).toBe(pastEvent.id);
+			assertToBeNonNullish(queriedEvent.startAt);
+			assertToBeNonNullish(queriedEvent.endAt);
+			expect(new Date(queriedEvent.startAt).getTime()).toBe(
+				pastStartAt.getTime(),
+			);
+			expect(new Date(queriedEvent.endAt).getTime()).toBe(
+				pastEndAt.getTime(),
+			);
+		});
+
+		test("handles multi-day events correctly", async () => {
+			assertToBeNonNullish(adminToken);
+			assertToBeNonNullish(adminUserId);
+			const authToken = adminToken;
+			const userId = adminUserId;
+			const organization = await createTestOrganization(authToken, userId);
+
+			// Cleanup: Delete organization (cascades or handled manually)
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organization.id } },
 				});
+			});
 
-				const pastEvent =
-					await server.drizzleClient.query.eventsTable.findFirst({
-						where: (fields, operators) => operators.eq(fields.id, pastEventId),
-					});
-				assertToBeNonNullish(pastEvent); // Assert exists since we just created it
-
-				// Query the past event
-				const queryResult = await mercuriusClient.query(Query_event, {
+			// Create a multi-day event
+			const multiDayEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
 					headers: {
 						authorization: `bearer ${authToken}`,
 					},
 					variables: {
 						input: {
-							id: pastEvent.id,
+							description: "Multi-day Conference",
+							startAt: "2099-03-01T10:00:00Z", // Far-future fixed date
+							endAt: "2099-03-04T10:00:00Z", // 3 days later
+							name: "Annual Conference",
+							organizationId: organization.id,
 						},
 					},
-				});
+				},
+			);
 
-				const queriedEvent = queryResult.data.event;
-				expect(queriedEvent).not.toBeNull();
-				assertToBeNonNullish(queriedEvent);
-				expect(queriedEvent.id).toBe(pastEvent.id);
-				assertToBeNonNullish(queriedEvent.startAt);
-				assertToBeNonNullish(queriedEvent.endAt);
-				expect(new Date(queriedEvent.startAt).getTime()).toBe(
-					pastStartAt.getTime(),
+			const multiDayEvent = multiDayEventResult.data?.createEvent;
+			assertToBeNonNullish(multiDayEvent);
+
+			// Cleanup: Delete event
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: multiDayEvent.id } },
+				});
+			});
+
+			// Query the multi-day event
+			const queryResult = await mercuriusClient.query(Query_event, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: multiDayEvent.id,
+					},
+				},
+			});
+
+			const queriedEvent = queryResult.data.event;
+			expect(queriedEvent).not.toBeNull();
+			assertToBeNonNullish(queriedEvent);
+			expect(queriedEvent.id).toBe(multiDayEvent.id);
+
+			assertToBeNonNullish(queriedEvent.startAt);
+			assertToBeNonNullish(queriedEvent.endAt);
+			const startDate = new Date(queriedEvent.startAt);
+			const endDate = new Date(queriedEvent.endAt);
+			const durationInDays =
+				(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+			expect(durationInDays).toBeGreaterThan(1);
+		});
+
+		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
+			// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
+			vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
+
+			// Calculate dates within materialization window
+			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
+			const baseDate = new Date();
+			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
+			baseDate.setUTCHours(10, 0, 0, 0);
+			const startAt = baseDate.toISOString();
+
+			const endDate = new Date(baseDate);
+			endDate.setUTCHours(11, 0, 0, 0);
+			const endAt = endDate.toISOString();
+
+			// Restore real timers before making async API calls
+			vi.useRealTimers();
+
+			const { authToken, userId } = await getAdminTokenAndUserId();
+
+			const organization = await createTestOrganization(authToken, userId);
+			assertToBeNonNullish(organization);
+			const organizationId = organization.id;
+
+			// Cleanup: Delete organization
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
+
+			// Create never-ending recurring event
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Never Recurring ${faker.string.uuid()}`,
+							organizationId,
+							startAt,
+							endAt,
+							recurrence: {
+								frequency: "WEEKLY",
+								never: true,
+							},
+						},
+					},
+				},
+			);
+
+			if (createEventResult.errors && createEventResult.errors.length > 0) {
+				throw new Error(
+					`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
 				);
-				expect(new Date(queriedEvent.endAt).getTime()).toBe(
-					pastEndAt.getTime(),
+			}
+			if (!createEventResult.data || !createEventResult.data.createEvent) {
+				throw new Error(
+					`createEvent returned no data. full response: ${JSON.stringify(createEventResult, null, 2)}`,
+				);
+			}
+
+			const baseRecurringEventId = createEventResult.data.createEvent.id;
+			assertToBeNonNullish(baseRecurringEventId);
+
+			// Cleanup: Delete recurring event template (cascades to instances)
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(
+					Mutation_deleteEntireRecurringEventSeries,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: { input: { id: baseRecurringEventId } },
+					},
 				);
 			});
 
-			test("handles multi-day events correctly", async () => {
+			const instancesResult = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { baseRecurringEventId },
+				},
+			);
+
+			if (instancesResult.errors && instancesResult.errors.length > 0) {
+				throw new Error(
+					`getRecurringEvents GraphQL errors: ${JSON.stringify(instancesResult.errors, null, 2)}`,
+				);
+			}
+
+			const generatedInstances = instancesResult.data?.getRecurringEvents;
+
+			assertToBeNonNullish(generatedInstances);
+			expect(Array.isArray(generatedInstances)).toBe(true);
+			expect(generatedInstances.length).toBeGreaterThan(0);
+		});
+
+		suite("Invite-only event visibility", () => {
+			test("registered-but-not-invited user can access invite-only event", async () => {
 				assertToBeNonNullish(adminToken);
 				assertToBeNonNullish(adminUserId);
-				const authToken = adminToken;
-				const userId = adminUserId;
-				const organization = await createTestOrganization(authToken, userId);
+				const adminAuthToken = adminToken;
 
-				// Cleanup: Delete organization (cascades or handled manually)
-				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { input: { id: organization.id } },
-					});
-				});
-
-				// Create a multi-day event
-				const multiDayEventResult = await mercuriusClient.mutate(
-					Mutation_createEvent,
-					{
-						headers: {
-							authorization: `bearer ${authToken}`,
-						},
-						variables: {
-							input: {
-								description: "Multi-day Conference",
-								startAt: "2099-03-01T10:00:00Z", // Far-future fixed date
-								endAt: "2099-03-04T10:00:00Z", // 3 days later
-								name: "Annual Conference",
-								organizationId: organization.id,
-							},
-						},
-					},
-				);
-
-				const multiDayEvent = multiDayEventResult.data?.createEvent;
-				assertToBeNonNullish(multiDayEvent);
-
-				// Cleanup: Delete event
-				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { input: { id: multiDayEvent.id } },
-					});
-				});
-
-				// Query the multi-day event
-				const queryResult = await mercuriusClient.query(Query_event, {
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: multiDayEvent.id,
-						},
-					},
-				});
-
-				const queriedEvent = queryResult.data.event;
-				expect(queriedEvent).not.toBeNull();
-				assertToBeNonNullish(queriedEvent);
-				expect(queriedEvent.id).toBe(multiDayEvent.id);
-
-				assertToBeNonNullish(queriedEvent.startAt);
-				assertToBeNonNullish(queriedEvent.endAt);
-				const startDate = new Date(queriedEvent.startAt);
-				const endDate = new Date(queriedEvent.endAt);
-				const durationInDays =
-					(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-				expect(durationInDays).toBeGreaterThan(1);
-			});
-
-			test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
-				// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
-				vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
-
-				// Calculate dates within the materialization window
-				// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
-				const baseDate = new Date();
-				baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
-				baseDate.setUTCHours(10, 0, 0, 0);
-				const startAt = baseDate.toISOString();
-
-				const endDate = new Date(baseDate);
-				endDate.setUTCHours(11, 0, 0, 0);
-				const endAt = endDate.toISOString();
-
-				// Restore real timers before making async API calls
-				vi.useRealTimers();
-
-				const { authToken, userId } = await getAdminTokenAndUserId();
-
-				const organization = await createTestOrganization(authToken, userId);
-				assertToBeNonNullish(organization);
-				const organizationId = organization.id;
-
-				// Cleanup: Delete organization
-				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { input: { id: organizationId } },
-					});
-				});
-
-				// Create never-ending recurring event
-				const createEventResult = await mercuriusClient.mutate(
-					Mutation_createEvent,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: `Never Recurring ${faker.string.uuid()}`,
-								organizationId,
-								startAt,
-								endAt,
-								recurrence: {
-									frequency: "WEEKLY",
-									never: true,
-								},
-							},
-						},
-					},
-				);
-
-				if (createEventResult.errors && createEventResult.errors.length > 0) {
-					throw new Error(
-						`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
-					);
-				}
-				if (!createEventResult.data || !createEventResult.data.createEvent) {
-					throw new Error(
-						`createEvent returned no data. full response: ${JSON.stringify(createEventResult, null, 2)}`,
-					);
-				}
-
-				const baseRecurringEventId = createEventResult.data.createEvent.id;
-				assertToBeNonNullish(baseRecurringEventId);
-
-				// Cleanup: Delete recurring event template (cascades to instances)
-				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(
-						Mutation_deleteEntireRecurringEventSeries,
-						{
-							headers: { authorization: `bearer ${authToken}` },
-							variables: { input: { id: baseRecurringEventId } },
-						},
-					);
-				});
-
-				const instancesResult = await mercuriusClient.query(
-					Query_getRecurringEvents,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { baseRecurringEventId },
-					},
-				);
-
-				if (instancesResult.errors && instancesResult.errors.length > 0) {
-					throw new Error(
-						`getRecurringEvents GraphQL errors: ${JSON.stringify(instancesResult.errors, null, 2)}`,
-					);
-				}
-
-				const generatedInstances = instancesResult.data?.getRecurringEvents;
-
-				assertToBeNonNullish(generatedInstances);
-				expect(Array.isArray(generatedInstances)).toBe(true);
-				expect(generatedInstances.length).toBeGreaterThan(0);
-			});
-
-			suite("Invite-only event visibility", () => {
-				test("registered-but-not-invited user can access invite-only event", async () => {
-					assertToBeNonNullish(adminToken);
-					assertToBeNonNullish(adminUserId);
-					const adminAuthToken = adminToken;
-
-					const { eventId, regularUserToken } =
-						await setupInviteOnlyTestScenario(
-							adminAuthToken,
-							adminUserId,
-							testCleanupFunctions,
-						);
-
-					// Register the regular user for the event (but don't invite)
-					// Use the regular user's token so they are the registered attendee
-					await mercuriusClient.mutate(Mutation_registerForEvent, {
-						headers: { authorization: `bearer ${regularUserToken}` },
-						variables: {
-							id: eventId,
-						},
-					});
-
-					// Registered regular user can access the invite-only event
-					const queryResult = await mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${regularUserToken}`,
-						},
-						variables: {
-							input: {
-								id: eventId,
-							},
-						},
-					});
-
-					expect(queryResult.data?.event).not.toBeNull();
-					expect(queryResult.data?.event?.id).toBe(eventId);
-					expect(queryResult.data?.event?.isInviteOnly).toBe(true);
-				});
-
-				test("invited user can access invite-only event", async () => {
-					assertToBeNonNullish(adminToken);
-					assertToBeNonNullish(adminUserId);
-					const adminAuthToken = adminToken;
-
-					const { eventId, regularUserId, regularUserToken } =
-						await setupInviteOnlyTestScenario(
-							adminAuthToken,
-							adminUserId,
-							testCleanupFunctions,
-						);
-
-					// Invite the regular user to the event
-					// This creates an event_attendees record with isInvited: true
-					await mercuriusClient.mutate(Mutation_inviteEventAttendee, {
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: {
-							data: {
-								eventId,
-								userId: regularUserId,
-							},
-						},
-					});
-
-					// Invited regular user can access the invite-only event
-					const queryResult = await mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${regularUserToken}`,
-						},
-						variables: {
-							input: {
-								id: eventId,
-							},
-						},
-					});
-
-					expect(queryResult.data?.event).not.toBeNull();
-					expect(queryResult.data?.event?.id).toBe(eventId);
-					expect(queryResult.data?.event?.isInviteOnly).toBe(true);
-				});
-
-				test("unauthorized regular member denied access", async () => {
-					assertToBeNonNullish(adminToken);
-					assertToBeNonNullish(adminUserId);
-					const adminAuthToken = adminToken;
-
-					const result = await setupInviteOnlyTestScenario(
+				const { eventId, regularUserToken } =
+					await setupInviteOnlyTestScenario(
 						adminAuthToken,
 						adminUserId,
 						testCleanupFunctions,
 					);
-					const eventId = result.eventId;
-					const regularUserToken = result.regularUserToken;
 
-					// Unauthorized regular member cannot access the invite-only event
-					const queryResult = await mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${regularUserToken}`,
-						},
-						variables: {
-							input: {
-								id: eventId,
-							},
-						},
-					});
-
-					// For invite-only events, the resolver returns null without an error
-					// when the user is not creator/admin/invited/registered
-					expect(queryResult.data?.event).toBeNull();
-					expect(queryResult.errors).toBeUndefined();
+				// Register the regular user for the event (but don't invite)
+				// Use the regular user's token so they are the registered attendee
+				await mercuriusClient.mutate(Mutation_registerForEvent, {
+					headers: { authorization: `bearer ${regularUserToken}` },
+					variables: {
+						id: eventId,
+					},
 				});
 
-				test("event creator can access invite-only event", async () => {
-					assertToBeNonNullish(adminToken);
-					assertToBeNonNullish(adminUserId);
-					const adminAuthToken = adminToken;
+				// Registered regular user can access the invite-only event
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${regularUserToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
 
-					// Create test organization
-					const organization = await createTestOrganization(
+				expect(queryResult.data?.event).not.toBeNull();
+				expect(queryResult.data?.event?.id).toBe(eventId);
+				expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+			});
+
+			test("invited user can access invite-only event", async () => {
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
+
+				const { eventId, regularUserId, regularUserToken } =
+					await setupInviteOnlyTestScenario(
 						adminAuthToken,
 						adminUserId,
+						testCleanupFunctions,
 					);
 
-					// Cleanup: Delete organization
-					testCleanupFunctions.push(async () => {
-						await mercuriusClient.mutate(Mutation_deleteOrganization, {
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: { input: { id: organization.id } },
-						});
-					});
-
-					// Create invite-only event as admin (admin becomes the creator)
-					const startAt = "2099-03-01T10:00:00Z";
-					const endAt = "2099-03-01T11:00:00Z";
-
-					const createEventResult = await mercuriusClient.mutate(
-						Mutation_createEvent,
-						{
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: {
-								input: {
-									name: `Invite-Only Event ${faker.string.uuid()}`,
-									organizationId: organization.id,
-									startAt,
-									endAt,
-									isInviteOnly: true,
-									isRegisterable: true,
-								},
-							},
+				// Invite the regular user to the event
+				// This creates an event_attendees record with isInvited: true
+				await mercuriusClient.mutate(Mutation_inviteEventAttendee, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						data: {
+							eventId,
+							userId: regularUserId,
 						},
-					);
-
-					if (
-						createEventResult.errors ||
-						!createEventResult.data?.createEvent?.id
-					) {
-						throw new Error(
-							`Failed to create invite-only event: ${JSON.stringify(
-								createEventResult.errors,
-							)}`,
-						);
-					}
-
-					const eventId = createEventResult.data.createEvent.id;
-
-					// Cleanup: Delete event
-					testCleanupFunctions.push(async () => {
-						await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: { input: { id: eventId } },
-						});
-					});
-
-					// Event creator (admin) can access the invite-only event
-					const queryResult = await mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${adminAuthToken}`,
-						},
-						variables: {
-							input: {
-								id: eventId,
-							},
-						},
-					});
-
-					expect(queryResult.data?.event).not.toBeNull();
-					expect(queryResult.data?.event?.id).toBe(eventId);
-					expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+					},
 				});
 
-				test("organization admin can access invite-only event", async () => {
-					assertToBeNonNullish(adminToken);
-					assertToBeNonNullish(adminUserId);
-					const adminAuthToken = adminToken;
+				// Invited regular user can access the invite-only event
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${regularUserToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
 
-					// Create test organization
-					const organization = await createTestOrganization(
-						adminAuthToken,
-						adminUserId,
-					);
+				expect(queryResult.data?.event).not.toBeNull();
+				expect(queryResult.data?.event?.id).toBe(eventId);
+				expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+			});
 
-					// Cleanup: Delete organization
-					testCleanupFunctions.push(async () => {
-						await mercuriusClient.mutate(Mutation_deleteOrganization, {
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: { input: { id: organization.id } },
-						});
+			test("unauthorized regular member denied access", async () => {
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
+
+				const result = await setupInviteOnlyTestScenario(
+					adminAuthToken,
+					adminUserId,
+					testCleanupFunctions,
+				);
+				const eventId = result.eventId;
+				const regularUserToken = result.regularUserToken;
+
+				// Unauthorized regular member cannot access the invite-only event
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${regularUserToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
+
+				// For invite-only events, the resolver returns null without an error
+				// when the user is not creator/admin/invited/registered
+				expect(queryResult.data?.event).toBeNull();
+				expect(queryResult.errors).toBeUndefined();
+			});
+
+			test("event creator can access invite-only event", async () => {
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
+
+				// Create test organization
+				const organization = await createTestOrganization(
+					adminAuthToken,
+					adminUserId,
+				);
+
+				// Cleanup: Delete organization
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: organization.id } },
 					});
+				});
 
-					// Create a regular user who will be an org admin
-					const orgAdminUserResult = await mercuriusClient.mutate(
-						Mutation_createUser,
-						{
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: {
-								input: {
-									emailAddress: `${faker.string.ulid()}@test.com`,
-									password: faker.internet.password(),
-									name: faker.person.fullName(),
-									role: "regular",
-									isEmailAddressVerified: false,
-								},
-							},
-						},
-					);
+				// Create invite-only event as admin (admin becomes the creator)
+				const startAt = "2099-03-01T10:00:00Z";
+				const endAt = "2099-03-01T11:00:00Z";
 
-					const orgAdminUser = orgAdminUserResult.data?.createUser;
-					if (!orgAdminUser || orgAdminUserResult.errors) {
-						throw new Error(
-							`Failed to create org admin user: ${JSON.stringify(
-								orgAdminUserResult.errors,
-							)}`,
-						);
-					}
-					assertToBeNonNullish(orgAdminUser.authenticationToken);
-					assertToBeNonNullish(orgAdminUser.user);
-
-					const orgAdminUserId = orgAdminUser.user.id;
-					const orgAdminUserToken = orgAdminUser.authenticationToken;
-
-					// Cleanup: Delete user
-					testCleanupFunctions.push(async () => {
-						await mercuriusClient.mutate(Mutation_deleteUser, {
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: { input: { id: orgAdminUserId } },
-						});
-					});
-
-					// Add user to organization as administrator
-					const membershipResult = await mercuriusClient.mutate(
-						Mutation_createOrganizationMembership,
-						{
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: {
-								input: {
-									organizationId: organization.id,
-									memberId: orgAdminUserId,
-									role: "administrator",
-								},
-							},
-						},
-					);
-
-					if (membershipResult.errors) {
-						throw new Error(
-							`Failed to create organization membership. Errors: ${JSON.stringify(
-								membershipResult.errors,
-							)}`,
-						);
-					}
-
-					const startAt = "2099-03-01T10:00:00Z";
-					const endAt = "2099-03-01T11:00:00Z";
-
-					const createEventResult = await mercuriusClient.mutate(
-						Mutation_createEvent,
-						{
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: {
-								input: {
-									name: `Invite-Only Event ${faker.string.uuid()}`,
-									organizationId: organization.id,
-									startAt,
-									endAt,
-									isInviteOnly: true,
-									isRegisterable: true,
-								},
-							},
-						},
-					);
-
-					if (
-						createEventResult.errors ||
-						!createEventResult.data?.createEvent?.id
-					) {
-						throw new Error(
-							`Failed to create invite-only event: ${JSON.stringify(
-								createEventResult.errors,
-							)}`,
-						);
-					}
-
-					const eventId = createEventResult.data.createEvent.id;
-
-					// Cleanup: Delete event
-					testCleanupFunctions.push(async () => {
-						await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-							headers: { authorization: `bearer ${adminAuthToken}` },
-							variables: { input: { id: eventId } },
-						});
-					});
-
-					// Organization admin can access the invite-only event
-					const queryResult = await mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${orgAdminUserToken}`,
-						},
+				const createEventResult = await mercuriusClient.mutate(
+					Mutation_createEvent,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
 						variables: {
 							input: {
-								id: eventId,
+								name: `Invite-Only Event ${faker.string.uuid()}`,
+								organizationId: organization.id,
+								startAt,
+								endAt,
+								isInviteOnly: true,
+								isRegisterable: true,
 							},
 						},
-					});
+					},
+				);
 
-					expect(queryResult.data?.event).not.toBeNull();
-					expect(queryResult.data?.event?.id).toBe(eventId);
-					expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+				if (
+					createEventResult.errors ||
+					!createEventResult.data?.createEvent?.id
+				) {
+					throw new Error(
+						`Failed to create invite-only event: ${JSON.stringify(
+							createEventResult.errors,
+						)}`,
+					);
+				}
+
+				const eventId = createEventResult.data.createEvent.id;
+
+				// Cleanup: Delete event
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: eventId } },
+					});
 				});
+
+				// Event creator can access the invite-only event
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
+
+				expect(queryResult.data?.event).not.toBeNull();
+				expect(queryResult.data?.event?.id).toBe(eventId);
+				expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+			});
+
+			test("organization admin can access invite-only event", async () => {
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
+
+				// Create test organization
+				const organization = await createTestOrganization(
+					adminAuthToken,
+					adminUserId,
+				);
+
+				// Create a regular user to make organization admin
+				const regularUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								emailAddress: `${faker.string.ulid()}@test.com`,
+								password: faker.internet.password(),
+								name: faker.person.fullName(),
+								role: "regular",
+								isEmailAddressVerified: false,
+							},
+						},
+					},
+				);
+
+				const regularUser = regularUserResult.data?.createUser;
+				if (!regularUser || regularUserResult.errors) {
+					throw new Error(
+						`Failed to create regular user: ${JSON.stringify(
+							regularUserResult.errors,
+						)}`,
+					);
+				}
+				assertToBeNonNullish(regularUser.authenticationToken);
+				assertToBeNonNullish(regularUser.user);
+
+				const regularUserId = regularUser.user.id;
+				const regularUserToken = regularUser.authenticationToken;
+
+				// Cleanup: Delete user
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: regularUserId } },
+					});
+				});
+
+				// Add user to organization as admin
+				const membershipResult = await mercuriusClient.mutate(
+					Mutation_createOrganizationMembership,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								organizationId: organization.id,
+								memberId: regularUserId,
+								role: "administrator",
+							},
+						},
+					},
+				);
+
+				if (membershipResult.errors) {
+					throw new Error(
+						`Failed to create organization membership. Errors: ${JSON.stringify(
+							membershipResult.errors,
+						)}`,
+					);
+				}
+
+				// Create invite-only event
+				const startAt = "2099-03-01T10:00:00Z";
+				const endAt = "2099-03-01T11:00:00Z";
+
+				const createEventResult = await mercuriusClient.mutate(
+					Mutation_createEvent,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								name: `Invite-Only Event ${faker.string.uuid()}`,
+								organizationId: organization.id,
+								startAt,
+								endAt,
+								isInviteOnly: true,
+								isRegisterable: true,
+							},
+						},
+					},
+				);
+
+				if (
+					createEventResult.errors ||
+					!createEventResult.data?.createEvent?.id
+				) {
+					throw new Error(
+						`Failed to create invite-only event: ${JSON.stringify(
+							createEventResult.errors,
+						)}`,
+					);
+				}
+
+				const eventId = createEventResult.data.createEvent.id;
+
+				// Cleanup: Delete event
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: eventId } },
+					});
+				});
+
+				// Cleanup: Delete organization
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: organization.id } },
+					});
+				});
+
+				// Organization admin can access the invite-only event
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${regularUserToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
+
+				expect(queryResult.data?.event).not.toBeNull();
+				expect(queryResult.data?.event?.id).toBe(eventId);
+				expect(queryResult.data?.event?.isInviteOnly).toBe(true);
 			});
 		});
 	});
