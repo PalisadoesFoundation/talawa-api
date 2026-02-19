@@ -1,8 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
+import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { organizationMembershipsTable } from "../../../../src/drizzle/tables/organizationMemberships";
 import { usersTable } from "../../../../src/drizzle/tables/users";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import {
     cancelInstances,
@@ -14,11 +16,32 @@ import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
-    Mutation_createUser,
-    Mutation_deleteOrganization,
 	Query_getRecurringEvents,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_createUser =
+	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
+    createUser(input: $input){
+        authenticationToken
+        user {
+            id
+        }
+    }
+}`);
+
+const Mutation_deleteOrganization =
+	gql(`mutation Mutation_deleteOrganization($input: MutationDeleteOrganizationInput!) {
+    deleteOrganization(input: $input) {
+        id
+    }
+}`);
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -224,6 +247,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -311,9 +340,15 @@ suite("Query field getRecurringEvents", () => {
 	suite("when user has insufficient permissions", () => {
 		test("should return an error when user is not a member of the organization and not an admin", async () => {
 			// Create a regular user (non-admin)
-			const { authToken: regularUserToken } =
+			const { authToken: regularUserToken, userId: regularUserId } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserToken);
+			assertToBeNonNullish(regularUserId);
+			cleanupFns.push(async () => {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, regularUserId));
+			});
 
 			// Create organization and event as admin first
 			const organizationCreateResult = await mercuriusClient.mutate(
@@ -331,6 +366,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			// Add admin as member so they can create events
 			await server.drizzleClient.insert(organizationMembershipsTable).values({
@@ -339,8 +380,8 @@ suite("Query field getRecurringEvents", () => {
 				role: "administrator",
 			});
 
-			const startAt = faker.date.future();
-			const endAt = new Date(startAt.getTime() + 3600000); // 1 hour later
+			const startAt = new Date("2030-06-15T10:00:00Z");
+			const endAt = new Date("2030-06-15T11:00:00Z");
 
 			// Create a recurring event template as admin
 			const eventCreateResult = await mercuriusClient.mutate(
@@ -416,8 +457,8 @@ suite("Query field getRecurringEvents", () => {
                 role: "administrator",
             });
 
-            const startAt = faker.date.future();
-            const endAt = new Date(startAt.getTime() + 60 * 60 * 1000);
+            const startAt = new Date("2030-01-01T10:00:00Z");
+            const endAt = new Date("2030-01-01T11:00:00Z");
 
             const createEventResult = await mercuriusClient.mutate(
                 Mutation_createEvent,
@@ -506,6 +547,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			// Create a recurring event template with recurrence
 			const { templateId, instanceIds } =
@@ -548,6 +595,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -590,6 +643,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -633,6 +692,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -667,6 +732,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -707,6 +778,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -754,6 +831,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -782,6 +865,11 @@ suite("Query field getRecurringEvents", () => {
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserToken);
 			assertToBeNonNullish(regularUserId);
+			cleanupFns.push(async () => {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, regularUserId));
+			});
 
 			// Create organization as admin
 			const organizationCreateResult = await mercuriusClient.mutate(
@@ -794,6 +882,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			// Add regular user as member
 			await server.drizzleClient.insert(organizationMembershipsTable).values({
@@ -844,6 +938,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			// Create recurring event template
 			const { templateId } = await createRecurringEventWithInstances(
@@ -894,6 +994,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -952,6 +1058,12 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
