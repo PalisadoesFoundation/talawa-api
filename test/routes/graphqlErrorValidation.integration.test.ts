@@ -29,6 +29,35 @@ describe("GraphQL Error Formatting Integration", () => {
 		adminToken = accessToken;
 	});
 
+	it("should succeed on authenticated GraphQL request when using REST sign-in token (preExecution dual-token and rate limit)", async () => {
+		// REST sign-in returns jose tokens (no user on payload); preExecution must resolve
+		// currentClient via verifyToken/sub so rate-limit key does not crash.
+		const { accessToken } = await getAdminAuthViaRest(server);
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query: `
+					query {
+						currentUser {
+							id
+							emailAddress
+						}
+					}
+				`,
+			},
+			headers: {
+				"content-type": "application/json",
+				authorization: `Bearer ${accessToken}`,
+			},
+		});
+		expect(response.statusCode).toBe(200);
+		const body = JSON.parse(response.body);
+		expect(body.errors).toBeUndefined();
+		expect(body.data?.currentUser?.id).toBeDefined();
+		expect(body.data?.currentUser?.emailAddress).toBeDefined();
+	});
+
 	it("should return 400 with INVALID_ARGUMENTS for malformed query string (parse error)", async () => {
 		const response = await server.inject({
 			method: "POST",

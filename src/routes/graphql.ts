@@ -5,16 +5,14 @@ import fastifyPlugin from "fastify-plugin";
 import { mercurius } from "mercurius";
 import { mercuriusUpload } from "mercurius-upload";
 import type {
-	CurrentClient,
 	ExplicitAuthenticationTokenPayload,
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
 import { observabilityConfig } from "../config/observability";
-import type { AccessClaims } from "../services/auth/tokens";
-import { verifyToken } from "../services/auth/tokens";
 import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
+import { resolveCurrentClient } from "../utilities/auth/currentClient";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -142,82 +140,7 @@ export type CreateContext = (
 export const createContext: CreateContext = async (initialContext) => {
 	const { fastify, request } = initialContext;
 
-	// Try to authenticate from Authorization header first, then fall back to cookie.
-	// Supports both legacy @fastify/jwt tokens ({ user: { id } }) and REST tokens
-	// (jose, { sub, typ: "access" }) produced by POST /auth/signin.
-	let currentClient: CurrentClient = { isAuthenticated: false };
-
-	const authHeader = (request.headers?.authorization ?? "").trim();
-	const BEARER_RE = /^Bearer\s+/i;
-	const bearerToken = BEARER_RE.test(authHeader)
-		? authHeader.replace(BEARER_RE, "").trim()
-		: "";
-
-	if (bearerToken) {
-		// Step 1: try legacy @fastify/jwt Bearer (expects { user: { id } }).
-		try {
-			const jwtPayload =
-				await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
-			currentClient = {
-				isAuthenticated: true,
-				user: jwtPayload.user,
-			};
-		} catch (_legacyBearerErr) {
-			// Step 2: fallback — try REST-format Bearer (jose, { sub, typ: "access" }).
-			try {
-				const restPayload = await verifyToken<AccessClaims>(bearerToken);
-				if (restPayload.typ === "access" && restPayload.sub) {
-					currentClient = {
-						isAuthenticated: true,
-						user: { id: restPayload.sub },
-					};
-				}
-			} catch (restBearerErr) {
-				if (request?.log?.debug) {
-					request.log.debug(
-						{ err: restBearerErr },
-						"Bearer token verification failed (both JWT formats); treating as unauthenticated",
-					);
-				}
-			}
-		}
-	} else {
-		// No Bearer header — try cookie auth (web clients).
-		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
-		if (accessTokenFromCookie) {
-			// Step 3a: try legacy @fastify/jwt cookie.
-			try {
-				const jwtPayload =
-					await fastify.jwt.verify<ExplicitAuthenticationTokenPayload>(
-						accessTokenFromCookie,
-					);
-				currentClient = {
-					isAuthenticated: true,
-					user: jwtPayload.user,
-				};
-			} catch (_legacyCookieErr) {
-				// Step 3b: fallback — try REST-format cookie (jose, { sub, typ: "access" }).
-				try {
-					const restPayload = await verifyToken<AccessClaims>(
-						accessTokenFromCookie,
-					);
-					if (restPayload.typ === "access" && restPayload.sub) {
-						currentClient = {
-							isAuthenticated: true,
-							user: { id: restPayload.sub },
-						};
-					}
-				} catch (cookieErr) {
-					if (request?.log?.debug) {
-						request.log.debug(
-							{ err: cookieErr },
-							"Cookie token verification failed; treating request as unauthenticated",
-						);
-					}
-				}
-			}
-		}
-	}
+	const currentClient = await resolveCurrentClient(fastify, request);
 
 	// Cookie configuration options (sameSite is set per-cookie in helpers)
 	const cookieConfig = {
@@ -930,27 +853,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// Get the IP address of the client making the request
 			const ip = request.ip;
 
-			// Verify the JWT token to get the user information
-			// This is used to identify the user for rate limiting purposes
-			let currentClient: CurrentClient;
-			try {
-				const jwtPayload =
-					await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
-				currentClient = {
-					isAuthenticated: true,
-					user: jwtPayload.user,
-				};
-			} catch (authError) {
-				if (request?.log?.debug) {
-					request.log.debug(
-						{ err: authError },
-						"JWT verification failed during preExecution; using unauthenticated rate limits",
-					);
-				}
-				currentClient = {
-					isAuthenticated: false,
-				};
-			}
+			const currentClient = await resolveCurrentClient(fastify, request);
+			const userId = currentClient.user?.id;
 
 			if (!ip) {
 				throw new TalawaGraphQLError({
@@ -961,16 +865,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				});
 			}
 
-			// Generate a rate limiting key based on user ID (if available) or IP address
-			// This allows different rate limits for authenticated vs unauthenticated users
-			let key: string;
-			if (currentClient.isAuthenticated) {
-				// For authenticated users, use both user ID and IP to prevent sharing accounts
-				key = `rate-limit:user:${currentClient.user.id}:${ip}`;
-			} else {
-				// For unauthenticated users, use only IP address
-				key = `rate-limit:ip:${ip}`;
-			}
+			// Build rate-limit key — use user id only when present
+			const key = userId
+				? `rate-limit:user:${userId}:${ip}`
+				: `rate-limit:ip:${ip}`;
 			const isRequestAllowed = await complexityLeakyBucket(
 				fastify,
 				key,
