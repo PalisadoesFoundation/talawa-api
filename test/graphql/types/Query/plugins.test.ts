@@ -33,9 +33,13 @@ async function insertPlugin(
 afterEach(async () => {
 	vi.restoreAllMocks();
 	for (const id of createdPluginIds) {
-		await server.drizzleClient
-			.delete(pluginsTable)
-			.where(eq(pluginsTable.id, id));
+		try {
+			await server.drizzleClient
+				.delete(pluginsTable)
+				.where(eq(pluginsTable.id, id));
+		} catch {
+			// Best-effort cleanup; ignore individual failures
+		}
 	}
 	createdPluginIds.length = 0;
 });
@@ -101,6 +105,7 @@ suite("Query field getPluginById", () => {
 			backup: true,
 		});
 		expect(result.data.getPluginById?.createdAt).toBeDefined();
+		expect(result.data.getPluginById?.updatedAt).toBeDefined();
 	});
 });
 
