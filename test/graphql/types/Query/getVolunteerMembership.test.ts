@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -7,6 +7,7 @@ import type {
 } from "~/src/utilities/TalawaGraphQLError";
 
 import { assertToBeNonNullish } from "../../../helpers";
+import { createRecurringEventWithInstances } from "../../../helpers/recurringEventTestHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -27,20 +28,21 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+vi.mock("~/src/utilities/leakyBucket", () => ({
+	complexityLeakyBucket: vi.fn().mockResolvedValue(true),
+}));
+
 suite("Query field getVolunteerMembership", () => {
 	let adminAuthToken: string;
 	let adminUserId: string;
 	let organizationId: string;
 	let eventId: string;
 	let regularUserId: string;
+	let regularUserName: string;
 	let volunteerGroupId: string;
 	let eventVolunteerId: string;
 
-	// Aggressive rate limiting protection - much longer delays
 	beforeAll(async () => {
-		// Much longer initial delay
-		await new Promise((resolve) => setTimeout(resolve, 500));
-
 		// Sign in as admin
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -55,9 +57,6 @@ suite("Query field getVolunteerMembership", () => {
 		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
 		adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
 		adminUserId = adminSignInResult.data.signIn.user.id;
-
-		// Longer delays between each operation
-		await new Promise((resolve) => setTimeout(resolve, 800));
 
 		// Create organization
 		const orgResult = await mercuriusClient.mutate(
@@ -78,8 +77,6 @@ suite("Query field getVolunteerMembership", () => {
 		assertToBeNonNullish(orgResult.data?.createOrganization);
 		organizationId = orgResult.data.createOrganization.id;
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
 		// Create organization membership for admin
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: {
@@ -94,8 +91,6 @@ suite("Query field getVolunteerMembership", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
 		// Create event
 		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
 			headers: {
@@ -103,7 +98,7 @@ suite("Query field getVolunteerMembership", () => {
 			},
 			variables: {
 				input: {
-					name: `Membership Test Event ${faker.string.alphanumeric(6)}`,
+					name: `VolMembershipTestEvent ${faker.string.alphanumeric(6)}`,
 					description: "Test event for membership queries",
 					startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 					endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
@@ -115,9 +110,8 @@ suite("Query field getVolunteerMembership", () => {
 		assertToBeNonNullish(eventResult.data?.createEvent);
 		eventId = eventResult.data.createEvent.id;
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
-		// Create regular user
+		// Create regular user with a unique recognizable name for filtering tests
+		regularUserName = `VolMembershipUser ${faker.string.alphanumeric(6)}`;
 		const regularUserResult = await mercuriusClient.mutate(
 			Mutation_createUser,
 			{
@@ -128,7 +122,7 @@ suite("Query field getVolunteerMembership", () => {
 					input: {
 						emailAddress: `${faker.string.ulid()}@test.com`,
 						isEmailAddressVerified: true,
-						name: `Membership Test User ${faker.person.firstName()}`,
+						name: regularUserName,
 						password: "password123",
 						role: "regular",
 					},
@@ -138,8 +132,6 @@ suite("Query field getVolunteerMembership", () => {
 
 		assertToBeNonNullish(regularUserResult.data?.createUser);
 		regularUserId = regularUserResult.data.createUser.user?.id as string;
-
-		await new Promise((resolve) => setTimeout(resolve, 800));
 
 		// Create organization membership for regular user
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -154,8 +146,6 @@ suite("Query field getVolunteerMembership", () => {
 				},
 			},
 		});
-
-		await new Promise((resolve) => setTimeout(resolve, 800));
 
 		// Create volunteer group
 		const volunteerGroupResult = await mercuriusClient.mutate(
@@ -180,8 +170,6 @@ suite("Query field getVolunteerMembership", () => {
 		volunteerGroupId = volunteerGroupResult.data.createEventVolunteerGroup
 			.id as string;
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
 		// Create event volunteer
 		const eventVolunteerResult = await mercuriusClient.mutate(
 			Mutation_createEventVolunteer,
@@ -202,8 +190,6 @@ suite("Query field getVolunteerMembership", () => {
 		eventVolunteerId = eventVolunteerResult.data.createEventVolunteer
 			.id as string;
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
 		// Update volunteer to be accepted
 		await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
 			headers: {
@@ -217,9 +203,7 @@ suite("Query field getVolunteerMembership", () => {
 			},
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
-		// Create accepted volunteer membership for testing
+		// Create accepted volunteer membership (group membership) for testing
 		await mercuriusClient.mutate(Mutation_createVolunteerMembership, {
 			headers: {
 				authorization: `bearer ${adminAuthToken}`,
@@ -233,12 +217,8 @@ suite("Query field getVolunteerMembership", () => {
 				},
 			},
 		});
-
-		// Final setup delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
 	});
 
-	// Comprehensive cleanup with longer delays
 	afterAll(async () => {
 		try {
 			// Delete event volunteers first
@@ -253,7 +233,6 @@ suite("Query field getVolunteerMembership", () => {
 				} catch (error) {
 					console.warn(`Failed to delete event volunteer: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 300));
 			}
 
 			// Delete volunteer group
@@ -268,7 +247,6 @@ suite("Query field getVolunteerMembership", () => {
 				} catch (error) {
 					console.warn(`Failed to delete volunteer group: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 300));
 			}
 
 			// Delete organization memberships
@@ -288,7 +266,6 @@ suite("Query field getVolunteerMembership", () => {
 				} catch (error) {
 					console.warn(`Failed to delete regular user membership: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 300));
 			}
 
 			if (adminUserId && organizationId) {
@@ -307,7 +284,6 @@ suite("Query field getVolunteerMembership", () => {
 				} catch (error) {
 					console.warn(`Failed to delete admin membership: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 300));
 			}
 
 			// Delete regular user
@@ -322,7 +298,6 @@ suite("Query field getVolunteerMembership", () => {
 				} catch (error) {
 					console.warn(`Failed to delete regular user: ${error}`);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 300));
 			}
 
 			// Delete organization last
@@ -338,9 +313,6 @@ suite("Query field getVolunteerMembership", () => {
 					console.warn(`Failed to delete organization: ${error}`);
 				}
 			}
-
-			// Final cleanup delay
-			await new Promise((resolve) => setTimeout(resolve, 500));
 		} catch (error) {
 			console.error("Cleanup failed:", error);
 		}
@@ -348,13 +320,10 @@ suite("Query field getVolunteerMembership", () => {
 
 	suite("Authentication", () => {
 		test("should throw unauthenticated error when client is not authenticated", async () => {
-			// Add delay before first test
-			await new Promise((resolve) => setTimeout(resolve, 200));
-
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				variables: {
 					where: {
-						eventId, // Use the real eventId from setup
+						eventId,
 					},
 				},
 			});
@@ -375,9 +344,7 @@ suite("Query field getVolunteerMembership", () => {
 	});
 
 	suite("Input Validation", () => {
-		test("should throw error for invalid UUID format", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 300));
-
+		test("should throw error for invalid UUID in userId field", async () => {
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -408,12 +375,74 @@ suite("Query field getVolunteerMembership", () => {
 				]),
 			);
 		});
+
+		test("should throw error for invalid UUID in eventId field", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventId: "not-a-valid-uuid",
+					},
+				},
+			});
+
+			expect(result.data?.getVolunteerMembership).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["where", "eventId"],
+									message: expect.stringContaining("Invalid UUID"),
+								}),
+							]),
+						}),
+						message: expect.any(String),
+						path: ["getVolunteerMembership"],
+					}),
+				]),
+			);
+		});
+
+		test("should throw error for invalid UUID in groupId field", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						groupId: "not-a-valid-uuid",
+					},
+				},
+			});
+
+			expect(result.data?.getVolunteerMembership).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["where", "groupId"],
+									message: expect.stringContaining("Invalid UUID"),
+								}),
+							]),
+						}),
+						message: expect.any(String),
+						path: ["getVolunteerMembership"],
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("Basic Functionality", () => {
-		test("should handle empty where clause", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
+		test("should handle empty where clause and return array", async () => {
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -428,9 +457,7 @@ suite("Query field getVolunteerMembership", () => {
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
 		});
 
-		test("should filter by userId using created test data", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
+		test("should filter by userId and return matching memberships", async () => {
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -445,12 +472,12 @@ suite("Query field getVolunteerMembership", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.getVolunteerMembership).toBeDefined();
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
-			// May be 0 or more depending on test order - just verify structure
+			expect(
+				result.data?.getVolunteerMembership?.length,
+			).toBeGreaterThanOrEqual(1);
 		});
 
-		test("should filter by eventId using created test data", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
+		test("should filter by eventId (non-recurring) and return matching memberships", async () => {
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -465,11 +492,37 @@ suite("Query field getVolunteerMembership", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.getVolunteerMembership).toBeDefined();
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(
+				result.data?.getVolunteerMembership?.length,
+			).toBeGreaterThanOrEqual(1);
 		});
 
-		test("should filter by status", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
+		test("should filter by groupId and return matching memberships", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						groupId: volunteerGroupId,
+					},
+				},
+			});
 
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(
+				result.data?.getVolunteerMembership?.length,
+			).toBeGreaterThanOrEqual(1);
+
+			// All returned memberships should belong to the specified group
+			for (const membership of result.data?.getVolunteerMembership ?? []) {
+				expect(membership?.group?.id).toBe(volunteerGroupId);
+			}
+		});
+
+		test("should filter by status and return matching memberships", async () => {
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -486,29 +539,7 @@ suite("Query field getVolunteerMembership", () => {
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
 		});
 
-		test("should handle ordering", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
-			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					where: {
-						eventId,
-					},
-					orderBy: "createdAt_ASC",
-				},
-			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.getVolunteerMembership).toBeDefined();
-			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
-		});
-
-		test("should handle non-existent resources gracefully", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
+		test("should return empty array for non-existent userId", async () => {
 			const fakeUserId = faker.string.uuid();
 
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
@@ -526,6 +557,321 @@ suite("Query field getVolunteerMembership", () => {
 			expect(result.data?.getVolunteerMembership).toBeDefined();
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
 			expect(result.data?.getVolunteerMembership?.length).toBe(0);
+		});
+
+		test("should return empty array for non-existent groupId", async () => {
+			const fakeGroupId = faker.string.uuid();
+
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						groupId: fakeGroupId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(result.data?.getVolunteerMembership?.length).toBe(0);
+		});
+	});
+
+	suite("Filter Type", () => {
+		test("should filter group memberships using filter: group (isNotNull groupId)", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventId,
+						filter: "group",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+			// All returned memberships should have a group (isNotNull groupId)
+			for (const membership of result.data?.getVolunteerMembership ?? []) {
+				expect(membership?.group).not.toBeNull();
+			}
+		});
+
+		test("should filter individual memberships using filter: individual (isNull groupId)", async () => {
+			// First create an individual membership (no group)
+			const individualEventVolunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							eventId,
+							userId: adminUserId,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				individualEventVolunteerResult.data?.createEventVolunteer,
+			);
+			const individualVolunteerId = individualEventVolunteerResult.data
+				.createEventVolunteer.id as string;
+
+			// Accept the volunteer
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					id: individualVolunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Create individual membership (no group)
+			await mercuriusClient.mutate(Mutation_createVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					data: {
+						userId: adminUserId,
+						event: eventId,
+						status: "accepted",
+						// No group field = individual membership
+					},
+				},
+			});
+
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventId,
+						filter: "individual",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+			// All returned memberships should have no group (isNull groupId)
+			for (const membership of result.data?.getVolunteerMembership ?? []) {
+				expect(membership?.group).toBeNull();
+			}
+
+			// Cleanup: delete the individual volunteer
+			try {
+				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: { id: individualVolunteerId },
+				});
+			} catch (error) {
+				console.warn(`Failed to cleanup individual volunteer: ${error}`);
+			}
+		});
+	});
+
+	suite("Ordering", () => {
+		test("should order results by createdAt ascending", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventId,
+					},
+					orderBy: "createdAt_ASC",
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+			// Verify ascending order: each item's createdAt should be >= previous
+			const memberships = result.data?.getVolunteerMembership ?? [];
+			for (let i = 1; i < memberships.length; i++) {
+				const prev = new Date(memberships[i - 1]?.createdAt ?? 0).getTime();
+				const curr = new Date(memberships[i]?.createdAt ?? 0).getTime();
+				expect(curr).toBeGreaterThanOrEqual(prev);
+			}
+		});
+
+		test("should order results by createdAt descending", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventId,
+					},
+					orderBy: "createdAt_DESC",
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+			// Verify descending order: each item's createdAt should be <= previous
+			const memberships = result.data?.getVolunteerMembership ?? [];
+			for (let i = 1; i < memberships.length; i++) {
+				const prev = new Date(memberships[i - 1]?.createdAt ?? 0).getTime();
+				const curr = new Date(memberships[i]?.createdAt ?? 0).getTime();
+				expect(curr).toBeLessThanOrEqual(prev);
+			}
+		});
+	});
+
+	suite("Text Filtering", () => {
+		test("should filter by userName using partial match (ilike)", async () => {
+			// Use a substring of the user's name for the ilike search
+			const partialName = regularUserName.split(" ")[0]; // "VolMembershipUser"
+
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						userName: partialName,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(
+				result.data?.getVolunteerMembership?.length,
+			).toBeGreaterThanOrEqual(1);
+
+			// All returned memberships should have volunteers whose user name matches
+			for (const membership of result.data?.getVolunteerMembership ?? []) {
+				expect(membership?.volunteer?.user?.name).toContain(
+					"VolMembershipUser",
+				);
+			}
+		});
+
+		test("should return empty array when userName filter matches no users", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						userName: "NonExistentUserNameXYZ987",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(result.data?.getVolunteerMembership?.length).toBe(0);
+		});
+
+		test("should filter by eventTitle using partial match (ilike)", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventTitle: "VolMembershipTestEvent",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(
+				result.data?.getVolunteerMembership?.length,
+			).toBeGreaterThanOrEqual(1);
+
+			// All returned memberships should have events whose name matches
+			for (const membership of result.data?.getVolunteerMembership ?? []) {
+				expect(membership?.event?.name).toContain("VolMembershipTestEvent");
+			}
+		});
+
+		test("should return empty array when eventTitle filter matches no events", async () => {
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventTitle: "NonExistentEventTitleXYZ987",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+			expect(result.data?.getVolunteerMembership?.length).toBe(0);
+		});
+	});
+
+	suite("Recurring Event Instance Path", () => {
+		test("should handle eventId that is a recurring instance (OR condition for instance + series)", async () => {
+			// Create a recurring event with instances
+			const { instanceIds } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+				{
+					instanceCount: 2,
+					startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+				},
+			);
+
+			assertToBeNonNullish(instanceIds[0]);
+			const instanceId = instanceIds[0];
+
+			// Query with the recurring instance ID — this triggers the OR condition path
+			// (lines 84-99 in source: checks recurringEventInstancesTable and builds OR)
+			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					where: {
+						eventId: instanceId,
+					},
+				},
+			});
+
+			// The query should succeed (no error) — the recurring instance lookup runs,
+			// builds the OR condition, and returns memberships (may be empty since
+			// no memberships were created for this specific instance or its base template)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.getVolunteerMembership).toBeDefined();
+			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+			// Note: recurring event template and instances are cascade-deleted
+			// when the organization is deleted in afterAll
 		});
 	});
 });
