@@ -97,6 +97,15 @@ describe("src/drizzle/tables/postVotes", () => {
 		// Each step is wrapped in try/catch so that a failure in one
 		// does not skip cleanup of the remaining tables.
 		try {
+			if (createdResources.voteIds.length > 0) {
+				await server.drizzleClient
+					.delete(postVotesTable)
+					.where(inArray(postVotesTable.id, createdResources.voteIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for votes:", error);
+		}
+		try {
 			if (createdResources.postIds.length > 0) {
 				await server.drizzleClient
 					.delete(postsTable)
