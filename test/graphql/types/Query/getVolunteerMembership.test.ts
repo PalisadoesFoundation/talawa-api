@@ -1,5 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -217,6 +225,10 @@ suite("Query field getVolunteerMembership", () => {
 				},
 			},
 		});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	afterAll(async () => {
@@ -710,10 +722,12 @@ suite("Query field getVolunteerMembership", () => {
 			// Verify ascending order: each item's createdAt should be >= previous
 			const memberships = result.data?.getVolunteerMembership ?? [];
 			for (let i = 1; i < memberships.length; i++) {
-				assertToBeNonNullish(memberships[i - 1]?.createdAt);
-				assertToBeNonNullish(memberships[i]?.createdAt);
-				const prev = new Date(memberships[i - 1]?.createdAt).getTime();
-				const curr = new Date(memberships[i]?.createdAt).getTime();
+				const prevCreatedAt = memberships[i - 1]?.createdAt;
+				const currCreatedAt = memberships[i]?.createdAt;
+				assertToBeNonNullish(prevCreatedAt);
+				assertToBeNonNullish(currCreatedAt);
+				const prev = new Date(prevCreatedAt).getTime();
+				const curr = new Date(currCreatedAt).getTime();
 				expect(curr).toBeGreaterThanOrEqual(prev);
 			}
 		});
@@ -738,10 +752,12 @@ suite("Query field getVolunteerMembership", () => {
 			// Verify descending order: each item's createdAt should be <= previous
 			const memberships = result.data?.getVolunteerMembership ?? [];
 			for (let i = 1; i < memberships.length; i++) {
-				assertToBeNonNullish(memberships[i - 1]?.createdAt);
-				assertToBeNonNullish(memberships[i]?.createdAt);
-				const prev = new Date(memberships[i - 1]?.createdAt).getTime();
-				const curr = new Date(memberships[i]?.createdAt).getTime();
+				const prevCreatedAt = memberships[i - 1]?.createdAt;
+				const currCreatedAt = memberships[i]?.createdAt;
+				assertToBeNonNullish(prevCreatedAt);
+				assertToBeNonNullish(currCreatedAt);
+				const prev = new Date(prevCreatedAt).getTime();
+				const curr = new Date(currCreatedAt).getTime();
 				expect(curr).toBeLessThanOrEqual(prev);
 			}
 		});
@@ -772,9 +788,7 @@ suite("Query field getVolunteerMembership", () => {
 
 			// All returned memberships should have volunteers whose user name matches
 			for (const membership of result.data?.getVolunteerMembership ?? []) {
-				expect(membership?.volunteer?.user?.name).toContain(
-					"VolMembershipUser",
-				);
+				expect(membership?.volunteer?.user?.name).toContain(partialName);
 			}
 		});
 
@@ -843,20 +857,43 @@ suite("Query field getVolunteerMembership", () => {
 	suite("Recurring Event Instance Path", () => {
 		test("should handle eventId that is a recurring instance (OR condition for instance + series)", async () => {
 			// Create a recurring event with instances
-			const { instanceIds } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{
+			const { templateId, instanceIds } =
+				await createRecurringEventWithInstances(organizationId, adminUserId, {
 					instanceCount: 2,
 					startDate: new Date("2027-01-08T10:00:00Z"),
-				},
-			);
+				});
 
 			assertToBeNonNullish(instanceIds[0]);
 			const instanceId = instanceIds[0];
 
-			// Query with the recurring instance ID — this triggers the OR condition path
-			// (lines 84-99 in source: checks recurringEventInstancesTable and builds OR)
+			// Create a membership for the base template event (ENTIRE_SERIES case).
+			// The mutation defaults scope to ENTIRE_SERIES for recurring templates,
+			// so membership.eventId = templateId.
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createVolunteerMembership,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							userId: adminUserId,
+							event: templateId,
+							status: "invited",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				membershipResult.data?.createVolunteerMembership?.volunteer?.id,
+			);
+			const recurringVolunteerId = membershipResult.data
+				.createVolunteerMembership.volunteer.id as string;
+
+			// Query with the recurring instance ID — triggers the OR condition:
+			// (source lines 91-106: checks recurringEventInstancesTable, builds
+			//  OR for eventId = instanceId OR eventId = baseRecurringEventId)
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -868,13 +905,28 @@ suite("Query field getVolunteerMembership", () => {
 				},
 			});
 
-			// The query should succeed (no error) — the recurring instance lookup runs,
-			// builds the OR condition, and returns memberships (may be empty since
-			// no memberships were created for this specific instance or its base template)
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.getVolunteerMembership).toBeDefined();
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
 
+			// Verify the OR condition: the series/template membership (eventId = templateId)
+			// is returned when querying by instanceId — proving the OR branch works
+			const seriesMembership = result.data?.getVolunteerMembership?.find(
+				(m) => m?.event?.id === templateId,
+			);
+			expect(seriesMembership).toBeDefined();
+
+			// Cleanup: deleting the volunteer cascade-deletes its memberships
+			try {
+				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: { id: recurringVolunteerId },
+				});
+			} catch (error) {
+				console.warn(`Failed to cleanup recurring volunteer: ${error}`);
+			}
 			// Note: recurring event template and instances are cascade-deleted
 			// when the organization is deleted in afterAll
 		});
