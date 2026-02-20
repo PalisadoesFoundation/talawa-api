@@ -176,6 +176,13 @@
       "when": 1771356819876,
       "tag": "20260217193339_quick_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1771610388172,
+      "tag": "20260220175948_wet_alex_power",
+      "breakpoints": true
     }
   ]
 }
