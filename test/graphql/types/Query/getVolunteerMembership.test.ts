@@ -41,6 +41,8 @@ vi.mock("~/src/utilities/leakyBucket", () => ({
 }));
 
 suite("Query field getVolunteerMembership", () => {
+	const EVENT_NAME_PREFIX = "VolMembershipTestEvent";
+
 	let adminAuthToken: string;
 	let adminUserId: string;
 	let organizationId: string;
@@ -106,7 +108,7 @@ suite("Query field getVolunteerMembership", () => {
 			},
 			variables: {
 				input: {
-					name: `VolMembershipTestEvent ${faker.string.alphanumeric(6)}`,
+					name: `${EVENT_NAME_PREFIX} ${faker.string.alphanumeric(6)}`,
 					description: "Test event for membership queries",
 					startAt: "2027-01-01T10:00:00Z",
 					endAt: "2027-01-01T11:00:00Z",
@@ -228,7 +230,7 @@ suite("Query field getVolunteerMembership", () => {
 	});
 
 	afterEach(() => {
-		vi.restoreAllMocks();
+		vi.clearAllMocks();
 	});
 
 	afterAll(async () => {
@@ -617,86 +619,94 @@ suite("Query field getVolunteerMembership", () => {
 		});
 
 		test("should filter individual memberships using filter: individual (isNull groupId)", async () => {
-			// First create an individual membership (no group)
-			const individualEventVolunteerResult = await mercuriusClient.mutate(
-				Mutation_createEventVolunteer,
-				{
+			let individualVolunteerId: string | undefined;
+			try {
+				// First create an individual membership (no group)
+				const individualEventVolunteerResult = await mercuriusClient.mutate(
+					Mutation_createEventVolunteer,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								eventId,
+								userId: adminUserId,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					individualEventVolunteerResult.data?.createEventVolunteer,
+				);
+				individualVolunteerId = individualEventVolunteerResult.data
+					.createEventVolunteer.id as string;
+
+				// Accept the volunteer
+				await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
 					headers: {
 						authorization: `bearer ${adminAuthToken}`,
 					},
 					variables: {
-						input: {
-							eventId,
-							userId: adminUserId,
-						},
+						id: individualVolunteerId,
+						data: { hasAccepted: true },
 					},
-				},
-			);
+				});
 
-			assertToBeNonNullish(
-				individualEventVolunteerResult.data?.createEventVolunteer,
-			);
-			const individualVolunteerId = individualEventVolunteerResult.data
-				.createEventVolunteer.id as string;
-
-			// Accept the volunteer
-			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					id: individualVolunteerId,
-					data: { hasAccepted: true },
-				},
-			});
-
-			// Create individual membership (no group)
-			await mercuriusClient.mutate(Mutation_createVolunteerMembership, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					data: {
-						userId: adminUserId,
-						event: eventId,
-						status: "accepted",
-						// No group field = individual membership
-					},
-				},
-			});
-
-			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					where: {
-						eventId,
-						filter: "individual",
-					},
-				},
-			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.getVolunteerMembership).toBeDefined();
-			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
-
-			// All returned memberships should have no group (isNull groupId)
-			for (const membership of result.data?.getVolunteerMembership ?? []) {
-				expect(membership?.group).toBeNull();
-			}
-
-			// Cleanup: deleting the event volunteer cascade-deletes its associated volunteer
-			// memberships (deleteEventVolunteer.ts deletes memberships WHERE volunteerId = id).
-			try {
-				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
+				// Create individual membership (no group)
+				await mercuriusClient.mutate(Mutation_createVolunteerMembership, {
 					headers: {
 						authorization: `bearer ${adminAuthToken}`,
 					},
-					variables: { id: individualVolunteerId },
+					variables: {
+						data: {
+							userId: adminUserId,
+							event: eventId,
+							status: "accepted",
+							// No group field = individual membership
+						},
+					},
 				});
-			} catch (error) {
-				console.warn(`Failed to cleanup individual volunteer: ${error}`);
+
+				const result = await mercuriusClient.query(
+					Query_getVolunteerMembership,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							where: {
+								eventId,
+								filter: "individual",
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.getVolunteerMembership).toBeDefined();
+				expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+				// All returned memberships should have no group (isNull groupId)
+				for (const membership of result.data?.getVolunteerMembership ?? []) {
+					expect(membership?.group).toBeNull();
+				}
+			} finally {
+				// Cleanup always runs: deleting the volunteer cascade-deletes its
+				// associated memberships (deleteEventVolunteer.ts WHERE volunteerId = id).
+				if (individualVolunteerId) {
+					await mercuriusClient
+						.mutate(Mutation_deleteEventVolunteer, {
+							headers: {
+								authorization: `bearer ${adminAuthToken}`,
+							},
+							variables: { id: individualVolunteerId },
+						})
+						.catch((err: unknown) => {
+							console.warn(`Failed to cleanup individual volunteer: ${err}`);
+						});
+				}
 			}
 		});
 	});
@@ -817,7 +827,7 @@ suite("Query field getVolunteerMembership", () => {
 				},
 				variables: {
 					where: {
-						eventTitle: "VolMembershipTestEvent",
+						eventTitle: EVENT_NAME_PREFIX,
 					},
 				},
 			});
@@ -831,7 +841,7 @@ suite("Query field getVolunteerMembership", () => {
 
 			// All returned memberships should have events whose name matches
 			for (const membership of result.data?.getVolunteerMembership ?? []) {
-				expect(membership?.event?.name).toContain("VolMembershipTestEvent");
+				expect(membership?.event?.name).toContain(EVENT_NAME_PREFIX);
 			}
 		});
 
@@ -856,79 +866,87 @@ suite("Query field getVolunteerMembership", () => {
 
 	suite("Recurring Event Instance Path", () => {
 		test("should handle eventId that is a recurring instance (OR condition for instance + series)", async () => {
-			// Create a recurring event with instances
-			const { templateId, instanceIds } =
-				await createRecurringEventWithInstances(organizationId, adminUserId, {
-					instanceCount: 2,
-					startDate: new Date("2027-01-08T10:00:00Z"),
-				});
+			let recurringVolunteerId: string | undefined;
+			try {
+				// Create a recurring event with instances
+				const { templateId, instanceIds } =
+					await createRecurringEventWithInstances(organizationId, adminUserId, {
+						instanceCount: 2,
+						startDate: new Date("2027-01-08T10:00:00Z"),
+					});
 
-			assertToBeNonNullish(instanceIds[0]);
-			const instanceId = instanceIds[0];
+				assertToBeNonNullish(instanceIds[0]);
+				const instanceId = instanceIds[0];
 
-			// Create a membership for the base template event (ENTIRE_SERIES case).
-			// The mutation defaults scope to ENTIRE_SERIES for recurring templates,
-			// so membership.eventId = templateId.
-			const membershipResult = await mercuriusClient.mutate(
-				Mutation_createVolunteerMembership,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						data: {
-							userId: adminUserId,
-							event: templateId,
-							status: "invited",
+				// Create a membership for the base template event (ENTIRE_SERIES case).
+				// The mutation defaults scope to ENTIRE_SERIES for recurring templates,
+				// so membership.eventId = templateId.
+				const membershipResult = await mercuriusClient.mutate(
+					Mutation_createVolunteerMembership,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							data: {
+								userId: adminUserId,
+								event: templateId,
+								status: "invited",
+							},
 						},
 					},
-				},
-			);
+				);
 
-			assertToBeNonNullish(
-				membershipResult.data?.createVolunteerMembership?.volunteer?.id,
-			);
-			const recurringVolunteerId = membershipResult.data
-				.createVolunteerMembership.volunteer.id as string;
+				assertToBeNonNullish(
+					membershipResult.data?.createVolunteerMembership?.volunteer?.id,
+				);
+				recurringVolunteerId = membershipResult.data.createVolunteerMembership
+					.volunteer.id as string;
 
-			// Query with the recurring instance ID — triggers the OR condition:
-			// (source lines 91-106: checks recurringEventInstancesTable, builds
-			//  OR for eventId = instanceId OR eventId = baseRecurringEventId)
-			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					where: {
-						eventId: instanceId,
+				// Query with the recurring instance ID — triggers the OR condition:
+				// (source lines 91-106: checks recurringEventInstancesTable, builds
+				//  OR for eventId = instanceId OR eventId = baseRecurringEventId)
+				const result = await mercuriusClient.query(
+					Query_getVolunteerMembership,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							where: {
+								eventId: instanceId,
+							},
+						},
 					},
-				},
-			});
+				);
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.getVolunteerMembership).toBeDefined();
-			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.getVolunteerMembership).toBeDefined();
+				expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
 
-			// Verify the OR condition: the series/template membership (eventId = templateId)
-			// is returned when querying by instanceId — proving the OR branch works
-			const seriesMembership = result.data?.getVolunteerMembership?.find(
-				(m) => m?.event?.id === templateId,
-			);
-			expect(seriesMembership).toBeDefined();
-
-			// Cleanup: deleting the volunteer cascade-deletes its memberships
-			try {
-				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { id: recurringVolunteerId },
-				});
-			} catch (error) {
-				console.warn(`Failed to cleanup recurring volunteer: ${error}`);
+				// Verify the OR condition: the series/template membership (eventId = templateId)
+				// is returned when querying by instanceId — proving the OR branch works
+				const seriesMembership = result.data?.getVolunteerMembership?.find(
+					(m) => m?.event?.id === templateId,
+				);
+				expect(seriesMembership).toBeDefined();
+			} finally {
+				// Cleanup always runs: deleting the volunteer cascade-deletes its memberships.
+				// Note: recurring event template and instances are cascade-deleted
+				// when the organization is deleted in afterAll.
+				if (recurringVolunteerId) {
+					await mercuriusClient
+						.mutate(Mutation_deleteEventVolunteer, {
+							headers: {
+								authorization: `bearer ${adminAuthToken}`,
+							},
+							variables: { id: recurringVolunteerId },
+						})
+						.catch((err: unknown) => {
+							console.warn(`Failed to cleanup recurring volunteer: ${err}`);
+						});
+				}
 			}
-			// Note: recurring event template and instances are cascade-deleted
-			// when the organization is deleted in afterAll
 		});
 	});
 });
