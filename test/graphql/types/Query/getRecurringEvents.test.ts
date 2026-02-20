@@ -310,7 +310,6 @@ suite("Query field getRecurringEvents", () => {
             assertToBeNonNullish(signInAsRegularUserResult.data?.signIn);
             const regularUserToken =
                 signInAsRegularUserResult.data.signIn.authenticationToken;
-            assertToBeNonNullish(userId);
             assertToBeNonNullish(regularUserToken);
 
             await server.drizzleClient
@@ -508,9 +507,6 @@ suite("Query field getRecurringEvents", () => {
                 .spyOn(server.drizzleClient.query.eventsTable, "findFirst")
                 .mockImplementationOnce(() => {
                     throw new Error("forced non-talawa error");
-                });
-            cleanupFns.push(async () => {
-                eventsFindFirstSpy.mockRestore();
             });
 
             const result = await mercuriusClient.query(Query_getRecurringEvents, {
