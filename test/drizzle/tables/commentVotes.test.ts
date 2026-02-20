@@ -853,7 +853,6 @@ describe("src/drizzle/tables/commentVotes", () => {
 			expect(verifyDeleted).toBeUndefined();
 		});
 	});
-
 	describe("Index Configuration", () => {
 		const tableConfig = getTableConfig(commentVotesTable);
 

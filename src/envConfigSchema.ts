@@ -662,16 +662,6 @@ export const envConfigSchema = Type.Object({
 	),
 
 	/**
-	 * Google OAuth Redirect URI for authentication callback.
-	 */
-	GOOGLE_REDIRECT_URI: Type.Optional(
-		Type.String({
-			minLength: 1,
-			format: "uri",
-		}),
-	),
-
-	/**
 	 * GitHub OAuth Client ID for authentication.
 	 */
 	GITHUB_CLIENT_ID: Type.Optional(
@@ -686,16 +676,6 @@ export const envConfigSchema = Type.Object({
 	GITHUB_CLIENT_SECRET: Type.Optional(
 		Type.String({
 			minLength: 1,
-		}),
-	),
-
-	/**
-	 * GitHub OAuth Redirect URI for authentication callback.
-	 */
-	GITHUB_REDIRECT_URI: Type.Optional(
-		Type.String({
-			minLength: 1,
-			format: "uri",
 		}),
 	),
 
@@ -799,6 +779,18 @@ export const envConfigSchema = Type.Object({
 		Type.Integer({
 			minimum: 1,
 			default: 500,
+		}),
+	),
+
+	/**
+	 * Number of top organizations (by member count) to pre-load into cache at startup.
+	 * Set to 0 to disable cache warming.
+	 * Default: 0 (disabled)
+	 */
+	CACHE_WARMING_ORG_COUNT: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 0,
 		}),
 	),
 

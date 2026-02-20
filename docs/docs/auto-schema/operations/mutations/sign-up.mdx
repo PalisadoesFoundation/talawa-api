@@ -71,12 +71,18 @@ export const Details = ({
   );
 };
 
+:::warning[DEPRECATED]
+
+Use REST POST /auth/signup
+
+:::
+
 Mutation field to sign up to talawa.
 
 ```graphql
 signUp(
   input: MutationSignUpInput!
-): AuthenticationPayload
+): AuthenticationPayload @deprecated
 ```
 
 ### Arguments

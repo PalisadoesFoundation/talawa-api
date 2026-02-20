@@ -7,7 +7,7 @@ export const userMaritalStatusEnum = z.enum([
 	"divorced",
 	"engaged",
 	"married",
-	"seperated",
+	"separated",
 	"single",
 	"widowed",
 ]);

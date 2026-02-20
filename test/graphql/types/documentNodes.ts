@@ -401,6 +401,13 @@ export const Query_user_emailAddress =
     }
 }`);
 
+export const Query_user_maritalStatus =
+	gql(`query Query_user_maritalStatus($input: QueryUserInput!) {
+    user(input: $input) {
+        maritalStatus
+    }
+}`);
+
 export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
@@ -792,13 +799,57 @@ export const Query_organizations = gql(`
 	query Query_organizations {
 		organizations {
 			id
-      avatarURL
-      name
-      city
-      state
-      countryCode
+			name
+			description
+			addressLine1
+			addressLine2
+			city
+			state
+			postalCode
+			countryCode
+
+			createdAt
 		}
 	}
+`);
+
+export const Query_agendaFolder = gql(`
+  query agendaFolder($input:QueryAgendaFolderInput!) {
+    agendaFolder(input: $input) {
+      id
+      name
+      sequence
+      description
+      createdAt
+      updatedAt
+      creator {
+        id
+      }
+      event {
+        id
+      }
+      organization {
+        id
+      }
+    }
+  }
+`);
+
+export const Query_agendaFolder_Restricted = gql(`
+  query agendaFolder($input:QueryAgendaFolderInput!) {
+    agendaFolder(input: $input) {
+      id
+      name
+      sequence
+      description
+      event {
+        id
+      }
+      organization {
+        id
+      }
+    }
+  }
 `);
 
 export const Query_blockedUsers = gql(`
@@ -3042,6 +3093,34 @@ export const Query_venue_updatedAt = gql(`
   query Query_venue_updatedAt($input: QueryVenueInput!) {
     venue(input: $input) {
       id
+      updatedAt
+    }
+  }
+`);
+
+export const Query_getPluginById = gql(`
+  query Query_getPluginById($input: QueryPluginInput!) {
+    getPluginById(input: $input) {
+      id
+      pluginId
+      isActivated
+      isInstalled
+      backup
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Query_getPlugins = gql(`
+  query Query_getPlugins($input: QueryPluginsInput) {
+    getPlugins(input: $input) {
+      id
+      pluginId
+      isActivated
+      isInstalled
+      backup
+      createdAt
       updatedAt
     }
   }

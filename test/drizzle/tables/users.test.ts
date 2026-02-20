@@ -1955,7 +1955,7 @@ describe("src/drizzle/tables/users.ts - Table Definition Tests", () => {
 				"divorced",
 				"engaged",
 				"married",
-				"seperated",
+				"separated",
 				"single",
 				"widowed",
 			];

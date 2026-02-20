@@ -84,7 +84,6 @@ describe("GoogleOAuthProvider", () => {
 		config = {
 			clientId: "test_google_client_id.apps.googleusercontent.com",
 			clientSecret: "test_google_client_secret",
-			redirectUri: "http://localhost:3000/auth/google/callback",
 		};
 		provider = new GoogleOAuthProvider(config);
 	});
@@ -220,20 +219,20 @@ describe("GoogleOAuthProvider", () => {
 			const urlParams = mockedPost.mock.calls[0]?.[1] as URLSearchParams;
 			expect(urlParams.get("redirect_uri")).toBe(overrideUri);
 		});
-		it("should throw TokenExchangeError when no redirectUri is available", async () => {
+		it("should throw TokenExchangeError when redirectUri is empty", async () => {
 			const providerNoRedirect = new GoogleOAuthProvider({
 				clientId: "test_id",
 				clientSecret: "test_secret",
 			});
 
 			await expect(
-				providerNoRedirect.exchangeCodeForTokens("test_code"),
+				providerNoRedirect.exchangeCodeForTokens("test_code", " "),
 			).rejects.toThrow(TokenExchangeError);
 
 			await expect(
-				providerNoRedirect.exchangeCodeForTokens("test_code"),
+				providerNoRedirect.exchangeCodeForTokens("test_code", " "),
 			).rejects.toThrow(
-				"redirect_uri is required but was not provided in the method parameter or provider configuration",
+				"redirect_uri is required but was not provided in the method parameter",
 			);
 		});
 

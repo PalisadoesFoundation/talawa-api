@@ -597,65 +597,80 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 			expect(op?.ms).toBeGreaterThanOrEqual(0);
 		});
 
+		// Shared helper for avatar statObject failure tests
+		function setupCreateOrgTest() {
+			const perf = createPerformanceTracker();
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			context.perf = perf;
+
+			const orgName = `Test Org ${faker.string.ulid()}`;
+			const mockAdminUser = createMockAdminUser();
+			const mockCreatedOrganization = {
+				...createMockCreatedOrganization(orgName),
+				avatarMimeType: "image/png" as const,
+				avatarName: faker.string.uuid(),
+			};
+
+			const validAvatarInput = {
+				objectName: faker.string.uuid(),
+				mimeType: "image/png",
+				fileHash: faker.string.hexadecimal({
+					length: 64,
+					casing: "lower",
+					prefix: "",
+				}),
+				name: "avatar.png",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockAdminUser,
+			);
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			// Ensure transaction property exists for vi.spyOn to work
+			const drizzleWithTransaction = mocks.drizzleClient as unknown as {
+				transaction: (...args: unknown[]) => Promise<unknown>;
+			};
+			if (!drizzleWithTransaction.transaction) {
+				drizzleWithTransaction.transaction = async () => {};
+			}
+			vi.spyOn(drizzleWithTransaction, "transaction").mockImplementation(
+				async (...args: unknown[]) => {
+					const callback = args[0] as (tx: unknown) => Promise<unknown>;
+					const mockTx = {
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockReturnValue({
+								returning: vi.fn().mockResolvedValue([mockCreatedOrganization]),
+							}),
+						}),
+					};
+					return callback(mockTx as never);
+				},
+			);
+
+			const statObjectSpy = vi.spyOn(mocks.minioClient.client, "statObject");
+
+			return {
+				perf,
+				context,
+				mocks,
+				orgName,
+				validAvatarInput,
+				statObjectSpy,
+				createOrganizationMutationResolver,
+			};
+		}
+
 		it("should track mutation execution time when avatar upload verification fails", async () => {
 			// Use real timers to avoid infinite loop from runAllTimersAsync (mocks/context can schedule recurring timers)
 			vi.useRealTimers();
 			try {
-				const perf = createPerformanceTracker();
-				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-				context.perf = perf;
-
-				const orgName = `Test Org ${faker.string.ulid()}`;
-				const mockAdminUser = createMockAdminUser();
-				const mockCreatedOrganization = {
-					...createMockCreatedOrganization(orgName),
-					avatarMimeType: "image/png" as const,
-					avatarName: faker.string.uuid(),
-				};
-
-				// Valid avatar input
-				const validAvatarInput = {
-					objectName: faker.string.uuid(),
-					mimeType: "image/png",
-					fileHash: faker.string.hexadecimal({
-						length: 64,
-						casing: "lower",
-						prefix: "",
-					}),
-					name: "avatar.png",
-				};
-
-				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					mockAdminUser,
-				);
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					undefined,
-				);
-
-				// Mock transaction with avatar fields
-				(
-					mocks.drizzleClient as unknown as {
-						transaction: ReturnType<typeof vi.fn>;
-					}
-				).transaction = vi
-					.fn()
-					.mockImplementation(
-						async (callback: (tx: unknown) => Promise<unknown>) => {
-							const mockTx = {
-								insert: vi.fn().mockReturnValue({
-									values: vi.fn().mockReturnValue({
-										returning: vi
-											.fn()
-											.mockResolvedValue([mockCreatedOrganization]),
-									}),
-								}),
-							};
-							return callback(mockTx as never);
-						},
-					);
+				const { perf, context, orgName, validAvatarInput, statObjectSpy } =
+					setupCreateOrgTest();
 
 				// Mock MinIO statObject to fail (file not found)
-				const statObjectSpy = vi.spyOn(mocks.minioClient.client, "statObject");
 				statObjectSpy.mockRejectedValue(new Error("File not found"));
 
 				try {
@@ -686,6 +701,77 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 				expect(op).toBeDefined();
 				expect(op?.count).toBe(1);
 				expect(op?.ms).toBeGreaterThanOrEqual(0);
+			} finally {
+				vi.useFakeTimers();
+			}
+		});
+
+		it.each([
+			{
+				description: "error with name NotFound",
+				createError: () => {
+					const err = new Error("S3 Error");
+					err.name = "NotFound";
+					return err;
+				},
+			},
+			{
+				description: "error with message containing Not Found",
+				createError: () => new Error("Object Not Found in bucket"),
+			},
+			{
+				description: "error with code NotFound",
+				createError: () =>
+					Object.assign(new Error("S3 error"), { code: "NotFound" }),
+			},
+		])("should throw invalid_arguments when statObject throws $description", async ({
+			createError,
+		}) => {
+			vi.useRealTimers();
+			try {
+				const { perf, context, orgName, validAvatarInput, statObjectSpy } =
+					setupCreateOrgTest();
+
+				statObjectSpy.mockRejectedValue(createError());
+
+				try {
+					await createOrganizationMutationResolver(
+						null,
+						{
+							input: {
+								name: orgName,
+								description: "Test Description",
+								avatar: validAvatarInput,
+							},
+						},
+						context,
+					);
+					expect.fail("Expected error to be thrown");
+				} catch (error) {
+					expect(error).toBeInstanceOf(TalawaGraphQLError);
+					expect((error as TalawaGraphQLError).extensions?.code).toBe(
+						"invalid_arguments",
+					);
+					const issues = (error as TalawaGraphQLError).extensions
+						?.issues as Array<{
+						argumentPath: string[];
+						message: string;
+					}>;
+					expect(issues).toBeDefined();
+					expect(issues?.[0]?.argumentPath).toEqual([
+						"input",
+						"avatar",
+						"objectName",
+					]);
+					expect(issues?.[0]?.message).toBe(
+						"File not found in storage. Please upload the file first.",
+					);
+				}
+
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:createOrganization"];
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
 			} finally {
 				vi.useFakeTimers();
 			}
