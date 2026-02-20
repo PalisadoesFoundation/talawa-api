@@ -1,17 +1,19 @@
 import { relations, sql } from "drizzle-orm";
 import {
 	index,
+	pgEnum,
 	pgTable,
-	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
+import { postVoteTypeValues } from "../enums/postVoteType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
+
+export const postVoteTypePgEnum = pgEnum("post_vote_type", postVoteTypeValues);
 
 /**
  * Drizzle orm postgres table definition for post votes.
@@ -52,9 +54,7 @@ export const postVotesTable = pgTable(
 		/**
 		 * Type of the vote.
 		 */
-		type: text("type", {
-			enum: postVoteTypeEnum.options as [string, ...string[]],
-		}).notNull(),
+		type: postVoteTypePgEnum("type").notNull(),
 		/**
 		 * Date time at the time the vote was last updated.
 		 */

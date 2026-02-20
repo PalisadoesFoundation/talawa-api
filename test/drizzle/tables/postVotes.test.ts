@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import {
@@ -7,8 +7,9 @@ import {
 	Query_signIn,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
+	organizationsTable,
 	postsTable,
 	postVotesTable,
 	postVotesTableRelations,
@@ -22,6 +23,13 @@ import { server } from "../../server";
  * Test validates table schema, insertion, and relations.
  * database operations, indexes.
  */
+
+const createdResources = {
+	voteIds: [] as string[],
+	postIds: [] as string[],
+	orgIds: [] as string[],
+	userIds: [] as string[],
+};
 
 async function createTestOrganization(): Promise<string> {
 	// Clear any existing headers to ensure a clean sign-in
@@ -62,6 +70,7 @@ async function createTestOrganization(): Promise<string> {
 		orgId,
 		"Organization ID is missing from creation response",
 	);
+	createdResources.orgIds.push(orgId);
 	return orgId;
 }
 
@@ -78,10 +87,50 @@ async function createTestPost(): Promise<string> {
 		.returning({ id: postsTable.id });
 	const postId = postResult[0]?.id;
 	assertToBeNonNullish(postId, "Post ID is missing from creation response");
+	createdResources.postIds.push(postId);
 	return postId;
 }
 
 describe("src/drizzle/tables/postVotes", () => {
+	afterEach(async () => {
+		// Delete in reverse dependency order using tracked IDs only.
+		// Each step is wrapped in try/catch so that a failure in one
+		// does not skip cleanup of the remaining tables.
+		try {
+			if (createdResources.postIds.length > 0) {
+				await server.drizzleClient
+					.delete(postsTable)
+					.where(inArray(postsTable.id, createdResources.postIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for posts:", error);
+		}
+		try {
+			if (createdResources.orgIds.length > 0) {
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(inArray(organizationsTable.id, createdResources.orgIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for organizations:", error);
+		}
+		try {
+			if (createdResources.userIds.length > 0) {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(inArray(usersTable.id, createdResources.userIds));
+			}
+		} catch (error) {
+			console.error("Cleanup failed for users:", error);
+		}
+
+		// Reset tracked arrays
+		createdResources.voteIds.length = 0;
+		createdResources.postIds.length = 0;
+		createdResources.orgIds.length = 0;
+		createdResources.userIds.length = 0;
+	});
+
 	describe("PostVotes Table Schema", () => {
 		it("should have the correct schema", () => {
 			const columns = Object.keys(postVotesTable);
@@ -156,6 +205,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const invalidPostId = faker.string.uuid();
 			const validCreatorId = await createRegularUserUsingAdmin();
 
+			createdResources.userIds.push(validCreatorId.userId);
+
 			await expect(
 				server.drizzleClient.insert(postVotesTable).values({
 					type: "up_vote",
@@ -167,6 +218,8 @@ describe("src/drizzle/tables/postVotes", () => {
 
 		it("should reject insert with empty postId foreign key", async () => {
 			const validCreatorId = await createRegularUserUsingAdmin();
+
+			createdResources.userIds.push(validCreatorId.userId);
 
 			await expect(
 				server.drizzleClient.insert(postVotesTable).values({
@@ -339,6 +392,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "up_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [result] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
@@ -353,6 +408,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				throw new Error("Insert did not return a result");
 			}
 
+			createdResources.voteIds.push(result.id);
 			expect(result.id).toBeDefined();
 			expect(result.type).toBe(type);
 			expect(result.postId).toBe(postId);
@@ -365,6 +421,8 @@ describe("src/drizzle/tables/postVotes", () => {
 				"down_vote",
 				"up_vote",
 			];
+
+			createdResources.userIds.push(userId);
 
 			for (const type of validTypes) {
 				const postId = await createTestPost();
@@ -379,6 +437,7 @@ describe("src/drizzle/tables/postVotes", () => {
 
 				expect(result).toBeDefined();
 				if (result) {
+					createdResources.voteIds.push(result.id);
 					expect(result.type).toBe(type);
 				}
 			}
@@ -388,6 +447,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const postId = await createTestPost();
 			const type = "up_vote";
+
+			createdResources.userIds.push(userId);
 
 			await server.drizzleClient.insert(postVotesTable).values({
 				type,
@@ -400,6 +461,13 @@ describe("src/drizzle/tables/postVotes", () => {
 				.from(postVotesTable)
 				.where(eq(postVotesTable.type, type));
 
+			if (results.length === 0) {
+				throw new Error("No records found for the given type");
+			}
+
+			results.forEach((value) => {
+				createdResources.voteIds.push(value.id);
+			});
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBeGreaterThan(0);
 			expect(results[0]?.type).toBe(type);
@@ -409,6 +477,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const postId = await createTestPost();
 			const type = "up_vote";
+
+			createdResources.userIds.push(userId);
 
 			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
@@ -424,6 +494,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				throw new Error("Failed to insert record");
 			}
 
+			createdResources.voteIds.push(inserted.id);
 			const updatetype = "down_vote";
 
 			const [updated] = await server.drizzleClient
@@ -444,6 +515,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "up_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
@@ -458,6 +531,7 @@ describe("src/drizzle/tables/postVotes", () => {
 				throw new Error("Failed to insert record");
 			}
 
+			createdResources.voteIds.push(inserted.id);
 			const postVoteId = inserted.id;
 
 			const [deleted] = await server.drizzleClient
@@ -482,6 +556,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
@@ -495,6 +571,7 @@ describe("src/drizzle/tables/postVotes", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+			createdResources.voteIds.push(inserted.id);
 
 			await server.drizzleClient
 				.delete(usersTable)
@@ -514,6 +591,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
@@ -527,6 +606,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+
+			createdResources.voteIds.push(inserted.id);
 
 			expect(inserted.creatorId).toBe(userId);
 			const postVoteId = inserted.id;
@@ -550,6 +631,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
@@ -563,6 +646,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert record");
 			}
+
+			createdResources.voteIds.push(inserted.id);
 
 			expect(inserted.postId).toBe(postId);
 			const postVoteId = inserted.id;
@@ -587,7 +672,9 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
-			await server.drizzleClient
+			createdResources.userIds.push(userId);
+
+			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
 					type,
@@ -596,6 +683,11 @@ describe("src/drizzle/tables/postVotes", () => {
 				})
 				.returning();
 
+			expect(inserted).toBeDefined();
+			if (!inserted) {
+				throw new Error("Failed to insert record");
+			}
+			createdResources.voteIds.push(inserted.id);
 			const results = await server.drizzleClient
 				.select()
 				.from(postVotesTable)
@@ -609,7 +701,9 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
-			await server.drizzleClient
+			createdResources.userIds.push(userId);
+
+			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
 					type,
@@ -618,6 +712,11 @@ describe("src/drizzle/tables/postVotes", () => {
 				})
 				.returning();
 
+			expect(inserted).toBeDefined();
+			if (!inserted) {
+				throw new Error("Failed to insert record");
+			}
+			createdResources.voteIds.push(inserted.id);
 			const results = await server.drizzleClient
 				.select()
 				.from(postVotesTable)
@@ -631,7 +730,9 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
-			await server.drizzleClient
+			createdResources.userIds.push(userId);
+
+			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
 					type,
@@ -639,6 +740,12 @@ describe("src/drizzle/tables/postVotes", () => {
 					creatorId: userId,
 				})
 				.returning();
+
+			expect(inserted).toBeDefined();
+			if (!inserted) {
+				throw new Error("Failed to insert record");
+			}
+			createdResources.voteIds.push(inserted.id);
 
 			const results = await server.drizzleClient
 				.select()
@@ -653,7 +760,7 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
-			await server.drizzleClient
+			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
 					type,
@@ -662,7 +769,13 @@ describe("src/drizzle/tables/postVotes", () => {
 				})
 				.returning();
 
-			expect(
+			expect(inserted).toBeDefined();
+			if (!inserted) {
+				throw new Error("Failed to insert record");
+			}
+			createdResources.voteIds.push(inserted.id);
+
+			await expect(
 				server.drizzleClient
 					.insert(postVotesTable)
 					.values({
@@ -681,6 +794,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [result] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
@@ -692,8 +807,27 @@ describe("src/drizzle/tables/postVotes", () => {
 
 			expect(result).toBeDefined();
 			if (result) {
+				createdResources.voteIds.push(result.id);
 				expect(result.type).toBe(type);
 			}
+		});
+
+		it("should reject invalid enum values at database level", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const postId = await createTestPost();
+
+			createdResources.userIds.push(userId);
+
+			await expect(
+				server.drizzleClient
+					.insert(postVotesTable)
+					.values({
+						type: "invalid_vote_type" as "up_vote", // Type assertion to bypass TS
+						postId,
+						creatorId: userId,
+					})
+					.returning(),
+			).rejects.toThrow();
 		});
 	});
 });
