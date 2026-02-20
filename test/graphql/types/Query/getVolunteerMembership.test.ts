@@ -51,6 +51,9 @@ suite("Query field getVolunteerMembership", () => {
 	let regularUserName: string;
 	let volunteerGroupId: string;
 	let eventVolunteerId: string;
+	// Safety-net: tracks volunteer IDs created mid-test so afterEach can
+	// delete them even if an assertion fails before the test's finally block.
+	let inlineCreatedVolunteerIds: string[] = [];
 
 	beforeAll(async () => {
 		// Sign in as admin
@@ -229,8 +232,23 @@ suite("Query field getVolunteerMembership", () => {
 		});
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		vi.clearAllMocks();
+		// Safety-net: delete any volunteers created mid-test that were not
+		// already cleaned up by try/finally blocks. Deleting a volunteer
+		// cascade-deletes its memberships (deleteEventVolunteer.ts).
+		const toDelete = inlineCreatedVolunteerIds;
+		inlineCreatedVolunteerIds = [];
+		for (const id of toDelete) {
+			await mercuriusClient
+				.mutate(Mutation_deleteEventVolunteer, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { id },
+				})
+				.catch(() => {
+					/* already deleted by try/finally */
+				});
+		}
 	});
 
 	afterAll(async () => {
@@ -456,13 +474,14 @@ suite("Query field getVolunteerMembership", () => {
 	});
 
 	suite("Basic Functionality", () => {
-		test("should handle empty where clause and return array", async () => {
+		test("should handle where clause with only eventId and return array", async () => {
+			// Scoped to eventId to avoid returning every row in the DB (flaky in sharded CI)
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					where: {},
+					where: { eventId },
 				},
 			});
 
@@ -551,6 +570,11 @@ suite("Query field getVolunteerMembership", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.getVolunteerMembership).toBeDefined();
 			expect(Array.isArray(result.data?.getVolunteerMembership)).toBe(true);
+
+			// Verify every returned membership actually has the filtered status
+			for (const membership of result.data?.getVolunteerMembership ?? []) {
+				expect(membership?.status).toBe("accepted");
+			}
 		});
 
 		test("should return empty array for non-existent userId", async () => {
@@ -642,6 +666,7 @@ suite("Query field getVolunteerMembership", () => {
 				);
 				individualVolunteerId = individualEventVolunteerResult.data
 					.createEventVolunteer.id as string;
+				inlineCreatedVolunteerIds.push(individualVolunteerId);
 
 				// Accept the volunteer
 				await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
@@ -902,6 +927,7 @@ suite("Query field getVolunteerMembership", () => {
 				);
 				recurringVolunteerId = membershipResult.data.createVolunteerMembership
 					.volunteer.id as string;
+				inlineCreatedVolunteerIds.push(recurringVolunteerId);
 
 				// Query with the recurring instance ID — triggers the OR condition:
 				// (source lines 91-106: checks recurringEventInstancesTable, builds
