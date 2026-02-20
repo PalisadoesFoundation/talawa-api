@@ -61,7 +61,7 @@ suite("Query field getRecurringEvents", () => {
     const cleanupFns: Array<() => Promise<void>> = [];
 
     afterEach(async () => {
-        for (const cleanup of cleanupFns.reverse()) {
+        for (const cleanup of [...cleanupFns].reverse()) {
             try {
                 await cleanup();
             } catch (_error) {
@@ -298,6 +298,11 @@ suite("Query field getRecurringEvents", () => {
             );
             assertToBeNonNullish(createUserResult.data?.createUser?.user?.id);
             const userId = createUserResult.data.createUser.user.id;
+            cleanupFns.push(async () => {
+                await server.drizzleClient
+                    .delete(usersTable)
+                    .where(eq(usersTable.id, userId));
+            });
 
             const signInAsRegularUserResult = await mercuriusClient.query(Query_signIn, {
                 variables: {
@@ -926,11 +931,7 @@ suite("Query field getRecurringEvents", () => {
 					},
 				},
 			);
-			if (organizationCreateResult.errors?.length) {
-				throw new Error(
-					`createOrganization failed: ${JSON.stringify(organizationCreateResult.errors)}`,
-				);
-			}
+			expect(organizationCreateResult.errors).toBeUndefined();
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
@@ -966,11 +967,7 @@ suite("Query field getRecurringEvents", () => {
 				},
 			});
 
-			if (result.errors?.length) {
-				throw new Error(
-					`getRecurringEvents failed (admin should have access): ${JSON.stringify(result.errors)}`,
-				);
-			}
+			expect(result.errors).toBeUndefined();
 			const instances = result.data?.getRecurringEvents;
 			assertToBeNonNullish(instances);
 			expect(instances).toHaveLength(3);
@@ -1009,6 +1006,8 @@ suite("Query field getRecurringEvents", () => {
 
 			// Query with includeCancelled: false (default), limit: 3, offset: 0
 			// Should return indices 0, 1, 3 (skipping 2)
+			// Assumes getRecurringEvents filters cancelled instances BEFORE applying limit/offset.
+			// If resolver ordering changes (paginate first, then filter), this expectation must be updated.
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
