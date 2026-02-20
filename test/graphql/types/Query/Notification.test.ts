@@ -550,6 +550,154 @@ suite("Query field user.notifications", () => {
 		expect(notifications[0]?.eventType).toBe("post_created");
 	});
 
+	test("read notification returns isRead=true and readAt populated", async () => {
+		const adminToken = await getAdminToken();
+		const templateId = await createNotificationTemplate();
+		const { userId, userToken } = await createUser(adminToken);
+
+		const [insertedLog] = await server.drizzleClient
+			.insert(notificationLogsTable)
+			.values({
+				templateId,
+				renderedContent: { title: "Read notice", body: "You read this" },
+				eventType: "post_created",
+				channel: "in_app",
+				status: "delivered",
+				navigation: null,
+				sender: null,
+			})
+			.returning({ id: notificationLogsTable.id });
+
+		assertToBeNonNullish(insertedLog);
+
+		const readAt = new Date("2025-06-01T12:00:00Z");
+		await server.drizzleClient.insert(notificationAudienceTable).values({
+			notificationId: insertedLog.id,
+			userId,
+			isRead: true,
+			readAt,
+		});
+
+		cleanups.push(async () => {
+			await server.drizzleClient
+				.delete(notificationAudienceTable)
+				.where(eq(notificationAudienceTable.notificationId, insertedLog.id));
+			await server.drizzleClient
+				.delete(notificationLogsTable)
+				.where(eq(notificationLogsTable.id, insertedLog.id));
+		});
+
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 5 } },
+		});
+
+		expect(res.errors).toBeUndefined();
+		const notifications = res.data?.user?.notifications ?? [];
+		expect(notifications.length).toBe(1);
+		expect(notifications[0]?.isRead).toBe(true);
+		expect(notifications[0]?.readAt).toBeDefined();
+		expect(notifications[0]?.title).toBe("Read notice");
+		expect(notifications[0]?.body).toBe("You read this");
+	});
+
+	test("notification with navigation field set returns navigation value", async () => {
+		const adminToken = await getAdminToken();
+		const templateId = await createNotificationTemplate();
+		const { userId, userToken } = await createUser(adminToken);
+
+		const [insertedLog] = await server.drizzleClient
+			.insert(notificationLogsTable)
+			.values({
+				templateId,
+				renderedContent: { title: "Nav test", body: "Click here" },
+				eventType: "post_created",
+				channel: "in_app",
+				status: "delivered",
+				navigation: "/post/abc123",
+				sender: null,
+			})
+			.returning({ id: notificationLogsTable.id });
+
+		assertToBeNonNullish(insertedLog);
+
+		await server.drizzleClient.insert(notificationAudienceTable).values({
+			notificationId: insertedLog.id,
+			userId,
+			isRead: false,
+		});
+
+		cleanups.push(async () => {
+			await server.drizzleClient
+				.delete(notificationAudienceTable)
+				.where(eq(notificationAudienceTable.notificationId, insertedLog.id));
+			await server.drizzleClient
+				.delete(notificationLogsTable)
+				.where(eq(notificationLogsTable.id, insertedLog.id));
+		});
+
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 5 } },
+		});
+
+		expect(res.errors).toBeUndefined();
+		const notifications = res.data?.user?.notifications ?? [];
+		expect(notifications.length).toBe(1);
+		expect(notifications[0]?.navigation).toBe("/post/abc123");
+	});
+
+	test("renderedContent with empty string title falls back to default, empty body stays empty", async () => {
+		const adminToken = await getAdminToken();
+		const templateId = await createNotificationTemplate();
+		const { userId, userToken } = await createUser(adminToken);
+
+		// Empty string is falsy, so title falls back to the "Notification" default
+		// while body (which defaults to "") stays "".
+		const [insertedLog] = await server.drizzleClient
+			.insert(notificationLogsTable)
+			.values({
+				templateId,
+				renderedContent: { title: "", body: "" },
+				eventType: "post_created",
+				channel: "in_app",
+				status: "delivered",
+				navigation: null,
+				sender: null,
+			})
+			.returning({ id: notificationLogsTable.id });
+
+		assertToBeNonNullish(insertedLog);
+
+		await server.drizzleClient.insert(notificationAudienceTable).values({
+			notificationId: insertedLog.id,
+			userId,
+			isRead: false,
+		});
+
+		cleanups.push(async () => {
+			await server.drizzleClient
+				.delete(notificationAudienceTable)
+				.where(eq(notificationAudienceTable.notificationId, insertedLog.id));
+			await server.drizzleClient
+				.delete(notificationLogsTable)
+				.where(eq(notificationLogsTable.id, insertedLog.id));
+		});
+
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 5 } },
+		});
+
+		expect(res.errors).toBeUndefined();
+		const notifications = res.data?.user?.notifications ?? [];
+		expect(notifications.length).toBe(1);
+		// Empty string title is falsy → falls back to "Notification" (see NotificationResponse.ts)
+		expect(notifications[0]?.title).toBe("Notification");
+		// Empty string body is falsy → falls back to ""
+		expect(notifications[0]?.body).toBe("");
+	});
+
 	test("post creation generates notification with correct fields", async () => {
 		const adminToken = await getAdminToken();
 		await createNotificationTemplate();
