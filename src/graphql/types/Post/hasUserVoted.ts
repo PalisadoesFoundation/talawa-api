@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
+import type { postVoteTypeZodEnum } from "~/src/drizzle/enums/postVoteType";
 import { builder } from "~/src/graphql/builder";
 import envConfig from "~/src/utilities/graphqLimits";
 import { PostVoteType } from "../../enums/PostVoteType";
@@ -7,7 +7,7 @@ import { Post } from "./Post";
 
 export const HasUserVoted = builder.objectRef<{
 	hasVoted: boolean;
-	voteType: z.infer<typeof postVoteTypeEnum> | null;
+	voteType: z.infer<typeof postVoteTypeZodEnum> | null;
 }>("HasUserVoted");
 
 HasUserVoted.implement({
@@ -57,7 +57,9 @@ Post.implement({
 					};
 				}
 				return {
-					voteType: existingPostVote.type as z.infer<typeof postVoteTypeEnum>,
+					voteType: existingPostVote.type as z.infer<
+						typeof postVoteTypeZodEnum
+					>,
 					hasVoted: true,
 				};
 			},

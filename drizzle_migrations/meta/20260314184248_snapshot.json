@@ -1,5 +1,5 @@
 {
-  "id": "5849d8a1-0f14-44b4-9995-7cb224000f09",
+  "id": "251ce2ea-e129-4f80-8178-1a0ab7fad256",
   "prevId": "7c1fd266-3836-4a45-91a5-76f12a881250",
   "version": "7",
   "dialect": "postgresql",
@@ -8731,7 +8731,8 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "post_vote_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -11132,6 +11133,14 @@
   "enums": {
     "public.comment_vote_type": {
       "name": "comment_vote_type",
+      "schema": "public",
+      "values": [
+        "down_vote",
+        "up_vote"
+      ]
+    },
+    "public.post_vote_type": {
+      "name": "post_vote_type",
       "schema": "public",
       "values": [
         "down_vote",

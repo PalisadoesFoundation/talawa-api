@@ -165,7 +165,11 @@ export {
 	postAttachmentsTableRelations,
 } from "./tables/postAttachments";
 export { postsTable, postsTableRelations } from "./tables/posts";
-export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
+export {
+	postVotesTable,
+	postVotesTableRelations,
+	postVoteTypePgEnum,
+} from "./tables/postVotes";
 export {
 	recurrenceFrequencyEnum,
 	recurrenceRulesTable,
