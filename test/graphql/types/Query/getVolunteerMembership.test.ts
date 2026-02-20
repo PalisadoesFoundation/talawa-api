@@ -56,6 +56,9 @@ suite("Query field getVolunteerMembership", () => {
 	let inlineCreatedVolunteerIds: string[] = [];
 
 	beforeAll(async () => {
+		// NOTE: Resources created here are READ-ONLY shared fixtures.
+		// Tests that need to mutate data must create their own isolated resources
+		// (tracked via inlineCreatedVolunteerIds) rather than modifying these.
 		// Sign in as admin
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
