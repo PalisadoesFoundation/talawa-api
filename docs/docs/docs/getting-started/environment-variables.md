@@ -206,6 +206,18 @@ Optional. REST auth access token TTL in seconds; used for JWT expiry and cookie 
 
 Optional. REST auth refresh token TTL in seconds; used for refresh JWT and cookie maxAge. Default: 2592000 (30 days).
 
+### API_COOKIE_SECRET
+
+Required for cookie signing. Used by `@fastify/cookie` and the REST auth routes when setting auth cookies. Must be at least 32 characters. Generate a strong random value for production.
+
+### API_COOKIE_DOMAIN
+
+Optional. Domain for auth cookies (e.g. `.example.com` for subdomain sharing). Omit for same-origin only; no default.
+
+### API_IS_SECURE_COOKIES
+
+Optional. When `true`, cookies are sent only over HTTPS. Defaults to `true` when unset. Set to `true` in production; can be `false` for local or development over HTTP.
+
 ### API_LOG_LEVEL
 
 This environment variable is used to configure the [log level](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) for talawa api's [pino.js](https://github.com/pinojs/pino) logger. Possible values are `debug`, `error`, `fatal`, `info`, `trace` and `warn`.
