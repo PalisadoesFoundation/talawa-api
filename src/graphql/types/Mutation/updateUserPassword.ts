@@ -8,6 +8,10 @@ import {
 	mutationUpdateUserPasswordInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserPasswordInput";
 import envConfig from "~/src/utilities/graphqLimits";
+import {
+	checkPasswordChangeRateLimit,
+	consumePasswordChangeRateLimit,
+} from "~/src/utilities/passwordChangeRateLimit";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -33,6 +37,15 @@ builder.mutationField("updateUserPassword", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
+					},
+				});
+			}
+
+			if (!checkPasswordChangeRateLimit(ctx.currentClient.user.id)) {
+				throw new TalawaGraphQLError({
+					message: "Too many password change attempts. Please try again later.",
+					extensions: {
+						code: "too_many_requests",
 					},
 				});
 			}
@@ -141,6 +154,8 @@ builder.mutationField("updateUserPassword", (t) =>
 					lastFailedLoginAt: null,
 				})
 				.where(eq(usersTable.id, currentUserId));
+
+			consumePasswordChangeRateLimit(currentUserId);
 
 			return true;
 		},
