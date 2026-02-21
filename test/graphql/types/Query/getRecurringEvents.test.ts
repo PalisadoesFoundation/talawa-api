@@ -65,7 +65,7 @@ suite("Query field getRecurringEvents", () => {
 			try {
 				await cleanup();
 			} catch (_error) {
-				// Ignore cleanup failures to avoid masking test assertions.
+				console.error("Cleanup failure in getRecurringEvents tests:", _error);
 			}
 		}
 		cleanupFns.length = 0;
