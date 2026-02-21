@@ -2,13 +2,13 @@ import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { organizationMembershipsTable } from "../../../../src/drizzle/tables/organizationMemberships";
 import { usersTable } from "../../../../src/drizzle/tables/users";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import {
-    cancelInstances,
-    createRecurringEventWithInstances,
+	cancelInstances,
+	createRecurringEventWithInstances,
 } from "../../../helpers/recurringEventTestHelpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -58,19 +58,19 @@ assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
 
 suite("Query field getRecurringEvents", () => {
-    const cleanupFns: Array<() => Promise<void>> = [];
+	const cleanupFns: Array<() => Promise<void>> = [];
 
-    afterEach(async () => {
-        for (const cleanup of [...cleanupFns].reverse()) {
-            try {
-                await cleanup();
-            } catch (_error) {
-                // Ignore cleanup failures to avoid masking test assertions.
-            }
-        }
-        cleanupFns.length = 0;
-        vi.restoreAllMocks();
-    });
+	afterEach(async () => {
+		for (const cleanup of [...cleanupFns].reverse()) {
+			try {
+				await cleanup();
+			} catch (_error) {
+				// Ignore cleanup failures to avoid masking test assertions.
+			}
+		}
+		cleanupFns.length = 0;
+		vi.restoreAllMocks();
+	});
 
 	suite("when input validation fails", () => {
 		test("should return an error when baseRecurringEventId is empty string", async () => {
@@ -134,8 +134,6 @@ suite("Query field getRecurringEvents", () => {
 				]),
 			);
 		});
-
-
 
 		test("should return an error when offset exceeds MAX_OFFSET (10000)", async () => {
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -277,68 +275,71 @@ suite("Query field getRecurringEvents", () => {
 			);
 		});
 
-        test("should return unauthenticated when authenticated user record is missing", async () => {
-            const regularUserEmail = `missing-user-${faker.string.uuid()}@test.com`;
-            const regularUserPassword = `Pwd-${faker.string.alphanumeric(16)}`;
+		test("should return unauthenticated when authenticated user record is missing", async () => {
+			const regularUserEmail = `missing-user-${faker.string.uuid()}@test.com`;
+			const regularUserPassword = `Pwd-${faker.string.alphanumeric(16)}`;
 
-            const createUserResult = await mercuriusClient.mutate(
-                Mutation_createUser,
-                {
-                    headers: { authorization: `bearer ${authToken}` },
-                    variables: {
-                        input: {
-                            emailAddress: regularUserEmail,
-                            isEmailAddressVerified: false,
-                            name: faker.person.fullName(),
-                            password: regularUserPassword,
-                            role: "regular",
-                        },
-                    },
-                },
-            );
-            assertToBeNonNullish(createUserResult.data?.createUser?.user?.id);
-            const userId = createUserResult.data.createUser.user.id;
-            cleanupFns.push(async () => {
-                await server.drizzleClient
-                    .delete(usersTable)
-                    .where(eq(usersTable.id, userId));
-            });
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							isEmailAddressVerified: false,
+							name: faker.person.fullName(),
+							password: regularUserPassword,
+							role: "regular",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createUserResult.data?.createUser?.user?.id);
+			const userId = createUserResult.data.createUser.user.id;
+			cleanupFns.push(async () => {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, userId));
+			});
 
-            const signInAsRegularUserResult = await mercuriusClient.query(Query_signIn, {
-                variables: {
-                    input: {
-                        emailAddress: regularUserEmail,
-                        password: regularUserPassword,
-                    },
-                },
-            });
-            assertToBeNonNullish(signInAsRegularUserResult.data?.signIn);
-            const regularUserToken =
-                signInAsRegularUserResult.data.signIn.authenticationToken;
-            assertToBeNonNullish(regularUserToken);
+			const signInAsRegularUserResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							password: regularUserPassword,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(signInAsRegularUserResult.data?.signIn);
+			const regularUserToken =
+				signInAsRegularUserResult.data.signIn.authenticationToken;
+			assertToBeNonNullish(regularUserToken);
 
-            await server.drizzleClient
-                .delete(usersTable)
-                .where(eq(usersTable.id, userId));
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
 
-            const result = await mercuriusClient.query(Query_getRecurringEvents, {
-                headers: { authorization: `bearer ${regularUserToken}` },
-                variables: {
-                    baseRecurringEventId: faker.string.uuid(),
-                },
-            });
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${regularUserToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+				},
+			});
 
-            expect(result.data?.getRecurringEvents).toBeNull();
-            expect(result.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        extensions: expect.objectContaining({
-                            code: "unauthenticated",
-                        }),
-                    }),
-                ]),
-            );
-        });
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("when user has insufficient permissions", () => {
@@ -433,101 +434,102 @@ suite("Query field getRecurringEvents", () => {
 		});
 	});
 
-    suite("additional branch coverage", () => {
-        test("should return invalid_arguments when base event exists but is not a recurring template", async () => {
-            const createOrgResult = await mercuriusClient.mutate(
-                Mutation_createOrganization,
-                {
-                    headers: { authorization: `bearer ${authToken}` },
-                    variables: {
-                        input: {
-                            name: `Recurring branch org ${faker.string.uuid()}`,
-                        },
-                    },
-                },
-            );
-            assertToBeNonNullish(createOrgResult.data?.createOrganization);
-            const organizationId = createOrgResult.data.createOrganization.id;
-            cleanupFns.push(async () => {
-                await mercuriusClient.mutate(Mutation_deleteOrganization, {
-                    headers: { authorization: `bearer ${authToken}` },
-                    variables: { input: { id: organizationId } },
-                });
-            });
+	suite("additional branch coverage", () => {
+		test("should return invalid_arguments when base event exists but is not a recurring template", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Recurring branch org ${faker.string.uuid()}`,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organizationId = createOrgResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
 
-            await server.drizzleClient.insert(organizationMembershipsTable).values({
-                organizationId,
-                memberId: adminUserId,
-                role: "administrator",
-            });
+			await server.drizzleClient.insert(organizationMembershipsTable).values({
+				organizationId,
+				memberId: adminUserId,
+				role: "administrator",
+			});
 
-            const startAt = new Date("2030-01-01T10:00:00Z");
-            const endAt = new Date("2030-01-01T11:00:00Z");
+			const startAt = new Date("2030-01-01T10:00:00Z");
+			const endAt = new Date("2030-01-01T11:00:00Z");
 
-            const createEventResult = await mercuriusClient.mutate(
-                Mutation_createEvent,
-                {
-                    headers: { authorization: `bearer ${authToken}` },
-                    variables: {
-                        input: {
-                            name: faker.lorem.words(2),
-                            description: faker.lorem.sentence(),
-                            organizationId,
-                            startAt: startAt.toISOString(),
-                            endAt: endAt.toISOString(),
-                        },
-                    },
-                },
-            );
-            assertToBeNonNullish(createEventResult.data?.createEvent);
-            const standaloneEventId = createEventResult.data.createEvent.id;
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.lorem.words(2),
+							description: faker.lorem.sentence(),
+							organizationId,
+							startAt: startAt.toISOString(),
+							endAt: endAt.toISOString(),
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createEventResult.data?.createEvent);
+			const standaloneEventId = createEventResult.data.createEvent.id;
 
-            const result = await mercuriusClient.query(Query_getRecurringEvents, {
-                headers: { authorization: `bearer ${authToken}` },
-                variables: {
-                    baseRecurringEventId: standaloneEventId,
-                },
-            });
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: standaloneEventId,
+				},
+			});
 
-            expect(result.data?.getRecurringEvents).toBeNull();
-            expect(result.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        extensions: expect.objectContaining({
-                            code: "invalid_arguments",
-                            issues: expect.arrayContaining([
-                                expect.objectContaining({
-                                    argumentPath: ["baseRecurringEventId"],
-                                    message: "Event must be a recurring event template",
-                                }),
-                            ]),
-                        }),
-                    }),
-                ]),
-            );
-        });
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["baseRecurringEventId"],
+									message: "Event must be a recurring event template",
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
 
-        test("should return unexpected when an internal non-Talawa error is thrown", async () => {
-            const eventsFindFirstSpy = vi
-                .spyOn(server.drizzleClient.query.eventsTable, "findFirst")
-                .mockImplementationOnce(() => {
-                    throw new Error("forced non-talawa error");
-            });
+		test("should return unexpected when an internal non-Talawa error is thrown", async () => {
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable,
+				"findFirst",
+			).mockImplementationOnce(() => {
+				throw new Error("forced non-talawa error");
+			});
 
-            const result = await mercuriusClient.query(Query_getRecurringEvents, {
-                headers: { authorization: `bearer ${authToken}` },
-                variables: {
-                    baseRecurringEventId: faker.string.uuid(),
-                },
-            });
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+				},
+			});
 
-            expect(result.data?.getRecurringEvents).toBeNull();
-            expect(result.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        message: "Failed to retrieve recurring events",
-                        extensions: expect.objectContaining({
-                            code: "unexpected",
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						message: "Failed to retrieve recurring events",
+						extensions: expect.objectContaining({
+							code: "unexpected",
 						}),
 					}),
 				]),
