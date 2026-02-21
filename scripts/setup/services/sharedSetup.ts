@@ -98,13 +98,17 @@ export type SetupKey =
 	| "API_SMTP_FROM_EMAIL"
 	| "API_SMTP_FROM_NAME"
 	| "API_SMTP_NAME"
-	| "API_SMTP_LOCAL_ADDRESS";
+	| "API_SMTP_LOCAL_ADDRESS"
+	| "CACHE_WARMING_ORG_COUNT";
 
 /**
  * Type for the answers object collected during setup.
- * Uses Partial<Record<SetupKey, string>> to ensure only allowed keys are used.
+ * Uses Partial<Record<SetupKey, string>> & Index Signature to ensure 
+ * only allowed keys are used while remaining flexible for tests/dynamic access.
  */
-export type SetupAnswers = Partial<Record<SetupKey, string>>;
+export type SetupAnswers = Partial<Record<SetupKey, string>> & {
+	[key: string]: string | undefined;
+};
 
 export const envFileName = ".env";
 export const envBackupFile = ".env.backup";
