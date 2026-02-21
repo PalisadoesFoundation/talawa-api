@@ -1146,13 +1146,11 @@ describe("Validation Helpers", () => {
 
 			const answers: SetupAnswers = {
 				CI: "true",
-				SOME_OTHER_CONFIG: "value",
 			};
 
 			const result = await observabilitySetup(answers);
 
 			expect(result.CI).toBe("true");
-			expect(result.SOME_OTHER_CONFIG).toBe("value");
 			expect(result.API_OTEL_ENABLED).toBe("false");
 		});
 

@@ -35,7 +35,7 @@ describe("Setup -> postgresSetup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(answers[key]).toBe(value);
+			expect(answers[key as keyof typeof answers]).toBe(value);
 		}
 	});
 
