@@ -2221,13 +2221,21 @@ type Mutation {
   """Mutation field to add an event attendee."""
   addEventAttendee(data: EventAttendeeInput!): User
 
+  """
+  Admin-only mutation to create on-spot event attendees with auto-verified email.
+  """
+  adminCreateOnSpotAttendee(
+    """
+    Input for admin on-spot attendee creation. Only available to authenticated admin users.
+    """
+    input: MutationSignUpInput!
+  ): User
+
   """Mutation to allow an administrator to reset another user's password."""
   adminUpdateUserPassword(
     """Input for updating a member's password by an admin."""
     input: MutationAdminUpdateUserPasswordInput!
   ): Boolean
-  """Admin-only mutation to create on-spot event attendees with auto-verified email."""
-  adminCreateOnSpotAttendee(input: MutationSignUpInput!): User
 
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
@@ -3579,6 +3587,9 @@ input MutationSignUpInput {
 
   """Address line 2 of the user's address."""
   addressLine2: String
+
+  """Avatar of the user."""
+  avatar: Upload
 
   """Date of birth of the user."""
   birthDate: Date
