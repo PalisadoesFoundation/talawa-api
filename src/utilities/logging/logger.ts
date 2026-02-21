@@ -1,6 +1,7 @@
 import type { Logger, LoggerOptions } from "pino";
 import pino from "pino";
-import type { AppLogger } from "./AppLogger";
+
+export type AppLogger = Logger;
 
 const isTest = process.env.NODE_ENV === "test";
 const isStaging = process.env.NODE_ENV === "staging";
@@ -15,7 +16,7 @@ const redactPaths = [
 	"refreshToken",
 ];
 
-const loggerOptions: LoggerOptions = {
+export const loggerOptions: LoggerOptions = {
 	level: process.env.LOG_LEVEL || "info",
 	redact: {
 		paths: redactPaths,
@@ -39,8 +40,8 @@ export const rootLogger: AppLogger = pino(loggerOptions);
 
 /**
  * Creates a child logger with additional fields
- * @param logger The parent logger
- * @param fields Additional fields to include in all logs
+ * @param logger - The parent logger
+ * @param fields - Additional fields to include in all logs
  * @returns A new logger instance
  */
 export const withFields = (
