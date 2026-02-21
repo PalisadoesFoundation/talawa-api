@@ -1,5 +1,8 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
+import type { GraphQLContext } from "~/src/graphql/context";
 import {
 	QueryUserInput,
 	queryUserInputSchema,
@@ -30,13 +33,12 @@ builder.queryField("user", (t) =>
 			{
 				schema: queryUserArgumentsSchema,
 			},
-			async (_parent, args, ctx) => {
+			async (_parent, args, ctx: GraphQLContext) => {
 				const resolver = async () => {
 					// Validation is handled by withValidation wrapper
 					// args are already validated and type-safe
 					const user = await ctx.drizzleClient.query.usersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, args.input.id),
+						where: eq(usersTable.id, args.input.id),
 					});
 
 					if (user === undefined) {

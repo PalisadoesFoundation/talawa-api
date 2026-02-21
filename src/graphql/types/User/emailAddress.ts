@@ -5,11 +5,11 @@ import { User } from "./User";
 
 /**
  * Resolver for the User.emailAddress field.
- * 
+ *
  * Authorization logic:
  * - Users can view their own email address
  * - Administrators can view any user's email address
- * 
+ *
  * The `authenticated` scope ensures the user is logged in.
  * Additional authorization logic checks if the user is viewing their own email
  * or is an administrator.
@@ -25,6 +25,7 @@ export const emailAddressResolver = async (
 	ctx: GraphQLContext,
 ) => {
 	// Auth plugin ensures user is authenticated
+	// biome-ignore lint/style/noNonNullAssertion: Safe - auth plugin guarantees user exists
 	const currentUserId = ctx.currentClient.user!.id;
 
 	// Check if user is viewing their own email
@@ -55,7 +56,8 @@ export const emailAddressResolver = async (
 User.implement({
 	fields: (t) => ({
 		emailAddress: t.field({
-			description: "Email address of the user. Users can view their own email, administrators can view any email.",
+			description:
+				"Email address of the user. Users can view their own email, administrators can view any email.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: emailAddressResolver,
 			type: "EmailAddress",

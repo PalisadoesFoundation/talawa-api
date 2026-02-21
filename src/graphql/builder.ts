@@ -56,8 +56,11 @@ export const builder = new SchemaBuilder<{
 					columns: {
 						role: true,
 					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, context.currentClient.user!.id),
+					where: (fields, operators) => {
+						// biome-ignore lint/style/noNonNullAssertion: Safe - auth plugin guarantees user exists
+						const currentUserId = context.currentClient.user!.id;
+						return operators.eq(fields.id, currentUserId);
+					},
 				});
 
 			const isAdministrator = currentUser?.role === "administrator";

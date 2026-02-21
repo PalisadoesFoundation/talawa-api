@@ -21,11 +21,7 @@ describe("validation utilities", () => {
 
 			const wrappedResolver = withValidation({ schema }, resolver);
 
-			const result = await wrappedResolver(
-				{},
-				{ name: "John", age: 25 },
-				{},
-			);
+			const result = await wrappedResolver({}, { name: "John", age: 25 }, {});
 
 			expect(result).toBe("Hello John, age 25");
 			expect(resolver).toHaveBeenCalledWith({}, { name: "John", age: 25 }, {});
@@ -48,25 +44,33 @@ describe("validation utilities", () => {
 		});
 
 		it("should call custom validation function", async () => {
-			const customValidate = vi.fn(async (args: any, _ctx: any) => {
-				if (args.email === "taken@example.com") {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{
-									argumentPath: ["email"],
-									message: "Email already taken",
-								},
-							],
-						},
-					});
-				}
-			});
+			const customValidate = vi.fn(
+				async (args: { email: string }, _ctx: Record<string, never>) => {
+					if (args.email === "taken@example.com") {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["email"],
+										message: "Email already taken",
+									},
+								],
+							},
+						});
+					}
+				},
+			);
 
-			const resolver = vi.fn(async (_parent, args: any, _ctx) => {
-				return `Email: ${args.email}`;
-			});
+			const resolver = vi.fn(
+				async (
+					_parent: Record<string, never>,
+					args: { email: string },
+					_ctx: Record<string, never>,
+				) => {
+					return `Email: ${args.email}`;
+				},
+			);
 
 			const wrappedResolver = withValidation(
 				{ validate: customValidate },
@@ -93,23 +97,26 @@ describe("validation utilities", () => {
 				name: z.string(),
 			});
 
-			const transform = vi.fn(async (args: any) => ({
+			const transform = vi.fn(async (args: { name: string }) => ({
 				...args,
 				name: args.name.toUpperCase(),
 			}));
 
-			const resolver = vi.fn(async (_parent, args: any, _ctx) => {
-				return args.name;
-			});
-
-			const wrappedResolver = withValidation(
-				{ schema, transform },
-				resolver,
+			const resolver = vi.fn(
+				async (
+					_parent: Record<string, never>,
+					args: { name: string },
+					_ctx: Record<string, never>,
+				) => {
+					return { name: args.name }; // Return object to match transform output
+				},
 			);
+
+			const wrappedResolver = withValidation({ schema, transform }, resolver);
 
 			const result = await wrappedResolver({}, { name: "john" }, {});
 
-			expect(result).toBe("JOHN");
+			expect(result).toEqual({ name: "JOHN" });
 			expect(transform).toHaveBeenCalledWith({ name: "john" });
 		});
 
@@ -156,9 +163,15 @@ describe("validation utilities", () => {
 				username: z.string().min(3),
 			});
 
-			const resolver = vi.fn(async (_parent, args: any, _ctx) => {
-				return `User: ${args.username}`;
-			});
+			const resolver = vi.fn(
+				async (
+					_parent: Record<string, never>,
+					args: { username: string },
+					_ctx: Record<string, never>,
+				) => {
+					return `User: ${args.username}`;
+				},
+			);
 
 			const wrappedResolver = validateInput(schema, resolver);
 
@@ -171,15 +184,21 @@ describe("validation utilities", () => {
 
 	describe("validateCustom", () => {
 		it("should be a convenience wrapper for custom validation", async () => {
-			const customValidate = vi.fn(async (args: any) => {
+			const customValidate = vi.fn(async (args: { value: number }) => {
 				if (args.value < 0) {
 					throw new Error("Value must be positive");
 				}
 			});
 
-			const resolver = vi.fn(async (_parent, args: any, _ctx) => {
-				return args.value * 2;
-			});
+			const resolver = vi.fn(
+				async (
+					_parent: Record<string, never>,
+					args: { value: number },
+					_ctx: Record<string, never>,
+				) => {
+					return args.value * 2;
+				},
+			);
 
 			const wrappedResolver = validateCustom(customValidate, resolver);
 
