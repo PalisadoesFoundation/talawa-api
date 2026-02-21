@@ -480,7 +480,7 @@ builder.mutationField("createEvent", (t) =>
 										creatorId: currentUserId,
 										eventId: createdEvent.id,
 										mimeType: attachment.mimeType,
-										name: attachment.objectName,
+										name: attachment.name,
 									})),
 								)
 								.returning();
