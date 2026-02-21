@@ -1,5 +1,3 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
@@ -25,45 +23,28 @@ import {
 } from "~/src/utilities/recurringEventHelpers";
 
 const mutationCreateEventArgumentsSchema = z.object({
-	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
-		let attachments:
-			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			  })[]
-			| undefined;
-
+	input: mutationCreateEventInputSchema.transform((arg, ctx) => {
 		if (arg.attachments !== undefined) {
-			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = eventAttachmentMimeTypeEnum
+			const { success, error } = eventAttachmentMimeTypeEnum
 				.array()
-				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
+				.safeParse(arg.attachments.map((a) => a.mimetype));
 
 			if (!success) {
 				for (const issue of error.issues) {
-					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
 					if (typeof issue.path[0] === "number") {
 						ctx.addIssue({
 							code: "custom",
-							path: ["attachments", issue.path[0]],
+							path: ["attachments", issue.path[0], "mimetype"],
 							message: `Mime type "${
-								rawAttachments[issue.path[0]]?.mimetype
+								arg.attachments[issue.path[0]]?.mimetype
 							}" is not allowed.`,
 						});
 					}
 				}
-			} else {
-				attachments = rawAttachments.map((attachment, index) =>
-					Object.assign(attachment, {
-						mimetype: data[index],
-					}),
-				);
 			}
 		}
 
-		return {
-			...arg,
-			attachments,
-		};
+		return arg;
 	}),
 });
 
@@ -189,6 +170,50 @@ builder.mutationField("createEvent", (t) =>
 						],
 					},
 				});
+			}
+
+			if (parsedArgs.input.attachments !== undefined) {
+				for (const [
+					index,
+					attachment,
+				] of parsedArgs.input.attachments.entries()) {
+					try {
+						await ctx.minio.client.statObject(
+							ctx.minio.bucketName,
+							attachment.objectName,
+						);
+					} catch (error) {
+						if (
+							error instanceof Error &&
+							(error.name === "NotFound" ||
+								error.message.includes("Not Found") ||
+								(error as { code?: string }).code === "NotFound")
+						) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "invalid_arguments",
+									issues: [
+										{
+											argumentPath: [
+												"input",
+												"attachments",
+												index,
+												"objectName",
+											],
+											message:
+												"File not found in storage. Please upload the file first.",
+										},
+									],
+								},
+							});
+						}
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+				}
 			}
 
 			const createdEventResult = await ctx.drizzleClient.transaction(
@@ -388,26 +413,10 @@ builder.mutationField("createEvent", (t) =>
 									creatorId: currentUserId,
 									eventId: createdEvent.id,
 									mimeType: attachment.mimetype,
-									name: ulid(),
+									name: attachment.objectName,
 								})),
 							)
 							.returning();
-
-						await Promise.all(
-							createdEventAttachments.map((attachment, index) => {
-								if (attachments[index] !== undefined) {
-									return ctx.minio.client.putObject(
-										ctx.minio.bucketName,
-										attachment.name,
-										attachments[index].createReadStream(),
-										undefined,
-										{
-											"content-type": attachment.mimeType,
-										},
-									);
-								}
-							}),
-						);
 					}
 
 					const finalEvent = Object.assign(createdEvent, {

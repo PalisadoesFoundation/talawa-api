@@ -1,7 +1,10 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
+import {
+	FileMetadataInput,
+	fileMetadataSchema as fileMetadataInputSchema,
+} from "./MutationCreatePostInput";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
@@ -13,12 +16,7 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 		startAt: true,
 	})
 	.extend({
-		attachments: z
-			.custom<Promise<FileUpload>>()
-			.array()
-			.min(1)
-			.max(20)
-			.optional(),
+		attachments: fileMetadataInputSchema.array().min(1).max(20).optional(),
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
@@ -44,7 +42,7 @@ export const MutationCreateEventInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the event.",
-				type: t.listRef("Upload", { required: true }),
+				type: t.listRef(FileMetadataInput, { required: true }),
 				// Keep the list optional...
 				required: false,
 			}),

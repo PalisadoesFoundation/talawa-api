@@ -2580,7 +2580,7 @@ input MutationCreateEventInput {
   allDay: Boolean
 
   """Attachments of the event."""
-  attachments: [Upload!]
+  attachments: [FileMetadataInput!]
 
   """Custom information about the event."""
   description: String
@@ -3394,7 +3394,7 @@ input MutationUpdateCurrentUserInput {
   addressLine2: String
 
   """Avatar of the user."""
-  avatar: Upload
+  avatar: FileMetadataInput
 
   """Date of birth of the user."""
   birthDate: Date
@@ -3710,7 +3710,7 @@ input MutationUpdateUserInput {
   addressLine2: String
 
   """Avatar of the user."""
-  avatar: Upload
+  avatar: FileMetadataInput
 
   """Date of birth of the user."""
   birthDate: Date

@@ -1,7 +1,6 @@
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
+
 import { z } from "zod";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -15,38 +14,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 const mutationUpdateCurrentUserArgumentsSchema = z.object({
-	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
-		let avatar:
-			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
-			| null
-			| undefined;
-
-		if (isNotNullish(arg.avatar)) {
-			const rawAvatar = await arg.avatar;
-			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
-
-			if (!success) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["avatar"],
-					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
-				});
-			} else {
-				avatar = Object.assign(rawAvatar, {
-					mimetype: data,
-				});
-			}
-		} else if (arg.avatar !== undefined) {
-			avatar = null;
-		}
-
-		return {
-			...arg,
-			avatar,
-		};
-	}),
+	input: mutationUpdateCurrentUserInputSchema,
 });
 
 builder.mutationField("updateCurrentUser", (t) =>
@@ -131,13 +99,93 @@ builder.mutationField("updateCurrentUser", (t) =>
 				}
 			}
 
-			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let avatarName: string;
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | undefined;
+			let avatarName: string | undefined;
 
 			if (isNotNullish(parsedArgs.input.avatar)) {
-				avatarName =
-					currentUser.avatarName === null ? ulid() : currentUser.avatarName;
-				avatarMimeType = parsedArgs.input.avatar.mimetype;
+				const { data, success } = imageMimeTypeEnum.safeParse(
+					parsedArgs.input.avatar.mimetype,
+				);
+
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "avatar", "mimetype"],
+									message: `Mime type "${parsedArgs.input.avatar.mimetype}" is not allowed.`,
+								},
+							],
+						},
+					});
+				}
+
+				avatarName = parsedArgs.input.avatar.objectName;
+				avatarMimeType = data;
+
+				// Verify file exists in MinIO BEFORE database update
+				try {
+					await ctx.minio.client.statObject(ctx.minio.bucketName, avatarName);
+				} catch (error) {
+					if (
+						error instanceof Error &&
+						(error.name === "NotFound" ||
+							error.message.includes("Not Found") ||
+							(error as { code?: string }).code === "NotFound")
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input", "avatar", "objectName"],
+										message:
+											"File not found in storage. Please upload the file first.",
+									},
+								],
+							},
+						});
+					}
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
+
+				// Remove old avatar if it exists and has a different name
+				if (
+					currentUser.avatarName !== null &&
+					currentUser.avatarName !== avatarName
+				) {
+					try {
+						await ctx.minio.client.removeObject(
+							ctx.minio.bucketName,
+							currentUser.avatarName,
+						);
+					} catch (error) {
+						ctx.log.warn(
+							{ err: error, oldAvatarName: currentUser.avatarName },
+							"Failed to remove old avatar during update",
+						);
+					}
+				}
+			} else if (
+				parsedArgs.input.avatar !== undefined &&
+				currentUser.avatarName !== null
+			) {
+				try {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						currentUser.avatarName,
+					);
+				} catch (error) {
+					ctx.log.warn(
+						{ err: error, oldAvatarName: currentUser.avatarName },
+						"Failed to remove old avatar during null assignment",
+					);
+				}
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
@@ -184,26 +232,6 @@ builder.mutationField("updateCurrentUser", (t) =>
 							code: "unauthenticated",
 						},
 					});
-				}
-
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.avatar.mimetype,
-						},
-					);
-				} else if (
-					parsedArgs.input.avatar !== undefined &&
-					currentUser.avatarName !== null
-				) {
-					await ctx.minio.client.removeObject(
-						ctx.minio.bucketName,
-						currentUser.avatarName,
-					);
 				}
 
 				return updatedCurrentUser;
