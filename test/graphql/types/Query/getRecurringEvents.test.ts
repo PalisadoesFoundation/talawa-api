@@ -1,9 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { eventsTable } from "../../../../src/drizzle/tables/events";
 import { organizationMembershipsTable } from "../../../../src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "../../../../src/drizzle/tables/organizations";
+import { recurrenceRulesTable } from "../../../../src/drizzle/tables/recurrenceRules";
+import { recurringEventInstancesTable } from "../../../../src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import {
@@ -33,13 +37,6 @@ const Mutation_createUser =
         user {
             id
         }
-    }
-}`);
-
-const Mutation_deleteOrganization =
-	gql(`mutation Mutation_deleteOrganization($input: MutationDeleteOrganizationInput!) {
-    deleteOrganization(input: $input) {
-        id
     }
 }`);
 
@@ -246,10 +243,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId } = await createRecurringEventWithInstances(
@@ -372,10 +399,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			// Add admin as member so they can create events
@@ -450,10 +507,40 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(createOrgResult.data?.createOrganization);
 			const organizationId = createOrgResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			await server.drizzleClient.insert(organizationMembershipsTable).values({
@@ -551,10 +638,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			// Create a recurring event template with recurrence
@@ -599,10 +716,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId, instanceIds } =
@@ -647,10 +794,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId, instanceIds } =
@@ -696,10 +873,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId } = await createRecurringEventWithInstances(
@@ -736,10 +943,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId, instanceIds } =
@@ -782,10 +1019,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId, instanceIds } =
@@ -835,10 +1102,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId } = await createRecurringEventWithInstances(
@@ -886,10 +1183,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			// Add regular user as member
@@ -938,10 +1265,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			// Create recurring event template
@@ -990,10 +1347,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId, instanceIds } =
@@ -1056,10 +1443,40 @@ suite("Query field getRecurringEvents", () => {
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
 			cleanupFns.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: organizationId } },
-				});
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
 			});
 
 			const { templateId, instanceIds } =
