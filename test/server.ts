@@ -3,6 +3,8 @@ import { createServer } from "~/src/createServer";
 import { envSchemaAjv } from "~/src/envConfigSchema";
 import { type TestEnvConfig, testEnvConfigSchema } from "./envConfigSchema";
 
+
+
 const testEnvConfig = envSchema<TestEnvConfig>({
 	ajv: envSchemaAjv,
 	dotenv: true,
@@ -46,5 +48,6 @@ export const server = await createServer({
 		 */
 		API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
 		API_RATE_LIMIT_REFILL_RATE: 10000,
+		API_FRONTEND_URL: "http://localhost:3000",
 	},
 });

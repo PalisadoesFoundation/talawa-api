@@ -22,6 +22,10 @@ services:
         condition: service_healthy
         # Should be set to false when a third party postgres test service could be used in the api service the and the `postgres_test` compose profile is disabled.
         required: true
+      redis-test:
+        condition: service_healthy
+        # Should be set to false when a third party redis test service could be used in api service and `redis_test` compose profile is disabled.
+        required: true
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:

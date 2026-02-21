@@ -1,8 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
@@ -28,49 +29,58 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-async function signInAsAdmin(): Promise<{ token: string; userId: string }> {
-	if (
-		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-	) {
-		throw new Error("Admin credentials missing in env config");
-	}
-	const res = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	if (
-		res.errors ||
-		!res.data?.signIn?.authenticationToken ||
-		!res.data?.signIn?.user?.id
-	) {
-		throw new Error(
-			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
-		);
-	}
-	const token = res.data.signIn.authenticationToken;
-	const userId = res.data.signIn.user.id;
-	assertToBeNonNullish(token);
-	assertToBeNonNullish(userId);
-	return { token, userId };
-}
-
 suite("Query field event", () => {
+	// Admin auth (fetched once per suite)
+	let adminToken: string | null = null;
+	let adminUserId: string | null = null;
+
+	async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
+		if (adminToken && adminUserId)
+			return { token: adminToken, userId: adminUserId };
+		if (
+			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+		) {
+			throw new Error("Admin credentials missing in env config");
+		}
+		const res = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		if (
+			res.errors ||
+			!res.data?.signIn?.authenticationToken ||
+			!res.data?.signIn?.user?.id
+		) {
+			throw new Error(
+				`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
+			);
+		}
+		adminToken = res.data.signIn.authenticationToken;
+		adminUserId = res.data.signIn.user.id;
+		assertToBeNonNullish(adminToken);
+		assertToBeNonNullish(adminUserId);
+		return { token: adminToken, userId: adminUserId };
+	}
+
 	// Helper function to get admin auth token and user ID
 	async function getAdminTokenAndUserId() {
-		const { token, userId } = await signInAsAdmin();
+		const { token, userId } = await ensureAdminAuth();
 		return { authToken: token, userId };
 	}
 
-	// Helper function to get admin auth token
 	async function getAdminToken() {
 		const { authToken } = await getAdminTokenAndUserId();
 		return authToken;
 	}
+
+	beforeAll(async () => {
+		await ensureAdminAuth();
+	});
 
 	// Helper function to create an organization
 	async function createTestOrganization(authToken: string, userId: string) {
@@ -97,7 +107,6 @@ suite("Query field event", () => {
 				)}`,
 			);
 		}
-		assertToBeNonNullish(organization);
 
 		// Create organization membership for the admin user
 		const membershipResult = await mercuriusClient.mutate(
@@ -132,9 +141,10 @@ suite("Query field event", () => {
 		organizationId: string,
 		options: {
 			durationInHours?: number;
-			startOffset?: number; // milliseconds from now
+			startOffset?: number; // milliseconds from fixed base date
 			description?: string;
 			name?: string;
+			baseDate?: Date; // Fixed base date for deterministic tests
 		} = {},
 	) {
 		const {
@@ -143,10 +153,10 @@ suite("Query field event", () => {
 			startOffset = 24 * 60 * 60 * 1000,
 			description = "Test Event",
 			name = "Test Event",
+			baseDate = new Date("2099-03-01T10:00:00Z"), // Fixed UTC timestamp for test determinism
 		} = options;
 
 		// Use far-future fixed date to prevent past-date failures
-		const baseDate = new Date("2099-03-01T10:00:00Z");
 		const startAt = new Date(baseDate.getTime() + startOffset);
 		const endAt = new Date(
 			startAt.getTime() + durationInHours * 60 * 60 * 1000,
@@ -177,14 +187,12 @@ suite("Query field event", () => {
 		return event;
 	}
 
-	async function setupTestData(authToken: string, userId: string) {
-		const organization = await createTestOrganization(authToken, userId);
-		const event = await createTestEvent(authToken, organization.id);
-		return { organization, event };
-	}
-
-	// Helper function to create and delete a test user
-	async function createAndDeleteTestUser(authToken: string) {
+	// Helper function to create a user and return stale token (user is deleted)
+	// Returns token for a deleted user to test authentication edge cases
+	async function createUserAndReturnStaleToken(
+		authToken: string,
+		cleanupFunctions: Array<() => Promise<void>>,
+	) {
 		const userResult = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: {
 				authorization: `bearer ${authToken}`,
@@ -205,16 +213,44 @@ suite("Query field event", () => {
 		assertToBeNonNullish(user.authenticationToken);
 		assertToBeNonNullish(user.user);
 
-		await mercuriusClient.mutate(Mutation_deleteUser, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					id: user.user.id,
-				},
-			},
+		// Register cleanup immediately after creation in case deletion fails
+		const userId = user.user.id;
+		cleanupFunctions.push(async () => {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: userId,
+						},
+					},
+				});
+			} catch (error) {
+				console.error(
+					"Failed to cleanup user in createUserAndReturnStaleToken:",
+					error,
+				);
+			}
 		});
+
+		// Attempt deletion - if it fails, cleanup will handle it
+		try {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: userId,
+					},
+				},
+			});
+		} catch (error) {
+			// Deletion failed, but cleanup is registered
+			console.error("Failed to delete user immediately:", error);
+		}
 
 		return user;
 	}
@@ -389,25 +425,28 @@ suite("Query field event", () => {
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
 				const { authToken, userId } = await getAdminTokenAndUserId();
-				const { event, organization } = await setupTestData(authToken, userId);
+				const organization = await createTestOrganization(authToken, userId);
 
 				// Cleanup: Delete organization
 				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { input: { id: organization.id } },
-					});
+					await server.drizzleClient
+						.delete(organizationsTable)
+						.where(eq(organizationsTable.id, organization.id));
 				});
+
+				const event = await createTestEvent(authToken, organization.id);
 
 				// Cleanup: Delete event
 				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { input: { id: event.id } },
-					});
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(eq(eventsTable.id, event.id));
 				});
 
-				const deletedUser = await createAndDeleteTestUser(authToken);
+				const deletedUser = await createUserAndReturnStaleToken(
+					authToken,
+					testCleanupFunctions,
+				);
 
 				// Try to access event with deleted user's token
 				const queryResult = await mercuriusClient.query(Query_event, {
@@ -441,7 +480,8 @@ suite("Query field event", () => {
 		`results in a graphql error with database query failure in the "errors" field and "null" as the value of "data.event" field if`,
 		() => {
 			test("fails with ULID of wrong length", async () => {
-				const authToken = await getAdminToken();
+				assertToBeNonNullish(adminToken);
+				const authToken = adminToken;
 				const result = await mercuriusClient.query(Query_event, {
 					headers: {
 						authorization: `bearer ${authToken}`,
@@ -464,7 +504,8 @@ suite("Query field event", () => {
 			});
 
 			test("fails with ULID containing invalid characters", async () => {
-				const authToken = await getAdminToken();
+				assertToBeNonNullish(adminToken);
+				const authToken = adminToken;
 				const result = await mercuriusClient.query(Query_event, {
 					headers: {
 						authorization: `bearer ${authToken}`,
@@ -583,20 +624,18 @@ suite("Query field event", () => {
 
 			// Cleanup: Delete organization
 			testCleanupFunctions.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: organization.id } },
-				});
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organization.id));
 			});
 
 			const event = await createTestEvent(adminAuthToken, organization.id);
 
-			// Cleanup: Delete event
+			// Cleanup: Delete event (added for safety even though org delete cascades)
 			testCleanupFunctions.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: event.id } },
-				});
+				await server.drizzleClient
+					.delete(eventsTable)
+					.where(eq(eventsTable.id, event.id));
 			});
 
 			// Create a regular user who is not a member of the organization
@@ -675,10 +714,9 @@ suite("Query field event", () => {
 
 			// Cleanup: Delete organization
 			testCleanupFunctions.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: organization.id } },
-				});
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organization.id));
 			});
 
 			// Create test event using helper
@@ -765,7 +803,10 @@ suite("Query field event", () => {
 			testCleanupFunctions.length = 0;
 		});
 		test("handles events with past dates correctly", async () => {
-			const { authToken, userId } = await getAdminTokenAndUserId();
+			assertToBeNonNullish(adminToken);
+			assertToBeNonNullish(adminUserId);
+			const authToken = adminToken;
+			const userId = adminUserId;
 			const organization = await createTestOrganization(authToken, userId);
 
 			// Cleanup: Delete organization
@@ -781,6 +822,8 @@ suite("Query field event", () => {
 			const pastStartAt = new Date("2025-01-01T10:00:00Z");
 			const pastEndAt = new Date("2025-01-02T10:00:00Z");
 			const pastEventId = uuidv7();
+
+			// Insert the past event directly into the database
 			await server.drizzleClient.insert(eventsTable).values({
 				id: pastEventId,
 				name: "Past Event",
@@ -833,10 +876,13 @@ suite("Query field event", () => {
 		});
 
 		test("handles multi-day events correctly", async () => {
-			const { authToken, userId } = await getAdminTokenAndUserId();
+			assertToBeNonNullish(adminToken);
+			assertToBeNonNullish(adminUserId);
+			const authToken = adminToken;
+			const userId = adminUserId;
 			const organization = await createTestOrganization(authToken, userId);
 
-			// Cleanup: Delete organization
+			// Cleanup: Delete organization (cascades or handled manually)
 			testCleanupFunctions.push(async () => {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `bearer ${authToken}` },
@@ -904,7 +950,7 @@ suite("Query field event", () => {
 			// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
 			vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
 
-			// Calculate dates within the materialization window
+			// Calculate dates within materialization window
 			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
 			const baseDate = new Date();
 			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
@@ -977,6 +1023,17 @@ suite("Query field event", () => {
 				);
 			});
 
+			if (createEventResult.errors && createEventResult.errors.length > 0) {
+				throw new Error(
+					`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
+				);
+			}
+			if (!createEventResult.data || !createEventResult.data.createEvent) {
+				throw new Error(
+					`createEvent returned no data. full response: ${JSON.stringify(createEventResult.data, null, 2)}`,
+				);
+			}
+
 			const instancesResult = await mercuriusClient.query(
 				Query_getRecurringEvents,
 				{
@@ -1000,8 +1057,9 @@ suite("Query field event", () => {
 
 		suite("Invite-only event visibility", () => {
 			test("registered-but-not-invited user can access invite-only event", async () => {
-				const { authToken: adminAuthToken, userId: adminUserId } =
-					await getAdminTokenAndUserId();
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
 
 				const { eventId, regularUserToken } = await setupInviteOnlyTestScenario(
 					adminAuthToken,
@@ -1036,8 +1094,9 @@ suite("Query field event", () => {
 			});
 
 			test("invited user can access invite-only event", async () => {
-				const { authToken: adminAuthToken, userId: adminUserId } =
-					await getAdminTokenAndUserId();
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
 
 				const { eventId, regularUserId, regularUserToken } =
 					await setupInviteOnlyTestScenario(
@@ -1076,14 +1135,17 @@ suite("Query field event", () => {
 			});
 
 			test("unauthorized regular member denied access", async () => {
-				const { authToken: adminAuthToken, userId: adminUserId } =
-					await getAdminTokenAndUserId();
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
 
-				const { eventId, regularUserToken } = await setupInviteOnlyTestScenario(
+				const result = await setupInviteOnlyTestScenario(
 					adminAuthToken,
 					adminUserId,
 					testCleanupFunctions,
 				);
+				const eventId = result.eventId;
+				const regularUserToken = result.regularUserToken;
 
 				// Unauthorized regular member cannot access the invite-only event
 				const queryResult = await mercuriusClient.query(Query_event, {
@@ -1104,8 +1166,9 @@ suite("Query field event", () => {
 			});
 
 			test("event creator can access invite-only event", async () => {
-				const { authToken: adminAuthToken, userId: adminUserId } =
-					await getAdminTokenAndUserId();
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
 
 				// Create test organization
 				const organization = await createTestOrganization(
@@ -1163,7 +1226,7 @@ suite("Query field event", () => {
 					});
 				});
 
-				// Event creator (admin) can access the invite-only event
+				// Event creator can access the invite-only event
 				const queryResult = await mercuriusClient.query(Query_event, {
 					headers: {
 						authorization: `bearer ${adminAuthToken}`,
@@ -1181,8 +1244,9 @@ suite("Query field event", () => {
 			});
 
 			test("organization admin can access invite-only event", async () => {
-				const { authToken: adminAuthToken, userId: adminUserId } =
-					await getAdminTokenAndUserId();
+				assertToBeNonNullish(adminToken);
+				assertToBeNonNullish(adminUserId);
+				const adminAuthToken = adminToken;
 
 				// Create test organization
 				const organization = await createTestOrganization(
@@ -1190,16 +1254,8 @@ suite("Query field event", () => {
 					adminUserId,
 				);
 
-				// Cleanup: Delete organization
-				testCleanupFunctions.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: { input: { id: organization.id } },
-					});
-				});
-
-				// Create a regular user who will be an org admin
-				const orgAdminUserResult = await mercuriusClient.mutate(
+				// Create a regular user to make organization admin
+				const regularUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
 						headers: { authorization: `bearer ${adminAuthToken}` },
@@ -1215,29 +1271,29 @@ suite("Query field event", () => {
 					},
 				);
 
-				const orgAdminUser = orgAdminUserResult.data?.createUser;
-				if (!orgAdminUser || orgAdminUserResult.errors) {
+				const regularUser = regularUserResult.data?.createUser;
+				if (!regularUser || regularUserResult.errors) {
 					throw new Error(
-						`Failed to create org admin user: ${JSON.stringify(
-							orgAdminUserResult.errors,
+						`Failed to create regular user: ${JSON.stringify(
+							regularUserResult.errors,
 						)}`,
 					);
 				}
-				assertToBeNonNullish(orgAdminUser.authenticationToken);
-				assertToBeNonNullish(orgAdminUser.user);
+				assertToBeNonNullish(regularUser.authenticationToken);
+				assertToBeNonNullish(regularUser.user);
 
-				const orgAdminUserId = orgAdminUser.user.id;
-				const orgAdminUserToken = orgAdminUser.authenticationToken;
+				const regularUserId = regularUser.user.id;
+				const regularUserToken = regularUser.authenticationToken;
 
 				// Cleanup: Delete user
 				testCleanupFunctions.push(async () => {
 					await mercuriusClient.mutate(Mutation_deleteUser, {
 						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: { input: { id: orgAdminUserId } },
+						variables: { input: { id: regularUserId } },
 					});
 				});
 
-				// Add user to organization as administrator
+				// Add user to organization as admin
 				const membershipResult = await mercuriusClient.mutate(
 					Mutation_createOrganizationMembership,
 					{
@@ -1245,7 +1301,7 @@ suite("Query field event", () => {
 						variables: {
 							input: {
 								organizationId: organization.id,
-								memberId: orgAdminUserId,
+								memberId: regularUserId,
 								role: "administrator",
 							},
 						},
@@ -1302,10 +1358,18 @@ suite("Query field event", () => {
 					});
 				});
 
+				// Cleanup: Delete organization
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: organization.id } },
+					});
+				});
+
 				// Organization admin can access the invite-only event
 				const queryResult = await mercuriusClient.query(Query_event, {
 					headers: {
-						authorization: `bearer ${orgAdminUserToken}`,
+						authorization: `bearer ${regularUserToken}`,
 					},
 					variables: {
 						input: {
