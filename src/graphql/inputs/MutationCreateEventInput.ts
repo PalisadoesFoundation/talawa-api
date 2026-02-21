@@ -1,4 +1,3 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import {
 	EVENT_DESCRIPTION_MAX_LENGTH,
@@ -8,6 +7,10 @@ import {
 } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
@@ -22,12 +25,7 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 			.max(EVENT_DESCRIPTION_MAX_LENGTH)
 			.optional(),
 		name: sanitizedStringSchema.min(1).max(EVENT_NAME_MAX_LENGTH),
-		attachments: z
-			.custom<Promise<FileUpload>>()
-			.array()
-			.min(1)
-			.max(20)
-			.optional(),
+		attachments: fileMetadataInputSchema.array().min(1).max(20).optional(),
 		allDay: z.boolean().optional(),
 		isInviteOnly: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
@@ -57,9 +55,8 @@ export const MutationCreateEventInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the event.",
-				type: t.listRef("Upload", { required: true }),
-				// Keep the list optional...
 				required: false,
+				type: [FileMetadataInput],
 			}),
 			description: t.string({
 				description: "Custom information about the event.",
