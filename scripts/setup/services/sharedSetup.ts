@@ -103,7 +103,7 @@ export type SetupKey =
 
 /**
  * Type for the answers object collected during setup.
- * Uses Partial<Record<SetupKey, string>> & Index Signature to ensure 
+ * Uses Partial<Record<SetupKey, string>> & Index Signature to ensure
  * only allowed keys are used while remaining flexible for tests/dynamic access.
  */
 export type SetupAnswers = Partial<Record<SetupKey, string>> & {

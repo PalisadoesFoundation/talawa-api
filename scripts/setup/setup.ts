@@ -41,22 +41,22 @@ export {
 // Service imports
 import { administratorEmail } from "./services/administratorSetup";
 import { apiSetup } from "./services/apiSetup";
+import { cachingSetup } from "./services/cachingSetup";
 import { caddySetup } from "./services/caddySetup";
 import { setCI } from "./services/ciSetup";
 import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 import { minioSetup } from "./services/minioSetup";
 import { postgresSetup } from "./services/postgresSetup";
-import { cachingSetup } from "./services/cachingSetup";
 
 export { administratorEmail } from "./services/administratorSetup";
 // Service re-exports
 export { apiSetup } from "./services/apiSetup";
+export { cachingSetup } from "./services/cachingSetup";
 export { caddySetup } from "./services/caddySetup";
 export { setCI } from "./services/ciSetup";
 export { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 export { minioSetup } from "./services/minioSetup";
 export { postgresSetup } from "./services/postgresSetup";
-export { cachingSetup } from "./services/cachingSetup";
 
 import { updateEnvVariable } from "./updateEnvVariable";
 import { validatePositiveInteger } from "./validators";
