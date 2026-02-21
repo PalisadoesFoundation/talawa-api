@@ -1,6 +1,10 @@
 import { expect, suite, test } from "vitest";
 import {
 	formatExpiryTime,
+	getEmailVerificationEmailHtml,
+	getEmailVerificationEmailText,
+	getOnSpotAttendeeWelcomeEmailHtml,
+	getOnSpotAttendeeWelcomeEmailText,
 	getPasswordResetEmailHtml,
 	getPasswordResetEmailText,
 } from "~/src/utilities/emailTemplates";
@@ -130,6 +134,196 @@ suite("emailTemplates", () => {
 			expect(formatExpiryTime(119)).toBe("1 minute");
 			// 120 seconds -> 2 minutes
 			expect(formatExpiryTime(120)).toBe("2 minutes");
+		});
+	});
+
+	suite("getEmailVerificationEmailText", () => {
+		test("should generate text email with expiry time", () => {
+			const ctx = {
+				userName: "John Doe",
+				communityName: "Test Community",
+				verificationLink: "https://example.com/verify?token=abc123",
+				expiryText: "24 hours",
+			};
+
+			const result = getEmailVerificationEmailText(ctx);
+
+			expect(result).toContain("Hello John Doe");
+			expect(result).toContain("Welcome to Test Community!");
+			expect(result).toContain("https://example.com/verify?token=abc123");
+			expect(result).toContain("This link will expire in 24 hours.");
+			expect(result).toContain("The Test Community Team");
+		});
+
+		test("should generate text email without expiry (no timeout)", () => {
+			const ctx = {
+				userName: "Jane Doe",
+				communityName: "My Org",
+				verificationLink: "https://example.com/verify?token=xyz",
+				expiryText: "",
+			};
+
+			const result = getEmailVerificationEmailText(ctx);
+
+			expect(result).toContain("Hello Jane Doe");
+			expect(result).toContain("This link does not expire.");
+			expect(result).not.toContain("will expire in");
+		});
+	});
+
+	suite("getEmailVerificationEmailHtml", () => {
+		test("should generate HTML email with expiry time", () => {
+			const ctx = {
+				userName: "Alice",
+				communityName: "Community X",
+				verificationLink: "https://example.com/verify?token=def",
+				expiryText: "14 days",
+			};
+
+			const result = getEmailVerificationEmailHtml(ctx);
+
+			expect(result).toContain("<!DOCTYPE html>");
+			expect(result).toContain("Hello Alice");
+			expect(result).toContain("Welcome to Community X!");
+			expect(result).toContain('href="https://example.com/verify?token=def"');
+			expect(result).toContain("This link will expire in 14 days.");
+		});
+
+		test("should generate HTML email without expiry (no timeout)", () => {
+			const ctx = {
+				userName: "Bob",
+				communityName: "My Platform",
+				verificationLink: "https://example.com/verify",
+				expiryText: "",
+			};
+
+			const result = getEmailVerificationEmailHtml(ctx);
+
+			expect(result).toContain("This link does not expire.");
+			expect(result).not.toContain("will expire in");
+		});
+	});
+
+	suite("getOnSpotAttendeeWelcomeEmailText", () => {
+		test("should generate text email without event details", () => {
+			const ctx = {
+				userName: "New Attendee",
+				communityName: "Event Community",
+				emailAddress: "attendee@example.com",
+				temporaryPassword: "TempPass123!",
+				loginLink: "https://example.com/login",
+			};
+
+			const result = getOnSpotAttendeeWelcomeEmailText(ctx);
+
+			expect(result).toContain("Hello New Attendee");
+			expect(result).toContain("Welcome to Event Community!");
+			expect(result).toContain("attendee@example.com");
+			expect(result).toContain("TempPass123!");
+			expect(result).toContain("https://example.com/login");
+			expect(result).not.toContain("Event:");
+		});
+
+		test("should generate text email with full event details", () => {
+			const ctx = {
+				userName: "New Attendee",
+				communityName: "Event Community",
+				emailAddress: "attendee@example.com",
+				temporaryPassword: "TempPass123!",
+				loginLink: "https://example.com/login",
+				eventName: "Annual Conference",
+				eventDate: "2025-03-15",
+				eventTime: "9:00 AM",
+				eventLocation: "Convention Center",
+			};
+
+			const result = getOnSpotAttendeeWelcomeEmailText(ctx);
+
+			expect(result).toContain("Event: Annual Conference");
+			expect(result).toContain("Date: 2025-03-15");
+			expect(result).toContain("Time: 9:00 AM");
+			expect(result).toContain("Location: Convention Center");
+		});
+
+		test("should generate text email with partial event details", () => {
+			const ctx = {
+				userName: "New Attendee",
+				communityName: "Event Community",
+				emailAddress: "attendee@example.com",
+				temporaryPassword: "TempPass123!",
+				loginLink: "https://example.com/login",
+				eventName: "Workshop",
+			};
+
+			const result = getOnSpotAttendeeWelcomeEmailText(ctx);
+
+			expect(result).toContain("Event: Workshop");
+			expect(result).not.toContain("Date:");
+			expect(result).not.toContain("Time:");
+			expect(result).not.toContain("Location:");
+		});
+	});
+
+	suite("getOnSpotAttendeeWelcomeEmailHtml", () => {
+		test("should generate HTML email without event details", () => {
+			const ctx = {
+				userName: "New Attendee",
+				communityName: "Event Community",
+				emailAddress: "attendee@example.com",
+				temporaryPassword: "TempPass123!",
+				loginLink: "https://example.com/login",
+			};
+
+			const result = getOnSpotAttendeeWelcomeEmailHtml(ctx);
+
+			expect(result).toContain("<!DOCTYPE html>");
+			expect(result).toContain("Welcome to Event Community!");
+			expect(result).toContain("attendee@example.com");
+			expect(result).toContain("TempPass123!");
+			expect(result).toContain('href="https://example.com/login"');
+			expect(result).not.toContain("Event Details:");
+		});
+
+		test("should generate HTML email with full event details", () => {
+			const ctx = {
+				userName: "New Attendee",
+				communityName: "Event Community",
+				emailAddress: "attendee@example.com",
+				temporaryPassword: "TempPass123!",
+				loginLink: "https://example.com/login",
+				eventName: "Annual Conference",
+				eventDate: "2025-03-15",
+				eventTime: "9:00 AM",
+				eventLocation: "Convention Center",
+			};
+
+			const result = getOnSpotAttendeeWelcomeEmailHtml(ctx);
+
+			expect(result).toContain("Event Details:");
+			expect(result).toContain("Annual Conference");
+			expect(result).toContain("2025-03-15");
+			expect(result).toContain("9:00 AM");
+			expect(result).toContain("Convention Center");
+		});
+
+		test("should generate HTML email with partial event details", () => {
+			const ctx = {
+				userName: "New Attendee",
+				communityName: "Event Community",
+				emailAddress: "attendee@example.com",
+				temporaryPassword: "TempPass123!",
+				loginLink: "https://example.com/login",
+				eventName: "Workshop",
+				eventDate: "2025-04-01",
+			};
+
+			const result = getOnSpotAttendeeWelcomeEmailHtml(ctx);
+
+			expect(result).toContain("Event Details:");
+			expect(result).toContain("Workshop");
+			expect(result).toContain("2025-04-01");
+			expect(result).not.toContain("Time:");
+			expect(result).not.toContain("Location:");
 		});
 	});
 });

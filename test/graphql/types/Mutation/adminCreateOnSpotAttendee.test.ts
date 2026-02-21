@@ -184,9 +184,72 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 		});
 	});
 
+	suite("when input validation fails with invalid password", () => {
+		test("should return invalid_arguments error for password that is too short", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Password Validation Org ${faker.string.ulid()}`,
+							description: "Org for password validation testing",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Sunset Blvd",
+							addressLine2: "Suite 200",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const result = await mercuriusClient.mutate(
+				Mutation_adminCreateOnSpotAttendee,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Test Attendee",
+							emailAddress: faker.internet.email(),
+							password: "short", // Too short (< 8 chars) - fails zod validation
+							selectedOrganization: orgId,
+						},
+					},
+				},
+			);
+
+			expect(result.data?.adminCreateOnSpotAttendee ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						path: ["adminCreateOnSpotAttendee"],
+					}),
+				]),
+			);
+		});
+	});
+
 	suite("when the email address is already registered", () => {
-		test("should return an error with forbidden_action_on_arguments_associated_resources code", async () => {
-			// Create organization first
+		test("should allow creation and return the new attendee (existing email is reused)", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -209,10 +272,90 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			assertToBeNonNullish(orgId);
 			trackedEntityIds.organizationIds.push(orgId);
 
-			// Add admin as organization member with administrator role
-			const membershipResult = await mercuriusClient.mutate(
-				Mutation_createOrganizationMembership,
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const { userId: existingUserId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(existingUserId);
+			trackedEntityIds.userIds.push(existingUserId);
+
+			const existingUser =
+				await server.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) => operators.eq(fields.id, existingUserId),
+				});
+			assertToBeNonNullish(existingUser);
+			const emailAddress = existingUser.emailAddress;
+
+			const result = await mercuriusClient.mutate(
+				Mutation_adminCreateOnSpotAttendee,
 				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Duplicate Email Attendee",
+							emailAddress,
+							password: "123!@#Test",
+							selectedOrganization: orgId,
+						},
+					},
+				},
+			);
+
+			// Implementation behavior: succeeds even with duplicate email
+			expect(result.data?.adminCreateOnSpotAttendee).toBeDefined();
+			expect(result.data?.adminCreateOnSpotAttendee?.emailAddress).toBe(
+				emailAddress.toLowerCase(),
+			);
+			expect(
+				result.data?.adminCreateOnSpotAttendee?.isEmailAddressVerified,
+			).toBe(true);
+
+			const createdId = result.data?.adminCreateOnSpotAttendee?.id;
+			if (createdId) trackedEntityIds.userIds.push(createdId);
+		});
+	});
+
+	suite(
+		"when creating on-spot attendee with avatar explicitly set to null",
+		() => {
+			test("should create user successfully when avatar is null", async () => {
+				vi.spyOn(emailService, "sendEmail").mockResolvedValue({
+					id: faker.string.uuid(),
+					success: true,
+					messageId: faker.string.uuid(),
+				});
+
+				const createOrgResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `Bearer ${authToken}` },
+						variables: {
+							input: {
+								name: `Null Avatar Org ${faker.string.ulid()}`,
+								description: "Org for null avatar testing",
+								countryCode: "us",
+								state: "CA",
+								city: "Los Angeles",
+								postalCode: "90001",
+								addressLine1: "123 Sunset Blvd",
+								addressLine2: "Suite 200",
+							},
+						},
+					},
+				);
+				const orgId = createOrgResult.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+				trackedEntityIds.organizationIds.push(orgId);
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
@@ -221,47 +364,100 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							role: "administrator",
 						},
 					},
+				});
+
+				const attendeeEmail = faker.internet.email();
+
+				const result = await mercuriusClient.mutate(
+					Mutation_adminCreateOnSpotAttendee,
+					{
+						headers: { authorization: `Bearer ${authToken}` },
+						variables: {
+							input: {
+								name: faker.person.fullName(),
+								emailAddress: attendeeEmail,
+								password: "TempPass123!@#",
+								selectedOrganization: orgId,
+								avatar: null, // explicit null — triggers the `arg.avatar !== undefined` branch (line 59-61)
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.adminCreateOnSpotAttendee).toBeDefined();
+
+				const createdId = result.data?.adminCreateOnSpotAttendee?.id;
+				if (createdId) trackedEntityIds.userIds.push(createdId);
+			});
+		},
+	);
+	suite("when emailService.sendEmail throws synchronously", () => {
+		test("should still create attendee and log error", async () => {
+			vi.spyOn(emailService, "sendEmail").mockImplementation(() => {
+				throw new Error("Synchronous email error");
+			});
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Sync Error Email Org ${faker.string.ulid()}`,
+							description: "Org for sync email error testing",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Sunset Blvd",
+							addressLine2: "Suite 200",
+						},
+					},
 				},
 			);
-			const membershipId =
-				membershipResult.data?.createOrganizationMembership?.id;
-			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+			trackedEntityIds.organizationIds.push(orgId);
 
-			// Create a regular user with a known email
-			const { userId: existingUserId } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(existingUserId);
-			trackedEntityIds.userIds.push(existingUserId);
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
 
-			// Fetch the user from database to get their email
-			const existingUser =
-				await server.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, existingUserId),
-				});
-			assertToBeNonNullish(existingUser);
-			const emailAddress = existingUser.emailAddress;
+			const attendeeEmail = faker.internet.email();
 
-			// Try to create on-spot attendee with the same email
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
 				{
 					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
-							name: "Duplicate Email Attendee",
-							emailAddress, // Existing email
-							password: "Test123!@#",
+							name: faker.person.fullName(),
+							emailAddress: attendeeEmail,
+							password: "TempPass123!@#",
 							selectedOrganization: orgId,
 						},
 					},
 				},
 			);
 
-			// The duplicate email check allows creation due to how the system handles existing emails
-			// This test verifies the attendee creation with a duplicate email succeeds (implementation behavior)
+			// Attendee should still be created despite sync email error
+			expect(result.errors).toBeUndefined();
 			expect(result.data?.adminCreateOnSpotAttendee).toBeDefined();
-			expect(result.data?.adminCreateOnSpotAttendee?.emailAddress).toBe(
-				emailAddress.toLowerCase(),
-			);
+
+			const dbUser = await server.drizzleClient.query.usersTable.findFirst({
+				where: (fields, operators) =>
+					operators.eq(fields.emailAddress, attendeeEmail.toLowerCase()),
+			});
+			expect(dbUser).toBeDefined();
+			if (dbUser?.id) trackedEntityIds.userIds.push(dbUser.id);
 		});
 	});
 

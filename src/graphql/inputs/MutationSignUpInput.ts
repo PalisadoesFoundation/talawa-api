@@ -9,7 +9,10 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { orgId } from "~/src/graphql/validators/core";
-import { PASSWORD_MAX_LENGTH } from "~/src/utilities/auth/constants";
+import {
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+} from "~/src/utilities/auth/constants";
 
 export const mutationSignUpInputSchema = usersTableInsertSchema
 	.omit({
@@ -29,7 +32,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 		emailAddress: usersTableInsertSchema.shape.emailAddress.transform((e) =>
 			e.toLowerCase(),
 		),
-		password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+		password: z.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH),
 		selectedOrganization: orgId,
 		recaptchaToken: z.string().optional(),
 	});
@@ -44,6 +47,11 @@ export const MutationSignUpInput = builder
 			}),
 			addressLine2: t.string({
 				description: "Address line 2 of the user's address.",
+			}),
+			avatar: t.field({
+				description: "Avatar of the user.",
+				required: false,
+				type: "Upload",
 			}),
 			birthDate: t.field({
 				description: "Date of birth of the user.",
