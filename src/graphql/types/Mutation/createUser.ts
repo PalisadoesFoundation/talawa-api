@@ -67,19 +67,16 @@ builder.mutationField("createUser", (t) =>
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a user.",
+		// Declarative authorization: only administrators can create users
+		authScopes: {
+			administrator: true,
+		},
 		resolve: withMutationMetrics(
 			{
 				operationName: "mutation:createUser",
 			},
 			async (_parent, args, ctx) => {
-				if (!ctx.currentClient.isAuthenticated) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-					});
-				}
-
+				// Input validation using Zod
 				const {
 					data: parsedArgs,
 					error,
@@ -98,16 +95,12 @@ builder.mutationField("createUser", (t) =>
 					});
 				}
 
-				const currentUserId = ctx.currentClient.user.id;
+				// Auth plugin ensures user is authenticated and is an administrator
+				// No need for manual checks - the resolver only runs if authorized
+				// biome-ignore lint/style/noNonNullAssertion: Safe - auth plugin guarantees user exists
+				const currentUserId = ctx.currentClient.user!.id;
 
-				const [currentUser, existingUserWithEmailAddress] = await Promise.all([
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {
-							role: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
+				const [existingUserWithEmailAddress] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
 							role: true,
@@ -117,23 +110,10 @@ builder.mutationField("createUser", (t) =>
 					}),
 				]);
 
-				if (!currentUser) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-					});
-				}
-
-				if (currentUser.role !== "administrator") {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action",
-						},
-					});
-				}
-
-				if (existingUserWithEmailAddress) {
+				if (
+					existingUserWithEmailAddress !== null &&
+					existingUserWithEmailAddress !== undefined
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action_on_arguments_associated_resources",

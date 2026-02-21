@@ -1,5 +1,8 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
+import type { GraphQLContext } from "~/src/graphql/context";
 import {
 	QueryUserInput,
 	queryUserInputSchema,
@@ -8,6 +11,7 @@ import { User } from "~/src/graphql/types/User/User";
 import { executeWithMetrics } from "~/src/graphql/utils/withQueryMetrics";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { withValidation } from "~/src/utilities/validation";
 
 const queryUserArgumentsSchema = z.object({
 	input: queryUserInputSchema,
@@ -24,49 +28,38 @@ builder.queryField("user", (t) =>
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a user.",
-		resolve: async (_parent, args, ctx) => {
-			const resolver = async () => {
-				const {
-					data: parsedArgs,
-					error,
-					success,
-				} = queryUserArgumentsSchema.safeParse(args);
-
-				if (!success) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: error.issues.map((issue) => ({
-								argumentPath: issue.path,
-								message: issue.message,
-							})),
-						},
+		// Using withValidation utility for cleaner validation handling
+		resolve: withValidation(
+			{
+				schema: queryUserArgumentsSchema,
+			},
+			async (_parent, args, ctx: GraphQLContext) => {
+				const resolver = async () => {
+					// Validation is handled by withValidation wrapper
+					// args are already validated and type-safe
+					const user = await ctx.drizzleClient.query.usersTable.findFirst({
+						where: eq(usersTable.id, args.input.id),
 					});
-				}
 
-				const user = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.id),
-				});
+					if (user === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: ["input", "id"],
+									},
+								],
+							},
+						});
+					}
 
-				if (user === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "id"],
-								},
-							],
-						},
-					});
-				}
+					return user;
+				};
 
-				return user;
-			};
-
-			return await executeWithMetrics(ctx, "query:user", resolver);
-		},
+				return await executeWithMetrics(ctx, "query:user", resolver);
+			},
+		),
 		type: User,
 	}),
 );
