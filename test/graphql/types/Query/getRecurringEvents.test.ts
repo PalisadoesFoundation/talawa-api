@@ -1,7 +1,14 @@
 import { faker } from "@faker-js/faker";
-import { and, eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { and, eq, inArray } from "drizzle-orm";
+import { initGraphQLTada } from "gql.tada";
+import { afterEach, expect, suite, test, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { eventsTable } from "../../../../src/drizzle/tables/events";
 import { organizationMembershipsTable } from "../../../../src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "../../../../src/drizzle/tables/organizations";
+import { recurrenceRulesTable } from "../../../../src/drizzle/tables/recurrenceRules";
+import { recurringEventInstancesTable } from "../../../../src/drizzle/tables/recurringEventInstances";
+import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import {
 	cancelInstances,
@@ -16,6 +23,22 @@ import {
 	Query_getRecurringEvents,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_createUser =
+	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
+    createUser(input: $input){
+        authenticationToken
+        user {
+            id
+        }
+    }
+}`);
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -32,6 +55,20 @@ assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
 
 suite("Query field getRecurringEvents", () => {
+	const cleanupFns: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		for (const cleanup of [...cleanupFns].reverse()) {
+			try {
+				await cleanup();
+			} catch (_error) {
+				console.error("Cleanup failure in getRecurringEvents tests:", _error);
+			}
+		}
+		cleanupFns.length = 0;
+		vi.restoreAllMocks();
+	});
+
 	suite("when input validation fails", () => {
 		test("should return an error when baseRecurringEventId is empty string", async () => {
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
@@ -95,71 +132,6 @@ suite("Query field getRecurringEvents", () => {
 			);
 		});
 
-		test("should return an error when event is not a recurring event template", async () => {
-			// Create organization first
-			const organizationCreateResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.company.name(),
-						},
-					},
-				},
-			);
-
-			if (!organizationCreateResult.data?.createOrganization) {
-				return;
-			}
-
-			const organizationId =
-				organizationCreateResult.data.createOrganization.id;
-
-			// Create a regular (non-recurring) event
-			const eventCreateResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.lorem.words(3),
-							description: faker.lorem.sentence(),
-							organizationId,
-							startAt: faker.date.future().toISOString(),
-							endAt: faker.date.future().toISOString(),
-						},
-					},
-				},
-			);
-
-			if (!eventCreateResult.data?.createEvent) {
-				return;
-			}
-
-			const eventId = eventCreateResult.data.createEvent.id;
-
-			// Try to get recurring events for a non-recurring event
-			const result = await mercuriusClient.query(Query_getRecurringEvents, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					baseRecurringEventId: eventId,
-				},
-			});
-
-			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						message: expect.stringContaining("recurring event template"),
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
-
 		test("should return an error when offset exceeds MAX_OFFSET (10000)", async () => {
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -170,10 +142,18 @@ suite("Query field getRecurringEvents", () => {
 			});
 
 			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.length).toBeGreaterThan(0);
-			// The validation error should be present regardless of the specific error code
-			// as the zod schema will catch this at the resolver level
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["offset"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 		});
 
 		test("should return an error when offset is negative", async () => {
@@ -186,8 +166,18 @@ suite("Query field getRecurringEvents", () => {
 			});
 
 			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.length).toBeGreaterThan(0);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["offset"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 		});
 
 		test("should return an error when limit exceeds maximum (1000)", async () => {
@@ -200,8 +190,18 @@ suite("Query field getRecurringEvents", () => {
 			});
 
 			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.length).toBeGreaterThan(0);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["limit"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 		});
 
 		test("should return an error when limit is less than 1", async () => {
@@ -214,8 +214,18 @@ suite("Query field getRecurringEvents", () => {
 			});
 
 			expect(result.data?.getRecurringEvents).toBeNull();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.length).toBeGreaterThan(0);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({ argumentPath: ["limit"] }),
+							]),
+						}),
+					}),
+				]),
+			);
 		});
 	});
 
@@ -232,6 +242,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -255,14 +301,86 @@ suite("Query field getRecurringEvents", () => {
 				]),
 			);
 		});
+
+		test("should return unauthenticated when authenticated user record is missing", async () => {
+			const regularUserEmail = `missing-user-${faker.string.uuid()}@test.com`;
+			const regularUserPassword = `Pwd-${faker.string.alphanumeric(16)}`;
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							isEmailAddressVerified: false,
+							name: faker.person.fullName(),
+							password: regularUserPassword,
+							role: "regular",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createUserResult.data?.createUser?.user?.id);
+			const userId = createUserResult.data.createUser.user.id;
+			cleanupFns.push(async () => {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, userId));
+			});
+
+			const signInAsRegularUserResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							password: regularUserPassword,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(signInAsRegularUserResult.data?.signIn);
+			const regularUserToken =
+				signInAsRegularUserResult.data.signIn.authenticationToken;
+			assertToBeNonNullish(regularUserToken);
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${regularUserToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("when user has insufficient permissions", () => {
 		test("should return an error when user is not a member of the organization and not an admin", async () => {
 			// Create a regular user (non-admin)
-			const { authToken: regularUserToken } =
+			const { authToken: regularUserToken, userId: regularUserId } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserToken);
+			assertToBeNonNullish(regularUserId);
+			cleanupFns.push(async () => {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, regularUserId));
+			});
 
 			// Create organization and event as admin first
 			const organizationCreateResult = await mercuriusClient.mutate(
@@ -280,16 +398,52 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			// Add admin as member so they can create events
 			await server.drizzleClient.insert(organizationMembershipsTable).values({
 				organizationId,
 				memberId: adminUserId,
-				role: "admin",
+				role: "administrator",
 			});
 
-			const startAt = faker.date.future();
-			const endAt = new Date(startAt.getTime() + 3600000); // 1 hour later
+			const startAt = new Date("2030-06-15T10:00:00Z");
+			const endAt = new Date("2030-06-15T11:00:00Z");
 
 			// Create a recurring event template as admin
 			const eventCreateResult = await mercuriusClient.mutate(
@@ -337,6 +491,139 @@ suite("Query field getRecurringEvents", () => {
 		});
 	});
 
+	suite("additional branch coverage", () => {
+		test("should return invalid_arguments when base event exists but is not a recurring template", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Recurring branch org ${faker.string.uuid()}`,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organizationId = createOrgResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
+
+			await server.drizzleClient.insert(organizationMembershipsTable).values({
+				organizationId,
+				memberId: adminUserId,
+				role: "administrator",
+			});
+
+			const startAt = new Date("2030-01-01T10:00:00Z");
+			const endAt = new Date("2030-01-01T11:00:00Z");
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.lorem.words(2),
+							description: faker.lorem.sentence(),
+							organizationId,
+							startAt: startAt.toISOString(),
+							endAt: endAt.toISOString(),
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createEventResult.data?.createEvent);
+			const standaloneEventId = createEventResult.data.createEvent.id;
+
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: standaloneEventId,
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["baseRecurringEventId"],
+									message: "Event must be a recurring event template",
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return unexpected when an internal non-Talawa error is thrown", async () => {
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable,
+				"findFirst",
+			).mockImplementationOnce(() => {
+				throw new Error("forced non-talawa error");
+			});
+
+			const result = await mercuriusClient.query(Query_getRecurringEvents, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					baseRecurringEventId: faker.string.uuid(),
+				},
+			});
+
+			expect(result.data?.getRecurringEvents).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						message: "Failed to retrieve recurring events",
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
 	suite("includeCancelled Parameter Tests", () => {
 		test("should return both active and cancelled instances when includeCancelled is true", async () => {
 			// Setup: Create recurring event with 3 instances
@@ -350,6 +637,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			// Create a recurring event template with recurrence
 			const { templateId, instanceIds } =
@@ -392,6 +715,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -434,6 +793,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -477,6 +872,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -511,6 +942,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -551,6 +1018,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -598,6 +1101,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId } = await createRecurringEventWithInstances(
 				organizationId,
@@ -617,134 +1156,6 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(instances);
 			expect(instances).toHaveLength(5);
 		});
-
-		test("should handle boundary conditions for limit and offset", async () => {
-			// Setup: Create recurring event with 5 instances
-			const organizationCreateResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { name: faker.company.name() } },
-				},
-			);
-			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
-			const organizationId =
-				organizationCreateResult.data.createOrganization.id;
-
-			const { templateId } = await createRecurringEventWithInstances(
-				organizationId,
-				adminUserId,
-				{ instanceCount: 5 },
-			);
-
-			// Test max limit + 1
-			const resultMaxLimit = await mercuriusClient.query(
-				Query_getRecurringEvents,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: templateId,
-						limit: 1001,
-					},
-				},
-			);
-
-			// Should fail validation
-			expect(resultMaxLimit.data?.getRecurringEvents).toBeNull();
-			expect(resultMaxLimit.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({ argumentPath: ["limit"] }),
-							]),
-						}),
-					}),
-				]),
-			);
-
-			// Test max offset + 1
-			const resultMaxOffset = await mercuriusClient.query(
-				Query_getRecurringEvents,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: templateId,
-						offset: 10001,
-					},
-				},
-			);
-
-			// Should fail validation
-			expect(resultMaxOffset.data?.getRecurringEvents).toBeNull();
-			expect(resultMaxOffset.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({ argumentPath: ["offset"] }),
-							]),
-						}),
-					}),
-				]),
-			);
-
-			// Test negative limit
-			const resultNegativeLimit = await mercuriusClient.query(
-				Query_getRecurringEvents,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: templateId,
-						limit: -1,
-					},
-				},
-			);
-
-			// Should fail validation
-			expect(resultNegativeLimit.data?.getRecurringEvents).toBeNull();
-			expect(resultNegativeLimit.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({ argumentPath: ["limit"] }),
-							]),
-						}),
-					}),
-				]),
-			);
-
-			// Test negative offset
-			const resultNegativeOffset = await mercuriusClient.query(
-				Query_getRecurringEvents,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						baseRecurringEventId: templateId,
-						offset: -1,
-					},
-				},
-			);
-
-			// Should fail validation
-			expect(resultNegativeOffset.data?.getRecurringEvents).toBeNull();
-			expect(resultNegativeOffset.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({ argumentPath: ["offset"] }),
-							]),
-						}),
-					}),
-				]),
-			);
-		});
 	});
 
 	suite("Authorization Scenarios", () => {
@@ -754,6 +1165,11 @@ suite("Query field getRecurringEvents", () => {
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserToken);
 			assertToBeNonNullish(regularUserId);
+			cleanupFns.push(async () => {
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, regularUserId));
+			});
 
 			// Create organization as admin
 			const organizationCreateResult = await mercuriusClient.mutate(
@@ -766,6 +1182,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			// Add regular user as member
 			await server.drizzleClient.insert(organizationMembershipsTable).values({
@@ -808,14 +1260,46 @@ suite("Query field getRecurringEvents", () => {
 					},
 				},
 			);
-			if (organizationCreateResult.errors?.length) {
-				throw new Error(
-					`createOrganization failed: ${JSON.stringify(organizationCreateResult.errors)}`,
-				);
-			}
+			expect(organizationCreateResult.errors).toBeUndefined();
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			// Create recurring event template
 			const { templateId } = await createRecurringEventWithInstances(
@@ -842,11 +1326,7 @@ suite("Query field getRecurringEvents", () => {
 				},
 			});
 
-			if (result.errors?.length) {
-				throw new Error(
-					`getRecurringEvents failed (admin should have access): ${JSON.stringify(result.errors)}`,
-				);
-			}
+			expect(result.errors).toBeUndefined();
 			const instances = result.data?.getRecurringEvents;
 			assertToBeNonNullish(instances);
 			expect(instances).toHaveLength(3);
@@ -866,6 +1346,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
@@ -879,6 +1395,8 @@ suite("Query field getRecurringEvents", () => {
 
 			// Query with includeCancelled: false (default), limit: 3, offset: 0
 			// Should return indices 0, 1, 3 (skipping 2)
+			// Assumes getRecurringEvents filters cancelled instances BEFORE applying limit/offset.
+			// If resolver ordering changes (paginate first, then filter), this expectation must be updated.
 			const result = await mercuriusClient.query(Query_getRecurringEvents, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -924,6 +1442,42 @@ suite("Query field getRecurringEvents", () => {
 			assertToBeNonNullish(organizationCreateResult.data?.createOrganization);
 			const organizationId =
 				organizationCreateResult.data.createOrganization.id;
+			cleanupFns.push(async () => {
+				const orgEvents = await server.drizzleClient.query.eventsTable.findMany(
+					{
+						columns: { id: true },
+						where: (fields, ops) =>
+							ops.eq(fields.organizationId, organizationId),
+					},
+				);
+				const orgEventIds = orgEvents.map((e) => e.id);
+				if (orgEventIds.length > 0) {
+					await server.drizzleClient
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(
+								recurringEventInstancesTable.baseRecurringEventId,
+								orgEventIds,
+							),
+						);
+					await server.drizzleClient
+						.delete(recurrenceRulesTable)
+						.where(
+							inArray(recurrenceRulesTable.baseRecurringEventId, orgEventIds),
+						);
+					await server.drizzleClient
+						.delete(eventsTable)
+						.where(inArray(eventsTable.id, orgEventIds));
+				}
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					);
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, organizationId));
+			});
 
 			const { templateId, instanceIds } =
 				await createRecurringEventWithInstances(organizationId, adminUserId, {
