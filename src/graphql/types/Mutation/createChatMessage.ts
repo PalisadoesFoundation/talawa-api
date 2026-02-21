@@ -1,4 +1,6 @@
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -186,6 +188,18 @@ builder.mutationField("createChatMessage", (t) =>
 					},
 				});
 			}
+
+			await ctx.drizzleClient
+				.update(chatMembershipsTable)
+				.set({
+					lastReadAt: new Date(),
+				})
+				.where(
+					and(
+						eq(chatMembershipsTable.chatId, parsedArgs.input.chatId),
+						eq(chatMembershipsTable.memberId, currentUserId),
+					),
+				);
 
 			ctx.pubsub.publish({
 				payload: createdChatMessage,

@@ -2,18 +2,9 @@
  * Integration tests for Chat computed fields (unreadMessagesCount, hasUnread,
  * firstUnreadMessageId, lastMessage).
  *
- * NOTE: Frontend currently marks self-authored messages as read. On the server-side
- * the computed fields treat a missing membership.lastReadAt as epoch (new Date(0)),
- * which means creators will see their own messages as unread until they explicitly
- * mark the chat as read. This behaviour is intentional for now and is covered by
- * these tests.
- *
- * TODO (future): Implement a humanized server-side behaviour so creators do not
- * see their own freshly-created messages as unread. Possible approaches:
- *  - Ignore messages authored by the current user when counting unread messages;
- *  - Update the author's chatMembership.lastReadAt when they create a message.
- *
- * This should be implemented carefully to preserve read-receipt semantics.
+ * NOTE: Creators do not see their own messages as unread because server-side
+ * logic automatically updates their `chatMembership.lastReadAt` when they create
+ * a new message.
  */
 
 import { faker } from "@faker-js/faker";
@@ -225,9 +216,9 @@ suite("Chat computed fields", () => {
 		});
 		assertToBeNonNullish(aliceChat.data?.chat);
 		const aliceNode = aliceChat.data.chat;
-		expect(aliceNode.unreadMessagesCount).toBe(2);
-		expect(aliceNode.hasUnread).toBe(true);
-		expect(aliceNode.firstUnreadMessageId).toBe(m1Id);
+		expect(aliceNode.unreadMessagesCount).toBe(0);
+		expect(aliceNode.hasUnread).toBe(false);
+		expect(aliceNode.firstUnreadMessageId).toBeNull();
 	});
 
 	suite("unauthenticated access to computed fields is denied", () => {
