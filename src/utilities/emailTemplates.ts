@@ -191,3 +191,123 @@ export function getEmailVerificationEmailHtml(
 </body>
 </html>`;
 }
+
+export interface OnSpotAttendeeWelcomeContext {
+	userName: string;
+	communityName: string;
+	emailAddress: string;
+	temporaryPassword: string;
+	loginLink: string;
+	eventName?: string;
+	eventDate?: string;
+	eventTime?: string;
+	eventLocation?: string;
+}
+
+/**
+ * Generates plain text email content for on-spot attendee registration.
+ * Includes temporary login credentials for admin-registered attendees.
+ */
+export function getOnSpotAttendeeWelcomeEmailText(
+	ctx: OnSpotAttendeeWelcomeContext,
+): string {
+	let eventDetails = "";
+	if (ctx.eventName) {
+		eventDetails = `\nEvent: ${ctx.eventName}`;
+		if (ctx.eventDate) eventDetails += `\nDate: ${ctx.eventDate}`;
+		if (ctx.eventTime) eventDetails += `\nTime: ${ctx.eventTime}`;
+		if (ctx.eventLocation) eventDetails += `\nLocation: ${ctx.eventLocation}`;
+	}
+
+	return `Hello ${ctx.userName},
+
+Welcome to ${ctx.communityName}!
+
+You have been registered as an attendee. Your account has been created and is ready to use.${eventDetails}
+
+Your Login Credentials:
+Email: ${ctx.emailAddress}
+Temporary Password: ${ctx.temporaryPassword}
+
+Please log in using these credentials:
+${ctx.loginLink}
+
+For Security:
+On your first login, you will be prompted to update your password. This will help keep your account secure.
+
+If you have any questions or need assistance, please contact the ${ctx.communityName} support team.
+
+Best regards,
+The ${ctx.communityName} Team
+
+---
+This is an automated message. Please do not reply to this email.`;
+}
+
+/**
+ * Generates HTML email content for on-spot attendee registration.
+ * Includes temporary login credentials for admin-registered attendees.
+ */
+export function getOnSpotAttendeeWelcomeEmailHtml(
+	ctx: OnSpotAttendeeWelcomeContext,
+): string {
+	let eventDetailsHtml = "";
+	if (ctx.eventName) {
+		eventDetailsHtml = `
+    <div style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0 0 10px 0; color: #333;"><strong>Event Details:</strong></p>
+      <p style="margin: 5px 0; color: #555;"><strong>Event:</strong> ${ctx.eventName}</p>
+      ${ctx.eventDate ? `<p style="margin: 5px 0; color: #555;"><strong>Date:</strong> ${ctx.eventDate}</p>` : ""}
+      ${ctx.eventTime ? `<p style="margin: 5px 0; color: #555;"><strong>Time:</strong> ${ctx.eventTime}</p>` : ""}
+      ${ctx.eventLocation ? `<p style="margin: 5px 0; color: #555;"><strong>Location:</strong> ${ctx.eventLocation}</p>` : ""}
+    </div>`;
+	}
+
+	return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to ${ctx.communityName}</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background-color: #f9f9f9; border-radius: 8px; padding: 30px;">
+    <h1 style="color: #333; margin-top: 0; font-size: 24px;">Welcome to ${ctx.communityName}!</h1>
+    
+    <p>Hello ${ctx.userName},</p>
+    
+    <p>You have been registered as an attendee. Your account has been created and is ready to use.</p>
+    
+    ${eventDetailsHtml}
+    
+    <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0 0 15px 0; color: #333;"><strong>Your Login Credentials:</strong></p>
+      <p style="margin: 5px 0; color: #555;"><strong>Email:</strong> <span style="font-family: monospace; background-color: #f5f5f5; padding: 2px 6px;">${ctx.emailAddress}</span></p>
+      <p style="margin: 5px 0; color: #555;"><strong>Temporary Password:</strong> <span style="font-family: monospace; background-color: #f5f5f5; padding: 2px 6px;">${ctx.temporaryPassword}</span></p>
+    </div>
+    
+    <p style="margin: 20px 0;">Click the button below to log in to your account:</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${ctx.loginLink}" 
+         style="background-color: #3b82f6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">
+        Log In to Your Account
+      </a>
+    </div>
+    
+    <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0; color: #333;"><strong>Security Notice:</strong></p>
+      <p style="margin: 10px 0 0 0; color: #555; font-size: 14px;">On your first login, you will be prompted to update your password. Please use a strong, unique password to keep your account secure.</p>
+    </div>
+    
+    <p style="color: #666; margin-top: 20px;">If you have any questions or need assistance, please contact the ${ctx.communityName} support team.</p>
+    
+    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+    
+    <p style="color: #999; font-size: 12px; margin-bottom: 0;">
+      This is an automated message from ${ctx.communityName}. Please do not reply to this email.
+    </p>
+  </div>
+</body>
+</html>`;
+}

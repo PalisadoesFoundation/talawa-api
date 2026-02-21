@@ -105,6 +105,18 @@ export const Mutation_signUp =
     }
 }`);
 
+export const Mutation_adminCreateOnSpotAttendee = gql(`
+  mutation Mutation_adminCreateOnSpotAttendee($input: MutationSignUpInput!) {
+    adminCreateOnSpotAttendee(input: $input) {
+      id
+      name
+      emailAddress
+      isEmailAddressVerified
+      role
+    }
+  }
+`);
+
 export const Mutation_updateCurrentUser =
 	gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
     updateCurrentUser(input: $input) {
