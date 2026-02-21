@@ -4,6 +4,15 @@ import type { GraphQLContext } from "../../context";
 import { User } from "./User";
 
 /**
+ * Resolver for the User.emailAddress field.
+ * 
+ * Authorization logic:
+ * - Users can view their own email address
+ * - Administrators can view any user's email address
+ * 
+ * The `authenticated` scope ensures the user is logged in.
+ * Additional authorization logic checks if the user is viewing their own email
+ * or is an administrator.
  *
  * @param parent - The user object for which the email address is being resolved.
  * @param _args - No arguments are expected for this resolver, so this is an empty object.
@@ -15,66 +24,45 @@ export const emailAddressResolver = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
-	try {
-		if (!ctx.currentClient.isAuthenticated) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "unauthenticated",
-				},
-			});
-		}
+	// Auth plugin ensures user is authenticated
+	const currentUserId = ctx.currentClient.user!.id;
 
-		const currentUserId = ctx.currentClient.user.id;
+	// Check if user is viewing their own email
+	const isOwnEmail = parent.id === currentUserId;
 
-		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			columns: {
-				role: true,
-			},
-			where: (fields, operators) => operators.eq(fields.id, currentUserId),
-		});
+	// Check if user is an administrator
+	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		columns: {
+			role: true,
+		},
+		where: (fields, operators) => operators.eq(fields.id, currentUserId),
+	});
 
-		if (currentUser === undefined) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "unauthenticated",
-				},
-			});
-		}
+	const isAdministrator = currentUser?.role === "administrator";
 
-		if (currentUser.role !== "administrator" && parent.id !== currentUserId) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			});
-		}
-
-		return parent.emailAddress;
-	} catch (error) {
-		// Preserve TalawaGraphQLError instances to maintain proper error codes
-		if (error instanceof TalawaGraphQLError) {
-			throw error;
-		}
-
-		ctx.log.error(error);
-
-		// Only wrap unknown errors as unexpected
+	// Allow access if viewing own email OR if administrator
+	if (!isOwnEmail && !isAdministrator) {
 		throw new TalawaGraphQLError({
-			message: "Internal server error",
 			extensions: {
-				code: "unexpected",
+				code: "unauthorized_action",
 			},
 		});
 	}
+
+	return parent.emailAddress;
 };
 
 User.implement({
 	fields: (t) => ({
 		emailAddress: t.field({
-			description: "Email address of the user.",
+			description: "Email address of the user. Users can view their own email, administrators can view any email.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: emailAddressResolver,
 			type: "EmailAddress",
+			// Require authentication - additional authorization in resolver
+			authScopes: {
+				authenticated: true,
+			},
 		}),
 	}),
 });

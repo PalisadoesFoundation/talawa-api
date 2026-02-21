@@ -67,19 +67,16 @@ builder.mutationField("createUser", (t) =>
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a user.",
+		// Declarative authorization: only administrators can create users
+		authScopes: {
+			administrator: true,
+		},
 		resolve: withMutationMetrics(
 			{
 				operationName: "mutation:createUser",
 			},
 			async (_parent, args, ctx) => {
-				if (!ctx.currentClient.isAuthenticated) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-					});
-				}
-
+				// Input validation using Zod
 				const {
 					data: parsedArgs,
 					error,
@@ -98,40 +95,19 @@ builder.mutationField("createUser", (t) =>
 					});
 				}
 
-				const currentUserId = ctx.currentClient.user.id;
+				// Auth plugin ensures user is authenticated and is an administrator
+				// No need for manual checks - the resolver only runs if authorized
+				const currentUserId = ctx.currentClient.user!.id;
 
-				const [currentUser, existingUserWithEmailAddress] = await Promise.all([
+				const [existingUserWithEmailAddress] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
 							role: true,
 						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {
-							role: true,
-						},
-						where: (fields, operators) =>
+						where: (fields: any, operators: any) =>
 							operators.eq(fields.emailAddress, parsedArgs.input.emailAddress),
 					}),
 				]);
-
-				if (!currentUser) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-					});
-				}
-
-				if (currentUser.role !== "administrator") {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action",
-						},
-					});
-				}
 
 				if (existingUserWithEmailAddress) {
 					throw new TalawaGraphQLError({
@@ -155,7 +131,7 @@ builder.mutationField("createUser", (t) =>
 					avatarName = ulid();
 				}
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
+				return await ctx.drizzleClient.transaction(async (tx: any) => {
 					const [createdUser] = await tx
 						.insert(usersTable)
 						.values({
