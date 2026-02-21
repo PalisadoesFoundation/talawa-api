@@ -65,8 +65,7 @@ export class SMTPProvider implements IEmailProvider {
 	}> {
 		if (!this.transporter) {
 			const ns = await import("nodemailer");
-			const nodemailer = ((ns as unknown as { default?: typeof ns }).default ??
-				ns) as typeof ns;
+			const nodemailer = (ns.default || ns) as typeof ns;
 
 			// Validate host
 			if (!this.config.host) {

@@ -1,55 +1,51 @@
-import * as pinoModule from "pino";
-
-const pino = (
-	"default" in pinoModule
-		? (pinoModule as unknown as { default: typeof pinoModule.default }).default
-		: pinoModule
-) as typeof pinoModule.default;
-
 import type { Logger, LoggerOptions } from "pino";
+import pino from "pino";
+import type { AppLogger } from "./AppLogger";
 
-const level = process.env.LOG_LEVEL ?? "info";
-const nodeEnv = process.env.NODE_ENV ?? "development";
-const isDev = nodeEnv === "development";
+const isTest = process.env.NODE_ENV === "test";
+const isStaging = process.env.NODE_ENV === "staging";
 
-const base: Record<string, unknown> = {
-	service: "talawa-api",
-	env: nodeEnv,
-	version: process.env.APP_VERSION ?? "0.0.0",
-};
+const redactPaths = [
+	"host",
+	"port",
+	"user",
+	"password",
+	"clientSecret",
+	"accessToken",
+	"refreshToken",
+];
 
-export const loggerOptions: LoggerOptions = {
-	level,
-	base,
-	// Redact common sensitive fields (extend as needed)
+const loggerOptions: LoggerOptions = {
+	level: process.env.LOG_LEVEL || "info",
 	redact: {
-		paths: [
-			"req.headers.authorization",
-			"req.headers.cookie",
-			"password",
-			"credentials",
-			"token",
-		],
+		paths: redactPaths,
 		remove: true,
 	},
-	transport: isDev
-		? {
-				target: "pino-pretty",
-				options: {
-					colorize: true,
-					singleLine: true,
-					translateTime: "SYS:standard",
+	transport:
+		isTest ||
+		isStaging ||
+		(process.env.LOG_TRANSPORT_DISABLED === "true" &&
+			process.env.NODE_ENV !== "test")
+			? undefined
+			: {
+					target: "pino-pretty",
+					options: {
+						colorize: true,
+					},
 				},
-			}
-		: undefined,
 };
 
-export type AppLogger = Logger;
+export const rootLogger: AppLogger = pino(loggerOptions);
 
-// Helper to safely attach fields without mutating the original logger
+/**
+ * Creates a child logger with additional fields
+ * @param logger The parent logger
+ * @param fields Additional fields to include in all logs
+ * @returns A new logger instance
+ */
 export const withFields = (
 	logger: AppLogger,
 	fields: Record<string, unknown>,
 ): AppLogger => logger.child(fields);
 
-export const rootLogger: AppLogger = pino(loggerOptions);
+export type { Logger };
