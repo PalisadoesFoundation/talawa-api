@@ -46,6 +46,7 @@ import { setCI } from "./services/ciSetup";
 import { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 import { minioSetup } from "./services/minioSetup";
 import { postgresSetup } from "./services/postgresSetup";
+import { cachingSetup } from "./services/cachingSetup";
 
 export { administratorEmail } from "./services/administratorSetup";
 // Service re-exports
@@ -55,6 +56,7 @@ export { setCI } from "./services/ciSetup";
 export { cloudbeaverSetup } from "./services/cloudbeaverSetup";
 export { minioSetup } from "./services/minioSetup";
 export { postgresSetup } from "./services/postgresSetup";
+export { cachingSetup } from "./services/cachingSetup";
 
 import { updateEnvVariable } from "./updateEnvVariable";
 import { validatePositiveInteger } from "./validators";
@@ -548,24 +550,6 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					return true;
 				},
 			);
-
-			answers.GOOGLE_REDIRECT_URI = await promptInput(
-				"GOOGLE_REDIRECT_URI",
-				"Enter Google OAuth Redirect URI:",
-				answers.GOOGLE_REDIRECT_URI ||
-					"http://localhost:4000/auth/google/callback",
-				(input: string) => {
-					if (input.trim().length < 1) {
-						return "Google Redirect URI cannot be empty.";
-					}
-					try {
-						new URL(input.trim());
-						return true;
-					} catch {
-						return "Please enter a valid URL.";
-					}
-				},
-			);
 		}
 
 		if (setupGitHub) {
@@ -598,24 +582,6 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						return "GitHub Client Secret cannot be empty.";
 					}
 					return true;
-				},
-			);
-
-			answers.GITHUB_REDIRECT_URI = await promptInput(
-				"GITHUB_REDIRECT_URI",
-				"Enter GitHub OAuth Redirect URI:",
-				answers.GITHUB_REDIRECT_URI ||
-					"http://localhost:4000/auth/github/callback",
-				(input: string) => {
-					if (input.trim().length < 1) {
-						return "GitHub Redirect URI cannot be empty.";
-					}
-					try {
-						new URL(input.trim());
-						return true;
-					} catch {
-						return "Please enter a valid URL.";
-					}
 				},
 			);
 		}
@@ -791,6 +757,15 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupMetrics) {
 		answers = await metricsSetup(answers);
+	}
+
+	const setupCaching = await promptConfirm(
+		"setupCaching",
+		"Do you want to configure caching settings now?",
+		false,
+	);
+	if (setupCaching) {
+		answers = await cachingSetup(answers);
 	}
 	await updateEnvVariable(answers, {
 		envFile: envFileName,

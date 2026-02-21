@@ -1,0 +1,3 @@
+DROP INDEX "event_volunteer_memberships_volunteer_id_group_id_event_id_index";--> statement-breakpoint
+CREATE UNIQUE INDEX "event_volunteer_memberships_volunteer_id_event_id_index" ON "event_volunteer_memberships" USING btree ("volunteer_id","event_id") WHERE "event_volunteer_memberships"."group_id" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "event_volunteer_memberships_volunteer_id_group_id_event_id_index" ON "event_volunteer_memberships" USING btree ("volunteer_id","group_id","event_id") WHERE "event_volunteer_memberships"."group_id" IS NOT NULL;

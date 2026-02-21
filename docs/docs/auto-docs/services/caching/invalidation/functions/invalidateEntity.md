@@ -14,9 +14,9 @@ Invalidate a specific entity from the cache.
 
 ### cache
 
-[`CacheService`](../../CacheService/interfaces/CacheService.md)
+An object with a `del` method (e.g., CacheService or metrics proxy).
 
-The cache service instance.
+#### del
 
 ### entity
 

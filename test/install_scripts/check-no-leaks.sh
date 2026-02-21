@@ -6,9 +6,9 @@
 # Ensures EXIT traps and cleanup in test files work; fails if any temp
 # resources leak (e.g. mktemp dirs, /tmp/talawa-* files).
 #
-# Usage: ./check-no-leaks.sh   (from repo root or tests/install)
+# Usage: ./check-no-leaks.sh   (from repo root or test/install_scripts)
 # Returns: 0 if no leaks, 1 if leaks or tests failed
-# Requirements: bash, tests/install/run-all.sh
+# Requirements: bash, test/install_scripts/run-all.sh
 ##############################################################################
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

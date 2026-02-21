@@ -119,7 +119,6 @@ describe("BaseOAuthProvider", () => {
 		config = {
 			clientId: "test_client_id",
 			clientSecret: "test_client_secret",
-			redirectUri: "http://localhost:3000/callback",
 		};
 
 		provider = new ConcreteOAuthProvider("test-provider", config);
@@ -148,31 +147,19 @@ describe("BaseOAuthProvider", () => {
 			expect(() => provider.testValidateConfig()).not.toThrow();
 		});
 
-		it("should not throw error when redirectUri is missing (now optional)", () => {
-			expect(() => {
-				new ConcreteOAuthProvider("test-provider", {
-					clientId: "test_id",
-					redirectUri: "https://example.com/callback",
-					clientSecret: "test_secret",
-				});
-			}).not.toThrow();
-		});
-
 		it("should throw error when clientId is missing", () => {
-			try {
-				new ConcreteOAuthProvider("test-provider", {
-					clientId: "",
-					clientSecret: "test_secret",
-					redirectUri: "http://localhost:3000/callback",
-				});
-				throw new Error("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect(error).toMatchObject({
+			expect(
+				() =>
+					new ConcreteOAuthProvider("test-provider", {
+						clientId: "",
+						clientSecret: "test_secret",
+					}),
+			).toThrow(
+				expect.objectContaining({
 					code: "INVALID_CONFIG",
 					statusCode: 500,
-				});
-			}
+				}),
+			);
 		});
 
 		it("should throw error when clientSecret is missing", () => {
@@ -180,14 +167,12 @@ describe("BaseOAuthProvider", () => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "",
-					redirectUri: "http://localhost:3000/callback",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "",
-					redirectUri: "http://localhost:3000/callback",
 				});
 			}).toThrow(
 				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
@@ -199,14 +184,12 @@ describe("BaseOAuthProvider", () => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(/test-provider/);
 		});
@@ -216,14 +199,12 @@ describe("BaseOAuthProvider", () => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
-					redirectUri: "",
 				});
 			}).toThrow(
 				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
@@ -507,17 +488,12 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should wrap non-Error objects in ProfileFetchError", async () => {
-			// Test case where something other than Error is thrown
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedGet.mockRejectedValueOnce(null);
 
-			try {
-				await provider.testGet("https://test.com");
-				throw new Error("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(ProfileFetchError);
-				expect((error as ProfileFetchError).message).toContain("Unknown error");
-			}
+			await expect(provider.testGet("https://test.com")).rejects.toMatchObject({
+				message: expect.stringContaining("Unknown error"),
+			});
 		});
 	});
 
@@ -586,19 +562,15 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should wrap non-Error objects in TokenExchangeError", async () => {
-			// Test case where something other than Error is thrown
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedPost.mockRejectedValueOnce("string error");
 
-			try {
-				await provider.testPost("https://test.com", {});
-				throw new Error("Expected error to be thrown");
-			} catch (error) {
-				expect(error).toBeInstanceOf(TokenExchangeError);
-				expect((error as TokenExchangeError).message).toContain(
-					"Unknown error",
-				);
-			}
+			await expect(
+				provider.testPost("https://test.com", {}),
+			).rejects.toMatchObject({
+				name: "TokenExchangeError",
+				message: expect.stringContaining("Unknown error"),
+			});
 		});
 	});
 
@@ -620,7 +592,6 @@ describe("BaseOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "test_client_id",
 				clientSecret: "test_client_secret",
-				redirectUri: "https://example.com/callback",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new ConcreteOAuthProvider(
@@ -657,7 +628,6 @@ describe("BaseOAuthProvider", () => {
 			const customConfig: OAuthConfig = {
 				clientId: "test_client_id",
 				clientSecret: "test_client_secret",
-				redirectUri: "https://example.com/callback",
 				requestTimeoutMs: 5000,
 			};
 			const customProvider = new ConcreteOAuthProvider(

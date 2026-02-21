@@ -19,6 +19,27 @@ jobs:
       - name: Merge conflict finder
         uses: olivernybroe/action-conflict-finder@v4.1
 
+  check_rootless_production_config:
+    name: Check rootless production Docker config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Ensure rootless production files exist
+        run: |
+          test -f ./envFiles/.env.rootless.production
+          test -f ./docker/compose.rootless.production.yaml
+      - name: Validate docker compose config (rootless env, no interpolation)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config --no-interpolate -q
+      - name: Validate docker compose config (rootless env, interpolated)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+
   test-and-upload-coverage:
     name: Run tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest

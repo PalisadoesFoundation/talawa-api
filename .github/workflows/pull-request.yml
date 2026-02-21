@@ -220,6 +220,338 @@ jobs:
       - name: Check mock isolation
         run: docker container run talawa_api pnpm check_mock_isolation
 
+  check_rootless_production_config:
+    name: Check rootless production Docker config (rootless)
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Ensure rootless production files exist
+        run: |
+          test -f ./envFiles/.env.rootless.production
+          test -f ./docker/compose.rootless.production.yaml
+      - name: Validate docker compose config (rootless env, no interpolation)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config --no-interpolate -q
+      - name: Validate docker compose config (rootless env, interpolated)
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+      - name: Install rootless prerequisites
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y uidmap dbus-user-session slirp4netns fuse-overlayfs ca-certificates curl gnupg
+
+          # Ensure the Docker apt repo is configured so we can install/upgrade packages.
+          if ! command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
+            sudo install -m 0755 -d /etc/apt/keyrings
+            if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              sudo chmod a+r /etc/apt/keyrings/docker.gpg
+            fi
+
+            echo \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+              $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
+              sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            sudo apt-get update
+          fi
+
+          # Always install/upgrade rootless extras AND compose plugin.
+          # The !override YAML tag in compose.rootless.production.yaml requires
+          # Docker Compose v2.24.4+; the runner's pre-installed version may be older.
+          # Pin to a minimum version that supports the !override tag.
+          if ! sudo apt-get install -y docker-ce-rootless-extras 'docker-compose-plugin=2.24.4-*'; then
+            echo "::notice::Pinned docker-compose-plugin=2.24.4-* not available; installing latest and will verify version below."
+            sudo apt-get install -y docker-ce-rootless-extras docker-compose-plugin
+          fi
+
+          echo "Docker Compose version:"
+          docker compose version
+
+          # Verify that the installed Compose version satisfies the minimum requirement.
+          COMPOSE_MIN="2.24.4"
+          compose_version=$(docker compose version --short 2>/dev/null || echo "0.0.0")
+          version_gte() {
+            printf '%s\n%s' "$2" "$1" | sort -V -C
+          }
+          if ! version_gte "$compose_version" "$COMPOSE_MIN"; then
+            echo "::error::Docker Compose v${COMPOSE_MIN}+ required for !override tag, found v${compose_version}"
+            exit 1
+          fi
+          echo "Docker Compose v${compose_version} >= v${COMPOSE_MIN} ✓"
+
+      - name: Start rootless Docker daemon
+        run: |
+          set -euxo pipefail
+          export XDG_RUNTIME_DIR="/run/user/$UID"
+          sudo mkdir -p "$XDG_RUNTIME_DIR"
+          sudo chown "$USER":"$USER" "$XDG_RUNTIME_DIR"
+
+          export PATH="$HOME/bin:$PATH"
+
+          if [ ! -f "$HOME/.config/systemd/user/docker.service" ]; then
+            dockerd-rootless-setuptool.sh install --force
+          fi
+
+          if ! systemctl --user daemon-reload 2>/dev/null; then
+            echo "::notice::systemctl daemon-reload failed (expected on runners without session bus)"
+          fi
+
+          if ! systemctl --user start docker 2>/dev/null; then
+            echo "::notice::systemctl start docker failed (expected on runners without session bus)"
+          fi
+
+          if ! systemctl --user --no-pager status docker >/dev/null 2>&1; then
+            echo "::notice::Falling back to manual dockerd-rootless.sh start"
+            nohup dockerd-rootless.sh > "$RUNNER_TEMP/dockerd-rootless.log" 2>&1 &
+          fi
+
+          chmod +x scripts/docker/resolve-docker-host.sh
+          eval "$(./scripts/docker/resolve-docker-host.sh --mode rootless --emit-export --warn-if-docker-group)"
+          echo "DOCKER_HOST=$DOCKER_HOST" >> "$GITHUB_ENV"
+          echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >> "$GITHUB_ENV"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Verify rootless daemon
+        run: |
+          set -euxo pipefail
+
+          chmod +x scripts/docker/resolve-docker-host.sh
+          eval "$(./scripts/docker/resolve-docker-host.sh --mode rootless --emit-export --warn-if-docker-group)"
+
+          TIMEOUT=60
+          until docker info >/dev/null 2>&1 || [ "$TIMEOUT" -le 0 ]; do
+            sleep 2
+            TIMEOUT=$((TIMEOUT - 2))
+          done
+
+          if ! docker info >/dev/null 2>&1; then
+            echo "Rootless Docker daemon did not start in time."
+            if [ -f "$RUNNER_TEMP/dockerd-rootless.log" ]; then
+              tail -n 200 "$RUNNER_TEMP/dockerd-rootless.log"
+            fi
+            exit 1
+          fi
+
+          docker info --format '{{json .SecurityOptions}}' | tee "$RUNNER_TEMP/rootless-security-options.json"
+          grep -qi rootless "$RUNNER_TEMP/rootless-security-options.json"
+
+      - name: Verify rootless works without docker group membership
+        run: |
+          set -euxo pipefail
+
+          # Remove the current user from the docker group to simulate a pure rootless
+          # environment where the user has no access to the rootful daemon socket.
+          if ! sudo deluser "$USER" docker 2>/dev/null; then
+            echo "::warning::Could not remove $USER from docker group (may not be a member)."
+          fi
+
+          # Verify removal took effect in /etc/group before proceeding.
+          if getent group docker | grep -qw "$USER"; then
+            echo "::error::$USER is still listed in docker group in /etc/group after deluser."
+            exit 1
+          fi
+
+          # Write test commands to a temp script so we can execute them in a
+          # fresh login shell that re-reads /etc/group via initgroups().
+          cat > "$RUNNER_TEMP/test-no-docker-group.sh" << 'TESTSCRIPT'
+          #!/usr/bin/env bash
+          set -euxo pipefail
+
+          # Confirm the docker group is no longer active.
+          if id -nG | tr " " "\n" | grep -qx docker; then
+            echo "::error::docker group is still active; cannot validate non-docker-group scenario."
+            exit 1
+          fi
+
+          # The rootless daemon must still be reachable via DOCKER_HOST.
+          docker info >/dev/null 2>&1
+          echo "Rootless Docker is reachable without docker group membership ✓"
+
+          # Validate compose config still parses correctly.
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            config -q
+          echo "Compose config valid without docker group ✓"
+          TESTSCRIPT
+          chmod +x "$RUNNER_TEMP/test-no-docker-group.sh"
+
+          # `su --login` calls initgroups() which re-reads /etc/group, so the
+          # docker supplementary group is actually dropped (unlike sg which
+          # only changes the effective GID). Pass required env vars explicitly.
+          # NOTE: `su --login` resets CWD to $HOME; cd back to the workspace.
+          sudo su --login "$USER" -c "\
+            export DOCKER_HOST='$DOCKER_HOST' \
+                   XDG_RUNTIME_DIR='$XDG_RUNTIME_DIR' \
+                   PATH='$PATH'; \
+            cd '$GITHUB_WORKSPACE' && \
+            bash '$RUNNER_TEMP/test-no-docker-group.sh'"
+
+      - name: Set CI-safe secrets for rootless production template
+        run: |
+          set -euo pipefail
+
+          # Align build args with the current runner user to avoid permission mismatches.
+          echo "API_UID=$(id -u)" >> "$GITHUB_ENV"
+          echo "API_GID=$(id -g)" >> "$GITHUB_ENV"
+
+          # Override sentinel placeholders so the rootless production stack can start in CI.
+          echo "API_JWT_SECRET=ci_jwt_secret_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_AUTH_JWT_SECRET=ci_auth_jwt_secret_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_COOKIE_SECRET=ci_cookie_secret_0123456789abcdef0123456789abcdef" >> "$GITHUB_ENV"
+          echo "API_ADMINISTRATOR_USER_PASSWORD=ci_admin_password_0123456789abcdef" >> "$GITHUB_ENV"
+
+          # Ensure API <-> MinIO credentials match.
+          echo "API_MINIO_SECRET_KEY=ci_minio_secret_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "MINIO_ROOT_PASSWORD=ci_minio_secret_0123456789abcdef" >> "$GITHUB_ENV"
+
+          # Ensure API <-> Postgres credentials match.
+          echo "API_POSTGRES_PASSWORD=ci_postgres_password_0123456789abcdef" >> "$GITHUB_ENV"
+          echo "POSTGRES_PASSWORD=ci_postgres_password_0123456789abcdef" >> "$GITHUB_ENV"
+
+      - name: Start rootless production stack
+        run: |
+          set -euo pipefail
+
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
+
+          echo "=== Docker Compose version ==="
+          docker compose version
+
+          echo "=== Resolved compose config ==="
+          dc config -q
+
+          # 1. Build all images first so build failures surface clearly.
+          dc build
+
+          # 2. Start infrastructure (postgres, redis, minio) and wait for them.
+          echo "=== Starting infrastructure services ==="
+          dc up -d postgres redis minio
+
+          # Wait for Postgres to accept connections (bounded retry, fail early).
+          PG_RETRIES=30
+          until dc exec postgres pg_isready -U talawa --timeout=2 2>/dev/null; do
+            PG_RETRIES=$((PG_RETRIES - 1))
+            if [ "$PG_RETRIES" -le 0 ]; then
+              echo "::error::Postgres did not become ready within 60 s."
+              dc logs --tail 50 postgres
+              exit 1
+            fi
+            echo "Waiting for Postgres... ($PG_RETRIES retries left)"
+            sleep 2
+          done
+          echo "Postgres is ready ✓"
+
+          echo "Infrastructure status:"
+          dc ps
+
+          # 3. Start API separately so we can capture its logs if it crashes.
+          echo "=== Starting API ==="
+          dc up -d api
+
+          # 4. Wait for API healthcheck.
+          api_id="$(dc ps -q api)"
+          TIMEOUT=120
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" = "healthy" ] || [ "$TIMEOUT" -le 0 ]; do
+            # If the container exited, stop waiting immediately.
+            if [ "$(docker inspect -f '{{.State.Status}}' "$api_id" 2>/dev/null)" = "exited" ]; then
+              echo "::error::API container exited unexpectedly."
+              break
+            fi
+            echo "Waiting for API health... ($TIMEOUT s remaining)"
+            sleep 3
+            TIMEOUT=$((TIMEOUT - 3))
+          done
+
+          if [ "$(docker inspect -f '{{.State.Health.Status}}' "$api_id" 2>/dev/null)" != "healthy" ]; then
+            echo "::error::API did not become healthy."
+            echo "=== API container state ==="
+            docker inspect -f '{{json .State}}' "$api_id" || true
+            echo ""
+            echo "=== API healthcheck log ==="
+            docker inspect -f '{{json .State.Health}}' "$api_id" || true
+            echo ""
+            echo "=== API application logs ==="
+            dc logs --tail 300 api
+            echo "=== All services ==="
+            dc ps
+            exit 1
+          fi
+
+          echo "API is healthy. Starting Caddy..."
+          dc up -d caddy
+
+      - name: Verify API reachable via Caddy
+        run: |
+          set -euo pipefail
+
+          dc() {
+            docker compose --env-file ./envFiles/.env.rootless.production \
+              -f ./compose.yaml -f ./docker/compose.rootless.production.yaml "$@"
+          }
+
+          # Wait for Caddy port to be published (with retry)
+          CADDY_RETRIES=10
+          until http_port="$(dc port caddy 80 | head -n 1 | awk -F: '{print $2}')" && [ -n "$http_port" ]; do
+            CADDY_RETRIES=$((CADDY_RETRIES - 1))
+            if [ "$CADDY_RETRIES" -le 0 ]; then
+              echo "::error::Failed to determine published HTTP port for Caddy after 20s."
+              dc ps
+              exit 1
+            fi
+            echo "Waiting for Caddy port mapping... ($CADDY_RETRIES retries left)"
+            sleep 2
+          done
+
+          echo "Caddy port: $http_port"
+
+          # Poll Caddy until it's ready to accept connections
+          echo "Waiting for Caddy to initialize..."
+          CADDY_READY_RETRIES=10
+          until curl -fsS -m 2 "http://localhost:${http_port}/" >/dev/null 2>&1 || [ "$CADDY_READY_RETRIES" -le 0 ]; do
+            CADDY_READY_RETRIES=$((CADDY_READY_RETRIES - 1))
+            echo "Caddy not ready yet... ($CADDY_READY_RETRIES retries left)"
+            sleep 1
+          done
+
+          # Re-probe to determine actual success/failure (fixes off-by-one)
+          if ! curl -fsS -m 2 "http://localhost:${http_port}/" >/dev/null 2>&1; then
+            echo "::error::Caddy failed to become ready after 10s."
+            dc ps
+            dc logs caddy
+            exit 1
+          fi
+
+          echo "Caddy is ready!"
+
+          echo "Checking health endpoint via Caddy on http://localhost:${http_port}/healthcheck"
+          curl -fsS --retry 10 --retry-delay 2 --max-time 10 "http://localhost:${http_port}/healthcheck" > /dev/null
+
+      - name: Stop rootless production stack
+        if: always()
+        run: |
+          docker compose --env-file ./envFiles/.env.rootless.production \
+            -f ./compose.yaml -f ./docker/compose.rootless.production.yaml \
+            down -v
+
+      - name: Print rootless daemon logs on failure
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/dockerd-rootless.log" ]; then
+            tail -n 200 "$RUNNER_TEMP/dockerd-rootless.log"
+          fi
+
   Check_unused_code:
     name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
@@ -270,7 +602,7 @@ jobs:
           repository: PalisadoesFoundation/.github
           ref: main
           path: .github-central
-      
+
       - name: Make sensitive file checker executable
         run: chmod +x .github-central/.github/workflows/scripts/sensitive_file_check.py
 
@@ -343,12 +675,11 @@ jobs:
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
 
-
   Check-AutoDocs:
     needs: [Code-Quality-Checks]
     uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
     with:
-      pnpm-version: "10.26.1"
+      pnpm-version: "10.28.1" # This version should match package.json packageManager field
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
@@ -426,30 +757,30 @@ jobs:
       # a patched simplecov so we can use simplecov-html 0.12.3 (Ruby 3.2 compatible)
       - name: Prepare simplecov for Ruby 3.2
         run: |
-          mkdir -p tests/install/vendor
-          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git tests/install/vendor/simplecov
-          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' tests/install/vendor/simplecov/simplecov.gemspec
+          mkdir -p test/install_scripts/vendor
+          git clone --depth 1 --branch v0.21.2 https://github.com/simplecov-ruby/simplecov.git test/install_scripts/vendor/simplecov
+          sed -i 's/simplecov-html", "~> 0.11/simplecov-html", ">= 0.11/' test/install_scripts/vendor/simplecov/simplecov.gemspec
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.2"
           bundler-cache: true
-          working-directory: tests/install
+          working-directory: test/install_scripts
       - name: Run install script tests with coverage
-        working-directory: tests/install
+        working-directory: test/install_scripts
         run: |
           chmod +x run-all.sh
           bundle exec bashcov --root ../.. -- ./run-all.sh
       # Upload only when coverage file exists so the install flag gets data and shows in Codecov
       - name: Upload install coverage to Codecov
-        if: "!cancelled() && hashFiles('tests/install/coverage/coverage.xml') != ''"
+        if: "!cancelled() && hashFiles('test/install_scripts/coverage/coverage.xml') != ''"
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}-install"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
-          files: tests/install/coverage/coverage.xml
+          files: test/install_scripts/coverage/coverage.xml
           flags: install
 
   Run-Tests:
@@ -543,11 +874,11 @@ jobs:
       - name: Test Mailpit email service
         run: |
           echo "Testing Mailpit email service..."
-          
+
           # Test Mailpit API is responding
           MAILPIT_INFO=$(curl -s http://localhost:8025/api/v1/info 2>/dev/null || echo '{}')
           echo "Mailpit info: $MAILPIT_INFO"
-          
+
           # Check if Mailpit API is responding with valid data
           if echo "$MAILPIT_INFO" | grep -q '"version"'; then
             echo "SUCCESS: Mailpit API is responding correctly"
@@ -555,7 +886,7 @@ jobs:
           else
             echo "::warning::Mailpit API may not be responding properly"
           fi
-          
+
           # Note: Email functionality will be tested during the actual test suite execution
           # The API container will use Mailpit as configured in .env.ci
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
@@ -810,6 +1141,15 @@ jobs:
           cp envFiles/.env.devcontainer .env
           devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
+          
+      - name: Validate Devcontainer Environment
+        run: |
+          echo "Running environment validation checks..."
+          # Run ONLY the validation script (lightweight, doesn't reinstall everything)
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/validate-setup.sh"
+          # If validation fails, this step will fail
+          echo "Environment validation passed"
+
       - name: Wait for Postgres in devcontainer before migrations
         run: |
           set -euo pipefail
@@ -893,6 +1233,15 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+        
+      - name: Validate Devcontainer Environment
+        run: |
+          echo "Running environment validation checks..."
+          # Run ONLY the validation script (lightweight, doesn't reinstall everything)
+          docker exec talawa-api-1 /bin/bash -c "cd /home/talawa/api && ./.devcontainer/validate-setup.sh"
+          # If validation fails, this step will fail
+          echo "Environment validation passed"
+
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail
@@ -916,8 +1265,7 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
-      - name: Resolve API container
-        id: api-container
+      - name: Start server and monitor logs
         run: |
           API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
           if [ -z "$API_CONTAINER" ]; then

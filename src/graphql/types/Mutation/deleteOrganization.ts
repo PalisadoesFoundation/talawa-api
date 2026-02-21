@@ -7,7 +7,12 @@ import {
 	mutationDeleteOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { runBestEffortInvalidation } from "~/src/graphql/utils/runBestEffortInvalidation";
 import { withMutationMetrics } from "~/src/graphql/utils/withMutationMetrics";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -211,12 +216,21 @@ builder.mutationField("deleteOrganization", (t) =>
 							objectNames,
 						);
 					} catch (error) {
-						ctx.log?.error(
+						ctx.log.error(
 							{ err: error, objectNames },
 							"Failed to remove MinIO objects after organization deletion (best-effort cleanup); mutation succeeded.",
 						);
 					}
 				}
+
+				await runBestEffortInvalidation(
+					[
+						invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+						invalidateEntityLists(ctx.cache, "organization"),
+					],
+					"organization",
+					ctx.log,
+				);
 
 				return deletedOrganization;
 			},

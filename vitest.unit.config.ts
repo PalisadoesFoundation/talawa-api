@@ -70,7 +70,6 @@ export default defineConfig({
 			"test/plugin/**/*.{test,spec}.ts",
 			"test/scripts/**/*.{test,spec}.ts",
 			"test/setup/**/*.{test,spec}.ts",
-			"test/unit_tests/**/*.{test,spec}.ts",
 			"test/helpers/**/*.{test,spec}.ts",
 			"test/*.{test,spec}.ts",
 			"src/**/*.{test,spec}.ts",
