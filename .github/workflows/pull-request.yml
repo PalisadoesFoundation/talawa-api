@@ -1141,7 +1141,7 @@ jobs:
           cp envFiles/.env.devcontainer .env
           devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
           echo "Devcontainer started"
-          
+
       - name: Validate Devcontainer Environment
         run: |
           echo "Running environment validation checks..."
@@ -1233,7 +1233,7 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
-        
+
       - name: Validate Devcontainer Environment
         run: |
           echo "Running environment validation checks..."
@@ -1266,6 +1266,7 @@ jobs:
       - name: Verify Running Containers
         run: docker ps
       - name: Start server and monitor logs
+        id: api-container
         run: |
           API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
           if [ -z "$API_CONTAINER" ]; then
