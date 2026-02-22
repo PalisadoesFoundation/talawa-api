@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
-import type { BucketItemStat, Client } from "minio";
+import type { BucketItemStat } from "minio";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import type {
@@ -20,7 +20,6 @@ import {
 } from "../documentNodes";
 
 // Extract the return type of putObject from the minio Client
-type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
 
 suite("Mutation field updateCurrentUser", () => {
 	afterEach(() => {
@@ -1525,11 +1524,6 @@ suite("Mutation field updateCurrentUser", () => {
 			const userToken = createUserResult.data.createUser?.authenticationToken;
 			assertToBeNonNullish(userToken);
 
-			// Mock minio putObject
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
-
 			const comprehensiveTestData = {
 				addressLine1: faker.location.streetAddress().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
 				addressLine2: faker.location.secondaryAddress(),
@@ -1552,119 +1546,75 @@ suite("Mutation field updateCurrentUser", () => {
 				workPhoneNumber: "+15555555555",
 			};
 
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({
+					metaData: { "content-type": "image/jpeg" },
+					size: 1000,
+				} as any);
 
-			const operations = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						addressLine1
-						addressLine2
-						avatarMimeType
-						avatarURL
-						birthDate
-						city
-						countryCode
-						description
-						educationGrade
-						emailAddress
-						employmentStatus
-						homePhoneNumber
-						maritalStatus
-						mobilePhoneNumber
-						name
-						natalSex
-						naturalLanguageCode
-						postalCode
-						state
-						workPhoneNumber
-					}
-				}
-				`,
-				variables: {
-					input: {
-						...comprehensiveTestData,
-						avatar: null,
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								...comprehensiveTestData,
+								avatar: {
+									objectName: "test.jpg",
+									mimeType: "image/jpeg",
+									fileHash: "hash",
+								},
+							},
+						},
 					},
-				},
-			});
+				);
 
-			const map = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateCurrentUser).toEqual(
+					expect.objectContaining({
+						addressLine1: comprehensiveTestData.addressLine1,
+						addressLine2: comprehensiveTestData.addressLine2,
+						avatarMimeType: "image/jpeg",
+						avatarURL: expect.stringContaining("/objects/"),
+						birthDate: comprehensiveTestData.birthDate,
+						city: comprehensiveTestData.city,
+						countryCode: comprehensiveTestData.countryCode,
+						description: comprehensiveTestData.description,
+						educationGrade: comprehensiveTestData.educationGrade,
+						emailAddress: comprehensiveTestData.emailAddress,
+						employmentStatus: comprehensiveTestData.employmentStatus,
+						homePhoneNumber: comprehensiveTestData.homePhoneNumber,
+						maritalStatus: comprehensiveTestData.maritalStatus,
+						mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
+						name: comprehensiveTestData.name,
+						natalSex: comprehensiveTestData.natalSex,
+						naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
+						postalCode: comprehensiveTestData.postalCode,
+						state: comprehensiveTestData.state,
+						workPhoneNumber: comprehensiveTestData.workPhoneNumber,
+					}),
+				);
 
-			const fileContent = "test content";
+				// Additional explicit assertions for naturalLanguageCode and avatar persistence
+				expect(result.data.updateCurrentUser?.naturalLanguageCode).toBe(
+					comprehensiveTestData.naturalLanguageCode,
+				);
 
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
+				// Verify avatar fields are properly set and valid
+				expect(result.data.updateCurrentUser?.avatarMimeType).toBe(
+					"image/jpeg",
+				);
+				expect(result.data.updateCurrentUser?.avatarURL).toBeDefined();
+				expect(result.data.updateCurrentUser?.avatarURL).toMatch(
+					/\/objects\/[a-zA-Z0-9]+$/,
+				);
 
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${userToken}`,
-				},
-				payload: body,
-			});
-
-			const result = JSON.parse(response.body);
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data.updateCurrentUser).toEqual(
-				expect.objectContaining({
-					addressLine1: comprehensiveTestData.addressLine1,
-					addressLine2: comprehensiveTestData.addressLine2,
-					avatarMimeType: "image/jpeg",
-					avatarURL: expect.stringContaining("/objects/"),
-					birthDate: comprehensiveTestData.birthDate,
-					city: comprehensiveTestData.city,
-					countryCode: comprehensiveTestData.countryCode,
-					description: comprehensiveTestData.description,
-					educationGrade: comprehensiveTestData.educationGrade,
-					emailAddress: comprehensiveTestData.emailAddress,
-					employmentStatus: comprehensiveTestData.employmentStatus,
-					homePhoneNumber: comprehensiveTestData.homePhoneNumber,
-					maritalStatus: comprehensiveTestData.maritalStatus,
-					mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
-					name: comprehensiveTestData.name,
-					natalSex: comprehensiveTestData.natalSex,
-					naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
-					postalCode: comprehensiveTestData.postalCode,
-					state: comprehensiveTestData.state,
-					workPhoneNumber: comprehensiveTestData.workPhoneNumber,
-				}),
-			);
-
-			// Additional explicit assertions for naturalLanguageCode and avatar persistence
-			expect(result.data.updateCurrentUser?.naturalLanguageCode).toBe(
-				comprehensiveTestData.naturalLanguageCode,
-			);
-
-			// Verify avatar fields are properly set and valid
-			expect(result.data.updateCurrentUser?.avatarMimeType).toBe("image/jpeg");
-			expect(result.data.updateCurrentUser?.avatarURL).toBeDefined();
-			expect(result.data.updateCurrentUser?.avatarURL).toMatch(
-				/\/objects\/[a-zA-Z0-9]+$/,
-			);
-
-			// Verify minio putObject was called for avatar upload
-			expect(putObjectSpy).toHaveBeenCalled();
+				expect(statObjectSpy).toHaveBeenCalled();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
 		});
 	});
 });
