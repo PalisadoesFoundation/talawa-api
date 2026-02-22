@@ -51,7 +51,9 @@ export async function createRecurringEventWithInstances(
 
 	// Create recurrence rule
 	const recurrenceEndDate = new Date(startDate);
-	recurrenceEndDate.setDate(startDate.getDate() + instanceCount * interval);
+	recurrenceEndDate.setUTCDate(
+		startDate.getUTCDate() + instanceCount * interval,
+	);
 
 	const [recurrenceRule] = await server.drizzleClient
 		.insert(recurrenceRulesTable)
@@ -76,7 +78,7 @@ export async function createRecurringEventWithInstances(
 
 	for (let i = 0; i < instanceCount; i++) {
 		const instanceStart = new Date(startDate);
-		instanceStart.setDate(startDate.getDate() + i * interval);
+		instanceStart.setUTCDate(startDate.getUTCDate() + i * interval);
 
 		const instanceEnd = new Date(instanceStart);
 		instanceEnd.setTime(instanceStart.getTime() + 30 * 60 * 1000);

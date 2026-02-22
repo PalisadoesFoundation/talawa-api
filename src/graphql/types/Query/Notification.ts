@@ -98,7 +98,7 @@ User.implement({
 						),
 					)
 					.orderBy(desc(notificationLogsTable.createdAt))
-					.limit(parsedArgs.input.first || 20)
+					.limit(parsedArgs.input.first ?? 20)
 					.offset(parsedArgs.input.skip || 0);
 
 				return rawNotifications.map((notification) => ({
