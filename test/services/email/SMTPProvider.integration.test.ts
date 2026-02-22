@@ -49,8 +49,11 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 		}
 	});
 
-	it("should send real email using Ethereal test account", async () => {
-		if (!canRunSMTP || !provider || !testAccount) return;
+	it("should send real email using Ethereal test account", async (ctx) => {
+		if (!canRunSMTP || !provider || !testAccount) {
+			ctx.skip();
+			return;
+		}
 
 		const result = await provider.sendEmail({
 			id: "integration-1",
@@ -66,8 +69,11 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 		expect(result.messageId?.length).toBeGreaterThan(0);
 	});
 
-	it("should handle large Data URI attachment (nodemailer v7 sanity check)", async () => {
-		if (!canRunSMTP || !transporter || !testAccount) return;
+	it("should handle large Data URI attachment (nodemailer v7 sanity check)", async (ctx) => {
+		if (!canRunSMTP || !transporter || !testAccount) {
+			ctx.skip();
+			return;
+		}
 
 		const largeBuffer = Buffer.alloc(200 * 1024, "a");
 		const base64Data = largeBuffer.toString("base64");
@@ -88,8 +94,11 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 		expect(info.messageId).toBeDefined();
 	});
 
-	it("should handle repeated SMTP sends without DNS-related failures", async () => {
-		if (!canRunSMTP || !provider || !testAccount) return;
+	it("should handle repeated SMTP sends without DNS-related failures", async (ctx) => {
+		if (!canRunSMTP || !provider || !testAccount) {
+			ctx.skip();
+			return;
+		}
 
 		for (let i = 0; i < 5; i++) {
 			const result = await provider.sendEmail({
@@ -105,8 +114,11 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 		}
 	});
 
-	it("should correctly handle complex recipient formats via provider", async () => {
-		if (!canRunSMTP || !provider || !testAccount) return;
+	it("should correctly handle complex recipient formats via provider", async (ctx) => {
+		if (!canRunSMTP || !provider || !testAccount) {
+			ctx.skip();
+			return;
+		}
 
 		const result = await provider.sendEmail({
 			id: "recipient-test",
@@ -119,8 +131,11 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 		expect(result.success).toBe(true);
 		expect(result.messageId).toBeDefined();
 	});
-	it("should reject CRLF injection in recipient field", async () => {
-		if (!canRunSMTP || !provider || !testAccount) return;
+	it("should reject CRLF injection in recipient field", async (ctx) => {
+		if (!canRunSMTP || !provider || !testAccount) {
+			ctx.skip();
+			return;
+		}
 
 		const result = await provider.sendEmail({
 			id: "recipient-injection-test",
