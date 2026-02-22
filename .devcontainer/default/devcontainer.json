@@ -66,7 +66,7 @@
 		// https://github.com/devcontainers/features/tree/main/src/git
 		"ghcr.io/devcontainers/features/git": {},
 		// https://github.com/devcontainers/features/tree/main/src/github-cli
-		"ghcr.io/devcontainers/features/github-cli": {},
+		// "ghcr.io/devcontainers/features/github-cli": {},
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
 			"ENABLENONROOTDOCKER": "true"
 		}
