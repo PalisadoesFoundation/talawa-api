@@ -1134,8 +1134,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
       // Second attachment: invalid MIME type (not in postAttachmentMimeTypeEnum)
       const mockInvalidAttachment = {
         fileHash: VALID_FILE_HASH,
-        // biome-ignore lint/suspicious/noExplicitAny: testing invalid enum value
-        mimeType: "text/plain" as any,
+        mimeType: "text/plain" as unknown as any,
         name: "invalid.txt",
         objectName: "minio-invalid-object",
       };
