@@ -38,7 +38,7 @@ If you used `./envFiles/.env.rootless.production`, the default access ports are:
 
 1. HTTP: `http://localhost:8080`
 2. HTTPS: `https://localhost:8443`
-:::
+   :::
 
 ### Production Server Shutdown
 
@@ -95,30 +95,28 @@ Most of these steps are specific to Linux. You will need to modify them accordin
     sudo su $USER -
     ```
 
-5.  Build the docker devcontainer
+5.  Build and start the docker devcontainer
+    1. Default mode:
+       ```
+       devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
+       ```
+    1. Rootless mode:
+       ```
+       devcontainer up --workspace-folder . --config .devcontainer/rootless/devcontainer.json
+       ```
 
-    ```
-    devcontainer build --workspace-folder .
-    ```
-
-6.  When the build is complete, the last line of the output should be:
-
-    ```
-    {"outcome":"success","imageName":"talawa-api"}
-    ```
-
-7.  Start the docker devcontainer
-
-    ```
-    devcontainer up --workspace-folder .
-    ```
-
-8.  When the container startup is complete, the last lines of output should look like this:
+6.  When the container startup is complete, the last lines of output should look like this:
 
     ```
     ...
     ...
     {"outcome":"success",   "containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34",   "composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
+    ```
+
+7.  Start the application
+
+    ```
+    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
     ```
 
 All done!
