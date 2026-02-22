@@ -1265,7 +1265,7 @@ jobs:
           sleep 10
       - name: Verify Running Containers
         run: docker ps
-      - name: Start API server container and monitor logs
+      - name: Start server and monitor logs
         id: api-container
         run: |
           API_CONTAINER=$(docker compose ps -q api 2>/dev/null || true)
