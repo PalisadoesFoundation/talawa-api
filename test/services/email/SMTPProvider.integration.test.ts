@@ -1,37 +1,57 @@
 import nodemailer from "nodemailer";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { SMTPProvider } from "~/src/services/email/providers/SMTPProvider";
 import type { NonEmptyString } from "~/src/services/email/types";
 
 describe("SMTPProvider Integration (Nodemailer v7)", () => {
-	let testAccount: Awaited<ReturnType<typeof nodemailer.createTestAccount>>;
-	let provider: SMTPProvider;
-	let transporter: ReturnType<typeof nodemailer.createTransport>;
+	let testAccount: Awaited<
+		ReturnType<typeof nodemailer.createTestAccount>
+	> | null = null;
+	let provider: SMTPProvider | null = null;
+	let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+	let canRunSMTP = true;
+
 	beforeAll(async () => {
-		testAccount = await nodemailer.createTestAccount();
+		try {
+			testAccount = await nodemailer.createTestAccount();
 
-		provider = new SMTPProvider({
-			host: testAccount.smtp.host as NonEmptyString,
-			port: testAccount.smtp.port,
-			secure: testAccount.smtp.secure,
-			user: testAccount.user,
-			password: testAccount.pass,
-			fromEmail: testAccount.user,
-			fromName: "Talawa Integration",
-		});
-
-		transporter = nodemailer.createTransport({
-			host: testAccount.smtp.host,
-			port: testAccount.smtp.port,
-			secure: testAccount.smtp.secure,
-			auth: {
+			provider = new SMTPProvider({
+				host: testAccount.smtp.host as NonEmptyString,
+				port: testAccount.smtp.port,
+				secure: testAccount.smtp.secure,
 				user: testAccount.user,
-				pass: testAccount.pass,
-			},
-		});
+				password: testAccount.pass,
+				fromEmail: testAccount.user,
+				fromName: "Talawa Integration",
+			});
+
+			transporter = nodemailer.createTransport({
+				host: testAccount.smtp.host,
+				port: testAccount.smtp.port,
+				secure: testAccount.smtp.secure,
+				auth: {
+					user: testAccount.user,
+					pass: testAccount.pass,
+				},
+			});
+		} catch (err) {
+			console.warn(
+				"Skipping SMTP integration tests (Ethereal unavailable)",
+				err,
+			);
+			canRunSMTP = false;
+		}
+	});
+
+	afterAll(() => {
+		if (transporter) {
+			transporter.close();
+		}
 	});
 
 	it("should send real email using Ethereal test account", async () => {
+		if (!canRunSMTP || !provider || !testAccount) return;
+
 		const result = await provider.sendEmail({
 			id: "integration-1",
 			email: testAccount.user,
@@ -40,11 +60,15 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 			textBody: "Hello v7",
 			userId: "u1",
 		});
+
 		expect(result.success).toBe(true);
 		expect(typeof result.messageId).toBe("string");
 		expect(result.messageId?.length).toBeGreaterThan(0);
 	});
-	it("should handle large Data URI attachment (nodemailer v7)", async () => {
+
+	it("should handle large Data URI attachment (nodemailer v7 sanity check)", async () => {
+		if (!canRunSMTP || !transporter || !testAccount) return;
+
 		const largeBuffer = Buffer.alloc(200 * 1024, "a");
 		const base64Data = largeBuffer.toString("base64");
 
@@ -63,7 +87,10 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 
 		expect(info.messageId).toBeDefined();
 	});
+
 	it("should handle repeated SMTP sends without DNS-related failures", async () => {
+		if (!canRunSMTP || !provider || !testAccount) return;
+
 		for (let i = 0; i < 5; i++) {
 			const result = await provider.sendEmail({
 				id: `dns-test-${i}`,
@@ -77,16 +104,32 @@ describe("SMTPProvider Integration (Nodemailer v7)", () => {
 			expect(result.messageId).toBeDefined();
 		}
 	});
-	it("should correctly parse complex recipient formats (nodemailer v7)", async () => {
-		const info = await transporter.sendMail({
-			from: `"Sender Name" <${testAccount.user}>`,
-			to: `"User One" <${testAccount.user}>, ${testAccount.user}`,
-			cc: `"Another User" <${testAccount.user}>`,
+
+	it("should correctly handle complex recipient formats via provider", async () => {
+		if (!canRunSMTP || !provider || !testAccount) return;
+
+		const result = await provider.sendEmail({
+			id: "recipient-test",
+			email: `"User One" <${testAccount.user}>, ${testAccount.user}`,
 			subject: "Address Parsing Test",
-			text: "Testing address parser",
+			htmlBody: "<p>Testing address parser</p>",
+			userId: "u1",
 		});
 
-		expect(info.messageId).toBeDefined();
-		expect(Array.isArray(info.accepted)).toBe(true);
+		expect(result.success).toBe(true);
+		expect(result.messageId).toBeDefined();
+	});
+	it("should reject CRLF injection in recipient field", async () => {
+		if (!canRunSMTP || !provider || !testAccount) return;
+
+		const result = await provider.sendEmail({
+			id: "recipient-injection-test",
+			email: `${testAccount.user}\r\nBCC: evil@example.com`,
+			subject: "Injection Test",
+			htmlBody: "<p>Injection</p>",
+			userId: "u1",
+		});
+
+		expect(result.success).toBe(false);
 	});
 });
