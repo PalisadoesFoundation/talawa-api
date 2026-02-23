@@ -23,6 +23,9 @@ services:
         # Should be set to false when a third party postgres test service could be used in the api service the and the `postgres_test` compose profile is disabled.
         required: true
     # https://docs.docker.com/compose/environment-variables/
+    # Load full .env so createServer gets API_JWT_SECRET, API_GRAPHQL_* etc. (workflow adds API_JWT_SECRET to .env before run)
+    env_file:
+      - .env
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
       - API_MINIO_TEST_END_POINT=${API_MINIO_TEST_END_POINT:?error}
