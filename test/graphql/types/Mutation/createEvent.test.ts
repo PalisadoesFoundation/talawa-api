@@ -1089,9 +1089,11 @@ suite("Mutation field createEvent", () => {
 						endAt: getFutureDate(7, 12),
 						attachments: [
 							{
-								objectName: "test.pdf",
-								mimeType: "application/pdf",
-								fileHash: "fakehash",
+								objectName: "test.png",
+								mimeType: "image/png",
+								name: "test.png",
+								fileHash:
+									"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
 							},
 						],
 					},
@@ -1148,7 +1150,8 @@ suite("Mutation field createEvent", () => {
 					(_, i) => ({
 						objectName: `test${i + 1}.jpg`,
 						mimeType: "image/jpeg",
-						fileHash: `hash${i}`,
+						name: `test${i + 1}.jpg`,
+						fileHash: `a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b${i}`,
 					}),
 				);
 				const result = await createEvent({
@@ -2008,8 +2011,8 @@ suite("Event Attachment Uploads", () => {
 
 	test("creates attachment records when valid FileMetadataInput is provided and file exists in MinIO", async () => {
 		const organizationId = await createTestOrganization();
-		const objectName = "test-event-attachment.pdf";
-		const mimeType = "application/pdf";
+		const objectName = "test-event-attachment.png";
+		const mimeType = "image/png";
 
 		vi.spyOn(server.minio.client, "statObject").mockResolvedValue({
 			size: 1024,
@@ -2025,8 +2028,9 @@ suite("Event Attachment Uploads", () => {
 					{
 						objectName,
 						mimeType,
-						name: "Event Document.pdf",
-						fileHash: "test-hash",
+						name: "Event Document.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 					},
 				],
 			},
@@ -2047,7 +2051,7 @@ suite("Event Attachment Uploads", () => {
 				eventId,
 				objectName,
 				mimeType,
-				name: "Event Document.pdf",
+				name: "Event Document.png",
 			}),
 		);
 	});
@@ -2073,7 +2077,8 @@ suite("Event Attachment Uploads", () => {
 						objectName,
 						mimeType,
 						name: "Missing.png",
-						fileHash: "hash",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 					},
 				],
 			},
@@ -2106,7 +2111,8 @@ suite("Event Attachment Uploads", () => {
 						objectName: "test.png",
 						mimeType: "image/png",
 						name: "test.png",
-						fileHash: "hash",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 					},
 				],
 			},
@@ -2131,10 +2137,11 @@ suite("Event Attachment Uploads", () => {
 				...baseEventInput(organizationId),
 				attachments: [
 					{
-						objectName: "test.pdf",
-						mimeType: "application/pdf", // Input claims pdf
-						name: "test.pdf",
-						fileHash: "hash",
+						objectName: "test.png",
+						mimeType: "image/png", // Input claims png
+						name: "test.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 					},
 				],
 			},
@@ -2162,10 +2169,10 @@ suite("Event Attachment Uploads", () => {
 
 		vi.spyOn(server.minio.client, "statObject").mockImplementation(
 			async (_bucket, objectName) => {
-				if (objectName === "valid.pdf") {
+				if (objectName === "valid.png") {
 					return {
 						size: 1024,
-						metaData: { "content-type": "application/pdf" },
+						metaData: { "content-type": "image/png" },
 						lastModified: new Date(),
 						etag: "123",
 					} as unknown as import("minio").BucketItemStat;
@@ -2179,16 +2186,18 @@ suite("Event Attachment Uploads", () => {
 				...baseEventInput(organizationId),
 				attachments: [
 					{
-						objectName: "valid.pdf",
-						mimeType: "application/pdf",
-						name: "1.pdf",
-						fileHash: "hash1",
+						objectName: "valid.png",
+						mimeType: "image/png",
+						name: "1.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 					},
 					{
-						objectName: "missing.pdf",
-						mimeType: "application/pdf",
-						name: "2.pdf",
-						fileHash: "hash2",
+						objectName: "missing.png",
+						mimeType: "image/png",
+						name: "2.png",
+						fileHash:
+							"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
 					},
 				],
 			},

@@ -683,16 +683,17 @@ suite("Mutation field updateUser", () => {
 				const userId = createUser.data.createUser.user.id;
 
 				const fakeAvatarMetadata = {
-					fileHash: "dummy-hash",
-					mimeType: "text/plain",
-					name: "avatar.txt",
+					fileHash:
+						"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+					mimeType: "video/mp4",
+					name: "avatar.mp4",
 					objectName: "avatar-object-name",
 				};
 
 				const statObjectSpy = vi
 					.spyOn(server.minio.client, "statObject")
 					.mockResolvedValue({
-						metaData: { "content-type": "text/plain" },
+						metaData: { "content-type": "video/mp4" },
 						size: 1000,
 					} as unknown as Awaited<
 						ReturnType<typeof server.minio.client.statObject>
@@ -717,7 +718,7 @@ suite("Mutation field updateUser", () => {
 									issues: expect.arrayContaining([
 										expect.objectContaining({
 											argumentPath: ["input", "avatar", "mimeType"],
-											message: 'Mime type "text/plain" is not allowed.',
+											message: 'Mime type "video/mp4" is not allowed.',
 										}),
 									]),
 								}),

@@ -806,8 +806,8 @@ suite("Mutation field updateCurrentUser", () => {
 						avatar: {
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-							mimeType: "text/plain" as unknown as "image/png",
-							name: "test.txt",
+							mimeType: "video/mp4" as unknown as "image/png",
+							name: "test.mp4",
 							objectName: "minio-invalid-object",
 						},
 					},
@@ -823,7 +823,7 @@ suite("Mutation field updateCurrentUser", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["input", "avatar", "mimeType"],
-									message: 'Mime type "text/plain" is not allowed.',
+									message: 'Mime type "video/mp4" is not allowed.',
 								}),
 							]),
 						}),
