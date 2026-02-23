@@ -1077,7 +1077,9 @@ suite("Mutation field createEvent", () => {
 				.mockResolvedValue({
 					metaData: { "content-type": "image/jpeg" },
 					size: 1000,
-				} as any);
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
 			try {
 				const result = await createEvent({
 					input: {
@@ -1138,7 +1140,9 @@ suite("Mutation field createEvent", () => {
 				.mockResolvedValue({
 					metaData: { "content-type": "image/jpeg" },
 					size: 1000,
-				} as any);
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
 			try {
 				const attachments = Array.from({ length: attachmentCount }).map(
 					(_, i) => ({

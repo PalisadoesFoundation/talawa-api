@@ -1551,7 +1551,9 @@ suite("Mutation field updateCurrentUser", () => {
 				.mockResolvedValue({
 					metaData: { "content-type": "image/jpeg" },
 					size: 1000,
-				} as any);
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
 
 			try {
 				const result = await mercuriusClient.mutate(
