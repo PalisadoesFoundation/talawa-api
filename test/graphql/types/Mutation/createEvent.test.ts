@@ -2168,7 +2168,7 @@ suite("Event Attachment Uploads", () => {
 						metaData: { "content-type": "application/pdf" },
 						lastModified: new Date(),
 						etag: "123",
-					} as any;
+					} as unknown as import("minio").BucketItemStat;
 				}
 				throw notFoundError;
 			},
