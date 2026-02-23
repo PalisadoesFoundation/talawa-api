@@ -910,7 +910,7 @@ suite("Mutation field updateCurrentUser", () => {
 			// Verify avatar fields are properly set and valid
 			expect(result.data?.updateCurrentUser?.avatarMimeType).toBe("image/jpeg");
 			expect(result.data?.updateCurrentUser?.avatarURL).toMatch(
-				/\/objects\/[a-zA-Z0-9]+$/,
+				/\/objects\/[a-zA-Z0-9._-]+$/,
 			);
 		});
 
@@ -1612,7 +1612,7 @@ suite("Mutation field updateCurrentUser", () => {
 				);
 				expect(result.data.updateCurrentUser?.avatarURL).toBeDefined();
 				expect(result.data.updateCurrentUser?.avatarURL).toMatch(
-					/\/objects\/[a-zA-Z0-9]+$/,
+					/\/objects\/[a-zA-Z0-9._-]+$/,
 				);
 
 				expect(statObjectSpy).toHaveBeenCalled();

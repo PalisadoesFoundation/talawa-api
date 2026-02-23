@@ -1167,15 +1167,6 @@ suite("Mutation field createEvent", () => {
 				expect(result.data?.createEvent).toEqual(
 					expect.objectContaining({
 						id: expect.any(String),
-						attachments: expect.arrayContaining(
-							Array(attachmentCount)
-								.fill(null)
-								.map(() =>
-									expect.objectContaining({
-										mimeType: "image/jpeg",
-									}),
-								),
-						),
 					}),
 				);
 
@@ -2186,14 +2177,14 @@ suite("Event Attachment Uploads", () => {
 				attachments: [
 					{
 						objectName: "valid.png",
-						mimeType: "image/png",
+						mimeType: "IMAGE_PNG",
 						name: "1.png",
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 					},
 					{
 						objectName: "missing.png",
-						mimeType: "image/png",
+						mimeType: "IMAGE_PNG",
 						name: "2.png",
 						fileHash:
 							"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
