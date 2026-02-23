@@ -1090,7 +1090,7 @@ suite("Mutation field createEvent", () => {
 						attachments: [
 							{
 								objectName: "test.png",
-								mimeType: "image/png",
+								mimeType: "IMAGE_PNG",
 								name: "test.png",
 								fileHash:
 									"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
@@ -1149,7 +1149,7 @@ suite("Mutation field createEvent", () => {
 				const attachments = Array.from({ length: attachmentCount }).map(
 					(_, i) => ({
 						objectName: `test${i + 1}.jpg`,
-						mimeType: "image/jpeg",
+						mimeType: "IMAGE_JPEG",
 						name: `test${i + 1}.jpg`,
 						fileHash: `a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b${i}`,
 					}),
@@ -2012,11 +2012,11 @@ suite("Event Attachment Uploads", () => {
 	test("creates attachment records when valid FileMetadataInput is provided and file exists in MinIO", async () => {
 		const organizationId = await createTestOrganization();
 		const objectName = "test-event-attachment.png";
-		const mimeType = "image/png";
+		const mimeType = "image/png"; // This variable is used in the expect statement, not the input
 
 		vi.spyOn(server.minio.client, "statObject").mockResolvedValue({
 			size: 1024,
-			metaData: { "content-type": mimeType },
+			metaData: { "content-type": "image/png" },
 			lastModified: new Date(),
 			etag: "test-etag",
 		});
@@ -2027,7 +2027,7 @@ suite("Event Attachment Uploads", () => {
 				attachments: [
 					{
 						objectName,
-						mimeType,
+						mimeType: "IMAGE_PNG",
 						name: "Event Document.png",
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -2050,7 +2050,7 @@ suite("Event Attachment Uploads", () => {
 			expect.objectContaining({
 				eventId,
 				objectName,
-				mimeType,
+				mimeType, // This is the original mimeType variable
 				name: "Event Document.png",
 			}),
 		);
@@ -2059,7 +2059,6 @@ suite("Event Attachment Uploads", () => {
 	test("returns invalid_arguments error when statObject throws NotFound", async () => {
 		const organizationId = await createTestOrganization();
 		const objectName = "missing-file.png";
-		const mimeType = "image/png";
 
 		const notFoundError = new Error("Not Found");
 		notFoundError.name = "NotFound";
@@ -2075,7 +2074,7 @@ suite("Event Attachment Uploads", () => {
 				attachments: [
 					{
 						objectName,
-						mimeType,
+						mimeType: "IMAGE_PNG",
 						name: "Missing.png",
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -2109,7 +2108,7 @@ suite("Event Attachment Uploads", () => {
 				attachments: [
 					{
 						objectName: "test.png",
-						mimeType: "image/png",
+						mimeType: "IMAGE_PNG",
 						name: "test.png",
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -2138,7 +2137,7 @@ suite("Event Attachment Uploads", () => {
 				attachments: [
 					{
 						objectName: "test.png",
-						mimeType: "image/png", // Input claims png
+						mimeType: "IMAGE_PNG", // Input claims png
 						name: "test.png",
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

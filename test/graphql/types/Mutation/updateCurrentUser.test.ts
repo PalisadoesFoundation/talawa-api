@@ -806,7 +806,7 @@ suite("Mutation field updateCurrentUser", () => {
 						avatar: {
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-							mimeType: "video/mp4" as unknown as "image/png",
+							mimeType: "VIDEO_MP4" as unknown as "IMAGE_PNG",
 							name: "test.mp4",
 							objectName: "minio-invalid-object",
 						},
@@ -889,7 +889,7 @@ suite("Mutation field updateCurrentUser", () => {
 						avatar: {
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-							mimeType: "image/jpeg",
+							mimeType: "IMAGE_JPEG",
 							name: "test.jpg",
 							objectName: "minio-valid-object",
 						},
@@ -970,7 +970,7 @@ suite("Mutation field updateCurrentUser", () => {
 							avatar: {
 								fileHash:
 									"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-								mimeType: "image/jpeg",
+								mimeType: "IMAGE_JPEG",
 								name: "test.jpg",
 								objectName: "minio-valid-object-1",
 							},
@@ -1075,7 +1075,7 @@ suite("Mutation field updateCurrentUser", () => {
 						avatar: {
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-							mimeType: "image/jpeg",
+							mimeType: "IMAGE_JPEG",
 							name: "test.jpg",
 							objectName: "minio-valid-object-2",
 						},
@@ -1105,7 +1105,7 @@ suite("Mutation field updateCurrentUser", () => {
 						avatar: {
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-							mimeType: "image/png",
+							mimeType: "IMAGE_PNG",
 							name: "test.png",
 							objectName: "minio-valid-object-2",
 						},
@@ -1565,8 +1565,10 @@ suite("Mutation field updateCurrentUser", () => {
 								...comprehensiveTestData,
 								avatar: {
 									objectName: "test.jpg",
-									mimeType: "image/jpeg",
-									fileHash: "hash",
+									mimeType: "IMAGE_JPEG",
+									fileHash:
+										"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+									name: "test.jpg",
 								},
 							},
 						},
