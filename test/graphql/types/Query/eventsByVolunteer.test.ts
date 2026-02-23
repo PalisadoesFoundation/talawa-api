@@ -2245,7 +2245,6 @@ suite("Query field eventsByVolunteer", () => {
 				eventId: eventId,
 				name: "Test Attachment",
 				mimeType: "image/jpeg",
-				objectName: "test-object-name",
 			});
 
 			// Volunteer for event
