@@ -5,6 +5,10 @@ export type AppLogger = Logger;
 
 const isTest = process.env.NODE_ENV === "test";
 const isStaging = process.env.NODE_ENV === "staging";
+/** Use pino-pretty only when explicitly enabled; production images omit pino-pretty (devDep). */
+const usePinoPretty =
+	process.env.API_IS_PINO_PRETTY === "true" ||
+	process.env.API_IS_PINO_PRETTY === "1";
 
 const redactPaths = [
 	"host",
@@ -25,6 +29,7 @@ export const loggerOptions: LoggerOptions = {
 	transport:
 		isTest ||
 		isStaging ||
+		!usePinoPretty ||
 		(process.env.LOG_TRANSPORT_DISABLED === "true" &&
 			process.env.NODE_ENV !== "test")
 			? undefined
