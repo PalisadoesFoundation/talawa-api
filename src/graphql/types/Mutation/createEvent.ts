@@ -449,87 +449,79 @@ builder.mutationField("createEvent", (t) =>
 							const attachments = parsedArgs.input.attachments;
 
 							// Verify all files exist in MinIO BEFORE database insert
-							try {
-								const stats = await Promise.all(
-									attachments.map((attachment) =>
-										ctx.minio.client.statObject(
+							await Promise.all(
+								attachments.map(async (attachment, i) => {
+									try {
+										const stat = await ctx.minio.client.statObject(
 											ctx.minio.bucketName,
 											attachment.objectName,
-										),
-									),
-								);
+										);
 
-								// Validate MIME types
-								for (let i = 0; i < attachments.length; i++) {
-									const attachment = attachments[i];
-									const stat = stats[i];
+										const minioMimeType = stat.metaData?.["content-type"];
 
-									if (!stat || !attachment) {
-										continue;
-									}
+										if (
+											minioMimeType &&
+											minioMimeType !== attachment.mimeType
+										) {
+											throw new TalawaGraphQLError({
+												extensions: {
+													code: "invalid_arguments",
+													issues: [
+														{
+															argumentPath: [
+																"input",
+																"attachments",
+																i,
+																"mimeType",
+															],
+															message: `Mime type "${attachment.mimeType}" does not match the file in storage ("${minioMimeType}").`,
+														},
+													],
+												},
+											});
+										}
+									} catch (error) {
+										if (error instanceof TalawaGraphQLError) {
+											throw error;
+										}
 
-									const minioMimeType = stat.metaData?.["content-type"];
-
-									if (minioMimeType && minioMimeType !== attachment.mimeType) {
+										// Only treat NotFound as user error
+										if (
+											error instanceof Error &&
+											(error.name === "NotFound" ||
+												error.message.includes("Not Found") ||
+												(error as { code?: string }).code === "NotFound")
+										) {
+											throw new TalawaGraphQLError({
+												extensions: {
+													code: "invalid_arguments",
+													issues: [
+														{
+															argumentPath: [
+																"input",
+																"attachments",
+																i,
+																"objectName",
+															],
+															message:
+																"File not found in storage. Please upload the file first.",
+														},
+													],
+												},
+											});
+										}
+										// For other errors, throw unexpected
+										ctx.log.error(
+											`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
+										);
 										throw new TalawaGraphQLError({
 											extensions: {
-												code: "invalid_arguments",
-												issues: [
-													{
-														argumentPath: [
-															"input",
-															"attachments",
-															i,
-															"mimeType",
-														],
-														message: `Mime type "${attachment.mimeType}" does not match the file in storage ("${minioMimeType}").`,
-													},
-												],
+												code: "unexpected",
 											},
 										});
 									}
-								}
-							} catch (error) {
-								if (error instanceof TalawaGraphQLError) {
-									throw error;
-								}
-
-								ctx.log.error(
-									error,
-									"Error verifying MinIO objects for createEvent",
-								);
-
-								const isMinioError = (
-									err: unknown,
-								): err is { code?: string; name?: string } =>
-									typeof err === "object" && err !== null;
-
-								if (
-									isMinioError(error) &&
-									(error.code === "NoSuchKey" ||
-										error.code === "NotFound" ||
-										error.name === "NotFound")
-								) {
-									throw new TalawaGraphQLError({
-										extensions: {
-											code: "invalid_arguments",
-											issues: [
-												{
-													argumentPath: ["input", "attachments"],
-													message:
-														"One or more files not found or inaccessible in storage.",
-												},
-											],
-										},
-									});
-								}
-
-								throw new TalawaGraphQLError({
-									extensions: {
-										code: "unexpected",
-									},
-								});
-							}
+								}),
+							);
 
 							createdEventAttachments = await tx
 								.insert(eventAttachmentsTable)

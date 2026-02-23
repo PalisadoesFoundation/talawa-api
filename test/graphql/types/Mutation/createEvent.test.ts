@@ -2000,3 +2000,208 @@ suite("Default Agenda Folder and Category Creation", () => {
 		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
 	});
 });
+
+suite("Event Attachment Uploads", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("creates attachment records when valid FileMetadataInput is provided and file exists in MinIO", async () => {
+		const organizationId = await createTestOrganization();
+		const objectName = "test-event-attachment.pdf";
+		const mimeType = "application/pdf";
+
+		vi.spyOn(server.minio.client, "statObject").mockResolvedValue({
+			size: 1024,
+			metaData: { "content-type": mimeType },
+			lastModified: new Date(),
+			etag: "test-etag",
+		});
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName,
+						mimeType,
+						name: "Event Document.pdf",
+						fileHash: "test-hash",
+					},
+				],
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+
+		const eventId = result.data.createEvent.id;
+		const attachments =
+			await server.drizzleClient.query.eventAttachmentsTable.findMany({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(attachments).toHaveLength(1);
+		expect(attachments[0]).toEqual(
+			expect.objectContaining({
+				eventId,
+				objectName,
+				mimeType,
+				name: "Event Document.pdf",
+			}),
+		);
+	});
+
+	test("returns invalid_arguments error when statObject throws NotFound", async () => {
+		const organizationId = await createTestOrganization();
+		const objectName = "missing-file.png";
+		const mimeType = "image/png";
+
+		const notFoundError = new Error("Not Found");
+		notFoundError.name = "NotFound";
+		Object.assign(notFoundError, { code: "NotFound" });
+
+		vi.spyOn(server.minio.client, "statObject").mockRejectedValue(
+			notFoundError,
+		);
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName,
+						mimeType,
+						name: "Missing.png",
+						fileHash: "hash",
+					},
+				],
+			},
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "attachments", 0, "objectName"],
+					message: expect.stringContaining("not found in storage"),
+				}),
+			]),
+		);
+	});
+
+	test("returns unexpected error when statObject throws an unexpected error", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.minio.client, "statObject").mockRejectedValue(
+			new Error("Some unexpected MinIO error"),
+		);
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName: "test.png",
+						mimeType: "image/png",
+						name: "test.png",
+						fileHash: "hash",
+					},
+				],
+			},
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
+
+	test("returns invalid_arguments error when mimeType does not match storage", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.minio.client, "statObject").mockResolvedValue({
+			size: 1024,
+			metaData: { "content-type": "image/jpeg" }, // Actual is jpeg
+			lastModified: new Date(),
+			etag: "test-etag",
+		});
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName: "test.pdf",
+						mimeType: "application/pdf", // Input claims pdf
+						name: "test.pdf",
+						fileHash: "hash",
+					},
+				],
+			},
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "attachments", 0, "mimeType"],
+					message: expect.stringContaining(
+						"does not match the file in storage",
+					),
+				}),
+			]),
+		);
+	});
+
+	test("handles multiple attachments properly and reports correct index on failure", async () => {
+		const organizationId = await createTestOrganization();
+
+		const notFoundError = new Error("Not Found");
+		notFoundError.name = "NotFound";
+
+		vi.spyOn(server.minio.client, "statObject").mockImplementation(
+			async (_bucket, objectName) => {
+				if (objectName === "valid.pdf") {
+					return {
+						size: 1024,
+						metaData: { "content-type": "application/pdf" },
+						lastModified: new Date(),
+						etag: "123",
+					} as any;
+				}
+				throw notFoundError;
+			},
+		);
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName: "valid.pdf",
+						mimeType: "application/pdf",
+						name: "1.pdf",
+						fileHash: "hash1",
+					},
+					{
+						objectName: "missing.pdf",
+						mimeType: "application/pdf",
+						name: "2.pdf",
+						fileHash: "hash2",
+					},
+				],
+			},
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "attachments", 1, "objectName"],
+				}),
+			]),
+		);
+	});
+});

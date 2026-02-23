@@ -150,16 +150,34 @@ builder.mutationField("updateUser", (t) =>
 					// Verify file exists in MinIO BEFORE database update
 					try {
 						await ctx.minio.client.statObject(ctx.minio.bucketName, avatarName);
-					} catch (_error) {
+					} catch (error) {
+						// Only treat NotFound as user error
+						if (
+							error instanceof Error &&
+							(error.name === "NotFound" ||
+								error.message.includes("Not Found") ||
+								(error as { code?: string }).code === "NotFound")
+						) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "invalid_arguments",
+									issues: [
+										{
+											argumentPath: ["input", "avatar", "objectName"],
+											message:
+												"File not found in storage. Please upload the file first.",
+										},
+									],
+								},
+							});
+						}
+						// For other errors, throw unexpected
+						ctx.log.error(
+							`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
+						);
 						throw new TalawaGraphQLError({
 							extensions: {
-								code: "invalid_arguments",
-								issues: [
-									{
-										argumentPath: ["input", "avatar", "objectName"],
-										message: "File not found or inaccessible in storage.",
-									},
-								],
+								code: "unexpected",
 							},
 						});
 					}
