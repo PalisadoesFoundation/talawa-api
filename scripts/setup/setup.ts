@@ -547,7 +547,7 @@ export async function restAuthSetup(
 		answers.API_AUTH_JWT_SECRET = await promptInput(
 			"API_AUTH_JWT_SECRET",
 			"REST auth JWT secret (min 32 characters):",
-			authJwtSecret.slice(0, 32),
+			authJwtSecret,
 			(input: string) => {
 				const trimmed = input.trim();
 				if (trimmed.length < 32) {
@@ -575,7 +575,7 @@ export async function restAuthSetup(
 		answers.API_COOKIE_SECRET = await promptInput(
 			"API_COOKIE_SECRET",
 			"Cookie signing secret (min 32 characters):",
-			cookieSecret.slice(0, 32),
+			cookieSecret,
 			(input: string) => {
 				const trimmed = input.trim();
 				if (trimmed.length < 32) {
@@ -591,11 +591,25 @@ export async function restAuthSetup(
 			false,
 		);
 		if (setCookieDomain) {
-			answers.API_COOKIE_DOMAIN = await promptInput(
+			const domainInput = await promptInput(
 				"API_COOKIE_DOMAIN",
 				"Cookie domain (e.g. .example.com):",
 				"",
+				(input: string) => {
+					const trimmed = input.trim();
+					if (trimmed.length === 0) {
+						return "Cookie domain cannot be empty.";
+					}
+					// Optional leading dot, then valid domain (aligned with envConfigSchema API_COOKIE_DOMAIN)
+					const domainPattern =
+						/^(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+|[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*)$/;
+					if (!domainPattern.test(trimmed)) {
+						return "Enter a valid domain (e.g. .example.com or example.com).";
+					}
+					return true;
+				},
 			);
+			answers.API_COOKIE_DOMAIN = domainInput?.trim() ?? "";
 		}
 
 		answers.API_IS_SECURE_COOKIES = await promptList(
@@ -1441,6 +1455,9 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupRestAuth) {
 		answers = await restAuthSetup(answers);
+	} else if (answers.API_COOKIE_SECRET === undefined) {
+		// Env schema requires API_COOKIE_SECRET; ensure it is set when REST auth setup is skipped.
+		answers.API_COOKIE_SECRET = generateJwtSecret();
 	}
 	await updateEnvVariable(answers, {
 		envFile: envFileName,
