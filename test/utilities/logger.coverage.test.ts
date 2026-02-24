@@ -46,14 +46,48 @@ describe("logger.ts coverage", () => {
 		expect(prodLogger).toBeDefined();
 	});
 
-	it("enables transport for production environment when not disabled", async () => {
+	it("enables pino-pretty transport when API_IS_PINO_PRETTY is 'true' and not test/staging", async () => {
 		process.env.NODE_ENV = "production";
-		process.env.LOG_TRANSPORT_DISABLED = "false";
+		process.env.API_IS_PINO_PRETTY = "true";
+		delete process.env.LOG_TRANSPORT_DISABLED;
 		vi.resetModules();
-		const { rootLogger: prodLogger } = await import(
+		const { loggerOptions: opts } = await import(
 			"~/src/utilities/logging/logger"
 		);
-		expect(prodLogger).toBeDefined();
+		expect(opts.transport).toBeDefined();
+		expect((opts.transport as { target: string }).target).toBe("pino-pretty");
+	});
+
+	it("enables pino-pretty transport when API_IS_PINO_PRETTY is '1'", async () => {
+		process.env.NODE_ENV = "production";
+		process.env.API_IS_PINO_PRETTY = "1";
+		delete process.env.LOG_TRANSPORT_DISABLED;
+		vi.resetModules();
+		const { loggerOptions: opts } = await import(
+			"~/src/utilities/logging/logger"
+		);
+		expect(opts.transport).toBeDefined();
+		expect((opts.transport as { target: string }).target).toBe("pino-pretty");
+	});
+
+	it("disables transport for production when LOG_TRANSPORT_DISABLED is 'true'", async () => {
+		process.env.NODE_ENV = "production";
+		process.env.API_IS_PINO_PRETTY = "true";
+		process.env.LOG_TRANSPORT_DISABLED = "true";
+		vi.resetModules();
+		const { loggerOptions: opts } = await import(
+			"~/src/utilities/logging/logger"
+		);
+		expect(opts.transport).toBeUndefined();
+	});
+
+	it("uses custom LOG_LEVEL when set", async () => {
+		process.env.LOG_LEVEL = "debug";
+		vi.resetModules();
+		const { loggerOptions: opts } = await import(
+			"~/src/utilities/logging/logger"
+		);
+		expect(opts.level).toBe("debug");
 	});
 
 	it("configures redaction paths", async () => {
