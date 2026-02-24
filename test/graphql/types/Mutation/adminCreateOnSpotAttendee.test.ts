@@ -33,36 +33,15 @@ interface AdminCreateOnSpotAttendeePayload {
 let authToken: string;
 let adminUserId: string;
 
-beforeEach(async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	assertToBeNonNullish(signInResult.data?.signIn);
-	authToken = signInResult.data.signIn.authenticationToken as string;
-	adminUserId = signInResult.data.signIn.user?.id as string;
-	assertToBeNonNullish(authToken);
-	assertToBeNonNullish(adminUserId);
-});
-
-/**
- * Tracking arrays for cleanup - prevents DB entity leaks in tests
- */
-const trackedEntityIds = {
-	organizationIds: [] as string[],
-	userIds: [] as string[],
-	membershipIds: [] as string[],
-};
-
 /**
  * Helper function to cleanup tracked entities
  * Deletes organizations (which cascades memberships), then remaining users
  */
-async function cleanupTrackedEntities(): Promise<void> {
+async function cleanupTrackedEntities(trackedEntityIds: {
+	organizationIds: string[];
+	userIds: string[];
+	membershipIds: string[];
+}): Promise<void> {
 	// Delete organizations first (cascades to memberships)
 	for (const orgId of trackedEntityIds.organizationIds) {
 		try {
@@ -103,13 +82,47 @@ async function cleanupTrackedEntities(): Promise<void> {
 }
 
 suite("Mutation field adminCreateOnSpotAttendee", () => {
+	let trackedEntityIds: {
+		organizationIds: string[];
+		userIds: string[];
+		membershipIds: string[];
+	};
+
+	// unique email helper (guarantees uniqueness across parallel shards)
+	const uniqueEmail = () => `${faker.string.ulid()}@example.com`;
+
+	beforeEach(async () => {
+		// Initialize per-test tracker
+		trackedEntityIds = {
+			organizationIds: [],
+			userIds: [],
+			membershipIds: [],
+		};
+
+		// Sign in as admin once per test (moved inside suite to avoid module-scope shared setup)
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(signInResult.data?.signIn);
+		authToken = signInResult.data.signIn.authenticationToken as string;
+		adminUserId = signInResult.data.signIn.user?.id as string;
+		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(adminUserId);
+	});
+
 	/**
 	 * Cleanup hook: runs after each test to prevent DB entity leaks
 	 * Deletes all tracked organizations and users created during the test
 	 * Restore any mocked functions after each test to prevent cross-test pollution
 	 */
 	afterEach(async () => {
-		await cleanupTrackedEntities();
+		await cleanupTrackedEntities(trackedEntityIds);
+		vi.clearAllMocks();
 		vi.restoreAllMocks();
 	});
 
@@ -118,7 +131,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 	 * Ensures any remaining entities are cleaned up to prevent test pollution
 	 */
 	afterAll(async () => {
-		await cleanupTrackedEntities();
+		await cleanupTrackedEntities(trackedEntityIds);
 	});
 
 	suite("when the client is not authenticated", () => {
@@ -129,7 +142,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					variables: {
 						input: {
 							name: "Test Attendee",
-							emailAddress: faker.internet.email(),
+							emailAddress: uniqueEmail(),
 							password: "Test123!@#",
 							selectedOrganization: faker.string.uuid(),
 						},
@@ -157,7 +170,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					variables: {
 						input: {
 							name: "Test Attendee",
-							emailAddress: faker.internet.email(),
+							emailAddress: uniqueEmail(),
 							password: "Test123!@#",
 							selectedOrganization: faker.string.uuid(), // Non-existent organization
 						},
@@ -226,7 +239,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					variables: {
 						input: {
 							name: "Test Attendee",
-							emailAddress: faker.internet.email(),
+							emailAddress: uniqueEmail(),
 							password: "short", // Too short (< 8 chars) - fails zod validation
 							selectedOrganization: orgId,
 						},
@@ -366,7 +379,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					},
 				});
 
-				const attendeeEmail = faker.internet.email();
+				const attendeeEmail = uniqueEmail();
 
 				const result = await mercuriusClient.mutate(
 					Mutation_adminCreateOnSpotAttendee,
@@ -431,7 +444,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				},
 			});
 
-			const attendeeEmail = faker.internet.email();
+			const attendeeEmail = uniqueEmail();
 
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
@@ -519,7 +532,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					variables: {
 						input: {
 							name: "Test Attendee",
-							emailAddress: faker.internet.email(),
+							emailAddress: uniqueEmail(),
 							password: "Test123!@#",
 							selectedOrganization: orgId,
 						},
@@ -583,7 +596,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					variables: {
 						input: {
 							name: "Test Attendee",
-							emailAddress: faker.internet.email(),
+							emailAddress: uniqueEmail(),
 							password: "Test123!@#",
 							selectedOrganization: orgId,
 						},
@@ -658,8 +671,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
-			const attendeeEmail = faker.internet.email();
-			const attendeeName = faker.person.fullName();
+			const attendeeEmail = uniqueEmail();
+			const attendeeName = `User ${faker.string.ulid()}`;
 			const tempPassword = "TempPass123!@#";
 
 			// Create on-spot attendee as admin
@@ -773,7 +786,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
-			const attendeeEmail = faker.internet.email();
+			const attendeeEmail = uniqueEmail();
 
 			// Create on-spot attendee
 			const result = await mercuriusClient.mutate(
@@ -876,7 +889,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
-			const attendeeEmail = faker.internet.email();
+			const attendeeEmail = uniqueEmail();
 
 			// Create on-spot attendee
 			const result = await mercuriusClient.mutate(
@@ -977,7 +990,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				membershipResult.data?.createOrganizationMembership?.id;
 			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
 
-			const attendeeEmail = faker.internet.email();
+			const attendeeEmail = uniqueEmail();
 
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
@@ -997,7 +1010,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.adminCreateOnSpotAttendee).toBeDefined();
 
-			expect(sendEmailSpy).toHaveBeenCalledOnce();
+			expect(sendEmailSpy).toHaveBeenCalledTimes(1);
 
 			const createdAttendee = result.data
 				?.adminCreateOnSpotAttendee as AdminCreateOnSpotAttendeePayload;
