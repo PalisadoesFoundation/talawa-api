@@ -616,7 +616,7 @@ export async function restAuthSetup(
 			"API_IS_SECURE_COOKIES",
 			"Use secure (HTTPS-only) cookies?",
 			["true", "false"],
-			answers.CI === "true" ? "true" : "false",
+			"false",
 		);
 
 		console.log("\nREST auth configuration completed!");
