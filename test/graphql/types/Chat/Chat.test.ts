@@ -2,6 +2,10 @@
  * Integration tests for Chat computed fields (unreadMessagesCount, hasUnread,
  * firstUnreadMessageId, lastMessage).
  *
+ * NOTE: Creators do not see their own messages as unread because server-side
+ * logic automatically updates their `chatMembership.lastReadAt` when they create
+ * a new message.
+ *
  * NOTE: Frontend currently marks self-authored messages as read. On the server-side
  * the computed fields treat a missing membership.lastReadAt as epoch (new Date(0)),
  * which means creators will see their own messages as unread until they explicitly
@@ -225,9 +229,9 @@ suite("Chat computed fields", () => {
 		});
 		assertToBeNonNullish(aliceChat.data?.chat);
 		const aliceNode = aliceChat.data.chat;
-		expect(aliceNode.unreadMessagesCount).toBe(2);
-		expect(aliceNode.hasUnread).toBe(true);
-		expect(aliceNode.firstUnreadMessageId).toBe(m1Id);
+		expect(aliceNode.unreadMessagesCount).toBe(0);
+		expect(aliceNode.hasUnread).toBe(false);
+		expect(aliceNode.firstUnreadMessageId).toBeNull();
 	});
 
 	suite("unauthenticated access to computed fields is denied", () => {
