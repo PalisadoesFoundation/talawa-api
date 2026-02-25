@@ -99,7 +99,13 @@ export type SetupKey =
 	| "API_SMTP_FROM_NAME"
 	| "API_SMTP_NAME"
 	| "API_SMTP_LOCAL_ADDRESS"
-	| "CACHE_WARMING_ORG_COUNT";
+	| "CACHE_WARMING_ORG_COUNT"
+	| "API_AUTH_JWT_SECRET"
+	| "API_ACCESS_TOKEN_TTL"
+	| "API_REFRESH_TOKEN_TTL"
+	| "API_COOKIE_SECRET"
+	| "API_COOKIE_DOMAIN"
+	| "API_IS_SECURE_COOKIES";
 
 /**
  * Type for the answers object collected during setup.
