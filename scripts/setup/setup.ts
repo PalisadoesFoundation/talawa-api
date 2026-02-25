@@ -70,7 +70,6 @@ export {
 	validateEmail,
 	validatePort,
 	validatePositiveInteger,
-	validateSecurePassword,
 	validateURL,
 } from "./validators";
 

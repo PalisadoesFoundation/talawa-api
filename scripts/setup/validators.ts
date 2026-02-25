@@ -104,29 +104,6 @@ export function validateCloudBeaverPassword(input: string): true | string {
 	return true;
 }
 
-/**
- * Validates service password strength for secure deployments.
- * Enforces security requirements: 8+ characters, uppercase, lowercase, numbers, and special characters.
- * @param input - The password string to validate.
- * @returns `true` if valid, or an error message string if invalid.
- */
-export function validateSecurePassword(input: string): true | string {
-	if (!input.trim()) return "Password is required";
-	if (input.length < 8) return "Password must be at least 8 characters long";
-	if (!/[A-Z]/.test(input)) {
-		return "Password must contain at least one uppercase letter";
-	}
-	if (!/[a-z]/.test(input)) {
-		return "Password must contain at least one lowercase letter";
-	}
-	if (!/[0-9]/.test(input)) {
-		return "Password must contain at least one number";
-	}
-	if (!/[!@#$%^&*()]/.test(input)) {
-		return "Password must contain at least one special character (!@#$%^&*())";
-	}
-	return true;
-}
 
 /**
  * Validates CloudBeaver server URL format.
