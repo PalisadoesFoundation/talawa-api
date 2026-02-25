@@ -104,7 +104,6 @@ export function validateCloudBeaverPassword(input: string): true | string {
 	return true;
 }
 
-
 /**
  * Validates CloudBeaver server URL format.
  * Checks for HTTP/HTTPS protocol and valid port range (1-65535).
