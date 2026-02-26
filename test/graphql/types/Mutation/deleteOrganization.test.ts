@@ -1,7 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
-import { usersTable } from "~/src/drizzle/schema";
+import { expect, suite, test } from "vitest";
 import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
 import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { chatsTable } from "~/src/drizzle/tables/chats";
@@ -18,7 +17,6 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
-	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -51,40 +49,25 @@ async function createTestOrganization(token: string) {
 	return orgId;
 }
 
-let authToken: string;
-let adminUserId: string;
-
-const FIXED_START_TIME = new Date("2025-01-01T10:00:00Z");
-const FIXED_END_TIME = new Date("2025-01-02T10:00:00Z");
-
-beforeEach(async () => {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
+// Sign in as admin
+const signInResult = await mercuriusClient.query(Query_signIn, {
+	variables: {
+		input: {
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 		},
-	});
-	if (signInResult.errors) {
-		throw new Error(
-			`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
-		);
-	}
-	assertToBeNonNullish(signInResult.data?.signIn);
-	const token = signInResult.data.signIn.authenticationToken;
-	const id = signInResult.data.signIn.user?.id;
-	assertToBeNonNullish(token);
-	assertToBeNonNullish(id);
-	authToken = token;
-	adminUserId = id;
+	},
 });
-
-afterEach(async () => {
-	vi.restoreAllMocks();
-	await server.drizzleClient.delete(organizationsTable);
-	await server.drizzleClient.delete(usersTable);
-});
+if (signInResult.errors) {
+	throw new Error(
+		`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
+	);
+}
+assertToBeNonNullish(signInResult.data?.signIn);
+const authToken = signInResult.data.signIn.authenticationToken;
+assertToBeNonNullish(authToken);
+const adminUserId = signInResult.data.signIn.user?.id;
+assertToBeNonNullish(adminUserId);
 
 suite("Mutation field deleteOrganization", () => {
 	suite("when the client is not authenticated", () => {
@@ -182,7 +165,7 @@ suite("Mutation field deleteOrganization", () => {
 		test(
 			"should return an error with unauthorized_action extensions code",
 			async () => {
-				const { authToken: regularUserToken, userId: regularUserId } =
+				const { authToken: regularUserToken } =
 					await createRegularUserUsingAdmin();
 				assertToBeNonNullish(regularUserToken);
 
@@ -213,12 +196,6 @@ suite("Mutation field deleteOrganization", () => {
 						}),
 					]),
 				);
-
-				// Cleanup: delete the regular user as admin
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { id: regularUserId } },
-				});
 
 				// Cleanup: delete the org as admin
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -308,7 +285,9 @@ suite("Mutation field deleteOrganization", () => {
 
 					// Mock the transaction to simulate race condition where org is deleted
 					// between the initial check and the actual delete operation
-					const fakeTransaction = (async <T>(
+					const originalTransaction = server.drizzleClient.transaction;
+
+					const fakeTransaction = async <T>(
 						callback: (tx: typeof server.drizzleClient) => Promise<T>,
 					) => {
 						// Create a fake tx that returns empty array on delete
@@ -321,40 +300,43 @@ suite("Mutation field deleteOrganization", () => {
 							}),
 						} as unknown as typeof server.drizzleClient;
 						return callback(fakeTx);
-					}) as unknown as typeof server.drizzleClient.transaction;
+					};
 
-					vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-						fakeTransaction,
-					);
+					try {
+						server.drizzleClient.transaction =
+							fakeTransaction as unknown as typeof server.drizzleClient.transaction;
 
-					const result = await mercuriusClient.mutate(
-						Mutation_deleteOrganization,
-						{
-							headers: { authorization: `bearer ${authToken}` },
-							variables: {
-								input: {
-									id: orgId,
+						const result = await mercuriusClient.mutate(
+							Mutation_deleteOrganization,
+							{
+								headers: { authorization: `bearer ${authToken}` },
+								variables: {
+									input: {
+										id: orgId,
+									},
 								},
 							},
-						},
-					);
+						);
 
-					expect(result.data?.deleteOrganization ?? null).toBeNull();
-					expect(result.errors).toEqual(
-						expect.arrayContaining([
-							expect.objectContaining({
-								extensions: expect.objectContaining({
-									code: "arguments_associated_resources_not_found",
-									issues: expect.arrayContaining([
-										expect.objectContaining({
-											argumentPath: ["input", "id"],
-										}),
-									]),
+						expect(result.data?.deleteOrganization ?? null).toBeNull();
+						expect(result.errors).toEqual(
+							expect.arrayContaining([
+								expect.objectContaining({
+									extensions: expect.objectContaining({
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining([
+											expect.objectContaining({
+												argumentPath: ["input", "id"],
+											}),
+										]),
+									}),
+									path: ["deleteOrganization"],
 								}),
-								path: ["deleteOrganization"],
-							}),
-						]),
-					);
+							]),
+						);
+					} finally {
+						server.drizzleClient.transaction = originalTransaction;
+					}
 
 					// Cleanup: delete the org that wasn't actually deleted due to mock
 					await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -513,8 +495,8 @@ suite("Mutation field deleteOrganization", () => {
 						organizationId: orgId,
 						name: "Test Ad",
 						type: "banner",
-						startAt: FIXED_START_TIME,
-						endAt: FIXED_END_TIME,
+						startAt: new Date(),
+						endAt: new Date(Date.now() + 86400000),
 						creatorId: adminUserId,
 					})
 					.returning({ id: advertisementsTable.id });
@@ -587,8 +569,8 @@ suite("Mutation field deleteOrganization", () => {
 					.values({
 						organizationId: orgId,
 						name: "Test Event",
-						startAt: FIXED_START_TIME,
-						endAt: FIXED_END_TIME,
+						startAt: new Date(),
+						endAt: new Date(Date.now() + 3600000),
 						creatorId: adminUserId,
 					})
 					.returning({ id: eventsTable.id });

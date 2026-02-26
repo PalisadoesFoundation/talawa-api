@@ -2243,8 +2243,8 @@ suite("Query field eventsByVolunteer", () => {
 
 			await server.drizzleClient.insert(eventAttachmentsTable).values({
 				eventId: eventId,
-				objectName: "test-attachment.jpg",
 				name: "Test Attachment",
+				objectName: "test-object-name",
 				mimeType: "image/jpeg",
 			});
 
