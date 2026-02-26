@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import {
 	cleanupTemp,
 	commitTemp,

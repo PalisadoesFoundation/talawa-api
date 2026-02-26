@@ -19,7 +19,7 @@
 /.env-*
 /.env_*
 .backup/
-
+.env.local
 # Ignore the deploy compose file
 /compose.deploy.yaml
 
