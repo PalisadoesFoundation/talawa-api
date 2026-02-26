@@ -12,6 +12,7 @@ import {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
 	eventsTable,
+	organizationsTable,
 	usersTable,
 } from "~/src/drizzle/schema";
 import { eventAttachmentsTableInsertSchema } from "~/src/drizzle/tables/eventAttachments";
@@ -87,9 +88,11 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 	afterEach(async () => {
 		await server.drizzleClient.delete(eventAttachmentsTable);
 		await server.drizzleClient.delete(eventsTable);
+		// Delete organizations before users: event_generation_windows has
+		// created_by_id NOT NULL with onDelete "set null" — deleting orgs first
+		// cascade-deletes those rows, avoiding the constraint violation.
+		await server.drizzleClient.delete(organizationsTable);
 		await server.drizzleClient.delete(usersTable);
-		// Note: Organizations are currently not tracked but should be cleaned up by cascading if possible
-		// or by adding organizationsTable to the delete list.
 	});
 	describe("EventAttachments Table Schema", () => {
 		it("should have the correct schema", () => {
