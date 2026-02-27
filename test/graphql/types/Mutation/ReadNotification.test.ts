@@ -187,11 +187,13 @@ async function waitForNotifications(
 	return [];
 }
 
-const LONG_TEST_TIMEOUT = 20000;
+const LONG_TEST_TIMEOUT = 30000;
 beforeAll(async () => {
 	await ensureAdminAuth();
-	// Ensure notification template exists (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
-	const [existing] = await server.drizzleClient
+	// Ensure notification templates exist (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
+
+	// Seed post_created template (used by this test suite)
+	const [existingPost] = await server.drizzleClient
 		.select()
 		.from(notificationTemplatesTable)
 		.where(
@@ -201,7 +203,7 @@ beforeAll(async () => {
 			),
 		)
 		.limit(1);
-	if (!existing) {
+	if (!existingPost) {
 		await server.drizzleClient.insert(notificationTemplatesTable).values({
 			name: "New Post Created",
 			eventType: "post_created",
@@ -209,6 +211,30 @@ beforeAll(async () => {
 			body: '{authorName} has created a new post in {organizationName}: "{postCaption}"',
 			channelType: "in_app",
 			linkedRouteName: "/post/{postId}",
+		});
+	}
+
+	// Seed event_created template to prevent "No notification template found"
+	// errors from other tests in the same shard that create events, which can
+	// block or slow down the shared notification queue.
+	const [existingEvent] = await server.drizzleClient
+		.select()
+		.from(notificationTemplatesTable)
+		.where(
+			and(
+				eq(notificationTemplatesTable.eventType, "event_created"),
+				eq(notificationTemplatesTable.channelType, "in_app"),
+			),
+		)
+		.limit(1);
+	if (!existingEvent) {
+		await server.drizzleClient.insert(notificationTemplatesTable).values({
+			name: "New Event Created",
+			eventType: "event_created",
+			title: "New event: {eventName}",
+			body: '{creatorName} created "{eventName}" in {organizationName}',
+			channelType: "in_app",
+			linkedRouteName: "/event/{eventId}",
 		});
 	}
 });
