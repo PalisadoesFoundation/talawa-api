@@ -7,7 +7,7 @@ import {
 	Query_signIn,
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
@@ -84,10 +84,6 @@ async function createTestEvent(): Promise<string> {
 }
 
 describe("src/drizzle/tables/eventAttachments.ts", () => {
-	afterEach(async () => {
-		await server.drizzleClient.delete(eventAttachmentsTable);
-		await server.drizzleClient.delete(eventsTable);
-	});
 	describe("EventAttachments Table Schema", () => {
 		it("should have the correct schema", () => {
 			const columns = Object.keys(eventAttachmentsTable);
