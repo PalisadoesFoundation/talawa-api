@@ -1621,4 +1621,257 @@ suite("Mutation field updateCurrentUser", () => {
 			}
 		});
 	});
+
+	suite("Avatar MinIO error handling", () => {
+		test("returns invalid_arguments error when avatar file is not found in MinIO", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			const notFoundError = new Error("Not Found");
+			notFoundError.name = "NotFound";
+
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(notFoundError);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								avatar: {
+									objectName: "nonexistent-file.jpg",
+									mimeType: "IMAGE_JPEG",
+									fileHash:
+										"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+									name: "test.jpg",
+								},
+							},
+						},
+					},
+				);
+
+				expect(result.data.updateCurrentUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+				expect(
+					(result.errors?.[0]?.extensions as InvalidArgumentsExtensions)
+						?.issues,
+				).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["input", "avatar", "objectName"],
+							message: expect.stringContaining("File not found"),
+						}),
+					]),
+				);
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("returns unexpected error when MinIO throws a non-NotFound error", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(new Error("Connection refused"));
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								avatar: {
+									objectName: "test-file.jpg",
+									mimeType: "IMAGE_JPEG",
+									fileHash:
+										"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+									name: "test.jpg",
+								},
+							},
+						},
+					},
+				);
+
+				expect(result.data.updateCurrentUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("clears avatar fields when avatar is explicitly set to null", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			// First set an avatar
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({
+					metaData: { "content-type": "image/jpeg" },
+					size: 1000,
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
+
+			try {
+				await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							avatar: {
+								objectName: "avatar-to-clear.jpg",
+								mimeType: "IMAGE_JPEG",
+								fileHash:
+									"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+								name: "avatar.jpg",
+							},
+						},
+					},
+				});
+
+				const removeObjectSpy = vi
+					.spyOn(server.minio.client, "removeObject")
+					.mockResolvedValue(
+						undefined as Awaited<
+							ReturnType<typeof server.minio.client.removeObject>
+						>,
+					);
+
+				// Now clear the avatar by setting it to null
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								avatar: null,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.updateCurrentUser);
+				expect(result.data.updateCurrentUser.avatarURL).toBeNull();
+				expect(result.data.updateCurrentUser.avatarMimeType).toBeNull();
+
+				removeObjectSpy.mockRestore();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+	});
 });
