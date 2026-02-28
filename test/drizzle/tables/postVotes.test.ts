@@ -24,74 +24,75 @@ import { server } from "../../server";
  * database operations, indexes.
  */
 
-const createdResources = {
-	voteIds: [] as string[],
-	postIds: [] as string[],
-	orgIds: [] as string[],
-	userIds: [] as string[],
-};
-
-async function createTestOrganization(): Promise<string> {
-	// Clear any existing headers to ensure a clean sign-in
-	mercuriusClient.setHeaders({});
-	const signIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	if (signIn.errors) {
-		throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
-	}
-	const token = signIn.data?.signIn?.authenticationToken;
-	assertToBeNonNullish(
-		token,
-		"Authentication token is missing from sign-in response",
-	);
-	const org = await mercuriusClient.mutate(Mutation_createOrganization, {
-		headers: { authorization: `bearer ${token}` },
-		variables: {
-			input: {
-				name: `Org-${Date.now()}`,
-				countryCode: "us",
-				isUserRegistrationRequired: true,
-			},
-		},
-	});
-	if (org.errors) {
-		throw new Error(
-			`Create organization failed: ${JSON.stringify(org.errors)}`,
-		);
-	}
-	const orgId = org.data?.createOrganization?.id;
-	assertToBeNonNullish(
-		orgId,
-		"Organization ID is missing from creation response",
-	);
-	createdResources.orgIds.push(orgId);
-	return orgId;
-}
-
-async function createTestPost(): Promise<string> {
-	const { userId } = await createRegularUserUsingAdmin();
-	const postResult = await server.drizzleClient
-		.insert(postsTable)
-		.values({
-			caption: "Test Post Caption",
-			body: "This is the body of the test post.",
-			creatorId: userId,
-			organizationId: await createTestOrganization(),
-		})
-		.returning({ id: postsTable.id });
-	const postId = postResult[0]?.id;
-	assertToBeNonNullish(postId, "Post ID is missing from creation response");
-	createdResources.postIds.push(postId);
-	return postId;
-}
-
 describe("src/drizzle/tables/postVotes", () => {
+	const createdResources = {
+		voteIds: [] as string[],
+		postIds: [] as string[],
+		orgIds: [] as string[],
+		userIds: [] as string[],
+	};
+
+	async function createTestOrganization(): Promise<string> {
+		// Clear any existing headers to ensure a clean sign-in
+		mercuriusClient.setHeaders({});
+		const signIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		if (signIn.errors) {
+			throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
+		}
+		const token = signIn.data?.signIn?.authenticationToken;
+		assertToBeNonNullish(
+			token,
+			"Authentication token is missing from sign-in response",
+		);
+		const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					name: `Org-${Date.now()}`,
+					countryCode: "us",
+					isUserRegistrationRequired: true,
+				},
+			},
+		});
+		if (org.errors) {
+			throw new Error(
+				`Create organization failed: ${JSON.stringify(org.errors)}`,
+			);
+		}
+		const orgId = org.data?.createOrganization?.id;
+		assertToBeNonNullish(
+			orgId,
+			"Organization ID is missing from creation response",
+		);
+		createdResources.orgIds.push(orgId);
+		return orgId;
+	}
+
+	async function createTestPost(): Promise<string> {
+		const { userId } = await createRegularUserUsingAdmin();
+		createdResources.userIds.push(userId);
+		const postResult = await server.drizzleClient
+			.insert(postsTable)
+			.values({
+				caption: "Test Post Caption",
+				body: "This is the body of the test post.",
+				creatorId: userId,
+				organizationId: await createTestOrganization(),
+			})
+			.returning({ id: postsTable.id });
+		const postId = postResult[0]?.id;
+		assertToBeNonNullish(postId, "Post ID is missing from creation response");
+		createdResources.postIds.push(postId);
+		return postId;
+	}
+
 	afterEach(async () => {
 		// Delete in reverse dependency order using tracked IDs only.
 		// Each step is wrapped in try/catch so that a failure in one
