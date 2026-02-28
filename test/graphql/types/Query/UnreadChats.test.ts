@@ -41,7 +41,8 @@ suite("Query: unreadChats", () => {
 			try {
 				await fn();
 			} catch (_err) {
-				// ignore cleanup errors
+				// Expected error for this test case
+				console.error("Expected error:", _err);
 			}
 		}
 		cleanupFns.length = 0;
