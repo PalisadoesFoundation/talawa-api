@@ -14,6 +14,12 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+type TransactionCallback = Parameters<
+	typeof server.drizzleClient.transaction
+>[0];
+
+type TransactionType = Parameters<TransactionCallback>[0];
+
 // Sign in as admin to get an authentication token
 let authToken: string;
 
@@ -766,8 +772,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Mock the database insert to return empty array
 		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			async (callback: any) => {
+			async (callback: TransactionCallback) => {
 				const fakeTx = {
 					insert: () => ({
 						values: () => ({
@@ -777,7 +782,7 @@ suite("Mutation field createChatMessage", () => {
 					update: vi.fn(),
 				};
 
-				return callback(fakeTx);
+				return callback(fakeTx as unknown as TransactionType);
 			},
 		);
 
