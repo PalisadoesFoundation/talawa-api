@@ -55,7 +55,7 @@ describe("src/drizzle/tables/postVotes", () => {
 			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
-					name: `Org-${Date.now()}`,
+					name: `Org-${faker.string.uuid()}`,
 					countryCode: "us",
 					isUserRegistrationRequired: true,
 				},
@@ -97,6 +97,7 @@ describe("src/drizzle/tables/postVotes", () => {
 		// Delete in reverse dependency order using tracked IDs only.
 		// Each step is wrapped in try/catch so that a failure in one
 		// does not skip cleanup of the remaining tables.
+		const cleanupErrors: string[] = [];
 		try {
 			if (createdResources.voteIds.length > 0) {
 				await server.drizzleClient
@@ -104,7 +105,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postVotesTable.id, createdResources.voteIds));
 			}
 		} catch (error) {
-			console.error("Cleanup failed for votes:", error);
+			cleanupErrors.push(`votes: ${String(error)}`);
 		}
 		try {
 			if (createdResources.postIds.length > 0) {
@@ -113,7 +114,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postsTable.id, createdResources.postIds));
 			}
 		} catch (error) {
-			console.error("Cleanup failed for posts:", error);
+			cleanupErrors.push(`posts: ${String(error)}`);
 		}
 		try {
 			if (createdResources.orgIds.length > 0) {
@@ -122,7 +123,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(organizationsTable.id, createdResources.orgIds));
 			}
 		} catch (error) {
-			console.error("Cleanup failed for organizations:", error);
+			cleanupErrors.push(`organizations: ${String(error)}`);
 		}
 		try {
 			if (createdResources.userIds.length > 0) {
@@ -131,7 +132,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(usersTable.id, createdResources.userIds));
 			}
 		} catch (error) {
-			console.error("Cleanup failed for users:", error);
+			cleanupErrors.push(`users: ${String(error)}`);
 		}
 
 		// Reset tracked arrays
@@ -139,6 +140,10 @@ describe("src/drizzle/tables/postVotes", () => {
 		createdResources.postIds.length = 0;
 		createdResources.orgIds.length = 0;
 		createdResources.userIds.length = 0;
+
+		if (cleanupErrors.length > 0) {
+			throw new Error(`Cleanup failed: ${cleanupErrors.join("; ")}`);
+		}
 	});
 
 	describe("PostVotes Table Schema", () => {
@@ -460,11 +465,21 @@ describe("src/drizzle/tables/postVotes", () => {
 
 			createdResources.userIds.push(userId);
 
-			await server.drizzleClient.insert(postVotesTable).values({
-				type,
-				postId,
-				creatorId: userId,
-			});
+			const [inserted] = await server.drizzleClient
+				.insert(postVotesTable)
+				.values({
+					type,
+					postId,
+					creatorId: userId,
+				})
+				.returning({ id: postVotesTable.id });
+
+			expect(inserted).toBeDefined();
+			if (!inserted) {
+				throw new Error("Failed to insert record");
+			}
+
+			createdResources.voteIds.push(inserted.id);
 
 			const results = await server.drizzleClient
 				.select()
@@ -474,10 +489,6 @@ describe("src/drizzle/tables/postVotes", () => {
 			if (results.length === 0) {
 				throw new Error("No records found for the given type");
 			}
-
-			results.forEach((value) => {
-				createdResources.voteIds.push(value.id);
-			});
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBeGreaterThan(0);
 			expect(results[0]?.type).toBe(type);
