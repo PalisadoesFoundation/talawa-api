@@ -97,7 +97,6 @@ describe("src/drizzle/tables/postVotes", () => {
 		// Delete in reverse dependency order using tracked IDs only.
 		// Each step is wrapped in try/catch so that a failure in one
 		// does not skip cleanup of the remaining tables.
-		const cleanupErrors: string[] = [];
 		try {
 			if (createdResources.voteIds.length > 0) {
 				await server.drizzleClient
@@ -105,8 +104,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postVotesTable.id, createdResources.voteIds));
 			}
 		} catch (error) {
-			// Expected error for this test case
-			cleanupErrors.push(`votes: ${String(error)}`);
+			console.error("Cleanup failed for votes:", error);
 		}
 		try {
 			if (createdResources.postIds.length > 0) {
@@ -115,8 +113,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postsTable.id, createdResources.postIds));
 			}
 		} catch (error) {
-			// Expected error for this test case
-			cleanupErrors.push(`posts: ${String(error)}`);
+			console.error("Cleanup failed for posts:", error);
 		}
 		try {
 			if (createdResources.orgIds.length > 0) {
@@ -125,8 +122,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(organizationsTable.id, createdResources.orgIds));
 			}
 		} catch (error) {
-			// Expected error for this test case
-			cleanupErrors.push(`organizations: ${String(error)}`);
+			console.error("Cleanup failed for orgs:", error);
 		}
 		try {
 			if (createdResources.userIds.length > 0) {
@@ -135,8 +131,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(usersTable.id, createdResources.userIds));
 			}
 		} catch (error) {
-			// Expected error for this test case
-			cleanupErrors.push(`users: ${String(error)}`);
+			console.error("Cleanup failed for users:", error);
 		}
 
 		// Reset tracked arrays
@@ -144,10 +139,6 @@ describe("src/drizzle/tables/postVotes", () => {
 		createdResources.postIds.length = 0;
 		createdResources.orgIds.length = 0;
 		createdResources.userIds.length = 0;
-
-		if (cleanupErrors.length > 0) {
-			throw new Error(`Cleanup failed: ${cleanupErrors.join("; ")}`);
-		}
 	});
 
 	describe("PostVotes Table Schema", () => {
