@@ -105,6 +105,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postVotesTable.id, createdResources.voteIds));
 			}
 		} catch (error) {
+			// Expected error for this test case
 			cleanupErrors.push(`votes: ${String(error)}`);
 		}
 		try {
@@ -114,6 +115,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(postsTable.id, createdResources.postIds));
 			}
 		} catch (error) {
+			// Expected error for this test case
 			cleanupErrors.push(`posts: ${String(error)}`);
 		}
 		try {
@@ -123,6 +125,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(organizationsTable.id, createdResources.orgIds));
 			}
 		} catch (error) {
+			// Expected error for this test case
 			cleanupErrors.push(`organizations: ${String(error)}`);
 		}
 		try {
@@ -132,6 +135,7 @@ describe("src/drizzle/tables/postVotes", () => {
 					.where(inArray(usersTable.id, createdResources.userIds));
 			}
 		} catch (error) {
+			// Expected error for this test case
 			cleanupErrors.push(`users: ${String(error)}`);
 		}
 
