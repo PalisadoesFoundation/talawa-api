@@ -1500,13 +1500,34 @@ suite("Mutation field updateUser", () => {
 			assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
 			const adminToken = signIn.data.signIn.authenticationToken;
 
-			const nonExistentUserId = `${faker.string.ulid()}`;
+			// Create a real user so we have a valid ID format
+			const createUser = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "name",
+						password: "password",
+						role: "regular",
+					},
+				},
+			});
+			assertToBeNonNullish(createUser.data?.createUser?.user?.id);
+			const userId = createUser.data.createUser.user.id;
 
+			// Delete the user so they no longer exist
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
+			});
+
+			// Now try to update the deleted user — should get not-found
 			const result = await mercuriusClient.mutate(Mutation_updateUser, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						id: nonExistentUserId,
+						id: userId,
 						name: "new name",
 					},
 				},

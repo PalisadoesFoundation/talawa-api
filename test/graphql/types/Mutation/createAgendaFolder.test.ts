@@ -451,7 +451,7 @@ suite("Mutation field createAgendaFolder", () => {
 				server.drizzleClient,
 			);
 
-			vi.spyOn(server.drizzleClient, "insert").mockImplementationOnce(
+			vi.spyOn(server.drizzleClient, "insert").mockImplementation(
 				(table: unknown) => {
 					const tableName =
 						typeof table === "object" &&
