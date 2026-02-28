@@ -1873,5 +1873,83 @@ suite("Mutation field updateCurrentUser", () => {
 				statObjectSpy.mockRestore();
 			}
 		});
+
+		test("returns unauthenticated when user is deleted during transaction (race condition)", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+			assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+			// Mock the transaction so tx.update().set().where().returning() returns empty array
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (fn) => {
+					const fakeTx = {
+						update: () => ({
+							set: () => ({
+								where: () => ({
+									returning: async () => [],
+								}),
+							}),
+						}),
+					};
+					return await fn(fakeTx);
+				}) as unknown as typeof server.drizzleClient.transaction;
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								name: "new name",
+							},
+						},
+					},
+				);
+
+				expect(result.data.updateCurrentUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
 	});
 });

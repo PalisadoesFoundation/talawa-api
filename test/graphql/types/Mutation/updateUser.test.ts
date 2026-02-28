@@ -1551,5 +1551,87 @@ suite("Mutation field updateUser", () => {
 				]),
 			);
 		});
+		test("returns arguments_associated_resources_not_found when user is deleted during transaction (race condition)", async () => {
+			const signIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
+			const adminToken = signIn.data.signIn.authenticationToken;
+
+			const createUser = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "name",
+						password: "password",
+						role: "regular",
+					},
+				},
+			});
+			assertToBeNonNullish(createUser.data?.createUser?.user?.id);
+			const userId = createUser.data.createUser.user.id;
+
+			// Mock the transaction so `tx.update().set().where().returning()` returns [] (empty)
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (fn) => {
+					const fakeTx = {
+						update: () => ({
+							set: () => ({
+								where: () => ({
+									returning: async () => [],
+								}),
+							}),
+						}),
+					};
+					return await fn(fakeTx);
+				}) as unknown as typeof server.drizzleClient.transaction;
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_updateUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: userId,
+							name: "updated name",
+						},
+					},
+				});
+
+				expect(result.data.updateUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe(
+					"arguments_associated_resources_not_found",
+				);
+				expect(
+					(
+						result.errors?.[0]
+							?.extensions as ArgumentsAssociatedResourcesNotFoundExtensions
+					)?.issues,
+				).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["input", "id"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
+
+				// Clean up the created user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: userId } },
+				});
+			}
+		});
 	});
 });
