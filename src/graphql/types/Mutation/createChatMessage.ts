@@ -170,45 +170,49 @@ builder.mutationField("createChatMessage", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [_createdChatMessage] = await tx
-					.insert(chatMessagesTable)
-					.values({
-						body: parsedArgs.input.body,
-						chatId: parsedArgs.input.chatId,
-						creatorId: currentUserId,
-						parentMessageId: parsedArgs.input.parentMessageId,
-					})
-					.returning();
+			const createdChatMessage = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const [_createdChatMessage] = await tx
+						.insert(chatMessagesTable)
+						.values({
+							body: parsedArgs.input.body,
+							chatId: parsedArgs.input.chatId,
+							creatorId: currentUserId,
+							parentMessageId: parsedArgs.input.parentMessageId,
+						})
+						.returning();
 
-				// Inserted chat message not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (_createdChatMessage === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
+					// Inserted chat message not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+					if (_createdChatMessage === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
-				await tx
-					.update(chatMembershipsTable)
-					.set({
-						lastReadAt: new Date(),
-					})
-					.where(
-						and(
-							eq(chatMembershipsTable.chatId, parsedArgs.input.chatId),
-							eq(chatMembershipsTable.memberId, currentUserId),
-						),
-					);
+					await tx
+						.update(chatMembershipsTable)
+						.set({
+							lastReadAt: _createdChatMessage.createdAt,
+						})
+						.where(
+							and(
+								eq(chatMembershipsTable.chatId, parsedArgs.input.chatId),
+								eq(chatMembershipsTable.memberId, currentUserId),
+							),
+						);
 
-				ctx.pubsub.publish({
-					payload: _createdChatMessage,
-					topic: `chats.${parsedArgs.input.chatId}:chat_messages::create`,
-				});
+					return _createdChatMessage;
+				},
+			);
 
-				return _createdChatMessage;
+			ctx.pubsub.publish({
+				payload: createdChatMessage,
+				topic: `chats.${parsedArgs.input.chatId}:chat_messages::create`,
 			});
+
+			return createdChatMessage;
 		},
 		type: ChatMessage,
 	}),
