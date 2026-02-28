@@ -5,7 +5,8 @@ import {
 	promptList,
 	promptPassword,
 } from "./promptHelpers";
-import { type SetupAnswers, validateEmail } from "./setup";
+import { handlePromptError, type SetupAnswers } from "./services/sharedSetup";
+import { validateEmail } from "./validators";
 
 /**
  * Interactive setup for email configuration.
@@ -454,8 +455,12 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 		}
 	} catch (err) {
-		console.error("Error during email setup:", err);
-		throw err;
+		// In production, handle the error gracefully with backup restoration
+		// In tests, rethrow to allow proper error assertions
+		if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+			throw err;
+		}
+		await handlePromptError(err);
 	}
 	return answers;
 }

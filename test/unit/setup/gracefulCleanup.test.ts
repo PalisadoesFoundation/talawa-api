@@ -4,6 +4,7 @@ import {
 	describe,
 	expect,
 	it,
+	type Mock,
 	type MockInstance,
 	vi,
 } from "vitest";
@@ -18,25 +19,28 @@ vi.mock("scripts/setup/AtomicEnvWriter", () => ({
 }));
 
 describe("gracefulCleanup", () => {
-	let gracefulCleanup: (signal?: string) => Promise<void>;
+	let gracefulCleanup: (
+		signal?: string,
+		exitFn?: (code: number) => never,
+	) => Promise<void>;
 	let resetCleanupState: (options?: {
 		backupCreated?: boolean;
 		cleaning?: boolean;
 	}) => void;
-	let cleanupTempMock: MockInstance;
-	let atomicRestoreBackupMock: MockInstance;
+	let cleanupTempMock: Mock;
+	let atomicRestoreBackupMock: Mock;
 	let consoleLogSpy: MockInstance;
 	let consoleWarnSpy: MockInstance;
 	let consoleErrorSpy: MockInstance;
-	let processExitSpy: MockInstance;
+	let exitFnMock: Mock<(code: number) => never>;
 
 	beforeEach(async () => {
 		// Get the mocked AtomicEnvWriter functions
 		const { cleanupTemp, restoreBackup } = await import(
 			"scripts/setup/AtomicEnvWriter"
 		);
-		cleanupTempMock = cleanupTemp as unknown as MockInstance;
-		atomicRestoreBackupMock = restoreBackup as unknown as MockInstance;
+		cleanupTempMock = cleanupTemp as unknown as Mock;
+		atomicRestoreBackupMock = restoreBackup as unknown as Mock;
 
 		// Reset mocks
 		cleanupTempMock.mockReset();
@@ -55,10 +59,8 @@ describe("gracefulCleanup", () => {
 		consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-		// Spy on process.exit to prevent actual exit
-		processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
-			throw new Error("process.exit called");
-		}) as unknown as never);
+		// Mock exit function
+		exitFnMock = vi.fn((_code: number) => undefined as never);
 	});
 
 	afterEach(() => {
@@ -73,18 +75,8 @@ describe("gracefulCleanup", () => {
 		cleanupTempMock.mockResolvedValue(undefined);
 		atomicRestoreBackupMock.mockResolvedValue(undefined);
 
-		try {
-			// Call gracefulCleanup with SIGTERM
-			await gracefulCleanup("SIGTERM");
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		// Call gracefulCleanup with SIGTERM
+		await gracefulCleanup("SIGTERM", exitFnMock);
 
 		// Assert console.log was called with the signal-specific message
 		expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -102,8 +94,8 @@ describe("gracefulCleanup", () => {
 			"✅ Original configuration restored successfully",
 		);
 
-		// Assert process.exit was called with 0 (success)
-		expect(processExitSpy).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 0 (success)
+		expect(exitFnMock).toHaveBeenCalledWith(0);
 	});
 
 	it("should handle cleanupTemp throwing error and continue to restore backup", async () => {
@@ -117,18 +109,8 @@ describe("gracefulCleanup", () => {
 		// Mock atomicRestoreBackup to succeed
 		atomicRestoreBackupMock.mockResolvedValue(undefined);
 
-		try {
-			// Call gracefulCleanup
-			await gracefulCleanup(undefined);
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		// Call gracefulCleanup
+		await gracefulCleanup(undefined, exitFnMock);
 
 		// Assert console.warn was called with the temp error message
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -144,8 +126,8 @@ describe("gracefulCleanup", () => {
 			"✅ Original configuration restored successfully",
 		);
 
-		// Assert process.exit was called with 0 (success) since restore succeeded
-		expect(processExitSpy).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 0 (success) since restore succeeded
+		expect(exitFnMock).toHaveBeenCalledWith(0);
 	});
 
 	it("should log 'No backup to restore' message when backupCreated is false", async () => {
@@ -155,18 +137,8 @@ describe("gracefulCleanup", () => {
 		// Mock cleanupTemp to succeed
 		cleanupTempMock.mockResolvedValue(undefined);
 
-		try {
-			// Call gracefulCleanup with undefined signal
-			await gracefulCleanup(undefined);
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		// Call gracefulCleanup with undefined signal
+		await gracefulCleanup(undefined, exitFnMock);
 
 		// Assert console.log shows the no backup message
 		expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -179,8 +151,8 @@ describe("gracefulCleanup", () => {
 		// Assert cleanupTemp was still called
 		expect(cleanupTempMock).toHaveBeenCalledWith(".env.tmp");
 
-		// Assert process.exit was called with 0
-		expect(processExitSpy).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 0
+		expect(exitFnMock).toHaveBeenCalledWith(0);
 	});
 
 	it("should handle atomicRestoreBackup failure and exit with code 1", async () => {
@@ -194,18 +166,8 @@ describe("gracefulCleanup", () => {
 		const restoreError = new Error("Failed to restore from backup");
 		atomicRestoreBackupMock.mockRejectedValue(restoreError);
 
-		try {
-			// Call gracefulCleanup
-			await gracefulCleanup(undefined);
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		// Call gracefulCleanup
+		await gracefulCleanup(undefined, exitFnMock);
 
 		// Assert cleanupTemp was called
 		expect(cleanupTempMock).toHaveBeenCalledWith(".env.tmp");
@@ -219,8 +181,8 @@ describe("gracefulCleanup", () => {
 			restoreError,
 		);
 
-		// Assert process.exit was called with 1 (failure)
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Assert exitFn was called with 1 (failure)
+		expect(exitFnMock).toHaveBeenCalledWith(1);
 	});
 
 	it("should be idempotent - calling twice should only execute once", async () => {
@@ -239,14 +201,10 @@ describe("gracefulCleanup", () => {
 		cleanupTempMock.mockReturnValue(cleanupPromise);
 
 		// First call
-		const firstCall = gracefulCleanup(undefined).catch(() => {
-			// Expected - process.exit throws
-		});
+		const firstCall = gracefulCleanup(undefined, exitFnMock);
 
 		// Immediate second call (should be ignored due to cleaning flag)
-		const secondCall = gracefulCleanup(undefined).catch(() => {
-			// Expected - process.exit throws or returns early
-		});
+		const secondCall = gracefulCleanup(undefined, exitFnMock);
 
 		// Resolve the cleanup
 		resolveCleanup();
@@ -257,8 +215,8 @@ describe("gracefulCleanup", () => {
 		expect(cleanupTempMock).toHaveBeenCalledTimes(1);
 		// Assert restoreBackup was called exactly once (not by the suppressed second call)
 		expect(atomicRestoreBackupMock).toHaveBeenCalledTimes(1);
-		// Assert process.exit was called at most once (not more than once)
-		expect(processExitSpy.mock.calls.length).toBeLessThanOrEqual(1);
+		// Assert exitFn was called at most once (not more than once)
+		expect(exitFnMock.mock.calls.length).toBeLessThanOrEqual(1);
 	});
 
 	it("should log initial message with undefined signal", async () => {
@@ -268,17 +226,7 @@ describe("gracefulCleanup", () => {
 		// Mock the functions
 		cleanupTempMock.mockResolvedValue(undefined);
 
-		try {
-			await gracefulCleanup(undefined);
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		await gracefulCleanup(undefined, exitFnMock);
 
 		// Assert console.log was called with message for undefined signal
 		expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -297,17 +245,7 @@ describe("gracefulCleanup", () => {
 			throw internalError;
 		});
 
-		try {
-			await gracefulCleanup(undefined);
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		await gracefulCleanup(undefined, exitFnMock);
 
 		// Assert console.warn was called (inner try-catch intercepts the error)
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -320,8 +258,8 @@ describe("gracefulCleanup", () => {
 			"✓ Cleanup complete. No backup to restore.",
 		);
 
-		// Assert process.exit was called with 0 (success, since no backup to restore)
-		expect(processExitSpy).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 0 (success, since no backup to restore)
+		expect(exitFnMock).toHaveBeenCalledWith(0);
 	});
 
 	it("should exercise outer catch block when both cleanupTemp and atomicRestoreBackup fail", async () => {
@@ -334,17 +272,7 @@ describe("gracefulCleanup", () => {
 		cleanupTempMock.mockRejectedValue(tempError);
 		atomicRestoreBackupMock.mockRejectedValue(restoreError);
 
-		try {
-			await gracefulCleanup(undefined);
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		await gracefulCleanup(undefined, exitFnMock);
 
 		// Assert console.warn was called for temp error
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -358,8 +286,8 @@ describe("gracefulCleanup", () => {
 			restoreError,
 		);
 
-		// Assert process.exit was called with 1
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Assert exitFn was called with 1
+		expect(exitFnMock).toHaveBeenCalledWith(1);
 	});
 
 	it("should call gracefulCleanup with SIGINT and log signal-specific message", async () => {
@@ -370,18 +298,8 @@ describe("gracefulCleanup", () => {
 		cleanupTempMock.mockResolvedValue(undefined);
 		atomicRestoreBackupMock.mockResolvedValue(undefined);
 
-		try {
-			// Call gracefulCleanup with SIGINT
-			await gracefulCleanup("SIGINT");
-		} catch (error) {
-			// Expected: mocked process.exit throws to prevent actual exit
-			if (
-				!(error instanceof Error) ||
-				error.message !== "process.exit called"
-			) {
-				throw error; // Re-throw unexpected errors
-			}
-		}
+		// Call gracefulCleanup with SIGINT
+		await gracefulCleanup("SIGINT", exitFnMock);
 
 		// Assert console.log was called with the signal-specific message
 		expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -399,7 +317,7 @@ describe("gracefulCleanup", () => {
 			"✅ Original configuration restored successfully",
 		);
 
-		// Assert process.exit was called with 0 (success)
-		expect(processExitSpy).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 0 (success)
+		expect(exitFnMock).toHaveBeenCalledWith(0);
 	});
 });

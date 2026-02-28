@@ -32,7 +32,7 @@ export class SetupError extends Error {
 		context: SetupErrorContext = {},
 		cause?: Error,
 	) {
-		super(message, { cause });
+		super(message);
 		this.name = "SetupError";
 		this.code = code;
 		this.context = context;

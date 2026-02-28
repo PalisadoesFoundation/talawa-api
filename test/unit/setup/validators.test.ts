@@ -3,7 +3,7 @@
  * @module test/setup/validators.test
  */
 
-import crypto from "node:crypto";
+import * as crypto from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -14,7 +14,16 @@ import {
 	validateEmail,
 	validatePort,
 	validateURL,
-} from "../../scripts/setup/validators";
+} from "../../../scripts/setup/validators";
+
+vi.mock("node:crypto", async () => {
+	const actual =
+		await vi.importActual<typeof import("node:crypto")>("node:crypto");
+	return {
+		...actual,
+		randomBytes: vi.fn(actual.randomBytes),
+	};
+});
 
 /**
  * Note: Backward compatibility of re-exports from setup.ts is verified by:
@@ -26,7 +35,7 @@ import {
 describe("validators", () => {
 	describe("generateJwtSecret", () => {
 		afterEach(() => {
-			vi.restoreAllMocks();
+			vi.clearAllMocks();
 		});
 
 		it("returns a 128-character hexadecimal string", () => {
@@ -36,14 +45,13 @@ describe("validators", () => {
 		});
 
 		it("calls crypto.randomBytes with 64 bytes", () => {
-			const spy = vi.spyOn(crypto, "randomBytes");
 			const secret = generateJwtSecret();
-			expect(spy).toHaveBeenCalledWith(64);
+			expect(crypto.randomBytes).toHaveBeenCalledWith(64);
 			expect(secret).toHaveLength(128);
 		});
 
 		it("throws error when crypto.randomBytes fails", () => {
-			vi.spyOn(crypto, "randomBytes").mockImplementation(() => {
+			vi.mocked(crypto.randomBytes).mockImplementationOnce(() => {
 				throw new Error("Entropy source unavailable");
 			});
 

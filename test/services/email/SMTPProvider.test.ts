@@ -896,4 +896,47 @@ describe("SMTPProvider", () => {
 			}),
 		);
 	});
+
+	it("should handle unexpected rejections during batch processing (line 250 coverage)", async () => {
+		const provider = new SMTPProvider(mockConfig);
+		const batchJobs = [
+			{
+				id: "1",
+				email: "test@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "u1",
+			},
+		];
+
+		// Force sendEmail to reject (bypassing its internal try/catch for testing purposes)
+		vi.spyOn(provider, "sendEmail").mockRejectedValue(
+			"Unexpected Rejection" as unknown as Error,
+		);
+
+		const result = await provider.sendBulkEmails(batchJobs);
+		expect(result[0]?.success).toBe(false);
+		expect(result[0]?.error).toBe("Unexpected Rejection");
+	});
+
+	it("should handle non-Error rejections in sendEmail (line 193 coverage)", async () => {
+		const provider = new SMTPProvider(mockConfig);
+		const nodemailer = await import("nodemailer");
+
+		const mockSendMail = vi.fn().mockRejectedValue("String error");
+		(nodemailer.default.createTransport as Mock).mockReturnValue({
+			sendMail: mockSendMail,
+		});
+
+		const result = await provider.sendEmail({
+			id: "1",
+			email: "to@example.com",
+			subject: "S",
+			htmlBody: "B",
+			userId: "u",
+		});
+
+		expect(result.success).toBe(false);
+		expect(result.error).toBe("String error");
+	});
 });
