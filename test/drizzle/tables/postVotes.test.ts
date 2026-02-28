@@ -776,6 +776,8 @@ describe("src/drizzle/tables/postVotes", () => {
 			const postId = await createTestPost();
 			const type = "down_vote";
 
+			createdResources.userIds.push(userId);
+
 			const [inserted] = await server.drizzleClient
 				.insert(postVotesTable)
 				.values({
