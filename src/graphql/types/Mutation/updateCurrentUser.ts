@@ -190,15 +190,11 @@ builder.mutationField("updateCurrentUser", (t) =>
 						avatarMimeType:
 							parsedArgs.input.avatar === undefined
 								? undefined // Do not update if undefined
-								: avatarUpdate !== null
-									? avatarUpdate.avatarMimeType
-									: null, // Set to null if null
+								: avatarUpdate?.avatarMimeType, // Will be value or null
 						avatarName:
 							parsedArgs.input.avatar === undefined
 								? undefined // Do not update if undefined
-								: avatarUpdate !== null
-									? avatarUpdate.avatarName
-									: null, // Set to null if null
+								: avatarUpdate?.avatarName, // Will be value or null
 						birthDate: parsedArgs.input.birthDate,
 						city: parsedArgs.input.city,
 						countryCode: parsedArgs.input.countryCode,
