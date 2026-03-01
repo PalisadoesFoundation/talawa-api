@@ -7,6 +7,36 @@ import {
 } from "../Notification_engine";
 
 export class NotificationEventBus extends EventEmitter {
+	/**
+	 * Tracks in-flight notification promises so tests can await completion.
+	 * In production, this set is never read — it only adds negligible bookkeeping.
+	 */
+	private _pendingNotifications: Set<Promise<void>> = new Set();
+
+	/**
+	 * Returns a promise that resolves once all currently pending notification
+	 * callbacks have settled (resolved or rejected). Useful in tests to avoid
+	 * race conditions between fire-and-forget `setImmediate` callbacks and
+	 * subsequent database queries.
+	 */
+	async waitForPending(): Promise<void> {
+		await Promise.allSettled([...this._pendingNotifications]);
+	}
+
+	private _trackNotification(fn: () => Promise<void>): void {
+		const promise = new Promise<void>((resolve) => {
+			setImmediate(async () => {
+				try {
+					await fn();
+				} finally {
+					this._pendingNotifications.delete(promise);
+					resolve();
+				}
+			});
+		});
+		this._pendingNotifications.add(promise);
+	}
+
 	async emitPostCreated(
 		data: {
 			postId: string;
@@ -19,7 +49,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("post.created", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -55,7 +85,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("membership_request.accepted", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -95,7 +125,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("event.created", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -135,7 +165,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("join_request.submitted", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 
@@ -190,7 +220,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("member.joined", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -227,7 +257,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("user.blocked", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -264,7 +294,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("membership_request.rejected", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -305,7 +335,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("fund.created", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -347,7 +377,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("fund_campaign.created", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -394,7 +424,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("fund_campaign_pledge.created", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
@@ -441,7 +471,7 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("send_event_invite", data);
 
-		setImmediate(async () => {
+		this._trackNotification(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 

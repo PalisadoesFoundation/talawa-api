@@ -19,7 +19,7 @@ export const teardown = async () => {
 	try {
 		stopEmailQueue();
 		notificationEventBus.removeAllListeners();
-		await new Promise((resolve) => setImmediate(resolve));
+		await notificationEventBus.waitForPending();
 		console.log("Notification system cleaned up");
 	} catch (error) {
 		console.warn("Notification cleanup failed:", error);

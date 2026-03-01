@@ -1,9 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
-import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -13,6 +12,10 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createPost,
+	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Mutation_readNotification,
 	Query_signIn,
@@ -56,6 +59,16 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 }
 
 // Helper Types
+interface TestOrganization {
+	orgId: string;
+	cleanup: () => Promise<void>;
+}
+
+interface TestPost {
+	postId: string;
+	cleanup: () => Promise<void>;
+}
+
 interface TestUser {
 	userId: string;
 	authToken: string;
@@ -74,6 +87,28 @@ type NotificationItem = {
 	readAt: string | null;
 };
 
+async function createTestOrganization(): Promise<TestOrganization> {
+	const { token } = await ensureAdminAuth();
+	const res = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+		},
+	});
+	if (!res.data?.createOrganization?.id)
+		throw new Error(res.errors?.[0]?.message || "org create failed");
+	const orgId = res.data.createOrganization.id;
+	return {
+		orgId,
+		cleanup: async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${token}` },
+				variables: { input: { id: orgId } },
+			});
+		},
+	};
+}
+
 async function createTestUser(): Promise<TestUser> {
 	const regularUser = await createRegularUserUsingAdmin();
 	return {
@@ -89,10 +124,33 @@ async function createTestUser(): Promise<TestUser> {
 	};
 }
 
+async function createTestPost(
+	organizationId: string,
+	authToken: string,
+): Promise<TestPost> {
+	const res = await mercuriusClient.mutate(Mutation_createPost, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				caption: `Test post ${faker.lorem.words(3)}`,
+			},
+		},
+	});
+	if (!res.data?.createPost?.id)
+		throw new Error(res.errors?.[0]?.message || "post create failed");
+	return {
+		postId: res.data.createPost.id,
+		cleanup: async () => {
+			/* no delete needed currently */
+		},
+	};
+}
+
 async function waitForNotifications(
 	userId: string,
 	authToken: string,
-	timeoutMs = 5000,
+	timeoutMs = 15000,
 	minCount = 1,
 ): Promise<NotificationItem[]> {
 	const startTime = Date.now();
@@ -130,57 +188,11 @@ async function waitForNotifications(
 	return [];
 }
 
-/**
- * Directly insert a notification into the DB, bypassing the async EventBus.
- * The EventBus uses setImmediate which is unreliable under CI load.
- * This makes tests deterministic while still testing readNotification.
- */
-async function createDirectNotification(userId: string): Promise<string> {
-	const [template] = await server.drizzleClient
-		.select()
-		.from(notificationTemplatesTable)
-		.where(
-			and(
-				eq(notificationTemplatesTable.eventType, "post_created"),
-				eq(notificationTemplatesTable.channelType, "in_app"),
-			),
-		)
-		.limit(1);
-
-	assertToBeNonNullish(template);
-
-	const [notificationLog] = await server.drizzleClient
-		.insert(notificationLogsTable)
-		.values({
-			templateId: template.id,
-			eventType: "post_created",
-			channel: "in_app",
-			status: "sent",
-			renderedContent: {
-				title: "Test notification",
-				body: "Test notification body",
-			},
-		})
-		.returning();
-
-	assertToBeNonNullish(notificationLog);
-
-	await server.drizzleClient.insert(notificationAudienceTable).values({
-		notificationId: notificationLog.id,
-		userId,
-		isRead: false,
-	});
-
-	return notificationLog.id;
-}
-
 const LONG_TEST_TIMEOUT = 30000;
 beforeAll(async () => {
 	await ensureAdminAuth();
-	// Ensure notification templates exist (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
-
-	// Seed post_created template (used by this test suite)
-	const [existingPost] = await server.drizzleClient
+	// Ensure notification template exists (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
+	const [existing] = await server.drizzleClient
 		.select()
 		.from(notificationTemplatesTable)
 		.where(
@@ -190,7 +202,7 @@ beforeAll(async () => {
 			),
 		)
 		.limit(1);
-	if (!existingPost) {
+	if (!existing) {
 		await server.drizzleClient.insert(notificationTemplatesTable).values({
 			name: "New Post Created",
 			eventType: "post_created",
@@ -198,30 +210,6 @@ beforeAll(async () => {
 			body: '{authorName} has created a new post in {organizationName}: "{postCaption}"',
 			channelType: "in_app",
 			linkedRouteName: "/post/{postId}",
-		});
-	}
-
-	// Seed event_created template to prevent "No notification template found"
-	// errors from other tests in the same shard that create events, which can
-	// block or slow down the shared notification queue.
-	const [existingEvent] = await server.drizzleClient
-		.select()
-		.from(notificationTemplatesTable)
-		.where(
-			and(
-				eq(notificationTemplatesTable.eventType, "event_created"),
-				eq(notificationTemplatesTable.channelType, "in_app"),
-			),
-		)
-		.limit(1);
-	if (!existingEvent) {
-		await server.drizzleClient.insert(notificationTemplatesTable).values({
-			name: "New Event Created",
-			eventType: "event_created",
-			title: "New event: {eventName}",
-			body: '{creatorName} created "{eventName}" in {organizationName}',
-			channelType: "in_app",
-			linkedRouteName: "/event/{eventId}",
 		});
 	}
 });
@@ -402,11 +390,29 @@ suite("Mutation readNotification", () => {
 		test(
 			"Successfully marks single notification as read when notification exists",
 			async () => {
+				const organization = await createTestOrganization();
+				testCleanupFunctions.push(organization.cleanup);
+
 				const testUser = await createTestUser();
 				testCleanupFunctions.push(testUser.cleanup);
 
-				// Directly insert notification via DB (bypasses flaky async EventBus)
-				await createDirectNotification(testUser.userId);
+				const { token: adminAuth } = await ensureAdminAuth();
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuth}` },
+					variables: {
+						input: {
+							memberId: testUser.userId,
+							organizationId: organization.orgId,
+							role: "regular",
+						},
+					},
+				});
+
+				const { token: adminAuthToken } = await ensureAdminAuth();
+				const post = await createTestPost(organization.orgId, adminAuthToken);
+				testCleanupFunctions.push(post.cleanup);
+
+				await notificationEventBus.waitForPending();
 
 				const notifications = await waitForNotifications(
 					testUser.userId,
@@ -475,12 +481,32 @@ suite("Mutation readNotification", () => {
 		test(
 			"Successfully marks multiple notifications as read when notifications exist",
 			async () => {
+				const organization = await createTestOrganization();
+				testCleanupFunctions.push(organization.cleanup);
+
 				const testUser = await createTestUser();
 				testCleanupFunctions.push(testUser.cleanup);
 
-				// Directly insert 2 notifications via DB (bypasses flaky async EventBus)
-				await createDirectNotification(testUser.userId);
-				await createDirectNotification(testUser.userId);
+				const { token: adminAuth } = await ensureAdminAuth();
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuth}` },
+					variables: {
+						input: {
+							memberId: testUser.userId,
+							organizationId: organization.orgId,
+							role: "regular",
+						},
+					},
+				});
+
+				const { token: adminAuthToken } = await ensureAdminAuth();
+				const post1 = await createTestPost(organization.orgId, adminAuthToken);
+				testCleanupFunctions.push(post1.cleanup);
+
+				const post2 = await createTestPost(organization.orgId, adminAuthToken);
+				testCleanupFunctions.push(post2.cleanup);
+
+				await notificationEventBus.waitForPending();
 
 				const notifications = await waitForNotifications(
 					testUser.userId,
@@ -585,15 +611,42 @@ suite("Mutation readNotification", () => {
 		test(
 			"Only marks notifications belonging to the current user as read",
 			async () => {
+				const organization = await createTestOrganization();
+				testCleanupFunctions.push(organization.cleanup);
+
 				const testUser1 = await createTestUser();
 				testCleanupFunctions.push(testUser1.cleanup);
 
 				const testUser2 = await createTestUser();
 				testCleanupFunctions.push(testUser2.cleanup);
 
-				// Directly insert notifications for each user (bypasses flaky async EventBus)
-				await createDirectNotification(testUser1.userId);
-				await createDirectNotification(testUser2.userId);
+				const { token: adminAuth } = await ensureAdminAuth();
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuth}` },
+					variables: {
+						input: {
+							memberId: testUser1.userId,
+							organizationId: organization.orgId,
+							role: "regular",
+						},
+					},
+				});
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuth}` },
+					variables: {
+						input: {
+							memberId: testUser2.userId,
+							organizationId: organization.orgId,
+							role: "regular",
+						},
+					},
+				});
+
+				const { token: adminAuthToken } = await ensureAdminAuth();
+				const post = await createTestPost(organization.orgId, adminAuthToken);
+				testCleanupFunctions.push(post.cleanup);
+
+				await notificationEventBus.waitForPending();
 
 				const user1Notifications = await waitForNotifications(
 					testUser1.userId,
@@ -664,11 +717,29 @@ suite("Mutation readNotification", () => {
 		test(
 			"Handles mixed valid and invalid notification IDs gracefully",
 			async () => {
+				const organization = await createTestOrganization();
+				testCleanupFunctions.push(organization.cleanup);
+
 				const testUser = await createTestUser();
 				testCleanupFunctions.push(testUser.cleanup);
 
-				// Directly insert notification via DB (bypasses flaky async EventBus)
-				await createDirectNotification(testUser.userId);
+				const { token: adminAuth } = await ensureAdminAuth();
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuth}` },
+					variables: {
+						input: {
+							memberId: testUser.userId,
+							organizationId: organization.orgId,
+							role: "regular",
+						},
+					},
+				});
+
+				const { token: adminAuthToken } = await ensureAdminAuth();
+				const post = await createTestPost(organization.orgId, adminAuthToken);
+				testCleanupFunctions.push(post.cleanup);
+
+				await notificationEventBus.waitForPending();
 
 				const notifications = await waitForNotifications(
 					testUser.userId,
