@@ -19,30 +19,29 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("post.created", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"post_created",
-					{
-						authorName: data.authorName,
-						organizationName: data.organizationName,
-						postCaption: data.postCaption,
-						postId: data.postId,
-						postUrl: `/post/${data.postId}`,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"post_created",
+				{
+					authorName: data.authorName,
+					organizationName: data.organizationName,
+					postCaption: data.postCaption,
+					postId: data.postId,
+					postUrl: `/post/${data.postId}`,
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [data.organizationId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(`Notification sent for post ${data.postId}`);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send post notification:");
-			}
-		});
+			ctx.log.info(`Notification sent for post ${data.postId}`);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send post notification:");
+			throw error;
+		}
 	}
 
 	async emitMembershipRequestAccepted(
@@ -55,31 +54,30 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("membership_request.accepted", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"membership_request_accepted",
-					{
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-					},
-					{
-						targetType: NotificationTargetType.USER,
-						targetIds: [data.userId],
-					},
-					NotificationChannelType.EMAIL,
-				);
-				ctx.log.info(
-					`Membership acceptance notification sent to user ${data.userId}`,
-				);
-			} catch (error) {
-				ctx.log.error(
-					error,
-					"Failed to send membership acceptance notification:",
-				);
-			}
-		});
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"membership_request_accepted",
+				{
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+				},
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: [data.userId],
+				},
+				NotificationChannelType.EMAIL,
+			);
+			ctx.log.info(
+				`Membership acceptance notification sent to user ${data.userId}`,
+			);
+		} catch (error) {
+			ctx.log.error(
+				error,
+				"Failed to send membership acceptance notification:",
+			);
+			throw error;
+		}
 	}
 
 	async emitEventCreated(
@@ -95,32 +93,31 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("event.created", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"event_created",
-					{
-						eventName: data.eventName,
-						organizationName: data.organizationName,
-						startDate: data.startDate,
-						eventId: data.eventId,
-						creatorName: data.creatorName,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"event_created",
+				{
+					eventName: data.eventName,
+					organizationName: data.organizationName,
+					startDate: data.startDate,
+					eventId: data.eventId,
+					creatorName: data.creatorName,
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [data.organizationId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(
-					`Event creation notification sent for event ${data.eventId}`,
-				);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send event creation notification:");
-			}
-		});
+			ctx.log.info(
+				`Event creation notification sent for event ${data.eventId}`,
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send event creation notification:");
+			throw error;
+		}
 	}
 
 	async emitJoinRequestSubmitted(
@@ -135,48 +132,47 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("join_request.submitted", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
 
-				await Promise.all([
-					notificationEngine.createNotification(
-						"join_request_submitted",
-						{
-							userName: data.userName,
-							organizationName: data.organizationName,
-							organizationId: data.organizationId,
-							requestId: data.requestId,
-						},
-						{
-							targetType: NotificationTargetType.ORGANIZATION_ADMIN,
-							targetIds: [data.organizationId],
-						},
-						NotificationChannelType.IN_APP,
-					),
-					notificationEngine.createNotification(
-						"join_request_submitted",
-						{
-							userName: data.userName,
-							organizationName: data.organizationName,
-							organizationId: data.organizationId,
-							requestId: data.requestId,
-						},
-						{
-							targetType: NotificationTargetType.ORGANIZATION_ADMIN,
-							targetIds: [data.organizationId],
-						},
-						NotificationChannelType.EMAIL,
-					),
-				]);
+			await Promise.all([
+				notificationEngine.createNotification(
+					"join_request_submitted",
+					{
+						userName: data.userName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+						requestId: data.requestId,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				),
+				notificationEngine.createNotification(
+					"join_request_submitted",
+					{
+						userName: data.userName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+						requestId: data.requestId,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.EMAIL,
+				),
+			]);
 
-				ctx.log.info(
-					`Join request notifications (in-app + email) sent for user ${data.userId} to organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send join request notification:");
-			}
-		});
+			ctx.log.info(
+				`Join request notifications (in-app + email) sent for user ${data.userId} to organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send join request notification:");
+			throw error;
+		}
 	}
 
 	async emitNewMemberJoined(
@@ -190,30 +186,29 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("member.joined", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"new_member_joined",
-					{
-						userName: data.userName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"new_member_joined",
+				{
+					userName: data.userName,
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [data.organizationId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(
-					`New member notification sent for user ${data.userId} joining organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send new member notification:");
-			}
-		});
+			ctx.log.info(
+				`New member notification sent for user ${data.userId} joining organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send new member notification:");
+			throw error;
+		}
 	}
 
 	async emitUserBlocked(
@@ -226,31 +221,29 @@ export class NotificationEventBus extends EventEmitter {
 		ctx: GraphQLContext,
 	) {
 		this.emit("user.blocked", data);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"user_blocked",
+				{
+					userName: data.userName,
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+				},
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: [data.userId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"user_blocked",
-					{
-						userName: data.userName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-					},
-					{
-						targetType: NotificationTargetType.USER,
-						targetIds: [data.userId],
-					},
-					NotificationChannelType.IN_APP,
-				);
-
-				ctx.log.info(
-					`User blocked notification sent to user ${data.userId} from organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send user blocked notification:");
-			}
-		});
+			ctx.log.info(
+				`User blocked notification sent to user ${data.userId} from organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send user blocked notification:");
+			throw error;
+		}
 	}
 
 	async emitMembershipRequestRejected(
@@ -264,33 +257,32 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("membership_request.rejected", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"membership_request_rejected",
-					{
-						userName: data.userName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-					},
-					{
-						targetType: NotificationTargetType.USER,
-						targetIds: [data.userId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"membership_request_rejected",
+				{
+					userName: data.userName,
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+				},
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: [data.userId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(
-					`Membership request rejection notification sent to user ${data.userId} for organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(
-					error,
-					"Failed to send membership request rejection notification:",
-				);
-			}
-		});
+			ctx.log.info(
+				`Membership request rejection notification sent to user ${data.userId} for organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(
+				error,
+				"Failed to send membership request rejection notification:",
+			);
+			throw error;
+		}
 	}
 
 	async emitFundCreated(
@@ -305,31 +297,30 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("fund.created", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"fund_created",
-					{
-						fundName: data.fundName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-						creatorName: data.creatorName,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"fund_created",
+				{
+					fundName: data.fundName,
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+					creatorName: data.creatorName,
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [data.organizationId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(
-					`Fund creation notification sent for fund ${data.fundId} in organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send fund creation notification:");
-			}
-		});
+			ctx.log.info(
+				`Fund creation notification sent for fund ${data.fundId} in organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send fund creation notification:");
+			throw error;
+		}
 	}
 
 	async emitFundCampaignCreated(
@@ -347,37 +338,36 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("fund_campaign.created", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"fund_campaign_created",
-					{
-						campaignName: data.campaignName,
-						fundName: data.fundName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-						creatorName: data.creatorName,
-						goalAmount: data.goalAmount,
-						currencyCode: data.currencyCode,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"fund_campaign_created",
+				{
+					campaignName: data.campaignName,
+					fundName: data.fundName,
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+					creatorName: data.creatorName,
+					goalAmount: data.goalAmount,
+					currencyCode: data.currencyCode,
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [data.organizationId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(
-					`Fund campaign creation notification sent for campaign ${data.campaignId} in organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(
-					error,
-					"Failed to send fund campaign creation notification:",
-				);
-			}
-		});
+			ctx.log.info(
+				`Fund campaign creation notification sent for campaign ${data.campaignId} in organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(
+				error,
+				"Failed to send fund campaign creation notification:",
+			);
+			throw error;
+		}
 	}
 
 	async emitFundCampaignPledgeCreated(
@@ -394,36 +384,32 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("fund_campaign_pledge.created", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"fund_campaign_pledge_created",
-					{
-						campaignName: data.campaignName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-						pledgerName: data.pledgerName,
-						amount: data.amount,
-						currencyCode: data.currencyCode,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
+			await notificationEngine.createNotification(
+				"fund_campaign_pledge_created",
+				{
+					campaignName: data.campaignName,
+					organizationName: data.organizationName,
+					organizationId: data.organizationId,
+					pledgerName: data.pledgerName,
+					amount: data.amount,
+					currencyCode: data.currencyCode,
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION,
+					targetIds: [data.organizationId],
+				},
+				NotificationChannelType.IN_APP,
+			);
 
-				ctx.log.info(
-					`Fund campaign pledge notification sent for pledge ${data.pledgeId} in organization ${data.organizationId}`,
-				);
-			} catch (error) {
-				ctx.log.error(
-					error,
-					"Failed to send fund campaign pledge notification:",
-				);
-			}
-		});
+			ctx.log.info(
+				`Fund campaign pledge notification sent for pledge ${data.pledgeId} in organization ${data.organizationId}`,
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send fund campaign pledge notification:");
+			throw error;
+		}
 	}
 
 	async emitSendEventInvite(
@@ -441,34 +427,33 @@ export class NotificationEventBus extends EventEmitter {
 	) {
 		this.emit("send_event_invite", data);
 
-		setImmediate(async () => {
-			try {
-				const notificationEngine = new NotificationEngine(ctx);
+		try {
+			const notificationEngine = new NotificationEngine(ctx);
 
-				await notificationEngine.createDirectEmailNotification(
-					"send_event_invite",
-					{
-						inviteeName: data.inviteeName || "",
-						eventName: data.eventName || "an event",
-						invitationUrl: data.invitationUrl,
-						invitationToken: data.invitationToken,
-					},
-					data.inviteeEmail,
-					NotificationChannelType.EMAIL,
-				);
+			await notificationEngine.createDirectEmailNotification(
+				"send_event_invite",
+				{
+					inviteeName: data.inviteeName || "",
+					eventName: data.eventName || "an event",
+					invitationUrl: data.invitationUrl,
+					invitationToken: data.invitationToken,
+				},
+				data.inviteeEmail,
+				NotificationChannelType.EMAIL,
+			);
 
-				ctx.log.info(
-					{
-						inviteeEmail: data.inviteeEmail,
-						inviterId: data.inviterId,
-						eventId: data.eventId,
-					},
-					"Send event invite notification created",
-				);
-			} catch (error) {
-				ctx.log.error(error, "Failed to send event invite notification:");
-			}
-		});
+			ctx.log.info(
+				{
+					inviteeEmail: data.inviteeEmail,
+					inviterId: data.inviterId,
+					eventId: data.eventId,
+				},
+				"Send event invite notification created",
+			);
+		} catch (error) {
+			ctx.log.error(error, "Failed to send event invite notification:");
+			throw error;
+		}
 	}
 }
 
