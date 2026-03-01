@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -23,7 +24,6 @@ import {
 } from "../documentNodes";
 import "~/src/graphql/schema";
 
-// Helper function to get admin auth token
 async function getAdminAuthToken(): Promise<string> {
 	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -38,138 +38,163 @@ async function getAdminAuthToken(): Promise<string> {
 	return adminSignInResult.data.signIn.authenticationToken;
 }
 
-// Helper function types
 interface TestUser {
 	authToken: string;
 	userId: string;
 	name: string | null;
 }
 
-// Helper functions
-
-async function createRegularUser(): Promise<TestUser> {
-	const adminAuthToken = await getAdminAuthToken();
-
-	const userResult = await mercuriusClient.mutate(Mutation_createUser, {
-		headers: {
-			authorization: `bearer ${adminAuthToken}`,
-		},
-		variables: {
-			input: {
-				emailAddress: `email${faker.string.uuid()}@test.com`,
-				password: "password123",
-				role: "regular",
-				name: "Test User",
-				isEmailAddressVerified: false,
-			},
-		},
-	});
-
-	assertToBeNonNullish(userResult.data?.createUser?.authenticationToken);
-	assertToBeNonNullish(userResult.data?.createUser?.user?.id);
-
-	return {
-		authToken: userResult.data.createUser.authenticationToken,
-		userId: userResult.data.createUser.user.id,
-		name: userResult.data.createUser.user.name,
-	};
-}
-
-// Setup helper: creates org -> post -> comment chain
-async function createFullCommentChain(): Promise<{
-	orgId: string;
-	postId: string;
-	commentId: string;
-	commentBody: string;
-}> {
-	const adminAuthToken = await getAdminAuthToken();
-
-	// Create organization
-	const createOrgResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
-		{
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					name: `Org ${faker.string.uuid()}`,
-					description: "Test organization",
-					countryCode: "us",
-					state: "CA",
-					city: "San Francisco",
-					postalCode: "94101",
-					addressLine1: "123 Test St",
-				},
-			},
-		},
-	);
-
-	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
-	const orgId = createOrgResult.data.createOrganization.id;
-
-	// Create post
-	const createPostResult = await mercuriusClient.mutate(Mutation_createPost, {
-		headers: {
-			authorization: `bearer ${adminAuthToken}`,
-		},
-		variables: {
-			input: {
-				caption: "Test post",
-				organizationId: orgId,
-			},
-		},
-	});
-
-	assertToBeNonNullish(createPostResult.data?.createPost?.id);
-	const postId = createPostResult.data.createPost.id;
-
-	// Create comment
-	const commentBody = `Test comment ${faker.string.uuid()}`;
-	const createCommentResult = await mercuriusClient.mutate(
-		Mutation_createComment,
-		{
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					postId: postId,
-					body: commentBody,
-				},
-			},
-		},
-	);
-
-	assertToBeNonNullish(createCommentResult.data?.createComment?.id);
-	const commentId = createCommentResult.data.createComment.id;
-
-	return {
-		orgId,
-		postId,
-		commentId,
-		commentBody,
-	};
-}
-
-async function addUserToOrg(userId: string, orgId: string): Promise<void> {
-	const adminAuthToken = await getAdminAuthToken();
-
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: {
-			authorization: `bearer ${adminAuthToken}`,
-		},
-		variables: {
-			input: {
-				memberId: userId,
-				organizationId: orgId,
-				role: "regular",
-			},
-		},
-	});
-}
-
 suite("Query field comment", () => {
+	const cleanups: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		const cleanupErrors: unknown[] = [];
+		for (const cleanup of cleanups.reverse()) {
+			try {
+				await cleanup();
+			} catch (_error) {
+				console.error("Cleanup failed:", _error);
+				cleanupErrors.push(_error);
+			}
+		}
+		cleanups.length = 0;
+		if (cleanupErrors.length > 0) {
+			throw new Error(
+				`Teardown failed in ${cleanupErrors.length} cleanup task(s).`,
+			);
+		}
+	});
+
+	async function createRegularUser(): Promise<TestUser> {
+		const adminAuthToken = await getAdminAuthToken();
+
+		const userResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					emailAddress: `email${faker.string.uuid()}@test.com`,
+					password: "password123",
+					role: "regular",
+					name: "Test User",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+
+		assertToBeNonNullish(userResult.data?.createUser?.authenticationToken);
+		assertToBeNonNullish(userResult.data?.createUser?.user?.id);
+
+		const userId = userResult.data.createUser.user.id;
+		cleanups.push(async () => {
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+		});
+
+		return {
+			authToken: userResult.data.createUser.authenticationToken,
+			userId,
+			name: userResult.data.createUser.user.name,
+		};
+	}
+
+	async function createFullCommentChain(): Promise<{
+		orgId: string;
+		postId: string;
+		commentId: string;
+		commentBody: string;
+	}> {
+		const adminAuthToken = await getAdminAuthToken();
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						name: `Org ${faker.string.uuid()}`,
+						description: "Test organization",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Test St",
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
+		const orgId = createOrgResult.data.createOrganization.id;
+		cleanups.push(async () => {
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, orgId));
+		});
+
+		// Create post
+		const createPostResult = await mercuriusClient.mutate(Mutation_createPost, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					caption: "Test post",
+					organizationId: orgId,
+				},
+			},
+		});
+
+		assertToBeNonNullish(createPostResult.data?.createPost?.id);
+		const postId = createPostResult.data.createPost.id;
+
+		// Create comment
+		const commentBody = `Test comment ${faker.string.uuid()}`;
+		const createCommentResult = await mercuriusClient.mutate(
+			Mutation_createComment,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						postId: postId,
+						body: commentBody,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createCommentResult.data?.createComment?.id);
+		const commentId = createCommentResult.data.createComment.id;
+
+		return {
+			orgId,
+			postId,
+			commentId,
+			commentBody,
+		};
+	}
+
+	async function addUserToOrg(userId: string, orgId: string): Promise<void> {
+		const adminAuthToken = await getAdminAuthToken();
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					memberId: userId,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+	}
+
 	suite("results in a graphql error", () => {
 		test("with 'unauthenticated' extensions code if client is not authenticated", async () => {
 			const commentResult = await mercuriusClient.query(Query_comment, {
