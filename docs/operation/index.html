@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">Operation | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/operation"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Operation | Talawa API Documentation"><meta data-rh="true" name="description" content="Introduction"><meta data-rh="true" property="og:description" content="Introduction"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/operation"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/operation" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/operation" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Operation","item":"https://docs-api.talawa.io/docs/operation"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.9806b66e.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.f5cac2da.js" defer="defer"></script>
 <script src="/assets/js/main.1c1a0558.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -80,23 +80,20 @@
 <div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">sudo su $USER -</span><br></span></code></pre></div></div>
 </li>
 <li class="">
-<p>Build and start the docker devcontainer</p>
-<ol>
-<li class="">Default mode:<!-- -->
-<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json</span><br></span></code></pre></div></div>
+<p>Build the docker devcontainer</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer build --workspace-folder .</span><br></span></code></pre></div></div>
 </li>
-<li class="">Rootless mode:<!-- -->
-<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer up --workspace-folder . --config .devcontainer/rootless/devcontainer.json</span><br></span></code></pre></div></div>
+<li class="">
+<p>When the build is complete, the last line of the output should be:</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,&quot;imageName&quot;:&quot;talawa-api&quot;}</span><br></span></code></pre></div></div>
 </li>
-</ol>
+<li class="">
+<p>Start the docker devcontainer</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer up --workspace-folder .</span><br></span></code></pre></div></div>
 </li>
 <li class="">
 <p>When the container startup is complete, the last lines of output should look like this:</p>
 <div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,   &quot;containerId&quot;:&quot;81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34&quot;,   &quot;composeProjectName&quot;:&quot;talawa&quot;,&quot;remoteUser&quot;:&quot;talawa&quot;,&quot;remoteWorkspaceFolder&quot;:&quot;/home/talawa/api&quot;}</span><br></span></code></pre></div></div>
-</li>
-<li class="">
-<p>Start the application</p>
-<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker exec talawa-api-1 /bin/bash -c &#x27;pnpm run start_development_server&#x27;</span><br></span></code></pre></div></div>
 </li>
 </ol>
 <p>All done!</p>
