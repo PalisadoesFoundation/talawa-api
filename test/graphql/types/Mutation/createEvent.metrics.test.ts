@@ -939,9 +939,8 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			vi.restoreAllMocks();
 		});
 
-		it("should track mutation and trigger cleanup when attachment upload fails", async () => {
-			// Use real timers so resolver/stream/cleanup run without fake-timer interference.
-			// Fake timers can cause "10000 timers" infinite loop when this test runs in CI.
+		it("should track mutation and return invalid_arguments when attachment file is not found in storage", async () => {
+			// Use real timers so resolver runs without fake-timer interference.
 			vi.useRealTimers();
 
 			const perf = createPerformanceTracker();
@@ -971,31 +970,6 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				organizationId,
 			);
 
-			// Import eventAttachmentsTable
-			const { eventAttachmentsTable } = await import("~/src/drizzle/schema");
-
-			// Track attachment names for cleanup verification
-			const attachment1Name = "attachment-1-name";
-			const attachment2Name = "attachment-2-name";
-
-			// Mock created attachments (what the DB insert returns)
-			const mockAttachmentRecords = [
-				{
-					id: faker.string.uuid(),
-					eventId: mockCreatedEvent.id,
-					name: attachment1Name,
-					mimeType: "image/png",
-					creatorId: "user-123",
-				},
-				{
-					id: faker.string.uuid(),
-					eventId: mockCreatedEvent.id,
-					name: attachment2Name,
-					mimeType: "image/png",
-					creatorId: "user-123",
-				},
-			];
-
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockCurrentUser,
 			);
@@ -1003,7 +977,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				mockOrganization,
 			);
 
-			// Mock transaction
+			// Mock transaction returning the event/folder/category
 			(
 				mocks.drizzleClient as unknown as {
 					transaction?: ReturnType<typeof vi.fn>;
@@ -1037,15 +1011,6 @@ describe("Mutation createEvent - Performance Tracking", () => {
 										}),
 									};
 								}
-								if (table === eventAttachmentsTable) {
-									return {
-										values: vi.fn().mockReturnValue({
-											returning: vi
-												.fn()
-												.mockResolvedValue(mockAttachmentRecords),
-										}),
-									};
-								}
 								return {
 									values: vi.fn().mockReturnValue({
 										returning: vi.fn().mockResolvedValue([]),
@@ -1057,17 +1022,14 @@ describe("Mutation createEvent - Performance Tracking", () => {
 					},
 				);
 
-			// Mock MinIO putObject: first succeeds, second fails
-			const putObjectMock = vi.fn();
-			putObjectMock
-				.mockResolvedValueOnce({ etag: "mock-etag-1", versionId: null }) // First upload succeeds
-				.mockRejectedValueOnce(new Error("Upload failed for attachment 2")); // Second fails
-
-			// Mock removeObject for cleanup verification
-			const removeObjectMock = vi.fn().mockResolvedValue(undefined);
-
-			mocks.minioClient.client.putObject = putObjectMock;
-			mocks.minioClient.client.removeObject = removeObjectMock;
+			// Mock statObject to fail (file not found in MinIO)
+			const notFoundError = Object.assign(new Error("Not Found"), {
+				name: "NotFound",
+				code: "NotFound",
+			});
+			mocks.minioClient.client.statObject = vi
+				.fn()
+				.mockRejectedValue(notFoundError);
 
 			// Mock notification service
 			const mockNotification = {
@@ -1077,27 +1039,23 @@ describe("Mutation createEvent - Performance Tracking", () => {
 			};
 			context.notification = mockNotification;
 
-			// Create mock file uploads with proper stream mocks
-			const createMockReadStream = () => ({
-				pipe: vi.fn().mockReturnThis(),
-				on: vi.fn().mockReturnThis(),
-				[Symbol.asyncIterator]: vi.fn(),
-			});
-
-			const mockAttachment1 = Promise.resolve({
-				filename: "test1.png",
-				mimetype: "image/png",
-				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-				encoding: "7bit",
-				fieldName: "attachments",
-			});
-			const mockAttachment2 = Promise.resolve({
-				filename: "test2.png",
-				mimetype: "image/png",
-				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-				encoding: "7bit",
-				fieldName: "attachments",
-			});
+			// FileMetadataInput attachments (pre-uploaded via presigned URL)
+			const VALID_FILE_HASH =
+				"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+			const attachments = [
+				{
+					fileHash: VALID_FILE_HASH,
+					mimeType: "image/png",
+					name: "test1.png",
+					objectName: "minio-object-1",
+				},
+				{
+					fileHash: VALID_FILE_HASH,
+					mimeType: "image/png",
+					name: "test2.png",
+					objectName: "minio-object-2",
+				},
+			];
 
 			try {
 				try {
@@ -1110,7 +1068,7 @@ describe("Mutation createEvent - Performance Tracking", () => {
 								organizationId,
 								startAt,
 								endAt,
-								attachments: [mockAttachment1, mockAttachment2],
+								attachments,
 							},
 						},
 						context,
@@ -1118,23 +1076,14 @@ describe("Mutation createEvent - Performance Tracking", () => {
 					expect.fail("Expected error to be thrown");
 				} catch (error) {
 					expect(error).toBeInstanceOf(TalawaGraphQLError);
+					// With the MinIO flow the resolver checks statObject and returns invalid_arguments
 					expect((error as TalawaGraphQLError).extensions?.code).toBe(
-						"unexpected",
-					);
-					expect((error as TalawaGraphQLError).message).toContain(
-						"Upload failed",
+						"invalid_arguments",
 					);
 				}
 
-				// Verify putObject was called for both attachments
-				expect(putObjectMock).toHaveBeenCalledTimes(2);
-
-				// Verify cleanup was called for the successfully uploaded file
-				expect(removeObjectMock).toHaveBeenCalled();
-				expect(removeObjectMock).toHaveBeenCalledWith(
-					expect.any(String), // bucketName
-					attachment1Name, // First attachment that was successfully uploaded
-				);
+				// Verify statObject was called
+				expect(mocks.minioClient.client.statObject).toHaveBeenCalled();
 
 				const snapshot = perf.snapshot();
 				const op = snapshot.ops["mutation:createEvent"];
@@ -1173,30 +1122,24 @@ describe("Mutation createEvent - Performance Tracking", () => {
 				mockOrganization,
 			);
 
-			// Create mock file uploads with valid and invalid MIME types
-			const createMockReadStream = () => ({
-				pipe: vi.fn().mockReturnThis(),
-				on: vi.fn().mockReturnThis(),
-				[Symbol.asyncIterator]: vi.fn(),
-			});
+			const VALID_FILE_HASH =
+				"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
-			// First attachment: valid image MIME type
-			const mockValidAttachment = Promise.resolve({
-				filename: "valid.png",
-				mimetype: "image/png", // Valid
-				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-				encoding: "7bit",
-				fieldName: "attachments",
-			});
+			// First attachment: valid MIME type
+			const mockValidAttachment = {
+				fileHash: VALID_FILE_HASH,
+				mimeType: "image/png",
+				name: "valid.png",
+				objectName: "minio-valid-object",
+			};
 
-			// Second attachment: invalid text/plain MIME type
-			const mockInvalidAttachment = Promise.resolve({
-				filename: "invalid.txt",
-				mimetype: "text/plain", // Invalid - not in eventAttachmentMimeTypeEnum
-				createReadStream: vi.fn().mockReturnValue(createMockReadStream()),
-				encoding: "7bit",
-				fieldName: "attachments",
-			});
+			// Second attachment: invalid MIME type (not in postAttachmentMimeTypeEnum)
+			const mockInvalidAttachment = {
+				fileHash: VALID_FILE_HASH,
+				mimeType: "text/plain" as unknown as "image/png",
+				name: "invalid.txt",
+				objectName: "minio-invalid-object",
+			};
 
 			try {
 				try {
@@ -1227,13 +1170,12 @@ describe("Mutation createEvent - Performance Tracking", () => {
 					expect(issues).toBeDefined();
 					expect(Array.isArray(issues)).toBe(true);
 
-					// Should have an issue pointing to attachments[1] (the invalid one)
+					// Should have an issue pointing to attachments[1] mimeType (the invalid one)
 					const attachmentIssue = issues?.find(
 						(issue) =>
 							Array.isArray(issue.argumentPath) &&
 							issue.argumentPath[0] === "input" &&
-							issue.argumentPath[1] === "attachments" &&
-							issue.argumentPath[2] === 1,
+							issue.argumentPath[1] === "attachments",
 					);
 					expect(attachmentIssue).toBeDefined();
 				}

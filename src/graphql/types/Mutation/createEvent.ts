@@ -1,8 +1,5 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
@@ -52,44 +49,7 @@ export const mutationCreateEventArgumentsSchema = z.object({
 			});
 		}
 
-		let attachments:
-			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			  })[]
-			| undefined;
-
-		if (arg.attachments !== undefined) {
-			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = eventAttachmentMimeTypeEnum
-				.array()
-				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
-
-			if (!success) {
-				for (const issue of error.issues) {
-					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
-					if (typeof issue.path[0] === "number") {
-						ctx.addIssue({
-							code: "custom",
-							path: ["attachments", issue.path[0]],
-							message: `Mime type "${
-								rawAttachments[issue.path[0]]?.mimetype
-							}" is not allowed.`,
-						});
-					}
-				}
-			} else {
-				attachments = rawAttachments.map((attachment, index) =>
-					Object.assign(attachment, {
-						mimetype: data[index],
-					}),
-				);
-			}
-		}
-
-		return {
-			...arg,
-			attachments,
-		};
+		return arg;
 	}),
 });
 
@@ -488,90 +448,93 @@ builder.mutationField("createEvent", (t) =>
 						if (parsedArgs.input.attachments !== undefined) {
 							const attachments = parsedArgs.input.attachments;
 
+							// Verify all files exist in MinIO BEFORE database insert
+							await Promise.all(
+								attachments.map(async (attachment, i) => {
+									try {
+										const stat = await ctx.minio.client.statObject(
+											ctx.minio.bucketName,
+											attachment.objectName,
+										);
+
+										const minioMimeType = stat.metaData?.["content-type"];
+
+										if (
+											minioMimeType &&
+											minioMimeType !== attachment.mimeType
+										) {
+											throw new TalawaGraphQLError({
+												extensions: {
+													code: "invalid_arguments",
+													issues: [
+														{
+															argumentPath: [
+																"input",
+																"attachments",
+																i,
+																"mimeType",
+															],
+															message: `Mime type "${attachment.mimeType}" does not match the file in storage ("${minioMimeType}").`,
+														},
+													],
+												},
+											});
+										}
+									} catch (error) {
+										if (error instanceof TalawaGraphQLError) {
+											throw error;
+										}
+
+										// Only treat NotFound as user error
+										if (
+											error instanceof Error &&
+											(error.name === "NotFound" ||
+												error.message.includes("Not Found") ||
+												(error as { code?: string }).code === "NotFound")
+										) {
+											throw new TalawaGraphQLError({
+												extensions: {
+													code: "invalid_arguments",
+													issues: [
+														{
+															argumentPath: [
+																"input",
+																"attachments",
+																i,
+																"objectName",
+															],
+															message:
+																"File not found in storage. Please upload the file first.",
+														},
+													],
+												},
+											});
+										}
+										// For other errors, throw unexpected
+										ctx.log.error(
+											`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
+										);
+										throw new TalawaGraphQLError({
+											extensions: {
+												code: "unexpected",
+											},
+										});
+									}
+								}),
+							);
+
 							createdEventAttachments = await tx
 								.insert(eventAttachmentsTable)
 								.values(
 									attachments.map((attachment) => ({
 										creatorId: currentUserId,
 										eventId: createdEvent.id,
-										mimeType: attachment.mimetype,
-										name: ulid(),
+										mimeType: attachment.mimeType,
+										name: attachment.name,
+										objectName: attachment.objectName,
 									})),
 								)
 								.returning();
-
-							const pairs = createdEventAttachments.map(
-								(attachment, index) => ({
-									attachment,
-									fileUpload: attachments[index],
-								}),
-							);
-
-							// RETURNING guarantees createdEventAttachments.length === attachments.length,
-							// so pairs[i].fileUpload is always defined
-
-							try {
-								const uploadResults = await Promise.allSettled(
-									pairs.map(({ attachment, fileUpload }) =>
-										ctx.minio.client.putObject(
-											ctx.minio.bucketName,
-											attachment.name,
-											(
-												fileUpload as NonNullable<typeof fileUpload>
-											).createReadStream(),
-											undefined,
-											{
-												"content-type": attachment.mimeType,
-											},
-										),
-									),
-								);
-
-								// Collect all successfully uploaded object names
-								const uploadedNames: string[] = [];
-								let firstError: Error | undefined;
-
-								for (let i = 0; i < uploadResults.length; i++) {
-									const result = uploadResults[i];
-									const pair = pairs[i];
-
-									if (result?.status === "fulfilled" && pair) {
-										uploadedNames.push(pair.attachment.name);
-									} else if (result?.status === "rejected" && !firstError) {
-										firstError = result.reason;
-									}
-								}
-
-								// If any uploads failed, clean up all successfully uploaded files
-								if (firstError) {
-									const cleanupResults = await Promise.allSettled(
-										uploadedNames.map((name) =>
-											ctx.minio.client.removeObject(ctx.minio.bucketName, name),
-										),
-									);
-									const cleanupFailures = cleanupResults.filter(
-										(r) => r.status === "rejected",
-									);
-									if (cleanupFailures.length) {
-										ctx.log.error(
-											{ cleanupFailures },
-											"Failed to cleanup some uploaded attachments",
-										);
-									}
-									throw firstError;
-								}
-							} catch (e) {
-								ctx.log.error(
-									{ error: e },
-									"Error uploading event attachments to MinIO",
-								);
-								throw new TalawaGraphQLError({
-									extensions: {
-										code: "unexpected",
-									},
-									message: "Upload failed",
-								});
-							}
 						}
 
 						const finalEvent = Object.assign(createdEvent, {

@@ -4,6 +4,7 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeEventResolver } from "~/src/graphql/types/EventAttendee/event";
 import { getRecurringEventInstancesByIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import type { EventRow } from "~/src/utilities/dataloaders/eventLoader";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 vi.mock(
@@ -100,9 +101,18 @@ describe("EventAttendee Event Resolver Tests", () => {
 				isPublic: true,
 				isRegisterable: true,
 				allDay: false,
+				isInviteOnly: false,
+				isRecurringEventTemplate: false,
+				createdAt: new Date("2024-03-01T00:00:00Z"),
+				creatorId: null,
+				updatedAt: null,
+				updaterId: null,
+				location: null,
 			};
 
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(mockEvent);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(
+				mockEvent as unknown as EventRow,
+			);
 
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
@@ -118,7 +128,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 		});
 
 		it("should throw unexpected error if standalone event is not found", async () => {
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(null);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(null);
 
 			await expect(
 				eventAttendeeEventResolver(mockEventAttendee, {}, ctx),
@@ -136,9 +146,9 @@ describe("EventAttendee Event Resolver Tests", () => {
 		});
 
 		it("should handle DataLoader error when fetching standalone event", async () => {
-			ctx.dataloaders.event.load = vi
-				.fn()
-				.mockRejectedValue(new Error("Database connection failed"));
+			vi.spyOn(ctx.dataloaders.event, "load").mockRejectedValue(
+				new Error("Database connection failed"),
+			);
 
 			await expect(
 				eventAttendeeEventResolver(mockEventAttendee, {}, ctx),
@@ -148,7 +158,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 
 	describe("Recurring Event Instance Resolution", () => {
 		it("should resolve recurring event instance and return resolved instance", async () => {
-			ctx.dataloaders.event.load = vi.fn();
+			vi.spyOn(ctx.dataloaders.event, "load");
 
 			const recurringAttendee = {
 				...mockEventAttendee,
@@ -195,6 +205,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 				attachments: [
 					{
 						name: "doc.pdf",
+						objectName: "test-object-name",
 						creatorId: "creator-123",
 						updaterId: null,
 						mimeType: "image/png",
@@ -277,9 +288,9 @@ describe("EventAttendee Event Resolver Tests", () => {
 				eventId: "invalid-uuid-format",
 			} as EventAttendeeType;
 
-			ctx.dataloaders.event.load = vi
-				.fn()
-				.mockRejectedValue(new Error("Invalid UUID format"));
+			vi.spyOn(ctx.dataloaders.event, "load").mockRejectedValue(
+				new Error("Invalid UUID format"),
+			);
 
 			await expect(
 				eventAttendeeEventResolver(malformedAttendee, {}, ctx),
@@ -287,7 +298,7 @@ describe("EventAttendee Event Resolver Tests", () => {
 		});
 
 		it("should handle deleted events", async () => {
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(null);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(null);
 
 			await expect(
 				eventAttendeeEventResolver(mockEventAttendee, {}, ctx),
@@ -303,12 +314,24 @@ describe("EventAttendee Event Resolver Tests", () => {
 				id: "event-456",
 				name: "Simple Event",
 				organizationId: "org-123",
+				startAt: new Date("2024-03-10T09:00:00Z"),
+				endAt: new Date("2024-03-10T12:00:00Z"),
+				isPublic: true,
+				isRegisterable: true,
+				allDay: false,
+				isInviteOnly: false,
+				isRecurringEventTemplate: false,
+				createdAt: new Date("2024-03-01T00:00:00Z"),
+				creatorId: null,
+				description: null,
+				updatedAt: null,
+				updaterId: null,
+				location: null,
 			};
 
-			ctx.dataloaders.event.load = vi
-				.fn()
-				.mockResolvedValue(eventWithoutAttachments);
-
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(
+				eventWithoutAttachments as unknown as EventRow,
+			);
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
 				{},
@@ -336,11 +359,15 @@ describe("EventAttendee Event Resolver Tests", () => {
 				isPublic: true,
 				isRegisterable: true,
 				allDay: false,
+				isInviteOnly: false,
+				isRecurringEventTemplate: false,
 				createdAt: new Date("2024-03-01T10:00:00Z"),
 				updatedAt: new Date("2024-03-05T14:00:00Z"),
 			};
 
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(completeEvent);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(
+				completeEvent as unknown as EventRow,
+			);
 
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
@@ -359,9 +386,24 @@ describe("EventAttendee Event Resolver Tests", () => {
 				id: "event-456",
 				name: "Minimal Event",
 				organizationId: "org-123",
+				startAt: new Date("2024-03-10T09:00:00Z"),
+				endAt: new Date("2024-03-10T12:00:00Z"),
+				isPublic: true,
+				isRegisterable: true,
+				allDay: false,
+				isInviteOnly: false,
+				isRecurringEventTemplate: false,
+				createdAt: new Date("2024-03-01T00:00:00Z"),
+				creatorId: null,
+				description: null,
+				updatedAt: null,
+				updaterId: null,
+				location: null,
 			};
 
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(minimalEvent);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(
+				minimalEvent as unknown as EventRow,
+			);
 
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
@@ -382,9 +424,24 @@ describe("EventAttendee Event Resolver Tests", () => {
 				id: "event-456",
 				name: "Popular Event",
 				organizationId: "org-123",
+				startAt: new Date("2024-03-10T09:00:00Z"),
+				endAt: new Date("2024-03-10T12:00:00Z"),
+				isPublic: true,
+				isRegisterable: true,
+				allDay: false,
+				isInviteOnly: false,
+				isRecurringEventTemplate: false,
+				createdAt: new Date("2024-03-01T00:00:00Z"),
+				creatorId: null,
+				description: null,
+				updatedAt: null,
+				updaterId: null,
+				location: null,
 			};
 
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(sharedEvent);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(
+				sharedEvent as unknown as EventRow,
+			);
 
 			const attendees = Array.from({ length: 12 }, (_, i) => ({
 				...mockEventAttendee,
@@ -414,9 +471,22 @@ describe("EventAttendee Event Resolver Tests", () => {
 				description: "Large description ".repeat(200),
 				location: "Large location data ".repeat(10),
 				organizationId: "org-123",
+				startAt: new Date("2024-03-10T09:00:00Z"),
+				endAt: new Date("2024-03-10T12:00:00Z"),
+				isPublic: true,
+				isRegisterable: true,
+				allDay: false,
+				isInviteOnly: false,
+				isRecurringEventTemplate: false,
+				createdAt: new Date("2024-03-01T00:00:00Z"),
+				creatorId: null,
+				updatedAt: null,
+				updaterId: null,
 			};
 
-			ctx.dataloaders.event.load = vi.fn().mockResolvedValue(largeEvent);
+			vi.spyOn(ctx.dataloaders.event, "load").mockResolvedValue(
+				largeEvent as unknown as EventRow,
+			);
 
 			const result = await eventAttendeeEventResolver(
 				mockEventAttendee,
@@ -433,14 +503,26 @@ describe("EventAttendee Event Resolver Tests", () => {
 
 	describe("Database Recovery Scenarios", () => {
 		it("should handle transient database failures", async () => {
-			ctx.dataloaders.event.load = vi
-				.fn()
+			vi.spyOn(ctx.dataloaders.event, "load")
 				.mockRejectedValueOnce(new Error("Transient database error"))
 				.mockResolvedValueOnce({
 					id: "event-456",
 					name: "Recovery Test Event",
 					organizationId: "org-123",
-				});
+					startAt: new Date("2024-03-10T09:00:00Z"),
+					endAt: new Date("2024-03-10T12:00:00Z"),
+					isPublic: true,
+					isRegisterable: true,
+					allDay: false,
+					isInviteOnly: false,
+					isRecurringEventTemplate: false,
+					createdAt: new Date("2024-03-01T00:00:00Z"),
+					creatorId: null,
+					description: null,
+					updatedAt: null,
+					updaterId: null,
+					location: null,
+				} as unknown as EventRow);
 
 			// First call should fail
 			await expect(
@@ -458,9 +540,9 @@ describe("EventAttendee Event Resolver Tests", () => {
 		});
 
 		it("should handle database rollback scenarios", async () => {
-			ctx.dataloaders.event.load = vi
-				.fn()
-				.mockRejectedValue(new Error("Transaction was rolled back"));
+			vi.spyOn(ctx.dataloaders.event, "load").mockRejectedValue(
+				new Error("Transaction was rolled back"),
+			);
 
 			await expect(
 				eventAttendeeEventResolver(mockEventAttendee, {}, ctx),

@@ -14,6 +14,12 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+type TransactionCallback = Parameters<
+	typeof server.drizzleClient.transaction
+>[0];
+
+type TransactionType = Parameters<TransactionCallback>[0];
+
 // Sign in as admin to get an authentication token
 let authToken: string;
 
@@ -762,20 +768,29 @@ suite("Mutation field createChatMessage", () => {
 		});
 
 		// Create chat
-		const chatId = await createChat(orgId, orgAdminToken);
+		const _chatId = await createChat(orgId, orgAdminToken);
 
 		// Mock the database insert to return empty array
-		const mockReturning = vi.fn().mockResolvedValue([]);
-		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-		vi.spyOn(server.drizzleClient, "insert")
-			// @ts-expect-error - Mock return type does not match Drizzle builder type
-			.mockImplementation(() => ({ values: mockValues }));
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback: TransactionCallback) => {
+				const fakeTx = {
+					insert: () => ({
+						values: () => ({
+							returning: vi.fn().mockResolvedValue([]),
+						}),
+					}),
+					update: vi.fn(),
+				};
+
+				return callback(fakeTx as unknown as TransactionType);
+			},
+		);
 
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			headers: { authorization: `Bearer ${orgAdminToken}` },
 			variables: {
 				input: {
-					chatId: chatId,
+					chatId: _chatId,
 					body: "Test message",
 				},
 			},

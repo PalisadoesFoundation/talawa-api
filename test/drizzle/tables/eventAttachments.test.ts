@@ -17,6 +17,9 @@ import {
 import { eventAttachmentsTableInsertSchema } from "~/src/drizzle/tables/eventAttachments";
 import { server } from "../../server";
 
+const FIXED_START_TIME = new Date("2025-01-01T10:00:00Z");
+const FIXED_END_TIME = new Date("2025-01-01T11:00:00Z");
+
 async function createTestOrganization(): Promise<string> {
 	// Clear any existing headers to ensure a clean sign-in
 	mercuriusClient.setHeaders({});
@@ -40,7 +43,7 @@ async function createTestOrganization(): Promise<string> {
 		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
-				name: `Org-${Date.now()}`,
+				name: `Org-${faker.string.ulid()}`,
 				countryCode: "us",
 				isUserRegistrationRequired: true,
 			},
@@ -63,16 +66,14 @@ async function createTestEvent(): Promise<string> {
 	const { userId } = await createRegularUserUsingAdmin();
 	const OrgId = await createTestOrganization();
 
-	const startAt = faker.date.recent();
-	const endAt = new Date(startAt.getTime() + 60 * 60 * 1000);
 	const eventResult = await server.drizzleClient
 		.insert(eventsTable)
 		.values({
 			creatorId: userId,
 			organizationId: OrgId,
 			name: faker.lorem.word(),
-			startAt,
-			endAt,
+			startAt: FIXED_START_TIME,
+			endAt: FIXED_END_TIME,
 		})
 		.returning({ id: eventsTable.id });
 
@@ -91,6 +92,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			expect(columns).toContain("eventId");
 			expect(columns).toContain("mimeType");
 			expect(columns).toContain("name");
+			expect(columns).toContain("objectName");
 			expect(columns).toContain("updatedAt");
 			expect(columns).toContain("updaterId");
 		});
@@ -100,6 +102,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			expect(eventAttachmentsTable.eventId.notNull).toBe(true);
 			expect(eventAttachmentsTable.mimeType.notNull).toBe(true);
 			expect(eventAttachmentsTable.name.notNull).toBe(true);
+			expect(eventAttachmentsTable.objectName.notNull).toBe(true);
 		});
 
 		it("should have optional fields configured as nullable", () => {
@@ -120,6 +123,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			await expect(
 				server.drizzleClient.insert(eventAttachmentsTable).values({
 					name: "testfile.txt",
+					objectName: "test-object-name",
 					creatorId: invalidCreatorId,
 					mimeType: "image/png",
 					eventId: validEventId,
@@ -133,6 +137,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			await expect(
 				server.drizzleClient.insert(eventAttachmentsTable).values({
 					name: "testfile.txt",
+					objectName: "test-object-name",
 					updaterId: invalidUpdaterId,
 					mimeType: "image/png",
 					eventId: validEventId,
@@ -146,6 +151,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 			await expect(
 				server.drizzleClient.insert(eventAttachmentsTable).values({
 					name: "testfile.txt",
+					objectName: "test-object-name",
 					creatorId: validCreatorId.userId,
 					mimeType: "image/png",
 					eventId: invalidEventId,
@@ -281,6 +287,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 		it("should accept name with exactly minimum length (1 character)", () => {
 			const validData = {
 				name: "a",
+				objectName: "test-object-name",
 				mimeType: "image/png",
 				eventId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
@@ -301,6 +308,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: validEventId,
@@ -345,6 +353,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 					.insert(eventAttachmentsTable)
 					.values({
 						name: faker.system.fileName(),
+						objectName: "test-object-name",
 						creatorId: userId,
 						mimeType: mimeType,
 						eventId: eventId,
@@ -366,6 +375,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 
 			await server.drizzleClient.insert(eventAttachmentsTable).values({
 				name: name,
+				objectName: "test-object-name",
 				creatorId: userId,
 				mimeType: mimeType,
 				eventId: eventId,
@@ -391,6 +401,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -429,6 +440,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -469,6 +481,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -503,6 +516,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -541,6 +555,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					updaterId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -577,6 +592,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: faker.system.fileName(),
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: "image/png",
 					eventId: eventId,
@@ -618,6 +634,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -642,6 +659,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -667,6 +685,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: mimeType,
 					eventId: eventId,
@@ -695,6 +714,7 @@ describe("src/drizzle/tables/eventAttachments.ts", () => {
 				.insert(eventAttachmentsTable)
 				.values({
 					name: name,
+					objectName: "test-object-name",
 					creatorId: userId,
 					mimeType: validMimeType,
 					eventId: eventId,

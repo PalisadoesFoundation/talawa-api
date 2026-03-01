@@ -1072,82 +1072,58 @@ suite("Mutation field createEvent", () => {
 	suite("Attachment Handling", () => {
 		test("rejects file upload with invalid MIME type", async () => {
 			const organizationId = await createTestOrganization();
-			const token = adminAuthToken;
-
-			// Use Fastify's raw inject with manually constructed multipart data
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations = JSON.stringify({
-				query: `
-					mutation Mutation_createEvent($input: MutationCreateEventInput!) {
-						createEvent(input: $input) {
-							id
-							name
-							attachments { mimeType }
-						}
-					}
-				`,
-				variables: {
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({
+					metaData: { "content-type": "image/jpeg" },
+					size: 1000,
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
+			try {
+				const result = await createEvent({
 					input: {
 						organizationId,
 						name: `Event_${Date.now()}`,
 						startAt: getFutureDate(7, 10),
 						endAt: getFutureDate(7, 12),
-						attachments: [null],
+						attachments: [
+							{
+								objectName: "test.png",
+								mimeType: "IMAGE_PNG",
+								name: "test.png",
+								fileHash:
+									"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+							},
+						],
 					},
-				},
-			});
-
-			const map = JSON.stringify({
-				"0": ["variables.input.attachments.0"],
-			});
-
-			const fileContent = "fake pdf content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.pdf"',
-				"Content-Type: application/pdf",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${token}`,
-				},
-				payload: body,
-			});
-
-			const result = JSON.parse(response.body);
-
-			expect(result.data?.createEvent).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: expect.arrayContaining(["attachments"]),
-									message: expect.stringContaining("Mime type"),
-								}),
-							]),
+				});
+				expect(result.data?.createEvent).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: expect.arrayContaining([
+											"input",
+											"attachments",
+											0,
+											"mimeType",
+										]),
+										message: expect.stringContaining(
+											"does not match the file in storage",
+										),
+									}),
+								]),
+							}),
 						}),
-					}),
-				]),
-			);
+					]),
+				);
+			} finally {
+				statObjectSpy.mockRestore();
+			}
 		});
 
 		test.each([
@@ -1161,105 +1137,43 @@ suite("Mutation field createEvent", () => {
 			},
 		])("$name", async ({ attachmentCount }) => {
 			const organizationId = await createTestOrganization();
-			const token = adminAuthToken;
-
-			// Mock MinIO to avoid actual file upload
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockResolvedValue({ etag: "test-etag", versionId: "test-version" });
-
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({
+					metaData: { "content-type": "image/jpeg" },
+					size: 1000,
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
 			try {
-				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-				// Create attachments array
-				const attachments = Array(attachmentCount).fill(null);
-
-				// Build map for attachments
-				const mapEntries: Record<string, string[]> = {};
-				attachments.forEach((_, index) => {
-					mapEntries[String(index)] = [`variables.input.attachments.${index}`];
-				});
-
-				const operations = JSON.stringify({
-					query: `
-							mutation Mutation_createEvent($input: MutationCreateEventInput!) {
-								createEvent(input: $input) {
-									id
-									name
-									attachments { mimeType }
-								}
-							}
-						`,
-					variables: {
-						input: {
-							organizationId,
-							name: `Event_${Date.now()}`,
-							startAt: getFutureDate(7, 10),
-							endAt: getFutureDate(7, 12),
-							attachments,
-						},
+				const attachments = Array.from({ length: attachmentCount }).map(
+					(_, i) => ({
+						objectName: `test${i + 1}.jpg`,
+						mimeType: "IMAGE_JPEG",
+						name: `test${i + 1}.jpg`,
+						fileHash: `a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b${i}`,
+					}),
+				);
+				const result = await createEvent({
+					input: {
+						organizationId,
+						name: `Event_${Date.now()}`,
+						startAt: getFutureDate(7, 10),
+						endAt: getFutureDate(7, 12),
+						attachments,
 					},
 				});
-
-				const map = JSON.stringify(mapEntries);
-
-				// Build multipart body with all attachments
-				const bodyParts = [
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="operations"',
-					"",
-					operations,
-					`--${boundary}`,
-					'Content-Disposition: form-data; name="map"',
-					"",
-					map,
-				];
-
-				attachments.forEach((_, index) => {
-					bodyParts.push(`--${boundary}`);
-					bodyParts.push(
-						`Content-Disposition: form-data; name="${index}"; filename="test${index + 1}.jpg"`,
-					);
-					bodyParts.push("Content-Type: image/jpeg");
-					bodyParts.push("");
-					bodyParts.push(`fake jpeg content ${index + 1}`);
-				});
-
-				bodyParts.push(`--${boundary}--`);
-				const body = bodyParts.join("\r\n");
-
-				const response = await server.inject({
-					method: "POST",
-					url: "/graphql",
-					headers: {
-						"content-type": `multipart/form-data; boundary=${boundary}`,
-						authorization: `bearer ${token}`,
-					},
-					payload: body,
-				});
-
-				const result = JSON.parse(response.body);
-
 				expect(result.errors).toBeUndefined();
 				expect(result.data?.createEvent).toEqual(
 					expect.objectContaining({
 						id: expect.any(String),
-						attachments: expect.arrayContaining(
-							Array(attachmentCount)
-								.fill(null)
-								.map(() =>
-									expect.objectContaining({
-										mimeType: "image/jpeg",
-									}),
-								),
-						),
 					}),
 				);
 
 				// Verify MinIO upload was called the expected number of times
-				expect(putObjectSpy).toHaveBeenCalledTimes(attachmentCount);
+				expect(statObjectSpy).toHaveBeenCalledTimes(attachmentCount);
 			} finally {
-				putObjectSpy.mockRestore();
+				statObjectSpy.mockRestore();
 			}
 		});
 	});
@@ -2081,654 +1995,212 @@ suite("Default Agenda Folder and Category Creation", () => {
 	});
 });
 
-suite("Post-transaction attachment upload behavior", () => {
+suite("Event Attachment Uploads", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	test.each([
-		{ name: "single attachment", attachmentCount: 1 },
-		{ name: "multiple attachments", attachmentCount: 2 },
-	])("successfully uploads $name to MinIO after event creation", async ({
-		attachmentCount,
-	}) => {
+	test("creates attachment records when valid FileMetadataInput is provided and file exists in MinIO", async () => {
 		const organizationId = await createTestOrganization();
+		const objectName = "test-event-attachment.png";
+		const mimeType = "image/png"; // This variable is used in the expect statement, not the input
 
-		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
-
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		// Create attachments array
-		const attachments = Array(attachmentCount).fill(null);
-
-		// Build map for attachments
-		const mapEntries: Record<string, string[]> = {};
-		attachments.forEach((_, index) => {
-			mapEntries[String(index)] = [`variables.input.attachments.${index}`];
+		vi.spyOn(server.minio.client, "statObject").mockResolvedValue({
+			size: 1024,
+			metaData: { "content-type": "image/png" },
+			lastModified: new Date(),
+			etag: "test-etag",
 		});
-
-		const operations = JSON.stringify({
-			query: `
-				mutation CreateEvent($input: MutationCreateEventInput!) {
-					createEvent(input: $input) {
-					id
-					}
-				}
-			`,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments,
-				},
-			},
-		});
-
-		const map = JSON.stringify(mapEntries);
-
-		// Build multipart body with all attachments
-		const bodyParts = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-		];
-
-		attachments.forEach((_, index) => {
-			bodyParts.push(`--${boundary}`);
-			bodyParts.push(
-				`Content-Disposition: form-data; name="${index}"; filename="file${index + 1}.png"`,
-			);
-			bodyParts.push("Content-Type: image/png");
-			bodyParts.push("");
-			bodyParts.push(`fake-content-${index + 1}`);
-		});
-
-		bodyParts.push(`--${boundary}--`);
-		const body = bodyParts.join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data.createEvent.id).toBeDefined();
-		expect(putObjectSpy).toHaveBeenCalledTimes(attachmentCount);
-
-		// Verify attachments are stored in DB
-		const eventAttachments =
-			await server.drizzleClient.query.eventAttachmentsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.eventId, result.data.createEvent.id),
-			});
-		expect(eventAttachments).toHaveLength(attachmentCount);
-	});
-
-	test("cleans up DB rows and MinIO objects when attachment upload fails", async () => {
-		const organizationId = await createTestOrganization();
-
-		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
-		putObjectSpy.mockRejectedValue(new Error("upload failed"));
-
-		// Count events before the test
-		const eventCountBefore =
-			await server.drizzleClient.query.eventsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, organizationId),
-			});
-
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		const operations = JSON.stringify({
-			query: `
-			mutation CreateEvent($input: MutationCreateEventInput!) {
-				createEvent(input: $input) {
-					id
-				}
-			}
-		`,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null],
-				},
-			},
-		});
-
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// With new behavior, upload failure during transaction causes the entire mutation to fail
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("Upload failed");
-		expect(result.data?.createEvent).toBeNull();
-
-		// Verify no new event was created (transaction rolled back)
-		const eventCountAfter =
-			await server.drizzleClient.query.eventsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, organizationId),
-			});
-		expect(eventCountAfter.length).toBe(eventCountBefore.length);
-	});
-
-	test("skips upload logic when attachments are undefined", async () => {
-		const organizationId = await createTestOrganization();
-
-		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
 
 		const result = await createEvent({
 			input: {
 				...baseEventInput(organizationId),
-				// attachments intentionally omitted
+				attachments: [
+					{
+						objectName,
+						mimeType: "IMAGE_PNG",
+						name: "Event Document.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+					},
+				],
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.createEvent).toBeDefined();
+		assertToBeNonNullish(result.data?.createEvent);
 
-		// Upload block must not run
-		expect(putObjectSpy).not.toHaveBeenCalled();
+		const eventId = result.data.createEvent.id;
+		const attachments =
+			await server.drizzleClient.query.eventAttachmentsTable.findMany({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(attachments).toHaveLength(1);
+		expect(attachments[0]).toEqual(
+			expect.objectContaining({
+				eventId,
+				objectName,
+				mimeType, // This is the original mimeType variable
+				name: "Event Document.png",
+			}),
+		);
 	});
 
-	test("cleans up DB rows and attempts MinIO removal when first attachment upload fails", async () => {
+	test("returns invalid_arguments error when statObject throws NotFound", async () => {
 		const organizationId = await createTestOrganization();
+		const objectName = "missing-file.png";
 
-		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
-		putObjectSpy.mockRejectedValue(new Error("upload failed"));
+		const notFoundError = new Error("Not Found");
+		notFoundError.name = "NotFound";
+		Object.assign(notFoundError, { code: "NotFound" });
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		const operations = JSON.stringify({
-			query: `
-				mutation CreateEvent($input: MutationCreateEventInput!) {
-					createEvent(input: $input) { id }
-				}
-			`,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null],
-				},
-			},
-		});
-
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// With new behavior, upload failure during transaction causes the entire mutation to fail
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("Upload failed");
-		expect(result.data?.createEvent).toBeNull();
-		expect(putObjectSpy).toHaveBeenCalledTimes(1);
-	});
-
-	test("returns event without attachments when DB cleanup fails after upload failure", async () => {
-		const organizationId = await createTestOrganization();
-
-		// Upload fails → transaction should fail
-		const uploadError = new Error("upload failed");
-		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
-			uploadError,
+		vi.spyOn(server.minio.client, "statObject").mockRejectedValue(
+			notFoundError,
 		);
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		const operations = JSON.stringify({
-			query: `
-      mutation CreateEvent($input: MutationCreateEventInput!) {
-        createEvent(input: $input) { id }
-      }
-    `,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null],
-				},
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName,
+						mimeType: "IMAGE_PNG",
+						name: "Missing.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+					},
+				],
 			},
 		});
 
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// With new behavior, upload failure during transaction causes the entire mutation to fail
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "attachments", 0, "objectName"],
+					message: expect.stringContaining("not found in storage"),
+				}),
+			]),
+		);
 	});
 
-	test("logs error when some MinIO attachment cleanup operations fail", async () => {
+	test("returns unexpected error when statObject throws an unexpected error", async () => {
 		const organizationId = await createTestOrganization();
 
-		// Upload fails → transaction should fail
-		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
-			new Error("upload failed"),
+		vi.spyOn(server.minio.client, "statObject").mockRejectedValue(
+			new Error("Some unexpected MinIO error"),
 		);
 
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		const operations = JSON.stringify({
-			query: `
-      mutation CreateEvent($input: MutationCreateEventInput!) {
-        createEvent(input: $input) { id }
-      }
-    `,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null],
-				},
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName: "test.png",
+						mimeType: "IMAGE_PNG",
+						name: "test.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+					},
+				],
 			},
 		});
 
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// With new behavior, upload failure during transaction causes the entire mutation to fail
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 	});
 
-	test("MinIO removal during cleanup is atomic with transaction rollback", async () => {
+	test("returns invalid_arguments error when mimeType does not match storage", async () => {
 		const organizationId = await createTestOrganization();
 
-		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
-		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+		vi.spyOn(server.minio.client, "statObject").mockResolvedValue({
+			size: 1024,
+			metaData: { "content-type": "image/jpeg" }, // Actual is jpeg
+			lastModified: new Date(),
+			etag: "test-etag",
+		});
 
-		// First upload succeeds, second fails
-		putObjectSpy
-			.mockResolvedValueOnce({ etag: "etag-1", versionId: null })
-			.mockRejectedValueOnce(new Error("second upload failed"));
-
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		const operations = JSON.stringify({
-			query: `
-				mutation CreateEvent($input: MutationCreateEventInput!) {
-					createEvent(input: $input) { id }
-				}
-			`,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null, null],
-				},
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName: "test.png",
+						mimeType: "IMAGE_PNG", // Input claims png
+						name: "test.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+					},
+				],
 			},
 		});
 
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-			"1": ["variables.input.attachments.1"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file1.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-1",
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="1"; filename="file2.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-2",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// Mutation should fail
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("Upload failed");
 		expect(result.data?.createEvent).toBeNull();
-
-		// Cleanup was attempted for the first successfully uploaded file
-		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
-
-		// Verify the database transaction was rolled back - no event created
-		const eventCountAfter =
-			await server.drizzleClient.query.eventsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, organizationId),
-			});
-		expect(eventCountAfter).toHaveLength(0);
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "attachments", 0, "mimeType"],
+					message: expect.stringContaining(
+						"does not match the file in storage",
+					),
+				}),
+			]),
+		);
 	});
 
-	test("Promise.allSettled ensures partial upload failures trigger cleanup of successful uploads", async () => {
+	test("handles multiple attachments properly and reports correct index on failure", async () => {
 		const organizationId = await createTestOrganization();
 
-		// This test verifies that the Promise.allSettled pattern correctly identifies
-		// which uploads succeeded and cleans them up when any upload fails
-		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
-		let uploadCallCount = 0;
+		const notFoundError = new Error("Not Found");
+		notFoundError.name = "NotFound";
 
-		vi.spyOn(server.minio.client, "putObject").mockImplementation(async () => {
-			uploadCallCount++;
-			// Simulate a failure on the second upload
-			if (uploadCallCount === 2) {
-				throw new Error("partial upload failure");
-			}
-			return { etag: `test-etag-${uploadCallCount}`, versionId: null };
-		});
-
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-		const operations = JSON.stringify({
-			query: `
-				mutation CreateEvent($input: MutationCreateEventInput!) {
-					createEvent(input: $input) { id }
+		vi.spyOn(server.minio.client, "statObject").mockImplementation(
+			async (_bucket, objectName) => {
+				if (objectName === "valid.png") {
+					return {
+						size: 1024,
+						metaData: { "content-type": "image/png" },
+						lastModified: new Date(),
+						etag: "123",
+					} as unknown as import("minio").BucketItemStat;
 				}
-			`,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null, null],
-				},
+				throw notFoundError;
+			},
+		);
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				attachments: [
+					{
+						objectName: "valid.png",
+						mimeType: "IMAGE_PNG",
+						name: "1.png",
+						fileHash:
+							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+					},
+					{
+						objectName: "missing.png",
+						mimeType: "IMAGE_PNG",
+						name: "2.png",
+						fileHash:
+							"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+					},
+				],
 			},
 		});
 
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-			"1": ["variables.input.attachments.1"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file1.png"',
-			"Content-Type: image/png",
-			"",
-			"content1",
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="1"; filename="file2.png"',
-			"Content-Type: image/png",
-			"",
-			"content2",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// Should fail due to upload error
-		expect(result.errors).toBeDefined();
 		expect(result.data?.createEvent).toBeNull();
-
-		// Since Promise.allSettled is used, cleanup should happen:
-		// - First upload succeeded, so it should be removed
-		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
-
-		// Verify transaction rollback - no event was created
-		const events = await server.drizzleClient.query.eventsTable.findMany({
-			where: (fields, operators) =>
-				operators.eq(fields.organizationId, organizationId),
-		});
-		expect(events).toHaveLength(0);
-	});
-
-	test("handles cleanup removal failures and logs them", async () => {
-		const organizationId = await createTestOrganization();
-
-		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
-		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
-
-		// First upload succeeds, then subsequent uploads succeed but we trigger cleanup fail
-		putObjectSpy
-			.mockResolvedValueOnce({ etag: "etag-1", versionId: null })
-			.mockResolvedValueOnce({ etag: "etag-2", versionId: null })
-			.mockResolvedValueOnce({ etag: "etag-3", versionId: null })
-			.mockRejectedValueOnce(new Error("upload failed"));
-
-		// removeObject fails during cleanup for the first successful upload
-		removeObjectSpy.mockRejectedValueOnce(new Error("cleanup removal failed"));
-
-		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-		const operations = JSON.stringify({
-			query: `
-				mutation CreateEvent($input: MutationCreateEventInput!) {
-					createEvent(input: $input) { id }
-				}
-			`,
-			variables: {
-				input: {
-					...baseEventInput(organizationId),
-					attachments: [null, null, null, null],
-				},
-			},
-		});
-
-		const map = JSON.stringify({
-			"0": ["variables.input.attachments.0"],
-			"1": ["variables.input.attachments.1"],
-			"2": ["variables.input.attachments.2"],
-			"3": ["variables.input.attachments.3"],
-		});
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="file1.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-1",
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="1"; filename="file2.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-2",
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="2"; filename="file3.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-3",
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="3"; filename="file4.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-4",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-			},
-			payload: body,
-		});
-
-		const result = JSON.parse(response.body);
-
-		// Mutation should fail due to upload error
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0]?.message).toContain("Upload failed");
-		expect(result.data?.createEvent).toBeNull();
-
-		// Cleanup was attempted for the first successfully uploaded file
-		// At least one removeObject should have been called
-		expect(removeObjectSpy).toHaveBeenCalled();
-
-		// Verify transaction was rolled back
-		const eventCountAfter =
-			await server.drizzleClient.query.eventsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, organizationId),
-			});
-		expect(eventCountAfter).toHaveLength(0);
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "attachments", 1, "objectName"],
+				}),
+			]),
+		);
 	});
 });

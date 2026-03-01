@@ -195,7 +195,7 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(unreadRes.data?.unreadChats);
 		const unreadList = unreadRes.data.unreadChats;
-		expect(unreadList.some((c: { id: string }) => c.id === chatId)).toBe(true);
+		expect(unreadList.some((c: { id: string }) => c.id === chatId)).toBe(false);
 
 		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {

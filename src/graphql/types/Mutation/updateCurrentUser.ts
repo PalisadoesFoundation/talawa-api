@@ -1,7 +1,5 @@
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
 import { z } from "zod";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -17,42 +15,10 @@ import {
 	invalidateEntityLists,
 } from "~/src/services/caching/invalidation";
 import envConfig from "~/src/utilities/graphqLimits";
-import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 export const mutationUpdateCurrentUserArgumentsSchema = z.object({
-	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
-		let avatar:
-			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
-			| null
-			| undefined;
-
-		if (isNotNullish(arg.avatar)) {
-			const rawAvatar = await arg.avatar;
-			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
-
-			if (!success) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["avatar"],
-					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
-				});
-			} else {
-				avatar = Object.assign(rawAvatar, {
-					mimetype: data,
-				});
-			}
-		} else if (arg.avatar !== undefined) {
-			avatar = null;
-		}
-
-		return {
-			...arg,
-			avatar,
-		};
-	}),
+	input: mutationUpdateCurrentUserInputSchema,
 });
 
 builder.mutationField("updateCurrentUser", (t) =>
@@ -140,13 +106,80 @@ builder.mutationField("updateCurrentUser", (t) =>
 				}
 			}
 
-			const avatarUpdate = isNotNullish(parsedArgs.input.avatar)
-				? {
-						avatarName:
-							currentUser.avatarName === null ? ulid() : currentUser.avatarName,
-						avatarMimeType: parsedArgs.input.avatar.mimetype,
+			let avatarUpdate: {
+				avatarName: string | null;
+				avatarMimeType: z.infer<typeof imageMimeTypeEnum> | null;
+			} | null = null;
+
+			if (parsedArgs.input.avatar !== undefined) {
+				if (parsedArgs.input.avatar !== null) {
+					const { data, success } = imageMimeTypeEnum.safeParse(
+						parsedArgs.input.avatar.mimeType,
+					);
+
+					if (!success) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input", "avatar", "mimeType"],
+										message: `Mime type "${parsedArgs.input.avatar.mimeType}" is not allowed.`,
+									},
+								],
+							},
+						});
 					}
-				: null;
+
+					avatarUpdate = {
+						avatarName: parsedArgs.input.avatar.objectName,
+						avatarMimeType: data,
+					};
+
+					// Verify file exists in MinIO BEFORE database update
+					try {
+						await ctx.minio.client.statObject(
+							ctx.minio.bucketName,
+							avatarUpdate.avatarName as string,
+						);
+					} catch (error) {
+						// Only treat NotFound as user error
+						if (
+							error instanceof Error &&
+							(error.name === "NotFound" ||
+								error.message.includes("Not Found") ||
+								(error as { code?: string }).code === "NotFound")
+						) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "invalid_arguments",
+									issues: [
+										{
+											argumentPath: ["input", "avatar", "objectName"],
+											message:
+												"File not found in storage. Please upload the file first.",
+										},
+									],
+								},
+							});
+						}
+						// For other errors, throw unexpected
+						ctx.log.error(
+							`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+				} else {
+					avatarUpdate = {
+						avatarName: null,
+						avatarMimeType: null,
+					};
+				}
+			}
 
 			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const updateResult = await tx
@@ -157,15 +190,11 @@ builder.mutationField("updateCurrentUser", (t) =>
 						avatarMimeType:
 							parsedArgs.input.avatar === undefined
 								? undefined // Do not update if undefined
-								: avatarUpdate !== null
-									? avatarUpdate.avatarMimeType
-									: null, // Set to null if null
+								: avatarUpdate?.avatarMimeType, // Will be value or null
 						avatarName:
 							parsedArgs.input.avatar === undefined
 								? undefined // Do not update if undefined
-								: avatarUpdate !== null
-									? avatarUpdate.avatarName
-									: null, // Set to null if null
+								: avatarUpdate?.avatarName, // Will be value or null
 						birthDate: parsedArgs.input.birthDate,
 						city: parsedArgs.input.city,
 						countryCode: parsedArgs.input.countryCode,
@@ -202,19 +231,10 @@ builder.mutationField("updateCurrentUser", (t) =>
 
 				const updatedCurrentUser = updateResult[0];
 
-				if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarUpdate.avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.avatar.mimetype,
-						},
-					);
-				} else if (
+				if (
 					parsedArgs.input.avatar !== undefined &&
-					currentUser.avatarName !== null
+					currentUser.avatarName !== null &&
+					parsedArgs.input.avatar?.objectName !== currentUser.avatarName
 				) {
 					await ctx.minio.client.removeObject(
 						ctx.minio.bucketName,

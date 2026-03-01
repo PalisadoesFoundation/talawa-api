@@ -2244,6 +2244,7 @@ suite("Query field eventsByVolunteer", () => {
 			await server.drizzleClient.insert(eventAttachmentsTable).values({
 				eventId: eventId,
 				name: "Test Attachment",
+				objectName: "test-object-name",
 				mimeType: "image/jpeg",
 			});
 

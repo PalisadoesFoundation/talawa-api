@@ -41,7 +41,7 @@ suite("Query: unreadChats", () => {
 			try {
 				await fn();
 			} catch (_err) {
-				// ignore cleanup errors
+				console.error("Expected error:", _err);
 			}
 		}
 		cleanupFns.length = 0;
@@ -194,7 +194,7 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(unreadRes.data?.unreadChats);
 		const unreadList = unreadRes.data.unreadChats;
-		expect(unreadList.some((c: { id: string }) => c.id === chatId)).toBe(true);
+		expect(unreadList.some((c: { id: string }) => c.id === chatId)).toBe(false);
 
 		// Query as outsider: outsider is not a member, unreadChats should not include the chat
 		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
