@@ -15,6 +15,7 @@ import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Mutation_deleteOrganization,
 	Mutation_deleteUser,
 	Mutation_readNotification,
 	Query_signIn,
@@ -112,6 +113,11 @@ async function createTestUser(): Promise<TestUser> {
 				headers: { authorization: `bearer ${token}` },
 				variables: { input: { id: regularUser.userId } },
 			});
+
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${token}` },
+				variables: { input: { id: organizationId } },
+			});
 		},
 	};
 }
@@ -142,7 +148,17 @@ async function createNotificationViaEventBus(
 	);
 }
 
-const LONG_TEST_TIMEOUT = 10000;
+/**
+ * Determining test timeout based on environment.
+ * In CI environments, using a higher timeout (30s) to account for slower infra.
+ * Locally, using 10s for faster feedback.
+ * Can be overridden via LONG_TEST_TIMEOUT env variable.
+ */
+const LONG_TEST_TIMEOUT = parseInt(
+	process.env.LONG_TEST_TIMEOUT || (process.env.CI ? "30000" : "10000"),
+	10,
+);
+
 beforeAll(async () => {
 	await ensureAdminAuth();
 	// Ensure notification templates exist (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
@@ -407,6 +423,8 @@ suite("Mutation readNotification", () => {
 				expect(firstNotification.isRead).toBe(false);
 				expect(firstNotification.readAt).toBeNull();
 
+				assertToBeNonNullish(firstNotification.id);
+
 				const readNotificationResult = await mercuriusClient.mutate(
 					Mutation_readNotification,
 					{
@@ -415,7 +433,7 @@ suite("Mutation readNotification", () => {
 						},
 						variables: {
 							input: {
-								notificationIds: [firstNotification.id] as string[],
+								notificationIds: [firstNotification.id],
 							},
 						},
 					},
@@ -496,7 +514,10 @@ suite("Mutation readNotification", () => {
 
 				const notificationIds = unreadNotifications
 					.slice(0, 2)
-					.map((n: GraphQLNotification) => n.id) as string[];
+					.map((n: GraphQLNotification) => {
+						assertToBeNonNullish(n.id);
+						return n.id;
+					});
 
 				const readNotificationResult = await mercuriusClient.mutate(
 					Mutation_readNotification,
