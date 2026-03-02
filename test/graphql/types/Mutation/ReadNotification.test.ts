@@ -253,7 +253,15 @@ suite("Mutation readNotification", () => {
 
 		test("Returns an error when the user is present in token but deleted (simulated)", async () => {
 			const testUser = await createTestUser();
-			testCleanupFunctions.push(testUser.cleanup);
+			// Do NOT push testUser.cleanup here — the user is deleted manually below,
+			// so we only register org cleanup to avoid a double-delete on the user.
+			testCleanupFunctions.push(async () => {
+				const { token } = await ensureAdminAuth();
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${token}` },
+					variables: { input: { id: testUser.organizationId } },
+				});
+			});
 			// Delete the user via API
 			const { token } = await ensureAdminAuth();
 			await mercuriusClient.mutate(Mutation_deleteUser, {
