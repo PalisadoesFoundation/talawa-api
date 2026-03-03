@@ -38,7 +38,7 @@ Defined in: node\_modules/.pnpm/@types+node@22.19.9/node\_modules/@types/node/ev
 
 > **emitEventCreated**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:83](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L83)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L81)
 
 #### Parameters
 
@@ -82,7 +82,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:83](https://git
 
 > **emitFundCampaignCreated**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:326](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L326)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:318](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L318)
 
 #### Parameters
 
@@ -134,7 +134,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:326](https://gi
 
 > **emitFundCampaignPledgeCreated**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:373](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L373)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:364](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L364)
 
 #### Parameters
 
@@ -182,7 +182,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:373](https://gi
 
 > **emitFundCreated**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:288](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L288)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:281](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L281)
 
 #### Parameters
 
@@ -222,7 +222,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:288](https://gi
 
 > **emitJoinRequestSubmitted**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:123](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L123)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:120](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L120)
 
 #### Parameters
 
@@ -262,7 +262,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:123](https://gi
 
 > **emitMembershipRequestAccepted**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L47)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L46)
 
 #### Parameters
 
@@ -294,7 +294,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:47](https://git
 
 > **emitMembershipRequestRejected**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:249](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L249)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:243](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L243)
 
 #### Parameters
 
@@ -330,7 +330,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:249](https://gi
 
 > **emitNewMemberJoined**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:178](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L178)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:174](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L174)
 
 #### Parameters
 
@@ -406,7 +406,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:10](https://git
 
 > **emitSendEventInvite**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:415](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L415)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:405](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L405)
 
 #### Parameters
 
@@ -458,7 +458,7 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:415](https://gi
 
 > **emitUserBlocked**(`data`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:214](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L214)
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:209](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L209)
 
 #### Parameters
 

@@ -40,7 +40,6 @@ export class NotificationEventBus extends EventEmitter {
 			ctx.log.info(`Notification sent for post ${data.postId}`);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send post notification:");
-			throw error;
 		}
 	}
 
@@ -76,7 +75,6 @@ export class NotificationEventBus extends EventEmitter {
 				error,
 				"Failed to send membership acceptance notification:",
 			);
-			throw error;
 		}
 	}
 
@@ -116,7 +114,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send event creation notification:");
-			throw error;
 		}
 	}
 
@@ -171,7 +168,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send join request notification:");
-			throw error;
 		}
 	}
 
@@ -207,7 +203,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send new member notification:");
-			throw error;
 		}
 	}
 
@@ -242,7 +237,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send user blocked notification:");
-			throw error;
 		}
 	}
 
@@ -281,7 +275,6 @@ export class NotificationEventBus extends EventEmitter {
 				error,
 				"Failed to send membership request rejection notification:",
 			);
-			throw error;
 		}
 	}
 
@@ -319,7 +312,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send fund creation notification:");
-			throw error;
 		}
 	}
 
@@ -366,7 +358,6 @@ export class NotificationEventBus extends EventEmitter {
 				error,
 				"Failed to send fund campaign creation notification:",
 			);
-			throw error;
 		}
 	}
 
@@ -408,7 +399,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send fund campaign pledge notification:");
-			throw error;
 		}
 	}
 
@@ -455,7 +445,6 @@ export class NotificationEventBus extends EventEmitter {
 			);
 		} catch (error) {
 			ctx.log.error(error, "Failed to send event invite notification:");
-			throw error;
 		}
 	}
 }
