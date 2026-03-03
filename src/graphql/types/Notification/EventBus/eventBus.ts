@@ -434,10 +434,7 @@ export class NotificationEventBus extends EventEmitter {
 
 			ctx.log.info(
 				{
-					inviteeEmailMasked: data.inviteeEmail.replace(
-						/(^.).*(@.*$)/,
-						"$1***$2",
-					),
+					inviteeEmail: data.inviteeEmail,
 					inviterId: data.inviterId,
 					eventId: data.eventId,
 				},
