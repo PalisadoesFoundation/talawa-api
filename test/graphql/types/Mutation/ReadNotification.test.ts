@@ -22,12 +22,8 @@ import {
 	Query_user_notifications,
 } from "../documentNodes";
 
-// Admin auth (fetched once per suite)
-let adminToken: string | null = null;
-let adminUserId: string | null = null;
+// Admin auth (fresh token fetched per invocation — no shared state)
 async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
-	if (adminToken && adminUserId)
-		return { token: adminToken, userId: adminUserId };
 	if (
 		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
 		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
@@ -51,11 +47,11 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
 		);
 	}
-	adminToken = res.data.signIn.authenticationToken;
-	adminUserId = res.data.signIn.user.id;
-	assertToBeNonNullish(adminToken);
-	assertToBeNonNullish(adminUserId);
-	return { token: adminToken, userId: adminUserId };
+	const token = res.data.signIn.authenticationToken;
+	const userId = res.data.signIn.user.id;
+	assertToBeNonNullish(token);
+	assertToBeNonNullish(userId);
+	return { token, userId };
 }
 
 // Helper Types
@@ -516,16 +512,17 @@ suite("Mutation readNotification", () => {
 				expect(notifications.length).toBeGreaterThanOrEqual(2);
 
 				const unreadNotifications = notifications.filter(
-					(n: GraphQLNotification | null | undefined) => !n?.isRead,
+					(
+						n: GraphQLNotification | null | undefined,
+					): n is GraphQLNotification => n != null && !n.isRead && n.id != null,
 				);
 				expect(unreadNotifications.length).toBeGreaterThanOrEqual(2);
 
-				const notificationIds = unreadNotifications
-					.slice(0, 2)
-					.map((n: GraphQLNotification) => {
-						assertToBeNonNullish(n.id);
-						return n.id;
-					});
+				const notificationIds = unreadNotifications.slice(0, 2).map((n) => {
+					assertToBeNonNullish(n.id);
+					return n.id;
+				});
+				expect(notificationIds.length).toBe(2);
 
 				const readNotificationResult = await mercuriusClient.mutate(
 					Mutation_readNotification,

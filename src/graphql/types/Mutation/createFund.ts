@@ -172,7 +172,7 @@ builder.mutationField("createFund", (t) =>
 			}
 
 			// Send notification to organization admins
-			notificationEventBus.emitFundCreated(
+			await notificationEventBus.emitFundCreated(
 				{
 					fundId: createdFund.id,
 					fundName: createdFund.name,
