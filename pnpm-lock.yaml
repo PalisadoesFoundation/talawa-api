@@ -76,7 +76,7 @@ importers:
         version: 4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
       ajv-formats:
         specifier: ^3.0.1
-        version: 3.0.1(ajv@8.17.1)
+        version: 3.0.1(ajv@8.18.0)
       axios:
         specifier: ^1.13.5
         version: 1.13.5
@@ -123,8 +123,8 @@ importers:
         specifier: ^5.9.6
         version: 5.10.0
       mercurius:
-        specifier: ^16.2.0
-        version: 16.7.0(graphql@16.12.0)
+        specifier: ^16.8.0
+        version: 16.8.0(graphql@16.12.0)
       mercurius-upload:
         specifier: ^8.0.0
         version: 8.0.0(graphql@16.12.0)
@@ -209,7 +209,7 @@ importers:
         version: 2.1.0
       mercurius-integration-testing:
         specifier: ^9.0.1
-        version: 9.0.1(fastify@5.7.4)(graphql@16.12.0)(mercurius@16.7.0(graphql@16.12.0))
+        version: 9.0.1(fastify@5.7.4)(graphql@16.12.0)(mercurius@16.8.0(graphql@16.12.0))
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -2385,6 +2385,9 @@ packages:
   ajv@8.17.1:
     resolution: {integrity: sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==}
 
+  ajv@8.18.0:
+    resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
+
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
@@ -3619,8 +3622,8 @@ packages:
     peerDependencies:
       graphql: ^16.3.0
 
-  mercurius@16.7.0:
-    resolution: {integrity: sha512-xCu0qfOIvCm52jKKXFzl9VfPp+9DQrP/5cS0qt8OAA1xZomjTniK4ZlodOP1Q6dsgdfp1RtLx/KQcP7283febw==}
+  mercurius@16.8.0:
+    resolution: {integrity: sha512-b0ZxtmqgqH8GBvXxs5wITLNZdTOVd7FzkuvUkUgg0waEM1UD8buDcl0RVrqH745WOpGRqID2ltWRVfNeLIXh5w==}
     engines: {node: ^20.9.0 || >=22.0.0}
     peerDependencies:
       graphql: ^16.0.0
@@ -6881,7 +6884,18 @@ snapshots:
     optionalDependencies:
       ajv: 8.17.1
 
+  ajv-formats@3.0.1(ajv@8.18.0):
+    optionalDependencies:
+      ajv: 8.18.0
+
   ajv@8.17.1:
+    dependencies:
+      fast-deep-equal: 3.1.3
+      fast-uri: 3.1.0
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
+
+  ajv@8.18.0:
     dependencies:
       fast-deep-equal: 3.1.3
       fast-uri: 3.1.0
@@ -7411,8 +7425,8 @@ snapshots:
   fast-json-stringify@5.16.1:
     dependencies:
       '@fastify/merge-json-schemas': 0.1.1
-      ajv: 8.17.1
-      ajv-formats: 3.0.1(ajv@8.17.1)
+      ajv: 8.18.0
+      ajv-formats: 3.0.1(ajv@8.18.0)
       fast-deep-equal: 3.1.3
       fast-uri: 2.4.0
       json-schema-ref-resolver: 1.0.1
@@ -8094,13 +8108,13 @@ snapshots:
 
   mdurl@2.0.0: {}
 
-  mercurius-integration-testing@9.0.1(fastify@5.7.4)(graphql@16.12.0)(mercurius@16.7.0(graphql@16.12.0)):
+  mercurius-integration-testing@9.0.1(fastify@5.7.4)(graphql@16.12.0)(mercurius@16.8.0(graphql@16.12.0)):
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
       cookie: 1.1.1
       fastify: 5.7.4
       graphql: 16.12.0
-      mercurius: 16.7.0(graphql@16.12.0)
+      mercurius: 16.8.0(graphql@16.12.0)
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
@@ -8112,7 +8126,7 @@ snapshots:
       graphql: 16.12.0
       graphql-upload-minimal: 1.6.4(graphql@16.12.0)
 
-  mercurius@16.7.0(graphql@16.12.0):
+  mercurius@16.8.0(graphql@16.12.0):
     dependencies:
       '@fastify/error': 4.2.0
       '@fastify/static': 9.0.0
