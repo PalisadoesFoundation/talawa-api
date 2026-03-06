@@ -580,6 +580,7 @@ suite("Mutation field deleteOrganization", () => {
 				await server.drizzleClient.insert(eventAttachmentsTable).values({
 					eventId: event.id,
 					name: "test-event-file.png",
+					objectName: "test-object-name",
 					mimeType: "image/png",
 					creatorId: adminUserId,
 				});

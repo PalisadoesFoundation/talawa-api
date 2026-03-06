@@ -1,5 +1,4 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { z } from "zod";
+import type { z } from "zod";
 import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso639Set1LanguageCode } from "~/src/graphql/enums/Iso639Set1LanguageCode";
@@ -9,6 +8,10 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { UserRole } from "~/src/graphql/enums/UserRole";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema as fileMetadataSchema,
+} from "./FileMetadataInput";
 
 export const mutationUpdateUserInputSchema = usersTableInsertSchema
 	.omit({
@@ -24,7 +27,7 @@ export const mutationUpdateUserInputSchema = usersTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
-		avatar: z.custom<Promise<FileUpload>>().nullish(),
+		avatar: fileMetadataSchema.nullish(),
 		emailAddress: usersTableInsertSchema.shape.emailAddress.optional(),
 		id: usersTableInsertSchema.shape.id.unwrap(),
 		isEmailAddressVerified:
@@ -55,7 +58,8 @@ export const MutationUpdateUserInput = builder
 			}),
 			avatar: t.field({
 				description: "Avatar of the user.",
-				type: "Upload",
+				required: false,
+				type: FileMetadataInput,
 			}),
 			birthDate: t.field({
 				description: "Date of birth of the user.",

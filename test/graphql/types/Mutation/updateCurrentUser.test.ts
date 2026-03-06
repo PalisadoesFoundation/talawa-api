@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
-import type { Client } from "minio";
+import type { BucketItemStat } from "minio";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import type {
@@ -20,7 +20,6 @@ import {
 } from "../documentNodes";
 
 // Extract the return type of putObject from the minio Client
-type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
 
 suite("Mutation field updateCurrentUser", () => {
 	afterEach(() => {
@@ -798,58 +797,22 @@ suite("Mutation field updateCurrentUser", () => {
 			const userToken = createUserResult.data.createUser?.authenticationToken;
 			assertToBeNonNullish(userToken);
 
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-			const operations = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						avatarMimeType
-					}
-				}
-				`,
+			const result = await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+				headers: {
+					authorization: `bearer ${userToken}`,
+				},
 				variables: {
 					input: {
-						avatar: null,
+						avatar: {
+							fileHash:
+								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+							mimeType: "VIDEO_MP4" as unknown as "IMAGE_PNG",
+							name: "test.mp4",
+							objectName: "minio-invalid-object",
+						},
 					},
 				},
 			});
-
-			const map = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
-
-			const fileContent = "fake content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.txt"',
-				"Content-Type: text/plain",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${userToken}`,
-				},
-				payload: body,
-			});
-
-			const result = JSON.parse(response.body);
 
 			expect(result.data?.updateCurrentUser).toBeNull();
 			expect(result.errors).toEqual(
@@ -859,8 +822,8 @@ suite("Mutation field updateCurrentUser", () => {
 							code: "invalid_arguments",
 							issues: expect.arrayContaining([
 								expect.objectContaining({
-									argumentPath: ["input", "avatar"],
-									message: 'Mime type "text/plain" is not allowed.',
+									argumentPath: ["input", "avatar", "mimeType"],
+									message: 'Mime type "video/mp4" is not allowed.',
 								}),
 							]),
 						}),
@@ -909,82 +872,45 @@ suite("Mutation field updateCurrentUser", () => {
 			const userToken = createUserResult.data.createUser?.authenticationToken;
 			assertToBeNonNullish(userToken);
 
-			// Mock minio putObject
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+			// Mock minio statObject
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({ size: 1234 } as BucketItemStat);
 
 			const updatedName = faker.person.fullName();
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
-			const operations = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						name
-						avatarMimeType
-						avatarURL
-					}
-				}
-				`,
+			const result = await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+				headers: {
+					authorization: `bearer ${userToken}`,
+				},
 				variables: {
 					input: {
 						name: updatedName,
-						avatar: null,
+						avatar: {
+							fileHash:
+								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+							mimeType: "IMAGE_JPEG",
+							name: "test.jpg",
+							objectName: "minio-valid-object",
+						},
 					},
 				},
 			});
 
-			const map = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
-
-			const fileContent = "test content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${userToken}`,
-				},
-				payload: body,
-			});
-
-			const result = JSON.parse(response.body);
-
 			expect(result.errors).toBeUndefined();
-			expect(result.data.updateCurrentUser).toEqual(
+			expect(result.data?.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: updatedName,
 					avatarMimeType: "image/jpeg",
 					avatarURL: expect.stringContaining("/objects/"),
 				}),
 			);
-			expect(putObjectSpy).toHaveBeenCalled();
+			expect(statObjectSpy).toHaveBeenCalled();
 
 			// Verify avatar fields are properly set and valid
-			expect(result.data.updateCurrentUser?.avatarMimeType).toBe("image/jpeg");
-			expect(result.data.updateCurrentUser?.avatarURL).toMatch(
-				/\/objects\/[a-zA-Z0-9]+$/,
+			expect(result.data?.updateCurrentUser?.avatarMimeType).toBe("image/jpeg");
+			expect(result.data?.updateCurrentUser?.avatarURL).toMatch(
+				/\/objects\/[a-zA-Z0-9._-]+$/,
 			);
 		});
 
@@ -1027,68 +953,38 @@ suite("Mutation field updateCurrentUser", () => {
 			const userToken = createUserResult.data.createUser?.authenticationToken;
 			assertToBeNonNullish(userToken);
 
-			// Mock minio putObject
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+			// Mock minio statObject
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({ size: 1234 } as BucketItemStat);
 
 			// 1. Upload Avatar first
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const uploadOperations = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						avatarMimeType
-						avatarURL
-					}
-				}
-				`,
-				variables: {
-					input: {
-						avatar: null, // placeholder for map
+			const uploadResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${userToken}`,
+					},
+					variables: {
+						input: {
+							avatar: {
+								fileHash:
+									"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+								mimeType: "IMAGE_JPEG",
+								name: "test.jpg",
+								objectName: "minio-valid-object-1",
+							},
+						},
 					},
 				},
-			});
+			);
 
-			const uploadMap = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
-
-			const uploadBody = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				uploadOperations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				uploadMap,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				"test content",
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const uploadResponse = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${userToken}`,
-				},
-				payload: uploadBody,
-			});
-
-			const uploadResult = JSON.parse(uploadResponse.body);
 			expect(uploadResult.errors).toBeUndefined();
-			expect(uploadResult.data.updateCurrentUser.avatarMimeType).toBe(
+			expect(uploadResult.data?.updateCurrentUser?.avatarMimeType).toBe(
 				"image/jpeg",
 			);
-			expect(uploadResult.data.updateCurrentUser.avatarURL).toBeTruthy();
-			expect(putObjectSpy).toHaveBeenCalled();
+			expect(uploadResult.data?.updateCurrentUser?.avatarURL).toBeTruthy();
+			expect(statObjectSpy).toHaveBeenCalled();
 
 			// Remove Avatar
 			// Mock removeObject
@@ -1162,130 +1058,70 @@ suite("Mutation field updateCurrentUser", () => {
 			const userToken = createUserResult.data.createUser?.authenticationToken;
 			assertToBeNonNullish(userToken);
 
-			// Mock minio putObject
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+			// Mock minio statObject
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({ size: 1234 } as BucketItemStat);
 
 			// First Upload
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations1 = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						avatarMimeType
-						avatarURL
-					}
-				}
-				`,
+			const firstUpdatedName = faker.person.fullName();
+			const result1 = await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+				headers: {
+					authorization: `bearer ${userToken}`,
+				},
 				variables: {
 					input: {
-						avatar: null,
+						name: firstUpdatedName,
+						avatar: {
+							fileHash:
+								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+							mimeType: "IMAGE_JPEG",
+							name: "test.jpg",
+							objectName: "minio-valid-object-2",
+						},
 					},
 				},
 			});
 
-			const map1 = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
+			expect(result1.errors).toBeUndefined();
+			expect(result1.data?.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: firstUpdatedName,
+					avatarMimeType: "image/jpeg",
+					avatarURL: expect.stringContaining("/objects/"),
+				}),
+			);
+			expect(statObjectSpy).toHaveBeenCalled();
 
-			const body1 = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations1,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map1,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				"first avatar content",
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response1 = await server.inject({
-				method: "POST",
-				url: "/graphql",
+			// Second Upload with same name but different mime type
+			const secondUpdatedName = faker.person.fullName();
+			const result2 = await mercuriusClient.mutate(Mutation_updateCurrentUser, {
 				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
 					authorization: `bearer ${userToken}`,
 				},
-				payload: body1,
-			});
-
-			const result1 = JSON.parse(response1.body);
-			expect(result1.errors).toBeUndefined();
-			expect(result1.data.updateCurrentUser.avatarMimeType).toBe("image/jpeg");
-			expect(result1.data.updateCurrentUser.avatarURL).toBeTruthy();
-
-			// Second Upload (Replacement)
-			const secondUpdatedName = faker.person.fullName();
-			const boundary2 = `----WebKitFormBoundary${Math.random().toString(36)}`;
-			const operations2 = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						name
-						avatarMimeType
-						avatarURL
-					}
-				}
-				`,
 				variables: {
 					input: {
 						name: secondUpdatedName,
-						avatar: null,
+						avatar: {
+							fileHash:
+								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+							mimeType: "IMAGE_PNG",
+							name: "test.png",
+							objectName: "minio-valid-object-2",
+						},
 					},
 				},
 			});
 
-			const map2 = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
-
-			const body2 = [
-				`--${boundary2}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations2,
-				`--${boundary2}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map2,
-				`--${boundary2}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/png", // Different mime type
-				"",
-				"second avatar content",
-				`--${boundary2}--`,
-			].join("\r\n");
-
-			const response2 = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary2}`,
-					authorization: `bearer ${userToken}`,
-				},
-				payload: body2,
-			});
-
-			const result2 = JSON.parse(response2.body);
-
 			expect(result2.errors).toBeUndefined();
-			expect(result2.data.updateCurrentUser).toEqual(
+			expect(result2.data?.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: secondUpdatedName,
 					avatarMimeType: "image/png",
 					avatarURL: expect.stringContaining("/objects/"),
 				}),
 			);
-			expect(putObjectSpy).toHaveBeenCalled();
+			expect(statObjectSpy).toHaveBeenCalledTimes(2);
 		});
 	});
 
@@ -1688,11 +1524,6 @@ suite("Mutation field updateCurrentUser", () => {
 			const userToken = createUserResult.data.createUser?.authenticationToken;
 			assertToBeNonNullish(userToken);
 
-			// Mock minio putObject
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
-
 			const comprehensiveTestData = {
 				addressLine1: faker.location.streetAddress().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
 				addressLine2: faker.location.secondaryAddress(),
@@ -1715,119 +1546,410 @@ suite("Mutation field updateCurrentUser", () => {
 				workPhoneNumber: "+15555555555",
 			};
 
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({
+					metaData: { "content-type": "image/jpeg" },
+					size: 1000,
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
 
-			const operations = JSON.stringify({
-				query: `
-				mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
-					updateCurrentUser(input: $input) {
-						id
-						addressLine1
-						addressLine2
-						avatarMimeType
-						avatarURL
-						birthDate
-						city
-						countryCode
-						description
-						educationGrade
-						emailAddress
-						employmentStatus
-						homePhoneNumber
-						maritalStatus
-						mobilePhoneNumber
-						name
-						natalSex
-						naturalLanguageCode
-						postalCode
-						state
-						workPhoneNumber
-					}
-				}
-				`,
-				variables: {
-					input: {
-						...comprehensiveTestData,
-						avatar: null,
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								...comprehensiveTestData,
+								avatar: {
+									objectName: "test.jpg",
+									mimeType: "IMAGE_JPEG",
+									fileHash:
+										"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+									name: "test.jpg",
+								},
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateCurrentUser).toEqual(
+					expect.objectContaining({
+						addressLine1: comprehensiveTestData.addressLine1,
+						addressLine2: comprehensiveTestData.addressLine2,
+						avatarMimeType: "image/jpeg",
+						avatarURL: expect.stringContaining("/objects/"),
+						birthDate: comprehensiveTestData.birthDate,
+						city: comprehensiveTestData.city,
+						countryCode: comprehensiveTestData.countryCode,
+						description: comprehensiveTestData.description,
+						educationGrade: comprehensiveTestData.educationGrade,
+						emailAddress: comprehensiveTestData.emailAddress,
+						employmentStatus: comprehensiveTestData.employmentStatus,
+						homePhoneNumber: comprehensiveTestData.homePhoneNumber,
+						maritalStatus: comprehensiveTestData.maritalStatus,
+						mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
+						name: comprehensiveTestData.name,
+						natalSex: comprehensiveTestData.natalSex,
+						naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
+						postalCode: comprehensiveTestData.postalCode,
+						state: comprehensiveTestData.state,
+						workPhoneNumber: comprehensiveTestData.workPhoneNumber,
+					}),
+				);
+
+				// Additional explicit assertions for naturalLanguageCode and avatar persistence
+				expect(result.data.updateCurrentUser?.naturalLanguageCode).toBe(
+					comprehensiveTestData.naturalLanguageCode,
+				);
+
+				// Verify avatar fields are properly set and valid
+				expect(result.data.updateCurrentUser?.avatarMimeType).toBe(
+					"image/jpeg",
+				);
+				expect(result.data.updateCurrentUser?.avatarURL).toBeDefined();
+				expect(result.data.updateCurrentUser?.avatarURL).toMatch(
+					/\/objects\/[a-zA-Z0-9._-]+$/,
+				);
+
+				expect(statObjectSpy).toHaveBeenCalled();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+	});
+
+	suite("Avatar MinIO error handling", () => {
+		test("returns invalid_arguments error when avatar file is not found in MinIO", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
 					},
 				},
-			});
+			);
 
-			const map = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
 
-			const fileContent = "test content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
-
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${userToken}`,
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
 				},
-				payload: body,
-			});
-
-			const result = JSON.parse(response.body);
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data.updateCurrentUser).toEqual(
-				expect.objectContaining({
-					addressLine1: comprehensiveTestData.addressLine1,
-					addressLine2: comprehensiveTestData.addressLine2,
-					avatarMimeType: "image/jpeg",
-					avatarURL: expect.stringContaining("/objects/"),
-					birthDate: comprehensiveTestData.birthDate,
-					city: comprehensiveTestData.city,
-					countryCode: comprehensiveTestData.countryCode,
-					description: comprehensiveTestData.description,
-					educationGrade: comprehensiveTestData.educationGrade,
-					emailAddress: comprehensiveTestData.emailAddress,
-					employmentStatus: comprehensiveTestData.employmentStatus,
-					homePhoneNumber: comprehensiveTestData.homePhoneNumber,
-					maritalStatus: comprehensiveTestData.maritalStatus,
-					mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
-					name: comprehensiveTestData.name,
-					natalSex: comprehensiveTestData.natalSex,
-					naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
-					postalCode: comprehensiveTestData.postalCode,
-					state: comprehensiveTestData.state,
-					workPhoneNumber: comprehensiveTestData.workPhoneNumber,
-				}),
 			);
 
-			// Additional explicit assertions for naturalLanguageCode and avatar persistence
-			expect(result.data.updateCurrentUser?.naturalLanguageCode).toBe(
-				comprehensiveTestData.naturalLanguageCode,
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			const notFoundError = new Error("Not Found");
+			notFoundError.name = "NotFound";
+
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(notFoundError);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								avatar: {
+									objectName: "nonexistent-file.jpg",
+									mimeType: "IMAGE_JPEG",
+									fileHash:
+										"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+									name: "test.jpg",
+								},
+							},
+						},
+					},
+				);
+
+				expect(result.data.updateCurrentUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+				expect(
+					(result.errors?.[0]?.extensions as InvalidArgumentsExtensions)
+						?.issues,
+				).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["input", "avatar", "objectName"],
+							message: expect.stringContaining("File not found"),
+						}),
+					]),
+				);
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("returns unexpected error when MinIO throws a non-NotFound error", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
 			);
 
-			// Verify avatar fields are properly set and valid
-			expect(result.data.updateCurrentUser?.avatarMimeType).toBe("image/jpeg");
-			expect(result.data.updateCurrentUser?.avatarURL).toBeDefined();
-			expect(result.data.updateCurrentUser?.avatarURL).toMatch(
-				/\/objects\/[a-zA-Z0-9]+$/,
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
 			);
 
-			// Verify minio putObject was called for avatar upload
-			expect(putObjectSpy).toHaveBeenCalled();
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockRejectedValue(new Error("Connection refused"));
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								avatar: {
+									objectName: "test-file.jpg",
+									mimeType: "IMAGE_JPEG",
+									fileHash:
+										"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+									name: "test.jpg",
+								},
+							},
+						},
+					},
+				);
+
+				expect(result.data.updateCurrentUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("clears avatar fields when avatar is explicitly set to null", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			// First set an avatar
+			const statObjectSpy = vi
+				.spyOn(server.minio.client, "statObject")
+				.mockResolvedValue({
+					metaData: { "content-type": "image/jpeg" },
+					size: 1000,
+				} as unknown as Awaited<
+					ReturnType<typeof server.minio.client.statObject>
+				>);
+
+			try {
+				await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							avatar: {
+								objectName: "avatar-to-clear.jpg",
+								mimeType: "IMAGE_JPEG",
+								fileHash:
+									"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+								name: "avatar.jpg",
+							},
+						},
+					},
+				});
+
+				const removeObjectSpy = vi
+					.spyOn(server.minio.client, "removeObject")
+					.mockResolvedValue(
+						undefined as Awaited<
+							ReturnType<typeof server.minio.client.removeObject>
+						>,
+					);
+
+				// Now clear the avatar by setting it to null
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								avatar: null,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.updateCurrentUser);
+				expect(result.data.updateCurrentUser.avatarURL).toBeNull();
+				expect(result.data.updateCurrentUser.avatarMimeType).toBeNull();
+
+				removeObjectSpy.mockRestore();
+			} finally {
+				statObjectSpy.mockRestore();
+			}
+		});
+
+		test("returns unauthenticated when user is deleted during transaction (race condition)", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			const userToken = createUserResult.data.createUser?.authenticationToken;
+			assertToBeNonNullish(userToken);
+			assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+			// Mock the transaction so tx.update().set().where().returning() returns empty array
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (fn) => {
+					const fakeTx = {
+						update: () => ({
+							set: () => ({
+								where: () => ({
+									returning: async () => [],
+								}),
+							}),
+						}),
+					};
+					return await fn(fakeTx);
+				}) as unknown as typeof server.drizzleClient.transaction;
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateCurrentUser,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: {
+							input: {
+								name: "new name",
+							},
+						},
+					},
+				);
+
+				expect(result.data.updateCurrentUser).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
+			}
 		});
 	});
 });

@@ -96,14 +96,10 @@ Most of these steps are specific to Linux. You will need to modify them accordin
     ```
 
 5.  Build and start the docker devcontainer
-    1. Default mode:
-       ```
-       devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
-       ```
-    1. Rootless mode:
-       ```
-       devcontainer up --workspace-folder . --config .devcontainer/rootless/devcontainer.json
-       ```
+
+    ```
+    devcontainer up  --workspace-folder . --config .devcontainer/default/devcontainer.json
+    ```
 
 6.  When the container startup is complete, the last lines of output should look like this:
 
@@ -111,12 +107,6 @@ Most of these steps are specific to Linux. You will need to modify them accordin
     ...
     ...
     {"outcome":"success",   "containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34",   "composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
-    ```
-
-7.  Start the application
-
-    ```
-    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
     ```
 
 All done!

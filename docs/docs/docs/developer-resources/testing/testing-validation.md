@@ -311,7 +311,9 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator";
 ##### For an Unauthenticated User
 
 ```ts
-const { context, mocks } = createMockGraphQLContext({ isAuthenticated: false });
+const { context, mocks } = createMockGraphQLContext({
+  isAuthenticated: false,
+});
 ```
 
 `context.currentClient.isAuthenticated` will be `false`.
@@ -1135,7 +1137,6 @@ We use CloudBeaver which is a lightweight web application designed for comprehen
    ```
 3. You should now see the CloudBeaver UI. Click on the "New Connection" button and select `PostgreSQL` from the list of available connections.
 4. Fill in the connection details as follows:
-
    ```
    Name: talawa
    Host: postgres
@@ -1146,7 +1147,6 @@ We use CloudBeaver which is a lightweight web application designed for comprehen
    ```
 
    - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
-
 5. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
 6. Check the following boxes in the Database list:
    ```sql
@@ -1291,16 +1291,8 @@ Sometimes you may want to start all over again from scratch. These steps will re
    docker volume prune -f
    ```
 1. Restart the Docker dev containers to resume your development work.
-   1. Default mode:
-      ```bash
-      devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
-      ```
-   1. Rootless mode:
-      ```bash
-      devcontainer up --workspace-folder . --config .devcontainer/rootless/devcontainer.json
-      ```
-1. Start the application;
-   ```
+   ```bash
+   devcontainer up --workspace-folder . --config .devcontainer/default/devcontainer.json
    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
 

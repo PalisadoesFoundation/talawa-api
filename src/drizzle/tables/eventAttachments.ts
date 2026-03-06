@@ -48,6 +48,10 @@ export const eventAttachmentsTable = pgTable(
 		 */
 		name: text("name", {}).notNull(),
 		/**
+		 * Storage key name of the attachment in MinIO.
+		 */
+		objectName: text("object_name").notNull(),
+		/**
 		 * Date time at the time the attachment was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {

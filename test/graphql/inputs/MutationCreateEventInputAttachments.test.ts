@@ -1,11 +1,29 @@
-import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { mutationCreateEventInputSchema } from "~/src/graphql/inputs/MutationCreateEventInput";
 
 /**
- * Tests for event attachment file upload validation.
- * Validates array count limits for file uploads.
+ * Tests for event attachment FileMetadataInput validation.
+ * Now uses pre-upload metadata (objectName, mimeType, fileHash, name)
+ * instead of FileUpload streams.
  */
+
+const VALID_FILE_HASH =
+	"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
+/** Helper to create a valid FileMetadataInput object */
+function createFileMetadata(
+	mimeType: string,
+	name = "test-file",
+	objectName = "minio-object-id",
+) {
+	return {
+		fileHash: VALID_FILE_HASH,
+		mimeType,
+		name,
+		objectName,
+	};
+}
+
 describe("MutationCreateEventInput - Attachment Validation", () => {
 	const validInput = {
 		organizationId: "550e8400-e29b-41d4-a716-446655440000",
@@ -16,8 +34,6 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 
 	describe("attachments array limits", () => {
 		it("should validate base input structure without attachments", () => {
-			// Note: Schema allows .max(20) attachments
-			// Just testing schema structure accepts base input, actual FileUpload validation happens at mutation level
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
 			});
@@ -32,15 +48,17 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should accept a single valid attachment", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("image/jpeg", "photo.jpg")],
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it("should reject when attachments exceed max(20) limit", () => {
-			// Create 21 mock attachment promises to exceed the max(20) limit
-			const tooManyAttachments = Array.from({ length: 21 }, () =>
-				Promise.resolve({
-					filename: "test.jpg",
-					mimetype: "image/jpeg",
-					encoding: "7bit",
-					createReadStream: () => null,
-				}),
+			const tooManyAttachments = Array.from({ length: 21 }, (_, i) =>
+				createFileMetadata("image/jpeg", `file-${i}.jpg`, `object-${i}`),
 			);
 
 			const result = mutationCreateEventInputSchema.safeParse({
@@ -49,140 +67,112 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should accept up to 20 attachments", () => {
+			const maxAttachments = Array.from({ length: 20 }, (_, i) =>
+				createFileMetadata("image/jpeg", `file-${i}.jpg`, `object-${i}`),
+			);
+
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: maxAttachments,
+			});
+			expect(result.success).toBe(true);
+		});
 	});
 
-	describe("MIME type validation (arguments schema transform)", () => {
-		// Helper to create FileUpload-like objects
-		function createMockFileUpload(filename: string, mimetype: string) {
-			return Promise.resolve({
-				filename,
-				mimetype,
-				encoding: "7bit",
-				createReadStream: () => Readable.from(Buffer.from("test")),
-			});
-		}
-
-		it("should accept valid image/png", async () => {
-			const { mutationCreateEventArgumentsSchema } = await import(
-				"~/src/graphql/types/Mutation/createEvent"
-			);
-			// Use future dates to pass startAt validation
-			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
-			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
-				input: {
-					...validInput,
-					startAt,
-					endAt,
-					attachments: [createMockFileUpload("test.png", "image/png")],
-				},
+	describe("MIME type validation", () => {
+		it("should accept valid mimeType image/png", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("image/png", "photo.png")],
 			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept valid image/jpeg", async () => {
-			const { mutationCreateEventArgumentsSchema } = await import(
-				"~/src/graphql/types/Mutation/createEvent"
-			);
-			// Use future dates to pass startAt validation
-			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
-			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
-				input: {
-					...validInput,
-					startAt,
-					endAt,
-					attachments: [createMockFileUpload("test.jpg", "image/jpeg")],
-				},
+		it("should accept valid mimeType image/jpeg", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("image/jpeg", "photo.jpg")],
 			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should reject invalid MIME type application/pdf", async () => {
-			const { mutationCreateEventArgumentsSchema } = await import(
-				"~/src/graphql/types/Mutation/createEvent"
-			);
-			// Use future dates to pass startAt validation
-			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
-			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
-				input: {
-					...validInput,
-					startAt,
-					endAt,
-					attachments: [createMockFileUpload("test.pdf", "application/pdf")],
-				},
+		it("should accept valid mimeType image/webp", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("image/webp", "photo.webp")],
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept valid mimeType video/mp4", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("video/mp4", "video.mp4")],
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject invalid MIME type application/pdf", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("application/pdf", "doc.pdf")],
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject invalid MIME type text/plain", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [createFileMetadata("text/plain", "file.txt")],
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should handle mixed valid and invalid MIME types", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					createFileMetadata("image/png", "valid.png", "object-1"),
+					createFileMetadata("text/plain", "invalid.txt", "object-2"),
+				],
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject attachment missing required fileHash field", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					{
+						mimeType: "image/jpeg",
+						name: "test.jpg",
+						objectName: "test-object",
+						// fileHash intentionally missing
+					},
+				],
 			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["input", "attachments", 0],
-							message: 'Mime type "application/pdf" is not allowed.',
-						}),
-					]),
-				);
+				const paths = result.error.issues.map((issue) => issue.path.join("."));
+				expect(paths.some((p) => p.includes("fileHash"))).toBe(true);
 			}
 		});
 
-		it("should reject invalid MIME type text/plain", async () => {
-			const { mutationCreateEventArgumentsSchema } = await import(
-				"~/src/graphql/types/Mutation/createEvent"
-			);
-			// Use future dates to pass startAt validation
-			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
-			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
-				input: {
-					...validInput,
-					startAt,
-					endAt,
-					attachments: [createMockFileUpload("test.txt", "text/plain")],
-				},
+		it("should reject attachment missing required objectName field", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: [
+					{
+						fileHash: VALID_FILE_HASH,
+						mimeType: "image/jpeg",
+						name: "test.jpg",
+						// objectName intentionally missing
+					},
+				],
 			});
 			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["input", "attachments", 0],
-							message: 'Mime type "text/plain" is not allowed.',
-						}),
-					]),
-				);
-			}
-		});
-
-		it("should handle mixed valid and invalid MIME types", async () => {
-			const { mutationCreateEventArgumentsSchema } = await import(
-				"~/src/graphql/types/Mutation/createEvent"
-			);
-			// Use future dates to pass startAt validation
-			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
-			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
-				input: {
-					...validInput,
-					startAt,
-					endAt,
-					attachments: [
-						createMockFileUpload("valid.png", "image/png"),
-						createMockFileUpload("invalid.txt", "text/plain"),
-					],
-				},
-			});
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["input", "attachments", 1],
-							message: 'Mime type "text/plain" is not allowed.',
-						}),
-					]),
-				);
-			}
 		});
 	});
 });

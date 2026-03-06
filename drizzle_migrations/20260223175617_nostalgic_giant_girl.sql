@@ -1,0 +1,1 @@
+ALTER TABLE "event_attachments" ADD COLUMN "object_name" text NOT NULL;

@@ -154,9 +154,10 @@ suite("Mutation field createAgendaFolder", () => {
 		for (const cleanup of testCleanupFunctions.reverse()) {
 			try {
 				await cleanup();
-			} catch {
+			} catch (_error) {
 				// Cleanup errors are intentionally swallowed to prevent cascading failures
 				// during teardown. The test result is already determined at this point.
+				console.error("Cleanup error ignored:", _error);
 			}
 		}
 		testCleanupFunctions.length = 0;
@@ -451,7 +452,7 @@ suite("Mutation field createAgendaFolder", () => {
 				server.drizzleClient,
 			);
 
-			vi.spyOn(server.drizzleClient, "insert").mockImplementationOnce(
+			vi.spyOn(server.drizzleClient, "insert").mockImplementation(
 				(table: unknown) => {
 					const tableName =
 						typeof table === "object" &&
