@@ -78,6 +78,7 @@ input MutationUpdateThisAndFollowingEventsInput {
   allDay: Boolean
   description: String
   endAt: DateTime
+  endDate: String
   id: ID!
   isInviteOnly: Boolean
   isPublic: Boolean
@@ -86,6 +87,7 @@ input MutationUpdateThisAndFollowingEventsInput {
   name: String
   recurrence: RecurrenceInput
   startAt: DateTime
+  startDate: String
 }
 ```
 
@@ -101,7 +103,11 @@ Updated description for this and following event instances.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Updated end time for this and following event instances.
+Updated end time for this and following timed event instances (allDay = false).
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>endDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Exclusive end date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -133,7 +139,11 @@ Updated recurrence pattern for the new series starting from this instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Updated start time for this and following event instances.
+Updated start time for this and following timed event instances (allDay = false).
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Inclusive start date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).
 
 ### Member Of
 
