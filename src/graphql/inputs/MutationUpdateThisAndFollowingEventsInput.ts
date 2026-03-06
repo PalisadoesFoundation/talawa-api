@@ -25,6 +25,10 @@ export const mutationUpdateThisAndFollowingEventsInputSchema = z
 			.optional(),
 		startAt: z.date().optional(),
 		endAt: z.date().optional(),
+		/** Inclusive start date (YYYY-MM-DD) for all-day events. Required when allDay = true. */
+		startDate: z.string().date().optional(),
+		/** Exclusive end date (YYYY-MM-DD) for all-day events. Required when allDay = true. */
+		endDate: z.string().date().optional(),
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
@@ -79,12 +83,21 @@ export const MutationUpdateThisAndFollowingEventsInput = builder
 			}),
 			startAt: t.field({
 				description:
-					"Updated start time for this and following event instances.",
+					"Updated start time for this and following timed event instances (allDay = false).",
 				type: "DateTime",
 			}),
 			endAt: t.field({
-				description: "Updated end time for this and following event instances.",
+				description:
+					"Updated end time for this and following timed event instances (allDay = false).",
 				type: "DateTime",
+			}),
+			startDate: t.string({
+				description:
+					"Inclusive start date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).",
+			}),
+			endDate: t.string({
+				description:
+					"Exclusive end date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).",
 			}),
 			allDay: t.boolean({
 				description:

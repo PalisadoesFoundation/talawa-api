@@ -1,4 +1,14 @@
-import { and, asc, eq, gte, inArray, lte, not, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	eq,
+	gte,
+	inArray,
+	isNotNull,
+	lte,
+	not,
+	or,
+} from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -405,24 +415,55 @@ async function fetchRecurringEventInstances(
 		excludeInstanceIds,
 	} = input;
 
+	// Convert Date inputs to YYYY-MM-DD strings for all-day date comparisons
+	const windowStartStr = startDate.toISOString().slice(0, 10);
+	const windowEndStr = endDate.toISOString().slice(0, 10);
+
 	const whereConditions = [
 		eq(recurringEventInstancesTable.organizationId, organizationId),
-		// Event overlaps with date range - same logic as standalone events
+		// Event overlaps with date range — handles both timed and all-day instances
 		or(
-			// Event starts within range
+			// Timed instances: actualStartTime/actualEndTime are not null
 			and(
-				gte(recurringEventInstancesTable.actualStartTime, startDate),
-				lte(recurringEventInstancesTable.actualStartTime, endDate),
+				isNotNull(recurringEventInstancesTable.actualStartTime),
+				or(
+					// Instance starts within range
+					and(
+						gte(recurringEventInstancesTable.actualStartTime, startDate),
+						lte(recurringEventInstancesTable.actualStartTime, endDate),
+					),
+					// Instance ends within range
+					and(
+						gte(recurringEventInstancesTable.actualEndTime, startDate),
+						lte(recurringEventInstancesTable.actualEndTime, endDate),
+					),
+					// Instance spans the entire range
+					and(
+						lte(recurringEventInstancesTable.actualStartTime, startDate),
+						gte(recurringEventInstancesTable.actualEndTime, endDate),
+					),
+				),
 			),
-			// Event ends within range
+			// All-day instances: actualStartDate/actualEndDate are not null (string DATE comparisons)
 			and(
-				gte(recurringEventInstancesTable.actualEndTime, startDate),
-				lte(recurringEventInstancesTable.actualEndTime, endDate),
-			),
-			// Event spans the entire range
-			and(
-				lte(recurringEventInstancesTable.actualStartTime, startDate),
-				gte(recurringEventInstancesTable.actualEndTime, endDate),
+				isNotNull(recurringEventInstancesTable.actualStartDate),
+				or(
+					// Instance starts within range
+					and(
+						gte(recurringEventInstancesTable.actualStartDate, windowStartStr),
+						lte(recurringEventInstancesTable.actualStartDate, windowEndStr),
+					),
+					// Instance ends within range
+					and(
+						gte(recurringEventInstancesTable.actualEndDate, windowStartStr),
+						lte(recurringEventInstancesTable.actualEndDate, windowEndStr),
+					),
+					// Instance spans the entire range
+					and(
+						lte(recurringEventInstancesTable.actualStartDate, windowStartStr),
+						gte(recurringEventInstancesTable.actualEndDate, windowEndStr),
+					),
+				),
 			),
 		),
 	];

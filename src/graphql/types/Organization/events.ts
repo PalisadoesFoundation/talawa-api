@@ -408,6 +408,7 @@ Organization.implement({
 						const cursorIndex = allEvents.findIndex(
 							(event) =>
 								event.id === cursor.id &&
+								event.startAt &&
 								new Date(event.startAt).getTime() === cursor.startAt.getTime(),
 						);
 
@@ -448,7 +449,7 @@ Organization.implement({
 					return transformToDefaultGraphQLConnection({
 						createCursor: (event) => ({
 							id: event.id,
-							startAt: new Date(event.startAt),
+							startAt: event.startAt ? new Date(event.startAt) : new Date(),
 						}),
 						createNode: (event) => event,
 						parsedArgs: { cursor, isInversed, limit },

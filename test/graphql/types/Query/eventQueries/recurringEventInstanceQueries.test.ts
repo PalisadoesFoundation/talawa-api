@@ -57,6 +57,9 @@ const mockRawInstance: typeof recurringEventInstancesTable.$inferSelect = {
 	generatedAt: new Date("2025-01-01T00:00:00.000Z"),
 	lastUpdatedAt: new Date("2025-01-02T00:00:00.000Z"),
 	version: "1.0",
+	originalInstanceStartDate: null,
+	actualStartDate: null,
+	actualEndDate: null,
 	sequenceNumber: 1,
 	totalCount: 10,
 };
@@ -83,6 +86,8 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect & {
 	updatedAt: null,
 
 	isRecurringEventTemplate: true,
+	startDate: null,
+	endDate: null,
 	attachments: [],
 };
 
@@ -128,6 +133,9 @@ const mockResolvedInstance: ResolvedRecurringEventInstance = {
 	exceptionCreatedBy: "user-2",
 
 	exceptionCreatedAt: new Date("2025-01-03T00:00:00.000Z"),
+	originalInstanceStartDate: null,
+	actualStartDate: null,
+	actualEndDate: null,
 	attachments: [],
 };
 

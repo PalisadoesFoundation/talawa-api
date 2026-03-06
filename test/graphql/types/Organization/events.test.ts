@@ -80,6 +80,8 @@ describe("Organization Events Resolver Tests", () => {
 			registrationClosesAt: new Date(),
 			attachments: [],
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 		},
 		{
 			id: "event-2",
@@ -102,6 +104,8 @@ describe("Organization Events Resolver Tests", () => {
 			registrationClosesAt: new Date(),
 			attachments: [],
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 		},
 	];
 
@@ -515,6 +519,8 @@ describe("Organization Events Resolver Tests", () => {
 				registrationClosesAt: new Date(),
 				attachments: [],
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 			}));
 
 			mockGetUnifiedEventsInDateRange.mockResolvedValue(manyEvents);
@@ -575,6 +581,8 @@ describe("Organization Events Resolver Tests", () => {
 					isInviteOnly: false,
 					location: "Test Location",
 					registrationClosesAt: new Date(),
+					startDate: null,
+					endDate: null,
 					attachments: [],
 					isRecurringEventTemplate: false,
 				},

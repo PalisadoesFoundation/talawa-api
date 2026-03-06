@@ -34,6 +34,8 @@ describe("Event Attendees Resolver Tests", () => {
 			isInviteOnly: false,
 			location: null,
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		} as EventType;
 	});

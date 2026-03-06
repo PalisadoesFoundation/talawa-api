@@ -30,8 +30,11 @@ export function resolveInstanceWithInheritance(
 		originalSeriesId: generatedInstance.originalSeriesId,
 		recurrenceRuleId: generatedInstance.recurrenceRuleId,
 		originalInstanceStartTime: generatedInstance.originalInstanceStartTime,
+		originalInstanceStartDate: generatedInstance.originalInstanceStartDate,
 		actualStartTime: generatedInstance.actualStartTime,
 		actualEndTime: generatedInstance.actualEndTime,
+		actualStartDate: generatedInstance.actualStartDate,
+		actualEndDate: generatedInstance.actualEndDate,
 		isCancelled: generatedInstance.isCancelled,
 		organizationId: generatedInstance.organizationId,
 		generatedAt: generatedInstance.generatedAt,
@@ -115,6 +118,15 @@ function applyExceptionData(
 			exceptionData.endAt as string | number | Date,
 		);
 	}
+
+	// Handle all-day date exception fields
+	if (exceptionData.startDate !== undefined) {
+		resolvedInstance.actualStartDate = exceptionData.startDate as string | null;
+	}
+
+	if (exceptionData.endDate !== undefined) {
+		resolvedInstance.actualEndDate = exceptionData.endDate as string | null;
+	}
 }
 
 /**
@@ -140,6 +152,8 @@ function isValidExceptionField(
 		"isInviteOnly",
 		"actualStartTime",
 		"actualEndTime",
+		"actualStartDate",
+		"actualEndDate",
 		"isCancelled",
 	];
 
@@ -275,9 +289,6 @@ export function validateResolvedInstance(
 		"id",
 		"baseRecurringEventId",
 		"originalSeriesId",
-		"originalInstanceStartTime",
-		"actualStartTime",
-		"actualEndTime",
 		"organizationId",
 		"name",
 	];
@@ -291,6 +302,21 @@ export function validateResolvedInstance(
 			logger.error(`Missing required field in resolved instance: ${field}`);
 			return false;
 		}
+	}
+
+	// Validate that either timed or all-day fields are present
+	const hasTimedFields =
+		resolvedInstance.actualStartTime !== null &&
+		resolvedInstance.actualStartTime !== undefined;
+	const hasDateFields =
+		resolvedInstance.actualStartDate !== null &&
+		resolvedInstance.actualStartDate !== undefined;
+
+	if (!hasTimedFields && !hasDateFields) {
+		logger.error(
+			"Resolved instance missing both actualStartTime and actualStartDate",
+		);
+		return false;
 	}
 
 	return true;

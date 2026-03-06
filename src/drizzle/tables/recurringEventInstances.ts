@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
+	date,
 	index,
 	integer,
 	pgTable,
@@ -70,38 +71,53 @@ export const recurringEventInstancesTable = pgTable(
 		originalSeriesId: uuid("original_series_id").notNull(),
 
 		/**
-		 * The original scheduled start time for this specific instance.
-		 * This represents when this occurrence was supposed to happen according
-		 * to the recurrence pattern, before any exceptions are applied.
-		 * Used for matching with exceptions in the event_exceptions table.
+		 * The original scheduled start time for this specific instance (timed events only).
+		 * Used for matching with exceptions. Null for all-day recurring events.
 		 */
 		originalInstanceStartTime: timestamp("original_instance_start_time", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).notNull(),
+		}),
 
 		/**
-		 * The actual start time for this recurring event instance.
-		 * This is calculated from the original time plus any exceptions.
-		 * Pre-calculated for fast date-range queries and sorting.
+		 * The original scheduled start date for all-day recurring event instances.
+		 * Null for timed recurring events.
+		 */
+		originalInstanceStartDate: date("original_instance_start_date"),
+
+		/**
+		 * The actual UTC start time for timed recurring event instances.
+		 * Null for all-day recurring events (use actualStartDate instead).
 		 */
 		actualStartTime: timestamp("actual_start_time", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).notNull(),
+		}),
 
 		/**
-		 * The actual end time for this recurring event instance.
-		 * Calculated based on actualStartTime and duration from template + exceptions.
-		 * Pre-calculated for fast date-range queries and calendar views.
+		 * The actual UTC end time for timed recurring event instances.
+		 * Null for all-day recurring events (use actualEndDate instead).
 		 */
 		actualEndTime: timestamp("actual_end_time", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).notNull(),
+		}),
+
+		/**
+		 * Inclusive start date for all-day recurring event instances (date only, no time or timezone).
+		 * Null for timed recurring events (use actualStartTime instead).
+		 */
+		actualStartDate: date("actual_start_date"),
+
+		/**
+		 * Exclusive end date for all-day recurring event instances (date only, no time or timezone).
+		 * For example, March 1 to March 2 is a one-day event.
+		 * Null for timed recurring events (use actualEndTime instead).
+		 */
+		actualEndDate: date("actual_end_date"),
 
 		/**
 		 * Indicates whether this instance has been cancelled/deleted.
@@ -179,11 +195,18 @@ export const recurringEventInstancesTable = pgTable(
 			self.actualStartTime,
 		),
 		actualEndTimeIdx: index("reei_actual_end_time_idx").on(self.actualEndTime),
+		actualStartDateIdx: index("reei_actual_start_date_idx").on(
+			self.actualStartDate,
+		),
+		actualEndDateIdx: index("reei_actual_end_date_idx").on(self.actualEndDate),
 
 		// Indexes for background worker operations
 		originalInstanceStartTimeIdx: index(
 			"reei_original_instance_start_time_idx",
 		).on(self.originalInstanceStartTime),
+		originalInstanceStartDateIdx: index(
+			"reei_original_instance_start_date_idx",
+		).on(self.originalInstanceStartDate),
 		recurrenceRuleIdx: index("reei_recurrence_rule_idx").on(
 			self.recurrenceRuleId,
 		),
@@ -280,9 +303,14 @@ export const recurringEventInstancesTableInsertSchema = createInsertSchema(
 		baseRecurringEventId: z.string().uuid(),
 		recurrenceRuleId: z.string().uuid(),
 		originalSeriesId: z.string().uuid(),
-		originalInstanceStartTime: z.date(),
-		actualStartTime: z.date(),
-		actualEndTime: z.date(),
+		// Timed event fields (allDay = false)
+		originalInstanceStartTime: z.date().nullable().optional(),
+		actualStartTime: z.date().nullable().optional(),
+		actualEndTime: z.date().nullable().optional(),
+		// All-day event fields (allDay = true)
+		originalInstanceStartDate: z.string().date().nullable().optional(),
+		actualStartDate: z.string().date().nullable().optional(),
+		actualEndDate: z.string().date().nullable().optional(),
 		isCancelled: z.boolean().optional(),
 		organizationId: z.string().uuid(),
 		version: z.string().optional(),
@@ -301,9 +329,14 @@ export type ResolvedRecurringEventInstance = {
 	baseRecurringEventId: string;
 	recurrenceRuleId: string;
 	originalSeriesId: string;
-	originalInstanceStartTime: Date;
-	actualStartTime: Date;
-	actualEndTime: Date;
+	// Timed event fields (allDay = false; null for all-day instances)
+	originalInstanceStartTime: Date | null;
+	actualStartTime: Date | null;
+	actualEndTime: Date | null;
+	// All-day event fields (allDay = true; null for timed instances)
+	originalInstanceStartDate: string | null;
+	actualStartDate: string | null;
+	actualEndDate: string | null;
 	isCancelled: boolean;
 	organizationId: string;
 	generatedAt: Date;
@@ -344,9 +377,14 @@ export type CreateRecurringEventInstanceInput = {
 	baseRecurringEventId: string;
 	recurrenceRuleId: string;
 	originalSeriesId: string;
-	originalInstanceStartTime: Date;
-	actualStartTime: Date;
-	actualEndTime: Date;
+	// Timed event fields (allDay = false; provide these when the base event is timed)
+	originalInstanceStartTime?: Date | null;
+	actualStartTime?: Date | null;
+	actualEndTime?: Date | null;
+	// All-day event fields (allDay = true; provide these when the base event is all-day, YYYY-MM-DD format)
+	originalInstanceStartDate?: string | null;
+	actualStartDate?: string | null;
+	actualEndDate?: string | null;
 	organizationId: string;
 	isCancelled?: boolean;
 	sequenceNumber: number;

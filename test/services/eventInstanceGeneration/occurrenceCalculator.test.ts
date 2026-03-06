@@ -132,7 +132,7 @@ suite("occurrenceCalculator", () => {
 			expect(result).toHaveLength(4);
 			const cancelledOccurrence = result.find(
 				(r) =>
-					r.originalStartTime.getTime() ===
+					r.originalStartTime?.getTime() ===
 					new Date("2025-01-08T10:00:00Z").getTime(),
 			);
 			expect(cancelledOccurrence).toBeDefined();
@@ -171,7 +171,7 @@ suite("occurrenceCalculator", () => {
 			expect(result).toHaveLength(4);
 			const modifiedOccurrence = result.find(
 				(r) =>
-					r.originalStartTime.getTime() ===
+					r.originalStartTime?.getTime() ===
 					new Date("2025-01-08T10:00:00Z").getTime(),
 			);
 			expect(modifiedOccurrence).toBeDefined();
@@ -251,10 +251,10 @@ suite("occurrenceCalculator", () => {
 			// Should only include occurrences that fall within the window
 			expect(result.length).toBeGreaterThan(0);
 			for (const occurrence of result) {
-				expect(occurrence.originalStartTime.getTime()).toBeGreaterThanOrEqual(
+				expect(occurrence.originalStartTime?.getTime()).toBeGreaterThanOrEqual(
 					config.windowStart.getTime(),
 				);
-				expect(occurrence.originalStartTime.getTime()).toBeLessThanOrEqual(
+				expect(occurrence.originalStartTime?.getTime()).toBeLessThanOrEqual(
 					config.windowEnd.getTime(),
 				);
 			}
@@ -280,9 +280,13 @@ suite("occurrenceCalculator", () => {
 			expect(result.length).toBeGreaterThan(0);
 			if (endDateRule.recurrenceEndDate) {
 				expect(
-					result.every(
-						(r) => r.originalStartTime <= endDateRule.recurrenceEndDate,
-					),
+					result.every((r) => {
+						const rTime = r.originalStartTime?.getTime();
+						const endTime = endDateRule.recurrenceEndDate?.getTime();
+						return (
+							rTime !== undefined && endTime !== undefined && rTime <= endTime
+						);
+					}),
 				).toBe(true);
 			}
 		});

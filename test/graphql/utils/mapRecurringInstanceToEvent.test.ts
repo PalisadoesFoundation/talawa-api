@@ -25,7 +25,9 @@ describe("mapRecurringInstanceToEvent", () => {
 			sequenceNumber: 1,
 			totalCount: 5,
 			hasExceptions: false,
-			// Added missing required fields to match ResolvedRecurringEventInstance type
+			originalInstanceStartDate: null,
+			actualStartDate: null,
+			actualEndDate: null, // Added missing required fields to match ResolvedRecurringEventInstance type
 			recurrenceRuleId: "rule-1",
 			originalSeriesId: "series-1",
 			originalInstanceStartTime: new Date("2023-10-01T10:00:00Z"),
@@ -89,6 +91,9 @@ describe("mapRecurringInstanceToEvent", () => {
 			sequenceNumber: 1,
 			totalCount: null,
 			hasExceptions: false,
+			originalInstanceStartDate: null,
+			actualStartDate: null,
+			actualEndDate: null,
 			recurrenceRuleId: "rule-2",
 			originalSeriesId: "series-2",
 			originalInstanceStartTime: new Date("2023-10-01T10:00:00Z"),

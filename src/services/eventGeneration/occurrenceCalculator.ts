@@ -24,24 +24,64 @@ export function calculateInstanceOccurrences(
 	const { recurrenceRule, baseEvent, windowStart, windowEnd, exceptions } =
 		config;
 
-	if (!baseEvent.startAt || !baseEvent.endAt) {
+	const isAllDay = baseEvent.allDay;
+
+	if (isAllDay) {
+		if (!baseEvent.startDate) {
+			logger.warn(
+				{ baseEventId: baseEvent.id },
+				"All-day base event missing startDate",
+			);
+			return [];
+		}
+	} else {
+		if (!baseEvent.startAt || !baseEvent.endAt) {
+			logger.warn(
+				{
+					baseEventId: baseEvent.id,
+					startAt: baseEvent.startAt,
+					endAt: baseEvent.endAt,
+				},
+				"Base event missing start or end time",
+			);
+			return [];
+		}
+	}
+
+	// Anchor date: midnight UTC for all-day events, actual Date for timed events
+	if (isAllDay && !baseEvent.startDate) {
+		logger.warn(
+			{
+				baseEventId: baseEvent.id,
+				startDate: baseEvent.startDate,
+			},
+			"All-day base event missing startDate",
+		);
+		return [];
+	}
+	if (!isAllDay && !baseEvent.startAt) {
 		logger.warn(
 			{
 				baseEventId: baseEvent.id,
 				startAt: baseEvent.startAt,
-				endAt: baseEvent.endAt,
 			},
-			"Base event missing start or end time",
+			"Timed base event missing startAt",
 		);
 		return [];
 	}
+
+	const anchorDate = isAllDay
+		? new Date(`${baseEvent.startDate}T00:00:00.000Z`)
+		: baseEvent.startAt;
 
 	const context = buildRecurrenceContext(recurrenceRule, baseEvent, exceptions);
 	const occurrences: CalculatedOccurrence[] = [];
 
 	logger.debug(
 		{
-			baseEventStart: baseEvent.startAt.toISOString(),
+			baseEventStart: isAllDay
+				? baseEvent.startDate
+				: baseEvent.startAt?.toISOString(),
 			windowStart: windowStart.toISOString(),
 			windowEnd: windowEnd.toISOString(),
 			frequency: recurrenceRule.frequency,
@@ -52,7 +92,7 @@ export function calculateInstanceOccurrences(
 		"Starting occurrence calculation",
 	);
 
-	let currentDate = new Date(baseEvent.startAt);
+	let currentDate = new Date(anchorDate ?? new Date());
 	let iterationCount = 0;
 	let sequenceNumber = 1;
 
@@ -70,7 +110,7 @@ export function calculateInstanceOccurrences(
 				shouldGenerateInstanceAtDate(
 					currentDate,
 					recurrenceRule,
-					baseEvent.startAt,
+					anchorDate ?? new Date(),
 				)
 			) {
 				const occurrence = createOccurrenceFromDate(
@@ -99,7 +139,7 @@ export function calculateInstanceOccurrences(
 			shouldGenerateInstanceAtDate(
 				currentDate,
 				recurrenceRule,
-				baseEvent.startAt,
+				anchorDate ?? new Date(),
 			)
 		) {
 			//  Check count limit BEFORE creating occurrence to include start date properly
@@ -166,8 +206,23 @@ function buildRecurrenceContext(
 	baseEvent: typeof eventsTable.$inferSelect,
 	exceptions: (typeof eventExceptionsTable.$inferSelect)[],
 ): RecurrenceContext {
-	const eventDuration =
-		(baseEvent.endAt?.getTime() ?? 0) - (baseEvent.startAt?.getTime() ?? 0);
+	const isAllDay = baseEvent.allDay;
+
+	// Duration in ms for timed events; duration in days for all-day events
+	const eventDuration = isAllDay
+		? 0
+		: (baseEvent.endAt?.getTime() ?? 0) - (baseEvent.startAt?.getTime() ?? 0);
+
+	// Duration in whole days for all-day events
+	let allDayDurationDays = 1; // default: 1 day
+	if (isAllDay && baseEvent.startDate && baseEvent.endDate) {
+		const start = new Date(`${baseEvent.startDate}T00:00:00.000Z`);
+		const end = new Date(`${baseEvent.endDate}T00:00:00.000Z`);
+		allDayDurationDays = Math.max(
+			1,
+			Math.round((end.getTime() - start.getTime()) / 86400000),
+		);
+	}
 
 	// Calculate total count for finite series
 	const totalCount = recurrenceRule.count || null;
@@ -203,6 +258,8 @@ function buildRecurrenceContext(
 		isNeverEnding,
 		exceptionsByTime,
 		maxIterations,
+		isAllDay,
+		allDayDurationDays,
 	};
 }
 
@@ -220,6 +277,44 @@ function createOccurrenceFromDate(
 	context: RecurrenceContext,
 	sequenceNumber: number,
 ): CalculatedOccurrence {
+	if (context.isAllDay) {
+		// All-day event: produce date strings, no timestamps
+		const startDateStr = currentDate.toISOString().slice(0, 10);
+		const endDate = new Date(currentDate);
+		endDate.setUTCDate(endDate.getUTCDate() + context.allDayDurationDays);
+		const endDateStr = endDate.toISOString().slice(0, 10);
+
+		let actualStartDate = startDateStr;
+		let actualEndDate = endDateStr;
+		let isCancelled = false;
+
+		// Check for all-day exceptions by date key
+		const exception = context.exceptionsByTime.get(startDateStr);
+		if (exception?.exceptionData) {
+			const exceptionData = exception.exceptionData as Record<string, unknown>;
+			if (exceptionData.startDate)
+				actualStartDate = exceptionData.startDate as string;
+			if (exceptionData.endDate)
+				actualEndDate = exceptionData.endDate as string;
+			if (exceptionData.isCancelled)
+				isCancelled = exceptionData.isCancelled as boolean;
+		}
+
+		return {
+			recurringEventInstanceId: uuidv7(),
+			originalStartTime: null,
+			actualStartTime: null,
+			actualEndTime: null,
+			originalStartDate: startDateStr,
+			actualStartDate,
+			actualEndDate,
+			isCancelled,
+			sequenceNumber,
+			totalCount: context.totalCount,
+		};
+	}
+
+	// Timed event
 	const originalStartTime = new Date(currentDate);
 	let actualStartTime = new Date(currentDate);
 	let actualEndTime = new Date(currentDate.getTime() + context.eventDuration);
@@ -251,6 +346,9 @@ function createOccurrenceFromDate(
 		originalStartTime,
 		actualStartTime,
 		actualEndTime,
+		originalStartDate: null,
+		actualStartDate: null,
+		actualEndDate: null,
 		isCancelled,
 		sequenceNumber,
 		totalCount: context.totalCount,

@@ -809,9 +809,14 @@ type Event {
   description: String
 
   """
-  The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.
+  The UTC end timestamp for timed events (allDay = false). Null for all-day events — use endDate instead.
   """
   endAt: DateTime
+
+  """
+  Exclusive end date (YYYY-MM-DD) for all-day events (allDay = true). e.g. March 1 → March 2 is a one-day event. Null for timed events — use endAt instead.
+  """
+  endDate: String
 
   """
   A boolean flag indicating if this materialized instance has any exceptions applied to it.
@@ -873,9 +878,14 @@ type Event {
   sequenceNumber: Int
 
   """
-  The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.
+  The UTC start timestamp for timed events (allDay = false). Null for all-day events — use startDate instead.
   """
-  startAt: DateTime!
+  startAt: DateTime
+
+  """
+  Inclusive start date (YYYY-MM-DD) for all-day events (allDay = true). Null for timed events — use startAt instead.
+  """
+  startDate: String
 
   """
   The total number of instances in the complete recurring series. This will be null for infinite series.
@@ -3002,7 +3012,9 @@ input MutationCreateCommentVoteInput {
 
 """"""
 input MutationCreateEventInput {
-  """Indicates if the event spans the entire day"""
+  """
+  If true, the event spans the entire day and uses startDate/endDate. If false (default), uses startAt/endAt UTC timestamps.
+  """
   allDay: Boolean
 
   """Attachments of the event."""
@@ -3011,8 +3023,15 @@ input MutationCreateEventInput {
   """Custom information about the event."""
   description: String
 
-  """Date time at the time the event ends at."""
-  endAt: DateTime!
+  """
+  UTC timestamp at the time the timed event ends. Required when allDay is false.
+  """
+  endAt: DateTime
+
+  """
+  Exclusive end date for all-day events (YYYY-MM-DD). Required when allDay is true. e.g. March 1 → March 2 is a one-day event.
+  """
+  endDate: String
 
   """Indicates if the event is invite-only"""
   isInviteOnly: Boolean
@@ -3037,8 +3056,15 @@ input MutationCreateEventInput {
   """
   recurrence: RecurrenceInput
 
-  """Date time at the time the event starts at."""
-  startAt: DateTime!
+  """
+  UTC timestamp at the time the timed event starts. Required when allDay is false.
+  """
+  startAt: DateTime
+
+  """
+  Inclusive start date for all-day events (YYYY-MM-DD). Required when allDay is true.
+  """
+  startDate: String
 }
 
 """"""
@@ -3967,14 +3993,23 @@ input MutationUpdateEntireRecurringEventSeriesInput {
 
 """"""
 input MutationUpdateEventInput {
-  """Indicates if the event spans the entire day."""
+  """
+  If true, converts the event to all-day (requires startDate/endDate). If false, converts to timed (requires startAt/endAt).
+  """
   allDay: Boolean
 
   """Custom information about the event."""
   description: String
 
-  """Date time at the time the event ends at."""
+  """
+  UTC timestamp at the time the timed event ends. Only applicable when allDay is false.
+  """
   endAt: DateTime
+
+  """
+  Exclusive end date for all-day events (YYYY-MM-DD). Only applicable when allDay is true.
+  """
+  endDate: String
 
   """Global identifier of the event."""
   id: ID!
@@ -3994,8 +4029,15 @@ input MutationUpdateEventInput {
   """Name of the event."""
   name: String
 
-  """Date time at the time the event starts at."""
+  """
+  UTC timestamp at the time the timed event starts. Only applicable when allDay is false.
+  """
   startAt: DateTime
+
+  """
+  Inclusive start date for all-day events (YYYY-MM-DD). Only applicable when allDay is true.
+  """
+  startDate: String
 }
 
 """"""
@@ -4132,8 +4174,13 @@ input MutationUpdateSingleRecurringEventInstanceInput {
   """Updated description for this specific event instance."""
   description: String
 
-  """Updated end time for this specific event instance."""
+  """Updated UTC end time for this specific timed event instance."""
   endAt: DateTime
+
+  """
+  Exclusive end date (YYYY-MM-DD) for this specific all-day event instance.
+  """
+  endDate: String
 
   """Global identifier of the recurring event instance to update."""
   id: ID!
@@ -4153,8 +4200,13 @@ input MutationUpdateSingleRecurringEventInstanceInput {
   """Updated name for this specific event instance."""
   name: String
 
-  """Updated start time for this specific event instance."""
+  """Updated UTC start time for this specific timed event instance."""
   startAt: DateTime
+
+  """
+  Inclusive start date (YYYY-MM-DD) for this specific all-day event instance.
+  """
+  startDate: String
 }
 
 """"""
@@ -4189,8 +4241,15 @@ input MutationUpdateThisAndFollowingEventsInput {
   """Updated description for this and following event instances."""
   description: String
 
-  """Updated end time for this and following event instances."""
+  """
+  Updated end time for this and following timed event instances (allDay = false).
+  """
   endAt: DateTime
+
+  """
+  Exclusive end date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).
+  """
+  endDate: String
 
   """
   Global identifier of the recurring event instance from which to update this and following instances.
@@ -4217,8 +4276,15 @@ input MutationUpdateThisAndFollowingEventsInput {
   """
   recurrence: RecurrenceInput
 
-  """Updated start time for this and following event instances."""
+  """
+  Updated start time for this and following timed event instances (allDay = false).
+  """
   startAt: DateTime
+
+  """
+  Inclusive start date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).
+  """
+  startDate: String
 }
 
 """"""

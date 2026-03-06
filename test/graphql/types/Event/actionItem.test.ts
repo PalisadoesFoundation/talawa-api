@@ -228,6 +228,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -261,6 +263,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -297,6 +301,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -340,6 +346,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -385,6 +393,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -436,6 +446,8 @@ suite("Event.actionItems", () => {
 			location: "Test Location",
 			isRecurringEventTemplate: false,
 			baseRecurringEventId,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -480,6 +492,8 @@ suite("Event.actionItems", () => {
 			location: "Test Location",
 			isRecurringEventTemplate: false,
 			baseRecurringEventId: null, // falsy value
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -523,6 +537,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 			// No baseRecurringEventId property
 		};
@@ -569,6 +585,8 @@ suite("Event.actionItems", () => {
 			location: "Test Location",
 			isRecurringEventTemplate: false,
 			baseRecurringEventId,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -616,6 +634,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -660,6 +680,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 
@@ -780,6 +802,8 @@ suite("Event.actionItems", () => {
 			isInviteOnly: false,
 			location: "Test Location",
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		};
 

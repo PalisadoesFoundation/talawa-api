@@ -878,6 +878,11 @@ describe("Mutation createEvent - Performance Tracking", () => {
 									}),
 								};
 							}),
+							update: vi.fn().mockReturnValue({
+								set: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue(undefined),
+								}),
+							}),
 						};
 						return callback(mockTx as never);
 					},

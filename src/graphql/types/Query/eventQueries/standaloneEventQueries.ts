@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, lte, or } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNotNull, lte, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
@@ -41,23 +41,57 @@ export async function getStandaloneEventsInDateRange(
 > {
 	const { organizationId, startDate, endDate, eventIds, limit = 1000 } = input;
 
+	// Convert Date inputs to YYYY-MM-DD strings for all-day date comparisons
+	const windowStartStr = startDate.toISOString().slice(0, 10);
+	const windowEndStr = endDate.toISOString().slice(0, 10);
+
 	try {
 		const whereConditions = [
 			eq(eventsTable.organizationId, organizationId),
 			eq(eventsTable.isRecurringEventTemplate, false),
-			// Event overlaps with date range
+			// Event overlaps with date range — handles both timed and all-day events
 			or(
-				// Event starts within range
+				// Timed events: startAt/endAt are not null
 				and(
-					gte(eventsTable.startAt, startDate),
-					lte(eventsTable.startAt, endDate),
+					isNotNull(eventsTable.startAt),
+					or(
+						// Event starts within range
+						and(
+							gte(eventsTable.startAt, startDate),
+							lte(eventsTable.startAt, endDate),
+						),
+						// Event ends within range
+						and(
+							gte(eventsTable.endAt, startDate),
+							lte(eventsTable.endAt, endDate),
+						),
+						// Event spans the entire range
+						and(
+							lte(eventsTable.startAt, startDate),
+							gte(eventsTable.endAt, endDate),
+						),
+					),
 				),
-				// Event ends within range
-				and(gte(eventsTable.endAt, startDate), lte(eventsTable.endAt, endDate)),
-				// Event spans the entire range
+				// All-day events: startDate/endDate are not null (string DATE comparisons)
 				and(
-					lte(eventsTable.startAt, startDate),
-					gte(eventsTable.endAt, endDate),
+					isNotNull(eventsTable.startDate),
+					or(
+						// Event starts within range
+						and(
+							gte(eventsTable.startDate, windowStartStr),
+							lte(eventsTable.startDate, windowEndStr),
+						),
+						// Event ends within range
+						and(
+							gte(eventsTable.endDate, windowStartStr),
+							lte(eventsTable.endDate, windowEndStr),
+						),
+						// Event spans the entire range
+						and(
+							lte(eventsTable.startDate, windowStartStr),
+							gte(eventsTable.endDate, windowEndStr),
+						),
+					),
 				),
 			),
 		];
@@ -93,6 +127,8 @@ export async function getStandaloneEventsInDateRange(
 				dateRange: {
 					start: startDate.toISOString(),
 					end: endDate.toISOString(),
+					startStr: windowStartStr,
+					endStr: windowEndStr,
 				},
 				eventIdsFilter: eventIds?.length || 0,
 			},

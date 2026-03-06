@@ -677,6 +677,8 @@ suite("Mutation field createEvent", () => {
 					...baseEventInput(organizationId),
 					name: "Event with Optional Fields",
 					allDay: true,
+					startDate: getFutureDate(30, 0).split("T")[0],
+					endDate: getFutureDate(31, 0).split("T")[0],
 					isPublic: true,
 					isRegisterable: true,
 					location: "Test Location",
@@ -1867,6 +1869,8 @@ suite("Mutation field createEvent", () => {
 					...baseEventInput(organizationId),
 					name: "Final Object Defaults",
 					allDay: true,
+					startDate: getFutureDate(30, 0).split("T")[0],
+					endDate: getFutureDate(31, 0).split("T")[0],
 				},
 			});
 

@@ -287,10 +287,16 @@ export async function getUnifiedEventsInDateRange(
 			allEvents.push(...enrichedGeneratedInstances);
 		}
 
-		// Step 3: Sort all events by start time (and then by ID for consistency)
+		// Step 3: Sort all events by start time (null-safe: fall back to startDate for all-day events)
 		allEvents.sort((a, b) => {
-			const aTime = new Date(a.startAt).getTime();
-			const bTime = new Date(b.startAt).getTime();
+			const getTime = (event: EventWithAttachments): number => {
+				if (event.startAt) return event.startAt.getTime();
+				if (event.startDate)
+					return new Date(`${event.startDate}T00:00:00.000Z`).getTime();
+				return 0;
+			};
+			const aTime = getTime(a);
+			const bTime = getTime(b);
 			if (aTime === bTime) {
 				return a.id.localeCompare(b.id);
 			}

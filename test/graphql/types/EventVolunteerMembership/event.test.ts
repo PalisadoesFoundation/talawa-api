@@ -32,6 +32,9 @@ const mockEvent = {
 	isRegisterable: true,
 	updaterId: null,
 	isRecurringEventTemplate: false,
+	startDate: null,
+	endDate: null,
+	attachments: [],
 };
 
 describe("VolunteerMembershipEventResolver", () => {
@@ -375,8 +378,8 @@ describe("VolunteerMembershipEventResolver", () => {
 				context,
 			);
 
-			expect(result.startAt.getFullYear()).toBe(2025);
-			expect(result.endAt.getFullYear()).toBe(2025);
+			expect(result.startAt?.getFullYear()).toBe(2025);
+			expect(result.endAt?.getFullYear()).toBe(2025);
 		});
 	});
 });

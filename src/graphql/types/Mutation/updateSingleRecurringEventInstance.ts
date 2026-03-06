@@ -70,12 +70,15 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					columns: {
 						id: true,
 						isCancelled: true,
+						originalInstanceStartTime: true,
+						originalInstanceStartDate: true,
 						actualStartTime: true,
 						actualEndTime: true,
+						actualStartDate: true,
+						actualEndDate: true,
 						baseRecurringEventId: true,
 						recurrenceRuleId: true,
 						originalSeriesId: true,
-						originalInstanceStartTime: true,
 						organizationId: true,
 						generatedAt: true,
 						lastUpdatedAt: true,
@@ -177,13 +180,19 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 			}
 
 			// Calculate new timing if provided
-			let actualStartTime = existingInstance.actualStartTime;
-			let actualEndTime = existingInstance.actualEndTime;
+			let actualStartTime = existingInstance.actualStartTime ?? null;
+			let actualEndTime = existingInstance.actualEndTime ?? null;
+			let actualStartDate = existingInstance.actualStartDate ?? null;
+			let actualEndDate = existingInstance.actualEndDate ?? null;
 
-			if (parsedArgs.input.startAt || parsedArgs.input.endAt) {
+			// Timed event: adjust startAt / endAt
+			if (
+				(parsedArgs.input.startAt || parsedArgs.input.endAt) &&
+				actualStartTime &&
+				actualEndTime
+			) {
 				const originalDuration =
-					existingInstance.actualEndTime.getTime() -
-					existingInstance.actualStartTime.getTime();
+					actualEndTime.getTime() - actualStartTime.getTime();
 
 				if (parsedArgs.input.startAt) {
 					actualStartTime = parsedArgs.input.startAt;
@@ -213,6 +222,31 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 						},
 					});
 				}
+			}
+
+			// All-day event: adjust startDate / endDate
+			if (parsedArgs.input.startDate !== undefined) {
+				actualStartDate = parsedArgs.input.startDate;
+			}
+			if (parsedArgs.input.endDate !== undefined) {
+				actualEndDate = parsedArgs.input.endDate;
+			}
+			if (
+				actualStartDate &&
+				actualEndDate &&
+				actualEndDate <= actualStartDate
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "endDate"],
+								message: `End date must be after start date: ${actualStartDate}.`,
+							},
+						],
+					},
+				});
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
@@ -319,11 +353,17 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					lastUpdatedAt: new Date(),
 				};
 
-				if (actualStartTime !== existingInstance.actualStartTime) {
+				if (actualStartTime !== (existingInstance.actualStartTime ?? null)) {
 					instanceUpdateData.actualStartTime = actualStartTime;
 				}
-				if (actualEndTime !== existingInstance.actualEndTime) {
+				if (actualEndTime !== (existingInstance.actualEndTime ?? null)) {
 					instanceUpdateData.actualEndTime = actualEndTime;
+				}
+				if (actualStartDate !== (existingInstance.actualStartDate ?? null)) {
+					instanceUpdateData.actualStartDate = actualStartDate;
+				}
+				if (actualEndDate !== (existingInstance.actualEndDate ?? null)) {
+					instanceUpdateData.actualEndDate = actualEndDate;
 				}
 
 				const [updatedInstance] = await tx
@@ -361,9 +401,14 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					baseRecurringEventId: existingInstance.baseRecurringEventId,
 					recurrenceRuleId: existingInstance.recurrenceRuleId,
 					originalSeriesId: existingInstance.originalSeriesId,
-					originalInstanceStartTime: existingInstance.originalInstanceStartTime,
-					actualStartTime: updatedInstance.actualStartTime,
-					actualEndTime: updatedInstance.actualEndTime,
+					originalInstanceStartTime:
+						existingInstance.originalInstanceStartTime ?? null,
+					originalInstanceStartDate:
+						existingInstance.originalInstanceStartDate ?? null,
+					actualStartTime: updatedInstance.actualStartTime ?? null,
+					actualEndTime: updatedInstance.actualEndTime ?? null,
+					actualStartDate: updatedInstance.actualStartDate ?? null,
+					actualEndDate: updatedInstance.actualEndDate ?? null,
 					isCancelled: existingInstance.isCancelled,
 					organizationId: existingInstance.organizationId,
 					generatedAt: existingInstance.generatedAt,

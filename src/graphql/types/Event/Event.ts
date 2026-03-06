@@ -61,8 +61,9 @@ Event.implement({
 		}),
 		endAt: t.field({
 			description:
-				"The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.",
+				"The UTC end timestamp for timed events (allDay = false). Null for all-day events — use endDate instead.",
 			type: "DateTime",
+			nullable: true,
 			resolve: (event) =>
 				"actualEndTime" in event ? event.actualEndTime : event.endAt,
 		}),
@@ -77,11 +78,43 @@ Event.implement({
 		}),
 		startAt: t.field({
 			description:
-				"The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.",
+				"The UTC start timestamp for timed events (allDay = false). Null for all-day events — use startDate instead.",
 			type: "DateTime",
-			nullable: false,
+			nullable: true,
 			resolve: (event) =>
 				"actualStartTime" in event ? event.actualStartTime : event.startAt,
+		}),
+		/**
+		 * Inclusive start date for all-day events (date only, no time or timezone).
+		 * Null for timed events — use startAt instead.
+		 */
+		startDate: t.string({
+			description:
+				"Inclusive start date (YYYY-MM-DD) for all-day events (allDay = true). Null for timed events — use startAt instead.",
+			nullable: true,
+			resolve: (event) => {
+				const date =
+					"actualStartDate" in event
+						? (event.actualStartDate ?? null)
+						: ((event as { startDate?: string | null }).startDate ?? null);
+				return date ? escapeHTML(date) : null;
+			},
+		}),
+		/**
+		 * Exclusive end date for all-day events (date only, no time or timezone).
+		 * Null for timed events — use endAt instead.
+		 */
+		endDate: t.string({
+			description:
+				"Exclusive end date (YYYY-MM-DD) for all-day events (allDay = true). e.g. March 1 → March 2 is a one-day event. Null for timed events — use endAt instead.",
+			nullable: true,
+			resolve: (event) => {
+				const date =
+					"actualEndDate" in event
+						? (event.actualEndDate ?? null)
+						: ((event as { endDate?: string | null }).endDate ?? null);
+				return date ? escapeHTML(date) : null;
+			},
 		}),
 		allDay: t.exposeBoolean("allDay", {
 			description:

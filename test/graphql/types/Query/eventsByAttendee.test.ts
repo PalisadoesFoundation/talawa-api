@@ -1639,53 +1639,17 @@ suite("Query field eventsByAttendee", () => {
 			const baseEventId = recurringEventResult.data?.createEvent?.id;
 			assertToBeNonNullish(baseEventId);
 
-			// Volunteer to generate instances
-			const adminVolunteerResult = await mercuriusClient.mutate(
-				Mutation_createEventVolunteer,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							userId: adminUserId,
-							eventId: baseEventId,
-							scope: "ENTIRE_SERIES",
-						},
-					},
-				},
-			);
-			const adminVolunteerId =
-				adminVolunteerResult.data?.createEventVolunteer?.id;
-			assertToBeNonNullish(adminVolunteerId);
-
-			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					id: adminVolunteerId,
-					data: { hasAccepted: true },
-				},
-			});
-
-			// Get all instances
-			const adminEventsResult = await mercuriusClient.query(
-				Query_eventsByVolunteer,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { userId: adminUserId },
-				},
-			);
-			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
-				id: string;
-				name: string;
-				isGenerated?: boolean | null;
-				baseRecurringEventId?: string | null;
-			}>;
-			const instances = adminEvents?.filter(
-				(e) =>
-					e.name === "All Cancelled Template Test" &&
-					e.isGenerated === true &&
-					e.baseRecurringEventId === baseEventId,
-			);
-			expect(instances?.length).toBeGreaterThanOrEqual(3);
+			// Instances are generated at event creation time; verify directly from DB
+			// (avoids 100-item pagination limit when admin has many accumulated volunteer records)
+			const instances =
+				await server.drizzleClient.query.recurringEventInstancesTable.findMany({
+					columns: { id: true },
+					where: eq(
+						recurringEventInstancesTable.baseRecurringEventId,
+						baseEventId,
+					),
+				});
+			expect(instances.length).toBeGreaterThanOrEqual(3);
 
 			// Cancel ALL instances
 			await server.drizzleClient

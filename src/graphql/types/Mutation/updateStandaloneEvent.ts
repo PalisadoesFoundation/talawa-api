@@ -70,8 +70,10 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				ctx.drizzleClient.query.eventsTable.findFirst({
 					columns: {
 						endAt: true,
+						endDate: true,
 						organizationId: true,
 						startAt: true,
+						startDate: true,
 						allDay: true,
 						isPublic: true,
 						isRegisterable: true,
@@ -122,9 +124,11 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
+			// For timed events: validate that updated endAt doesn't precede existing startAt
 			if (
 				isNotNullish(parsedArgs.input.endAt) &&
 				!isNotNullish(parsedArgs.input.startAt) &&
+				existingEvent.startAt &&
 				parsedArgs.input.endAt <= existingEvent.startAt
 			) {
 				throw new TalawaGraphQLError({
@@ -140,9 +144,11 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
+			// For timed events: validate that updated startAt doesn't exceed existing endAt
 			if (
 				!isNotNullish(parsedArgs.input.endAt) &&
 				isNotNullish(parsedArgs.input.startAt) &&
+				existingEvent.endAt &&
 				parsedArgs.input.startAt >= existingEvent.endAt
 			) {
 				throw new TalawaGraphQLError({
@@ -152,6 +158,46 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 							{
 								argumentPath: ["input", "startAt"],
 								message: `Must be smaller than the value: ${existingEvent.endAt.toISOString()}.`,
+							},
+						],
+					},
+				});
+			}
+
+			// For all-day events: validate that updated endDate doesn't precede existing startDate
+			if (
+				isNotNullish(parsedArgs.input.endDate) &&
+				!isNotNullish(parsedArgs.input.startDate) &&
+				existingEvent.startDate &&
+				parsedArgs.input.endDate <= existingEvent.startDate
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "endDate"],
+								message: `Must be greater than the value: ${existingEvent.startDate}.`,
+							},
+						],
+					},
+				});
+			}
+
+			// For all-day events: validate that updated startDate doesn't exceed existing endDate
+			if (
+				!isNotNullish(parsedArgs.input.endDate) &&
+				isNotNullish(parsedArgs.input.startDate) &&
+				existingEvent.endDate &&
+				parsedArgs.input.startDate >= existingEvent.endDate
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "startDate"],
+								message: `Must be smaller than the value: ${existingEvent.endDate}.`,
 							},
 						],
 					},
@@ -186,18 +232,106 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 			if (parsedArgs.input.description !== undefined) {
 				updateData.description = parsedArgs.input.description;
 			}
-			if (parsedArgs.input.endAt !== undefined) {
-				updateData.endAt = parsedArgs.input.endAt;
-			}
 			if (parsedArgs.input.name !== undefined) {
 				updateData.name = parsedArgs.input.name;
 			}
-			if (parsedArgs.input.startAt !== undefined) {
-				updateData.startAt = parsedArgs.input.startAt;
+			if (parsedArgs.input.location !== undefined) {
+				updateData.location = parsedArgs.input.location;
 			}
+
+			// Handle event type changes (only if explicitly provided)
 			if (parsedArgs.input.allDay !== undefined) {
 				updateData.allDay = parsedArgs.input.allDay;
+				// When switching event type, clear the opposing fields
+				if (parsedArgs.input.allDay === true) {
+					updateData.startAt = null;
+					updateData.endAt = null;
+				} else {
+					updateData.startDate = null;
+					updateData.endDate = null;
+				}
 			}
+
+			// Determine the effective event type (explicit update or preserve existing)
+			const effectiveAllDay =
+				parsedArgs.input.allDay !== undefined
+					? parsedArgs.input.allDay
+					: existingEvent.allDay;
+
+			// Validate that correct date/time fields are provided for event type
+			if (effectiveAllDay === true) {
+				// All-day events require startDate and endDate
+				if (
+					parsedArgs.input.allDay === true ||
+					parsedArgs.input.startDate !== undefined ||
+					parsedArgs.input.endDate !== undefined
+				) {
+					// If explicitly setting to all-day or providing date fields, validate
+					if (
+						parsedArgs.input.startDate === undefined &&
+						parsedArgs.input.endDate === undefined
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input"],
+										message:
+											"All-day events require startDate and endDate fields, not startAt/endAt",
+									},
+								],
+							},
+						});
+					}
+				}
+			} else {
+				// Timed events require startAt and endAt
+				if (
+					parsedArgs.input.allDay === false ||
+					parsedArgs.input.startAt !== undefined ||
+					parsedArgs.input.endAt !== undefined
+				) {
+					// If explicitly setting to timed or providing timestamp fields, validate
+					if (
+						parsedArgs.input.startAt === undefined &&
+						parsedArgs.input.endAt === undefined
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input"],
+										message:
+											"Timed events require startAt and endAt fields, not startDate/endDate",
+									},
+								],
+							},
+						});
+					}
+				}
+			}
+
+			// Set date/time fields based on event type
+			if (effectiveAllDay === true) {
+				// All-day event: only set date fields
+				if (parsedArgs.input.startDate !== undefined) {
+					updateData.startDate = parsedArgs.input.startDate;
+				}
+				if (parsedArgs.input.endDate !== undefined) {
+					updateData.endDate = parsedArgs.input.endDate;
+				}
+			} else {
+				// Timed event: only set timestamp fields
+				if (parsedArgs.input.startAt !== undefined) {
+					updateData.startAt = parsedArgs.input.startAt;
+				}
+				if (parsedArgs.input.endAt !== undefined) {
+					updateData.endAt = parsedArgs.input.endAt;
+				}
+			}
+
 			if (parsedArgs.input.isPublic !== undefined) {
 				updateData.isPublic = parsedArgs.input.isPublic;
 			}
@@ -206,9 +340,6 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 			}
 			if (parsedArgs.input.isInviteOnly !== undefined) {
 				updateData.isInviteOnly = parsedArgs.input.isInviteOnly;
-			}
-			if (parsedArgs.input.location !== undefined) {
-				updateData.location = parsedArgs.input.location;
 			}
 
 			// Validate final event visibility state after update

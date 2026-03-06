@@ -1,4 +1,4 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, isNotNull, lt, or } from "drizzle-orm";
 import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -178,9 +178,23 @@ export async function cleanupOldGeneratedInstances(
 			.where(
 				and(
 					eq(recurringEventInstancesTable.organizationId, organizationId),
-					lt(
-						recurringEventInstancesTable.actualEndTime,
-						windowConfig.retentionStartDate,
+					or(
+						// For timed events: check actualEndTime
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndTime),
+							lt(
+								recurringEventInstancesTable.actualEndTime,
+								windowConfig.retentionStartDate,
+							),
+						),
+						// For all-day events: check actualEndDate
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndDate),
+							lt(
+								recurringEventInstancesTable.actualEndDate,
+								windowConfig.retentionStartDate.toISOString().slice(0, 10),
+							),
+						),
 					),
 				),
 			);
@@ -250,9 +264,23 @@ export async function getCleanupStats(
 			.findMany({
 				where: and(
 					eq(recurringEventInstancesTable.organizationId, organizationId),
-					lt(
-						recurringEventInstancesTable.actualEndTime,
-						windowConfig.retentionStartDate,
+					or(
+						// For timed events: check actualEndTime
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndTime),
+							lt(
+								recurringEventInstancesTable.actualEndTime,
+								windowConfig.retentionStartDate,
+							),
+						),
+						// For all-day events: check actualEndDate
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndDate),
+							lt(
+								recurringEventInstancesTable.actualEndDate,
+								windowConfig.retentionStartDate.toISOString().slice(0, 10),
+							),
+						),
 					),
 				),
 				columns: { id: true },

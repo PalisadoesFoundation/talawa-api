@@ -12,7 +12,7 @@ suite("community query", () => {
 		const communityId = faker.string.uuid();
 		await server.drizzleClient.insert(communitiesTable).values({
 			id: communityId,
-			name: "Test community",
+			name: `Test community ${faker.string.uuid()}`,
 		});
 
 		const response = await mercuriusClient.query(Query_community);

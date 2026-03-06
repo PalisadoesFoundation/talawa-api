@@ -29,6 +29,8 @@ const MockEvent = {
 	isInviteOnly: false,
 	location: "Test Location",
 	isRecurringEventTemplate: false,
+	startDate: null,
+	endDate: null,
 	attachments: [],
 };
 

@@ -550,11 +550,51 @@ export async function insertCollections(
 								id: string;
 								createdAt: string | number | Date;
 								updatedAt: string | number | Date;
-								startAt: string | number | Date;
-								endAt: string | number | Date;
+								startAt: string | number | Date | null;
+								endAt: string | number | Date | null;
+								startDate?: string;
+								endDate?: string;
+								allDay?: boolean;
 							},
 							index: number,
 						) => {
+							// For all-day events, generate fresh dates relative to now
+							if (event.allDay) {
+								const createdAt = new Date(
+									now.getFullYear(),
+									now.getMonth(),
+									now.getDate() + index,
+									1,
+									0,
+									0,
+								);
+
+								// Generate startDate and endDate in YYYY-MM-DD format
+								// For all-day events, we'll create single-day events
+								const eventDate = new Date(
+									now.getFullYear(),
+									now.getMonth(),
+									now.getDate() + index,
+								);
+								const startDate = eventDate.toISOString().slice(0, 10);
+
+								// endDate is exclusive, so add 1 day
+								const endDateObj = new Date(eventDate);
+								endDateObj.setDate(endDateObj.getDate() + 1);
+								const endDate = endDateObj.toISOString().slice(0, 10);
+
+								return {
+									...event,
+									createdAt,
+									startAt: null,
+									endAt: null,
+									startDate,
+									endDate,
+									updatedAt: null,
+								};
+							}
+
+							// For timed events, generate timestamps
 							const start = new Date(
 								now.getFullYear(),
 								now.getMonth(),
@@ -563,7 +603,6 @@ export async function insertCollections(
 								0,
 								0,
 							);
-
 							const end = new Date(start.getTime() + 2 * 24 * 60 * 60 * 1000);
 
 							return {

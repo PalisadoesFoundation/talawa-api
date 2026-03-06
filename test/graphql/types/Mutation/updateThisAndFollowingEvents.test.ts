@@ -589,6 +589,8 @@ test("should handle all-day event updates", async () => {
 				input: {
 					id: targetInstanceId,
 					allDay: true,
+					startDate: "2024-02-05",
+					endDate: "2024-02-05",
 				},
 			},
 		},
@@ -708,7 +710,7 @@ test("should properly update the old recurrence rule end date", async () => {
 
 	expect(updatedOldRule).toBeDefined();
 	expect(updatedOldRule?.recurrenceEndDate).toEqual(
-		new Date(targetInstance.actualStartTime.getTime() - 1),
+		new Date((targetInstance.actualStartTime?.getTime() ?? 0) - 1),
 	);
 });
 

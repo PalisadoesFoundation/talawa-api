@@ -158,7 +158,8 @@ builder.queryField("eventsByVolunteer", (t) =>
 
 				let baseEventsInfo: {
 					id: string;
-					startAt: Date;
+					startAt: Date | null;
+					startDate: string | null;
 					isRecurringEventTemplate: boolean;
 				}[] = [];
 
@@ -167,6 +168,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 						columns: {
 							id: true,
 							startAt: true,
+							startDate: true,
 							isRecurringEventTemplate: true,
 						},
 						where: inArray(eventsTable.id, baseEventIdsToCheck),
@@ -196,18 +198,28 @@ builder.queryField("eventsByVolunteer", (t) =>
 						} else {
 							// Volunteer record thinks it's standalone/instance-specific but no instance ID?
 							// Treat as single event occurrence?
+							const templateStartMs = info.startAt
+								? info.startAt.getTime()
+								: info.startDate
+									? new Date(`${info.startDate}T00:00:00.000Z`).getTime()
+									: 0;
 							eventReferences.push({
 								id: info.id,
-								startTime: new Date(info.startAt).getTime(),
+								startTime: templateStartMs,
 								secondaryId: info.id,
 							});
 						}
 					} else {
 						// It is a Standalone Event (or just not a template).
 						// Treat as an individual event outcome.
+						const standaloneStartMs = info.startAt
+							? info.startAt.getTime()
+							: info.startDate
+								? new Date(`${info.startDate}T00:00:00.000Z`).getTime()
+								: 0;
 						eventReferences.push({
 							id: info.id,
-							startTime: new Date(info.startAt).getTime(),
+							startTime: standaloneStartMs,
 							secondaryId: info.id,
 						});
 					}
@@ -218,7 +230,11 @@ builder.queryField("eventsByVolunteer", (t) =>
 					const instances =
 						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
 							{
-								columns: { id: true, actualStartTime: true },
+								columns: {
+									id: true,
+									actualStartTime: true,
+									actualStartDate: true,
+								},
 								where: and(
 									inArray(recurringEventInstancesTable.id, specificInstanceIds),
 									eq(recurringEventInstancesTable.isCancelled, false),
@@ -226,9 +242,14 @@ builder.queryField("eventsByVolunteer", (t) =>
 							},
 						);
 					for (const i of instances) {
+						const specificInstanceMs = i.actualStartTime
+							? i.actualStartTime.getTime()
+							: i.actualStartDate
+								? new Date(`${i.actualStartDate}T00:00:00.000Z`).getTime()
+								: 0;
 						eventReferences.push({
 							id: i.id,
-							startTime: new Date(i.actualStartTime).getTime(),
+							startTime: specificInstanceMs,
 							secondaryId: i.id,
 						});
 					}
@@ -245,6 +266,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 								columns: {
 									id: true,
 									actualStartTime: true,
+									actualStartDate: true,
 									baseRecurringEventId: true,
 								},
 								where: and(
@@ -268,9 +290,14 @@ builder.queryField("eventsByVolunteer", (t) =>
 						if (i.baseRecurringEventId) {
 							foundBaseIds.add(i.baseRecurringEventId);
 						}
+						const templateInstanceMs = i.actualStartTime
+							? i.actualStartTime.getTime()
+							: i.actualStartDate
+								? new Date(`${i.actualStartDate}T00:00:00.000Z`).getTime()
+								: 0;
 						eventReferences.push({
 							id: i.id,
-							startTime: new Date(i.actualStartTime).getTime(),
+							startTime: templateInstanceMs,
 							secondaryId: i.id,
 						});
 					}
@@ -315,9 +342,14 @@ builder.queryField("eventsByVolunteer", (t) =>
 						// Retrieve info from baseEventsInfo
 						const info = baseEventsInfo.find((e) => e.id === templateId);
 						if (info) {
+							const fallbackStartMs = info.startAt
+								? info.startAt.getTime()
+								: info.startDate
+									? new Date(`${info.startDate}T00:00:00.000Z`).getTime()
+									: 0;
 							eventReferences.push({
 								id: info.id,
-								startTime: new Date(info.startAt).getTime(),
+								startTime: fallbackStartMs,
 								secondaryId: info.id,
 							});
 						}

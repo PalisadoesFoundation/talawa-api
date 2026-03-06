@@ -1,6 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
+	check,
+	date,
 	index,
 	pgTable,
 	text,
@@ -45,12 +47,23 @@ export const eventsTable = pgTable(
 		description: text("description"),
 		/**
 		 * Date time at the time the event ends at.
+		 * Used only for timed events (allDay = false).
+		 * Always stored in UTC as a timestamp with timezone.
+		 * Must be null if allDay = true.
 		 */
 		endAt: timestamp("end_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).notNull(),
+		}),
+
+		/**
+		 * Exclusive end date for all-day events (date only, no time or timezone).
+		 * For example, March 1 to March 2 represents a one-day event.
+		 * Used only for all-day events (allDay = true).
+		 * Must be null if allDay = false.
+		 */
+		endDate: date("end_date"),
 		/**
 		 * Primary unique identifier of the event.
 		 */
@@ -70,12 +83,21 @@ export const eventsTable = pgTable(
 			}),
 		/**
 		 * Date time at the time the event starts at.
+		 * Used only for timed events (allDay = false).
+		 * Always stored in UTC as a timestamp with timezone.
+		 * Must be null if allDay = true.
 		 */
 		startAt: timestamp("start_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).notNull(),
+		}),
+		/**
+		 * Inclusive start date for all-day events (date only, no time or timezone).
+		 * Used only for all-day events (allDay = true).
+		 * Must be null if allDay = false.
+		 */
+		startDate: date("start_date"),
 		/**
 		 * Indicates if the event spans the entire day.
 		 */
@@ -124,15 +146,34 @@ export const eventsTable = pgTable(
 			.default(false),
 	},
 	(self) => ({
+		// Check constraint to enforce allDay field consistency
+		// If allDay = true: startDate and endDate must be set, startAt and endAt must be null
+		// If allDay = false: startAt and endAt must be set, startDate and endDate must be null
+		allDayConsistencyCheck: check(
+			"all_day_consistency_check",
+			sql`
+				CASE
+					WHEN ${self.allDay} = true THEN
+						${self.startDate} IS NOT NULL AND ${self.endDate} IS NOT NULL
+						AND ${self.startAt} IS NULL AND ${self.endAt} IS NULL
+					WHEN ${self.allDay} = false THEN
+						${self.startAt} IS NOT NULL AND ${self.endAt} IS NOT NULL
+						AND ${self.startDate} IS NULL AND ${self.endDate} IS NULL
+					ELSE false
+				END = true
+			`,
+		),
 		// Existing indexes with better naming
 		createdAtIdx: index("events_created_at_idx").on(self.createdAt),
 		creatorIdIdx: index("events_creator_id_idx").on(self.creatorId),
 		endAtIdx: index("events_end_at_idx").on(self.endAt),
+		endDateIdx: index("events_end_date_idx").on(self.endDate),
 		nameIdx: index("events_name_idx").on(self.name),
 		organizationIdIdx: index("events_organization_id_idx").on(
 			self.organizationId,
 		),
 		startAtIdx: index("events_start_at_idx").on(self.startAt),
+		startDateIdx: index("events_start_date_idx").on(self.startDate),
 		allDayIdx: index("events_all_day_idx").on(self.allDay),
 		isInviteOnlyIdx: index("events_is_invite_only_idx").on(self.isInviteOnly),
 		isPublicIdx: index("events_is_public_idx").on(self.isPublic),
@@ -206,6 +247,26 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	isPublic: (schema) => schema.optional(),
 	isRegisterable: (schema) => schema.optional(),
 	location: (schema) => schema.min(1).max(EVENT_LOCATION_MAX_LENGTH).optional(),
+	// Timed event fields (used when allDay = false)
+	startAt: (schema) => schema.optional(),
+	endAt: (schema) => schema.optional(),
+	// All-day event fields (used when allDay = true)
+	startDate: (schema) => schema.optional(),
+	endDate: (schema) => schema.optional(),
 	// Recurring event fields validation
 	isRecurringEventTemplate: z.boolean().optional(),
-});
+}).refine(
+	(data) => {
+		// If allDay is true, startDate and endDate must be present
+		if (data.allDay === true) {
+			return data.startDate !== undefined && data.endDate !== undefined;
+		}
+		// If allDay is false or undefined (defaults to false), startAt and endAt must be present
+		return data.startAt !== undefined && data.endAt !== undefined;
+	},
+	{
+		message:
+			"If allDay=true, startDate and endDate must be provided. If allDay=false, startAt and endAt must be provided.",
+		path: ["allDay"],
+	},
+);

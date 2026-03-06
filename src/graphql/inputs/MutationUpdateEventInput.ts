@@ -6,11 +6,13 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 export const mutationUpdateEventInputSchema = z
 	.object({
 		description: eventsTableInsertSchema.shape.description.optional(),
-		endAt: eventsTableInsertSchema.shape.endAt.optional(),
+		endAt: z.date().optional(),
+		startAt: z.date().optional(),
+		startDate: z.string().date().optional(),
+		endDate: z.string().date().optional(),
+		allDay: z.boolean().optional(),
 		id: eventsTableInsertSchema.shape.id.unwrap(),
 		name: eventsTableInsertSchema.shape.name.optional(),
-		startAt: eventsTableInsertSchema.shape.startAt.optional(),
-		allDay: eventsTableInsertSchema.shape.allDay.optional(),
 		isInviteOnly: eventsTableInsertSchema.shape.isInviteOnly.optional(),
 		isPublic: eventsTableInsertSchema.shape.isPublic.optional(),
 		isRegisterable: eventsTableInsertSchema.shape.isRegisterable.optional(),
@@ -23,6 +25,7 @@ export const mutationUpdateEventInputSchema = z
 				message: "At least one optional argument must be provided.",
 			});
 		}
+		// Validate timed event: if both startAt and endAt are provided, endAt must be after startAt
 		if (
 			isNotNullish(remainingArg.endAt) &&
 			isNotNullish(remainingArg.startAt) &&
@@ -32,6 +35,18 @@ export const mutationUpdateEventInputSchema = z
 				code: "custom",
 				message: `Must be greater than the value: ${remainingArg.startAt.toISOString()}.`,
 				path: ["endAt"],
+			});
+		}
+		// Validate all-day event: if both startDate and endDate are provided, endDate must be after startDate
+		if (
+			isNotNullish(remainingArg.endDate) &&
+			isNotNullish(remainingArg.startDate) &&
+			remainingArg.endDate <= remainingArg.startDate
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: `Must be greater than the value: ${remainingArg.startDate}.`,
+				path: ["endDate"],
 			});
 		}
 	});
@@ -47,8 +62,24 @@ export const MutationUpdateEventInput = builder
 				description: "Custom information about the event.",
 			}),
 			endAt: t.field({
-				description: "Date time at the time the event ends at.",
+				description:
+					"UTC timestamp at the time the timed event ends. Only applicable when allDay is false.",
 				type: "DateTime",
+			}),
+			startAt: t.field({
+				description:
+					"UTC timestamp at the time the timed event starts. Only applicable when allDay is false.",
+				type: "DateTime",
+			}),
+			startDate: t.string({
+				description:
+					"Inclusive start date for all-day events (YYYY-MM-DD). Only applicable when allDay is true.",
+				required: false,
+			}),
+			endDate: t.string({
+				description:
+					"Exclusive end date for all-day events (YYYY-MM-DD). Only applicable when allDay is true.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the event.",
@@ -57,12 +88,9 @@ export const MutationUpdateEventInput = builder
 			name: t.string({
 				description: "Name of the event.",
 			}),
-			startAt: t.field({
-				description: "Date time at the time the event starts at.",
-				type: "DateTime",
-			}),
 			allDay: t.boolean({
-				description: "Indicates if the event spans the entire day.",
+				description:
+					"If true, converts the event to all-day (requires startDate/endDate). If false, converts to timed (requires startAt/endAt).",
 			}),
 			isInviteOnly: t.boolean({
 				description: "Indicates if the event is invite-only",

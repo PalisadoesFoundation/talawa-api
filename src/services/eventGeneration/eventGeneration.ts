@@ -1,4 +1,4 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, isNotNull, isNull, lte, or } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -121,11 +121,15 @@ export async function generateInstancesForRecurringEvent(
 				normalizedEndDate:
 					normalizedRecurrenceRule.recurrenceEndDate?.toISOString(),
 				firstOccurrence:
-					occurrences[0]?.originalStartTime.toISOString() ?? null,
+					occurrences[0]?.originalStartTime?.toISOString() ??
+					occurrences[0]?.originalStartDate ??
+					null,
 				lastOccurrence:
 					occurrences[
 						occurrences.length - 1
-					]?.originalStartTime.toISOString() ?? null,
+					]?.originalStartTime?.toISOString() ??
+					occurrences[occurrences.length - 1]?.originalStartDate ??
+					null,
 				expectedCount: preservedOriginalCount
 					? `Should create exactly ${preservedOriginalCount} occurrences`
 					: "No count limit",
@@ -185,9 +189,12 @@ export async function generateInstancesForRecurringEvent(
  */
 async function createNewGeneratedInstances(
 	occurrences: Array<{
-		originalStartTime: Date;
-		actualStartTime: Date;
-		actualEndTime: Date;
+		originalStartTime: Date | null;
+		actualStartTime: Date | null;
+		actualEndTime: Date | null;
+		originalStartDate: string | null;
+		actualStartDate: string | null;
+		actualEndDate: string | null;
 		isCancelled: boolean;
 		sequenceNumber: number;
 		totalCount: number | null;
@@ -205,6 +212,18 @@ async function createNewGeneratedInstances(
 		return 0;
 	}
 
+	// Detect whether occurrences are all-day (no timestamps)
+	const isAllDay = occurrences[0]?.originalStartTime === null;
+
+	// Helper: derive a unique dedup key per occurrence
+	const occurrenceKey = (o: {
+		originalStartTime: Date | null;
+		originalStartDate: string | null;
+	}): string =>
+		o.originalStartTime
+			? o.originalStartTime.toISOString()
+			: (o.originalStartDate ?? "");
+
 	// Filter out existing instances
 	const existingInstances =
 		await drizzleClient.query.recurringEventInstancesTable.findMany({
@@ -213,26 +232,54 @@ async function createNewGeneratedInstances(
 					recurringEventInstancesTable.baseRecurringEventId,
 					baseRecurringEventId,
 				),
-				gte(
-					recurringEventInstancesTable.originalInstanceStartTime,
-					windowStartDate,
-				),
-				lte(
-					recurringEventInstancesTable.originalInstanceStartTime,
-					windowEndDate,
-				),
+				isAllDay
+					? and(
+							isNull(recurringEventInstancesTable.originalInstanceStartTime),
+							or(
+								and(
+									gte(
+										recurringEventInstancesTable.originalInstanceStartDate,
+										windowStartDate.toISOString().slice(0, 10),
+									),
+									lte(
+										recurringEventInstancesTable.originalInstanceStartDate,
+										windowEndDate.toISOString().slice(0, 10),
+									),
+								),
+							),
+						)
+					: and(
+							isNotNull(recurringEventInstancesTable.originalInstanceStartTime),
+							gte(
+								recurringEventInstancesTable.originalInstanceStartTime,
+								windowStartDate,
+							),
+							lte(
+								recurringEventInstancesTable.originalInstanceStartTime,
+								windowEndDate,
+							),
+						),
 			),
-			columns: { originalInstanceStartTime: true },
+			columns: {
+				originalInstanceStartTime: true,
+				originalInstanceStartDate: true,
+			},
 		});
 
 	const existingTimes = new Set(
-		existingInstances.map((i: { originalInstanceStartTime: Date }) =>
-			i.originalInstanceStartTime.toISOString(),
+		existingInstances.map(
+			(i: {
+				originalInstanceStartTime: Date | null;
+				originalInstanceStartDate: string | null;
+			}) =>
+				i.originalInstanceStartTime
+					? i.originalInstanceStartTime.toISOString()
+					: (i.originalInstanceStartDate ?? ""),
 		),
 	);
 
 	const newOccurrences = occurrences.filter(
-		(o) => !existingTimes.has(o.originalStartTime.toISOString()),
+		(o) => !existingTimes.has(occurrenceKey(o)),
 	);
 
 	if (newOccurrences.length === 0) {
@@ -249,8 +296,11 @@ async function createNewGeneratedInstances(
 			recurrenceRuleId,
 			originalSeriesId: originalSeriesId,
 			originalInstanceStartTime: occurrence.originalStartTime,
+			originalInstanceStartDate: occurrence.originalStartDate,
 			actualStartTime: occurrence.actualStartTime,
 			actualEndTime: occurrence.actualEndTime,
+			actualStartDate: occurrence.actualStartDate,
+			actualEndDate: occurrence.actualEndDate,
 			organizationId,
 			isCancelled: occurrence.isCancelled,
 			sequenceNumber: occurrence.sequenceNumber,

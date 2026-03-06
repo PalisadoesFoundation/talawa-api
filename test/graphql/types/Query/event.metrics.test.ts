@@ -61,6 +61,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -227,6 +229,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -247,6 +251,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -313,6 +319,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -371,6 +379,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -426,6 +436,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -494,6 +506,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -543,6 +557,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -601,6 +617,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -659,6 +677,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -718,6 +738,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "standalone" as const,
 			};
@@ -780,6 +802,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "generated" as const, // Recurring event instance uses 'generated' type
 			};
@@ -841,6 +865,8 @@ describe("Query event - Performance Tracking", () => {
 				createdAt: new Date(),
 				updatedAt: null,
 				isRecurringEventTemplate: false,
+				startDate: null,
+				endDate: null,
 				attachments: [],
 				eventType: "generated" as const, // Generated = recurring instance
 			};

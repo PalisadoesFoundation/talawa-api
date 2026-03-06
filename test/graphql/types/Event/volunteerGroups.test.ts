@@ -23,6 +23,8 @@ const mockEvent = {
 	isInviteOnly: false,
 	updaterId: null,
 	isRecurringEventTemplate: false,
+	startDate: null,
+	endDate: null,
 	attachments: [],
 };
 

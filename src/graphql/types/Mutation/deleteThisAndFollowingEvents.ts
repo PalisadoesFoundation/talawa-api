@@ -71,6 +71,9 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 						actualStartTime: true,
 						actualEndTime: true,
 						originalInstanceStartTime: true,
+						actualStartDate: true,
+						actualEndDate: true,
+						originalInstanceStartDate: true,
 						baseRecurringEventId: true,
 						isCancelled: true,
 						recurrenceRuleId: true,
@@ -179,10 +182,27 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
+				// Determine if this is an all-day event
+				const isAllDay = existingInstance.baseRecurringEvent.allDay;
+
+				// Validate required fields based on event type
+				if (!isAllDay && !existingInstance.actualStartTime) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+							message: "Timed event instance missing actualStartTime.",
+						},
+					});
+				}
+
 				// Calculate the new end date (just before this instance)
-				const newEndDate = new Date(
-					existingInstance.actualStartTime.getTime() - 1,
-				);
+				const newEndDate = isAllDay
+					? new Date(
+							new Date(
+								`${existingInstance.actualStartDate}T00:00:00.000Z`,
+							).getTime() - 1,
+						)
+					: new Date((existingInstance.actualStartTime?.getTime() ?? 0) - 1);
 
 				// Update the recurrence rule to end just before this instance
 				await tx
@@ -195,6 +215,17 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 						eq(recurrenceRulesTable.id, existingInstance.recurrenceRuleId),
 					);
 
+				// Build query condition based on event type
+				const startCondition = isAllDay
+					? gte(
+							recurringEventInstancesTable.actualStartDate,
+							existingInstance.actualStartDate ?? "1970-01-01",
+						)
+					: gte(
+							recurringEventInstancesTable.actualStartTime,
+							existingInstance.actualStartTime ?? new Date(),
+						);
+
 				// First, get all instances that will be deleted to clean up their exceptions
 				const instancesToDelete = await tx
 					.select({ id: recurringEventInstancesTable.id })
@@ -205,10 +236,7 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 								recurringEventInstancesTable.originalSeriesId,
 								existingInstance.originalSeriesId,
 							),
-							gte(
-								recurringEventInstancesTable.actualStartTime,
-								existingInstance.actualStartTime,
-							),
+							startCondition,
 						),
 					);
 
@@ -239,10 +267,7 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 								recurringEventInstancesTable.originalSeriesId,
 								existingInstance.originalSeriesId,
 							),
-							gte(
-								recurringEventInstancesTable.actualStartTime,
-								existingInstance.actualStartTime,
-							),
+							startCondition,
 						),
 					);
 

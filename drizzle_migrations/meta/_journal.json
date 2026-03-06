@@ -176,6 +176,13 @@
       "when": 1771356819876,
       "tag": "20260217193339_quick_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1772364566301,
+      "tag": "20260301112926_chunky_penance",
+      "breakpoints": true
     }
   ]
 }
