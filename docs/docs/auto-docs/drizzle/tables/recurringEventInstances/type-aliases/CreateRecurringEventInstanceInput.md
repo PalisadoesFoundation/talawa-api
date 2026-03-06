@@ -6,25 +6,41 @@
 
 > **CreateRecurringEventInstanceInput** = `object`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:343](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L343)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:376](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L376)
 
 Input type for creating new recurring event instances.
 
 ## Properties
 
-### actualEndTime
+### actualEndDate?
 
-> **actualEndTime**: `Date`
+> `optional` **actualEndDate**: `string` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:349](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L349)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:387](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L387)
 
 ***
 
-### actualStartTime
+### actualEndTime?
 
-> **actualStartTime**: `Date`
+> `optional` **actualEndTime**: `Date` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:348](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L348)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:383](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L383)
+
+***
+
+### actualStartDate?
+
+> `optional` **actualStartDate**: `string` \| `null`
+
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:386](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L386)
+
+***
+
+### actualStartTime?
+
+> `optional` **actualStartTime**: `Date` \| `null`
+
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:382](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L382)
 
 ***
 
@@ -32,7 +48,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:348](https://github.c
 
 > **baseRecurringEventId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:344](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L344)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:377](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L377)
 
 ***
 
@@ -40,7 +56,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:344](https://github.c
 
 > `optional` **isCancelled**: `boolean`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:351](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L351)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:389](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L389)
 
 ***
 
@@ -48,15 +64,23 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:351](https://github.c
 
 > **organizationId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:350](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L350)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:388](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L388)
 
 ***
 
-### originalInstanceStartTime
+### originalInstanceStartDate?
 
-> **originalInstanceStartTime**: `Date`
+> `optional` **originalInstanceStartDate**: `string` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:347](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L347)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:385](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L385)
+
+***
+
+### originalInstanceStartTime?
+
+> `optional` **originalInstanceStartTime**: `Date` \| `null`
+
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:381](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L381)
 
 ***
 
@@ -64,7 +88,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:347](https://github.c
 
 > **originalSeriesId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:346](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L346)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:379](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L379)
 
 ***
 
@@ -72,7 +96,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:346](https://github.c
 
 > **recurrenceRuleId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:345](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L345)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:378](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L378)
 
 ***
 
@@ -80,7 +104,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:345](https://github.c
 
 > **sequenceNumber**: `number`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:352](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L352)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:390](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L390)
 
 ***
 
@@ -88,4 +112,4 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:352](https://github.c
 
 > `optional` **totalCount**: `number` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:353](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L353)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:391](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L391)

@@ -4,7 +4,7 @@
 
 # Interface: ResolveInstanceInput
 
-Defined in: [src/services/eventGeneration/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L65)
+Defined in: [src/services/eventGeneration/types.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L70)
 
 Input for resolving instance with inheritance
 
@@ -14,7 +14,7 @@ Input for resolving instance with inheritance
 
 > **baseTemplate**: [`EventTemplateWithAttachments`](../type-aliases/EventTemplateWithAttachments.md)
 
-Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L67)
+Defined in: [src/services/eventGeneration/types.ts:72](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L72)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventGeneration/types.ts:67](https://github.com/Palisa
 
 > `optional` **exception**: `object`
 
-Defined in: [src/services/eventGeneration/types.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L68)
+Defined in: [src/services/eventGeneration/types.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L73)
 
 #### createdAt
 
@@ -62,15 +62,23 @@ Defined in: [src/services/eventGeneration/types.ts:68](https://github.com/Palisa
 
 > **generatedInstance**: `object`
 
-Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L66)
+Defined in: [src/services/eventGeneration/types.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L71)
+
+#### actualEndDate
+
+> **actualEndDate**: `string` \| `null`
 
 #### actualEndTime
 
-> **actualEndTime**: `Date`
+> **actualEndTime**: `Date` \| `null`
+
+#### actualStartDate
+
+> **actualStartDate**: `string` \| `null`
 
 #### actualStartTime
 
-> **actualStartTime**: `Date`
+> **actualStartTime**: `Date` \| `null`
 
 #### baseRecurringEventId
 
@@ -96,9 +104,13 @@ Defined in: [src/services/eventGeneration/types.ts:66](https://github.com/Palisa
 
 > **organizationId**: `string`
 
+#### originalInstanceStartDate
+
+> **originalInstanceStartDate**: `string` \| `null`
+
 #### originalInstanceStartTime
 
-> **originalInstanceStartTime**: `Date`
+> **originalInstanceStartTime**: `Date` \| `null`
 
 #### originalSeriesId
 

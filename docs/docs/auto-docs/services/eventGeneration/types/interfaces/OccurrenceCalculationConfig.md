@@ -34,7 +34,11 @@ Defined in: [src/services/eventGeneration/types.ts:36](https://github.com/Palisa
 
 #### endAt
 
-> **endAt**: `Date`
+> **endAt**: `Date` \| `null`
+
+#### endDate
+
+> **endDate**: `string` \| `null`
 
 #### id
 
@@ -70,7 +74,11 @@ Defined in: [src/services/eventGeneration/types.ts:36](https://github.com/Palisa
 
 #### startAt
 
-> **startAt**: `Date`
+> **startAt**: `Date` \| `null`
+
+#### startDate
+
+> **startDate**: `string` \| `null`
 
 #### updatedAt
 
