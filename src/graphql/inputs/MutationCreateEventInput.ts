@@ -21,7 +21,6 @@ export const mutationCreateEventInputSchema = z
 			.min(1)
 			.max(EVENT_DESCRIPTION_MAX_LENGTH)
 			.optional(),
-		name: sanitizedStringSchema.min(1).max(EVENT_NAME_MAX_LENGTH),
 		attachments: fileMetadataInputSchema.array().min(1).max(20).optional(),
 		allDay: z.boolean().optional(),
 		isInviteOnly: z.boolean().optional(),
