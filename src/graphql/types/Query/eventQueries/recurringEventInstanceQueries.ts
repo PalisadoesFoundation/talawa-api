@@ -21,6 +21,7 @@ import {
 	resolveMultipleInstances,
 } from "~/src/services/eventGeneration/instanceResolver";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Defines the input parameters for querying recurring event instances.
@@ -75,15 +76,17 @@ export async function getRecurringEventInstancesInDateRange(
 
 	// Defensive validation for limit and offset parameters
 	if (limit !== undefined && limit < 1) {
-		throw new Error(
-			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
-		);
+		throw new TalawaGraphQLError({
+			message: `Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
+			extensions: { code: "unexpected" },
+		});
 	}
 
 	if (offset !== undefined && offset < 0) {
-		throw new Error(
-			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
-		);
+		throw new TalawaGraphQLError({
+			message: `Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
+			extensions: { code: "unexpected" },
+		});
 	}
 
 	try {
@@ -221,9 +224,10 @@ export async function getRecurringEventInstanceById(
 		});
 
 		if (!baseTemplateResult) {
-			throw new Error(
-				`Base template not found: ${instance.baseRecurringEventId}`,
-			);
+			throw new TalawaGraphQLError({
+				message: `Base template not found: ${instance.baseRecurringEventId}`,
+				extensions: { code: "unexpected" },
+			});
 		}
 
 		// Map attachment relation to standard field
@@ -328,15 +332,17 @@ export async function getRecurringEventInstancesByBaseIds(
 
 	// Defensive validation for limit and offset parameters
 	if (limit !== undefined && limit < 1) {
-		throw new Error(
-			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
-		);
+		throw new TalawaGraphQLError({
+			message: `Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
+			extensions: { code: "unexpected" },
+		});
 	}
 
 	if (offset !== undefined && offset < 0) {
-		throw new Error(
-			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
-		);
+		throw new TalawaGraphQLError({
+			message: `Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
+			extensions: { code: "unexpected" },
+		});
 	}
 
 	const effectiveLimit = limit ?? DEFAULT_LIMIT;

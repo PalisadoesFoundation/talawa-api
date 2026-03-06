@@ -4,6 +4,8 @@ import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
  * The main method for the cleanup worker, which processes all organizations
@@ -209,9 +211,10 @@ export async function cleanupSpecificOrganization(
 		});
 
 	if (!windowConfig) {
-		throw new Error(
-			`No materialization window found for organization ${organizationId}`,
-		);
+		throw new TalawaRestError({
+			code: ErrorCode.NOT_FOUND,
+			message: `No materialization window found for organization ${organizationId}`,
+		});
 	}
 
 	const instancesDeleted = await cleanupOrganizationInstances(

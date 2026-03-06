@@ -2,6 +2,8 @@ import { and, eq, isNotNull, lt, or } from "drizzle-orm";
 import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import type { ServiceDependencies, WindowManagerConfig } from "./types";
 
 /**
@@ -30,7 +32,10 @@ export async function initializeGenerationWindow(
 			logger.error(
 				`Failed to insert and return Generation window for organization ${input.organizationId}`,
 			);
-			throw new Error("Failed to initialize Generation window.");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Failed to initialize Generation window.",
+			});
 		}
 
 		logger.info(
@@ -111,9 +116,10 @@ export async function extendGenerationWindow(
 			});
 
 		if (!windowConfig) {
-			throw new Error(
-				`No Generation window found for organization ${organizationId}`,
-			);
+			throw new TalawaRestError({
+				code: ErrorCode.NOT_FOUND,
+				message: `No Generation window found for organization ${organizationId}`,
+			});
 		}
 
 		const newEndDate = new Date(windowConfig.currentWindowEndDate);

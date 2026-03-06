@@ -7,8 +7,8 @@ import {
 	recurringEventInstancesTable,
 	recurringEventInstancesTableInsertSchema,
 } from "~/src/drizzle/tables/recurringEventInstances";
-
 import { normalizeRecurrenceRule } from "~/src/utilities/recurringEvent";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { calculateInstanceOccurrences } from "./occurrenceCalculator";
 import type { GenerateInstancesInput, ServiceDependencies } from "./types";
 
@@ -69,9 +69,10 @@ export async function generateInstancesForRecurringEvent(
 				{ baseTemplate: !!baseTemplate, recurrenceRule: !!recurrenceRule },
 				`Base template or recurrence rule not found for ${baseRecurringEventId}`,
 			);
-			throw new Error(
-				`Base template or recurrence rule not found: ${baseRecurringEventId}`,
-			);
+			throw new TalawaGraphQLError({
+				message: `Base template or recurrence rule not found: ${baseRecurringEventId}`,
+				extensions: { code: "unexpected" },
+			});
 		}
 
 		// For initial generation, we don't need existing exceptions
@@ -144,9 +145,10 @@ export async function generateInstancesForRecurringEvent(
 				{ recurrenceRuleId: recurrenceRule.id },
 				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
 			);
-			throw new Error(
-				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
-			);
+			throw new TalawaGraphQLError({
+				message: `Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
+				extensions: { code: "unexpected" },
+			});
 		}
 
 		// Filter out existing instances and create new ones
