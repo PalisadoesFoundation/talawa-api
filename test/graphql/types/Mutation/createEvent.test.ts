@@ -436,7 +436,12 @@ suite("Mutation field createEvent", () => {
 					mimetype: "image/png", // Valid mime type but invalid object structure for Upload scalar
 					encoding: "7bit",
 				},
-			];
+			] as unknown as Array<{
+				objectName: string;
+				name: string;
+				mimeType: "IMAGE_JPEG";
+				fileHash: string;
+			}>;
 
 			const invalidResult = await createEvent({
 				input: {
@@ -1151,7 +1156,7 @@ suite("Mutation field createEvent", () => {
 				const attachments = Array.from({ length: attachmentCount }).map(
 					(_, i) => ({
 						objectName: `test${i + 1}.jpg`,
-						mimeType: "IMAGE_JPEG",
+						mimeType: "IMAGE_JPEG" as const,
 						name: `test${i + 1}.jpg`,
 						fileHash: `a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b${i}`,
 					}),

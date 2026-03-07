@@ -685,7 +685,7 @@ suite("Mutation field updateUser", () => {
 				const fakeAvatarMetadata = {
 					fileHash:
 						"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-					mimeType: "VIDEO_MP4",
+					mimeType: "VIDEO_MP4" as const,
 					name: "avatar.mp4",
 					objectName: "avatar-object-name",
 				};
@@ -1225,7 +1225,7 @@ suite("Mutation field updateUser", () => {
 					const avatarInput = {
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-						mimeType: "IMAGE_JPEG",
+						mimeType: "IMAGE_JPEG" as const,
 						name: "test.jpg",
 						objectName: "minio-object-id",
 					};
@@ -1299,7 +1299,7 @@ suite("Mutation field updateUser", () => {
 					const avatarInput = {
 						fileHash:
 							"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-						mimeType: "IMAGE_JPEG",
+						mimeType: "IMAGE_JPEG" as const,
 						name: "test.jpg",
 						objectName: "minio-object-id",
 					};

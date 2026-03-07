@@ -306,9 +306,7 @@ suite("windowManager", () => {
 							isNotNull(recurringEventInstancesTable.actualEndDate),
 							lt(
 								recurringEventInstancesTable.actualEndDate,
-								mockWindowConfig.retentionStartDate
-									.toISOString()
-									.slice(0, 10),
+								mockWindowConfig.retentionStartDate.toISOString().slice(0, 10),
 							),
 						),
 					),
@@ -505,9 +503,7 @@ suite("windowManager", () => {
 							isNotNull(recurringEventInstancesTable.actualEndDate),
 							lt(
 								recurringEventInstancesTable.actualEndDate,
-								mockWindowConfig.retentionStartDate
-									.toISOString()
-									.slice(0, 10),
+								mockWindowConfig.retentionStartDate.toISOString().slice(0, 10),
 							),
 						),
 					),
