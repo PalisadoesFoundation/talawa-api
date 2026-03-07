@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, isNotNull, lt, or } from "drizzle-orm";
 import { afterEach, expect, type Mock, suite, test, vi } from "vitest";
 import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
@@ -294,9 +294,23 @@ suite("windowManager", () => {
 			expect(mockDeleteChain.where).toHaveBeenCalledWith(
 				and(
 					eq(recurringEventInstancesTable.organizationId, mockOrganizationId),
-					lt(
-						recurringEventInstancesTable.actualEndTime,
-						mockWindowConfig.retentionStartDate,
+					or(
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndTime),
+							lt(
+								recurringEventInstancesTable.actualEndTime,
+								mockWindowConfig.retentionStartDate,
+							),
+						),
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndDate),
+							lt(
+								recurringEventInstancesTable.actualEndDate,
+								mockWindowConfig.retentionStartDate
+									.toISOString()
+									.slice(0, 10),
+							),
+						),
 					),
 				),
 			);
@@ -479,9 +493,23 @@ suite("windowManager", () => {
 			).toHaveBeenCalledWith({
 				where: and(
 					eq(recurringEventInstancesTable.organizationId, mockOrganizationId),
-					lt(
-						recurringEventInstancesTable.actualEndTime,
-						mockWindowConfig.retentionStartDate,
+					or(
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndTime),
+							lt(
+								recurringEventInstancesTable.actualEndTime,
+								mockWindowConfig.retentionStartDate,
+							),
+						),
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndDate),
+							lt(
+								recurringEventInstancesTable.actualEndDate,
+								mockWindowConfig.retentionStartDate
+									.toISOString()
+									.slice(0, 10),
+							),
+						),
 					),
 				),
 				columns: { id: true },

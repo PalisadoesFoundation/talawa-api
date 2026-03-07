@@ -107,9 +107,6 @@ builder.queryField("eventsByCreator", (t) =>
 				});
 			}
 
-			// Calculate effective window for fetching
-			const effectiveWindow = offset + limit;
-
 			try {
 				// Helper to get sort time for events (handles both timed and all-day)
 				const getEventSortTime = (event: EventWithAttachments): number => {
@@ -135,9 +132,8 @@ builder.queryField("eventsByCreator", (t) =>
 						with: {
 							attachmentsWhereEvent: true,
 						},
-						// Note: Cannot reliably order by startAt since it's null for all-day events
-						// Will sort in-memory after fetching all events
-						limit: effectiveWindow,
+						// Note: Cannot reliably order by startAt since it's null for all-day events.
+						// All events are fetched and sorted in-memory for correctness.
 					});
 
 				// Transform standalone events to unified format
@@ -168,7 +164,7 @@ builder.queryField("eventsByCreator", (t) =>
 						baseRecurringEventIds,
 						ctx.drizzleClient,
 						ctx.log,
-						{ limit: effectiveWindow, includeCancelled: false },
+						{ includeCancelled: false },
 					);
 
 					// Transform instances to unified format
@@ -198,7 +194,6 @@ builder.queryField("eventsByCreator", (t) =>
 						paginatedCount: paginatedEvents.length,
 						standaloneFetched: standaloneEvents.length,
 						recurringInstancesFetched,
-						effectiveWindow,
 					},
 					"Retrieved events by creator",
 				);
