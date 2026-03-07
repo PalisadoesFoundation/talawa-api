@@ -100,8 +100,8 @@ describe("src/drizzle/tables/events.ts", () => {
 					expect(eventsTable.endAt.columnType).toBe("PgTimestamp");
 				});
 
-				it("should be not null", () => {
-					expect(eventsTable.endAt.notNull).toBe(true);
+				it("should be nullable", () => {
+					expect(eventsTable.endAt.notNull).toBe(false);
 				});
 			});
 
@@ -133,8 +133,8 @@ describe("src/drizzle/tables/events.ts", () => {
 					expect(eventsTable.startAt.columnType).toBe("PgTimestamp");
 				});
 
-				it("should be not null", () => {
-					expect(eventsTable.startAt.notNull).toBe(true);
+				it("should be nullable", () => {
+					expect(eventsTable.startAt.notNull).toBe(false);
 				});
 			});
 

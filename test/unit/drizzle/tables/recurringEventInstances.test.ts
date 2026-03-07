@@ -48,9 +48,9 @@ describe("recurringEventInstancesTable definition", () => {
 		expect(columns.baseRecurringEventId.notNull).toBe(true);
 		expect(columns.recurrenceRuleId.notNull).toBe(true);
 		expect(columns.originalSeriesId.notNull).toBe(true);
-		expect(columns.originalInstanceStartTime.notNull).toBe(true);
-		expect(columns.actualStartTime.notNull).toBe(true);
-		expect(columns.actualEndTime.notNull).toBe(true);
+		expect(columns.originalInstanceStartTime.notNull).toBe(false);
+		expect(columns.actualStartTime.notNull).toBe(false);
+		expect(columns.actualEndTime.notNull).toBe(false);
 		expect(columns.isCancelled.notNull).toBe(true);
 		expect(columns.organizationId.notNull).toBe(true);
 		expect(columns.generatedAt.notNull).toBe(true);
