@@ -313,11 +313,11 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 
 				// Truncate the old recurrence rule to end just before this instance.
 				// For all-day: use midnight UTC of the start date. For timed: subtract 1 ms.
+				// Note: the guards above guarantee actualStartDate/actualStartTime are non-null
+				// before we reach here; the `as Date` cast reflects that invariant.
 				const splitEndDate = oldIsAllDay
-					? new Date(
-							`${existingInstance.actualStartDate ?? new Date().toISOString().split("T")[0]}T00:00:00.000Z`,
-						)
-					: new Date((existingInstance.actualStartTime?.getTime() ?? 0) - 1);
+					? new Date(`${existingInstance.actualStartDate}T00:00:00.000Z`)
+					: new Date((existingInstance.actualStartTime as Date).getTime() - 1);
 
 				await tx
 					.update(recurrenceRulesTable)

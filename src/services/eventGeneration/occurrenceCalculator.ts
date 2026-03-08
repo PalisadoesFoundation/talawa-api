@@ -49,27 +49,6 @@ export function calculateInstanceOccurrences(
 	}
 
 	// Anchor date: midnight UTC for all-day events, actual Date for timed events
-	if (isAllDay && !baseEvent.startDate) {
-		logger.warn(
-			{
-				baseEventId: baseEvent.id,
-				startDate: baseEvent.startDate,
-			},
-			"All-day base event missing startDate",
-		);
-		return [];
-	}
-	if (!isAllDay && !baseEvent.startAt) {
-		logger.warn(
-			{
-				baseEventId: baseEvent.id,
-				startAt: baseEvent.startAt,
-			},
-			"Timed base event missing startAt",
-		);
-		return [];
-	}
-
 	const anchorDate = isAllDay
 		? new Date(`${baseEvent.startDate}T00:00:00.000Z`)
 		: baseEvent.startAt;
@@ -289,7 +268,7 @@ function createOccurrenceFromDate(
 		let isCancelled = false;
 
 		// Check for all-day exceptions by date key
-		const exception = context.exceptionsByTime.get(startDateStr);
+		const exception = context.exceptionsByTime.get(currentDate.toISOString());
 		if (exception?.exceptionData) {
 			const exceptionData = exception.exceptionData as Record<string, unknown>;
 			if (exceptionData.startDate)
