@@ -265,4 +265,89 @@ describe("MutationCreateEventInput Schema", () => {
 		});
 		expect(result.success).toBe(false);
 	});
+
+	// All-day event validation tests (allDay = true branch of superRefine)
+	it("all-day validation - should reject allDay:true when startDate is missing", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "All-Day Event",
+			allDay: true,
+			endDate: "2024-01-02",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("startDate");
+		}
+	});
+
+	it("all-day validation - should reject allDay:true when endDate is missing", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "All-Day Event",
+			allDay: true,
+			startDate: "2024-01-01",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("endDate");
+		}
+	});
+
+	it("all-day validation - should reject allDay:true when endDate is not greater than startDate", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "All-Day Event",
+			allDay: true,
+			startDate: "2024-01-05",
+			endDate: "2024-01-05",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const endDateIssue = result.error.issues.find(
+				(i) => i.path.join(".") === "endDate",
+			);
+			expect(endDateIssue).toBeDefined();
+			expect(endDateIssue?.message).toContain("2024-01-05");
+		}
+	});
+
+	it("all-day validation - should accept allDay:true with valid startDate and endDate", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "All-Day Event",
+			allDay: true,
+			startDate: "2024-01-01",
+			endDate: "2024-01-02",
+		});
+		expect(result.success).toBe(true);
+	});
+
+	// Timed event validation tests (else branch of superRefine)
+	it("timed validation - should reject when startAt is missing", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "Timed Event",
+			endAt: new Date("2024-01-01T12:00:00Z"),
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("startAt");
+		}
+	});
+
+	it("timed validation - should reject when endAt is missing", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "Timed Event",
+			startAt: new Date("2024-01-01T10:00:00Z"),
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("endAt");
+		}
+	});
 });
