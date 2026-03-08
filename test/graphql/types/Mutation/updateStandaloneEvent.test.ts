@@ -741,6 +741,268 @@ suite("Mutation field updateStandaloneEvent", () => {
 					originalEventFindFirst;
 			}
 		});
+
+		test("should return an error when only endDate is provided and it is not greater than existing startDate", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockEvent = {
+				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				startDate: "2024-12-05",
+				endDate: "2024-12-07",
+				startAt: null,
+				endAt: null,
+			};
+
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockEvent);
+
+			try {
+				// Provide endDate equal to existingEvent.startDate (triggers <= check)
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								endDate: "2024-12-05", // equal to existing startDate
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "endDate"],
+										message: expect.stringContaining(
+											"Must be greater than the value",
+										),
+									}),
+								]),
+							}),
+							path: ["updateStandaloneEvent"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
+
+		test("should return an error when only startDate is provided and it is not smaller than existing endDate", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockEvent = {
+				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				startDate: "2024-12-05",
+				endDate: "2024-12-07",
+				startAt: null,
+				endAt: null,
+			};
+
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockEvent);
+
+			try {
+				// Provide startDate equal to existingEvent.endDate (triggers >= check)
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								startDate: "2024-12-07", // equal to existing endDate
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "startDate"],
+										message: expect.stringContaining(
+											"Must be smaller than the value",
+										),
+									}),
+								]),
+							}),
+							path: ["updateStandaloneEvent"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
+
+		test("should return an error when allDay is set to true without providing startDate and endDate", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			// Existing event is a timed event
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				);
+
+			try {
+				// Send allDay: true but omit startDate and endDate
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								allDay: true,
+								// No startDate or endDate provided
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input"],
+										message: expect.stringContaining(
+											"All-day events require startDate and endDate fields",
+										),
+									}),
+								]),
+							}),
+							path: ["updateStandaloneEvent"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
+
+		test("should return an error when allDay is set to false without providing startAt and endAt", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			// Existing event is an all-day event
+			const allDayMockEvent = {
+				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				startAt: null,
+				endAt: null,
+				startDate: "2024-12-05",
+				endDate: "2024-12-06",
+				allDay: true,
+			};
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(allDayMockEvent);
+
+			try {
+				// Send allDay: false but omit startAt and endAt
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								allDay: false,
+								// No startAt or endAt provided
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input"],
+										message: expect.stringContaining(
+											"Timed events require startAt and endAt fields",
+										),
+									}),
+								]),
+							}),
+							path: ["updateStandaloneEvent"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
 	});
 
 	suite("when update operation fails unexpectedly", () => {
@@ -1248,6 +1510,184 @@ suite("Mutation field updateStandaloneEvent", () => {
 						isInviteOnly: false,
 					}),
 				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+				server.drizzleClient.update = originalUpdate;
+			}
+		});
+
+		test("should clear startAt and endAt when switching to allDay true", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+			const originalUpdate = server.drizzleClient.update;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			// Existing event is a timed event
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				);
+
+			// Updated event should have allDay true and cleared startAt/endAt
+			const updatedEvent = {
+				id: eventId,
+				name: "Test Standalone Event",
+				description: "A test standalone event",
+				location: "Original Location",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-12-05",
+				endDate: "2024-12-06",
+				allDay: true,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				organizationId: orgId,
+			};
+
+			let capturedSetData: Record<string, unknown> = {};
+			server.drizzleClient.update = vi.fn().mockReturnValue({
+				set: vi.fn().mockImplementation((data) => {
+					capturedSetData = data;
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([updatedEvent]),
+						}),
+					};
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								allDay: true,
+								startDate: "2024-12-05",
+								endDate: "2024-12-06",
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateStandaloneEvent).toEqual(
+					expect.objectContaining({
+						id: eventId,
+						allDay: true,
+					}),
+				);
+				// Verify that startAt and endAt were explicitly set to null
+				expect(capturedSetData).toMatchObject({
+					allDay: true,
+					startAt: null,
+					endAt: null,
+				});
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+				server.drizzleClient.update = originalUpdate;
+			}
+		});
+
+		test("should clear startDate and endDate when switching to allDay false", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+			const originalUpdate = server.drizzleClient.update;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			// Existing event is an all-day event
+			const allDayMockEvent = {
+				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				startAt: null,
+				endAt: null,
+				startDate: "2024-12-05",
+				endDate: "2024-12-06",
+				allDay: true,
+			};
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(allDayMockEvent);
+
+			// Updated event should have allDay false and cleared startDate/endDate
+			const updatedEvent = {
+				id: eventId,
+				name: "Test Standalone Event",
+				description: "A test standalone event",
+				location: "Original Location",
+				startAt: new Date("2024-12-05T10:00:00Z"),
+				endAt: new Date("2024-12-05T12:00:00Z"),
+				startDate: null,
+				endDate: null,
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				organizationId: orgId,
+			};
+
+			let capturedSetData: Record<string, unknown> = {};
+			server.drizzleClient.update = vi.fn().mockReturnValue({
+				set: vi.fn().mockImplementation((data) => {
+					capturedSetData = data;
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([updatedEvent]),
+						}),
+					};
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								allDay: false,
+								startAt: "2024-12-05T10:00:00Z",
+								endAt: "2024-12-05T12:00:00Z",
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateStandaloneEvent).toEqual(
+					expect.objectContaining({
+						id: eventId,
+						allDay: false,
+					}),
+				);
+				// Verify that startDate and endDate were explicitly set to null
+				expect(capturedSetData).toMatchObject({
+					allDay: false,
+					startDate: null,
+					endDate: null,
+				});
 			} finally {
 				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
 				server.drizzleClient.query.eventsTable.findFirst =
