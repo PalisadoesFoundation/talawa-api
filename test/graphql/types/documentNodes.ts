@@ -3127,3 +3127,62 @@ export const Query_getPlugins = gql(`
     }
   }
 `);
+
+export const Query_eventsByVolunteer = gql(`
+  query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
+    eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
+      id
+      name
+      description
+      startAt
+      endAt
+      location
+      allDay
+      isPublic
+      isRegisterable
+      isInviteOnly
+      isGenerated
+      baseRecurringEventId
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Query_eventsByVolunteerWithAttachments = gql(`
+  query Query_eventsByVolunteerWithAttachments($userId: ID!) {
+    eventsByVolunteer(userId: $userId) {
+      id
+      name
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Query_eventsByAttendee = gql(`
+	query Query_eventsByAttendee($userId: ID!, $limit: Int, $offset: Int) {
+		eventsByAttendee(userId: $userId, limit: $limit, offset: $offset) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+			isGenerated
+			baseRecurringEventId
+		}
+	}
+`);

@@ -536,5 +536,201 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 
 			expect(remainingInstances).toHaveLength(0);
 		});
+
+		test("should return unexpected error when timed instance is missing actualStartTime", async () => {
+			const organizationId = await createOrganizationAndGetId(authToken);
+
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data?.signIn?.user);
+			const adminUserId = adminSignIn.data.signIn.user.id;
+
+			// Create a timed (allDay=false) template
+			const [template] = await server.drizzleClient
+				.insert(eventsTable)
+				.values({
+					name: "Timed Weekly Event",
+					organizationId,
+					creatorId: adminUserId,
+					isRecurringEventTemplate: true,
+					allDay: false,
+					startAt: new Date("2024-01-01T10:00:00Z"),
+					endAt: new Date("2024-01-01T11:00:00Z"),
+					isPublic: true,
+					isRegisterable: false,
+				})
+				.returning();
+			assertToBeNonNullish(template);
+
+			const originalSeriesId = faker.string.uuid();
+			const [recurrenceRule] = await server.drizzleClient
+				.insert(recurrenceRulesTable)
+				.values({
+					baseRecurringEventId: template.id,
+					originalSeriesId,
+					recurrenceStartDate: new Date("2024-01-01"),
+					recurrenceEndDate: new Date("2024-12-31"),
+					frequency: "WEEKLY",
+					interval: 1,
+					organizationId,
+					creatorId: adminUserId,
+					recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+					latestInstanceDate: new Date("2024-01-01"),
+				})
+				.returning();
+			assertToBeNonNullish(recurrenceRule);
+
+			// Insert a timed instance with actualStartTime explicitly null
+			const [instance] = await server.drizzleClient
+				.insert(recurringEventInstancesTable)
+				.values({
+					baseRecurringEventId: template.id,
+					recurrenceRuleId: recurrenceRule.id,
+					originalSeriesId,
+					organizationId,
+					originalInstanceStartTime: new Date("2024-01-01T10:00:00Z"),
+					actualStartTime: null,
+					actualEndTime: null,
+					sequenceNumber: 1,
+				})
+				.returning();
+			assertToBeNonNullish(instance);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: instance.id } },
+				},
+			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+		});
+
+		test("should set recurrenceEndDate to midnight-minus-1ms of actualStartDate for all-day events", async () => {
+			const organizationId = await createOrganizationAndGetId(authToken);
+
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data?.signIn?.user);
+			const adminUserId = adminSignIn.data.signIn.user.id;
+
+			// Create an all-day template
+			const [template] = await server.drizzleClient
+				.insert(eventsTable)
+				.values({
+					name: "All-Day Weekly Event",
+					organizationId,
+					creatorId: adminUserId,
+					isRecurringEventTemplate: true,
+					allDay: true,
+					startDate: "2024-03-01",
+					endDate: "2024-03-01",
+					isPublic: true,
+					isRegisterable: false,
+				})
+				.returning();
+			assertToBeNonNullish(template);
+
+			const originalSeriesId = faker.string.uuid();
+			const [recurrenceRule] = await server.drizzleClient
+				.insert(recurrenceRulesTable)
+				.values({
+					baseRecurringEventId: template.id,
+					originalSeriesId,
+					recurrenceStartDate: new Date("2024-03-01"),
+					recurrenceEndDate: new Date("2024-12-31"),
+					frequency: "WEEKLY",
+					interval: 1,
+					organizationId,
+					creatorId: adminUserId,
+					recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+					latestInstanceDate: new Date("2024-03-15"),
+				})
+				.returning();
+			assertToBeNonNullish(recurrenceRule);
+
+			// Insert three all-day instances
+			const instances = await server.drizzleClient
+				.insert(recurringEventInstancesTable)
+				.values([
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: recurrenceRule.id,
+						originalSeriesId,
+						organizationId,
+						originalInstanceStartDate: "2024-03-01",
+						actualStartDate: "2024-03-01",
+						actualEndDate: "2024-03-01",
+						sequenceNumber: 1,
+					},
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: recurrenceRule.id,
+						originalSeriesId,
+						organizationId,
+						originalInstanceStartDate: "2024-03-08",
+						actualStartDate: "2024-03-08",
+						actualEndDate: "2024-03-08",
+						sequenceNumber: 2,
+					},
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: recurrenceRule.id,
+						originalSeriesId,
+						organizationId,
+						originalInstanceStartDate: "2024-03-15",
+						actualStartDate: "2024-03-15",
+						actualEndDate: "2024-03-15",
+						sequenceNumber: 3,
+					},
+				])
+				.returning();
+			expect(instances).toHaveLength(3);
+
+			// Target the second instance (2024-03-08)
+			const targetInstance = instances[1];
+			assertToBeNonNullish(targetInstance);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: targetInstance.id } },
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.deleteThisAndFollowingEvents).toBeDefined();
+
+			// Verify recurrenceEndDate was set to midnight-minus-1ms of actualStartDate
+			// i.e. new Date(new Date("2024-03-08T00:00:00.000Z").getTime() - 1)
+			const updatedRule =
+				await server.drizzleClient.query.recurrenceRulesTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.id, recurrenceRule.id),
+				});
+			assertToBeNonNullish(updatedRule);
+			expect(updatedRule.recurrenceEndDate).toEqual(
+				new Date(
+					new Date(
+						`${targetInstance.actualStartDate}T00:00:00.000Z`,
+					).getTime() - 1,
+				),
+			);
+		});
 	});
 });

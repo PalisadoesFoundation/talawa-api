@@ -1,194 +1,23 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
-import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-// Inline query and mutation definitions to avoid coverage issues
-const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
-    signIn(input: $input) {
-        authenticationToken
-        refreshToken
-        user {
-            addressLine1
-            addressLine2
-            birthDate
-            city
-            countryCode
-            createdAt
-            description
-            educationGrade
-            emailAddress
-            employmentStatus
-            homePhoneNumber
-            id
-            isEmailAddressVerified
-            maritalStatus
-            mobilePhoneNumber
-            name
-            natalSex
-            postalCode
-            role
-            state
-            workPhoneNumber
-        }
-    }
-}`);
-
-const Mutation_createOrganization =
-	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
-    createOrganization(input: $input) {
-      id
-      name
-      countryCode
-      isUserRegistrationRequired
-    }
-  }`);
-
-const Mutation_createOrganizationMembership =
-	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
-    createOrganizationMembership(input: $input) {
-      id
-    }
-  }`);
-
-const Mutation_createEvent =
-	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
-    createEvent(input: $input) {
-        id
-        name
-        description
-        startAt
-        endAt
-        createdAt
-        creator{
-            id
-            name
-        }
-        organization {
-            id
-            countryCode
-        }
-    }
-}`);
-
-const Mutation_createEventVolunteer = gql(`
-  mutation Mutation_createEventVolunteer($input: EventVolunteerInput!) {
-    createEventVolunteer(data: $input) {
-      id
-      hasAccepted
-      isPublic
-      hoursVolunteered
-      user {
-        id
-      }
-      event {
-        id
-      }
-    }
-  }
-`);
-
-const Mutation_updateEventVolunteer = gql(`
-  mutation Mutation_updateEventVolunteer($id: ID!, $data: UpdateEventVolunteerInput) {
-    updateEventVolunteer(id: $id, data: $data) {
-      id
-      hasAccepted
-      isPublic
-      hoursVolunteered
-      user {
-        id
-        name
-      }
-      event {
-        id
-        name
-      }
-      creator {
-        id
-        name
-      }
-      updater {
-        id
-        name
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const Mutation_registerEventAttendee = gql(`
-  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
-    registerEventAttendee(data: $data) {
-      id
-      isInvited
-      isRegistered
-      isCheckedIn
-      isCheckedOut
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const Query_eventsByAttendee = gql(`
-	query Query_eventsByAttendee($userId: ID!, $limit: Int, $offset: Int) {
-		eventsByAttendee(userId: $userId, limit: $limit, offset: $offset) {
-			id
-			name
-			description
-			startAt
-			endAt
-			location
-			allDay
-			isPublic
-			isRegisterable
-			isInviteOnly
-			organization {
-				id
-				name
-			}
-			isGenerated
-			baseRecurringEventId
-		}
-	}
-`);
-
-const Query_eventsByVolunteer = gql(`
-query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
-eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
-id
-name
-description
-startAt
-endAt
-location
-allDay
-isPublic
-isRegisterable
-isInviteOnly
-isGenerated
-baseRecurringEventId
-organization {
-id
-name
-}
-}
-}
-`);
+import {
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_registerEventAttendee,
+	Mutation_updateEventVolunteer,
+	Query_eventsByAttendee,
+	Query_eventsByVolunteer,
+	Query_signIn,
+} from "../documentNodes";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -2179,6 +2008,392 @@ suite("Query field eventsByAttendee", () => {
 				(e) => e.id === templateAId && e.isGenerated !== true,
 			);
 			expect(hasTemplateABaseInLaterPage).toBe(false);
+		});
+
+		test("should use startDate when computing sort key for all-day standalone event (startDate branch)", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `AllDay Standalone Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create an all-day standalone event (startAt=null, startDate set)
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "AllDay Standalone Attendee Event",
+							description: "standalone all-day event for startDate branch",
+							organizationId: orgId,
+							allDay: true,
+							startDate: "2028-03-15",
+							endDate: "2028-03-16",
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Register user as attendee
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: { userId, eventId },
+				},
+			});
+
+			// Query: resolver hits record.event.startDate branch since startAt=null
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as
+				| Array<{ id: string; name: string; allDay?: boolean | null }>
+				| undefined;
+			assertToBeNonNullish(events);
+			const found = events.find((e) => e.id === eventId);
+			expect(found).toBeDefined();
+			expect(found?.name).toBe("AllDay Standalone Attendee Event");
+		});
+
+		test("should use actualStartDate when computing sort key for all-day specific recurring instance (actualStartDate branch)", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `AllDay Specific Instance Attendee Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create an all-day recurring event with near-future dates so instances get generated
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "AllDay Specific Instance Attendee",
+							description:
+								"all-day recurring for specific instance attendee test",
+							organizationId: orgId,
+							allDay: true,
+							startDate: "2026-04-01",
+							endDate: "2026-04-02",
+							recurrence: { frequency: "DAILY", count: 3 },
+						},
+					},
+				},
+			);
+			const baseEventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Step 1: admin volunteers ENTIRE_SERIES to trigger instance generation
+			const adminVolResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: baseEventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			const adminVolId = adminVolResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(adminVolId);
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { id: adminVolId, data: { hasAccepted: true } },
+			});
+
+			// Discover an all-day instance ID via the volunteer query
+			const adminQueryResult = await mercuriusClient.query(
+				Query_eventsByVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId: adminUserId },
+				},
+			);
+			const adminEvents = adminQueryResult.data?.eventsByVolunteer as Array<{
+				id: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}>;
+			assertToBeNonNullish(adminEvents);
+			const allDayInstance = adminEvents.find(
+				(e) => e.isGenerated === true && e.baseRecurringEventId === baseEventId,
+			);
+			assertToBeNonNullish(allDayInstance);
+			const instanceId = allDayInstance.id;
+
+			// Step 2: register fresh user as attendee for that specific all-day instance
+			const registerResult = await mercuriusClient.mutate(
+				Mutation_registerEventAttendee,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						data: { userId, recurringEventInstanceId: instanceId },
+					},
+				},
+			);
+			expect(registerResult.errors).toBeUndefined();
+
+			// Query: resolver hits recurringEventInstance.actualStartDate branch
+			// since all-day instance has actualStartTime=null
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as
+				| Array<{ id: string; isGenerated?: boolean | null }>
+				| undefined;
+			assertToBeNonNullish(events);
+			const found = events.find((e) => e.id === instanceId);
+			expect(found).toBeDefined();
+		});
+
+		test("should use actualStartDate when computing sort key for all-day template instances in windowed fetch (actualStartDate branch)", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `AllDay Template Instances Attendee Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create an all-day recurring event with near-future dates so instances get generated
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "AllDay Template Instances Attendee Event",
+							description:
+								"all-day recurring for template instances attendee test",
+							organizationId: orgId,
+							allDay: true,
+							startDate: "2026-05-01",
+							endDate: "2026-05-02",
+							recurrence: { frequency: "DAILY", count: 2 },
+						},
+					},
+				},
+			);
+			const baseEventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Register fresh user as attendee of the TEMPLATE event (entire series)
+			// The resolver will fetch template instances, and since they're all-day
+			// (actualStartTime=null, actualStartDate set), it hits instance.actualStartDate branch
+			const registerResult = await mercuriusClient.mutate(
+				Mutation_registerEventAttendee,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						data: { userId, eventId: baseEventId },
+					},
+				},
+			);
+			expect(registerResult.errors).toBeUndefined();
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as
+				| Array<{
+						id: string;
+						isGenerated?: boolean | null;
+						baseRecurringEventId?: string | null;
+				  }>
+				| undefined;
+			assertToBeNonNullish(events);
+			expect(events.length).toBeGreaterThanOrEqual(1);
+			const relatedEvents = events.filter(
+				(e) => e.baseRecurringEventId === baseEventId || e.id === baseEventId,
+			);
+			expect(relatedEvents.length).toBeGreaterThanOrEqual(1);
+		});
+
+		test("should use startDate when computing sort key for all-day recurring template fallback with no instances (startDate branch)", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `AllDay No Instances Attendee Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a far-future all-day recurring event (no instances generated yet)
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "AllDay Far Future Recurring Attendee Event",
+							description:
+								"far future all-day recurring for fallback startDate attendee branch",
+							organizationId: orgId,
+							allDay: true,
+							startDate: "2040-01-01",
+							endDate: "2040-01-02",
+							recurrence: { frequency: "DAILY", count: 2 },
+						},
+					},
+				},
+			);
+			const baseEventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Register fresh user as attendee of the template (no instances exist)
+			// Fallback returns the base template using record.event.startDate branch
+			const registerResult = await mercuriusClient.mutate(
+				Mutation_registerEventAttendee,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						data: { userId, eventId: baseEventId },
+					},
+				},
+			);
+			expect(registerResult.errors).toBeUndefined();
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as
+				| Array<{ id: string; name: string }>
+				| undefined;
+			assertToBeNonNullish(events);
+			const found = events.find((e) => e.id === baseEventId);
+			expect(found).toBeDefined();
+			expect(found?.name).toBe("AllDay Far Future Recurring Attendee Event");
 		});
 	});
 });

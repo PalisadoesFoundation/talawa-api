@@ -195,14 +195,15 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 					});
 				}
 
-				// Calculate the new end date (just before this instance)
+				// Calculate the new end date (just before this instance).
+				// The guard above guarantees actualStartTime is non-null on the timed path.
 				const newEndDate = isAllDay
 					? new Date(
 							new Date(
 								`${existingInstance.actualStartDate}T00:00:00.000Z`,
 							).getTime() - 1,
 						)
-					: new Date((existingInstance.actualStartTime?.getTime() ?? 0) - 1);
+					: new Date((existingInstance.actualStartTime as Date).getTime() - 1);
 
 				// Update the recurrence rule to end just before this instance
 				await tx
