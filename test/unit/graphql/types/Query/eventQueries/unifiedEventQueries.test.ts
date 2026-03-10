@@ -314,6 +314,79 @@ describe("unifiedEventQueries", () => {
 			expect(result[0]?.id).toBe("no-date-event");
 			expect(result[1]?.id).toBe("dated-event");
 		});
+
+		it("should use id localeCompare when computed times are equal from startAt", async () => {
+			const input = {
+				organizationId: "org-1",
+				startDate: new Date(),
+				endDate: new Date(),
+			};
+
+			const sameStartAt = new Date("2023-01-01T10:00:00Z");
+			const eventB = {
+				id: "b-event",
+				startAt: sameStartAt,
+			};
+			const eventA = {
+				id: "a-event",
+				startAt: sameStartAt,
+			};
+
+			vi.mocked(getStandaloneEventsInDateRange).mockResolvedValueOnce([
+				eventB as unknown as EventWithAttachments,
+				eventA as unknown as EventWithAttachments,
+			]);
+			vi.mocked(getRecurringEventInstancesInDateRange).mockResolvedValueOnce(
+				[],
+			);
+
+			const result = await getUnifiedEventsInDateRange(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toHaveLength(2);
+			expect(result[0]?.id).toBe("a-event");
+			expect(result[1]?.id).toBe("b-event");
+		});
+
+		it("should use id localeCompare when computed times are equal from startDate", async () => {
+			const input = {
+				organizationId: "org-1",
+				startDate: new Date(),
+				endDate: new Date(),
+			};
+
+			const eventZ = {
+				id: "z-event",
+				startAt: null,
+				startDate: "2023-01-05",
+			};
+			const eventM = {
+				id: "m-event",
+				startAt: null,
+				startDate: "2023-01-05",
+			};
+
+			vi.mocked(getStandaloneEventsInDateRange).mockResolvedValueOnce([
+				eventZ as unknown as EventWithAttachments,
+				eventM as unknown as EventWithAttachments,
+			]);
+			vi.mocked(getRecurringEventInstancesInDateRange).mockResolvedValueOnce(
+				[],
+			);
+
+			const result = await getUnifiedEventsInDateRange(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toHaveLength(2);
+			expect(result[0]?.id).toBe("m-event");
+			expect(result[1]?.id).toBe("z-event");
+		});
 	});
 
 	describe("filterInviteOnlyEvents", () => {
