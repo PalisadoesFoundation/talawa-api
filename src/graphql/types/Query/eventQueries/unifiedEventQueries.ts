@@ -5,6 +5,7 @@ import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	type GetRecurringEventInstancesInput,
 	getRecurringEventInstancesByIds,
@@ -313,9 +314,12 @@ export async function getUnifiedEventsInDateRange(
 				if (event.startDate)
 					return new Date(`${event.startDate}T00:00:00.000Z`).getTime();
 				// This should never happen after filtering, but kept as safety
-				throw new Error(
-					`Event ${event.id} is missing both startAt and startDate`,
-				);
+				throw new TalawaGraphQLError({
+					message: `Event ${event.id} is missing both startAt and startDate`,
+					extensions: {
+						code: "unexpected",
+					},
+				});
 			};
 			const aTime = getTime(a);
 			const bTime = getTime(b);
