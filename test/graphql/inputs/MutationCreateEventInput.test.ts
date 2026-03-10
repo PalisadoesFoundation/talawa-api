@@ -350,4 +350,69 @@ describe("MutationCreateEventInput Schema", () => {
 			expect(paths).toContain("endAt");
 		}
 	});
+
+	it("all-day validation - should reject allDay:true when startAt/endAt are also provided", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "All-Day Event",
+			allDay: true,
+			startDate: "2024-01-01",
+			endDate: "2024-01-02",
+			startAt: new Date("2024-01-01T10:00:00Z"),
+			endAt: new Date("2024-01-01T11:00:00Z"),
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("startAt");
+			expect(paths).toContain("endAt");
+		}
+	});
+
+	it("timed validation - should reject when startDate/endDate are also provided", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "Timed Event",
+			startAt: new Date("2024-01-01T10:00:00Z"),
+			endAt: new Date("2024-01-01T11:00:00Z"),
+			startDate: "2024-01-01",
+			endDate: "2024-01-02",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("startDate");
+			expect(paths).toContain("endDate");
+		}
+	});
+
+	it("timed validation - should reject when only startDate is provided with timed fields", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "Timed Event",
+			startAt: new Date("2024-01-01T10:00:00Z"),
+			endAt: new Date("2024-01-01T11:00:00Z"),
+			startDate: "2024-01-01",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("startDate");
+		}
+	});
+
+	it("timed validation - should reject when only endDate is provided with timed fields", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			name: "Timed Event",
+			startAt: new Date("2024-01-01T10:00:00Z"),
+			endAt: new Date("2024-01-01T11:00:00Z"),
+			endDate: "2024-01-02",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const paths = result.error.issues.map((i) => i.path.join("."));
+			expect(paths).toContain("endDate");
+		}
+	});
 });

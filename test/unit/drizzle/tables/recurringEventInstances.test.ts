@@ -171,4 +171,76 @@ describe("recurringEventInstancesTableInsertSchema", () => {
 			expect(issue?.code).toBe("too_small");
 		}
 	});
+
+	it("should validate a valid all-day payload with null timed fields", () => {
+		const allDayPayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date(),
+			actualStartTime: null,
+			actualEndTime: null,
+			actualStartDate: "2025-01-01",
+			actualEndDate: "2025-01-02",
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(allDayPayload);
+
+		expect(result.success).toBe(true);
+	});
+
+	it("should reject mixed-mode payload with all-day dates and timed actual fields", () => {
+		const mixedModePayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date(),
+			actualStartTime: new Date(),
+			actualEndTime: new Date(),
+			actualStartDate: "2025-01-01",
+			actualEndDate: "2025-01-02",
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(mixedModePayload);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const issue = result.error.issues.find(
+				(i) => i.path[0] === "actualStartTime",
+			);
+			expect(issue).toBeDefined();
+		}
+	});
+
+	it("should reject neither-mode payload with no timed or all-day actual fields", () => {
+		const neitherModePayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date(),
+			actualStartTime: null,
+			actualEndTime: null,
+			actualStartDate: null,
+			actualEndDate: null,
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(neitherModePayload);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const issue = result.error.issues.find(
+				(i) => i.path[0] === "actualStartTime",
+			);
+			expect(issue).toBeDefined();
+		}
+	});
 });

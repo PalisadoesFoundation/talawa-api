@@ -279,7 +279,7 @@ describe("unifiedEventQueries", () => {
 			expect(result[1]?.id).toBe("instance-1");
 		});
 
-		it("should fall back to 0 when both startAt and startDate are missing", async () => {
+		it("should filter out and log malformed events missing both startAt and startDate", async () => {
 			const input = {
 				organizationId: "org-1",
 				startDate: new Date(),
@@ -310,9 +310,17 @@ describe("unifiedEventQueries", () => {
 				mockLogger,
 			);
 
-			expect(result).toHaveLength(2);
-			expect(result[0]?.id).toBe("no-date-event");
-			expect(result[1]?.id).toBe("dated-event");
+			// Malformed event should be filtered out, only valid event returned
+			expect(result).toHaveLength(1);
+			expect(result[0]?.id).toBe("dated-event");
+
+			// Should have logged the malformed event
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining("Found 1 malformed events"),
+			);
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining("no-date-event"),
+			);
 		});
 
 		it("should use id localeCompare when computed times are equal from startAt", async () => {

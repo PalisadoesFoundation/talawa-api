@@ -1,4 +1,14 @@
-import { and, asc, eq, gte, inArray, isNotNull, lte, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	eq,
+	gt,
+	gte,
+	inArray,
+	isNotNull,
+	lte,
+	or,
+} from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
@@ -39,11 +49,19 @@ export async function getStandaloneEventsInDateRange(
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 	})[]
 > {
+	const formatLocalYYYYMMDD = (date: Date): string => {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+
+		return `${year}-${month}-${day}`;
+	};
+
 	const { organizationId, startDate, endDate, eventIds, limit = 1000 } = input;
 
 	// Convert Date inputs to YYYY-MM-DD strings for all-day date comparisons
-	const windowStartStr = startDate.toISOString().slice(0, 10);
-	const windowEndStr = endDate.toISOString().slice(0, 10);
+	const windowStartStr = formatLocalYYYYMMDD(startDate);
+	const windowEndStr = formatLocalYYYYMMDD(endDate);
 
 	try {
 		const whereConditions = [
@@ -73,6 +91,7 @@ export async function getStandaloneEventsInDateRange(
 					),
 				),
 				// All-day events: startDate/endDate are not null (string DATE comparisons)
+				// Using half-open interval semantics: [startDate, endDate)
 				and(
 					isNotNull(eventsTable.startDate),
 					or(
@@ -81,15 +100,15 @@ export async function getStandaloneEventsInDateRange(
 							gte(eventsTable.startDate, windowStartStr),
 							lte(eventsTable.startDate, windowEndStr),
 						),
-						// Event ends within range
+						// Event ends within range (endDate is exclusive)
 						and(
-							gte(eventsTable.endDate, windowStartStr),
+							gt(eventsTable.endDate, windowStartStr),
 							lte(eventsTable.endDate, windowEndStr),
 						),
-						// Event spans the entire range
+						// Event spans the entire range (endDate is exclusive)
 						and(
 							lte(eventsTable.startDate, windowStartStr),
-							gte(eventsTable.endDate, windowEndStr),
+							gt(eventsTable.endDate, windowEndStr),
 						),
 					),
 				),

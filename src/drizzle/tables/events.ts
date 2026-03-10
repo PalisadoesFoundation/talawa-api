@@ -257,16 +257,26 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	isRecurringEventTemplate: z.boolean().optional(),
 }).refine(
 	(data) => {
-		// If allDay is true, startDate and endDate must be present
 		if (data.allDay === true) {
-			return data.startDate !== undefined && data.endDate !== undefined;
+			return (
+				data.startDate != null &&
+				data.endDate != null &&
+				data.startAt == null &&
+				data.endAt == null
+			);
 		}
-		// If allDay is false or undefined (defaults to false), startAt and endAt must be present
-		return data.startAt !== undefined && data.endAt !== undefined;
+
+		// allDay false/undefined (defaults to false): timed fields required and date-only fields must be absent.
+		return (
+			data.startAt != null &&
+			data.endAt != null &&
+			data.startDate == null &&
+			data.endDate == null
+		);
 	},
 	{
 		message:
-			"If allDay=true, startDate and endDate must be provided. If allDay=false, startAt and endAt must be provided.",
+			"If allDay=true, provide startDate/endDate only. If allDay=false, provide startAt/endAt only.",
 		path: ["allDay"],
 	},
 );

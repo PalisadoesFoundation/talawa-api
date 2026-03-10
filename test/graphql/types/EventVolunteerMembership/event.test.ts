@@ -378,8 +378,8 @@ describe("VolunteerMembershipEventResolver", () => {
 				context,
 			);
 
-			expect(result.startAt?.getFullYear()).toBe(2025);
-			expect(result.endAt?.getFullYear()).toBe(2025);
+			expect(result.startAt?.getUTCFullYear()).toBe(2025);
+			expect(result.endAt?.getUTCFullYear()).toBe(2025);
 		});
 	});
 });

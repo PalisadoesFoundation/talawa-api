@@ -169,14 +169,14 @@ suite("occurrenceCalculator", () => {
 			}
 		});
 
-		test("uses duration of 1 day when all-day event startDate equals endDate", () => {
+		test("uses duration of 1 day for a one-day all-day event with exclusive endDate", () => {
 			const sameDayEvent = {
 				...mockBaseEvent,
 				allDay: true,
 				startAt: null,
 				endAt: null,
 				startDate: "2025-01-01",
-				endDate: "2025-01-01", // same day — Math.max(1, 0) = 1
+				endDate: "2025-01-02", // exclusive endDate for a one-day all-day event
 			} as unknown as typeof eventsTable.$inferSelect;
 
 			const allDayRule = {
@@ -196,7 +196,7 @@ suite("occurrenceCalculator", () => {
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
 			expect(result).toHaveLength(2);
-			// Each occurrence should span exactly 1 day (minimum)
+			// Each occurrence should span exactly 1 day
 			for (const occurrence of result) {
 				const start = new Date(`${occurrence.actualStartDate}T00:00:00.000Z`);
 				const end = new Date(`${occurrence.actualEndDate}T00:00:00.000Z`);

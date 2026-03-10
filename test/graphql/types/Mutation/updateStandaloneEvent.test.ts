@@ -12,7 +12,7 @@ import {
 } from "../documentNodes";
 
 afterEach(() => {
-	vi.clearAllMocks();
+	vi.restoreAllMocks();
 });
 
 // Helper function to create a test organization
@@ -190,21 +190,23 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock event with regular user as non-admin member
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "regular" });
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, userId, "member"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "regular" });
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(
+				mockStandaloneEvent(eventId, orgId, userId, "member"),
+			);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -232,10 +234,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 	});
@@ -349,24 +347,26 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock event with isPublic=false, isInviteOnly=false
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			mockEvent.isPublic = false;
 			mockEvent.isInviteOnly = false;
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -406,10 +406,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -417,25 +413,26 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			// Mock existing event: isPublic=true, isInviteOnly=false
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			mockEvent.isPublic = true;
 			mockEvent.isInviteOnly = false;
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -473,10 +470,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -484,25 +477,26 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			// Mock existing event: isPublic=false, isInviteOnly=true
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			mockEvent.isPublic = false;
 			mockEvent.isInviteOnly = true;
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -540,10 +534,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -551,25 +541,26 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			// Mock existing legacy invalid event: isPublic=true, isInviteOnly=true
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			mockEvent.isPublic = true;
 			mockEvent.isInviteOnly = true;
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -607,10 +598,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 	});
@@ -621,25 +608,27 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock event with specific timing
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			// Set existing start time to be after the new end time we'll provide
 			mockEvent.startAt = new Date("2024-12-02T15:00:00Z");
 			mockEvent.endAt = new Date("2024-12-02T17:00:00Z");
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -672,10 +661,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -684,25 +669,27 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock event with specific timing
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			// Set existing end time to be before the new start time we'll provide
 			mockEvent.startAt = new Date("2024-12-02T10:00:00Z");
 			mockEvent.endAt = new Date("2024-12-02T12:00:00Z");
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -735,10 +722,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -746,14 +729,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			const mockEvent = {
 				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
@@ -763,11 +744,14 @@ suite("Mutation field updateStandaloneEvent", () => {
 				endAt: null,
 			};
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				// Provide endDate equal to existingEvent.startDate (triggers <= check)
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
@@ -801,10 +785,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -812,14 +792,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			const mockEvent = {
 				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
@@ -829,11 +807,14 @@ suite("Mutation field updateStandaloneEvent", () => {
 				endAt: null,
 			};
 
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
-			try {
+			{
 				// Provide startDate equal to existingEvent.endDate (triggers >= check)
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
@@ -867,10 +848,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -878,23 +855,22 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			// Existing event is a timed event
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockStandaloneEvent(eventId, orgId, "admin-user-id"));
 
-			try {
+			{
 				// Send allDay: true but omit startDate and endDate
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
@@ -929,10 +905,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 
@@ -940,14 +912,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			// Existing event is an all-day event
 			const allDayMockEvent = {
@@ -958,11 +928,14 @@ suite("Mutation field updateStandaloneEvent", () => {
 				endDate: "2024-12-06",
 				allDay: true,
 			};
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(allDayMockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(allDayMockEvent);
 
-			try {
+			{
 				// Send allDay: false but omit startAt and endAt
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
@@ -997,10 +970,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
 			}
 		});
 	});
@@ -1011,23 +980,27 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock successful validation but failed update
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockStandaloneEvent(eventId, orgId, "admin-user-id"));
 
 			// Mock update that returns empty array (which makes updatedEvent undefined)
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([]), // Empty array causes updatedEvent to be undefined
@@ -1035,7 +1008,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1060,11 +1033,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						}),
 					]),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 	});
@@ -1075,20 +1043,19 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock successful scenario
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockStandaloneEvent(eventId, orgId, "admin-user-id"));
 
 			// Mock successful update
 			const updatedEvent = {
@@ -1104,7 +1071,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				organizationId: orgId,
 			};
 
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([updatedEvent]),
@@ -1112,7 +1084,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1141,11 +1113,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						isRegisterable: false,
 					}),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1154,20 +1121,19 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock successful scenario
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockStandaloneEvent(eventId, orgId, "admin-user-id"));
 
 			// Mock successful update
 			const updatedEvent = {
@@ -1183,7 +1149,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				organizationId: orgId,
 			};
 
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([updatedEvent]),
@@ -1191,7 +1162,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1214,11 +1185,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						endAt: "2024-12-02T16:00:00.000Z",
 					}),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1232,20 +1198,21 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock regular user as organization administrator
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "regular" }); // Regular user, not platform admin
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, userId, "administrator"),
-				); // But org admin
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "regular" }); // Regular user, not platform admin
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(
+				mockStandaloneEvent(eventId, orgId, userId, "administrator"),
+			); // But org admin
 
 			// Mock successful update
 			const updatedEvent = {
@@ -1261,7 +1228,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				organizationId: orgId,
 			};
 
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([updatedEvent]),
@@ -1269,7 +1241,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1290,11 +1262,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						name: "Updated by Org Admin",
 					}),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1303,20 +1270,21 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock successful scenario
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
 			// Mock successful update
 			const updatedEvent = {
@@ -1332,7 +1300,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				organizationId: orgId,
 			};
 
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([updatedEvent]),
@@ -1340,7 +1313,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1366,11 +1339,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						]),
 					}),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1379,20 +1347,21 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock successful scenario
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
 			mockEvent.isPublic = false; // Set to false to avoid illegal state
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(mockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockEvent);
 
 			// Mock successful update with isInviteOnly
 			const updatedEvent = {
@@ -1409,7 +1378,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				organizationId: orgId,
 			};
 
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([updatedEvent]),
@@ -1417,7 +1391,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1438,11 +1412,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						isInviteOnly: true,
 					}),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1451,20 +1420,19 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const orgId = await createTestOrganization(adminToken);
 
 			// Mock successful scenario
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
 
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockStandaloneEvent(eventId, orgId, "admin-user-id"));
 
 			// Mock successful update with isInviteOnly set to false
 			const updatedEvent = {
@@ -1481,7 +1449,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				organizationId: orgId,
 			};
 
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
 						returning: vi.fn().mockResolvedValue([updatedEvent]),
@@ -1489,7 +1462,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1510,11 +1483,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 						isInviteOnly: false,
 					}),
 				);
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1522,21 +1490,19 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 			// Existing event is a timed event
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(mockStandaloneEvent(eventId, orgId, "admin-user-id"));
 
 			// Updated event should have allDay true and cleared startAt/endAt
 			const updatedEvent = {
@@ -1556,7 +1522,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 			};
 
 			let capturedSetData: Record<string, unknown> = {};
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockImplementation((data) => {
 					capturedSetData = data;
 					return {
@@ -1567,7 +1538,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1596,11 +1567,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 					startAt: null,
 					endAt: null,
 				});
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
@@ -1608,15 +1574,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalEventFindFirst =
-				server.drizzleClient.query.eventsTable.findFirst;
-			const originalUpdate = server.drizzleClient.update;
-
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({ role: "administrator" });
+			vi.spyOn(
+				server.drizzleClient.query.usersTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue({ role: "administrator" });
 			// Existing event is an all-day event
 			const allDayMockEvent = {
 				...mockStandaloneEvent(eventId, orgId, "admin-user-id"),
@@ -1626,9 +1589,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 				endDate: "2024-12-06",
 				allDay: true,
 			};
-			server.drizzleClient.query.eventsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(allDayMockEvent);
+			vi.spyOn(
+				server.drizzleClient.query.eventsTable as unknown as {
+					findFirst: (...args: unknown[]) => unknown;
+				},
+				"findFirst",
+			).mockResolvedValue(allDayMockEvent);
 
 			// Updated event should have allDay false and cleared startDate/endDate
 			const updatedEvent = {
@@ -1648,7 +1614,12 @@ suite("Mutation field updateStandaloneEvent", () => {
 			};
 
 			let capturedSetData: Record<string, unknown> = {};
-			server.drizzleClient.update = vi.fn().mockReturnValue({
+			vi.spyOn(
+				server.drizzleClient as unknown as {
+					update: (...args: unknown[]) => unknown;
+				},
+				"update",
+			).mockReturnValue({
 				set: vi.fn().mockImplementation((data) => {
 					capturedSetData = data;
 					return {
@@ -1659,7 +1630,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				}),
 			});
 
-			try {
+			{
 				const result = await mercuriusClient.mutate(
 					Mutation_updateStandaloneEvent,
 					{
@@ -1688,11 +1659,6 @@ suite("Mutation field updateStandaloneEvent", () => {
 					startDate: null,
 					endDate: null,
 				});
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.eventsTable.findFirst =
-					originalEventFindFirst;
-				server.drizzleClient.update = originalUpdate;
 			}
 		});
 	});

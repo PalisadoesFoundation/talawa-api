@@ -304,17 +304,32 @@ export function validateResolvedInstance(
 		}
 	}
 
-	// Validate that either timed or all-day fields are present
-	const hasTimedFields =
-		resolvedInstance.actualStartTime !== null &&
-		resolvedInstance.actualStartTime !== undefined;
-	const hasDateFields =
-		resolvedInstance.actualStartDate !== null &&
-		resolvedInstance.actualStartDate !== undefined;
+	const hasActualStartTime = resolvedInstance.actualStartTime != null;
+	const hasActualEndTime = resolvedInstance.actualEndTime != null;
+	const hasActualStartDate = resolvedInstance.actualStartDate != null;
+	const hasActualEndDate = resolvedInstance.actualEndDate != null;
 
-	if (!hasTimedFields && !hasDateFields) {
+	const isValidTimedMode =
+		hasActualStartTime &&
+		hasActualEndTime &&
+		!hasActualStartDate &&
+		!hasActualEndDate;
+
+	const isValidAllDayMode =
+		!hasActualStartTime &&
+		!hasActualEndTime &&
+		hasActualStartDate &&
+		hasActualEndDate;
+
+	if (!isValidTimedMode && !isValidAllDayMode) {
 		logger.error(
-			"Resolved instance missing both actualStartTime and actualStartDate",
+			{
+				actualStartTime: resolvedInstance.actualStartTime,
+				actualEndTime: resolvedInstance.actualEndTime,
+				actualStartDate: resolvedInstance.actualStartDate,
+				actualEndDate: resolvedInstance.actualEndDate,
+			},
+			"Resolved instance must use exactly one complete mode: timed (actualStartTime+actualEndTime only) or all-day (actualStartDate+actualEndDate only)",
 		);
 		return false;
 	}

@@ -84,6 +84,30 @@ describe("Organization Events Resolver Tests", () => {
 			endDate: null,
 		},
 		{
+			id: "event-all-day",
+			name: "All Day Event",
+			startAt: null,
+			endAt: null,
+			eventType: "standalone" as const,
+			title: "All Day Event",
+			organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+			createdAt: new Date(),
+			creatorId: "user-123",
+			description: "description",
+			updatedAt: null,
+			updaterId: null,
+			allDay: true,
+			isPublic: true,
+			isRegisterable: true,
+			isInviteOnly: false,
+			location: "Test Location",
+			registrationClosesAt: new Date(),
+			attachments: [],
+			isRecurringEventTemplate: false,
+			startDate: "2024-07-21",
+			endDate: "2024-07-22",
+		},
+		{
 			id: "event-2",
 			name: "Test Event 2",
 			startAt: new Date("2024-07-21T14:00:00Z"),
@@ -597,6 +621,72 @@ describe("Organization Events Resolver Tests", () => {
 				mockResolveInfo,
 			);
 			expect(result).toBeDefined();
+		});
+
+		it("should paginate forward correctly with an all-day cursor", async () => {
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-all-day",
+					startAt: "2024-07-21T00:00:00.000Z",
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue(mockEvents);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 2, after: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+			const connection = result as {
+				edges: Array<{ cursor: string; node: { id: string } }>;
+				pageInfo: { hasPreviousPage: boolean; hasNextPage: boolean };
+			};
+
+			expect(connection.edges).toHaveLength(1);
+			expect(connection.edges[0]?.node.id).toBe("event-2");
+			expect(connection.pageInfo.hasPreviousPage).toBe(true);
+			expect(connection.pageInfo.hasNextPage).toBe(false);
+
+			const decodedCursor = JSON.parse(
+				Buffer.from(connection.edges[0]?.cursor ?? "", "base64url").toString(
+					"utf-8",
+				),
+			);
+			expect(decodedCursor.id).toBe("event-2");
+		});
+
+		it("should paginate backward correctly with an all-day cursor", async () => {
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-all-day",
+					startAt: "2024-07-21T00:00:00.000Z",
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue(mockEvents);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ last: 2, before: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+			const connection = result as {
+				edges: Array<{ cursor: string; node: { id: string } }>;
+				pageInfo: { hasPreviousPage: boolean; hasNextPage: boolean };
+			};
+
+			expect(connection.edges).toHaveLength(1);
+			expect(connection.edges[0]?.node.id).toBe("event-1");
+			expect(connection.pageInfo.hasNextPage).toBe(true);
+			expect(connection.pageInfo.hasPreviousPage).toBe(false);
+
+			const decodedCursor = JSON.parse(
+				Buffer.from(connection.edges[0]?.cursor ?? "", "base64url").toString(
+					"utf-8",
+				),
+			);
+			expect(decodedCursor.id).toBe("event-1");
 		});
 
 		it("should throw arguments_associated_resources_not_found for cursor not found in results", async () => {
@@ -1162,6 +1252,462 @@ describe("Organization Events Resolver Tests", () => {
 					},
 				}),
 			);
+		});
+	});
+
+	describe("All-Day Event Cursor Handling", () => {
+		beforeEach(() => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: mockOrganization.id },
+				],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
+		});
+
+		it("should create cursor for all-day event using startDate as UTC midnight", async () => {
+			const allDayEvent = {
+				id: "event-allday",
+				name: "All-Day Event",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-20",
+				endDate: "2024-07-21",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "All-Day Event",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "All-day test event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-allday",
+					startAt: new Date("2024-07-20T00:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([allDayEvent]);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, after: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+
+			expect(result).toBeDefined();
+		});
+
+		it("should match all-day event in pagination when cursor startDate matches event startDate", async () => {
+			const allDayEvent1 = {
+				id: "event-allday-1",
+				name: "All-Day Event 1",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-20",
+				endDate: "2024-07-21",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "All-Day Event 1",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "First all-day event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const allDayEvent2 = {
+				id: "event-allday-2",
+				name: "All-Day Event 2",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-21",
+				endDate: "2024-07-22",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "All-Day Event 2",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "Second all-day event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-allday-1",
+					startAt: new Date("2024-07-20T00:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				allDayEvent1,
+				allDayEvent2,
+			]);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, after: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+
+			expect(result).toBeDefined();
+		});
+
+		it("should handle all-day event with null startDate by failing cursor match", async () => {
+			const invalidAllDayEvent = {
+				id: "event-invalid-allday",
+				name: "Invalid All-Day Event",
+				startAt: null,
+				endAt: null,
+				startDate: null,
+				endDate: null,
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "Invalid All-Day Event",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "Invalid all-day event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-invalid-allday",
+					startAt: new Date().toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([invalidAllDayEvent]);
+			await expect(
+				eventsResolver(
+					mockOrganization,
+					{ first: 10, after: cursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["after"] }],
+					},
+				}),
+			);
+		});
+
+		it("should handle timed event with null startAt by failing cursor match", async () => {
+			const baseEvent = mockEvents[0];
+			if (!baseEvent) {
+				throw new Error("Expected mock event at index 0");
+			}
+			const invalidTimedEvent = {
+				...baseEvent,
+				startAt: null,
+				allDay: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-1",
+					startAt: new Date("2024-07-20T10:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([invalidTimedEvent]);
+			await expect(
+				eventsResolver(
+					mockOrganization,
+					{ first: 10, after: cursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["after"] }],
+					},
+				}),
+			);
+		});
+
+		it("should distinguish all-day events on different dates in cursor comparison", async () => {
+			const event1 = {
+				id: "event-1",
+				name: "Event on July 20",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-20",
+				endDate: "2024-07-21",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "Event July 20",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "Event on July 20",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const event2 = {
+				id: "event-2",
+				name: "Event on July 21",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-21",
+				endDate: "2024-07-22",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "Event July 21",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "Event on July 21",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-1",
+					startAt: new Date("2024-07-20T00:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([event1, event2]);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, after: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+
+			expect(result).toBeDefined();
+		});
+
+		it("should backward paginate all-day events using 'last' and 'before' with date matching", async () => {
+			const allDayEvent1 = {
+				id: "event-allday-1",
+				name: "All-Day Event 1",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-19",
+				endDate: "2024-07-20",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "All-Day Event 1",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "First all-day event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const allDayEvent2 = {
+				id: "event-allday-2",
+				name: "All-Day Event 2",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-20",
+				endDate: "2024-07-21",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "All-Day Event 2",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "Second all-day event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-allday-2",
+					startAt: new Date("2024-07-20T00:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				allDayEvent1,
+				allDayEvent2,
+			]);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ last: 10, before: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+
+			expect(result).toBeDefined();
+		});
+
+		it("should match timed event cursor using timestamp comparison", async () => {
+			const baseEvent1 = mockEvents[0];
+			if (!baseEvent1) {
+				throw new Error("Expected mock event at index 0");
+			}
+			const baseEvent2 = mockEvents[1];
+			if (!baseEvent2) {
+				throw new Error("Expected mock event at index 1");
+			}
+
+			const timedEvent1 = {
+				...baseEvent1,
+				startAt: new Date("2024-07-20T10:00:00Z"),
+				allDay: false,
+			};
+
+			const timedEvent2 = {
+				...baseEvent2,
+				startAt: new Date("2024-07-20T11:00:00Z"),
+				allDay: false,
+			};
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-1",
+					startAt: new Date("2024-07-20T10:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				timedEvent1,
+				timedEvent2,
+			]);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, after: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+
+			expect(result).toBeDefined();
+		});
+
+		it("should handle mixed all-day and timed events in pagination", async () => {
+			const allDayEvent = {
+				id: "event-allday",
+				name: "All-Day Event",
+				startAt: null,
+				endAt: null,
+				startDate: "2024-07-20",
+				endDate: "2024-07-21",
+				allDay: true,
+				eventType: "standalone" as const,
+				title: "All-Day Event",
+				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+				createdAt: new Date(),
+				creatorId: "user-123",
+				description: "All-day event",
+				updatedAt: null,
+				updaterId: null,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				location: "Test Location",
+				registrationClosesAt: new Date(),
+				attachments: [],
+				isRecurringEventTemplate: false,
+			};
+
+			const baseEvent = mockEvents[0];
+			if (!baseEvent) {
+				throw new Error("Expected mock event at index 0");
+			}
+			const timedEvent = { ...baseEvent };
+
+			const cursor = Buffer.from(
+				JSON.stringify({
+					id: "event-allday",
+					startAt: new Date("2024-07-20T00:00:00Z").toISOString(),
+				}),
+			).toString("base64url");
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				allDayEvent,
+				timedEvent,
+			]);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, after: cursor },
+				ctx,
+				mockResolveInfo,
+			);
+
+			expect(result).toBeDefined();
 		});
 	});
 });

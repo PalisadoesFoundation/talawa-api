@@ -226,6 +226,17 @@ async function createNewGeneratedInstances(
 			? o.originalStartTime.toISOString()
 			: (o.originalStartDate ?? "");
 
+	const formatUTCYYYYMMDD = (date: Date): string => {
+		const year = date.getUTCFullYear();
+		const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+		const day = String(date.getUTCDate()).padStart(2, "0");
+
+		return `${year}-${month}-${day}`;
+	};
+
+	const windowStartDateStrUTC = formatUTCYYYYMMDD(windowStartDate);
+	const windowEndDateStrUTC = formatUTCYYYYMMDD(windowEndDate);
+
 	// Filter out existing instances
 	const existingInstances =
 		await drizzleClient.query.recurringEventInstancesTable.findMany({
@@ -241,11 +252,11 @@ async function createNewGeneratedInstances(
 								and(
 									gte(
 										recurringEventInstancesTable.originalInstanceStartDate,
-										windowStartDate.toISOString().slice(0, 10),
+										windowStartDateStrUTC,
 									),
 									lte(
 										recurringEventInstancesTable.originalInstanceStartDate,
-										windowEndDate.toISOString().slice(0, 10),
+										windowEndDateStrUTC,
 									),
 								),
 							),

@@ -1,9 +1,10 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -16,8 +17,52 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const createdOrganizationIds = new Set<string>();
+
 // Clean up after each test to prevent state leakage
-afterEach(() => {
+afterEach(async () => {
+	const organizationIds = [...createdOrganizationIds];
+
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurringEventInstancesTable)
+			.where(
+				inArray(recurringEventInstancesTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(recurrenceRulesTable)
+			.where(inArray(recurrenceRulesTable.organizationId, organizationIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.organizationId, organizationIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(eventGenerationWindowsTable)
+			.where(
+				inArray(eventGenerationWindowsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds))
+			.execute();
+
+		createdOrganizationIds.clear();
+	}
+
 	vi.clearAllMocks();
 	mercuriusClient.setHeaders({});
 });
@@ -57,6 +102,7 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	});
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
+	createdOrganizationIds.add(orgId);
 	return orgId;
 }
 
@@ -590,7 +636,7 @@ test("should handle all-day event updates", async () => {
 					id: targetInstanceId,
 					allDay: true,
 					startDate: "2024-02-05",
-					endDate: "2024-02-05",
+					endDate: "2024-02-06",
 				},
 			},
 		},

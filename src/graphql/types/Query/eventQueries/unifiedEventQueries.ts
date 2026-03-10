@@ -287,13 +287,35 @@ export async function getUnifiedEventsInDateRange(
 			allEvents.push(...enrichedGeneratedInstances);
 		}
 
-		// Step 3: Sort all events by start time (null-safe: fall back to startDate for all-day events)
-		allEvents.sort((a, b) => {
+		// Step 3: Filter out malformed events missing both startAt and startDate
+		const malformedEvents: EventWithAttachments[] = [];
+		const validEvents: EventWithAttachments[] = [];
+
+		for (const event of allEvents) {
+			if (!event.startAt && !event.startDate) {
+				malformedEvents.push(event);
+			} else {
+				validEvents.push(event);
+			}
+		}
+
+		// Log malformed events with their context
+		if (malformedEvents.length > 0) {
+			logger.warn(
+				`Found ${malformedEvents.length} malformed events missing both startAt and startDate. Event IDs: ${malformedEvents.map((e) => e.id).join(", ")}`,
+			);
+		}
+
+		// Step 4: Sort valid events by start time (null-safe: fall back to startDate for all-day events)
+		validEvents.sort((a, b) => {
 			const getTime = (event: EventWithAttachments): number => {
 				if (event.startAt) return event.startAt.getTime();
 				if (event.startDate)
 					return new Date(`${event.startDate}T00:00:00.000Z`).getTime();
-				return 0;
+				// This should never happen after filtering, but kept as safety
+				throw new Error(
+					`Event ${event.id} is missing both startAt and startDate`,
+				);
 			};
 			const aTime = getTime(a);
 			const bTime = getTime(b);
@@ -303,7 +325,9 @@ export async function getUnifiedEventsInDateRange(
 			return aTime - bTime;
 		});
 
-		// Step 4: Apply final limit after sorting - this ensures we get the earliest events regardless of type
+		allEvents = validEvents;
+
+		// Step 5: Apply final limit after sorting - this ensures we get the earliest events regardless of type
 		if (allEvents.length > limit) {
 			allEvents = allEvents.slice(0, limit);
 		}

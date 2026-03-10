@@ -561,27 +561,39 @@ export async function insertCollections(
 							// For all-day events, generate fresh dates relative to now
 							if (event.allDay) {
 								const createdAt = new Date(
-									now.getFullYear(),
-									now.getMonth(),
-									now.getDate() + index,
-									1,
-									0,
-									0,
+									Date.UTC(
+										now.getUTCFullYear(),
+										now.getUTCMonth(),
+										now.getUTCDate() + index,
+										1,
+										0,
+										0,
+									),
 								);
 
 								// Generate startDate and endDate in YYYY-MM-DD format
 								// For all-day events, we'll create single-day events
 								const eventDate = new Date(
-									now.getFullYear(),
-									now.getMonth(),
-									now.getDate() + index,
+									Date.UTC(
+										now.getUTCFullYear(),
+										now.getUTCMonth(),
+										now.getUTCDate() + index,
+									),
 								);
-								const startDate = eventDate.toISOString().slice(0, 10);
+								const startDate = [
+									eventDate.getUTCFullYear(),
+									String(eventDate.getUTCMonth() + 1).padStart(2, "0"),
+									String(eventDate.getUTCDate()).padStart(2, "0"),
+								].join("-");
 
 								// endDate is exclusive, so add 1 day
 								const endDateObj = new Date(eventDate);
-								endDateObj.setDate(endDateObj.getDate() + 1);
-								const endDate = endDateObj.toISOString().slice(0, 10);
+								endDateObj.setUTCDate(endDateObj.getUTCDate() + 1);
+								const endDate = [
+									endDateObj.getUTCFullYear(),
+									String(endDateObj.getUTCMonth() + 1).padStart(2, "0"),
+									String(endDateObj.getUTCDate()).padStart(2, "0"),
+								].join("-");
 
 								return {
 									...event,
@@ -607,9 +619,12 @@ export async function insertCollections(
 
 							return {
 								...event,
+								allDay: false,
 								createdAt: start,
 								startAt: start,
 								endAt: end,
+								startDate: null,
+								endDate: null,
 								updatedAt: null,
 							};
 						},
@@ -671,9 +686,12 @@ export async function insertCollections(
 							const createdAt = parseDate(template.createdAt) ?? start;
 							return {
 								...template,
+								allDay: false,
 								createdAt,
 								startAt: start,
 								endAt: end,
+								startDate: null,
+								endDate: null,
 								updatedAt: null,
 								updaterId: null,
 								isPublic: true,
@@ -865,7 +883,7 @@ export async function insertCollections(
 				}
 
 				default:
-					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
+					console.log(`\x1b[31mInvalid table name: $collection\x1b[0m`);
 					break;
 			}
 		}

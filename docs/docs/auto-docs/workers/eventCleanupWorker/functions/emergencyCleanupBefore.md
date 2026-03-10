@@ -6,7 +6,7 @@
 
 > **emergencyCleanupBefore**(`cutoffDate`, `drizzleClient`, `logger`): `Promise`\<\{ `instancesDeleted`: `number`; `organizationsAffected`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:328](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventCleanupWorker.ts#L328)
+Defined in: [src/workers/eventCleanupWorker.ts:341](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventCleanupWorker.ts#L341)
 
 Performs an emergency cleanup of all materialized instances older than a specified
 cutoff date, across all organizations. This method should be used with caution as it

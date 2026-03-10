@@ -618,6 +618,236 @@ suite("Mutation field createEvent", () => {
 				path: ["createEvent"],
 			});
 		});
+
+		// Helper to generate dates in YYYY-MM-DD format for all-day events
+		const getTodayDateString = () => {
+			const today = new Date();
+			return today.toISOString().slice(0, 10);
+		};
+
+		const getFutureDateString = (daysFromNow: number) => {
+			const date = new Date();
+			date.setDate(date.getDate() + daysFromNow);
+			return date.toISOString().slice(0, 10);
+		};
+
+		const getPastDateString = (daysAgo: number) => {
+			const date = new Date();
+			date.setDate(date.getDate() - daysAgo);
+			return date.toISOString().slice(0, 10);
+		};
+
+		test("rejects all-day events with past startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Past All-Day Event",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getPastDateString(1), // 1 day ago
+					endDate: getTodayDateString(),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("allows all-day events with today as startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Today All-Day Event",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getTodayDateString(),
+					endDate: getFutureDateString(1), // Must be > startDate
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Today All-Day Event",
+				}),
+			);
+		});
+
+		test("allows all-day events with future startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Future All-Day Event",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getFutureDateString(5), // 5 days from now
+					endDate: getFutureDateString(6),
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Future All-Day Event",
+				}),
+			);
+		});
+
+		test("still validates timed events for past startAt (all-day flag not set)", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					allDay: false,
+					startAt: getPastDate(1, 10), // 1 day ago at 10:00
+					endAt: getPastDate(1, 12),
+				},
+			});
+
+			expect(result.data?.createEvent).toEqual(null);
+			expectErrorCode(result, "invalid_arguments");
+		});
+
+		test("rejects recurring all-day events with past startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Recurring Past All-Day Event",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getPastDateString(1), // 1 day ago
+					endDate: getTodayDateString(),
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("allows recurring all-day events with future startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Recurring Future All-Day Event",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getFutureDateString(7), // 7 days from now
+					endDate: getFutureDateString(8), // Must be > startDate
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Recurring Future All-Day Event",
+				}),
+			);
+		});
+
+		test("rejects events with allDay and past startDate when endDate is also provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Past Event With End",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getPastDateString(3), // 3 days ago
+					endDate: getPastDateString(1), // 1 day ago (after startDate but still past)
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects events with allDay=true and past startDate even if endDate is future", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Event Past Start Future End",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getPastDateString(2), // 2 days ago
+					endDate: getFutureDateString(5), // 5 days from now
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
 		test("rejects events with both isPublic and isInviteOnly set to true", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
@@ -643,6 +873,114 @@ suite("Mutation field createEvent", () => {
 							message: expect.stringContaining(
 								"cannot be both Public and Invite-Only",
 							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects all-day payloads containing timed fields", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Mixed Mode",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getFutureDateString(2),
+					endDate: getFutureDateString(3),
+					startAt: getFutureDate(2, 10),
+					endAt: getFutureDate(2, 12),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startAt"],
+							message: expect.any(String),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects timed payloads containing date-only fields", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					allDay: false,
+					startDate: getFutureDateString(2),
+					endDate: getFutureDateString(3),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.any(String),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects all-day payloads when only one date field is provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Partial Date",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startDate: getFutureDateString(2),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endDate"],
+							message: expect.any(String),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects timed payloads when only one time field is provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					startAt: getFutureDate(2, 10),
+					endAt: null,
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endAt"],
+							message: expect.any(String),
 						},
 					]),
 				}),
@@ -679,8 +1017,9 @@ suite("Mutation field createEvent", () => {
 
 			const result = await createEvent({
 				input: {
-					...baseEventInput(organizationId),
 					name: "Event with Optional Fields",
+					description: "Test Description",
+					organizationId,
 					allDay: true,
 					startDate: getFutureDate(30, 0).split("T")[0],
 					endDate: getFutureDate(31, 0).split("T")[0],
@@ -1785,8 +2124,9 @@ suite("Mutation field createEvent", () => {
 
 			const result = await createEvent({
 				input: {
-					...baseEventInput(organizationId),
 					name: "Final Object Defaults",
+					description: "Test Description",
+					organizationId,
 					allDay: true,
 					startDate: getFutureDate(30, 0).split("T")[0],
 					endDate: getFutureDate(31, 0).split("T")[0],

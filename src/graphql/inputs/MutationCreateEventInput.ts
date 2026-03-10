@@ -39,8 +39,26 @@ export const mutationCreateEventInputSchema = z
 		endDate: z.string().date().optional(),
 	})
 	.superRefine((arg, ctx) => {
+		// Check for mixed representations (startAt with startDate or endAt with endDate)
+		if (arg.startAt !== undefined && arg.startDate !== undefined) {
+			ctx.addIssue({
+				code: "custom",
+				message:
+					"Cannot provide both startAt (timed) and startDate (all-day) in the same payload.",
+				path: ["startAt"],
+			});
+		}
+		if (arg.endAt !== undefined && arg.endDate !== undefined) {
+			ctx.addIssue({
+				code: "custom",
+				message:
+					"Cannot provide both endAt (timed) and endDate (all-day) in the same payload.",
+				path: ["endAt"],
+			});
+		}
+
 		if (arg.allDay === true) {
-			// All-day event: startDate and endDate must be provided
+			// All-day event: startDate and endDate must be provided, forbid timed fields
 			if (!arg.startDate) {
 				ctx.addIssue({
 					code: "custom",
@@ -55,6 +73,22 @@ export const mutationCreateEventInputSchema = z
 					path: ["endDate"],
 				});
 			}
+			if (arg.startAt !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide startAt when allDay is true. Use startDate instead.",
+					path: ["startAt"],
+				});
+			}
+			if (arg.endAt !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide endAt when allDay is true. Use endDate instead.",
+					path: ["endAt"],
+				});
+			}
 			if (arg.startDate && arg.endDate && arg.endDate <= arg.startDate) {
 				ctx.addIssue({
 					code: "custom",
@@ -63,7 +97,7 @@ export const mutationCreateEventInputSchema = z
 				});
 			}
 		} else {
-			// Timed event (allDay = false or undefined): startAt and endAt must be provided
+			// Timed event (allDay = false or undefined): startAt and endAt must be provided, forbid all-day fields
 			if (!arg.startAt) {
 				ctx.addIssue({
 					code: "custom",
@@ -76,6 +110,22 @@ export const mutationCreateEventInputSchema = z
 					code: "custom",
 					message: "endAt is required for timed events",
 					path: ["endAt"],
+				});
+			}
+			if (arg.startDate !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide startDate when allDay is false or omitted. Use startAt instead.",
+					path: ["startDate"],
+				});
+			}
+			if (arg.endDate !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide endDate when allDay is false or omitted. Use endAt instead.",
+					path: ["endDate"],
 				});
 			}
 			if (arg.startAt && arg.endAt && arg.endAt <= arg.startAt) {

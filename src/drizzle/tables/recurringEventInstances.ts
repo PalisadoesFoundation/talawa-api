@@ -317,7 +317,26 @@ export const recurringEventInstancesTableInsertSchema = createInsertSchema(
 		sequenceNumber: z.number().int().min(1),
 		totalCount: z.number().int().min(1).nullable().optional(),
 	},
-);
+).superRefine((data, ctx) => {
+	const hasTimedStart = data.actualStartTime != null;
+	const hasTimedEnd = data.actualEndTime != null;
+	const hasAllDayStart = data.actualStartDate != null;
+	const hasAllDayEnd = data.actualEndDate != null;
+
+	const isTimedMode =
+		hasTimedStart && hasTimedEnd && !hasAllDayStart && !hasAllDayEnd;
+	const isAllDayMode =
+		!hasTimedStart && !hasTimedEnd && hasAllDayStart && hasAllDayEnd;
+
+	if (!isTimedMode && !isAllDayMode) {
+		ctx.addIssue({
+			code: "custom",
+			path: ["actualStartTime"],
+			message:
+				"Must provide exactly one complete mode: timed (actualStartTime + actualEndTime) or all-day (actualStartDate + actualEndDate).",
+		});
+	}
+});
 
 /**
  * Type representing a fully resolved recurring event event instance.

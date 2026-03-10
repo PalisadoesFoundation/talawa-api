@@ -403,8 +403,18 @@ describe("getRecurringEventInstancesInDateRange", () => {
 				mockDrizzleClient,
 				mockLogger,
 			),
-		).rejects.toThrow(
-			"Invalid limit: 0. Limit must be greater than or equal to 1.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		await expect(
@@ -413,8 +423,18 @@ describe("getRecurringEventInstancesInDateRange", () => {
 				mockDrizzleClient,
 				mockLogger,
 			),
-		).rejects.toThrow(
-			"Invalid limit: -5. Limit must be greater than or equal to 1.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		expect(
@@ -429,8 +449,18 @@ describe("getRecurringEventInstancesInDateRange", () => {
 				mockDrizzleClient,
 				mockLogger,
 			),
-		).rejects.toThrow(
-			"Invalid offset: -1. Offset must be greater than or equal to 0.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		await expect(
@@ -439,8 +469,18 @@ describe("getRecurringEventInstancesInDateRange", () => {
 				mockDrizzleClient,
 				mockLogger,
 			),
-		).rejects.toThrow(
-			"Invalid offset: -100. Offset must be greater than or equal to 0.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		expect(
@@ -1141,8 +1181,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ limit: 0 },
 			),
-		).rejects.toThrow(
-			"Invalid limit: 0. Limit must be greater than or equal to 1.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		await expect(
@@ -1152,8 +1202,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ limit: -5 },
 			),
-		).rejects.toThrow(
-			"Invalid limit: -5. Limit must be greater than or equal to 1.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		// Verify query was never called
@@ -1170,8 +1230,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ offset: -1 },
 			),
-		).rejects.toThrow(
-			"Invalid offset: -1. Offset must be greater than or equal to 0.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		await expect(
@@ -1181,8 +1251,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ offset: -100 },
 			),
-		).rejects.toThrow(
-			"Invalid offset: -100. Offset must be greater than or equal to 0.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		// Verify query was never called

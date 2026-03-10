@@ -8,6 +8,17 @@ import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
+ * Formats a Date to a local YYYY-MM-DD string without UTC conversion.
+ * Uses local getFullYear/getMonth/getDate to avoid timezone shifts.
+ */
+function formatLocalDate(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
+/**
  * The main method for the cleanup worker, which processes all organizations
  * and removes instances that have passed their retention period.
  *
@@ -87,6 +98,7 @@ async function cleanupOrganizationInstances(
 	retentionCutoffDate.setMonth(
 		retentionCutoffDate.getMonth() - historyRetentionMonths,
 	);
+	const retentionCutoffDateStr = formatLocalDate(retentionCutoffDate);
 
 	logger.info(
 		`Cleaning up instances for organization ${organizationId} ` +
@@ -109,7 +121,7 @@ async function cleanupOrganizationInstances(
 						isNotNull(recurringEventInstancesTable.actualEndDate),
 						lt(
 							recurringEventInstancesTable.actualEndDate,
-							retentionCutoffDate.toISOString().slice(0, 10),
+							retentionCutoffDateStr,
 						),
 					),
 				),
@@ -139,7 +151,7 @@ async function cleanupOrganizationInstances(
 					isNotNull(recurringEventInstancesTable.actualEndDate),
 					lt(
 						recurringEventInstancesTable.actualEndDate,
-						retentionCutoffDate.toISOString().slice(0, 10),
+						retentionCutoffDateStr,
 					),
 				),
 			),
@@ -282,6 +294,7 @@ export async function getOrganizationCleanupStatus(
 	retentionCutoffDate.setMonth(
 		retentionCutoffDate.getMonth() - windowConfig.historyRetentionMonths,
 	);
+	const retentionCutoffDateStr = formatLocalDate(retentionCutoffDate);
 
 	// Count instances eligible for cleanup
 	const instancesEligibleForCleanup =
@@ -299,7 +312,7 @@ export async function getOrganizationCleanupStatus(
 						isNotNull(recurringEventInstancesTable.actualEndDate),
 						lt(
 							recurringEventInstancesTable.actualEndDate,
-							retentionCutoffDate.toISOString().slice(0, 10),
+							retentionCutoffDateStr,
 						),
 					),
 				),
@@ -336,6 +349,7 @@ export async function emergencyCleanupBefore(
 	logger.warn(
 		`EMERGENCY CLEANUP: Deleting ALL instances before ${cutoffDate.toISOString()}`,
 	);
+	const cutoffDateStr = formatLocalDate(cutoffDate);
 
 	// Get affected organizations (for reporting)
 	const affectedOrganizations =
@@ -349,10 +363,7 @@ export async function emergencyCleanupBefore(
 				// For all-day events: check actualEndDate
 				and(
 					isNotNull(recurringEventInstancesTable.actualEndDate),
-					lt(
-						recurringEventInstancesTable.actualEndDate,
-						cutoffDate.toISOString().slice(0, 10),
-					),
+					lt(recurringEventInstancesTable.actualEndDate, cutoffDateStr),
 				),
 			),
 			columns: { organizationId: true },
@@ -373,10 +384,7 @@ export async function emergencyCleanupBefore(
 			// For all-day events: check actualEndDate
 			and(
 				isNotNull(recurringEventInstancesTable.actualEndDate),
-				lt(
-					recurringEventInstancesTable.actualEndDate,
-					cutoffDate.toISOString().slice(0, 10),
-				),
+				lt(recurringEventInstancesTable.actualEndDate, cutoffDateStr),
 			),
 		),
 	);
@@ -438,7 +446,7 @@ export async function getGlobalCleanupStatistics(
 				return instance.actualEndTime;
 			}
 			if (instance.actualEndDate) {
-				return new Date(`${instance.actualEndDate}T23:59:59.999Z`);
+				return new Date(instance.actualEndDate);
 			}
 			return null;
 		})
@@ -462,9 +470,7 @@ export async function getGlobalCleanupStatistics(
 		retentionCutoffDate.setMonth(
 			retentionCutoffDate.getMonth() - org.historyRetentionMonths,
 		);
-		const retentionCutoffDateStr = retentionCutoffDate
-			.toISOString()
-			.slice(0, 10);
+		const retentionCutoffDateStr = formatLocalDate(retentionCutoffDate);
 
 		const orgEligibleInstances = allInstances.filter((instance) => {
 			if (instance.organizationId !== org.organizationId) return false;

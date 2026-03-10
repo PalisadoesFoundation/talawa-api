@@ -53,6 +53,18 @@ export const mutationCreateEventArgumentsSchema = z.object({
 			}
 		}
 
+		if (arg.allDay === true && arg.startDate) {
+			const today = new Date().toISOString().slice(0, 10);
+
+			if (arg.startDate < today) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["startDate"],
+					message: "Start date must not be in the past",
+				});
+			}
+		}
+
 		return arg;
 	}),
 });
@@ -121,6 +133,80 @@ builder.mutationField("createEvent", (t) =>
 							],
 						},
 					});
+				}
+
+				// Validate event time model to avoid mixed-mode payloads silently being nulled.
+				const hasStartAt = parsedArgs.input.startAt != null;
+				const hasEndAt = parsedArgs.input.endAt != null;
+				const hasStartDate = parsedArgs.input.startDate != null;
+				const hasEndDate = parsedArgs.input.endDate != null;
+
+				if (parsedArgs.input.allDay === true) {
+					const issues: { argumentPath: string[]; message: string }[] = [];
+
+					if (hasStartAt) {
+						issues.push({
+							argumentPath: ["input", "startAt"],
+							message: "Must be null when allDay is true.",
+						});
+					}
+
+					if (hasEndAt) {
+						issues.push({
+							argumentPath: ["input", "endAt"],
+							message: "Must be null when allDay is true.",
+						});
+					}
+
+					if (hasStartDate !== hasEndDate) {
+						issues.push({
+							argumentPath: ["input", hasStartDate ? "endDate" : "startDate"],
+							message:
+								"startDate and endDate must both be provided or both be null.",
+						});
+					}
+
+					if (issues.length > 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues,
+							},
+						});
+					}
+				} else {
+					const issues: { argumentPath: string[]; message: string }[] = [];
+
+					if (hasStartDate) {
+						issues.push({
+							argumentPath: ["input", "startDate"],
+							message: "Must be null when allDay is false.",
+						});
+					}
+
+					if (hasEndDate) {
+						issues.push({
+							argumentPath: ["input", "endDate"],
+							message: "Must be null when allDay is false.",
+						});
+					}
+
+					if (hasStartAt !== hasEndAt) {
+						issues.push({
+							argumentPath: ["input", hasStartAt ? "endAt" : "startAt"],
+							message:
+								"startAt and endAt must both be provided or both be null.",
+						});
+					}
+
+					if (issues.length > 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues,
+							},
+						});
+					}
 				}
 
 				// Validate recurrence input if provided
@@ -389,6 +475,13 @@ builder.mutationField("createEvent", (t) =>
 							const windowStartDate = new Date(recurrenceStart);
 							let windowEndDate: Date;
 
+							const addMonthsUTC = (date: Date, months: number): Date => {
+								const result = new Date(date);
+								result.setUTCMonth(result.getUTCMonth() + months);
+
+								return result;
+							};
+
 							ctx.log.debug(
 								{
 									eventStartAt: recurrenceStart.toISOString(),
@@ -401,10 +494,9 @@ builder.mutationField("createEvent", (t) =>
 								windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
 
 								// If end date is within the default window, use the window end instead
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() +
-										windowConfig.hotWindowMonthsAhead,
+								const defaultWindowEnd = addMonthsUTC(
+									new Date(),
+									windowConfig.hotWindowMonthsAhead,
 								);
 
 								if (windowEndDate > defaultWindowEnd) {
@@ -412,18 +504,16 @@ builder.mutationField("createEvent", (t) =>
 								}
 							} else if (parsedArgs.input.recurrence.count) {
 								// For count-based recurrence, estimate end date and use window
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() +
-										windowConfig.hotWindowMonthsAhead,
+								const defaultWindowEnd = addMonthsUTC(
+									new Date(),
+									windowConfig.hotWindowMonthsAhead,
 								);
 								windowEndDate = defaultWindowEnd;
 							} else {
 								// For never-ending events, use the materialization window
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() +
-										windowConfig.hotWindowMonthsAhead,
+								const defaultWindowEnd = addMonthsUTC(
+									new Date(),
+									windowConfig.hotWindowMonthsAhead,
 								);
 								windowEndDate = defaultWindowEnd;
 							}

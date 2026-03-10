@@ -518,7 +518,7 @@ suite("instanceResolver", () => {
 			);
 		});
 
-		test("returns false when both actualStartTime and actualStartDate are missing", () => {
+		test("returns false when neither timed nor all-day mode is complete", () => {
 			const invalidInstance: Partial<ResolvedEventInstance> = {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
@@ -539,7 +539,101 @@ suite("instanceResolver", () => {
 
 			expect(result).toBe(false);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Resolved instance missing both actualStartTime and actualStartDate",
+				expect.objectContaining({
+					actualStartTime: null,
+					actualEndTime: expect.any(Date),
+					actualStartDate: null,
+					actualEndDate: null,
+				}),
+				expect.stringContaining(
+					"Resolved instance must use exactly one complete mode",
+				),
+			);
+		});
+
+		test("returns true for valid all-day mode instance", () => {
+			const validAllDayInstance: Partial<ResolvedEventInstance> = {
+				id: faker.string.uuid(),
+				baseRecurringEventId: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
+				originalInstanceStartTime: null,
+				actualStartTime: null,
+				actualEndTime: null,
+				actualStartDate: "2025-01-01",
+				actualEndDate: "2025-01-02",
+				organizationId: faker.string.uuid(),
+				name: "All-day Event",
+			};
+
+			const result = validateResolvedInstance(
+				validAllDayInstance as ResolvedEventInstance,
+				mockLogger,
+			);
+
+			expect(result).toBe(true);
+		});
+
+		test("returns false for mixed-mode instance with both timed and all-day fields", () => {
+			const mixedModeInstance: Partial<ResolvedEventInstance> = {
+				id: faker.string.uuid(),
+				baseRecurringEventId: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
+				originalInstanceStartTime: new Date(),
+				actualStartTime: new Date(),
+				actualEndTime: new Date(),
+				actualStartDate: "2025-01-01",
+				actualEndDate: "2025-01-02",
+				organizationId: faker.string.uuid(),
+				name: "Mixed Event",
+			};
+
+			const result = validateResolvedInstance(
+				mixedModeInstance as ResolvedEventInstance,
+				mockLogger,
+			);
+
+			expect(result).toBe(false);
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					actualStartTime: expect.any(Date),
+					actualEndTime: expect.any(Date),
+					actualStartDate: "2025-01-01",
+					actualEndDate: "2025-01-02",
+				}),
+				expect.stringContaining(
+					"Resolved instance must use exactly one complete mode",
+				),
+			);
+		});
+
+		test("returns false for all-day instance missing actualEndDate", () => {
+			const invalidAllDayInstance: Partial<ResolvedEventInstance> = {
+				id: faker.string.uuid(),
+				baseRecurringEventId: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
+				originalInstanceStartTime: null,
+				actualStartTime: null,
+				actualEndTime: null,
+				actualStartDate: "2025-01-01",
+				actualEndDate: null,
+				organizationId: faker.string.uuid(),
+				name: "All-day Missing End",
+			};
+
+			const result = validateResolvedInstance(
+				invalidAllDayInstance as ResolvedEventInstance,
+				mockLogger,
+			);
+
+			expect(result).toBe(false);
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					actualStartDate: "2025-01-01",
+					actualEndDate: null,
+				}),
+				expect.stringContaining(
+					"Resolved instance must use exactly one complete mode",
+				),
 			);
 		});
 	});
