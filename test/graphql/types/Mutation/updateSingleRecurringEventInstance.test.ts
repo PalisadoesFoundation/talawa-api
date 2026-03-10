@@ -91,15 +91,19 @@ function mockRecurringEventInstance(
 	userRole: "administrator" | "member" = "administrator",
 	isCancelled = false,
 	isInviteOnly = false,
+	allDay = false,
 ) {
 	return {
 		id: instanceId,
 		isCancelled,
-		actualStartTime: new Date("2024-12-02T10:00:00Z"),
-		actualEndTime: new Date("2024-12-02T12:00:00Z"),
+		actualStartTime: allDay ? null : new Date("2024-12-02T10:00:00Z"),
+		actualEndTime: allDay ? null : new Date("2024-12-02T12:00:00Z"),
+		actualStartDate: allDay ? "2024-12-02" : null,
+		actualEndDate: allDay ? "2024-12-05" : null,
+		originalInstanceStartTime: allDay ? null : "2024-12-02T10:00:00Z",
+		originalInstanceStartDate: allDay ? "2024-12-02" : null,
 		baseRecurringEventId: faker.string.uuid(),
 		recurrenceRuleId: faker.string.uuid(),
-		originalInstanceStartTime: "2024-12-02T10:00:00Z",
 		organizationId: orgId,
 		generatedAt: "2024-12-02T09:00:00Z",
 		lastUpdatedAt: new Date(),
@@ -119,7 +123,7 @@ function mockRecurringEventInstance(
 			name: "Original Event Name",
 			description: "Original description",
 			location: "Original Location",
-			allDay: false,
+			allDay,
 			isPublic: !isInviteOnly,
 			isRegisterable: true,
 			isInviteOnly,
@@ -940,6 +944,407 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
 					originalInstanceFindFirst;
 				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+	});
+
+	suite("when all-day event date validation fails in resolver", () => {
+		test("should successfully update startDate for an all-day event", async () => {
+			const adminToken = await getAdminAuthToken();
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+				"administrator",
+				false,
+				false,
+				true, // all-day event
+			);
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			// Mock successful transaction
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockResolvedValue(undefined),
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockReturnValue({
+								where: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: instanceId,
+											baseRecurringEventId: mockInstance.baseRecurringEventId,
+											recurrenceRuleId: mockInstance.recurrenceRuleId,
+											originalInstanceStartDate: "2024-12-02",
+											actualStartDate: "2024-12-03",
+											actualEndDate: "2024-12-05",
+											organizationId: orgId,
+											isCancelled: false,
+											createdAt: new Date(),
+											updatedAt: new Date(),
+										},
+									]),
+								}),
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								startDate: "2024-12-03", // Update start date
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toBeTruthy();
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should successfully update endDate for an all-day event", async () => {
+			const adminToken = await getAdminAuthToken();
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+				"administrator",
+				false,
+				false,
+				true, // all-day event
+			);
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			// Mock successful transaction
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockResolvedValue(undefined),
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockReturnValue({
+								where: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: instanceId,
+											baseRecurringEventId: mockInstance.baseRecurringEventId,
+											recurrenceRuleId: mockInstance.recurrenceRuleId,
+											originalInstanceStartDate: "2024-12-02",
+											actualStartDate: "2024-12-02",
+											actualEndDate: "2024-12-06",
+											organizationId: orgId,
+											isCancelled: false,
+											createdAt: new Date(),
+											updatedAt: new Date(),
+										},
+									]),
+								}),
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								endDate: "2024-12-06", // Update end date
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toBeTruthy();
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should return an error when endDate equals startDate for an all-day event", async () => {
+			const adminToken = await getAdminAuthToken();
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+				"administrator",
+				false,
+				false,
+				true, // all-day event
+			);
+			// Set dates so that when updated, endDate will equal startDate
+			mockInstance.actualStartDate = "2024-12-05";
+			mockInstance.actualEndDate = "2024-12-10";
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								endDate: "2024-12-05", // End date equals start date
+							},
+						},
+					},
+				);
+
+				expect(
+					result.data?.updateSingleRecurringEventInstance ?? null,
+				).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "endDate"],
+										message: expect.stringContaining(
+											"End date must be after start date",
+										),
+									}),
+								]),
+							}),
+							path: ["updateSingleRecurringEventInstance"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+			}
+		});
+
+		test("should return an error when endDate is before startDate for an all-day event", async () => {
+			const adminToken = await getAdminAuthToken();
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+				"administrator",
+				false,
+				false,
+				true, // all-day event
+			);
+			// Set dates so that when updated, endDate will be before startDate
+			mockInstance.actualStartDate = "2024-12-10";
+			mockInstance.actualEndDate = "2024-12-15";
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								endDate: "2024-12-08", // End date before start date
+							},
+						},
+					},
+				);
+
+				expect(
+					result.data?.updateSingleRecurringEventInstance ?? null,
+				).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "endDate"],
+										message: expect.stringContaining(
+											"End date must be after start date",
+										),
+									}),
+								]),
+							}),
+							path: ["updateSingleRecurringEventInstance"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+			}
+		});
+
+		test("should return an error when updating startDate causes it to be after existing endDate", async () => {
+			const adminToken = await getAdminAuthToken();
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+				"administrator",
+				false,
+				false,
+				true, // all-day event
+			);
+			// Set dates so that updating startDate will cause issues
+			mockInstance.actualStartDate = "2024-12-02";
+			mockInstance.actualEndDate = "2024-12-05";
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								startDate: "2024-12-06", // Start date after existing end date
+							},
+						},
+					},
+				);
+
+				expect(
+					result.data?.updateSingleRecurringEventInstance ?? null,
+				).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "endDate"],
+										message: expect.stringContaining(
+											"End date must be after start date",
+										),
+									}),
+								]),
+							}),
+							path: ["updateSingleRecurringEventInstance"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
 			}
 		});
 	});
