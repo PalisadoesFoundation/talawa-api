@@ -206,6 +206,62 @@ suite("instanceResolver", () => {
 			expect(result.id).toBe(mockGeneratedInstance.id); // Should not be overridden
 			expect(result).not.toHaveProperty("invalidField");
 		});
+
+		test("applies all-day date exception data correctly", () => {
+			const mockException = {
+				id: faker.string.uuid(),
+				recurringEventInstanceId: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				exceptionData: {
+					startDate: "2025-06-15",
+					endDate: "2025-06-15",
+				},
+				organizationId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+			} as typeof eventExceptionsTable.$inferSelect;
+
+			const input: ResolveInstanceInput = {
+				generatedInstance: mockGeneratedInstance,
+				baseTemplate: mockBaseTemplate,
+				exception: mockException,
+			};
+
+			const result = resolveInstanceWithInheritance(input);
+
+			expect(result.actualStartDate).toBe("2025-06-15");
+			expect(result.actualEndDate).toBe("2025-06-15");
+		});
+
+		test("applies null all-day date exception data correctly", () => {
+			const mockException = {
+				id: faker.string.uuid(),
+				recurringEventInstanceId: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				exceptionData: {
+					startDate: null,
+					endDate: null,
+				},
+				organizationId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+			} as typeof eventExceptionsTable.$inferSelect;
+
+			const input: ResolveInstanceInput = {
+				generatedInstance: mockGeneratedInstance,
+				baseTemplate: mockBaseTemplate,
+				exception: mockException,
+			};
+
+			const result = resolveInstanceWithInheritance(input);
+
+			expect(result.actualStartDate).toBeNull();
+			expect(result.actualEndDate).toBeNull();
+		});
 	});
 
 	suite("resolveMultipleInstances", () => {
@@ -459,6 +515,31 @@ suite("instanceResolver", () => {
 			expect(result).toBe(false);
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				"Missing required field in resolved instance: originalSeriesId",
+			);
+		});
+
+		test("returns false when both actualStartTime and actualStartDate are missing", () => {
+			const invalidInstance: Partial<ResolvedEventInstance> = {
+				id: faker.string.uuid(),
+				baseRecurringEventId: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
+				originalInstanceStartTime: new Date(),
+				actualStartTime: null,
+				actualEndTime: new Date(),
+				actualStartDate: null,
+				actualEndDate: null,
+				organizationId: faker.string.uuid(),
+				name: "Test Event",
+			};
+
+			const result = validateResolvedInstance(
+				invalidInstance as ResolvedEventInstance,
+				mockLogger,
+			);
+
+			expect(result).toBe(false);
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				"Resolved instance missing both actualStartTime and actualStartDate",
 			);
 		});
 	});

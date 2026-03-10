@@ -576,5 +576,66 @@ describe("src/drizzle/tables/events.ts", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should accept allDay=true with startDate and endDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject allDay=true without startDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true without endDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true without startDate and endDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=false without startAt and endAt", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: false,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject when allDay is undefined without startAt and endAt", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 });

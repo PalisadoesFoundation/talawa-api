@@ -395,6 +395,58 @@ describe("getRecurringEventInstancesInDateRange", () => {
 			`Failed to get recurring event instances for organization ${baseInput.organizationId}`,
 		);
 	});
+
+	it("should throw error when limit is less than 1", async () => {
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, limit: 0 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow(
+			"Invalid limit: 0. Limit must be greater than or equal to 1.",
+		);
+
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, limit: -5 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow(
+			"Invalid limit: -5. Limit must be greater than or equal to 1.",
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when offset is negative", async () => {
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, offset: -1 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow(
+			"Invalid offset: -1. Offset must be greater than or equal to 0.",
+		);
+
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, offset: -100 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow(
+			"Invalid offset: -100. Offset must be greater than or equal to 0.",
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
 });
 
 describe("getRecurringEventInstanceById", () => {

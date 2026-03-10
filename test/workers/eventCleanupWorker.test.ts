@@ -197,6 +197,36 @@ describe("eventCleanupWorker", () => {
 			);
 		});
 
+		it("should return 0 and log debug when organization has no old instances", async () => {
+			const mockWindowConfigs = [
+				createMockWindowConfig({
+					id: "window1",
+					organizationId: "org1",
+					historyRetentionMonths: 6,
+					isEnabled: true,
+				}),
+			];
+
+			vi.mocked(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
+			).mockResolvedValue(mockWindowConfigs);
+			vi.mocked(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+			).mockResolvedValue([]);
+
+			const result = await cleanupOldInstances(mockDrizzleClient, mockLogger);
+
+			expect(result).toEqual({
+				organizationsProcessed: 1,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				"No old instances to cleanup for organization org1",
+			);
+			expect(mockDrizzleClient.delete).not.toHaveBeenCalled();
+		});
+
 		it("should handle database errors", async () => {
 			const error = new Error("Database connection failed");
 			vi.mocked(
@@ -484,6 +514,82 @@ describe("eventCleanupWorker", () => {
 				newestInstanceDate: null,
 				averageInstancesPerOrganization: 0,
 			});
+		});
+
+		it("should use all-day actualEndDate as end-of-day when calculating oldest/newest dates", async () => {
+			const mockOrganizations = [
+				createMockWindowConfig({
+					organizationId: "org1",
+					historyRetentionMonths: 6,
+				}),
+			];
+
+			const mockInstances = [
+				createMockMaterializedInstance({
+					id: "instance-all-day-1",
+					organizationId: "org1",
+					actualEndTime: null,
+					actualEndDate: "2024-01-05",
+				}),
+				createMockMaterializedInstance({
+					id: "instance-all-day-2",
+					organizationId: "org1",
+					actualEndTime: null,
+					actualEndDate: "2024-02-10",
+				}),
+			];
+
+			vi.mocked(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
+			).mockResolvedValue(mockOrganizations);
+			vi.mocked(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+			).mockResolvedValue(mockInstances);
+
+			const result = await getGlobalCleanupStatistics(mockDrizzleClient);
+
+			expect(result.oldestInstanceDate).toEqual(
+				new Date("2024-01-05T23:59:59.999Z"),
+			);
+			expect(result.newestInstanceDate).toEqual(
+				new Date("2024-02-10T23:59:59.999Z"),
+			);
+		});
+
+		it("should count all-day instances as eligible when actualEndDate is before retention cutoff", async () => {
+			const mockOrganizations = [
+				createMockWindowConfig({
+					organizationId: "org1",
+					historyRetentionMonths: 1,
+				}),
+			];
+
+			const mockInstances = [
+				createMockMaterializedInstance({
+					id: "eligible-all-day",
+					organizationId: "org1",
+					actualEndTime: null,
+					actualEndDate: "2000-01-01",
+				}),
+				createMockMaterializedInstance({
+					id: "not-eligible-all-day",
+					organizationId: "org1",
+					actualEndTime: null,
+					actualEndDate: "2999-01-01",
+				}),
+			];
+
+			vi.mocked(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
+			).mockResolvedValue(mockOrganizations);
+			vi.mocked(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+			).mockResolvedValue(mockInstances);
+
+			const result = await getGlobalCleanupStatistics(mockDrizzleClient);
+
+			expect(result.totalInstances).toBe(2);
+			expect(result.totalInstancesEligibleForCleanup).toBe(1);
 		});
 	});
 });

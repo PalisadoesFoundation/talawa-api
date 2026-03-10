@@ -241,6 +241,79 @@ describe("unifiedEventQueries", () => {
 			).rejects.toThrow("Fail");
 			expect(mockLogger.error).toHaveBeenCalled();
 		});
+
+		it("should sort all-day events using startDate when startAt is null", async () => {
+			const input = {
+				organizationId: "org-1",
+				startDate: new Date(),
+				endDate: new Date(),
+			};
+
+			const allDayStandalone = {
+				id: "all-day-1",
+				startAt: null,
+				startDate: "2023-01-01",
+			};
+			const timedInstance = {
+				id: "instance-1",
+				actualStartTime: new Date("2023-01-02T09:00:00Z"),
+				actualEndTime: new Date("2023-01-02T10:00:00Z"),
+				baseRecurringEventId: "base-1",
+			};
+
+			vi.mocked(getStandaloneEventsInDateRange).mockResolvedValueOnce([
+				allDayStandalone as unknown as EventWithAttachments,
+			]);
+			vi.mocked(getRecurringEventInstancesInDateRange).mockResolvedValueOnce([
+				timedInstance as unknown as ResolvedRecurringEventInstance,
+			]);
+
+			const result = await getUnifiedEventsInDateRange(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toHaveLength(2);
+			expect(result[0]?.id).toBe("all-day-1");
+			expect(result[1]?.id).toBe("instance-1");
+		});
+
+		it("should fall back to 0 when both startAt and startDate are missing", async () => {
+			const input = {
+				organizationId: "org-1",
+				startDate: new Date(),
+				endDate: new Date(),
+			};
+
+			const noDateEvent = {
+				id: "no-date-event",
+				startAt: null,
+				startDate: null,
+			};
+			const datedEvent = {
+				id: "dated-event",
+				startAt: new Date("2023-01-01T10:00:00Z"),
+			};
+
+			vi.mocked(getStandaloneEventsInDateRange).mockResolvedValueOnce([
+				noDateEvent as unknown as EventWithAttachments,
+				datedEvent as unknown as EventWithAttachments,
+			]);
+			vi.mocked(getRecurringEventInstancesInDateRange).mockResolvedValueOnce(
+				[],
+			);
+
+			const result = await getUnifiedEventsInDateRange(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toHaveLength(2);
+			expect(result[0]?.id).toBe("no-date-event");
+			expect(result[1]?.id).toBe("dated-event");
+		});
 	});
 
 	describe("filterInviteOnlyEvents", () => {
