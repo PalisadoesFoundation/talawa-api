@@ -1248,7 +1248,7 @@ suite("Mutation field createEvent", () => {
 						startAt: new Date(getFutureDate(2, 10)),
 						endAt: new Date(getFutureDate(2, 12)),
 						startDate: getFutureDateString(2),
-						endDate: null,
+						endDate: undefined,
 					},
 				},
 			} as Awaited<
@@ -1301,7 +1301,7 @@ suite("Mutation field createEvent", () => {
 						name: "Resolver Branch Timed",
 						allDay: false,
 						startAt: new Date(getFutureDate(2, 10)),
-						endAt: null,
+						endAt: undefined,
 						startDate: getFutureDateString(2),
 						endDate: getFutureDateString(3),
 					},
