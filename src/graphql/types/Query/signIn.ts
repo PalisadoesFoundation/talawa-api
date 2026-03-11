@@ -17,6 +17,7 @@ import {
 	storeRefreshToken,
 } from "~/src/utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import type { CurrentClient } from "../../context";
 
 const querySignInArgumentsSchema = z.object({
@@ -147,7 +148,7 @@ builder.queryField("signIn", (t) =>
 
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_credentials",
+						code: ErrorCode.INVALID_CREDENTIALS,
 						issues: [
 							{
 								argumentPath: ["input"],

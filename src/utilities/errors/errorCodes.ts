@@ -34,6 +34,9 @@ export enum ErrorCode {
 	/** User role is insufficient for the requested action (HTTP 403) */
 	INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
 
+	/** Provided credentials (email/password) are incorrect (HTTP 401) */
+	INVALID_CREDENTIALS = "invalid_credentials",
+
 	/** Request arguments failed validation (HTTP 400) */
 	INVALID_ARGUMENTS = "invalid_arguments",
 	/** Input data validation failed (HTTP 400) */
@@ -93,6 +96,8 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, number> = {
 	[ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES]: 403,
 	[ErrorCode.FORBIDDEN_ACTION]: 403,
 	[ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES]: 403,
+
+	[ErrorCode.INVALID_CREDENTIALS]: 401,
 
 	[ErrorCode.INVALID_ARGUMENTS]: 400,
 	[ErrorCode.INVALID_INPUT]: 400,
