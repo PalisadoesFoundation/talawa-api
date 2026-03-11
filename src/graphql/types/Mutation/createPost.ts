@@ -225,7 +225,7 @@ builder.mutationField("createPost", (t) =>
 					attachments: createdAttachment ? [createdAttachment] : [],
 				});
 
-				notificationEventBus.emitPostCreated(
+				await notificationEventBus.emitPostCreated(
 					{
 						postId: createdPost.id,
 						organizationId: parsedArgs.input.organizationId,

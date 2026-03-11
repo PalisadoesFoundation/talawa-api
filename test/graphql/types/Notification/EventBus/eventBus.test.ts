@@ -44,10 +44,6 @@ describe("NotificationEventBus", () => {
 		bus.removeAllListeners();
 	});
 
-	function waitForSetImmediate(): Promise<void> {
-		return new Promise((resolve) => setImmediate(resolve));
-	}
-
 	describe("emitPostCreated", () => {
 		it("should emit 'post.created' event with correct data", async () => {
 			const data = {
@@ -76,7 +72,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitPostCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(createNotificationSpy).toHaveBeenCalledWith(
 				"post_created",
@@ -105,7 +100,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitPostCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(infoSpy).toHaveBeenCalledWith(
 				"Notification sent for post post-123",
@@ -125,7 +119,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitPostCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -146,7 +139,6 @@ describe("NotificationEventBus", () => {
 			bus.on("membership_request.accepted", eventListener);
 
 			await bus.emitMembershipRequestAccepted(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -174,7 +166,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitMembershipRequestAccepted(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -198,7 +189,6 @@ describe("NotificationEventBus", () => {
 			bus.on("event.created", eventListener);
 
 			await bus.emitEventCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -233,7 +223,6 @@ describe("NotificationEventBus", () => {
 			bus.on("join_request.submitted", eventListener);
 
 			await bus.emitJoinRequestSubmitted(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -282,7 +271,6 @@ describe("NotificationEventBus", () => {
 			bus.on("member.joined", eventListener);
 
 			await bus.emitNewMemberJoined(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -314,7 +302,6 @@ describe("NotificationEventBus", () => {
 			bus.on("user.blocked", eventListener);
 
 			await bus.emitUserBlocked(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -347,7 +334,6 @@ describe("NotificationEventBus", () => {
 			bus.on("fund.created", eventListener);
 
 			await bus.emitFundCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -384,7 +370,6 @@ describe("NotificationEventBus", () => {
 			bus.on("fund_campaign.created", eventListener);
 
 			await bus.emitFundCampaignCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -423,7 +408,6 @@ describe("NotificationEventBus", () => {
 			bus.on("fund_campaign_pledge.created", eventListener);
 
 			await bus.emitFundCampaignPledgeCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(eventListener).toHaveBeenCalledWith(data);
 			expect(createNotificationSpy).toHaveBeenCalledWith(
@@ -469,8 +453,6 @@ describe("NotificationEventBus", () => {
 				bus.emitMembershipRequestAccepted(memberData, mockCtx),
 			]);
 
-			await waitForSetImmediate();
-
 			expect(errorSpy).toHaveBeenCalledTimes(2);
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -497,7 +479,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitFundCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -523,7 +504,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitFundCampaignCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -548,7 +528,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitFundCampaignPledgeCreated(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -583,7 +562,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitMembershipRequestRejected(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(createNotificationSpy).toHaveBeenCalledWith(
 				"membership_request_rejected",
@@ -609,7 +587,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitMembershipRequestRejected(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(infoSpy).toHaveBeenCalledWith(
 				"Membership request rejection notification sent to user user-123 for organization org-456",
@@ -628,7 +605,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitMembershipRequestRejected(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -678,7 +654,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitSendEventInvite(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(createDirectEmailNotificationSpy).toHaveBeenCalledWith(
 				"send_event_invite",
@@ -703,7 +678,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitSendEventInvite(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(createDirectEmailNotificationSpy).toHaveBeenCalledWith(
 				"send_event_invite",
@@ -731,7 +705,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitSendEventInvite(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(infoSpy).toHaveBeenCalledWith(
 				{
@@ -755,7 +728,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitSendEventInvite(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(infoSpy).toHaveBeenCalledWith(
 				{
@@ -782,7 +754,6 @@ describe("NotificationEventBus", () => {
 			};
 
 			await bus.emitSendEventInvite(data, mockCtx);
-			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				error,
@@ -835,8 +806,6 @@ describe("NotificationEventBus", () => {
 				bus.emitUserBlocked(blockData, mockCtx),
 			]);
 
-			await waitForSetImmediate();
-
 			// All should log errors appropriately
 			expect(errorSpy).toHaveBeenCalledWith(
 				commonError,
@@ -888,8 +857,6 @@ describe("NotificationEventBus", () => {
 				bus.emitMembershipRequestRejected(rejectionData, mockCtx),
 				bus.emitSendEventInvite(inviteData, mockCtx),
 			]);
-
-			await waitForSetImmediate();
 
 			// Both should log errors appropriately
 			expect(errorSpy).toHaveBeenCalledWith(

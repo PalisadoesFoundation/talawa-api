@@ -145,7 +145,7 @@ builder.mutationField("rejectMembershipRequest", (t) =>
 			}
 
 			// Notify the user about membership request rejection
-			notificationEventBus.emitMembershipRequestRejected(
+			await notificationEventBus.emitMembershipRequestRejected(
 				{
 					userId: membershipRequest.userId,
 					userName: membershipRequest.user.name,

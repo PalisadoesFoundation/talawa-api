@@ -262,7 +262,7 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 			}
 
 			// Send notification to organization admins
-			notificationEventBus.emitFundCampaignPledgeCreated(
+			await notificationEventBus.emitFundCampaignPledgeCreated(
 				{
 					pledgeId: createdFundCampaignPledge.id,
 					campaignName: existingFundCampaign.name,
