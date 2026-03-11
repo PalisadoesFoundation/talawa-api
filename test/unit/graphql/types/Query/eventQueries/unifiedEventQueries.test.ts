@@ -395,6 +395,87 @@ describe("unifiedEventQueries", () => {
 			expect(result[0]?.id).toBe("m-event");
 			expect(result[1]?.id).toBe("z-event");
 		});
+
+		it("should apply final limit after removing malformed events and sorting valid events", async () => {
+			const input = {
+				organizationId: "org-1",
+				startDate: new Date(),
+				endDate: new Date(),
+				limit: 1,
+			};
+
+			const malformed = {
+				id: "malformed-1",
+				startAt: null,
+				startDate: null,
+			};
+			const lateTimed = {
+				id: "timed-late",
+				startAt: new Date("2023-01-02T10:00:00Z"),
+			};
+			const earlyAllDay = {
+				id: "all-day-early",
+				startAt: null,
+				startDate: "2023-01-01",
+			};
+
+			vi.mocked(getStandaloneEventsInDateRange).mockResolvedValueOnce([
+				malformed as unknown as EventWithAttachments,
+				lateTimed as unknown as EventWithAttachments,
+				earlyAllDay as unknown as EventWithAttachments,
+			]);
+			vi.mocked(getRecurringEventInstancesInDateRange).mockResolvedValueOnce(
+				[],
+			);
+
+			const result = await getUnifiedEventsInDateRange(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			// malformed-1 should be dropped; remaining valid events sorted; final limit keeps earliest only
+			expect(result).toHaveLength(1);
+			expect(result[0]?.id).toBe("all-day-early");
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining("Found 1 malformed events"),
+			);
+		});
+
+		it("should not log malformed warning when all events are valid", async () => {
+			const input = {
+				organizationId: "org-1",
+				startDate: new Date(),
+				endDate: new Date(),
+			};
+
+			const validTimed = {
+				id: "valid-timed",
+				startAt: new Date("2023-01-03T08:00:00Z"),
+			};
+			const validAllDay = {
+				id: "valid-all-day",
+				startAt: null,
+				startDate: "2023-01-02",
+			};
+
+			vi.mocked(getStandaloneEventsInDateRange).mockResolvedValueOnce([
+				validTimed as unknown as EventWithAttachments,
+				validAllDay as unknown as EventWithAttachments,
+			]);
+			vi.mocked(getRecurringEventInstancesInDateRange).mockResolvedValueOnce(
+				[],
+			);
+
+			const result = await getUnifiedEventsInDateRange(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toHaveLength(2);
+			expect(mockLogger.warn).not.toHaveBeenCalled();
+		});
 	});
 
 	describe("filterInviteOnlyEvents", () => {

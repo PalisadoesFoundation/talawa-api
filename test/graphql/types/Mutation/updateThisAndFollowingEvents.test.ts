@@ -1893,3 +1893,143 @@ test("should return invalid_arguments when switching to allDay without providing
 		),
 	).toBe(true);
 });
+
+test("should return invalid_arguments when both timed and all-day fields are provided together (mixed mode)", async () => {
+	// Covers: if (hasAnyTimed && hasAnyDate) branch in MutationUpdateThisAndFollowingEventsInput superRefine
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					// Mixed mode: both timed and all-day fields provided simultaneously
+					startAt: "2024-02-01T10:00:00.000Z",
+					startDate: "2024-02-01",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.includes("allDay") &&
+				i.message.includes(
+					"Provide either timed fields (startAt/endAt) or all-day fields (startDate/endDate), not both.",
+				),
+		),
+	).toBe(true);
+}, 10000);
+
+test("should return invalid_arguments when allDay=true is set alongside startAt/endAt timed fields", async () => {
+	// Covers: if (remainingArgs.allDay === true && hasAnyTimed) branch
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					allDay: true,
+					startAt: "2024-02-01T10:00:00.000Z",
+					startDate: "2024-02-01",
+					endDate: "2024-02-02",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.includes("allDay") &&
+				i.message.includes("When allDay=true, startAt/endAt must be omitted."),
+		),
+	).toBe(true);
+}, 10000);
+
+test("should return invalid_arguments when allDay=false is set alongside startDate/endDate all-day fields", async () => {
+	// Covers: if (remainingArgs.allDay === false && hasAnyDate) branch
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					allDay: false,
+					startDate: "2024-02-01",
+					endDate: "2024-02-02",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.includes("allDay") &&
+				i.message.includes(
+					"When allDay=false, startDate/endDate must be omitted.",
+				),
+		),
+	).toBe(true);
+}, 10000);

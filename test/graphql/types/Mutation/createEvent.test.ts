@@ -7,6 +7,7 @@ import {
 	agendaFoldersTable,
 } from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -983,6 +984,354 @@ suite("Mutation field createEvent", () => {
 						{
 							argumentPath: ["input", "endAt"],
 							message: expect.any(String),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects allDay=true payload when only startAt is provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Only StartAt",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startAt: getFutureDate(2, 10),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startAt"],
+							message:
+								"Cannot provide startAt when allDay is true. Use startDate instead.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects allDay=true payload when only endAt is provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Only EndAt",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					endAt: getFutureDate(2, 12),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endAt"],
+							message:
+								"Cannot provide endAt when allDay is true. Use endDate instead.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects allDay=true payload when only endDate is provided without startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Only EndDate",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					endDate: getFutureDateString(3),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: "startDate is required for all-day events",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("accumulates all allDay=true violations in a single error when startAt, endAt, and mismatched dates are present", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "All-Day Multi-Violation",
+					description: "Test Description",
+					organizationId,
+					allDay: true,
+					startAt: getFutureDate(2, 10),
+					endAt: getFutureDate(2, 12),
+					startDate: getFutureDateString(2),
+					// endDate intentionally omitted
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endDate"],
+							message: "endDate is required for all-day events",
+						},
+						{
+							argumentPath: ["input", "startAt"],
+							message:
+								"Cannot provide startAt when allDay is true. Use startDate instead.",
+						},
+						{
+							argumentPath: ["input", "endAt"],
+							message:
+								"Cannot provide endAt when allDay is true. Use endDate instead.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects timed event payload when only startDate is provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					allDay: false,
+					startDate: getFutureDateString(2),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message:
+								"Cannot provide startDate when allDay is false or omitted. Use startAt instead.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects timed event payload when only endDate is provided", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					allDay: false,
+					endDate: getFutureDateString(3),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endDate"],
+							message:
+								"Cannot provide endDate when allDay is false or omitted. Use endAt instead.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("rejects timed event payload when only endAt is provided without startAt", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Timed Only EndAt",
+					description: "Test Description",
+					organizationId,
+					endAt: getFutureDate(2, 12),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startAt"],
+							message: "startAt is required for timed events",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("accumulates all timed event violations in a single error when startDate, endDate, and mismatched times are present", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Timed Multi-Violation",
+					description: "Test Description",
+					organizationId,
+					allDay: false,
+					startDate: getFutureDateString(2),
+					endDate: getFutureDateString(3),
+					startAt: getFutureDate(2, 10),
+					// endAt intentionally omitted
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endAt"],
+							message: "endAt is required for timed events",
+						},
+						{
+							argumentPath: ["input", "startDate"],
+							message:
+								"Cannot provide startDate when allDay is false or omitted. Use startAt instead.",
+						},
+						{
+							argumentPath: ["input", "endDate"],
+							message:
+								"Cannot provide endDate when allDay is false or omitted. Use endAt instead.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("covers resolver allDay=true mixed-mode branch by collecting startAt, endAt and date-pair issues", async () => {
+			const organizationId = faker.string.uuid();
+			vi.spyOn(
+				mutationCreateEventArgumentsSchema,
+				"safeParseAsync",
+			).mockResolvedValue({
+				success: true,
+				data: {
+					input: {
+						organizationId,
+						name: "Resolver Branch All-Day",
+						allDay: true,
+						startAt: new Date(getFutureDate(2, 10)),
+						endAt: new Date(getFutureDate(2, 12)),
+						startDate: getFutureDateString(2),
+						endDate: null,
+					},
+				},
+			} as Awaited<
+				ReturnType<typeof mutationCreateEventArgumentsSchema.safeParseAsync>
+			>);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					allDay: true,
+					startDate: getFutureDateString(2),
+					endDate: getFutureDateString(3),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startAt"],
+							message: "Must be null when allDay is true.",
+						},
+						{
+							argumentPath: ["input", "endAt"],
+							message: "Must be null when allDay is true.",
+						},
+						{
+							argumentPath: ["input", "endDate"],
+							message:
+								"startDate and endDate must both be provided or both be null.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
+		});
+
+		test("covers resolver allDay=false mixed-mode branch by collecting startDate, endDate and time-pair issues", async () => {
+			const organizationId = faker.string.uuid();
+			vi.spyOn(
+				mutationCreateEventArgumentsSchema,
+				"safeParseAsync",
+			).mockResolvedValue({
+				success: true,
+				data: {
+					input: {
+						organizationId,
+						name: "Resolver Branch Timed",
+						allDay: false,
+						startAt: new Date(getFutureDate(2, 10)),
+						endAt: null,
+						startDate: getFutureDateString(2),
+						endDate: getFutureDateString(3),
+					},
+				},
+			} as Awaited<
+				ReturnType<typeof mutationCreateEventArgumentsSchema.safeParseAsync>
+			>);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: "Must be null when allDay is false.",
+						},
+						{
+							argumentPath: ["input", "endDate"],
+							message: "Must be null when allDay is false.",
+						},
+						{
+							argumentPath: ["input", "endAt"],
+							message:
+								"startAt and endAt must both be provided or both be null.",
 						},
 					]),
 				}),

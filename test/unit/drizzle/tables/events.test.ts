@@ -656,6 +656,30 @@ describe("src/drizzle/tables/events.ts", () => {
 			expect(result.success).toBe(false);
 		});
 
+		it("should reject allDay=true when only startAt is provided with date-only fields", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true when only endAt is provided with date-only fields", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
 		it("should reject allDay=false without startAt and endAt", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Timed Event",
@@ -665,6 +689,27 @@ describe("src/drizzle/tables/events.ts", () => {
 				endDate: "2025-06-16",
 			});
 			expect(result.success).toBe(false);
+		});
+
+		it("should accept allDay=false with startAt and endAt only", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: false,
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept allDay undefined with startAt and endAt only", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(true);
 		});
 
 		it("should reject allDay=false when date-only fields are also provided", () => {
