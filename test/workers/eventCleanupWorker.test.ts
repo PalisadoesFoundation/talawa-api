@@ -516,7 +516,7 @@ describe("eventCleanupWorker", () => {
 			});
 		});
 
-		it("should use all-day actualEndDate as end-of-day when calculating oldest/newest dates", async () => {
+		it("should use all-day actualEndDate as date-only midnight when calculating oldest/newest dates", async () => {
 			const mockOrganizations = [
 				createMockWindowConfig({
 					organizationId: "org1",
@@ -549,10 +549,10 @@ describe("eventCleanupWorker", () => {
 			const result = await getGlobalCleanupStatistics(mockDrizzleClient);
 
 			expect(result.oldestInstanceDate).toEqual(
-				new Date("2024-01-05T23:59:59.999Z"),
+				new Date("2024-01-05T00:00:00.000Z"),
 			);
 			expect(result.newestInstanceDate).toEqual(
-				new Date("2024-02-10T23:59:59.999Z"),
+				new Date("2024-02-10T00:00:00.000Z"),
 			);
 		});
 
