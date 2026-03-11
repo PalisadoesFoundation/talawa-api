@@ -28,6 +28,7 @@ describe("ErrorCode enum", () => {
 			"forbidden_action",
 			"unexpected",
 			"unauthorized_action_on_arguments_associated_resources",
+			"invalid_credentials",
 		];
 
 		expectedCodes.forEach((code) => {
@@ -51,6 +52,7 @@ describe("ERROR_CODE_TO_HTTP_STATUS mapping", () => {
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.UNAUTHENTICATED]).toBe(401);
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.TOKEN_EXPIRED]).toBe(401);
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.TOKEN_INVALID]).toBe(401);
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.INVALID_CREDENTIALS]).toBe(401);
 	});
 
 	it("should map authorization errors to 403", () => {

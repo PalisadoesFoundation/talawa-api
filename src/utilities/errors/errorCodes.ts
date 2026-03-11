@@ -69,6 +69,8 @@ export enum ErrorCode {
 	UNEXPECTED = "unexpected",
 	/** Legacy error code for unauthorized action on associated resources (HTTP 403) */
 	UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES = "unauthorized_action_on_arguments_associated_resources",
+	/** Legacy error code for invalid login credentials (HTTP 401) */
+	INVALID_CREDENTIALS = "invalid_credentials",
 }
 
 /**
@@ -112,6 +114,7 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, number> = {
 	[ErrorCode.UNEXPECTED]: 500,
 	[ErrorCode.DATABASE_ERROR]: 500,
 	[ErrorCode.EXTERNAL_SERVICE_ERROR]: 502,
+	[ErrorCode.INVALID_CREDENTIALS]: 401,
 };
 
 /**
