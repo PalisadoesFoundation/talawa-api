@@ -1,5 +1,9 @@
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -11,7 +15,42 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-afterEach(() => {
+const createdOrganizationIds = new Set<string>();
+const createdUserIds = new Set<string>();
+
+afterEach(async () => {
+	const organizationIds = [...createdOrganizationIds];
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds))
+			.execute();
+
+		createdOrganizationIds.clear();
+	}
+
+	const userIds = [...createdUserIds];
+	if (userIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(inArray(organizationMembershipsTable.memberId, userIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, userIds))
+			.execute();
+
+		createdUserIds.clear();
+	}
+
 	vi.restoreAllMocks();
 });
 
@@ -37,7 +76,15 @@ async function createTestOrganization(authToken: string) {
 	);
 	const orgId = createOrgResult.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
+	createdOrganizationIds.add(orgId);
 	return orgId;
+}
+
+async function createTrackedRegularUser() {
+	const user = await createRegularUserUsingAdmin();
+	assertToBeNonNullish(user.userId);
+	createdUserIds.add(user.userId);
+	return user;
 }
 
 // Mock function to simulate finding a standalone event
@@ -114,7 +161,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 
 	suite("when the current user does not exist", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
-			const { authToken: userToken } = await createRegularUserUsingAdmin();
+			const { authToken: userToken } = await createTrackedRegularUser();
 			assertToBeNonNullish(userToken);
 
 			// Delete the user
@@ -182,7 +229,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 	suite("when user lacks permission to update the event", () => {
 		test("should return an error with unauthorized_action_on_arguments_associated_resources for non-admin user", async () => {
 			const { authToken: regularToken, userId } =
-				await createRegularUserUsingAdmin();
+				await createTrackedRegularUser();
 			assertToBeNonNullish(regularToken);
 			assertToBeNonNullish(userId);
 
@@ -1190,7 +1237,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 
 		test("should allow organization administrator to update event", async () => {
 			const { authToken: regularToken, userId } =
-				await createRegularUserUsingAdmin();
+				await createTrackedRegularUser();
 			assertToBeNonNullish(regularToken);
 			assertToBeNonNullish(userId);
 

@@ -969,6 +969,37 @@ suite("Query field eventsByVolunteer", () => {
 				creatorId: adminUserId,
 			});
 
+			const neighborEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Neighbor Earlier Timed Event",
+							description: "Neighbor event to verify deterministic ordering",
+							organizationId: orgId,
+							startAt: new Date(
+								eventStart.getTime() - 24 * 60 * 60 * 1000,
+							).toISOString(),
+							endAt: new Date(
+								eventEnd.getTime() - 24 * 60 * 60 * 1000,
+							).toISOString(),
+						},
+					},
+				},
+			);
+			const neighborEventId = neighborEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(neighborEventId);
+
+			await server.drizzleClient.insert(eventVolunteersTable).values({
+				userId: freshUserId,
+				eventId: neighborEventId,
+				isTemplate: false,
+				recurringEventInstanceId: null,
+				hasAccepted: true,
+				creatorId: adminUserId,
+			});
+
 			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: { userId: freshUserId },
@@ -979,10 +1010,15 @@ suite("Query field eventsByVolunteer", () => {
 				| Array<{ id: string; name: string }>
 				| undefined;
 			assertToBeNonNullish(events);
-			// The template event itself should be returned as a standalone occurrence
-			const found = events.find((e) => e.id === templateEventId);
-			expect(found).toBeDefined();
-			expect(found?.name).toBe("Timed Recurring Template Event");
+			const templateIndex = events.findIndex((e) => e.id === templateEventId);
+			const neighborIndex = events.findIndex((e) => e.id === neighborEventId);
+			expect(templateIndex).toBeGreaterThanOrEqual(0);
+			expect(neighborIndex).toBeGreaterThanOrEqual(0);
+			expect(neighborIndex).toBeLessThan(templateIndex);
+			expect(events[neighborIndex]?.name).toBe("Neighbor Earlier Timed Event");
+			expect(events[templateIndex]?.name).toBe(
+				"Timed Recurring Template Event",
+			);
 		});
 
 		test("should treat a non-template volunteer pointing to an all-day recurring template event as standalone occurrence (startDate path)", async () => {
@@ -1054,6 +1090,34 @@ suite("Query field eventsByVolunteer", () => {
 				creatorId: adminUserId,
 			});
 
+			const neighborEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Neighbor Later Timed Event",
+							description:
+								"Neighbor event to validate startDate-based ordering",
+							organizationId: orgId,
+							startAt: "2030-06-02T10:00:00.000Z",
+							endAt: "2030-06-02T11:00:00.000Z",
+						},
+					},
+				},
+			);
+			const neighborEventId = neighborEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(neighborEventId);
+
+			await server.drizzleClient.insert(eventVolunteersTable).values({
+				userId: freshUserId,
+				eventId: neighborEventId,
+				isTemplate: false,
+				recurringEventInstanceId: null,
+				hasAccepted: true,
+				creatorId: adminUserId,
+			});
+
 			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: { userId: freshUserId },
@@ -1064,10 +1128,15 @@ suite("Query field eventsByVolunteer", () => {
 				| Array<{ id: string; name: string }>
 				| undefined;
 			assertToBeNonNullish(events);
-			// The all-day template event itself should be returned as a standalone occurrence
-			const found = events.find((e) => e.id === templateEventId);
-			expect(found).toBeDefined();
-			expect(found?.name).toBe("AllDay Recurring Template Event");
+			const templateIndex = events.findIndex((e) => e.id === templateEventId);
+			const neighborIndex = events.findIndex((e) => e.id === neighborEventId);
+			expect(templateIndex).toBeGreaterThanOrEqual(0);
+			expect(neighborIndex).toBeGreaterThanOrEqual(0);
+			expect(templateIndex).toBeLessThan(neighborIndex);
+			expect(events[templateIndex]?.name).toBe(
+				"AllDay Recurring Template Event",
+			);
+			expect(events[neighborIndex]?.name).toBe("Neighbor Later Timed Event");
 		});
 
 		test("should use startDate when computing sort key for all-day standalone event (line 217-218 startDate branch)", async () => {
@@ -1136,6 +1205,33 @@ suite("Query field eventsByVolunteer", () => {
 				creatorId: adminUserId,
 			});
 
+			const neighborEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Neighbor Timed Event",
+							description: "Timed neighbor to lock sort behavior",
+							organizationId: orgId,
+							startAt: "2028-03-16T09:00:00.000Z",
+							endAt: "2028-03-16T10:00:00.000Z",
+						},
+					},
+				},
+			);
+			const neighborEventId = neighborEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(neighborEventId);
+
+			await server.drizzleClient.insert(eventVolunteersTable).values({
+				userId: freshUserId,
+				eventId: neighborEventId,
+				isTemplate: false,
+				recurringEventInstanceId: null,
+				hasAccepted: true,
+				creatorId: adminUserId,
+			});
+
 			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: { userId: freshUserId },
@@ -1146,9 +1242,15 @@ suite("Query field eventsByVolunteer", () => {
 				| Array<{ id: string; name: string }>
 				| undefined;
 			assertToBeNonNullish(events);
-			const found = events.find((e) => e.id === standaloneEventId);
-			expect(found).toBeDefined();
-			expect(found?.name).toBe("AllDay Standalone Event");
+			const standaloneIndex = events.findIndex(
+				(e) => e.id === standaloneEventId,
+			);
+			const neighborIndex = events.findIndex((e) => e.id === neighborEventId);
+			expect(standaloneIndex).toBeGreaterThanOrEqual(0);
+			expect(neighborIndex).toBeGreaterThanOrEqual(0);
+			expect(standaloneIndex).toBeLessThan(neighborIndex);
+			expect(events[standaloneIndex]?.name).toBe("AllDay Standalone Event");
+			expect(events[neighborIndex]?.name).toBe("Neighbor Timed Event");
 		});
 
 		test("should use actualStartDate when computing sort key for a specific all-day recurring instance (line 247-248 actualStartDate branch)", async () => {

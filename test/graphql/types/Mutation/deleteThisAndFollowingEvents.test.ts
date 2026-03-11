@@ -1,8 +1,9 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { eq, inArray } from "drizzle-orm";
+import { afterEach, expect, suite, test } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -51,6 +52,7 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	});
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
+	createdOrganizationIds.add(orgId);
 	return orgId;
 }
 
@@ -143,6 +145,46 @@ async function createRecurringEventWithInstances(
 		instanceIds: instances.map((i) => i.id),
 	};
 }
+
+const createdOrganizationIds = new Set<string>();
+
+// Clean up after each test to prevent state leakage
+afterEach(async () => {
+	const organizationIds = [...createdOrganizationIds];
+
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurringEventInstancesTable)
+			.where(
+				inArray(recurringEventInstancesTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(recurrenceRulesTable)
+			.where(inArray(recurrenceRulesTable.organizationId, organizationIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.organizationId, organizationIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds))
+			.execute();
+
+		createdOrganizationIds.clear();
+	}
+});
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -638,7 +680,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 					isRecurringEventTemplate: true,
 					allDay: true,
 					startDate: "2024-03-01",
-					endDate: "2024-03-01",
+					endDate: "2024-03-02",
 					isPublic: true,
 					isRegisterable: false,
 				})
@@ -674,7 +716,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 						organizationId,
 						originalInstanceStartDate: "2024-03-01",
 						actualStartDate: "2024-03-01",
-						actualEndDate: "2024-03-01",
+						actualEndDate: "2024-03-02",
 						sequenceNumber: 1,
 					},
 					{
@@ -684,7 +726,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 						organizationId,
 						originalInstanceStartDate: "2024-03-08",
 						actualStartDate: "2024-03-08",
-						actualEndDate: "2024-03-08",
+						actualEndDate: "2024-03-09",
 						sequenceNumber: 2,
 					},
 					{
@@ -694,7 +736,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 						organizationId,
 						originalInstanceStartDate: "2024-03-15",
 						actualStartDate: "2024-03-15",
-						actualEndDate: "2024-03-15",
+						actualEndDate: "2024-03-16",
 						sequenceNumber: 3,
 					},
 				])

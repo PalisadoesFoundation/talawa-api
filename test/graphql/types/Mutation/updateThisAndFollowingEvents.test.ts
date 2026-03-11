@@ -7,6 +7,7 @@ import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationM
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -18,6 +19,7 @@ import {
 } from "../documentNodes";
 
 const createdOrganizationIds = new Set<string>();
+const createdUserIds = new Set<string>();
 
 // Clean up after each test to prevent state leakage
 afterEach(async () => {
@@ -61,6 +63,15 @@ afterEach(async () => {
 			.execute();
 
 		createdOrganizationIds.clear();
+	}
+
+	const userIds = [...createdUserIds];
+	if (userIds.length > 0) {
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, userIds))
+			.execute();
+		createdUserIds.clear();
 	}
 
 	vi.clearAllMocks();
@@ -485,18 +496,23 @@ suite(
 
 			const regularUserEmail = faker.internet.email();
 			const regularUserPassword = "password123";
-			await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						emailAddress: regularUserEmail,
-						password: regularUserPassword,
-						name: "Regular User",
-						role: "regular",
-						isEmailAddressVerified: true,
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							password: regularUserPassword,
+							name: "Regular User",
+							role: "regular",
+							isEmailAddressVerified: true,
+						},
 					},
 				},
-			});
+			);
+			const createdUserId = createUserResult.data?.createUser?.user?.id;
+			if (createdUserId) createdUserIds.add(createdUserId);
 
 			const regularUserSignInResult = await mercuriusClient.query(
 				Query_signIn,

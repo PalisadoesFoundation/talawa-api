@@ -262,6 +262,10 @@ describe("VolunteerMembershipEventResolver", () => {
 			const allDayEvent = {
 				...mockEvent,
 				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: "2024-02-01",
+				endDate: "2024-02-02",
 			};
 
 			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
@@ -275,6 +279,10 @@ describe("VolunteerMembershipEventResolver", () => {
 			);
 
 			expect(result.allDay).toBe(true);
+			expect(result.startAt).toBeNull();
+			expect(result.endAt).toBeNull();
+			expect(result.startDate).toBe("2024-02-01");
+			expect(result.endDate).toBe("2024-02-02");
 			expect(result.attachments).toEqual([]);
 		});
 	});

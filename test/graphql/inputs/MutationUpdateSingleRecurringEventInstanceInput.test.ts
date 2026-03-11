@@ -180,8 +180,85 @@ describe("MutationUpdateSingleRecurringEventInstanceInput Schema", () => {
 				id: validId,
 				startDate: "2025-06-10",
 				endDate: "2025-06-11",
+				allDay: true,
 			});
 
 		expect(result.success).toBe(true);
+	});
+
+	it("should reject when timed and all-day fields are both provided", () => {
+		const result =
+			mutationUpdateSingleRecurringEventInstanceInputSchema.safeParse({
+				id: validId,
+				startAt: new Date("2025-06-01T10:00:00Z"),
+				startDate: "2025-06-10",
+			});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(
+				result.error.issues.some(
+					(issue) =>
+						issue.message ===
+						"Use either startAt/endAt or startDate/endDate, not both.",
+				),
+			).toBe(true);
+		}
+	});
+
+	it("should reject timed fields when allDay is true", () => {
+		const result =
+			mutationUpdateSingleRecurringEventInstanceInputSchema.safeParse({
+				id: validId,
+				allDay: true,
+				startAt: new Date("2025-06-01T10:00:00Z"),
+			});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const allDayIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "allDay",
+			);
+			expect(allDayIssue?.message).toBe(
+				"Timed fields are not allowed when allDay is true.",
+			);
+		}
+	});
+
+	it("should reject all-day fields when allDay is false", () => {
+		const result =
+			mutationUpdateSingleRecurringEventInstanceInputSchema.safeParse({
+				id: validId,
+				allDay: false,
+				startDate: "2025-06-10",
+			});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const allDayIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "allDay",
+			);
+			expect(allDayIssue?.message).toBe(
+				"All-day fields require allDay to be true.",
+			);
+		}
+	});
+
+	it("should reject all-day fields when allDay is undefined", () => {
+		const result =
+			mutationUpdateSingleRecurringEventInstanceInputSchema.safeParse({
+				id: validId,
+				startDate: "2025-06-10",
+			});
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const allDayIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "allDay",
+			);
+			expect(allDayIssue?.message).toBe(
+				"All-day fields require allDay to be true.",
+			);
+		}
 	});
 });

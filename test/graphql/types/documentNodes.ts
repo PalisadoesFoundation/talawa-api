@@ -1985,6 +1985,8 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       location
       startAt
       endAt
+      startDate
+      endDate
       allDay
       isPublic
       isRegisterable
@@ -3136,6 +3138,8 @@ export const Query_eventsByVolunteer = gql(`
       description
       startAt
       endAt
+      startDate
+      endDate
       location
       allDay
       isPublic
@@ -3156,6 +3160,8 @@ export const Query_eventsByVolunteerWithAttachments = gql(`
     eventsByVolunteer(userId: $userId) {
       id
       name
+      startDate
+      endDate
       attachments {
         mimeType
         url
@@ -3172,6 +3178,8 @@ export const Query_eventsByAttendee = gql(`
 			description
 			startAt
 			endAt
+      startDate
+      endDate
 			location
 			allDay
 			isPublic

@@ -34,6 +34,35 @@ export const mutationUpdateSingleRecurringEventInstanceInputSchema = z
 		isInviteOnly: z.boolean().optional(),
 	})
 	.superRefine(({ id, ...remainingArgs }, ctx) => {
+		const hasTimedFields =
+			isNotNullish(remainingArgs.startAt) || isNotNullish(remainingArgs.endAt);
+		const hasAllDayFields =
+			isNotNullish(remainingArgs.startDate) ||
+			isNotNullish(remainingArgs.endDate);
+
+		if (hasTimedFields && hasAllDayFields) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Use either startAt/endAt or startDate/endDate, not both.",
+			});
+		}
+
+		if (remainingArgs.allDay === true && hasTimedFields) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Timed fields are not allowed when allDay is true.",
+				path: ["allDay"],
+			});
+		}
+
+		if (remainingArgs.allDay !== true && hasAllDayFields) {
+			ctx.addIssue({
+				code: "custom",
+				message: "All-day fields require allDay to be true.",
+				path: ["allDay"],
+			});
+		}
+
 		// Ensure at least one field is being updated
 		if (!Object.values(remainingArgs).some((value) => value !== undefined)) {
 			ctx.addIssue({

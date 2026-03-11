@@ -954,12 +954,6 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalInstanceFindFirst =
-				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
-			const originalTransaction = server.drizzleClient.transaction;
-
 			server.drizzleClient.query.usersTable.findFirst = vi
 				.fn()
 				.mockResolvedValue({ role: "administrator" });
@@ -978,6 +972,26 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 				.fn()
 				.mockResolvedValue(mockInstance);
 
+			const updatedInstance = {
+				id: instanceId,
+				baseRecurringEventId: mockInstance.baseRecurringEventId,
+				recurrenceRuleId: mockInstance.recurrenceRuleId,
+				originalInstanceStartDate: "2024-12-02",
+				actualStartDate: "2024-12-03",
+				actualEndDate: "2024-12-05",
+				organizationId: orgId,
+				isCancelled: false,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			const insertValuesSpy = vi.fn().mockResolvedValue(undefined);
+			const updateSetSpy = vi.fn().mockReturnValue({
+				where: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([updatedInstance]),
+				}),
+			});
+
 			// Mock successful transaction
 			server.drizzleClient.transaction = vi
 				.fn()
@@ -989,54 +1003,58 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 							},
 						},
 						insert: vi.fn().mockReturnValue({
-							values: vi.fn().mockResolvedValue(undefined),
+							values: insertValuesSpy,
 						}),
 						update: vi.fn().mockReturnValue({
-							set: vi.fn().mockReturnValue({
-								where: vi.fn().mockReturnValue({
-									returning: vi.fn().mockResolvedValue([
-										{
-											id: instanceId,
-											baseRecurringEventId: mockInstance.baseRecurringEventId,
-											recurrenceRuleId: mockInstance.recurrenceRuleId,
-											originalInstanceStartDate: "2024-12-02",
-											actualStartDate: "2024-12-03",
-											actualEndDate: "2024-12-05",
-											organizationId: orgId,
-											isCancelled: false,
-											createdAt: new Date(),
-											updatedAt: new Date(),
-										},
-									]),
-								}),
-							}),
+							set: updateSetSpy,
 						}),
 					};
 					return await callback(mockTx);
 				});
 
-			try {
-				const result = await mercuriusClient.mutate(
-					Mutation_updateSingleRecurringEventInstance,
-					{
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: {
-							input: {
-								id: instanceId,
-								startDate: "2024-12-03", // Update start date
-							},
+			const result = await mercuriusClient.mutate(
+				Mutation_updateSingleRecurringEventInstance,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: instanceId,
+							allDay: true,
+							startDate: "2024-12-03", // Update start date
 						},
 					},
-				);
+				},
+			);
 
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.updateSingleRecurringEventInstance).toBeTruthy();
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
-					originalInstanceFindFirst;
-				server.drizzleClient.transaction = originalTransaction;
-			}
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateSingleRecurringEventInstance).toMatchObject({
+				id: instanceId,
+				startDate: updatedInstance.actualStartDate,
+				endDate: updatedInstance.actualEndDate,
+				allDay: true,
+			});
+
+			// Verify persisted instance override fields were written.
+			expect(updateSetSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					actualStartDate: updatedInstance.actualStartDate,
+					actualEndDate: updatedInstance.actualEndDate,
+				}),
+			);
+
+			// Verify stored exception record includes the all-day override flag.
+			expect(insertValuesSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					recurringEventInstanceId: instanceId,
+					exceptionData: expect.objectContaining({
+						allDay: true,
+					}),
+				}),
+			);
+			expect(result.data?.updateSingleRecurringEventInstance).toMatchObject({
+				startDate: "2024-12-03",
+				endDate: "2024-12-05",
+			});
 		});
 
 		test("should successfully update endDate for an all-day event", async () => {
@@ -1044,12 +1062,6 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 			const instanceId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			const originalInstanceFindFirst =
-				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
-			const originalTransaction = server.drizzleClient.transaction;
-
 			server.drizzleClient.query.usersTable.findFirst = vi
 				.fn()
 				.mockResolvedValue({ role: "administrator" });
@@ -1068,6 +1080,26 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 				.fn()
 				.mockResolvedValue(mockInstance);
 
+			const updatedInstance = {
+				id: instanceId,
+				baseRecurringEventId: mockInstance.baseRecurringEventId,
+				recurrenceRuleId: mockInstance.recurrenceRuleId,
+				originalInstanceStartDate: "2024-12-02",
+				actualStartDate: "2024-12-02",
+				actualEndDate: "2024-12-06",
+				organizationId: orgId,
+				isCancelled: false,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			const insertValuesSpy = vi.fn().mockResolvedValue(undefined);
+			const updateSetSpy = vi.fn().mockReturnValue({
+				where: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([updatedInstance]),
+				}),
+			});
+
 			// Mock successful transaction
 			server.drizzleClient.transaction = vi
 				.fn()
@@ -1079,54 +1111,58 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 							},
 						},
 						insert: vi.fn().mockReturnValue({
-							values: vi.fn().mockResolvedValue(undefined),
+							values: insertValuesSpy,
 						}),
 						update: vi.fn().mockReturnValue({
-							set: vi.fn().mockReturnValue({
-								where: vi.fn().mockReturnValue({
-									returning: vi.fn().mockResolvedValue([
-										{
-											id: instanceId,
-											baseRecurringEventId: mockInstance.baseRecurringEventId,
-											recurrenceRuleId: mockInstance.recurrenceRuleId,
-											originalInstanceStartDate: "2024-12-02",
-											actualStartDate: "2024-12-02",
-											actualEndDate: "2024-12-06",
-											organizationId: orgId,
-											isCancelled: false,
-											createdAt: new Date(),
-											updatedAt: new Date(),
-										},
-									]),
-								}),
-							}),
+							set: updateSetSpy,
 						}),
 					};
 					return await callback(mockTx);
 				});
 
-			try {
-				const result = await mercuriusClient.mutate(
-					Mutation_updateSingleRecurringEventInstance,
-					{
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: {
-							input: {
-								id: instanceId,
-								endDate: "2024-12-06", // Update end date
-							},
+			const result = await mercuriusClient.mutate(
+				Mutation_updateSingleRecurringEventInstance,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: instanceId,
+							allDay: true,
+							endDate: "2024-12-06", // Update end date
 						},
 					},
-				);
+				},
+			);
 
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.updateSingleRecurringEventInstance).toBeTruthy();
-			} finally {
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
-					originalInstanceFindFirst;
-				server.drizzleClient.transaction = originalTransaction;
-			}
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateSingleRecurringEventInstance).toMatchObject({
+				id: instanceId,
+				startDate: updatedInstance.actualStartDate,
+				endDate: updatedInstance.actualEndDate,
+				allDay: true,
+			});
+
+			// Verify persisted instance override fields were written.
+			expect(updateSetSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					actualStartDate: updatedInstance.actualStartDate,
+					actualEndDate: updatedInstance.actualEndDate,
+				}),
+			);
+
+			// Verify stored exception record includes the all-day override flag.
+			expect(insertValuesSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					recurringEventInstanceId: instanceId,
+					exceptionData: expect.objectContaining({
+						allDay: true,
+					}),
+				}),
+			);
+			expect(result.data?.updateSingleRecurringEventInstance).toMatchObject({
+				startDate: "2024-12-02",
+				endDate: "2024-12-06",
+			});
 		});
 
 		test("should return an error when endDate equals startDate for an all-day event", async () => {

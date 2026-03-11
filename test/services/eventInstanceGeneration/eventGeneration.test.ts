@@ -68,8 +68,8 @@ suite("eventMaterialization", () => {
 				isPublic: true,
 				isRegisterable: true,
 				allDay: false,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
 			};
 
 			const mockRecurrenceRule = {
@@ -93,7 +93,7 @@ suite("eventMaterialization", () => {
 					instanceStartTime: new Date("2025-01-15T10:00:00Z"),
 					exceptionData: { isCancelled: true },
 					creatorId: faker.string.uuid(),
-					createdAt: new Date(),
+					createdAt: new Date("2025-01-01T00:00:00Z"),
 				},
 			];
 
@@ -382,8 +382,8 @@ suite("eventMaterialization", () => {
 				isPublic: true,
 				isRegisterable: true,
 				allDay: false,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
 			};
 
 			const mockRecurrenceRule = {
@@ -445,8 +445,8 @@ suite("eventMaterialization", () => {
 				creatorId: faker.string.uuid(),
 				isPublic: true,
 				isRegisterable: true,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
 			};
 
 			const mockRecurrenceRule = {
@@ -469,6 +469,9 @@ suite("eventMaterialization", () => {
 			(
 				mockDrizzleClient.query.recurrenceRulesTable.findFirst as Mock
 			).mockResolvedValue(mockRecurrenceRule);
+			(
+				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
+			).mockResolvedValue([]);
 			(
 				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
 			).mockResolvedValue([]);
@@ -508,8 +511,8 @@ suite("eventMaterialization", () => {
 				creatorId: faker.string.uuid(),
 				isPublic: true,
 				isRegisterable: true,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
 			};
 
 			const mockRecurrenceRule = {
@@ -552,6 +555,9 @@ suite("eventMaterialization", () => {
 			(
 				mockDrizzleClient.query.recurrenceRulesTable.findFirst as Mock
 			).mockResolvedValue(mockRecurrenceRule);
+			(
+				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
+			).mockResolvedValue([]);
 			(
 				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
 			).mockResolvedValue(mockExistingInstances);

@@ -48,8 +48,8 @@ suite("instanceResolver", () => {
 		actualEndTime: new Date("2025-01-01T11:00:00Z"),
 		isCancelled: false,
 		organizationId: faker.string.uuid(),
-		generatedAt: new Date(),
-		lastUpdatedAt: new Date(),
+		generatedAt: new Date("2025-06-01T00:00:00.000Z"),
+		lastUpdatedAt: new Date("2025-06-01T00:00:00.000Z"),
 		version: "1",
 		sequenceNumber: 1,
 		totalCount: 10,
@@ -65,8 +65,8 @@ suite("instanceResolver", () => {
 		isRegisterable: true,
 		creatorId: faker.string.uuid(),
 		updaterId: faker.string.uuid(),
-		createdAt: new Date(),
-		updatedAt: new Date(),
+		createdAt: new Date("2025-06-01T00:00:00.000Z"),
+		updatedAt: new Date("2025-06-01T00:00:00.000Z"),
 		attachments: [],
 	} as unknown as typeof eventsTable.$inferSelect & {
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
@@ -122,7 +122,7 @@ suite("instanceResolver", () => {
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
-				createdAt: new Date(),
+				createdAt: new Date("2025-06-01T00:00:00.000Z"),
 				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
@@ -161,7 +161,7 @@ suite("instanceResolver", () => {
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
-				createdAt: new Date(),
+				createdAt: new Date("2025-06-01T00:00:00.000Z"),
 				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
@@ -190,7 +190,7 @@ suite("instanceResolver", () => {
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
-				createdAt: new Date(),
+				createdAt: new Date("2025-06-01T00:00:00.000Z"),
 				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
@@ -219,7 +219,7 @@ suite("instanceResolver", () => {
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
-				createdAt: new Date(),
+				createdAt: new Date("2025-06-01T00:00:00.000Z"),
 				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
@@ -233,6 +233,8 @@ suite("instanceResolver", () => {
 
 			expect(result.actualStartDate).toBe("2025-06-15");
 			expect(result.actualEndDate).toBe("2025-06-15");
+			expect(result.actualStartTime).toBeNull();
+			expect(result.actualEndTime).toBeNull();
 		});
 
 		test("applies null all-day date exception data correctly", () => {
@@ -247,7 +249,7 @@ suite("instanceResolver", () => {
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
-				createdAt: new Date(),
+				createdAt: new Date("2025-06-01T00:00:00.000Z"),
 				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
@@ -261,6 +263,8 @@ suite("instanceResolver", () => {
 
 			expect(result.actualStartDate).toBeNull();
 			expect(result.actualEndDate).toBeNull();
+			expect(result.actualStartTime).toBeNull();
+			expect(result.actualEndTime).toBeNull();
 		});
 	});
 
@@ -314,7 +318,7 @@ suite("instanceResolver", () => {
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
-				createdAt: new Date(),
+				createdAt: new Date("2025-06-01T00:00:00.000Z"),
 				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
@@ -379,7 +383,7 @@ suite("instanceResolver", () => {
 					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
 					updaterId: null,
-					createdAt: new Date(),
+					createdAt: new Date("2025-06-01T00:00:00.000Z"),
 					updatedAt: null,
 				},
 				{
@@ -389,7 +393,7 @@ suite("instanceResolver", () => {
 					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
 					updaterId: null,
-					createdAt: new Date(),
+					createdAt: new Date("2025-06-01T00:00:00.000Z"),
 					updatedAt: null,
 				},
 			] as (typeof eventExceptionsTable.$inferSelect)[];
@@ -457,9 +461,9 @@ suite("instanceResolver", () => {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
 				originalSeriesId: faker.string.uuid(),
-				originalInstanceStartTime: new Date(),
-				actualStartTime: new Date(),
-				actualEndTime: new Date(),
+				originalInstanceStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualEndTime: new Date("2025-06-01T00:00:00.000Z"),
 				organizationId: faker.string.uuid(),
 				name: "Test Event",
 			};
@@ -477,9 +481,9 @@ suite("instanceResolver", () => {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
 				// Missing originalSeriesId
-				originalInstanceStartTime: new Date(),
-				actualStartTime: new Date(),
-				actualEndTime: new Date(),
+				originalInstanceStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualEndTime: new Date("2025-06-01T00:00:00.000Z"),
 				organizationId: faker.string.uuid(),
 				name: "Test Event",
 			};
@@ -499,9 +503,9 @@ suite("instanceResolver", () => {
 			const invalidInstance: Partial<ResolvedEventInstance> = {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
-				originalInstanceStartTime: new Date(),
-				actualStartTime: new Date(),
-				actualEndTime: new Date(),
+				originalInstanceStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualEndTime: new Date("2025-06-01T00:00:00.000Z"),
 				organizationId: faker.string.uuid(),
 				name: "Test Event",
 				originalSeriesId: undefined, // Undefined required field
@@ -523,9 +527,9 @@ suite("instanceResolver", () => {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
 				originalSeriesId: faker.string.uuid(),
-				originalInstanceStartTime: new Date(),
+				originalInstanceStartTime: new Date("2025-06-01T00:00:00.000Z"),
 				actualStartTime: null,
-				actualEndTime: new Date(),
+				actualEndTime: new Date("2025-06-01T00:00:00.000Z"),
 				actualStartDate: null,
 				actualEndDate: null,
 				organizationId: faker.string.uuid(),
@@ -578,9 +582,9 @@ suite("instanceResolver", () => {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
 				originalSeriesId: faker.string.uuid(),
-				originalInstanceStartTime: new Date(),
-				actualStartTime: new Date(),
-				actualEndTime: new Date(),
+				originalInstanceStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualStartTime: new Date("2025-06-01T00:00:00.000Z"),
+				actualEndTime: new Date("2025-06-01T00:00:00.000Z"),
 				actualStartDate: "2025-01-01",
 				actualEndDate: "2025-01-02",
 				organizationId: faker.string.uuid(),

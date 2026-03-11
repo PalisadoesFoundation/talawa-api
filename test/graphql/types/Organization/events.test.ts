@@ -67,7 +67,7 @@ describe("Organization Events Resolver Tests", () => {
 			eventType: "standalone" as const,
 			title: "Test Event 1",
 			organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-			createdAt: new Date(),
+			createdAt: new Date("2020-01-01T00:00:00Z"),
 			creatorId: "user-123",
 			description: "description",
 			updatedAt: null,
@@ -77,7 +77,7 @@ describe("Organization Events Resolver Tests", () => {
 			isRegisterable: true,
 			isInviteOnly: false,
 			location: "Test Location",
-			registrationClosesAt: new Date(),
+			registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 			attachments: [],
 			isRecurringEventTemplate: false,
 			startDate: null,
@@ -91,7 +91,7 @@ describe("Organization Events Resolver Tests", () => {
 			eventType: "standalone" as const,
 			title: "All Day Event",
 			organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-			createdAt: new Date(),
+			createdAt: new Date("2020-01-01T00:00:00Z"),
 			creatorId: "user-123",
 			description: "description",
 			updatedAt: null,
@@ -101,7 +101,7 @@ describe("Organization Events Resolver Tests", () => {
 			isRegisterable: true,
 			isInviteOnly: false,
 			location: "Test Location",
-			registrationClosesAt: new Date(),
+			registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 			attachments: [],
 			isRecurringEventTemplate: false,
 			startDate: "2024-07-21",
@@ -115,7 +115,7 @@ describe("Organization Events Resolver Tests", () => {
 			eventType: "generated" as const,
 			title: "Test Event 2",
 			organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-			createdAt: new Date(),
+			createdAt: new Date("2020-01-01T00:00:00Z"),
 			creatorId: "user-123",
 			description: "description",
 			updatedAt: null,
@@ -125,7 +125,7 @@ describe("Organization Events Resolver Tests", () => {
 			isRegisterable: true,
 			isInviteOnly: false,
 			location: "Test Location",
-			registrationClosesAt: new Date(),
+			registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 			attachments: [],
 			isRecurringEventTemplate: false,
 			startDate: null,
@@ -530,7 +530,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: `Test Event ${i}`,
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "description",
 				updatedAt: null,
@@ -540,7 +540,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 				startDate: null,
@@ -594,7 +594,7 @@ describe("Organization Events Resolver Tests", () => {
 					eventType: "standalone" as const,
 					title: "Test Event 0",
 					organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-					createdAt: new Date(),
+					createdAt: new Date("2020-01-01T00:00:00Z"),
 					creatorId: "user-123",
 					description: "description",
 					updatedAt: null,
@@ -604,7 +604,7 @@ describe("Organization Events Resolver Tests", () => {
 					isRegisterable: true,
 					isInviteOnly: false,
 					location: "Test Location",
-					registrationClosesAt: new Date(),
+					registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 					startDate: null,
 					endDate: null,
 					attachments: [],
@@ -1282,7 +1282,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "All-Day Event",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "All-day test event",
 				updatedAt: null,
@@ -1291,7 +1291,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1326,7 +1326,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "All-Day Event 1",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "First all-day event",
 				updatedAt: null,
@@ -1335,7 +1335,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1351,7 +1351,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "All-Day Event 2",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "Second all-day event",
 				updatedAt: null,
@@ -1360,7 +1360,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1398,7 +1398,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "Invalid All-Day Event",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "Invalid all-day event",
 				updatedAt: null,
@@ -1407,7 +1407,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1415,7 +1415,7 @@ describe("Organization Events Resolver Tests", () => {
 			const cursor = Buffer.from(
 				JSON.stringify({
 					id: "event-invalid-allday",
-					startAt: new Date().toISOString(),
+					startAt: "2024-07-20T00:00:00.000Z",
 				}),
 			).toString("base64url");
 
@@ -1485,7 +1485,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "Event July 20",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "Event on July 20",
 				updatedAt: null,
@@ -1494,7 +1494,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1510,7 +1510,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "Event July 21",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "Event on July 21",
 				updatedAt: null,
@@ -1519,7 +1519,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1554,7 +1554,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "All-Day Event 1",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "First all-day event",
 				updatedAt: null,
@@ -1563,7 +1563,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1579,7 +1579,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "All-Day Event 2",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "Second all-day event",
 				updatedAt: null,
@@ -1588,7 +1588,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};
@@ -1619,9 +1619,9 @@ describe("Organization Events Resolver Tests", () => {
 			if (!baseEvent1) {
 				throw new Error("Expected mock event at index 0");
 			}
-			const baseEvent2 = mockEvents[1];
+			const baseEvent2 = mockEvents[2];
 			if (!baseEvent2) {
-				throw new Error("Expected mock event at index 1");
+				throw new Error("Expected mock event at index 2");
 			}
 
 			const timedEvent1 = {
@@ -1634,6 +1634,8 @@ describe("Organization Events Resolver Tests", () => {
 				...baseEvent2,
 				startAt: new Date("2024-07-20T11:00:00Z"),
 				allDay: false,
+				startDate: null,
+				endDate: null,
 			};
 
 			const cursor = Buffer.from(
@@ -1669,7 +1671,7 @@ describe("Organization Events Resolver Tests", () => {
 				eventType: "standalone" as const,
 				title: "All-Day Event",
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
-				createdAt: new Date(),
+				createdAt: new Date("2020-01-01T00:00:00Z"),
 				creatorId: "user-123",
 				description: "All-day event",
 				updatedAt: null,
@@ -1678,7 +1680,7 @@ describe("Organization Events Resolver Tests", () => {
 				isRegisterable: true,
 				isInviteOnly: false,
 				location: "Test Location",
-				registrationClosesAt: new Date(),
+				registrationClosesAt: new Date("2020-01-01T00:00:00Z"),
 				attachments: [],
 				isRecurringEventTemplate: false,
 			};

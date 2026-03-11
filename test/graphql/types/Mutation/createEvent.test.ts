@@ -55,6 +55,29 @@ const createEvent = async (
 		variables,
 	});
 
+const RUN_UTC_BASE_DATE = (() => {
+	const now = new Date();
+	return new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+	);
+})();
+
+const addUtcDays = (baseDate: Date, dayOffset: number) => {
+	const shifted = new Date(baseDate);
+	shifted.setUTCDate(shifted.getUTCDate() + dayOffset);
+	return shifted;
+};
+
+const toUtcDateString = (date: Date) => date.toISOString().slice(0, 10);
+
+const getTodayDateString = () => toUtcDateString(RUN_UTC_BASE_DATE);
+
+const getFutureDateString = (daysFromBase: number) =>
+	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, daysFromBase));
+
+const getPastDateString = (daysBeforeBase: number) =>
+	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, -daysBeforeBase));
+
 // Helper to generate a future date
 const getFutureDate = (daysFromNow: number, hours = 10) => {
 	const date = new Date();
@@ -619,24 +642,6 @@ suite("Mutation field createEvent", () => {
 			});
 		});
 
-		// Helper to generate dates in YYYY-MM-DD format for all-day events
-		const getTodayDateString = () => {
-			const today = new Date();
-			return today.toISOString().slice(0, 10);
-		};
-
-		const getFutureDateString = (daysFromNow: number) => {
-			const date = new Date();
-			date.setDate(date.getDate() + daysFromNow);
-			return date.toISOString().slice(0, 10);
-		};
-
-		const getPastDateString = (daysAgo: number) => {
-			const date = new Date();
-			date.setDate(date.getDate() - daysAgo);
-			return date.toISOString().slice(0, 10);
-		};
-
 		test("rejects all-day events with past startDate", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
@@ -1021,8 +1026,8 @@ suite("Mutation field createEvent", () => {
 					description: "Test Description",
 					organizationId,
 					allDay: true,
-					startDate: getFutureDate(30, 0).split("T")[0],
-					endDate: getFutureDate(31, 0).split("T")[0],
+					startDate: getFutureDateString(30),
+					endDate: getFutureDateString(31),
 					isPublic: true,
 					isRegisterable: true,
 					location: "Test Location",
@@ -2128,8 +2133,8 @@ suite("Mutation field createEvent", () => {
 					description: "Test Description",
 					organizationId,
 					allDay: true,
-					startDate: getFutureDate(30, 0).split("T")[0],
-					endDate: getFutureDate(31, 0).split("T")[0],
+					startDate: getFutureDateString(30),
+					endDate: getFutureDateString(31),
 				},
 			});
 

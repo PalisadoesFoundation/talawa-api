@@ -151,4 +151,88 @@ describe("MutationUpdateEventInput Schema", () => {
 			expect(endDateIssue).toBeDefined();
 		}
 	});
+
+	it("should fail when allDay is true and startAt is provided", () => {
+		const result = mutationUpdateEventInputSchema.safeParse({
+			id: "550e8400-e29b-41d4-a716-446655440000",
+			allDay: true,
+			startAt: new Date("2025-06-01T10:00:00Z"),
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const startAtIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "startAt",
+			);
+			expect(startAtIssue?.message).toBe(
+				"Cannot provide startAt when allDay is true. Use startDate instead.",
+			);
+		}
+	});
+
+	it("should fail when allDay is true and endAt is provided", () => {
+		const result = mutationUpdateEventInputSchema.safeParse({
+			id: "550e8400-e29b-41d4-a716-446655440000",
+			allDay: true,
+			endAt: new Date("2025-06-01T11:00:00Z"),
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const endAtIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "endAt",
+			);
+			expect(endAtIssue?.message).toBe(
+				"Cannot provide endAt when allDay is true. Use endDate instead.",
+			);
+		}
+	});
+
+	it("should fail when allDay is false and startDate is provided", () => {
+		const result = mutationUpdateEventInputSchema.safeParse({
+			id: "550e8400-e29b-41d4-a716-446655440000",
+			allDay: false,
+			startDate: "2025-06-10",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const startDateIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "startDate",
+			);
+			expect(startDateIssue?.message).toBe(
+				"Cannot provide startDate when allDay is false. Use startAt instead.",
+			);
+		}
+	});
+
+	it("should fail when allDay is false and endDate is provided", () => {
+		const result = mutationUpdateEventInputSchema.safeParse({
+			id: "550e8400-e29b-41d4-a716-446655440000",
+			allDay: false,
+			endDate: "2025-06-11",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const endDateIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "endDate",
+			);
+			expect(endDateIssue?.message).toBe(
+				"Cannot provide endDate when allDay is false. Use endAt instead.",
+			);
+		}
+	});
+
+	it("should fail when allDay is true and timed plus all-day fields are mixed", () => {
+		const result = mutationUpdateEventInputSchema.safeParse({
+			id: "550e8400-e29b-41d4-a716-446655440000",
+			allDay: true,
+			startAt: new Date("2025-06-01T10:00:00Z"),
+			startDate: "2025-06-10",
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const mixedIssue = result.error.issues.find(
+				(issue) => issue.path[0] === "startAt",
+			);
+			expect(mixedIssue).toBeDefined();
+		}
+	});
 });
