@@ -74,7 +74,7 @@ afterEach(async () => {
 		createdUserIds.clear();
 	}
 
-	vi.clearAllMocks();
+	vi.restoreAllMocks();
 	mercuriusClient.setHeaders({});
 });
 

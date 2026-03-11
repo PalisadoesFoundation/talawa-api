@@ -8,10 +8,16 @@ import {
 	isNotNull,
 	lte,
 	or,
+	sql,
 } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+
+const eventNormalizedStartSortKey = sql<Date>`coalesce(
+	${eventsTable.startAt},
+	${eventsTable.startDate}::timestamp
+)`;
 
 /**
  * Defines the input parameters for querying standalone events.
@@ -127,7 +133,7 @@ export async function getStandaloneEventsInDateRange(
 			with: {
 				attachmentsWhereEvent: true,
 			},
-			orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
+			orderBy: [asc(eventNormalizedStartSortKey), asc(eventsTable.id)],
 			limit,
 		});
 

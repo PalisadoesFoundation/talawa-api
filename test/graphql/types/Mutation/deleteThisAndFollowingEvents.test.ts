@@ -147,10 +147,12 @@ async function createRecurringEventWithInstances(
 }
 
 const createdOrganizationIds = new Set<string>();
+const createdUserIds = new Set<string>();
 
 // Clean up after each test to prevent state leakage
 afterEach(async () => {
 	const organizationIds = [...createdOrganizationIds];
+	const userIds = [...createdUserIds];
 
 	if (organizationIds.length > 0) {
 		await server.drizzleClient
@@ -183,6 +185,20 @@ afterEach(async () => {
 			.execute();
 
 		createdOrganizationIds.clear();
+	}
+
+	if (userIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(inArray(organizationMembershipsTable.memberId, userIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, userIds))
+			.execute();
+
+		createdUserIds.clear();
 	}
 });
 
@@ -292,6 +308,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 			assertToBeNonNullish(tempUserToken);
 			const tempUserId = tempUserResult.data.createUser.user?.id;
 			assertToBeNonNullish(tempUserId);
+			createdUserIds.add(tempUserId);
 
 			// Delete the user from the database directly (bypassing GraphQL)
 			await server.drizzleClient
@@ -347,6 +364,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 			assertToBeNonNullish(regularUserToken);
 			const regularUserId = regularUserResult.data.createUser.user?.id;
 			assertToBeNonNullish(regularUserId);
+			createdUserIds.add(regularUserId);
 
 			// Create organization and event with admin user
 			const organizationId = await createOrganizationAndGetId(authToken);
@@ -524,6 +542,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 			assertToBeNonNullish(orgAdminToken);
 			const orgAdminId = orgAdminResult.data.createUser.user?.id;
 			assertToBeNonNullish(orgAdminId);
+			createdUserIds.add(orgAdminId);
 
 			const organizationId = await createOrganizationAndGetId(authToken);
 

@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -19,6 +22,8 @@ const originalDbQueries = {
 	drizzleTransaction: server.drizzleClient.transaction,
 };
 
+const createdOrganizationIds = new Set<string>();
+
 beforeEach(() => {
 	// Ensure all database query methods are restored before each test
 	server.drizzleClient.query.usersTable.findFirst =
@@ -28,7 +33,7 @@ beforeEach(() => {
 	server.drizzleClient.transaction = originalDbQueries.drizzleTransaction;
 });
 
-afterEach(() => {
+afterEach(async () => {
 	// Clear all mocks and restore original implementations
 	vi.clearAllMocks();
 	vi.restoreAllMocks();
@@ -39,6 +44,23 @@ afterEach(() => {
 	server.drizzleClient.query.recurringEventInstancesTable.findFirst =
 		originalDbQueries.recurringEventInstancesTableFindFirst;
 	server.drizzleClient.transaction = originalDbQueries.drizzleTransaction;
+
+	const organizationIds = [...createdOrganizationIds];
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds))
+			.execute();
+
+		createdOrganizationIds.clear();
+	}
 });
 
 // Helper function to get admin authentication token
@@ -80,6 +102,7 @@ async function createTestOrganization(authToken: string) {
 	);
 	const orgId = createOrgResult.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
+	createdOrganizationIds.add(orgId);
 	return orgId;
 }
 

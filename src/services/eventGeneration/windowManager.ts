@@ -6,6 +6,11 @@ import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import type { ServiceDependencies, WindowManagerConfig } from "./types";
 
+function toUTCDateString(date: Date): string {
+	const pad = (n: number) => String(n).padStart(2, "0");
+	return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+}
+
 /**
  * Initializes the Generation window for a given organization, setting up the time frame
  * for which event instances will be generated and retained.
@@ -77,10 +82,14 @@ function buildWindowConfiguration(
 	const retentionMonths = 3; // Fixed 3 months retention
 
 	const currentWindowEndDate = new Date(now);
-	currentWindowEndDate.setMonth(currentWindowEndDate.getMonth() + monthsAhead);
+	currentWindowEndDate.setUTCMonth(
+		currentWindowEndDate.getUTCMonth() + monthsAhead,
+	);
 
 	const retentionStartDate = new Date(now);
-	retentionStartDate.setMonth(retentionStartDate.getMonth() - retentionMonths);
+	retentionStartDate.setUTCMonth(
+		retentionStartDate.getUTCMonth() - retentionMonths,
+	);
 
 	return {
 		...input,
@@ -123,7 +132,7 @@ export async function extendGenerationWindow(
 		}
 
 		const newEndDate = new Date(windowConfig.currentWindowEndDate);
-		newEndDate.setMonth(newEndDate.getMonth() + additionalMonths);
+		newEndDate.setUTCMonth(newEndDate.getUTCMonth() + additionalMonths);
 
 		await drizzleClient
 			.update(eventGenerationWindowsTable)
@@ -198,7 +207,7 @@ export async function cleanupOldGeneratedInstances(
 							isNotNull(recurringEventInstancesTable.actualEndDate),
 							lt(
 								recurringEventInstancesTable.actualEndDate,
-								windowConfig.retentionStartDate.toISOString().slice(0, 10),
+								toUTCDateString(windowConfig.retentionStartDate),
 							),
 						),
 					),
@@ -284,7 +293,7 @@ export async function getCleanupStats(
 							isNotNull(recurringEventInstancesTable.actualEndDate),
 							lt(
 								recurringEventInstancesTable.actualEndDate,
-								windowConfig.retentionStartDate.toISOString().slice(0, 10),
+								toUTCDateString(windowConfig.retentionStartDate),
 							),
 						),
 					),

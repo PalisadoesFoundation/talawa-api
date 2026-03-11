@@ -8,13 +8,13 @@ import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
- * Formats a Date to a local YYYY-MM-DD string without UTC conversion.
- * Uses local getFullYear/getMonth/getDate to avoid timezone shifts.
+ * Formats a Date to a UTC YYYY-MM-DD string.
+ * Uses UTC components to avoid timezone drift in Docker/CI environments.
  */
-function formatLocalDate(date: Date): string {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
+function toUTCDateString(date: Date): string {
+	const year = date.getUTCFullYear();
+	const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(date.getUTCDate()).padStart(2, "0");
 	return `${year}-${month}-${day}`;
 }
 
@@ -95,10 +95,10 @@ async function cleanupOrganizationInstances(
 	// Calculate retention cutoff date
 	const now = new Date();
 	const retentionCutoffDate = new Date(now);
-	retentionCutoffDate.setMonth(
-		retentionCutoffDate.getMonth() - historyRetentionMonths,
+	retentionCutoffDate.setUTCMonth(
+		retentionCutoffDate.getUTCMonth() - historyRetentionMonths,
 	);
-	const retentionCutoffDateStr = formatLocalDate(retentionCutoffDate);
+	const retentionCutoffDateStr = toUTCDateString(retentionCutoffDate);
 
 	logger.info(
 		`Cleaning up instances for organization ${organizationId} ` +
@@ -238,8 +238,8 @@ export async function cleanupSpecificOrganization(
 	// Calculate retention cutoff date for response
 	const now = new Date();
 	const retentionCutoffDate = new Date(now);
-	retentionCutoffDate.setMonth(
-		retentionCutoffDate.getMonth() - windowConfig.historyRetentionMonths,
+	retentionCutoffDate.setUTCMonth(
+		retentionCutoffDate.getUTCMonth() - windowConfig.historyRetentionMonths,
 	);
 
 	return {
@@ -291,10 +291,10 @@ export async function getOrganizationCleanupStatus(
 	// Calculate retention cutoff date
 	const now = new Date();
 	const retentionCutoffDate = new Date(now);
-	retentionCutoffDate.setMonth(
-		retentionCutoffDate.getMonth() - windowConfig.historyRetentionMonths,
+	retentionCutoffDate.setUTCMonth(
+		retentionCutoffDate.getUTCMonth() - windowConfig.historyRetentionMonths,
 	);
-	const retentionCutoffDateStr = formatLocalDate(retentionCutoffDate);
+	const retentionCutoffDateStr = toUTCDateString(retentionCutoffDate);
 
 	// Count instances eligible for cleanup
 	const instancesEligibleForCleanup =
@@ -349,7 +349,7 @@ export async function emergencyCleanupBefore(
 	logger.warn(
 		`EMERGENCY CLEANUP: Deleting ALL instances before ${cutoffDate.toISOString()}`,
 	);
-	const cutoffDateStr = formatLocalDate(cutoffDate);
+	const cutoffDateStr = toUTCDateString(cutoffDate);
 
 	// Get affected organizations (for reporting)
 	const affectedOrganizations =
@@ -467,10 +467,10 @@ export async function getGlobalCleanupStatistics(
 
 	for (const org of organizations) {
 		const retentionCutoffDate = new Date(now);
-		retentionCutoffDate.setMonth(
-			retentionCutoffDate.getMonth() - org.historyRetentionMonths,
+		retentionCutoffDate.setUTCMonth(
+			retentionCutoffDate.getUTCMonth() - org.historyRetentionMonths,
 		);
-		const retentionCutoffDateStr = formatLocalDate(retentionCutoffDate);
+		const retentionCutoffDateStr = toUTCDateString(retentionCutoffDate);
 
 		const orgEligibleInstances = allInstances.filter((instance) => {
 			if (instance.organizationId !== org.organizationId) return false;

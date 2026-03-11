@@ -109,7 +109,7 @@ describe("Event GraphQL Type", () => {
 			attachments: [],
 		} as unknown as EventType;
 
-		vi.clearAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe("attachments resolver", () => {

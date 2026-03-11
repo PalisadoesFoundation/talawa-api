@@ -127,6 +127,22 @@ function applyExceptionData(
 	if (exceptionData.endDate !== undefined) {
 		resolvedInstance.actualEndDate = exceptionData.endDate as string | null;
 	}
+
+	if (
+		exceptionData.startDate !== undefined ||
+		exceptionData.endDate !== undefined
+	) {
+		resolvedInstance.actualStartTime = null;
+		resolvedInstance.actualEndTime = null;
+	}
+
+	if (
+		exceptionData.startAt !== undefined ||
+		exceptionData.endAt !== undefined
+	) {
+		resolvedInstance.actualStartDate = null;
+		resolvedInstance.actualEndDate = null;
+	}
 }
 
 /**

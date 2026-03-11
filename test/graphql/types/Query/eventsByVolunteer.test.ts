@@ -1,14 +1,17 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
-import { expect, suite, test, vi } from "vitest";
+import { eq, inArray } from "drizzle-orm";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import { createRegularUserUsingAdmin as createRegularUserUsingAdminBase } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createEvent,
 	Mutation_createEventVolunteer,
@@ -33,6 +36,145 @@ const authToken = signInResult.data.signIn.authenticationToken;
 const adminUserId = signInResult.data.signIn.user?.id;
 assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
+
+const createdState = {
+	userIds: new Set<string>(),
+	organizationIds: new Set<string>(),
+	eventIds: new Set<string>(),
+	eventVolunteerIds: new Set<string>(),
+	organizationMembershipKeys: new Set<string>(),
+};
+
+const originalMutate = mercuriusClient.mutate.bind(mercuriusClient);
+
+type TrackedMutationResult = {
+	data?: {
+		createOrganization?: { id?: string | null } | null;
+		createEvent?: { id?: string | null } | null;
+		createEventVolunteer?: { id?: string | null } | null;
+	};
+};
+
+async function createRegularUserUsingAdmin(): Promise<{
+	userId: string;
+	authToken: string;
+}> {
+	const result = await createRegularUserUsingAdminBase();
+	createdState.userIds.add(result.userId);
+	return result;
+}
+
+beforeEach(() => {
+	createdState.userIds.clear();
+	createdState.organizationIds.clear();
+	createdState.eventIds.clear();
+	createdState.eventVolunteerIds.clear();
+	createdState.organizationMembershipKeys.clear();
+
+	vi.spyOn(mercuriusClient, "mutate").mockImplementation(async (...args) => {
+		const mutation = args[0];
+		const options = args[1] as
+			| {
+					variables?: {
+						input?: { memberId?: string; organizationId?: string };
+					};
+			  }
+			| undefined;
+		const result = await originalMutate(...args);
+		const trackedData = (result as TrackedMutationResult).data;
+
+		if (mutation === Mutation_createOrganization) {
+			const orgId = trackedData?.createOrganization?.id;
+			if (orgId) {
+				createdState.organizationIds.add(orgId);
+			}
+		}
+
+		if (mutation === Mutation_createEvent) {
+			const eventId = trackedData?.createEvent?.id;
+			if (eventId) {
+				createdState.eventIds.add(eventId);
+			}
+		}
+
+		if (mutation === Mutation_createEventVolunteer) {
+			const volunteerId = trackedData?.createEventVolunteer?.id;
+			if (volunteerId) {
+				createdState.eventVolunteerIds.add(volunteerId);
+			}
+		}
+
+		if (mutation === Mutation_createOrganizationMembership) {
+			const memberId = options?.variables?.input?.memberId;
+			const organizationId = options?.variables?.input?.organizationId;
+			if (memberId && organizationId) {
+				createdState.organizationMembershipKeys.add(
+					`${memberId}:${organizationId}`,
+				);
+			}
+		}
+
+		return result;
+	});
+});
+
+afterEach(async () => {
+	vi.restoreAllMocks();
+
+	const userIds = [...createdState.userIds];
+	const organizationIds = [...createdState.organizationIds];
+	const eventIds = [...createdState.eventIds];
+	const volunteerIds = [...createdState.eventVolunteerIds];
+
+	if (volunteerIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventVolunteersTable)
+			.where(inArray(eventVolunteersTable.id, volunteerIds));
+	}
+
+	if (eventIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurringEventInstancesTable)
+			.where(
+				inArray(recurringEventInstancesTable.baseRecurringEventId, eventIds),
+			);
+		await server.drizzleClient
+			.delete(eventVolunteersTable)
+			.where(inArray(eventVolunteersTable.eventId, eventIds));
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.id, eventIds));
+	}
+
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			);
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds));
+	}
+
+	if (userIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventVolunteersTable)
+			.where(inArray(eventVolunteersTable.userId, userIds));
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(inArray(organizationMembershipsTable.memberId, userIds));
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, userIds));
+	}
+
+	createdState.userIds.clear();
+	createdState.organizationIds.clear();
+	createdState.eventIds.clear();
+	createdState.eventVolunteerIds.clear();
+	createdState.organizationMembershipKeys.clear();
+});
 
 suite("Query field eventsByVolunteer", () => {
 	suite("when input validation fails", () => {
@@ -935,9 +1077,8 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create a timed recurring event (isRecurringEventTemplate=true, startAt is non-null)
-			const eventStart = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
-			const eventEnd = new Date(eventStart);
-			eventEnd.setHours(eventEnd.getHours() + 1);
+			const eventStart = "2026-04-15T10:00:00.000Z";
+			const eventEnd = "2026-04-15T11:00:00.000Z";
 
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
@@ -948,8 +1089,8 @@ suite("Query field eventsByVolunteer", () => {
 							name: "Timed Recurring Template Event",
 							description: "Recurring event for standalone-volunteer branch",
 							organizationId: orgId,
-							startAt: eventStart.toISOString(),
-							endAt: eventEnd.toISOString(),
+							startAt: eventStart,
+							endAt: eventEnd,
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
@@ -978,12 +1119,8 @@ suite("Query field eventsByVolunteer", () => {
 							name: "Neighbor Earlier Timed Event",
 							description: "Neighbor event to verify deterministic ordering",
 							organizationId: orgId,
-							startAt: new Date(
-								eventStart.getTime() - 24 * 60 * 60 * 1000,
-							).toISOString(),
-							endAt: new Date(
-								eventEnd.getTime() - 24 * 60 * 60 * 1000,
-							).toISOString(),
+							startAt: "2026-04-14T10:00:00.000Z",
+							endAt: "2026-04-14T11:00:00.000Z",
 						},
 					},
 				},

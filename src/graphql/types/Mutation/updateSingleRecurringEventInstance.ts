@@ -184,32 +184,58 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 			let actualEndTime = existingInstance.actualEndTime ?? null;
 			let actualStartDate = existingInstance.actualStartDate ?? null;
 			let actualEndDate = existingInstance.actualEndDate ?? null;
+			const hasTimedOverrides =
+				parsedArgs.input.startAt !== undefined ||
+				parsedArgs.input.endAt !== undefined;
+			const hasAllDayOverrides =
+				parsedArgs.input.startDate !== undefined ||
+				parsedArgs.input.endDate !== undefined;
+			const switchingToTimed =
+				parsedArgs.input.allDay === false || hasTimedOverrides;
+			const switchingToAllDay =
+				parsedArgs.input.allDay === true || hasAllDayOverrides;
+
+			// Ensure timed/all-day fields remain mutually exclusive when mode flips.
+			if (switchingToTimed) {
+				actualStartDate = null;
+				actualEndDate = null;
+			}
+			if (switchingToAllDay) {
+				actualStartTime = null;
+				actualEndTime = null;
+			}
 
 			// Timed event: adjust startAt / endAt
-			if (
-				(parsedArgs.input.startAt || parsedArgs.input.endAt) &&
-				actualStartTime &&
-				actualEndTime
-			) {
-				const originalDuration =
-					actualEndTime.getTime() - actualStartTime.getTime();
+			if (hasTimedOverrides) {
+				const existingStartTime = existingInstance.actualStartTime ?? null;
+				const existingEndTime = existingInstance.actualEndTime ?? null;
 
-				if (parsedArgs.input.startAt) {
+				if (parsedArgs.input.startAt !== undefined) {
 					actualStartTime = parsedArgs.input.startAt;
-					// If only startAt is provided, maintain the same duration
-					if (!parsedArgs.input.endAt) {
+					// If only startAt is provided, maintain the same duration when available.
+					if (
+						parsedArgs.input.endAt === undefined &&
+						existingStartTime &&
+						existingEndTime
+					) {
+						const originalDuration =
+							existingEndTime.getTime() - existingStartTime.getTime();
 						actualEndTime = new Date(
 							actualStartTime.getTime() + originalDuration,
 						);
 					}
 				}
 
-				if (parsedArgs.input.endAt) {
+				if (parsedArgs.input.endAt !== undefined) {
 					actualEndTime = parsedArgs.input.endAt;
 				}
 
-				// Validate timing
-				if (actualEndTime <= actualStartTime) {
+				// Validate timing when both fields are available.
+				if (
+					actualStartTime &&
+					actualEndTime &&
+					actualEndTime <= actualStartTime
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "invalid_arguments",
@@ -279,6 +305,12 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 				}
 				if (parsedArgs.input.endAt !== undefined) {
 					exceptionData.endAt = parsedArgs.input.endAt.toISOString();
+				}
+				if (parsedArgs.input.startDate !== undefined) {
+					exceptionData.startDate = parsedArgs.input.startDate;
+				}
+				if (parsedArgs.input.endDate !== undefined) {
+					exceptionData.endDate = parsedArgs.input.endDate;
 				}
 
 				// Check if exception already exists
