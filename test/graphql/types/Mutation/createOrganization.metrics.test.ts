@@ -545,56 +545,60 @@ describe("Mutation createOrganization - Performance Tracking", () => {
 		});
 
 		it("should track mutation execution time when avatar is explicitly set to null", async () => {
-			const perf = createPerformanceTracker();
-			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-			context.perf = perf;
+			// Use real timers to avoid infinite loop from runAllTimersAsync (mocks/context can schedule recurring timers)
+			vi.useRealTimers();
+			try {
+				const perf = createPerformanceTracker();
+				const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+				context.perf = perf;
 
-			const orgName = `Test Org ${faker.string.ulid()}`;
-			const mockAdminUser = createMockAdminUser();
-			const mockCreatedOrganization = createMockCreatedOrganization(orgName);
+				const orgName = `Test Org ${faker.string.ulid()}`;
+				const mockAdminUser = createMockAdminUser();
+				const mockCreatedOrganization = createMockCreatedOrganization(orgName);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockAdminUser,
-			);
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+					mockAdminUser,
+				);
+				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+					undefined,
+				);
 
-			// Mock transaction
-			(
-				mocks.drizzleClient as unknown as {
-					transaction: ReturnType<typeof vi.fn>;
-				}
-			).transaction = vi
-				.fn()
-				.mockImplementation(createMockTransaction(mockCreatedOrganization));
+				// Mock transaction
+				(
+					mocks.drizzleClient as unknown as {
+						transaction: ReturnType<typeof vi.fn>;
+					}
+				).transaction = vi
+					.fn()
+					.mockImplementation(createMockTransaction(mockCreatedOrganization));
 
-			const resultPromise = createOrganizationMutationResolver(
-				null,
-				{
-					input: {
-						name: orgName,
-						description: "Test Description",
-						avatar: null, // Explicitly set to null
+				const result = await createOrganizationMutationResolver(
+					null,
+					{
+						input: {
+							name: orgName,
+							description: "Test Description",
+							avatar: null, // Explicitly set to null
+						},
 					},
-				},
-				context,
-			);
-			await vi.runAllTimersAsync();
-			const result = await resultPromise;
+					context,
+				);
 
-			expect(result).toBeDefined();
-			expect(result).toMatchObject({
-				name: orgName,
-				description: "Test Description",
-			});
+				expect(result).toBeDefined();
+				expect(result).toMatchObject({
+					name: orgName,
+					description: "Test Description",
+				});
 
-			const snapshot = perf.snapshot();
-			const op = snapshot.ops["mutation:createOrganization"];
+				const snapshot = perf.snapshot();
+				const op = snapshot.ops["mutation:createOrganization"];
 
-			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
-			expect(op?.ms).toBeGreaterThanOrEqual(0);
+				expect(op).toBeDefined();
+				expect(op?.count).toBe(1);
+				expect(op?.ms).toBeGreaterThanOrEqual(0);
+			} finally {
+				vi.useFakeTimers();
+			}
 		});
 
 		// Shared helper for avatar statObject failure tests

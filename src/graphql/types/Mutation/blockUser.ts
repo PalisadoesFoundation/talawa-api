@@ -177,7 +177,7 @@ builder.mutationField("blockUser", (t) =>
 				});
 
 				// Notify the blocked user
-				notificationEventBus.emitUserBlocked(
+				await notificationEventBus.emitUserBlocked(
 					{
 						userId: parsedArgs.userId,
 						userName: targetUser.name,

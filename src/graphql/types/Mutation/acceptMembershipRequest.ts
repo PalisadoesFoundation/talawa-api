@@ -181,7 +181,7 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 				});
 
 				// Notify the user about membership acceptance
-				notificationEventBus.emitMembershipRequestAccepted(
+				await notificationEventBus.emitMembershipRequestAccepted(
 					{
 						userId: membershipRequest.userId,
 						organizationId: membershipRequest.organizationId,
@@ -191,7 +191,7 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 				);
 
 				// Notify organization admins about new member
-				notificationEventBus.emitNewMemberJoined(
+				await notificationEventBus.emitNewMemberJoined(
 					{
 						userId: membershipRequest.userId,
 						userName: membershipRequest.user.name,

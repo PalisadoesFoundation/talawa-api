@@ -459,12 +459,9 @@ suite("Mutation field createEvent", () => {
 					mimetype: "image/png", // Valid mime type but invalid object structure for Upload scalar
 					encoding: "7bit",
 				},
-			] as unknown as Array<{
-				objectName: string;
-				name: string;
-				mimeType: "IMAGE_JPEG";
-				fileHash: string;
-			}>;
+			] as unknown as VariablesOf<
+				typeof Mutation_createEvent
+			>["input"]["attachments"];
 
 			const invalidResult = await createEvent({
 				input: {
