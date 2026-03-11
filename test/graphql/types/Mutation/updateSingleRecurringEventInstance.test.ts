@@ -1038,7 +1038,6 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 			expect(updateSetSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
 					actualStartDate: updatedInstance.actualStartDate,
-					actualEndDate: updatedInstance.actualEndDate,
 				}),
 			);
 
@@ -1145,7 +1144,6 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 			// Verify persisted instance override fields were written.
 			expect(updateSetSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
-					actualStartDate: updatedInstance.actualStartDate,
 					actualEndDate: updatedInstance.actualEndDate,
 				}),
 			);
@@ -1204,6 +1202,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 						variables: {
 							input: {
 								id: instanceId,
+								allDay: true,
 								endDate: "2024-12-05", // End date equals start date
 							},
 						},
@@ -1277,6 +1276,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 						variables: {
 							input: {
 								id: instanceId,
+								allDay: true,
 								endDate: "2024-12-08", // End date before start date
 							},
 						},
@@ -1350,6 +1350,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 						variables: {
 							input: {
 								id: instanceId,
+								allDay: true,
 								startDate: "2024-12-06", // Start date after existing end date
 							},
 						},

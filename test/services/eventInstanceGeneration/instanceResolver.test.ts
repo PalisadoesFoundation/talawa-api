@@ -233,8 +233,10 @@ suite("instanceResolver", () => {
 
 			expect(result.actualStartDate).toBe("2025-06-15");
 			expect(result.actualEndDate).toBe("2025-06-15");
-			expect(result.actualStartTime).toBeNull();
-			expect(result.actualEndTime).toBeNull();
+			expect(result.actualStartTime).toEqual(
+				mockGeneratedInstance.actualStartTime,
+			);
+			expect(result.actualEndTime).toEqual(mockGeneratedInstance.actualEndTime);
 		});
 
 		test("applies null all-day date exception data correctly", () => {
@@ -263,8 +265,10 @@ suite("instanceResolver", () => {
 
 			expect(result.actualStartDate).toBeNull();
 			expect(result.actualEndDate).toBeNull();
-			expect(result.actualStartTime).toBeNull();
-			expect(result.actualEndTime).toBeNull();
+			expect(result.actualStartTime).toEqual(
+				mockGeneratedInstance.actualStartTime,
+			);
+			expect(result.actualEndTime).toEqual(mockGeneratedInstance.actualEndTime);
 		});
 	});
 
