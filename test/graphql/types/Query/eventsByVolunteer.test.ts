@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -119,12 +119,17 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-	vi.restoreAllMocks();
-
 	const userIds = [...createdState.userIds];
 	const organizationIds = [...createdState.organizationIds];
 	const eventIds = [...createdState.eventIds];
 	const volunteerIds = [...createdState.eventVolunteerIds];
+	const membershipKeys = [...createdState.organizationMembershipKeys];
+
+	if (eventIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventAttachmentsTable)
+			.where(inArray(eventAttachmentsTable.eventId, eventIds));
+	}
 
 	if (volunteerIds.length > 0) {
 		await server.drizzleClient
@@ -157,6 +162,22 @@ afterEach(async () => {
 			.where(inArray(organizationsTable.id, organizationIds));
 	}
 
+	if (membershipKeys.length > 0) {
+		for (const key of membershipKeys) {
+			const [memberId, organizationId] = key.split(":");
+			if (memberId && organizationId) {
+				await server.drizzleClient
+					.delete(organizationMembershipsTable)
+					.where(
+						and(
+							eq(organizationMembershipsTable.memberId, memberId),
+							eq(organizationMembershipsTable.organizationId, organizationId),
+						),
+					);
+			}
+		}
+	}
+
 	if (userIds.length > 0) {
 		await server.drizzleClient
 			.delete(eventVolunteersTable)
@@ -174,6 +195,8 @@ afterEach(async () => {
 	createdState.eventIds.clear();
 	createdState.eventVolunteerIds.clear();
 	createdState.organizationMembershipKeys.clear();
+
+	vi.restoreAllMocks();
 });
 
 suite("Query field eventsByVolunteer", () => {

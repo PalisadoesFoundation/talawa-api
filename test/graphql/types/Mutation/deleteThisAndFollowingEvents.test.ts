@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { eq, inArray } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
+import { and, eq, inArray } from "drizzle-orm";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
@@ -17,11 +17,22 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const createdState = {
+	organizationIds: new Set<string>(),
+	userIds: new Set<string>(),
+	eventIds: new Set<string>(),
+	recurrenceRuleIds: new Set<string>(),
+	recurringInstanceIds: new Set<string>(),
+	organizationMembershipKeys: new Set<string>(),
+};
+
 async function addMembership(
 	organizationId: string,
 	memberId: string,
 	role: "administrator" | "regular",
 ) {
+	createdState.organizationMembershipKeys.add(`${organizationId}:${memberId}`);
+
 	await server.drizzleClient
 		.insert(organizationMembershipsTable)
 		.values({
@@ -52,7 +63,7 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	});
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
-	createdOrganizationIds.add(orgId);
+	createdState.organizationIds.add(orgId);
 	return orgId;
 }
 
@@ -81,6 +92,7 @@ async function createRecurringEventWithInstances(
 		.returning();
 
 	assertToBeNonNullish(template);
+	createdState.eventIds.add(template.id);
 
 	// Create recurrence rule
 	const [recurrenceRule] = await server.drizzleClient
@@ -100,6 +112,7 @@ async function createRecurringEventWithInstances(
 		.returning();
 
 	assertToBeNonNullish(recurrenceRule);
+	createdState.recurrenceRuleIds.add(recurrenceRule.id);
 
 	// Create multiple instances
 	const instancesData = [
@@ -140,20 +153,61 @@ async function createRecurringEventWithInstances(
 		.values(instancesData)
 		.returning();
 
+	for (const instance of instances) {
+		createdState.recurringInstanceIds.add(instance.id);
+	}
+
 	return {
 		templateId: template.id,
 		instanceIds: instances.map((i) => i.id),
 	};
 }
 
-const createdOrganizationIds = new Set<string>();
-const createdUserIds = new Set<string>();
+beforeEach(() => {
+	createdState.organizationIds.clear();
+	createdState.userIds.clear();
+	createdState.eventIds.clear();
+	createdState.recurrenceRuleIds.clear();
+	createdState.recurringInstanceIds.clear();
+	createdState.organizationMembershipKeys.clear();
+});
 
 // Clean up after each test to prevent state leakage
 afterEach(async () => {
-	const organizationIds = [...createdOrganizationIds];
-	const userIds = [...createdUserIds];
+	const recurringInstanceIds = [...createdState.recurringInstanceIds];
+	const recurrenceRuleIds = [...createdState.recurrenceRuleIds];
+	const eventIds = [...createdState.eventIds];
+	const organizationIds = [...createdState.organizationIds];
+	const userIds = [...createdState.userIds];
+	const organizationMembershipKeys = [
+		...createdState.organizationMembershipKeys,
+	];
 
+	// 1) recurring instances
+	if (recurringInstanceIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurringEventInstancesTable)
+			.where(inArray(recurringEventInstancesTable.id, recurringInstanceIds))
+			.execute();
+	}
+
+	// 2) recurrence rules
+	if (recurrenceRuleIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurrenceRulesTable)
+			.where(inArray(recurrenceRulesTable.id, recurrenceRuleIds))
+			.execute();
+	}
+
+	// 3) events
+	if (eventIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.id, eventIds))
+			.execute();
+	}
+
+	// fallback by organization in case a test inserted rows directly without tracking
 	if (organizationIds.length > 0) {
 		await server.drizzleClient
 			.delete(recurringEventInstancesTable)
@@ -161,7 +215,6 @@ afterEach(async () => {
 				inArray(recurringEventInstancesTable.organizationId, organizationIds),
 			)
 			.execute();
-
 		await server.drizzleClient
 			.delete(recurrenceRulesTable)
 			.where(inArray(recurrenceRulesTable.organizationId, organizationIds))
@@ -183,10 +236,30 @@ afterEach(async () => {
 			.delete(organizationsTable)
 			.where(inArray(organizationsTable.id, organizationIds))
 			.execute();
-
-		createdOrganizationIds.clear();
 	}
 
+	// 4) memberships
+	if (organizationMembershipKeys.length > 0) {
+		for (const key of organizationMembershipKeys) {
+			const [organizationId, memberId] = key.split(":");
+			if (!organizationId || !memberId) {
+				continue;
+			}
+			await server.drizzleClient
+				.delete(organizationMembershipsTable)
+				.where(
+					and(
+						eq(organizationMembershipsTable.organizationId, organizationId),
+						eq(organizationMembershipsTable.memberId, memberId),
+					),
+				)
+				.execute();
+		}
+	}
+
+	// 5) organizations handled above
+
+	// 6) users
 	if (userIds.length > 0) {
 		await server.drizzleClient
 			.delete(organizationMembershipsTable)
@@ -197,9 +270,15 @@ afterEach(async () => {
 			.delete(usersTable)
 			.where(inArray(usersTable.id, userIds))
 			.execute();
-
-		createdUserIds.clear();
 	}
+
+	createdState.organizationIds.clear();
+	createdState.userIds.clear();
+	createdState.eventIds.clear();
+	createdState.recurrenceRuleIds.clear();
+	createdState.recurringInstanceIds.clear();
+	createdState.organizationMembershipKeys.clear();
+	vi.restoreAllMocks();
 });
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -308,7 +387,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 			assertToBeNonNullish(tempUserToken);
 			const tempUserId = tempUserResult.data.createUser.user?.id;
 			assertToBeNonNullish(tempUserId);
-			createdUserIds.add(tempUserId);
+			createdState.userIds.add(tempUserId);
 
 			// Delete the user from the database directly (bypassing GraphQL)
 			await server.drizzleClient
@@ -364,7 +443,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 			assertToBeNonNullish(regularUserToken);
 			const regularUserId = regularUserResult.data.createUser.user?.id;
 			assertToBeNonNullish(regularUserId);
-			createdUserIds.add(regularUserId);
+			createdState.userIds.add(regularUserId);
 
 			// Create organization and event with admin user
 			const organizationId = await createOrganizationAndGetId(authToken);
@@ -542,7 +621,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 			assertToBeNonNullish(orgAdminToken);
 			const orgAdminId = orgAdminResult.data.createUser.user?.id;
 			assertToBeNonNullish(orgAdminId);
-			createdUserIds.add(orgAdminId);
+			createdState.userIds.add(orgAdminId);
 
 			const organizationId = await createOrganizationAndGetId(authToken);
 
@@ -628,6 +707,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 				})
 				.returning();
 			assertToBeNonNullish(template);
+			createdState.eventIds.add(template.id);
 
 			const originalSeriesId = faker.string.uuid();
 			const [recurrenceRule] = await server.drizzleClient
@@ -646,6 +726,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 				})
 				.returning();
 			assertToBeNonNullish(recurrenceRule);
+			createdState.recurrenceRuleIds.add(recurrenceRule.id);
 
 			// Insert a timed instance with actualStartTime explicitly null
 			const [instance] = await server.drizzleClient
@@ -662,6 +743,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 				})
 				.returning();
 			assertToBeNonNullish(instance);
+			createdState.recurringInstanceIds.add(instance.id);
 
 			const result = await mercuriusClient.mutate(
 				Mutation_deleteThisAndFollowingEvents,
@@ -705,6 +787,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 				})
 				.returning();
 			assertToBeNonNullish(template);
+			createdState.eventIds.add(template.id);
 
 			const originalSeriesId = faker.string.uuid();
 			const [recurrenceRule] = await server.drizzleClient
@@ -723,6 +806,7 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 				})
 				.returning();
 			assertToBeNonNullish(recurrenceRule);
+			createdState.recurrenceRuleIds.add(recurrenceRule.id);
 
 			// Insert three all-day instances
 			const instances = await server.drizzleClient
@@ -760,6 +844,9 @@ suite("Mutation field deleteThisAndFollowingEvents", () => {
 					},
 				])
 				.returning();
+			for (const instance of instances) {
+				createdState.recurringInstanceIds.add(instance.id);
+			}
 			expect(instances).toHaveLength(3);
 
 			// Target the second instance (2024-03-08)

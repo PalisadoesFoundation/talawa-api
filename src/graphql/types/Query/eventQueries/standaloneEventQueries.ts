@@ -55,10 +55,10 @@ export async function getStandaloneEventsInDateRange(
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 	})[]
 > {
-	const formatLocalYYYYMMDD = (date: Date): string => {
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		const day = String(date.getDate()).padStart(2, "0");
+	const formatUtcYYYYMMDD = (date: Date): string => {
+		const year = date.getUTCFullYear();
+		const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+		const day = String(date.getUTCDate()).padStart(2, "0");
 
 		return `${year}-${month}-${day}`;
 	};
@@ -66,8 +66,8 @@ export async function getStandaloneEventsInDateRange(
 	const { organizationId, startDate, endDate, eventIds, limit = 1000 } = input;
 
 	// Convert Date inputs to YYYY-MM-DD strings for all-day date comparisons
-	const windowStartStr = formatLocalYYYYMMDD(startDate);
-	const windowEndStr = formatLocalYYYYMMDD(endDate);
+	const windowStartStr = formatUtcYYYYMMDD(startDate);
+	const windowEndStr = formatUtcYYYYMMDD(endDate);
 
 	try {
 		const whereConditions = [
