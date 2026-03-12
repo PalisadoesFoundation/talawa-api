@@ -57,6 +57,9 @@ const mockRawInstance: typeof recurringEventInstancesTable.$inferSelect = {
 	generatedAt: new Date("2025-01-01T00:00:00.000Z"),
 	lastUpdatedAt: new Date("2025-01-02T00:00:00.000Z"),
 	version: "1.0",
+	originalInstanceStartDate: null,
+	actualStartDate: null,
+	actualEndDate: null,
 	sequenceNumber: 1,
 	totalCount: 10,
 };
@@ -83,6 +86,8 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect & {
 	updatedAt: null,
 
 	isRecurringEventTemplate: true,
+	startDate: null,
+	endDate: null,
 	attachments: [],
 };
 
@@ -128,6 +133,9 @@ const mockResolvedInstance: ResolvedRecurringEventInstance = {
 	exceptionCreatedBy: "user-2",
 
 	exceptionCreatedAt: new Date("2025-01-03T00:00:00.000Z"),
+	originalInstanceStartDate: null,
+	actualStartDate: null,
+	actualEndDate: null,
 	attachments: [],
 };
 
@@ -386,6 +394,98 @@ describe("getRecurringEventInstancesInDateRange", () => {
 			error,
 			`Failed to get recurring event instances for organization ${baseInput.organizationId}`,
 		);
+	});
+
+	it("should throw error when limit is less than 1", async () => {
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, limit: 0 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
+		);
+
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, limit: -5 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when offset is negative", async () => {
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, offset: -1 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
+		);
+
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				{ ...baseInput, offset: -100 },
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
 	});
 });
 
@@ -1081,8 +1181,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ limit: 0 },
 			),
-		).rejects.toThrow(
-			"Invalid limit: 0. Limit must be greater than or equal to 1.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		await expect(
@@ -1092,8 +1202,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ limit: -5 },
 			),
-		).rejects.toThrow(
-			"Invalid limit: -5. Limit must be greater than or equal to 1.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["limit"],
+							message: "Limit must be greater than or equal to 1.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		// Verify query was never called
@@ -1110,8 +1230,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ offset: -1 },
 			),
-		).rejects.toThrow(
-			"Invalid offset: -1. Offset must be greater than or equal to 0.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		await expect(
@@ -1121,8 +1251,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 				mockLogger,
 				{ offset: -100 },
 			),
-		).rejects.toThrow(
-			"Invalid offset: -100. Offset must be greater than or equal to 0.",
+		).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["offset"],
+							message: "Offset must be greater than or equal to 0.",
+						}),
+					]),
+				}),
+			}),
 		);
 
 		// Verify query was never called

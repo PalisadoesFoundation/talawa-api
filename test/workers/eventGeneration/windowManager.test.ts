@@ -65,6 +65,9 @@ describe("windowManager", () => {
 		generatedAt: new Date("2024-01-01"),
 		lastUpdatedAt: null,
 		version: "1",
+		originalInstanceStartDate: null,
+		actualStartDate: null,
+		actualEndDate: null,
 		sequenceNumber: 1,
 		totalCount: null,
 		...overrides,
@@ -83,8 +86,8 @@ describe("windowManager", () => {
 		organizationId: "org1",
 		isRecurringEventTemplate: true,
 		instanceEndTime: null,
-		startDate: new Date("2024-01-01"),
-		endDate: new Date("2024-01-02"),
+		startDate: null,
+		endDate: null,
 		startAt: new Date("2024-01-01"),
 		allDay: false,
 		location: null,
@@ -95,6 +98,17 @@ describe("windowManager", () => {
 		isInviteOnly: false,
 		...overrides,
 	});
+
+	// Helper for all-day fixtures that use date-only fields
+	const createMockAllDayEvent = (overrides = {}) =>
+		createMockEvent({
+			startAt: null,
+			endAt: null,
+			allDay: true,
+			startDate: "2024-01-01",
+			endDate: "2024-01-02",
+			...overrides,
+		});
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -312,7 +326,7 @@ describe("windowManager", () => {
 
 			const mockRecurringEvents = [
 				createMockEvent({ id: "event1" }),
-				createMockEvent({ id: "event2" }),
+				createMockAllDayEvent({ id: "event2" }),
 			];
 
 			const mockMaterializedInstances = [

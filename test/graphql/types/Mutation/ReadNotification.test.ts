@@ -134,6 +134,7 @@ async function createNotificationViaEventBus(
 			log: {
 				info: () => {},
 				warn: () => {},
+				error: () => {},
 			},
 			drizzleClient: server.drizzleClient,
 			currentClient: {

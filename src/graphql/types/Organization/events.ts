@@ -405,11 +405,33 @@ Organization.implement({
 
 					// Apply cursor-based pagination
 					if (cursor !== undefined) {
-						const cursorIndex = allEvents.findIndex(
-							(event) =>
-								event.id === cursor.id &&
-								new Date(event.startAt).getTime() === cursor.startAt.getTime(),
-						);
+						const cursorIndex = allEvents.findIndex((event) => {
+							if (event.id !== cursor.id) {
+								return false;
+							}
+
+							// Normalize event start time
+							const eventStartTime: Date | string | null = event.allDay
+								? (event.startDate?.toString() ?? "")
+								: event.startAt
+									? new Date(event.startAt)
+									: null;
+
+							if (eventStartTime === null || eventStartTime === "") {
+								return false;
+							}
+
+							// Compare with cursor's startAt (normalized format)
+							if (typeof eventStartTime === "string") {
+								// All-day event: compare as date strings
+								return (
+									eventStartTime === cursor.startAt.toISOString().slice(0, 10)
+								);
+							} else {
+								// Timed event: compare as timestamps
+								return eventStartTime.getTime() === cursor.startAt.getTime();
+							}
+						});
 
 						if (cursorIndex === -1) {
 							throw new TalawaGraphQLError({
@@ -448,7 +470,11 @@ Organization.implement({
 					return transformToDefaultGraphQLConnection({
 						createCursor: (event) => ({
 							id: event.id,
-							startAt: new Date(event.startAt),
+							startAt: event.allDay
+								? new Date(`${event.startDate}T00:00:00Z`)
+								: event.startAt
+									? new Date(event.startAt)
+									: new Date(),
 						}),
 						createNode: (event) => event,
 						parsedArgs: { cursor, isInversed, limit },

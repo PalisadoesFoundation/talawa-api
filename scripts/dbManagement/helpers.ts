@@ -550,11 +550,63 @@ export async function insertCollections(
 								id: string;
 								createdAt: string | number | Date;
 								updatedAt: string | number | Date;
-								startAt: string | number | Date;
-								endAt: string | number | Date;
+								startAt: string | number | Date | null;
+								endAt: string | number | Date | null;
+								startDate?: string;
+								endDate?: string;
+								allDay?: boolean;
 							},
 							index: number,
 						) => {
+							// For all-day events, generate fresh dates relative to now
+							if (event.allDay) {
+								const createdAt = new Date(
+									Date.UTC(
+										now.getUTCFullYear(),
+										now.getUTCMonth(),
+										now.getUTCDate() + index,
+										1,
+										0,
+										0,
+									),
+								);
+
+								// Generate startDate and endDate in YYYY-MM-DD format
+								// For all-day events, we'll create single-day events
+								const eventDate = new Date(
+									Date.UTC(
+										now.getUTCFullYear(),
+										now.getUTCMonth(),
+										now.getUTCDate() + index,
+									),
+								);
+								const startDate = [
+									eventDate.getUTCFullYear(),
+									String(eventDate.getUTCMonth() + 1).padStart(2, "0"),
+									String(eventDate.getUTCDate()).padStart(2, "0"),
+								].join("-");
+
+								// endDate is exclusive, so add 1 day
+								const endDateObj = new Date(eventDate);
+								endDateObj.setUTCDate(endDateObj.getUTCDate() + 1);
+								const endDate = [
+									endDateObj.getUTCFullYear(),
+									String(endDateObj.getUTCMonth() + 1).padStart(2, "0"),
+									String(endDateObj.getUTCDate()).padStart(2, "0"),
+								].join("-");
+
+								return {
+									...event,
+									createdAt,
+									startAt: null,
+									endAt: null,
+									startDate,
+									endDate,
+									updatedAt: null,
+								};
+							}
+
+							// For timed events, generate timestamps
 							const start = new Date(
 								now.getFullYear(),
 								now.getMonth(),
@@ -563,14 +615,16 @@ export async function insertCollections(
 								0,
 								0,
 							);
-
 							const end = new Date(start.getTime() + 2 * 24 * 60 * 60 * 1000);
 
 							return {
 								...event,
+								allDay: false,
 								createdAt: start,
 								startAt: start,
 								endAt: end,
+								startDate: null,
+								endDate: null,
 								updatedAt: null,
 							};
 						},
@@ -632,9 +686,12 @@ export async function insertCollections(
 							const createdAt = parseDate(template.createdAt) ?? start;
 							return {
 								...template,
+								allDay: false,
 								createdAt,
 								startAt: start,
 								endAt: end,
+								startDate: null,
+								endDate: null,
 								updatedAt: null,
 								updaterId: null,
 								isPublic: true,
@@ -826,7 +883,7 @@ export async function insertCollections(
 				}
 
 				default:
-					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
+					console.log(`\x1b[31mInvalid table name: $collection\x1b[0m`);
 					break;
 			}
 		}

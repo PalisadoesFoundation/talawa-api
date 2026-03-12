@@ -44,9 +44,14 @@ export interface OccurrenceCalculationConfig {
  */
 export interface CalculatedOccurrence {
 	recurringEventInstanceId: string;
-	originalStartTime: Date;
-	actualStartTime: Date;
-	actualEndTime: Date;
+	// For timed events (allDay = false); null for all-day
+	originalStartTime: Date | null;
+	actualStartTime: Date | null;
+	actualEndTime: Date | null;
+	// For all-day events (allDay = true; YYYY-MM-DD strings); null for timed
+	originalStartDate: string | null;
+	actualStartDate: string | null;
+	actualEndDate: string | null;
 	isCancelled: boolean;
 	sequenceNumber: number;
 	totalCount: number | null;
@@ -97,4 +102,6 @@ export interface RecurrenceContext {
 	isNeverEnding: boolean;
 	exceptionsByTime: Map<string, typeof eventExceptionsTable.$inferSelect>;
 	maxIterations: number;
+	isAllDay: boolean;
+	allDayDurationDays: number;
 }

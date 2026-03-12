@@ -61,10 +61,10 @@ describe("getStandaloneEventsInDateRange", () => {
 			expect.objectContaining({
 				organizationId,
 				count: 3,
-				dateRange: {
+				dateRange: expect.objectContaining({
 					start: startDate.toISOString(),
 					end: endDate.toISOString(),
-				},
+				}),
 				eventIdsFilter: 0,
 			}),
 			"Retrieved standalone events",
@@ -92,10 +92,10 @@ describe("getStandaloneEventsInDateRange", () => {
 			expect.objectContaining({
 				organizationId,
 				count: 1,
-				dateRange: {
+				dateRange: expect.objectContaining({
 					start: startDate.toISOString(),
 					end: endDate.toISOString(),
-				},
+				}),
 				eventIdsFilter: 2,
 			}),
 			"Retrieved standalone events",

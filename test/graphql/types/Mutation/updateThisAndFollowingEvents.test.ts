@@ -1,11 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -16,9 +18,63 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const createdOrganizationIds = new Set<string>();
+const createdUserIds = new Set<string>();
+
 // Clean up after each test to prevent state leakage
-afterEach(() => {
-	vi.clearAllMocks();
+afterEach(async () => {
+	const organizationIds = [...createdOrganizationIds];
+
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurringEventInstancesTable)
+			.where(
+				inArray(recurringEventInstancesTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(recurrenceRulesTable)
+			.where(inArray(recurrenceRulesTable.organizationId, organizationIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.organizationId, organizationIds))
+			.execute();
+
+		await server.drizzleClient
+			.delete(eventGenerationWindowsTable)
+			.where(
+				inArray(eventGenerationWindowsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			)
+			.execute();
+
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds))
+			.execute();
+
+		createdOrganizationIds.clear();
+	}
+
+	const userIds = [...createdUserIds];
+	if (userIds.length > 0) {
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, userIds))
+			.execute();
+		createdUserIds.clear();
+	}
+
+	vi.restoreAllMocks();
 	mercuriusClient.setHeaders({});
 });
 
@@ -57,6 +113,7 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	});
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
+	createdOrganizationIds.add(orgId);
 	return orgId;
 }
 
@@ -439,18 +496,23 @@ suite(
 
 			const regularUserEmail = faker.internet.email();
 			const regularUserPassword = "password123";
-			await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						emailAddress: regularUserEmail,
-						password: regularUserPassword,
-						name: "Regular User",
-						role: "regular",
-						isEmailAddressVerified: true,
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							password: regularUserPassword,
+							name: "Regular User",
+							role: "regular",
+							isEmailAddressVerified: true,
+						},
 					},
 				},
-			});
+			);
+			const createdUserId = createUserResult.data?.createUser?.user?.id;
+			if (createdUserId) createdUserIds.add(createdUserId);
 
 			const regularUserSignInResult = await mercuriusClient.query(
 				Query_signIn,
@@ -589,6 +651,8 @@ test("should handle all-day event updates", async () => {
 				input: {
 					id: targetInstanceId,
 					allDay: true,
+					startDate: "2024-02-05",
+					endDate: "2024-02-06",
 				},
 			},
 		},
@@ -708,7 +772,7 @@ test("should properly update the old recurrence rule end date", async () => {
 
 	expect(updatedOldRule).toBeDefined();
 	expect(updatedOldRule?.recurrenceEndDate).toEqual(
-		new Date(targetInstance.actualStartTime.getTime() - 1),
+		new Date((targetInstance.actualStartTime?.getTime() ?? 0) - 1),
 	);
 });
 
@@ -1495,4 +1559,477 @@ test("should propagate isInviteOnly to generated instances", async () => {
 	for (const instance of allInstances) {
 		expect(instance.baseRecurringEvent.isInviteOnly).toBe(true);
 	}
+}, 10000);
+
+test("should return unexpected error when all-day instance is missing actualStartDate", async () => {
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create an all-day recurring event template
+	const [template] = await server.drizzleClient
+		.insert(eventsTable)
+		.values({
+			name: "All-Day Event Template",
+			description: "All-day recurring event",
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			isRecurringEventTemplate: true,
+			allDay: true,
+			startDate: "2024-01-01",
+			endDate: "2024-01-02",
+			isPublic: true,
+			isRegisterable: false,
+		})
+		.returning();
+
+	assertToBeNonNullish(template);
+
+	const originalSeriesId = faker.string.uuid();
+	const [recurrenceRule] = await server.drizzleClient
+		.insert(recurrenceRulesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			originalSeriesId,
+			recurrenceStartDate: new Date("2024-01-01"),
+			recurrenceEndDate: new Date("2024-12-31"),
+			frequency: "WEEKLY",
+			interval: 1,
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+			latestInstanceDate: new Date("2024-01-01"),
+		})
+		.returning();
+
+	assertToBeNonNullish(recurrenceRule);
+
+	// Insert an all-day instance with actualStartDate explicitly null
+	const [instance] = await server.drizzleClient
+		.insert(recurringEventInstancesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
+			organizationId: orgId,
+			originalInstanceStartDate: "2024-01-01",
+			actualStartDate: null, // Missing — should trigger the unexpected error
+			actualEndDate: null,
+			sequenceNumber: 1,
+		})
+		.returning();
+
+	assertToBeNonNullish(instance);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: instance.id,
+					name: "Updated Name",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+});
+
+test("should return unexpected error when timed instance is missing actualStartTime", async () => {
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create a timed recurring event template
+	const [template] = await server.drizzleClient
+		.insert(eventsTable)
+		.values({
+			name: "Timed Event Template",
+			description: "Timed recurring event",
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			isRecurringEventTemplate: true,
+			allDay: false,
+			startAt: new Date("2024-01-01T10:00:00Z"),
+			endAt: new Date("2024-01-01T11:00:00Z"),
+			isPublic: true,
+			isRegisterable: false,
+		})
+		.returning();
+
+	assertToBeNonNullish(template);
+
+	const originalSeriesId = faker.string.uuid();
+	const [recurrenceRule] = await server.drizzleClient
+		.insert(recurrenceRulesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			originalSeriesId,
+			recurrenceStartDate: new Date("2024-01-01"),
+			recurrenceEndDate: new Date("2024-12-31"),
+			frequency: "WEEKLY",
+			interval: 1,
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+			latestInstanceDate: new Date("2024-01-01"),
+		})
+		.returning();
+
+	assertToBeNonNullish(recurrenceRule);
+
+	// Insert a timed instance with actualStartTime explicitly null
+	const [instance] = await server.drizzleClient
+		.insert(recurringEventInstancesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
+			organizationId: orgId,
+			originalInstanceStartTime: new Date("2024-01-01T10:00:00Z"),
+			actualStartTime: null, // Missing — should trigger the unexpected error
+			actualEndTime: null,
+			sequenceNumber: 1,
+		})
+		.returning();
+
+	assertToBeNonNullish(instance);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: instance.id,
+					name: "Updated Name",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+});
+
+test("should use gte(actualStartDate) when updating this-and-following for an all-day recurring event", async () => {
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create an all-day recurring event template
+	const [template] = await server.drizzleClient
+		.insert(eventsTable)
+		.values({
+			name: "All-Day Weekly Event",
+			description: "All-day recurring event for startCondition coverage",
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			isRecurringEventTemplate: true,
+			allDay: true,
+			startDate: "2024-03-01",
+			endDate: "2024-03-01",
+			isPublic: true,
+			isRegisterable: false,
+		})
+		.returning();
+
+	assertToBeNonNullish(template);
+
+	const originalSeriesId = faker.string.uuid();
+	const [recurrenceRule] = await server.drizzleClient
+		.insert(recurrenceRulesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			originalSeriesId,
+			recurrenceStartDate: new Date("2024-03-01"),
+			recurrenceEndDate: new Date("2024-12-31"),
+			frequency: "WEEKLY",
+			interval: 1,
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+			latestInstanceDate: new Date("2024-03-15"),
+		})
+		.returning();
+
+	assertToBeNonNullish(recurrenceRule);
+
+	// Insert three all-day instances with valid actualStartDate
+	const instances = await server.drizzleClient
+		.insert(recurringEventInstancesTable)
+		.values([
+			{
+				baseRecurringEventId: template.id,
+				recurrenceRuleId: recurrenceRule.id,
+				originalSeriesId,
+				organizationId: orgId,
+				originalInstanceStartDate: "2024-03-01",
+				actualStartDate: "2024-03-01",
+				actualEndDate: "2024-03-01",
+				sequenceNumber: 1,
+			},
+			{
+				baseRecurringEventId: template.id,
+				recurrenceRuleId: recurrenceRule.id,
+				originalSeriesId,
+				organizationId: orgId,
+				originalInstanceStartDate: "2024-03-08",
+				actualStartDate: "2024-03-08",
+				actualEndDate: "2024-03-08",
+				sequenceNumber: 2,
+			},
+			{
+				baseRecurringEventId: template.id,
+				recurrenceRuleId: recurrenceRule.id,
+				originalSeriesId,
+				organizationId: orgId,
+				originalInstanceStartDate: "2024-03-15",
+				actualStartDate: "2024-03-15",
+				actualEndDate: "2024-03-15",
+				sequenceNumber: 3,
+			},
+		])
+		.returning();
+
+	expect(instances).toHaveLength(3);
+
+	// Target the second instance — exercises gte(actualStartDate, "2024-03-08")
+	const targetInstance = instances[1];
+	assertToBeNonNullish(targetInstance);
+
+	const mutResult = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstance.id,
+					name: "Updated All-Day Event",
+				},
+			},
+		},
+	);
+
+	// Mutation should succeed, exercising the gte(actualStartDate, ...) startCondition branch
+	expect(mutResult.errors).toBeUndefined();
+	expect(mutResult.data?.updateThisAndFollowingEvents).toBeDefined();
+
+	// Verify the old recurrence rule was truncated to midnight UTC of the target instance's start date,
+	// exercising the all-day branch of splitEndDate:
+	// splitEndDate = new Date(`${existingInstance.actualStartDate}T00:00:00.000Z`)
+	const updatedOldRule =
+		await server.drizzleClient.query.recurrenceRulesTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, recurrenceRule.id),
+		});
+	expect(updatedOldRule).toBeDefined();
+	expect(updatedOldRule?.recurrenceEndDate).toEqual(
+		new Date(`${targetInstance.actualStartDate}T00:00:00.000Z`),
+	);
+
+	// The first instance (2024-03-01) should still belong to the original template
+	const firstInstance =
+		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
+			where: (fields, operators) =>
+				operators.and(
+					operators.eq(fields.baseRecurringEventId, template.id),
+					operators.eq(fields.actualStartDate, "2024-03-01"),
+				),
+		});
+	expect(firstInstance).toBeDefined();
+});
+
+test("should return invalid_arguments when switching to allDay without providing startDate", async () => {
+	// Scenario: timed recurring event (instances have actualStartDate: null), caller
+	// passes allDay: true but omits startDate — newStartDate resolves to null and the
+	// guard `if (newIsAllDay && !newStartDate)` fires.
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// createRecurringEventWithInstances builds a timed (allDay: false) series
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[1];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					// Switch to all-day but intentionally omit startDate
+					allDay: true,
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.join(".") === "input.startDate" &&
+				i.message === "startDate is required for all-day events.",
+		),
+	).toBe(true);
+});
+
+test("should return invalid_arguments when both timed and all-day fields are provided together (mixed mode)", async () => {
+	// Covers: if (hasAnyTimed && hasAnyDate) branch in MutationUpdateThisAndFollowingEventsInput superRefine
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					// Mixed mode: both timed and all-day fields provided simultaneously
+					startAt: "2024-02-01T10:00:00.000Z",
+					startDate: "2024-02-01",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.includes("allDay") &&
+				i.message.includes(
+					"Provide either timed fields (startAt/endAt) or all-day fields (startDate/endDate), not both.",
+				),
+		),
+	).toBe(true);
+}, 10000);
+
+test("should return invalid_arguments when allDay=true is set alongside startAt/endAt timed fields", async () => {
+	// Covers: if (remainingArgs.allDay === true && hasAnyTimed) branch
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					allDay: true,
+					startAt: "2024-02-01T10:00:00.000Z",
+					startDate: "2024-02-01",
+					endDate: "2024-02-02",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.includes("allDay") &&
+				i.message.includes("When allDay=true, startAt/endAt must be omitted."),
+		),
+	).toBe(true);
+}, 10000);
+
+test("should return invalid_arguments when allDay=false is set alongside startDate/endDate all-day fields", async () => {
+	// Covers: if (remainingArgs.allDay === false && hasAnyDate) branch
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					allDay: false,
+					startDate: "2024-02-01",
+					endDate: "2024-02-02",
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeDefined();
+	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	const issues = result.errors?.[0]?.extensions?.issues as
+		| Array<{ argumentPath: string[]; message: string }>
+		| undefined;
+	expect(
+		issues?.some(
+			(i) =>
+				i.argumentPath.includes("allDay") &&
+				i.message.includes(
+					"When allDay=false, startDate/endDate must be omitted.",
+				),
+		),
+	).toBe(true);
 }, 10000);

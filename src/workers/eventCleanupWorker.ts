@@ -1,9 +1,22 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, isNotNull, lt, or } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+
+/**
+ * Formats a Date to a UTC YYYY-MM-DD string.
+ * Uses UTC components to avoid timezone drift in Docker/CI environments.
+ */
+function toUTCDateString(date: Date): string {
+	const year = date.getUTCFullYear();
+	const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(date.getUTCDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
 
 /**
  * The main method for the cleanup worker, which processes all organizations
@@ -82,9 +95,10 @@ async function cleanupOrganizationInstances(
 	// Calculate retention cutoff date
 	const now = new Date();
 	const retentionCutoffDate = new Date(now);
-	retentionCutoffDate.setMonth(
-		retentionCutoffDate.getMonth() - historyRetentionMonths,
+	retentionCutoffDate.setUTCMonth(
+		retentionCutoffDate.getUTCMonth() - historyRetentionMonths,
 	);
+	const retentionCutoffDateStr = toUTCDateString(retentionCutoffDate);
 
 	logger.info(
 		`Cleaning up instances for organization ${organizationId} ` +
@@ -96,7 +110,21 @@ async function cleanupOrganizationInstances(
 		await drizzleClient.query.recurringEventInstancesTable.findMany({
 			where: and(
 				eq(recurringEventInstancesTable.organizationId, organizationId),
-				lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
+				or(
+					// For timed events: check actualEndTime
+					and(
+						isNotNull(recurringEventInstancesTable.actualEndTime),
+						lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
+					),
+					// For all-day events: check actualEndDate
+					and(
+						isNotNull(recurringEventInstancesTable.actualEndDate),
+						lt(
+							recurringEventInstancesTable.actualEndDate,
+							retentionCutoffDateStr,
+						),
+					),
+				),
 			),
 			columns: { id: true },
 		});
@@ -109,14 +137,26 @@ async function cleanupOrganizationInstances(
 	}
 
 	// Delete old instances
-	const result = await drizzleClient
-		.delete(recurringEventInstancesTable)
-		.where(
-			and(
-				eq(recurringEventInstancesTable.organizationId, organizationId),
-				lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
+	const result = await drizzleClient.delete(recurringEventInstancesTable).where(
+		and(
+			eq(recurringEventInstancesTable.organizationId, organizationId),
+			or(
+				// For timed events: check actualEndTime
+				and(
+					isNotNull(recurringEventInstancesTable.actualEndTime),
+					lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
+				),
+				// For all-day events: check actualEndDate
+				and(
+					isNotNull(recurringEventInstancesTable.actualEndDate),
+					lt(
+						recurringEventInstancesTable.actualEndDate,
+						retentionCutoffDateStr,
+					),
+				),
 			),
-		);
+		),
+	);
 
 	const deletedCount = result.rowCount || 0;
 
@@ -183,9 +223,10 @@ export async function cleanupSpecificOrganization(
 		});
 
 	if (!windowConfig) {
-		throw new Error(
-			`No materialization window found for organization ${organizationId}`,
-		);
+		throw new TalawaRestError({
+			code: ErrorCode.NOT_FOUND,
+			message: `No materialization window found for organization ${organizationId}`,
+		});
 	}
 
 	const instancesDeleted = await cleanupOrganizationInstances(
@@ -197,8 +238,8 @@ export async function cleanupSpecificOrganization(
 	// Calculate retention cutoff date for response
 	const now = new Date();
 	const retentionCutoffDate = new Date(now);
-	retentionCutoffDate.setMonth(
-		retentionCutoffDate.getMonth() - windowConfig.historyRetentionMonths,
+	retentionCutoffDate.setUTCMonth(
+		retentionCutoffDate.getUTCMonth() - windowConfig.historyRetentionMonths,
 	);
 
 	return {
@@ -250,16 +291,31 @@ export async function getOrganizationCleanupStatus(
 	// Calculate retention cutoff date
 	const now = new Date();
 	const retentionCutoffDate = new Date(now);
-	retentionCutoffDate.setMonth(
-		retentionCutoffDate.getMonth() - windowConfig.historyRetentionMonths,
+	retentionCutoffDate.setUTCMonth(
+		retentionCutoffDate.getUTCMonth() - windowConfig.historyRetentionMonths,
 	);
+	const retentionCutoffDateStr = toUTCDateString(retentionCutoffDate);
 
 	// Count instances eligible for cleanup
 	const instancesEligibleForCleanup =
 		await drizzleClient.query.recurringEventInstancesTable.findMany({
 			where: and(
 				eq(recurringEventInstancesTable.organizationId, organizationId),
-				lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
+				or(
+					// For timed events: check actualEndTime
+					and(
+						isNotNull(recurringEventInstancesTable.actualEndTime),
+						lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
+					),
+					// For all-day events: check actualEndDate
+					and(
+						isNotNull(recurringEventInstancesTable.actualEndDate),
+						lt(
+							recurringEventInstancesTable.actualEndDate,
+							retentionCutoffDateStr,
+						),
+					),
+				),
 			),
 			columns: { id: true },
 		});
@@ -293,11 +349,23 @@ export async function emergencyCleanupBefore(
 	logger.warn(
 		`EMERGENCY CLEANUP: Deleting ALL instances before ${cutoffDate.toISOString()}`,
 	);
+	const cutoffDateStr = toUTCDateString(cutoffDate);
 
 	// Get affected organizations (for reporting)
 	const affectedOrganizations =
 		await drizzleClient.query.recurringEventInstancesTable.findMany({
-			where: lt(recurringEventInstancesTable.actualEndTime, cutoffDate),
+			where: or(
+				// For timed events: check actualEndTime
+				and(
+					isNotNull(recurringEventInstancesTable.actualEndTime),
+					lt(recurringEventInstancesTable.actualEndTime, cutoffDate),
+				),
+				// For all-day events: check actualEndDate
+				and(
+					isNotNull(recurringEventInstancesTable.actualEndDate),
+					lt(recurringEventInstancesTable.actualEndDate, cutoffDateStr),
+				),
+			),
 			columns: { organizationId: true },
 		});
 
@@ -306,9 +374,20 @@ export async function emergencyCleanupBefore(
 	);
 
 	// Delete old instances
-	const result = await drizzleClient
-		.delete(recurringEventInstancesTable)
-		.where(lt(recurringEventInstancesTable.actualEndTime, cutoffDate));
+	const result = await drizzleClient.delete(recurringEventInstancesTable).where(
+		or(
+			// For timed events: check actualEndTime
+			and(
+				isNotNull(recurringEventInstancesTable.actualEndTime),
+				lt(recurringEventInstancesTable.actualEndTime, cutoffDate),
+			),
+			// For all-day events: check actualEndDate
+			and(
+				isNotNull(recurringEventInstancesTable.actualEndDate),
+				lt(recurringEventInstancesTable.actualEndDate, cutoffDateStr),
+			),
+		),
+	);
 
 	const deletedCount = result.rowCount || 0;
 
@@ -351,6 +430,7 @@ export async function getGlobalCleanupStatistics(
 			columns: {
 				organizationId: true,
 				actualEndTime: true,
+				actualEndDate: true,
 				generatedAt: true,
 			},
 		});
@@ -359,15 +439,26 @@ export async function getGlobalCleanupStatistics(
 	const totalOrganizations = organizations.length;
 	const totalInstances = allInstances.length;
 
-	// Find oldest and newest instance dates
-	const instanceDates = allInstances.map((instance) => instance.actualEndTime);
+	// Find oldest and newest instance dates (combine timed and all-day)
+	const instanceEndDates = allInstances
+		.map((instance) => {
+			if (instance.actualEndTime) {
+				return instance.actualEndTime;
+			}
+			if (instance.actualEndDate) {
+				return new Date(instance.actualEndDate);
+			}
+			return null;
+		})
+		.filter((d): d is Date => d !== null);
+
 	const oldestInstanceDate =
-		instanceDates.length > 0
-			? new Date(Math.min(...instanceDates.map((d) => d.getTime())))
+		instanceEndDates.length > 0
+			? new Date(Math.min(...instanceEndDates.map((d) => d.getTime())))
 			: null;
 	const newestInstanceDate =
-		instanceDates.length > 0
-			? new Date(Math.max(...instanceDates.map((d) => d.getTime())))
+		instanceEndDates.length > 0
+			? new Date(Math.max(...instanceEndDates.map((d) => d.getTime())))
 			: null;
 
 	// Count instances eligible for cleanup
@@ -376,15 +467,32 @@ export async function getGlobalCleanupStatistics(
 
 	for (const org of organizations) {
 		const retentionCutoffDate = new Date(now);
-		retentionCutoffDate.setMonth(
-			retentionCutoffDate.getMonth() - org.historyRetentionMonths,
+		retentionCutoffDate.setUTCMonth(
+			retentionCutoffDate.getUTCMonth() - org.historyRetentionMonths,
 		);
+		const retentionCutoffDateStr = toUTCDateString(retentionCutoffDate);
 
-		const orgEligibleInstances = allInstances.filter(
-			(instance) =>
-				instance.organizationId === org.organizationId &&
-				instance.actualEndTime < retentionCutoffDate,
-		);
+		const orgEligibleInstances = allInstances.filter((instance) => {
+			if (instance.organizationId !== org.organizationId) return false;
+
+			// Check timed events
+			if (
+				instance.actualEndTime &&
+				instance.actualEndTime < retentionCutoffDate
+			) {
+				return true;
+			}
+
+			// Check all-day events
+			if (
+				instance.actualEndDate &&
+				instance.actualEndDate < retentionCutoffDateStr
+			) {
+				return true;
+			}
+
+			return false;
+		});
 
 		totalInstancesEligibleForCleanup += orgEligibleInstances.length;
 	}

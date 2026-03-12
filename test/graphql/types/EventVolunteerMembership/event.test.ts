@@ -32,6 +32,9 @@ const mockEvent = {
 	isRegisterable: true,
 	updaterId: null,
 	isRecurringEventTemplate: false,
+	startDate: null,
+	endDate: null,
+	attachments: [],
 };
 
 describe("VolunteerMembershipEventResolver", () => {
@@ -259,6 +262,10 @@ describe("VolunteerMembershipEventResolver", () => {
 			const allDayEvent = {
 				...mockEvent,
 				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: "2024-02-01",
+				endDate: "2024-02-02",
 			};
 
 			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
@@ -272,6 +279,10 @@ describe("VolunteerMembershipEventResolver", () => {
 			);
 
 			expect(result.allDay).toBe(true);
+			expect(result.startAt).toBeNull();
+			expect(result.endAt).toBeNull();
+			expect(result.startDate).toBe("2024-02-01");
+			expect(result.endDate).toBe("2024-02-02");
 			expect(result.attachments).toEqual([]);
 		});
 	});
@@ -375,8 +386,8 @@ describe("VolunteerMembershipEventResolver", () => {
 				context,
 			);
 
-			expect(result.startAt.getFullYear()).toBe(2025);
-			expect(result.endAt.getFullYear()).toBe(2025);
+			expect(result.startAt?.getUTCFullYear()).toBe(2025);
+			expect(result.endAt?.getUTCFullYear()).toBe(2025);
 		});
 	});
 });

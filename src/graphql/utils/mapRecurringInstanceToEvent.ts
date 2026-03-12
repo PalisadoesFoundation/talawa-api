@@ -17,6 +17,8 @@ export function mapRecurringInstanceToEvent(
 		description: instance.description,
 		startAt: instance.actualStartTime,
 		endAt: instance.actualEndTime,
+		startDate: instance.actualStartDate ?? null,
+		endDate: instance.actualEndDate ?? null,
 		location: instance.location,
 		allDay: instance.allDay,
 		isPublic: instance.isPublic,

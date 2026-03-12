@@ -13,18 +13,14 @@ import {
 } from "./FileMetadataInput";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
-export const mutationCreateEventInputSchema = eventsTableInsertSchema
-	.pick({
-		endAt: true,
-		organizationId: true,
-		startAt: true,
-	})
-	.extend({
+export const mutationCreateEventInputSchema = z
+	.object({
+		organizationId: eventsTableInsertSchema.shape.organizationId,
+		name: sanitizedStringSchema.min(1).max(EVENT_NAME_MAX_LENGTH),
 		description: sanitizedStringSchema
 			.min(1)
 			.max(EVENT_DESCRIPTION_MAX_LENGTH)
 			.optional(),
-		name: sanitizedStringSchema.min(1).max(EVENT_NAME_MAX_LENGTH),
 		attachments: fileMetadataInputSchema.array().min(1).max(20).optional(),
 		allDay: z.boolean().optional(),
 		isInviteOnly: z.boolean().optional(),
@@ -35,14 +31,110 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 			.max(EVENT_LOCATION_MAX_LENGTH)
 			.optional(),
 		recurrence: recurrenceInputSchema.optional(),
+		// Timed event fields (required when allDay = false)
+		startAt: z.date().optional(),
+		endAt: z.date().optional(),
+		// All-day event fields (required when allDay = true; YYYY-MM-DD strings)
+		startDate: z.string().date().optional(),
+		endDate: z.string().date().optional(),
 	})
 	.superRefine((arg, ctx) => {
-		if (arg.endAt <= arg.startAt) {
+		// Check for mixed representations (startAt with startDate or endAt with endDate)
+		if (arg.startAt !== undefined && arg.startDate !== undefined) {
 			ctx.addIssue({
 				code: "custom",
-				message: `Must be greater than the value: ${arg.startAt.toISOString()}`,
+				message:
+					"Cannot provide both startAt (timed) and startDate (all-day) in the same payload.",
+				path: ["startAt"],
+			});
+		}
+		if (arg.endAt !== undefined && arg.endDate !== undefined) {
+			ctx.addIssue({
+				code: "custom",
+				message:
+					"Cannot provide both endAt (timed) and endDate (all-day) in the same payload.",
 				path: ["endAt"],
 			});
+		}
+
+		if (arg.allDay === true) {
+			// All-day event: startDate and endDate must be provided, forbid timed fields
+			if (!arg.startDate) {
+				ctx.addIssue({
+					code: "custom",
+					message: "startDate is required for all-day events",
+					path: ["startDate"],
+				});
+			}
+			if (!arg.endDate) {
+				ctx.addIssue({
+					code: "custom",
+					message: "endDate is required for all-day events",
+					path: ["endDate"],
+				});
+			}
+			if (arg.startAt !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide startAt when allDay is true. Use startDate instead.",
+					path: ["startAt"],
+				});
+			}
+			if (arg.endAt !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide endAt when allDay is true. Use endDate instead.",
+					path: ["endAt"],
+				});
+			}
+			if (arg.startDate && arg.endDate && arg.endDate <= arg.startDate) {
+				ctx.addIssue({
+					code: "custom",
+					message: `Must be greater than the value: ${arg.startDate}`,
+					path: ["endDate"],
+				});
+			}
+		} else {
+			// Timed event (allDay = false or undefined): startAt and endAt must be provided, forbid all-day fields
+			if (!arg.startAt) {
+				ctx.addIssue({
+					code: "custom",
+					message: "startAt is required for timed events",
+					path: ["startAt"],
+				});
+			}
+			if (!arg.endAt) {
+				ctx.addIssue({
+					code: "custom",
+					message: "endAt is required for timed events",
+					path: ["endAt"],
+				});
+			}
+			if (arg.startDate !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide startDate when allDay is false or omitted. Use startAt instead.",
+					path: ["startDate"],
+				});
+			}
+			if (arg.endDate !== undefined) {
+				ctx.addIssue({
+					code: "custom",
+					message:
+						"Cannot provide endDate when allDay is false or omitted. Use endAt instead.",
+					path: ["endDate"],
+				});
+			}
+			if (arg.startAt && arg.endAt && arg.endAt <= arg.startAt) {
+				ctx.addIssue({
+					code: "custom",
+					message: `Must be greater than the value: ${arg.startAt.toISOString()}`,
+					path: ["endAt"],
+				});
+			}
 		}
 	});
 
@@ -62,9 +154,26 @@ export const MutationCreateEventInput = builder
 				description: "Custom information about the event.",
 			}),
 			endAt: t.field({
-				description: "Date time at the time the event ends at.",
-				required: true,
+				description:
+					"UTC timestamp at the time the timed event ends. Required when allDay is false.",
+				required: false,
 				type: "DateTime",
+			}),
+			startAt: t.field({
+				description:
+					"UTC timestamp at the time the timed event starts. Required when allDay is false.",
+				required: false,
+				type: "DateTime",
+			}),
+			startDate: t.string({
+				description:
+					"Inclusive start date for all-day events (YYYY-MM-DD). Required when allDay is true.",
+				required: false,
+			}),
+			endDate: t.string({
+				description:
+					"Exclusive end date for all-day events (YYYY-MM-DD). Required when allDay is true. e.g. March 1 → March 2 is a one-day event.",
+				required: false,
 			}),
 			name: t.string({
 				description: "Name of the event.",
@@ -74,13 +183,9 @@ export const MutationCreateEventInput = builder
 				description: "Global identifier of the associated organization.",
 				required: true,
 			}),
-			startAt: t.field({
-				description: "Date time at the time the event starts at.",
-				required: true,
-				type: "DateTime",
-			}),
 			allDay: t.boolean({
-				description: "Indicates if the event spans the entire day",
+				description:
+					"If true, the event spans the entire day and uses startDate/endDate. If false (default), uses startAt/endAt UTC timestamps.",
 				required: false,
 			}),
 			isInviteOnly: t.boolean({

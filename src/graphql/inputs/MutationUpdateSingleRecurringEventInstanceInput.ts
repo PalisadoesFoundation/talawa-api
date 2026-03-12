@@ -22,14 +22,47 @@ export const mutationUpdateSingleRecurringEventInstanceInputSchema = z
 			.min(1, "Location must be at least 1 character long.")
 			.max(1024, "Location must be at most 1024 characters long.")
 			.optional(),
+		// Timed event fields (allDay = false)
 		startAt: z.date().optional(),
 		endAt: z.date().optional(),
+		// All-day event fields (allDay = true; YYYY-MM-DD strings)
+		startDate: z.string().date().optional(),
+		endDate: z.string().date().optional(),
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
 		isInviteOnly: z.boolean().optional(),
 	})
 	.superRefine(({ id, ...remainingArgs }, ctx) => {
+		const hasTimedFields =
+			isNotNullish(remainingArgs.startAt) || isNotNullish(remainingArgs.endAt);
+		const hasAllDayFields =
+			isNotNullish(remainingArgs.startDate) ||
+			isNotNullish(remainingArgs.endDate);
+
+		if (hasTimedFields && hasAllDayFields) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Use either startAt/endAt or startDate/endDate, not both.",
+			});
+		}
+
+		if (remainingArgs.allDay === true && hasTimedFields) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Timed fields are not allowed when allDay is true.",
+				path: ["allDay"],
+			});
+		}
+
+		if (remainingArgs.allDay !== true && hasAllDayFields) {
+			ctx.addIssue({
+				code: "custom",
+				message: "All-day fields require allDay to be true.",
+				path: ["allDay"],
+			});
+		}
+
 		// Ensure at least one field is being updated
 		if (!Object.values(remainingArgs).some((value) => value !== undefined)) {
 			ctx.addIssue({
@@ -38,7 +71,7 @@ export const mutationUpdateSingleRecurringEventInstanceInputSchema = z
 			});
 		}
 
-		// Validate that endAt is after startAt if both are provided
+		// Validate timed event fields: if both startAt and endAt are provided, endAt must be after startAt
 		if (
 			isNotNullish(remainingArgs.endAt) &&
 			isNotNullish(remainingArgs.startAt) &&
@@ -48,6 +81,19 @@ export const mutationUpdateSingleRecurringEventInstanceInputSchema = z
 				code: "custom",
 				message: `End time must be after start time: ${remainingArgs.startAt.toISOString()}.`,
 				path: ["endAt"],
+			});
+		}
+
+		// Validate all-day event fields: if both startDate and endDate are provided, endDate must be after startDate
+		if (
+			isNotNullish(remainingArgs.endDate) &&
+			isNotNullish(remainingArgs.startDate) &&
+			remainingArgs.endDate <= remainingArgs.startDate
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: `End date must be after start date: ${remainingArgs.startDate}.`,
+				path: ["endDate"],
 			});
 		}
 	});
@@ -74,12 +120,24 @@ export const MutationUpdateSingleRecurringEventInstanceInput = builder
 				description: "Updated location for this specific event instance.",
 			}),
 			startAt: t.field({
-				description: "Updated start time for this specific event instance.",
+				description:
+					"Updated UTC start time for this specific timed event instance.",
 				type: "DateTime",
 			}),
 			endAt: t.field({
-				description: "Updated end time for this specific event instance.",
+				description:
+					"Updated UTC end time for this specific timed event instance.",
 				type: "DateTime",
+			}),
+			startDate: t.string({
+				description:
+					"Inclusive start date (YYYY-MM-DD) for this specific all-day event instance.",
+				required: false,
+			}),
+			endDate: t.string({
+				description:
+					"Exclusive end date (YYYY-MM-DD) for this specific all-day event instance.",
+				required: false,
 			}),
 			allDay: t.boolean({
 				description:

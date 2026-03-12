@@ -35,6 +35,8 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			isRegisterable: true,
 			isInviteOnly: false,
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 		} as EventType;
 	});
 

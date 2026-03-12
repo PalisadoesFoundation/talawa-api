@@ -76,6 +76,7 @@ input MutationUpdateEventInput {
   allDay: Boolean
   description: String
   endAt: DateTime
+  endDate: String
   id: ID!
   isInviteOnly: Boolean
   isPublic: Boolean
@@ -83,6 +84,7 @@ input MutationUpdateEventInput {
   location: String
   name: String
   startAt: DateTime
+  startDate: String
 }
 ```
 
@@ -90,7 +92,7 @@ input MutationUpdateEventInput {
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>allDay</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Indicates if the event spans the entire day.
+If true, converts the event to all-day (requires startDate/endDate). If false, converts to timed (requires startAt/endAt).
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -98,7 +100,11 @@ Custom information about the event.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Date time at the time the event ends at.
+UTC timestamp at the time the timed event ends. Only applicable when allDay is false.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>endDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Exclusive end date for all-day events (YYYY-MM-DD). Only applicable when allDay is true.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -126,7 +132,11 @@ Name of the event.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Date time at the time the event starts at.
+UTC timestamp at the time the timed event starts. Only applicable when allDay is false.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateEventInput.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Inclusive start date for all-day events (YYYY-MM-DD). Only applicable when allDay is true.
 
 ### Member Of
 

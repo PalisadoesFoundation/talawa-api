@@ -35,6 +35,8 @@ describe("src/drizzle/tables/events.ts", () => {
 				expect(columns).toContain("name");
 				expect(columns).toContain("organizationId");
 				expect(columns).toContain("startAt");
+				expect(columns).toContain("startDate");
+				expect(columns).toContain("endDate");
 				expect(columns).toContain("allDay");
 				expect(columns).toContain("isInviteOnly");
 				expect(columns).toContain("isPublic");
@@ -100,8 +102,19 @@ describe("src/drizzle/tables/events.ts", () => {
 					expect(eventsTable.endAt.columnType).toBe("PgTimestamp");
 				});
 
-				it("should be not null", () => {
-					expect(eventsTable.endAt.notNull).toBe(true);
+				it("should be nullable", () => {
+					expect(eventsTable.endAt.notNull).toBe(false);
+				});
+			});
+
+			describe("endDate column", () => {
+				it("should be a date column", () => {
+					expect(eventsTable.endDate.dataType).toBe("string");
+					expect(eventsTable.endDate.columnType).toBe("PgDateString");
+				});
+
+				it("should be nullable at column level (enforced by allDay constraint)", () => {
+					expect(eventsTable.endDate.notNull).toBe(false);
 				});
 			});
 
@@ -133,8 +146,19 @@ describe("src/drizzle/tables/events.ts", () => {
 					expect(eventsTable.startAt.columnType).toBe("PgTimestamp");
 				});
 
-				it("should be not null", () => {
-					expect(eventsTable.startAt.notNull).toBe(true);
+				it("should be nullable", () => {
+					expect(eventsTable.startAt.notNull).toBe(false);
+				});
+			});
+
+			describe("startDate column", () => {
+				it("should be a date column", () => {
+					expect(eventsTable.startDate.dataType).toBe("string");
+					expect(eventsTable.startDate.columnType).toBe("PgDateString");
+				});
+
+				it("should be nullable at column level (enforced by allDay constraint)", () => {
+					expect(eventsTable.startDate.notNull).toBe(false);
 				});
 			});
 
@@ -312,9 +336,11 @@ describe("src/drizzle/tables/events.ts", () => {
 				expect(indexNames).toContain("events_created_at_idx");
 				expect(indexNames).toContain("events_creator_id_idx");
 				expect(indexNames).toContain("events_end_at_idx");
+				expect(indexNames).toContain("events_end_date_idx");
 				expect(indexNames).toContain("events_name_idx");
 				expect(indexNames).toContain("events_organization_id_idx");
 				expect(indexNames).toContain("events_start_at_idx");
+				expect(indexNames).toContain("events_start_date_idx");
 				expect(indexNames).toContain("events_all_day_idx");
 				expect(indexNames).toContain("events_is_invite_only_idx");
 				expect(indexNames).toContain("events_is_public_idx");
@@ -573,6 +599,150 @@ describe("src/drizzle/tables/events.ts", () => {
 				startAt: new Date(),
 				endAt: new Date(),
 				location: "",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept allDay=true with startDate and endDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject allDay=true without startDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true without endDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true without startDate and endDate", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true when timed fields are also provided", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true when only startAt is provided with date-only fields", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=true when only endAt is provided with date-only fields", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "All-day Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: true,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay=false without startAt and endAt", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: false,
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept allDay=false with startAt and endAt only", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: false,
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept allDay undefined with startAt and endAt only", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject allDay=false when date-only fields are also provided", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Timed Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				allDay: false,
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject when allDay is undefined without startAt and endAt", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject when allDay is undefined and date-only fields are provided with timed fields", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Event",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startAt: new Date("2025-06-15T10:00:00.000Z"),
+				endAt: new Date("2025-06-15T11:00:00.000Z"),
+				startDate: "2025-06-15",
+				endDate: "2025-06-16",
 			});
 			expect(result.success).toBe(false);
 		});

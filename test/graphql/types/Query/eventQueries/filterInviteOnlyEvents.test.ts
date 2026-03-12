@@ -54,6 +54,8 @@ describe("filterInviteOnlyEvents", () => {
 		updatedAt: null,
 		updaterId: null,
 		isRecurringEventTemplate: false,
+		startDate: null,
+		endDate: null,
 		attachments: [],
 		eventType,
 	});

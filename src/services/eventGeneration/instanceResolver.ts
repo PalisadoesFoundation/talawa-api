@@ -30,8 +30,11 @@ export function resolveInstanceWithInheritance(
 		originalSeriesId: generatedInstance.originalSeriesId,
 		recurrenceRuleId: generatedInstance.recurrenceRuleId,
 		originalInstanceStartTime: generatedInstance.originalInstanceStartTime,
+		originalInstanceStartDate: generatedInstance.originalInstanceStartDate,
 		actualStartTime: generatedInstance.actualStartTime,
 		actualEndTime: generatedInstance.actualEndTime,
+		actualStartDate: generatedInstance.actualStartDate,
+		actualEndDate: generatedInstance.actualEndDate,
 		isCancelled: generatedInstance.isCancelled,
 		organizationId: generatedInstance.organizationId,
 		generatedAt: generatedInstance.generatedAt,
@@ -115,6 +118,31 @@ function applyExceptionData(
 			exceptionData.endAt as string | number | Date,
 		);
 	}
+
+	// Handle all-day date exception fields
+	if (exceptionData.startDate !== undefined) {
+		resolvedInstance.actualStartDate = exceptionData.startDate as string | null;
+	}
+
+	if (exceptionData.endDate !== undefined) {
+		resolvedInstance.actualEndDate = exceptionData.endDate as string | null;
+	}
+
+	if (
+		exceptionData.startDate !== undefined ||
+		exceptionData.endDate !== undefined
+	) {
+		resolvedInstance.actualStartTime = null;
+		resolvedInstance.actualEndTime = null;
+	}
+
+	if (
+		exceptionData.startAt !== undefined ||
+		exceptionData.endAt !== undefined
+	) {
+		resolvedInstance.actualStartDate = null;
+		resolvedInstance.actualEndDate = null;
+	}
 }
 
 /**
@@ -140,6 +168,8 @@ function isValidExceptionField(
 		"isInviteOnly",
 		"actualStartTime",
 		"actualEndTime",
+		"actualStartDate",
+		"actualEndDate",
 		"isCancelled",
 	];
 
@@ -275,9 +305,6 @@ export function validateResolvedInstance(
 		"id",
 		"baseRecurringEventId",
 		"originalSeriesId",
-		"originalInstanceStartTime",
-		"actualStartTime",
-		"actualEndTime",
 		"organizationId",
 		"name",
 	];
@@ -291,6 +318,36 @@ export function validateResolvedInstance(
 			logger.error(`Missing required field in resolved instance: ${field}`);
 			return false;
 		}
+	}
+
+	const hasActualStartTime = resolvedInstance.actualStartTime != null;
+	const hasActualEndTime = resolvedInstance.actualEndTime != null;
+	const hasActualStartDate = resolvedInstance.actualStartDate != null;
+	const hasActualEndDate = resolvedInstance.actualEndDate != null;
+
+	const isValidTimedMode =
+		hasActualStartTime &&
+		hasActualEndTime &&
+		!hasActualStartDate &&
+		!hasActualEndDate;
+
+	const isValidAllDayMode =
+		!hasActualStartTime &&
+		!hasActualEndTime &&
+		hasActualStartDate &&
+		hasActualEndDate;
+
+	if (!isValidTimedMode && !isValidAllDayMode) {
+		logger.error(
+			{
+				actualStartTime: resolvedInstance.actualStartTime,
+				actualEndTime: resolvedInstance.actualEndTime,
+				actualStartDate: resolvedInstance.actualStartDate,
+				actualEndDate: resolvedInstance.actualEndDate,
+			},
+			"Resolved instance must use exactly one complete mode: timed (actualStartTime+actualEndTime only) or all-day (actualStartDate+actualEndDate only)",
+		);
+		return false;
 	}
 
 	return true;

@@ -1,4 +1,16 @@
-import { and, asc, eq, gte, inArray, lte, not, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	eq,
+	gt,
+	gte,
+	inArray,
+	isNotNull,
+	lte,
+	not,
+	or,
+	sql,
+} from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -11,6 +23,9 @@ import {
 	resolveMultipleInstances,
 } from "~/src/services/eventGeneration/instanceResolver";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+const recurringInstanceNormalizedStartSortKey = sql<Date>`coalesce(${recurringEventInstancesTable.actualStartTime}, ${recurringEventInstancesTable.actualStartDate}::timestamp)`;
 
 /**
  * Defines the input parameters for querying recurring event instances.
@@ -65,15 +80,31 @@ export async function getRecurringEventInstancesInDateRange(
 
 	// Defensive validation for limit and offset parameters
 	if (limit !== undefined && limit < 1) {
-		throw new Error(
-			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "invalid_arguments",
+				issues: [
+					{
+						argumentPath: ["limit"],
+						message: "Limit must be greater than or equal to 1.",
+					},
+				],
+			},
+		});
 	}
 
 	if (offset !== undefined && offset < 0) {
-		throw new Error(
-			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "invalid_arguments",
+				issues: [
+					{
+						argumentPath: ["offset"],
+						message: "Offset must be greater than or equal to 0.",
+					},
+				],
+			},
+		});
 	}
 
 	try {
@@ -211,9 +242,10 @@ export async function getRecurringEventInstanceById(
 		});
 
 		if (!baseTemplateResult) {
-			throw new Error(
-				`Base template not found: ${instance.baseRecurringEventId}`,
-			);
+			throw new TalawaGraphQLError({
+				message: `Base template not found: ${instance.baseRecurringEventId}`,
+				extensions: { code: "unexpected" },
+			});
 		}
 
 		// Map attachment relation to standard field
@@ -318,15 +350,31 @@ export async function getRecurringEventInstancesByBaseIds(
 
 	// Defensive validation for limit and offset parameters
 	if (limit !== undefined && limit < 1) {
-		throw new Error(
-			`Invalid limit: ${limit}. Limit must be greater than or equal to 1.`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "invalid_arguments",
+				issues: [
+					{
+						argumentPath: ["limit"],
+						message: "Limit must be greater than or equal to 1.",
+					},
+				],
+			},
+		});
 	}
 
 	if (offset !== undefined && offset < 0) {
-		throw new Error(
-			`Invalid offset: ${offset}. Offset must be greater than or equal to 0.`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "invalid_arguments",
+				issues: [
+					{
+						argumentPath: ["offset"],
+						message: "Offset must be greater than or equal to 0.",
+					},
+				],
+			},
+		});
 	}
 
 	const effectiveLimit = limit ?? DEFAULT_LIMIT;
@@ -354,7 +402,7 @@ export async function getRecurringEventInstancesByBaseIds(
 			await drizzleClient.query.recurringEventInstancesTable.findMany({
 				where: and(...whereConditions),
 				orderBy: [
-					asc(recurringEventInstancesTable.actualStartTime),
+					asc(recurringInstanceNormalizedStartSortKey),
 					asc(recurringEventInstancesTable.id),
 				],
 				limit: effectiveLimit,
@@ -395,6 +443,14 @@ async function fetchRecurringEventInstances(
 	input: GetRecurringEventInstancesInput & { excludeInstanceIds?: string[] },
 	drizzleClient: ServiceDependencies["drizzleClient"],
 ): Promise<(typeof recurringEventInstancesTable.$inferSelect)[]> {
+	const formatLocalDate = (date: Date): string => {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+
+		return `${year}-${month}-${day}`;
+	};
+
 	const {
 		organizationId,
 		startDate,
@@ -405,24 +461,55 @@ async function fetchRecurringEventInstances(
 		excludeInstanceIds,
 	} = input;
 
+	// Convert Date inputs to YYYY-MM-DD strings for all-day date comparisons
+	const windowStartStr = formatLocalDate(startDate);
+	const windowEndStr = formatLocalDate(endDate);
+
 	const whereConditions = [
 		eq(recurringEventInstancesTable.organizationId, organizationId),
-		// Event overlaps with date range - same logic as standalone events
+		// Event overlaps with date range — handles both timed and all-day instances
 		or(
-			// Event starts within range
+			// Timed instances: actualStartTime/actualEndTime are not null
 			and(
-				gte(recurringEventInstancesTable.actualStartTime, startDate),
-				lte(recurringEventInstancesTable.actualStartTime, endDate),
+				isNotNull(recurringEventInstancesTable.actualStartTime),
+				or(
+					// Instance starts within range
+					and(
+						gte(recurringEventInstancesTable.actualStartTime, startDate),
+						lte(recurringEventInstancesTable.actualStartTime, endDate),
+					),
+					// Instance ends within range
+					and(
+						gte(recurringEventInstancesTable.actualEndTime, startDate),
+						lte(recurringEventInstancesTable.actualEndTime, endDate),
+					),
+					// Instance spans the entire range
+					and(
+						lte(recurringEventInstancesTable.actualStartTime, startDate),
+						gte(recurringEventInstancesTable.actualEndTime, endDate),
+					),
+				),
 			),
-			// Event ends within range
+			// All-day instances: actualStartDate/actualEndDate are not null (string DATE comparisons)
 			and(
-				gte(recurringEventInstancesTable.actualEndTime, startDate),
-				lte(recurringEventInstancesTable.actualEndTime, endDate),
-			),
-			// Event spans the entire range
-			and(
-				lte(recurringEventInstancesTable.actualStartTime, startDate),
-				gte(recurringEventInstancesTable.actualEndTime, endDate),
+				isNotNull(recurringEventInstancesTable.actualStartDate),
+				or(
+					// Instance starts within range
+					and(
+						gte(recurringEventInstancesTable.actualStartDate, windowStartStr),
+						lte(recurringEventInstancesTable.actualStartDate, windowEndStr),
+					),
+					// Instance ends within range
+					and(
+						gt(recurringEventInstancesTable.actualEndDate, windowStartStr),
+						lte(recurringEventInstancesTable.actualEndDate, windowEndStr),
+					),
+					// Instance spans the entire range
+					and(
+						lte(recurringEventInstancesTable.actualStartDate, windowStartStr),
+						gt(recurringEventInstancesTable.actualEndDate, windowEndStr),
+					),
+				),
 			),
 		),
 	];
@@ -440,7 +527,7 @@ async function fetchRecurringEventInstances(
 	return await drizzleClient.query.recurringEventInstancesTable.findMany({
 		where: and(...whereConditions),
 		orderBy: [
-			asc(recurringEventInstancesTable.actualStartTime),
+			asc(recurringInstanceNormalizedStartSortKey),
 			asc(recurringEventInstancesTable.id),
 		],
 		limit,

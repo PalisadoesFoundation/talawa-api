@@ -6,7 +6,7 @@
 
 > **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`, `options?`): `Promise`\<`object` & `object`[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:127](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L127)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:188](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L188)
 
 Retrieves standalone events (and optionally recurring templates) by a list of specific IDs.
 This function is designed for the `eventsByIds` query. By default, only standalone events

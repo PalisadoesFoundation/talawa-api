@@ -25,7 +25,9 @@ describe("mapRecurringInstanceToEvent", () => {
 			sequenceNumber: 1,
 			totalCount: 5,
 			hasExceptions: false,
-			// Added missing required fields to match ResolvedRecurringEventInstance type
+			originalInstanceStartDate: null,
+			actualStartDate: null,
+			actualEndDate: null, // Added missing required fields to match ResolvedRecurringEventInstance type
 			recurrenceRuleId: "rule-1",
 			originalSeriesId: "series-1",
 			originalInstanceStartTime: new Date("2023-10-01T10:00:00Z"),
@@ -89,6 +91,9 @@ describe("mapRecurringInstanceToEvent", () => {
 			sequenceNumber: 1,
 			totalCount: null,
 			hasExceptions: false,
+			originalInstanceStartDate: null,
+			actualStartDate: null,
+			actualEndDate: null,
 			recurrenceRuleId: "rule-2",
 			originalSeriesId: "series-2",
 			originalInstanceStartTime: new Date("2023-10-01T10:00:00Z"),
@@ -112,5 +117,77 @@ describe("mapRecurringInstanceToEvent", () => {
 		expect(result.eventType).toBe("generated");
 		expect(result.isGenerated).toBe(true);
 		expect(result.attachments).toEqual([]);
+	});
+
+	it("correctly maps an all-day recurring instance with actualStartDate/actualEndDate", () => {
+		const instance: ResolvedRecurringEventInstance = {
+			id: "instance-allday",
+			name: "All-Day Event",
+			description: "An all-day test event",
+			actualStartTime: null,
+			actualEndTime: null,
+			actualStartDate: "2024-02-05",
+			actualEndDate: "2024-02-06",
+			location: "Auditorium",
+			allDay: true,
+			isPublic: true,
+			isRegisterable: true,
+			isInviteOnly: false,
+			organizationId: "org-1",
+			creatorId: "user-1",
+			updaterId: "user-1",
+			createdAt: new Date("2023-09-01T10:00:00Z"),
+			updatedAt: new Date("2023-09-02T10:00:00Z"),
+			isCancelled: false,
+			baseRecurringEventId: "base-3",
+			sequenceNumber: 2,
+			totalCount: 10,
+			hasExceptions: false,
+			originalInstanceStartDate: "2024-02-05",
+			originalInstanceStartTime: null,
+			recurrenceRuleId: "rule-3",
+			originalSeriesId: "series-3",
+			generatedAt: new Date("2023-09-01T10:00:00Z"),
+			lastUpdatedAt: null,
+			version: "1",
+			appliedExceptionData: null,
+			exceptionCreatedBy: null,
+			exceptionCreatedAt: null,
+			attachments: [],
+		};
+
+		const result = mapRecurringInstanceToEvent(instance);
+
+		expect(result).toMatchObject({
+			id: "instance-allday",
+			name: "All-Day Event",
+			description: "An all-day test event",
+			startAt: null,
+			endAt: null,
+			startDate: "2024-02-05",
+			endDate: "2024-02-06",
+			location: "Auditorium",
+			allDay: true,
+			isPublic: true,
+			isRegisterable: true,
+			isInviteOnly: false,
+			organizationId: "org-1",
+			creatorId: "user-1",
+			updaterId: "user-1",
+			createdAt: new Date("2023-09-01T10:00:00Z"),
+			updatedAt: new Date("2023-09-02T10:00:00Z"),
+			isRecurringEventTemplate: false,
+			baseRecurringEventId: "base-3",
+			sequenceNumber: 2,
+			totalCount: 10,
+			hasExceptions: false,
+			attachments: [],
+			eventType: "generated",
+			isGenerated: true,
+		});
+
+		// Verify timed fields are null for all-day events
+		expect(result.startAt).toBeNull();
+		expect(result.endAt).toBeNull();
 	});
 });

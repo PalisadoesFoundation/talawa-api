@@ -128,12 +128,14 @@ builder.queryField("eventsByAttendee", (t) =>
 							event: {
 								columns: {
 									startAt: true,
+									startDate: true,
 									isRecurringEventTemplate: true,
 								},
 							},
 							recurringEventInstance: {
 								columns: {
 									actualStartTime: true,
+									actualStartDate: true,
 									isCancelled: true,
 								},
 							},
@@ -161,11 +163,17 @@ builder.queryField("eventsByAttendee", (t) =>
 								continue;
 							}
 
+							const instanceStartMs = record.recurringEventInstance
+								.actualStartTime
+								? record.recurringEventInstance.actualStartTime.getTime()
+								: record.recurringEventInstance.actualStartDate
+									? new Date(
+											`${record.recurringEventInstance.actualStartDate}T00:00:00.000Z`,
+										).getTime()
+									: 0;
 							allReferenceEvents.push({
 								id: record.recurringEventInstanceId,
-								startAt: new Date(
-									record.recurringEventInstance.actualStartTime,
-								).getTime(),
+								startAt: instanceStartMs,
 								isRecurringInstance: true,
 							});
 						}
@@ -181,9 +189,16 @@ builder.queryField("eventsByAttendee", (t) =>
 						if (isTemplate) {
 							recurringTemplateIds.push(record.eventId);
 						} else {
+							const standaloneStartMs = record.event.startAt
+								? record.event.startAt.getTime()
+								: record.event.startDate
+									? new Date(
+											`${record.event.startDate}T00:00:00.000Z`,
+										).getTime()
+									: 0;
 							allReferenceEvents.push({
 								id: record.eventId,
-								startAt: new Date(record.event.startAt).getTime(),
+								startAt: standaloneStartMs,
 								isRecurringInstance: false,
 							});
 						}
@@ -221,6 +236,7 @@ builder.queryField("eventsByAttendee", (t) =>
 								columns: {
 									id: true,
 									actualStartTime: true,
+									actualStartDate: true,
 									baseRecurringEventId: true,
 								},
 								where: and(
@@ -239,9 +255,16 @@ builder.queryField("eventsByAttendee", (t) =>
 						);
 
 					for (const instance of templateInstances) {
+						const instanceMs = instance.actualStartTime
+							? instance.actualStartTime.getTime()
+							: instance.actualStartDate
+								? new Date(
+										`${instance.actualStartDate}T00:00:00.000Z`,
+									).getTime()
+								: 0;
 						allReferenceEvents.push({
 							id: instance.id,
-							startAt: new Date(instance.actualStartTime).getTime(),
+							startAt: instanceMs,
 							isRecurringInstance: true,
 						});
 					}
@@ -254,9 +277,16 @@ builder.queryField("eventsByAttendee", (t) =>
 								(r) => r.eventId === templateId && r.event,
 							);
 							if (record?.event) {
+								const templateStartMs = record.event.startAt
+									? record.event.startAt.getTime()
+									: record.event.startDate
+										? new Date(
+												`${record.event.startDate}T00:00:00.000Z`,
+											).getTime()
+										: 0;
 								allReferenceEvents.push({
 									id: templateId,
-									startAt: new Date(record.event.startAt).getTime(),
+									startAt: templateStartMs,
 									isRecurringInstance: false,
 								});
 							}

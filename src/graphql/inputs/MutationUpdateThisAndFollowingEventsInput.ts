@@ -25,6 +25,10 @@ export const mutationUpdateThisAndFollowingEventsInputSchema = z
 			.optional(),
 		startAt: z.date().optional(),
 		endAt: z.date().optional(),
+		/** Inclusive start date (YYYY-MM-DD) for all-day events. Required when allDay = true. */
+		startDate: z.string().date().optional(),
+		/** Exclusive end date (YYYY-MM-DD) for all-day events. Required when allDay = true. */
+		endDate: z.string().date().optional(),
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
@@ -32,11 +36,45 @@ export const mutationUpdateThisAndFollowingEventsInputSchema = z
 		recurrence: recurrenceInputSchema.optional(),
 	})
 	.superRefine(({ id, ...remainingArgs }, ctx) => {
+		const hasAnyTimed =
+			isNotNullish(remainingArgs.startAt) || isNotNullish(remainingArgs.endAt);
+		const hasAnyDate =
+			isNotNullish(remainingArgs.startDate) ||
+			isNotNullish(remainingArgs.endDate);
+
 		// Ensure at least one field is being updated
 		if (!Object.values(remainingArgs).some((value) => value !== undefined)) {
 			ctx.addIssue({
 				code: "custom",
 				message: "At least one field must be provided for update.",
+			});
+		}
+
+		// Reject mixed timed and all-day representations
+		if (hasAnyTimed && hasAnyDate) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["allDay"],
+				message:
+					"Provide either timed fields (startAt/endAt) or all-day fields (startDate/endDate), not both.",
+			});
+		}
+
+		// When allDay is explicitly true, reject timed fields
+		if (remainingArgs.allDay === true && hasAnyTimed) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["allDay"],
+				message: "When allDay=true, startAt/endAt must be omitted.",
+			});
+		}
+
+		// When allDay is explicitly false, reject all-day fields
+		if (remainingArgs.allDay === false && hasAnyDate) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["allDay"],
+				message: "When allDay=false, startDate/endDate must be omitted.",
 			});
 		}
 
@@ -50,6 +88,19 @@ export const mutationUpdateThisAndFollowingEventsInputSchema = z
 				code: "custom",
 				message: `End time must be after start time: ${remainingArgs.startAt.toISOString()}.`,
 				path: ["endAt"],
+			});
+		}
+
+		// Validate that endDate is after startDate if both are provided
+		if (
+			isNotNullish(remainingArgs.endDate) &&
+			isNotNullish(remainingArgs.startDate) &&
+			remainingArgs.endDate <= remainingArgs.startDate
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: `End date must be after start date: ${remainingArgs.startDate}.`,
+				path: ["endDate"],
 			});
 		}
 	});
@@ -79,12 +130,21 @@ export const MutationUpdateThisAndFollowingEventsInput = builder
 			}),
 			startAt: t.field({
 				description:
-					"Updated start time for this and following event instances.",
+					"Updated start time for this and following timed event instances (allDay = false).",
 				type: "DateTime",
 			}),
 			endAt: t.field({
-				description: "Updated end time for this and following event instances.",
+				description:
+					"Updated end time for this and following timed event instances (allDay = false).",
 				type: "DateTime",
+			}),
+			startDate: t.string({
+				description:
+					"Inclusive start date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).",
+			}),
+			endDate: t.string({
+				description:
+					"Exclusive end date (YYYY-MM-DD) for this and following all-day event instances (allDay = true).",
 			}),
 			allDay: t.boolean({
 				description:

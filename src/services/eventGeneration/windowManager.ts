@@ -1,8 +1,15 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, isNotNull, lt, or } from "drizzle-orm";
 import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import type { ServiceDependencies, WindowManagerConfig } from "./types";
+
+function toUTCDateString(date: Date): string {
+	const pad = (n: number) => String(n).padStart(2, "0");
+	return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+}
 
 /**
  * Initializes the Generation window for a given organization, setting up the time frame
@@ -30,7 +37,10 @@ export async function initializeGenerationWindow(
 			logger.error(
 				`Failed to insert and return Generation window for organization ${input.organizationId}`,
 			);
-			throw new Error("Failed to initialize Generation window.");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Failed to initialize Generation window.",
+			});
 		}
 
 		logger.info(
@@ -72,10 +82,14 @@ function buildWindowConfiguration(
 	const retentionMonths = 3; // Fixed 3 months retention
 
 	const currentWindowEndDate = new Date(now);
-	currentWindowEndDate.setMonth(currentWindowEndDate.getMonth() + monthsAhead);
+	currentWindowEndDate.setUTCMonth(
+		currentWindowEndDate.getUTCMonth() + monthsAhead,
+	);
 
 	const retentionStartDate = new Date(now);
-	retentionStartDate.setMonth(retentionStartDate.getMonth() - retentionMonths);
+	retentionStartDate.setUTCMonth(
+		retentionStartDate.getUTCMonth() - retentionMonths,
+	);
 
 	return {
 		...input,
@@ -111,13 +125,14 @@ export async function extendGenerationWindow(
 			});
 
 		if (!windowConfig) {
-			throw new Error(
-				`No Generation window found for organization ${organizationId}`,
-			);
+			throw new TalawaRestError({
+				code: ErrorCode.NOT_FOUND,
+				message: `No Generation window found for organization ${organizationId}`,
+			});
 		}
 
 		const newEndDate = new Date(windowConfig.currentWindowEndDate);
-		newEndDate.setMonth(newEndDate.getMonth() + additionalMonths);
+		newEndDate.setUTCMonth(newEndDate.getUTCMonth() + additionalMonths);
 
 		await drizzleClient
 			.update(eventGenerationWindowsTable)
@@ -178,9 +193,23 @@ export async function cleanupOldGeneratedInstances(
 			.where(
 				and(
 					eq(recurringEventInstancesTable.organizationId, organizationId),
-					lt(
-						recurringEventInstancesTable.actualEndTime,
-						windowConfig.retentionStartDate,
+					or(
+						// For timed events: check actualEndTime
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndTime),
+							lt(
+								recurringEventInstancesTable.actualEndTime,
+								windowConfig.retentionStartDate,
+							),
+						),
+						// For all-day events: check actualEndDate
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndDate),
+							lt(
+								recurringEventInstancesTable.actualEndDate,
+								toUTCDateString(windowConfig.retentionStartDate),
+							),
+						),
 					),
 				),
 			);
@@ -250,9 +279,23 @@ export async function getCleanupStats(
 			.findMany({
 				where: and(
 					eq(recurringEventInstancesTable.organizationId, organizationId),
-					lt(
-						recurringEventInstancesTable.actualEndTime,
-						windowConfig.retentionStartDate,
+					or(
+						// For timed events: check actualEndTime
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndTime),
+							lt(
+								recurringEventInstancesTable.actualEndTime,
+								windowConfig.retentionStartDate,
+							),
+						),
+						// For all-day events: check actualEndDate
+						and(
+							isNotNull(recurringEventInstancesTable.actualEndDate),
+							lt(
+								recurringEventInstancesTable.actualEndDate,
+								toUTCDateString(windowConfig.retentionStartDate),
+							),
+						),
 					),
 				),
 				columns: { id: true },

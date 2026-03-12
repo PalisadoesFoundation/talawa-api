@@ -49,6 +49,9 @@ describe("EventAttendee Event Resolver Tests", () => {
 		appliedExceptionData: null,
 		exceptionCreatedBy: null,
 		exceptionCreatedAt: null,
+		originalInstanceStartDate: null,
+		actualStartDate: null,
+		actualEndDate: null,
 		attachments: [],
 	};
 
@@ -588,6 +591,9 @@ describe("EventAttendee Event Resolver Tests", () => {
 				appliedExceptionData: null,
 				exceptionCreatedBy: null,
 				exceptionCreatedAt: null,
+				originalInstanceStartDate: null,
+				actualStartDate: null,
+				actualEndDate: null,
 
 				attachments: null as unknown as typeof mockResolvedInstance.attachments,
 			};

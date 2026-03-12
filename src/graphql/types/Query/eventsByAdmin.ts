@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -110,6 +110,18 @@ builder.queryField("eventsByAdmin", (t) =>
 			}
 
 			try {
+				// Helper to get sort time for events (handles both timed and all-day)
+				const getEventSortTime = (event: EventWithAttachments): number => {
+					if (event.startAt) {
+						return event.startAt.getTime();
+					}
+					if (event.startDate) {
+						// All-day event: convert startDate to midnight UTC
+						return new Date(`${event.startDate}T00:00:00.000Z`).getTime();
+					}
+					return 0; // Fallback for incomplete data
+				};
+
 				const allEvents: EventWithAttachments[] = [];
 
 				// Step 1: Find organizations where user is an administrator
@@ -141,9 +153,8 @@ builder.queryField("eventsByAdmin", (t) =>
 						with: {
 							attachmentsWhereEvent: true,
 						},
-						// Deterministic ordering
-						orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
-						limit: effectiveWindow,
+						// Note: Cannot reliably order by startAt since it's null for all-day events
+						// Will sort in-memory after fetching all events
 					});
 
 				// Transform standalone events to unified format
@@ -185,8 +196,8 @@ builder.queryField("eventsByAdmin", (t) =>
 
 				// Sort by start time (and ID for ties)
 				allEvents.sort((a, b) => {
-					const aTime = new Date(a.startAt).getTime();
-					const bTime = new Date(b.startAt).getTime();
+					const aTime = getEventSortTime(a);
+					const bTime = getEventSortTime(b);
 					if (aTime === bTime) {
 						return a.id.localeCompare(b.id);
 					}

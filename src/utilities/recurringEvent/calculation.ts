@@ -1,6 +1,8 @@
 import type { z } from "zod";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type { recurrenceInputSchema } from "~/src/graphql/inputs/RecurrenceInput";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
  * Calculates the completion date of a recurrence that is defined by a `count`.
@@ -155,17 +157,19 @@ export function normalizeRecurrenceRule(
 		// Validate inputs before calculation
 		// 1. Validate count is a positive integer
 		if (!Number.isInteger(rule.count) || rule.count <= 0) {
-			throw new Error(
-				`Invalid recurrence count: ${rule.count}. Count must be a positive integer.`,
-			);
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: `Invalid recurrence count: ${rule.count}. Count must be a positive integer.`,
+			});
 		}
 
 		// 2. Validate and compute interval
 		const interval = rule.interval ?? 1;
 		if (!Number.isInteger(interval) || interval <= 0) {
-			throw new Error(
-				`Invalid recurrence interval: ${interval}. Interval must be a positive integer.`,
-			);
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: `Invalid recurrence interval: ${interval}. Interval must be a positive integer.`,
+			});
 		}
 
 		// 3. Validate recurrenceStartDate is a valid Date object
@@ -173,9 +177,10 @@ export function normalizeRecurrenceRule(
 			!(rule.recurrenceStartDate instanceof Date) ||
 			Number.isNaN(rule.recurrenceStartDate.getTime())
 		) {
-			throw new Error(
-				`Invalid recurrence start date: ${rule.recurrenceStartDate}. Must be a valid Date object.`,
-			);
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: `Invalid recurrence start date: ${rule.recurrenceStartDate}. Must be a valid Date object.`,
+			});
 		}
 
 		const calculatedEndDate = calculateCompletionDateFromCount(
@@ -242,16 +247,18 @@ export function applyRecurrenceOverrides(
 
 		if (dayIndex < 0 || dayIndex >= dayMap.length) {
 			// This case should ideally not happen with valid Date objects
-			throw new Error("Invalid day of week derived from startAt");
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: "Invalid day of week derived from startAt",
+			});
 		}
 		const newDayOfWeek = dayMap[dayIndex];
 
 		if (newDayOfWeek) {
 			if (recurrence.frequency === "WEEKLY") {
-				// For weekly events, only override byDay if not explicitly provided in input
-				if (!inputRecurrence?.byDay) {
-					recurrence.byDay = [newDayOfWeek];
-				}
+				// For weekly events, ALWAYS override byDay when startAt changes
+				// because the day of the week IS the recurrence pattern
+				recurrence.byDay = [newDayOfWeek];
 			} else if (recurrence.frequency === "MONTHLY") {
 				// For monthly events, if byDay was previously set, update it
 				// Also set it if no byDay was originally set but we have a new start day

@@ -67,8 +67,12 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 						baseRecurringEventId: true,
 						organizationId: true,
 						isCancelled: true,
+						originalInstanceStartTime: true,
+						originalInstanceStartDate: true,
 						actualStartTime: true,
 						actualEndTime: true,
+						actualStartDate: true,
+						actualEndDate: true,
 						recurrenceRuleId: true,
 					},
 					with: {
@@ -86,12 +90,15 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 								creatorId: true,
 								startAt: true,
 								endAt: true,
+								startDate: true,
+								endDate: true,
 							},
 						},
 						recurrenceRule: {
 							columns: {
 								id: true,
 								originalSeriesId: true,
+								recurrenceRuleString: true,
 							},
 						},
 						organization: {
@@ -274,6 +281,8 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 							id: true,
 							actualStartTime: true,
 							actualEndTime: true,
+							actualStartDate: true,
+							actualEndDate: true,
 							baseRecurringEventId: true,
 							isCancelled: true,
 							organizationId: true,
@@ -284,6 +293,7 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 							totalCount: true,
 							recurrenceRuleId: true,
 							originalInstanceStartTime: true,
+							originalInstanceStartDate: true,
 						},
 						with: {
 							baseRecurringEvent: {
@@ -324,11 +334,15 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 					...baseEventData,
 					id: updatedInstance.id,
 					baseRecurringEventId: updatedInstance.baseRecurringEventId,
-					startAt: updatedInstance.actualStartTime,
-					endAt: updatedInstance.actualEndTime,
 					recurrenceRuleId: updatedInstance.recurrenceRuleId,
 					originalSeriesId: originalSeriesId,
 					originalInstanceStartTime: updatedInstance.originalInstanceStartTime,
+					originalInstanceStartDate:
+						updatedInstance.originalInstanceStartDate ?? null,
+					actualStartTime: updatedInstance.actualStartTime ?? null,
+					actualEndTime: updatedInstance.actualEndTime ?? null,
+					actualStartDate: updatedInstance.actualStartDate ?? null,
+					actualEndDate: updatedInstance.actualEndDate ?? null,
 					hasExceptions: false,
 					appliedExceptionData: null,
 					exceptionCreatedBy: null,

@@ -97,6 +97,7 @@ type Event {
   creator: User
   description: String
   endAt: DateTime
+  endDate: String
   hasExceptions: Boolean
   id: ID!
   isCancelled: Boolean
@@ -112,7 +113,8 @@ type Event {
   recurrenceDescription: String
   recurrenceRule: RecurrenceRule
   sequenceNumber: Int
-  startAt: DateTime!
+  startAt: DateTime
+  startDate: String
   totalCount: Int
   updatedAt: DateTime
   updater: User
@@ -194,7 +196,11 @@ A detailed description of the event, providing custom information and context.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.
+The UTC end timestamp for timed events (allDay = false). Null for all-day events — use endDate instead.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>endDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Exclusive end date (YYYY-MM-DD) for all-day events (allDay = true). e.g. March 1 → March 2 is a one-day event. Null for timed events — use endAt instead.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>hasExceptions</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -256,9 +262,13 @@ The recurrence rule object for recurring events.
 
 The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
 
-#### [<code style={{ fontWeight: 'normal' }}>Event.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.
+The UTC start timestamp for timed events (allDay = false). Null for all-day events — use startDate instead.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Inclusive start date (YYYY-MM-DD) for all-day events (allDay = true). Null for timed events — use startAt instead.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>totalCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

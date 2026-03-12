@@ -5,6 +5,7 @@ import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	type GetRecurringEventInstancesInput,
 	getRecurringEventInstancesByIds,
@@ -287,17 +288,50 @@ export async function getUnifiedEventsInDateRange(
 			allEvents.push(...enrichedGeneratedInstances);
 		}
 
-		// Step 3: Sort all events by start time (and then by ID for consistency)
-		allEvents.sort((a, b) => {
-			const aTime = new Date(a.startAt).getTime();
-			const bTime = new Date(b.startAt).getTime();
+		// Step 3: Filter out malformed events missing both startAt and startDate
+		const malformedEvents: EventWithAttachments[] = [];
+		const validEvents: EventWithAttachments[] = [];
+
+		for (const event of allEvents) {
+			if (!event.startAt && !event.startDate) {
+				malformedEvents.push(event);
+			} else {
+				validEvents.push(event);
+			}
+		}
+
+		// Log malformed events with their context
+		if (malformedEvents.length > 0) {
+			logger.warn(
+				`Found ${malformedEvents.length} malformed events missing both startAt and startDate. Event IDs: ${malformedEvents.map((e) => e.id).join(", ")}`,
+			);
+		}
+
+		// Step 4: Sort valid events by start time (null-safe: fall back to startDate for all-day events)
+		validEvents.sort((a, b) => {
+			const getTime = (event: EventWithAttachments): number => {
+				if (event.startAt) return event.startAt.getTime();
+				if (event.startDate)
+					return new Date(`${event.startDate}T00:00:00.000Z`).getTime();
+				// This should never happen after filtering, but kept as safety
+				throw new TalawaGraphQLError({
+					message: `Event ${event.id} is missing both startAt and startDate`,
+					extensions: {
+						code: "unexpected",
+					},
+				});
+			};
+			const aTime = getTime(a);
+			const bTime = getTime(b);
 			if (aTime === bTime) {
 				return a.id.localeCompare(b.id);
 			}
 			return aTime - bTime;
 		});
 
-		// Step 4: Apply final limit after sorting - this ensures we get the earliest events regardless of type
+		allEvents = validEvents;
+
+		// Step 5: Apply final limit after sorting - this ensures we get the earliest events regardless of type
 		if (allEvents.length > limit) {
 			allEvents = allEvents.slice(0, limit);
 		}

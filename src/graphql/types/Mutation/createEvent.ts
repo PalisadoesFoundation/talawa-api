@@ -1,4 +1,5 @@
-import { uuidv7 } from "uuidv7";
+import { eq } from "drizzle-orm";
+
 import { z } from "zod";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
@@ -38,15 +39,30 @@ const DEFAULT_AGENDA_CATEGORY_CONFIG = {
 
 export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
-		const now = new Date();
-		const gracePeriod = 2000; // 2 seconds for clock skew
-		if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["startAt"],
-				message:
-					"Start date must be in the future or within the next few seconds",
-			});
+		// For timed events, validate that startAt is not in the past
+		if (arg.allDay !== true && arg.startAt) {
+			const now = new Date();
+			const gracePeriod = 2000; // 2 seconds for clock skew
+			if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["startAt"],
+					message:
+						"Start date must be in the future or within the next few seconds",
+				});
+			}
+		}
+
+		if (arg.allDay === true && arg.startDate) {
+			const today = new Date().toISOString().slice(0, 10);
+
+			if (arg.startDate < today) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["startDate"],
+					message: "Start date must not be in the past",
+				});
+			}
 		}
 
 		return arg;
@@ -119,13 +135,92 @@ builder.mutationField("createEvent", (t) =>
 					});
 				}
 
+				// Validate event time model to avoid mixed-mode payloads silently being nulled.
+				const hasStartAt = parsedArgs.input.startAt != null;
+				const hasEndAt = parsedArgs.input.endAt != null;
+				const hasStartDate = parsedArgs.input.startDate != null;
+				const hasEndDate = parsedArgs.input.endDate != null;
+
+				if (parsedArgs.input.allDay === true) {
+					const issues: { argumentPath: string[]; message: string }[] = [];
+
+					if (hasStartAt) {
+						issues.push({
+							argumentPath: ["input", "startAt"],
+							message: "Must be null when allDay is true.",
+						});
+					}
+
+					if (hasEndAt) {
+						issues.push({
+							argumentPath: ["input", "endAt"],
+							message: "Must be null when allDay is true.",
+						});
+					}
+
+					if (hasStartDate !== hasEndDate) {
+						issues.push({
+							argumentPath: ["input", hasStartDate ? "endDate" : "startDate"],
+							message:
+								"startDate and endDate must both be provided or both be null.",
+						});
+					}
+
+					if (issues.length > 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues,
+							},
+						});
+					}
+				} else {
+					const issues: { argumentPath: string[]; message: string }[] = [];
+
+					if (hasStartDate) {
+						issues.push({
+							argumentPath: ["input", "startDate"],
+							message: "Must be null when allDay is false.",
+						});
+					}
+
+					if (hasEndDate) {
+						issues.push({
+							argumentPath: ["input", "endDate"],
+							message: "Must be null when allDay is false.",
+						});
+					}
+
+					if (hasStartAt !== hasEndAt) {
+						issues.push({
+							argumentPath: ["input", hasStartAt ? "endAt" : "startAt"],
+							message:
+								"startAt and endAt must both be provided or both be null.",
+						});
+					}
+
+					if (issues.length > 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues,
+							},
+						});
+					}
+				}
+
 				// Validate recurrence input if provided
 				if (parsedArgs.input.recurrence) {
+					// For timed events use startAt; for all-day events parse startDate as midnight UTC
+					const recurrenceValidationStart =
+						parsedArgs.input.allDay === true
+							? new Date(`${parsedArgs.input.startDate}T00:00:00Z`)
+							: (parsedArgs.input.startAt as Date);
+
 					const validation = validateRecurrenceInput(
 						parsedArgs.input.recurrence,
-						parsedArgs.input.startAt,
+						recurrenceValidationStart,
 					);
-
 					if (!validation.isValid) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -212,17 +307,28 @@ builder.mutationField("createEvent", (t) =>
 							.values({
 								creatorId: currentUserId,
 								description: parsedArgs.input.description,
-								endAt: parsedArgs.input.endAt,
 								name: parsedArgs.input.name,
 								organizationId: parsedArgs.input.organizationId,
-								startAt: parsedArgs.input.startAt,
 								allDay: parsedArgs.input.allDay ?? false,
 								isPublic: parsedArgs.input.isPublic ?? false,
 								isRegisterable: parsedArgs.input.isRegisterable ?? false,
 								isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
 								location: parsedArgs.input.location,
-								// Set as recurring template if recurrence is provided
 								isRecurringEventTemplate: !!parsedArgs.input.recurrence,
+								// Timed event fields (allDay = false)
+								...(parsedArgs.input.allDay === true
+									? { startAt: null, endAt: null }
+									: {
+											startAt: parsedArgs.input.startAt ?? null,
+											endAt: parsedArgs.input.endAt ?? null,
+										}),
+								// All-day event fields (allDay = true)
+								...(parsedArgs.input.allDay === true
+									? {
+											startDate: parsedArgs.input.startDate ?? null,
+											endDate: parsedArgs.input.endDate ?? null,
+										}
+									: { startDate: null, endDate: null }),
 							})
 							.returning();
 
@@ -291,36 +397,38 @@ builder.mutationField("createEvent", (t) =>
 						// Handle recurring event: Create recurrence rule AND immediately generate instances
 						if (parsedArgs.input.recurrence) {
 							// Build RRULE string
+							// For all-day events, use startDate parsed as midnight UTC; for timed events use startAt
+							const recurrenceStart =
+								parsedArgs.input.allDay === true
+									? new Date(`${parsedArgs.input.startDate}T00:00:00Z`)
+									: (parsedArgs.input.startAt as Date);
+
 							const rruleString = buildRRuleString(
 								parsedArgs.input.recurrence,
-								parsedArgs.input.startAt,
+								recurrenceStart,
 							);
 
 							// Create recurrence rule
-							// For new events, the originalSeriesId is the same as the rule's own ID
-							const ruleId = uuidv7();
+							// For new events, the originalSeriesId is set to the rule's own generated ID after insert
 							const [createdRecurrenceRule] = await tx
 								.insert(recurrenceRulesTable)
 								.values({
-									id: ruleId,
 									recurrenceRuleString: rruleString,
 									frequency: parsedArgs.input.recurrence.frequency,
 									interval: parsedArgs.input.recurrence.interval || 1,
-									recurrenceStartDate: parsedArgs.input.startAt,
+									recurrenceStartDate: recurrenceStart,
 									recurrenceEndDate:
 										parsedArgs.input.recurrence.endDate || null, // null for never-ending events
 									count: parsedArgs.input.recurrence.count || null, // null for never-ending events
-									latestInstanceDate: parsedArgs.input.startAt,
+									latestInstanceDate: recurrenceStart,
 									byDay: parsedArgs.input.recurrence.byDay,
 									byMonth: parsedArgs.input.recurrence.byMonth,
 									byMonthDay: parsedArgs.input.recurrence.byMonthDay,
 									baseRecurringEventId: createdEvent.id,
-									originalSeriesId: ruleId, // For new events, originalSeriesId is the rule's own ID
 									organizationId: parsedArgs.input.organizationId,
 									creatorId: currentUserId,
 								})
 								.returning();
-
 							if (createdRecurrenceRule === undefined) {
 								ctx.log.error(
 									"Failed to create recurrence rule for recurring event.",
@@ -333,16 +441,11 @@ builder.mutationField("createEvent", (t) =>
 								});
 							}
 
-							ctx.log.info(
-								{
-									baseEventId: createdEvent.id,
-									recurrenceRuleId: createdRecurrenceRule.id,
-									rruleString: rruleString,
-								},
-								"Created recurring event template and recurrence rule",
-							);
-
-							// Ensure generation window exists for the organization
+							// Set originalSeriesId = the rule's own ID (self-referential for a brand-new series)
+							await tx
+								.update(recurrenceRulesTable)
+								.set({ originalSeriesId: createdRecurrenceRule.id })
+								.where(eq(recurrenceRulesTable.id, createdRecurrenceRule.id));
 							let windowConfig =
 								await ctx.drizzleClient.query.eventGenerationWindowsTable.findFirst(
 									{
@@ -369,14 +472,19 @@ builder.mutationField("createEvent", (t) =>
 
 							//  Determine materialization window based on recurrence pattern
 							// Window should start from event start time, not current time
-							const windowStartDate = new Date(parsedArgs.input.startAt);
+							const windowStartDate = new Date(recurrenceStart);
 							let windowEndDate: Date;
+
+							const addMonthsUTC = (date: Date, months: number): Date => {
+								const result = new Date(date);
+								result.setUTCMonth(result.getUTCMonth() + months);
+
+								return result;
+							};
 
 							ctx.log.debug(
 								{
-									eventStartAt: parsedArgs.input.startAt.toISOString(),
-									windowStartDate: windowStartDate.toISOString(),
-									currentTime: new Date().toISOString(),
+									eventStartAt: recurrenceStart.toISOString(),
 								},
 								"FIXED: Window calculation",
 							);
@@ -386,10 +494,9 @@ builder.mutationField("createEvent", (t) =>
 								windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
 
 								// If end date is within the default window, use the window end instead
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() +
-										windowConfig.hotWindowMonthsAhead,
+								const defaultWindowEnd = addMonthsUTC(
+									new Date(),
+									windowConfig.hotWindowMonthsAhead,
 								);
 
 								if (windowEndDate > defaultWindowEnd) {
@@ -397,18 +504,16 @@ builder.mutationField("createEvent", (t) =>
 								}
 							} else if (parsedArgs.input.recurrence.count) {
 								// For count-based recurrence, estimate end date and use window
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() +
-										windowConfig.hotWindowMonthsAhead,
+								const defaultWindowEnd = addMonthsUTC(
+									new Date(),
+									windowConfig.hotWindowMonthsAhead,
 								);
 								windowEndDate = defaultWindowEnd;
 							} else {
 								// For never-ending events, use the materialization window
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() +
-										windowConfig.hotWindowMonthsAhead,
+								const defaultWindowEnd = addMonthsUTC(
+									new Date(),
+									windowConfig.hotWindowMonthsAhead,
 								);
 								windowEndDate = defaultWindowEnd;
 							}
@@ -542,6 +647,7 @@ builder.mutationField("createEvent", (t) =>
 							allDay: createdEvent.allDay ?? false,
 							isPublic: createdEvent.isPublic ?? false,
 							isRegisterable: createdEvent.isRegisterable ?? false,
+							isInviteOnly: createdEvent.isInviteOnly ?? false,
 						});
 
 						return finalEvent;
@@ -557,7 +663,12 @@ builder.mutationField("createEvent", (t) =>
 						eventName: createdEventResult.name,
 						organizationId: createdEventResult.organizationId,
 						organizationName: existingOrganization.name,
-						startDate: createdEventResult.startAt.toISOString(),
+						// For timed events use startAt; for all-day events use startDate at midnight UTC
+						startDate: createdEventResult.startAt
+							? createdEventResult.startAt.toISOString()
+							: createdEventResult.startDate
+								? `${createdEventResult.startDate}T00:00:00Z`
+								: new Date().toISOString(),
 						creatorName: currentUser.name,
 					};
 

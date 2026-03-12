@@ -1,194 +1,28 @@
 import { faker } from "@faker-js/faker";
-import { and, eq } from "drizzle-orm";
-import { initGraphQLTada } from "gql.tada";
-import { expect, suite, test, vi } from "vitest";
+import { and, eq, inArray } from "drizzle-orm";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
+import { eventsTable } from "~/src/drizzle/tables/events";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-// Inline query and mutation definitions to avoid coverage issues
-const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
-    signIn(input: $input) {
-        authenticationToken
-        refreshToken
-        user {
-            addressLine1
-            addressLine2
-            birthDate
-            city
-            countryCode
-            createdAt
-            description
-            educationGrade
-            emailAddress
-            employmentStatus
-            homePhoneNumber
-            id
-            isEmailAddressVerified
-            maritalStatus
-            mobilePhoneNumber
-            name
-            natalSex
-            postalCode
-            role
-            state
-            workPhoneNumber
-        }
-    }
-}`);
-
-const Mutation_createOrganization =
-	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
-    createOrganization(input: $input) {
-      id
-      name
-      countryCode
-      isUserRegistrationRequired
-    }
-  }`);
-
-const Mutation_createOrganizationMembership =
-	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
-    createOrganizationMembership(input: $input) {
-      id
-    }
-  }`);
-
-const Mutation_createEvent =
-	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
-    createEvent(input: $input) {
-        id
-        name
-        description
-        startAt
-        endAt
-        createdAt
-        creator{
-            id
-            name
-        }
-        organization {
-            id
-            countryCode
-        }
-    }
-}`);
-
-const Mutation_createEventVolunteer = gql(`
-  mutation Mutation_createEventVolunteer($input: EventVolunteerInput!) {
-    createEventVolunteer(data: $input) {
-      id
-      hasAccepted
-      isPublic
-      hoursVolunteered
-      user {
-        id
-      }
-      event {
-        id
-      }
-    }
-  }
-`);
-
-const Mutation_updateEventVolunteer = gql(`
-  mutation Mutation_updateEventVolunteer($id: ID!, $data: UpdateEventVolunteerInput) {
-    updateEventVolunteer(id: $id, data: $data) {
-      id
-      hasAccepted
-      isPublic
-      hoursVolunteered
-      user {
-        id
-        name
-      }
-      event {
-        id
-        name
-      }
-      creator {
-        id
-        name
-      }
-      updater {
-        id
-        name
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const Mutation_registerEventAttendee = gql(`
-  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
-    registerEventAttendee(data: $data) {
-      id
-      isInvited
-      isRegistered
-      isCheckedIn
-      isCheckedOut
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const Query_eventsByAttendee = gql(`
-	query Query_eventsByAttendee($userId: ID!, $limit: Int, $offset: Int) {
-		eventsByAttendee(userId: $userId, limit: $limit, offset: $offset) {
-			id
-			name
-			description
-			startAt
-			endAt
-			location
-			allDay
-			isPublic
-			isRegisterable
-			isInviteOnly
-			organization {
-				id
-				name
-			}
-			isGenerated
-			baseRecurringEventId
-		}
-	}
-`);
-
-const Query_eventsByVolunteer = gql(`
-query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
-eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
-id
-name
-description
-startAt
-endAt
-location
-allDay
-isPublic
-isRegisterable
-isInviteOnly
-isGenerated
-baseRecurringEventId
-organization {
-id
-name
-}
-}
-}
-`);
+import { createRegularUserUsingAdmin as createRegularUserUsingAdminBase } from "../createRegularUserUsingAdmin";
+import {
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_registerEventAttendee,
+	Mutation_updateEventVolunteer,
+	Query_eventsByAttendee,
+	Query_eventsByVolunteer,
+	Query_signIn,
+} from "../documentNodes";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -203,6 +37,169 @@ const authToken = signInResult.data.signIn.authenticationToken;
 const adminUserId = signInResult.data.signIn.user?.id;
 assertToBeNonNullish(authToken);
 assertToBeNonNullish(adminUserId);
+
+const createdState = {
+	userIds: new Set<string>(),
+	organizationIds: new Set<string>(),
+	eventIds: new Set<string>(),
+	eventAttendeeIds: new Set<string>(),
+	eventVolunteerIds: new Set<string>(),
+	organizationMembershipKeys: new Set<string>(),
+};
+
+const originalMutate = mercuriusClient.mutate.bind(mercuriusClient);
+
+type TrackedMutationResult = {
+	data?: {
+		createOrganization?: { id?: string | null } | null;
+		createEvent?: { id?: string | null } | null;
+		createEventVolunteer?: { id?: string | null } | null;
+		registerEventAttendee?: { id?: string | null } | null;
+	};
+};
+
+async function createRegularUserUsingAdmin(): Promise<{
+	userId: string;
+	authToken: string;
+}> {
+	const result = await createRegularUserUsingAdminBase();
+	createdState.userIds.add(result.userId);
+	return result;
+}
+
+beforeEach(() => {
+	createdState.userIds.clear();
+	createdState.organizationIds.clear();
+	createdState.eventIds.clear();
+	createdState.eventAttendeeIds.clear();
+	createdState.eventVolunteerIds.clear();
+	createdState.organizationMembershipKeys.clear();
+
+	vi.spyOn(mercuriusClient, "mutate").mockImplementation(async (...args) => {
+		const mutation = args[0];
+		const options = args[1] as
+			| {
+					variables?: {
+						input?: { memberId?: string; organizationId?: string };
+					};
+			  }
+			| undefined;
+		const result = await originalMutate(...args);
+		const trackedData = (result as TrackedMutationResult).data;
+
+		if (mutation === Mutation_createOrganization) {
+			const orgId = trackedData?.createOrganization?.id;
+			if (orgId) {
+				createdState.organizationIds.add(orgId);
+			}
+		}
+
+		if (mutation === Mutation_createEvent) {
+			const eventId = trackedData?.createEvent?.id;
+			if (eventId) {
+				createdState.eventIds.add(eventId);
+			}
+		}
+
+		if (mutation === Mutation_createEventVolunteer) {
+			const volunteerId = trackedData?.createEventVolunteer?.id;
+			if (volunteerId) {
+				createdState.eventVolunteerIds.add(volunteerId);
+			}
+		}
+
+		if (mutation === Mutation_registerEventAttendee) {
+			const attendeeId = trackedData?.registerEventAttendee?.id;
+			if (attendeeId) {
+				createdState.eventAttendeeIds.add(attendeeId);
+			}
+		}
+
+		if (mutation === Mutation_createOrganizationMembership) {
+			const memberId = options?.variables?.input?.memberId;
+			const organizationId = options?.variables?.input?.organizationId;
+			if (memberId && organizationId) {
+				createdState.organizationMembershipKeys.add(
+					`${memberId}:${organizationId}`,
+				);
+			}
+		}
+
+		return result;
+	});
+});
+
+afterEach(async () => {
+	vi.restoreAllMocks();
+
+	const userIds = [...createdState.userIds];
+	const organizationIds = [...createdState.organizationIds];
+	const eventIds = [...createdState.eventIds];
+	const attendeeIds = [...createdState.eventAttendeeIds];
+	const volunteerIds = [...createdState.eventVolunteerIds];
+
+	if (attendeeIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventAttendeesTable)
+			.where(inArray(eventAttendeesTable.id, attendeeIds));
+	}
+
+	if (volunteerIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventVolunteersTable)
+			.where(inArray(eventVolunteersTable.id, volunteerIds));
+	}
+
+	if (eventIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurringEventInstancesTable)
+			.where(
+				inArray(recurringEventInstancesTable.baseRecurringEventId, eventIds),
+			);
+		await server.drizzleClient
+			.delete(eventAttendeesTable)
+			.where(inArray(eventAttendeesTable.eventId, eventIds));
+		await server.drizzleClient
+			.delete(eventVolunteersTable)
+			.where(inArray(eventVolunteersTable.eventId, eventIds));
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.id, eventIds));
+	}
+
+	if (organizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				inArray(organizationMembershipsTable.organizationId, organizationIds),
+			);
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, organizationIds));
+	}
+
+	if (userIds.length > 0) {
+		await server.drizzleClient
+			.delete(eventAttendeesTable)
+			.where(inArray(eventAttendeesTable.userId, userIds));
+		await server.drizzleClient
+			.delete(eventVolunteersTable)
+			.where(inArray(eventVolunteersTable.userId, userIds));
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(inArray(organizationMembershipsTable.memberId, userIds));
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, userIds));
+	}
+
+	createdState.userIds.clear();
+	createdState.organizationIds.clear();
+	createdState.eventIds.clear();
+	createdState.eventAttendeeIds.clear();
+	createdState.eventVolunteerIds.clear();
+	createdState.organizationMembershipKeys.clear();
+});
 
 suite("Query field eventsByAttendee", () => {
 	suite("when input validation fails", () => {
@@ -1639,53 +1636,17 @@ suite("Query field eventsByAttendee", () => {
 			const baseEventId = recurringEventResult.data?.createEvent?.id;
 			assertToBeNonNullish(baseEventId);
 
-			// Volunteer to generate instances
-			const adminVolunteerResult = await mercuriusClient.mutate(
-				Mutation_createEventVolunteer,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							userId: adminUserId,
-							eventId: baseEventId,
-							scope: "ENTIRE_SERIES",
-						},
-					},
-				},
-			);
-			const adminVolunteerId =
-				adminVolunteerResult.data?.createEventVolunteer?.id;
-			assertToBeNonNullish(adminVolunteerId);
-
-			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					id: adminVolunteerId,
-					data: { hasAccepted: true },
-				},
-			});
-
-			// Get all instances
-			const adminEventsResult = await mercuriusClient.query(
-				Query_eventsByVolunteer,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { userId: adminUserId },
-				},
-			);
-			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
-				id: string;
-				name: string;
-				isGenerated?: boolean | null;
-				baseRecurringEventId?: string | null;
-			}>;
-			const instances = adminEvents?.filter(
-				(e) =>
-					e.name === "All Cancelled Template Test" &&
-					e.isGenerated === true &&
-					e.baseRecurringEventId === baseEventId,
-			);
-			expect(instances?.length).toBeGreaterThanOrEqual(3);
+			// Instances are generated at event creation time; verify directly from DB
+			// (avoids 100-item pagination limit when admin has many accumulated volunteer records)
+			const instances =
+				await server.drizzleClient.query.recurringEventInstancesTable.findMany({
+					columns: { id: true },
+					where: eq(
+						recurringEventInstancesTable.baseRecurringEventId,
+						baseEventId,
+					),
+				});
+			expect(instances.length).toBeGreaterThanOrEqual(3);
 
 			// Cancel ALL instances
 			await server.drizzleClient
@@ -2215,6 +2176,86 @@ suite("Query field eventsByAttendee", () => {
 				(e) => e.id === templateAId && e.isGenerated !== true,
 			);
 			expect(hasTemplateABaseInLaterPage).toBe(false);
+		});
+
+		test("should use startDate when computing sort key for all-day standalone event (startDate branch)", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `AllDay Standalone Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create an all-day standalone event (startAt=null, startDate set)
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "AllDay Standalone Attendee Event",
+							description: "standalone all-day event for startDate branch",
+							organizationId: orgId,
+							allDay: true,
+							startDate: "2028-03-15",
+							endDate: "2028-03-16",
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Register user as attendee
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: { userId, eventId },
+				},
+			});
+
+			// Query: resolver hits record.event.startDate branch since startAt=null
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as
+				| Array<{ id: string; name: string; allDay?: boolean | null }>
+				| undefined;
+			assertToBeNonNullish(events);
+			const found = events.find((e) => e.id === eventId);
+			expect(found).toBeDefined();
+			expect(found?.name).toBe("AllDay Standalone Attendee Event");
 		});
 	});
 });

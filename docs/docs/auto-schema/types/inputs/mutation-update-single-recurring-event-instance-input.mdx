@@ -78,6 +78,7 @@ input MutationUpdateSingleRecurringEventInstanceInput {
   allDay: Boolean
   description: String
   endAt: DateTime
+  endDate: String
   id: ID!
   isInviteOnly: Boolean
   isPublic: Boolean
@@ -85,6 +86,7 @@ input MutationUpdateSingleRecurringEventInstanceInput {
   location: String
   name: String
   startAt: DateTime
+  startDate: String
 }
 ```
 
@@ -100,7 +102,11 @@ Updated description for this specific event instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Updated end time for this specific event instance.
+Updated UTC end time for this specific timed event instance.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>endDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Exclusive end date (YYYY-MM-DD) for this specific all-day event instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -128,7 +134,11 @@ Updated name for this specific event instance.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Updated start time for this specific event instance.
+Updated UTC start time for this specific timed event instance.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateSingleRecurringEventInstanceInput.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Inclusive start date (YYYY-MM-DD) for this specific all-day event instance.
 
 ### Member Of
 

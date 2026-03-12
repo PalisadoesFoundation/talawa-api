@@ -68,8 +68,8 @@ suite("eventMaterialization", () => {
 				isPublic: true,
 				isRegisterable: true,
 				allDay: false,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
 			};
 
 			const mockRecurrenceRule = {
@@ -93,7 +93,7 @@ suite("eventMaterialization", () => {
 					instanceStartTime: new Date("2025-01-15T10:00:00Z"),
 					exceptionData: { isCancelled: true },
 					creatorId: faker.string.uuid(),
-					createdAt: new Date(),
+					createdAt: new Date("2025-01-01T00:00:00Z"),
 				},
 			];
 
@@ -382,8 +382,8 @@ suite("eventMaterialization", () => {
 				isPublic: true,
 				isRegisterable: true,
 				allDay: false,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
 			};
 
 			const mockRecurrenceRule = {
@@ -420,6 +420,157 @@ suite("eventMaterialization", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				{ recurrenceRuleId: mockRecurrenceRule.id },
 				`Recurrence rule for ${input.baseRecurringEventId} has null originalSeriesId`,
+			);
+		});
+
+		test("uses isNull/gte/lte(originalInstanceStartDate) query for all-day recurring events", async () => {
+			const input: GenerateInstancesInput = {
+				baseRecurringEventId: faker.string.uuid(),
+				windowStartDate: new Date("2025-01-01"),
+				windowEndDate: new Date("2025-01-31"),
+				organizationId: faker.string.uuid(),
+			};
+
+			// All-day template: allDay=true with startDate/endDate instead of startAt/endAt
+			const mockBaseTemplate = {
+				id: input.baseRecurringEventId,
+				name: "All-Day Weekly Event",
+				startAt: null,
+				endAt: null,
+				startDate: "2025-01-01",
+				endDate: "2025-01-02",
+				isRecurringEventTemplate: true,
+				organizationId: input.organizationId,
+				allDay: true,
+				creatorId: faker.string.uuid(),
+				isPublic: true,
+				isRegisterable: true,
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
+			};
+
+			const mockRecurrenceRule = {
+				id: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
+				baseRecurringEventId: input.baseRecurringEventId,
+				frequency: "WEEKLY",
+				interval: 1,
+				count: 4,
+				recurrenceEndDate: null,
+				recurrenceStartDate: new Date("2025-01-01"),
+				byDay: null,
+				byMonth: null,
+				byMonthDay: null,
+			};
+
+			(mockDrizzleClient.query.eventsTable.findFirst as Mock).mockResolvedValue(
+				mockBaseTemplate,
+			);
+			(
+				mockDrizzleClient.query.recurrenceRulesTable.findFirst as Mock
+			).mockResolvedValue(mockRecurrenceRule);
+			(
+				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
+			).mockResolvedValue([]);
+			(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
+			).mockResolvedValue([]);
+
+			const result = await generateInstancesForRecurringEvent(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			// Should create instances (all-day occurrences were generated and no duplicates exist)
+			expect(result).toBeGreaterThan(0);
+			// The isAllDay branch of the duplicate-check query was executed
+			expect(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+			).toHaveBeenCalled();
+		});
+
+		test("returns 0 when all-day instances already exist within the window", async () => {
+			const input: GenerateInstancesInput = {
+				baseRecurringEventId: faker.string.uuid(),
+				windowStartDate: new Date("2025-01-01"),
+				windowEndDate: new Date("2025-01-31"),
+				organizationId: faker.string.uuid(),
+			};
+
+			const mockBaseTemplate = {
+				id: input.baseRecurringEventId,
+				name: "All-Day Weekly Event",
+				startAt: null,
+				endAt: null,
+				startDate: "2025-01-01",
+				endDate: "2025-01-02",
+				isRecurringEventTemplate: true,
+				organizationId: input.organizationId,
+				allDay: true,
+				creatorId: faker.string.uuid(),
+				isPublic: true,
+				isRegisterable: true,
+				createdAt: new Date("2025-01-01T00:00:00Z"),
+				updatedAt: new Date("2025-01-01T00:00:00Z"),
+			};
+
+			const mockRecurrenceRule = {
+				id: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
+				baseRecurringEventId: input.baseRecurringEventId,
+				frequency: "WEEKLY",
+				interval: 1,
+				count: 4,
+				recurrenceEndDate: null,
+				recurrenceStartDate: new Date("2025-01-01"),
+				byDay: null,
+				byMonth: null,
+				byMonthDay: null,
+			};
+
+			// Return existing instances keyed by originalInstanceStartDate (all-day dedup path)
+			const mockExistingInstances = [
+				{
+					originalInstanceStartTime: null,
+					originalInstanceStartDate: "2025-01-01",
+				},
+				{
+					originalInstanceStartTime: null,
+					originalInstanceStartDate: "2025-01-08",
+				},
+				{
+					originalInstanceStartTime: null,
+					originalInstanceStartDate: "2025-01-15",
+				},
+				{
+					originalInstanceStartTime: null,
+					originalInstanceStartDate: "2025-01-22",
+				},
+			];
+
+			(mockDrizzleClient.query.eventsTable.findFirst as Mock).mockResolvedValue(
+				mockBaseTemplate,
+			);
+			(
+				mockDrizzleClient.query.recurrenceRulesTable.findFirst as Mock
+			).mockResolvedValue(mockRecurrenceRule);
+			(
+				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
+			).mockResolvedValue([]);
+			(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
+			).mockResolvedValue(mockExistingInstances);
+
+			const result = await generateInstancesForRecurringEvent(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toBe(0);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.stringContaining("No new instances to create"),
 			);
 		});
 	});

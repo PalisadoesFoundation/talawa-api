@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -107,10 +107,19 @@ builder.queryField("eventsByCreator", (t) =>
 				});
 			}
 
-			// Calculate effective window for fetching
-			const effectiveWindow = offset + limit;
-
 			try {
+				// Helper to get sort time for events (handles both timed and all-day)
+				const getEventSortTime = (event: EventWithAttachments): number => {
+					if (event.startAt) {
+						return event.startAt.getTime();
+					}
+					if (event.startDate) {
+						// All-day event: convert startDate to midnight UTC
+						return new Date(`${event.startDate}T00:00:00.000Z`).getTime();
+					}
+					return 0; // Fallback for incomplete data
+				};
+
 				const allEvents: EventWithAttachments[] = [];
 
 				// Step 1: Get standalone events created by user (with windowed limit)
@@ -123,8 +132,8 @@ builder.queryField("eventsByCreator", (t) =>
 						with: {
 							attachmentsWhereEvent: true,
 						},
-						orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
-						limit: effectiveWindow,
+						// Note: Cannot reliably order by startAt since it's null for all-day events.
+						// All events are fetched and sorted in-memory for correctness.
 					});
 
 				// Transform standalone events to unified format
@@ -155,7 +164,7 @@ builder.queryField("eventsByCreator", (t) =>
 						baseRecurringEventIds,
 						ctx.drizzleClient,
 						ctx.log,
-						{ limit: effectiveWindow, includeCancelled: false },
+						{ includeCancelled: false },
 					);
 
 					// Transform instances to unified format
@@ -167,8 +176,8 @@ builder.queryField("eventsByCreator", (t) =>
 
 				// Sort by start time and ID for stable sort
 				allEvents.sort((a, b) => {
-					const aTime = new Date(a.startAt).getTime();
-					const bTime = new Date(b.startAt).getTime();
+					const aTime = getEventSortTime(a);
+					const bTime = getEventSortTime(b);
 					if (aTime === bTime) {
 						return a.id.localeCompare(b.id);
 					}
@@ -185,7 +194,6 @@ builder.queryField("eventsByCreator", (t) =>
 						paginatedCount: paginatedEvents.length,
 						standaloneFetched: standaloneEvents.length,
 						recurringInstancesFetched,
-						effectiveWindow,
 					},
 					"Retrieved events by creator",
 				);

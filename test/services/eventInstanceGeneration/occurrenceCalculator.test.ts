@@ -100,6 +100,221 @@ suite("occurrenceCalculator", () => {
 			);
 		});
 
+		test("returns empty array when all-day base event is missing startDate", () => {
+			const allDayEventWithoutStartDate = {
+				...mockBaseEvent,
+				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: null,
+				endDate: "2025-01-31",
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: mockRecurrenceRule,
+				baseEvent: allDayEventWithoutStartDate,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(0);
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseEventId: allDayEventWithoutStartDate.id,
+				}),
+				"All-day base event missing startDate",
+			);
+		});
+
+		test("calculates correct multi-day duration for all-day recurring event", () => {
+			const allDayEvent = {
+				...mockBaseEvent,
+				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: "2025-01-01",
+				endDate: "2025-01-03", // 2-day span
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			const allDayRule = {
+				...mockRecurrenceRule,
+				frequency: "WEEKLY" as const,
+				count: 3,
+			};
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: allDayRule,
+				baseEvent: allDayEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(3);
+			// Each occurrence should span 2 days (endDate is 2 days after startDate)
+			for (const occurrence of result) {
+				expect(occurrence.originalStartDate).not.toBeNull();
+				expect(occurrence.actualEndDate).not.toBeNull();
+				const start = new Date(`${occurrence.actualStartDate}T00:00:00.000Z`);
+				const end = new Date(`${occurrence.actualEndDate}T00:00:00.000Z`);
+				const durationDays = Math.round(
+					(end.getTime() - start.getTime()) / 86400000,
+				);
+				expect(durationDays).toBe(2);
+			}
+		});
+
+		test("uses duration of 1 day for a one-day all-day event with exclusive endDate", () => {
+			const sameDayEvent = {
+				...mockBaseEvent,
+				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: "2025-01-01",
+				endDate: "2025-01-02", // exclusive endDate for a one-day all-day event
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			const allDayRule = {
+				...mockRecurrenceRule,
+				frequency: "WEEKLY" as const,
+				count: 2,
+			};
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: allDayRule,
+				baseEvent: sameDayEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(2);
+			// Each occurrence should span exactly 1 day
+			for (const occurrence of result) {
+				const start = new Date(`${occurrence.actualStartDate}T00:00:00.000Z`);
+				const end = new Date(`${occurrence.actualEndDate}T00:00:00.000Z`);
+				const durationDays = Math.round(
+					(end.getTime() - start.getTime()) / 86400000,
+				);
+				expect(durationDays).toBe(1);
+			}
+		});
+
+		test("applies startDate and endDate exception to an all-day occurrence", () => {
+			const allDayEvent = {
+				...mockBaseEvent,
+				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: "2025-01-01",
+				endDate: "2025-01-02",
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			// Exception key must match the full ISO string of the occurrence's currentDate
+			// currentDate for the first occurrence is new Date("2025-01-01T00:00:00.000Z")
+			// so startDateStr = "2025-01-01", but exceptionsByTime key = toISOString() of
+			// new Date(originalInstanceStartTime) — so we set the full ISO string
+			const allDayDateException = {
+				id: faker.string.uuid(),
+				recurringEventInstanceId: faker.string.uuid(),
+				baseRecurringEventId: allDayEvent.id,
+				exceptionData: {
+					startDate: "2025-01-03",
+					endDate: "2025-01-05",
+					originalInstanceStartTime: "2025-01-01T00:00:00.000Z",
+				},
+				organizationId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+			} as typeof eventExceptionsTable.$inferSelect;
+
+			const allDayRule = {
+				...mockRecurrenceRule,
+				frequency: "WEEKLY" as const,
+				count: 2,
+			};
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: allDayRule,
+				baseEvent: allDayEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [allDayDateException],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(2);
+			// First occurrence (2025-01-01) should have its dates overridden by the exception
+			const firstOccurrence = result.find(
+				(r) => r.originalStartDate === "2025-01-01",
+			);
+			expect(firstOccurrence).toBeDefined();
+			expect(firstOccurrence?.actualStartDate).toBe("2025-01-03");
+			expect(firstOccurrence?.actualEndDate).toBe("2025-01-05");
+			expect(firstOccurrence?.isCancelled).toBe(false);
+		});
+
+		test("applies isCancelled exception to an all-day occurrence", () => {
+			const allDayEvent = {
+				...mockBaseEvent,
+				allDay: true,
+				startAt: null,
+				endAt: null,
+				startDate: "2025-01-01",
+				endDate: "2025-01-02",
+			} as unknown as typeof eventsTable.$inferSelect;
+
+			const allDayCancelException = {
+				id: faker.string.uuid(),
+				recurringEventInstanceId: faker.string.uuid(),
+				baseRecurringEventId: allDayEvent.id,
+				exceptionData: {
+					isCancelled: true,
+					originalInstanceStartTime: "2025-01-01T00:00:00.000Z",
+				},
+				organizationId: faker.string.uuid(),
+				creatorId: faker.string.uuid(),
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: null,
+			} as typeof eventExceptionsTable.$inferSelect;
+
+			const allDayRule = {
+				...mockRecurrenceRule,
+				frequency: "WEEKLY" as const,
+				count: 2,
+			};
+
+			const config: OccurrenceCalculationConfig = {
+				recurrenceRule: allDayRule,
+				baseEvent: allDayEvent,
+				windowStart: new Date("2025-01-01T00:00:00Z"),
+				windowEnd: new Date("2025-01-31T23:59:59Z"),
+				exceptions: [allDayCancelException],
+			};
+
+			const result = calculateInstanceOccurrences(config, mockLogger);
+
+			expect(result).toHaveLength(2);
+			const cancelledOccurrence = result.find(
+				(r) => r.originalStartDate === "2025-01-01",
+			);
+			expect(cancelledOccurrence).toBeDefined();
+			expect(cancelledOccurrence?.isCancelled).toBe(true);
+			// Dates should remain unchanged when only isCancelled is in exception
+			expect(cancelledOccurrence?.actualStartDate).toBe("2025-01-01");
+		});
+
 		test("applies exceptions to cancel an occurrence", () => {
 			const canceledException = {
 				id: faker.string.uuid(),
@@ -132,7 +347,7 @@ suite("occurrenceCalculator", () => {
 			expect(result).toHaveLength(4);
 			const cancelledOccurrence = result.find(
 				(r) =>
-					r.originalStartTime.getTime() ===
+					r.originalStartTime?.getTime() ===
 					new Date("2025-01-08T10:00:00Z").getTime(),
 			);
 			expect(cancelledOccurrence).toBeDefined();
@@ -171,7 +386,7 @@ suite("occurrenceCalculator", () => {
 			expect(result).toHaveLength(4);
 			const modifiedOccurrence = result.find(
 				(r) =>
-					r.originalStartTime.getTime() ===
+					r.originalStartTime?.getTime() ===
 					new Date("2025-01-08T10:00:00Z").getTime(),
 			);
 			expect(modifiedOccurrence).toBeDefined();
@@ -251,10 +466,10 @@ suite("occurrenceCalculator", () => {
 			// Should only include occurrences that fall within the window
 			expect(result.length).toBeGreaterThan(0);
 			for (const occurrence of result) {
-				expect(occurrence.originalStartTime.getTime()).toBeGreaterThanOrEqual(
+				expect(occurrence.originalStartTime?.getTime()).toBeGreaterThanOrEqual(
 					config.windowStart.getTime(),
 				);
-				expect(occurrence.originalStartTime.getTime()).toBeLessThanOrEqual(
+				expect(occurrence.originalStartTime?.getTime()).toBeLessThanOrEqual(
 					config.windowEnd.getTime(),
 				);
 			}
@@ -280,9 +495,13 @@ suite("occurrenceCalculator", () => {
 			expect(result.length).toBeGreaterThan(0);
 			if (endDateRule.recurrenceEndDate) {
 				expect(
-					result.every(
-						(r) => r.originalStartTime <= endDateRule.recurrenceEndDate,
-					),
+					result.every((r) => {
+						const rTime = r.originalStartTime?.getTime();
+						const endTime = endDateRule.recurrenceEndDate?.getTime();
+						return (
+							rTime !== undefined && endTime !== undefined && rTime <= endTime
+						);
+					}),
 				).toBe(true);
 			}
 		});

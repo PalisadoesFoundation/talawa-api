@@ -48,9 +48,9 @@ describe("recurringEventInstancesTable definition", () => {
 		expect(columns.baseRecurringEventId.notNull).toBe(true);
 		expect(columns.recurrenceRuleId.notNull).toBe(true);
 		expect(columns.originalSeriesId.notNull).toBe(true);
-		expect(columns.originalInstanceStartTime.notNull).toBe(true);
-		expect(columns.actualStartTime.notNull).toBe(true);
-		expect(columns.actualEndTime.notNull).toBe(true);
+		expect(columns.originalInstanceStartTime.notNull).toBe(false);
+		expect(columns.actualStartTime.notNull).toBe(false);
+		expect(columns.actualEndTime.notNull).toBe(false);
 		expect(columns.isCancelled.notNull).toBe(true);
 		expect(columns.organizationId.notNull).toBe(true);
 		expect(columns.generatedAt.notNull).toBe(true);
@@ -169,6 +169,78 @@ describe("recurringEventInstancesTableInsertSchema", () => {
 
 			expect(issue).toBeDefined();
 			expect(issue?.code).toBe("too_small");
+		}
+	});
+
+	it("should validate a valid all-day payload with null timed fields", () => {
+		const allDayPayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date("2025-01-01T00:00:00.000Z"),
+			actualStartTime: null,
+			actualEndTime: null,
+			actualStartDate: "2025-01-01",
+			actualEndDate: "2025-01-02",
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(allDayPayload);
+
+		expect(result.success).toBe(true);
+	});
+
+	it("should reject mixed-mode payload with all-day dates and timed actual fields", () => {
+		const mixedModePayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date("2025-01-01T00:00:00.000Z"),
+			actualStartTime: new Date("2025-01-01T09:00:00.000Z"),
+			actualEndTime: new Date("2025-01-01T10:00:00.000Z"),
+			actualStartDate: "2025-01-01",
+			actualEndDate: "2025-01-02",
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(mixedModePayload);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const issue = result.error.issues.find(
+				(i) => i.path[0] === "actualStartTime",
+			);
+			expect(issue).toBeDefined();
+		}
+	});
+
+	it("should reject neither-mode payload with no timed or all-day actual fields", () => {
+		const neitherModePayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date("2025-01-01T00:00:00.000Z"),
+			actualStartTime: null,
+			actualEndTime: null,
+			actualStartDate: null,
+			actualEndDate: null,
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(neitherModePayload);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const issue = result.error.issues.find(
+				(i) => i.path[0] === "actualStartTime",
+			);
+			expect(issue).toBeDefined();
 		}
 	});
 });

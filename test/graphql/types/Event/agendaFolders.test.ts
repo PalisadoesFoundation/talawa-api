@@ -102,6 +102,8 @@ describe("Event agendaFolders Resolver", () => {
 			isInviteOnly: false,
 			location: null,
 			isRecurringEventTemplate: false,
+			startDate: null,
+			endDate: null,
 			attachments: [],
 		} as EventType;
 	});

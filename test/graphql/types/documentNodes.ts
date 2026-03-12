@@ -1985,6 +1985,8 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       location
       startAt
       endAt
+      startDate
+      endDate
       allDay
       isPublic
       isRegisterable
@@ -3126,4 +3128,69 @@ export const Query_getPlugins = gql(`
       updatedAt
     }
   }
+`);
+
+export const Query_eventsByVolunteer = gql(`
+  query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
+    eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
+      id
+      name
+      description
+      startAt
+      endAt
+      startDate
+      endDate
+      location
+      allDay
+      isPublic
+      isRegisterable
+      isInviteOnly
+      isGenerated
+      baseRecurringEventId
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Query_eventsByVolunteerWithAttachments = gql(`
+  query Query_eventsByVolunteerWithAttachments($userId: ID!) {
+    eventsByVolunteer(userId: $userId) {
+      id
+      name
+      startDate
+      endDate
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Query_eventsByAttendee = gql(`
+	query Query_eventsByAttendee($userId: ID!, $limit: Int, $offset: Int) {
+		eventsByAttendee(userId: $userId, limit: $limit, offset: $offset) {
+			id
+			name
+			description
+			startAt
+			endAt
+      startDate
+      endDate
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+			isGenerated
+			baseRecurringEventId
+		}
+	}
 `);

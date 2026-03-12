@@ -1,7 +1,23 @@
-import { and, asc, eq, gte, inArray, lte, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	eq,
+	gt,
+	gte,
+	inArray,
+	isNotNull,
+	lte,
+	or,
+	sql,
+} from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+
+const eventNormalizedStartSortKey = sql<Date>`coalesce(
+	${eventsTable.startAt},
+	${eventsTable.startDate}::timestamp
+)`;
 
 /**
  * Defines the input parameters for querying standalone events.
@@ -39,25 +55,68 @@ export async function getStandaloneEventsInDateRange(
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 	})[]
 > {
+	const formatUtcYYYYMMDD = (date: Date): string => {
+		const year = date.getUTCFullYear();
+		const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+		const day = String(date.getUTCDate()).padStart(2, "0");
+
+		return `${year}-${month}-${day}`;
+	};
+
 	const { organizationId, startDate, endDate, eventIds, limit = 1000 } = input;
+
+	// Convert Date inputs to YYYY-MM-DD strings for all-day date comparisons
+	const windowStartStr = formatUtcYYYYMMDD(startDate);
+	const windowEndStr = formatUtcYYYYMMDD(endDate);
 
 	try {
 		const whereConditions = [
 			eq(eventsTable.organizationId, organizationId),
 			eq(eventsTable.isRecurringEventTemplate, false),
-			// Event overlaps with date range
+			// Event overlaps with date range — handles both timed and all-day events
 			or(
-				// Event starts within range
+				// Timed events: startAt/endAt are not null
 				and(
-					gte(eventsTable.startAt, startDate),
-					lte(eventsTable.startAt, endDate),
+					isNotNull(eventsTable.startAt),
+					or(
+						// Event starts within range
+						and(
+							gte(eventsTable.startAt, startDate),
+							lte(eventsTable.startAt, endDate),
+						),
+						// Event ends within range
+						and(
+							gte(eventsTable.endAt, startDate),
+							lte(eventsTable.endAt, endDate),
+						),
+						// Event spans the entire range
+						and(
+							lte(eventsTable.startAt, startDate),
+							gte(eventsTable.endAt, endDate),
+						),
+					),
 				),
-				// Event ends within range
-				and(gte(eventsTable.endAt, startDate), lte(eventsTable.endAt, endDate)),
-				// Event spans the entire range
+				// All-day events: startDate/endDate are not null (string DATE comparisons)
+				// Using half-open interval semantics: [startDate, endDate)
 				and(
-					lte(eventsTable.startAt, startDate),
-					gte(eventsTable.endAt, endDate),
+					isNotNull(eventsTable.startDate),
+					or(
+						// Event starts within range
+						and(
+							gte(eventsTable.startDate, windowStartStr),
+							lte(eventsTable.startDate, windowEndStr),
+						),
+						// Event ends within range (endDate is exclusive)
+						and(
+							gt(eventsTable.endDate, windowStartStr),
+							lte(eventsTable.endDate, windowEndStr),
+						),
+						// Event spans the entire range (endDate is exclusive)
+						and(
+							lte(eventsTable.startDate, windowStartStr),
+							gt(eventsTable.endDate, windowEndStr),
+						),
+					),
 				),
 			),
 		];
@@ -74,7 +133,7 @@ export async function getStandaloneEventsInDateRange(
 			with: {
 				attachmentsWhereEvent: true,
 			},
-			orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
+			orderBy: [asc(eventNormalizedStartSortKey), asc(eventsTable.id)],
 			limit,
 		});
 
@@ -93,6 +152,8 @@ export async function getStandaloneEventsInDateRange(
 				dateRange: {
 					start: startDate.toISOString(),
 					end: endDate.toISOString(),
+					startStr: windowStartStr,
+					endStr: windowEndStr,
 				},
 				eventIdsFilter: eventIds?.length || 0,
 			},
