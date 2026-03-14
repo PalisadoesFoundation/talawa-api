@@ -1,0 +1,2 @@
+CREATE TYPE "public"."post_vote_type" AS ENUM('down_vote', 'up_vote');--> statement-breakpoint
+ALTER TABLE "post_votes" ALTER COLUMN "type" SET DATA TYPE "public"."post_vote_type" USING "type"::"public"."post_vote_type";
