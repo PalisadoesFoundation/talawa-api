@@ -240,7 +240,7 @@ builder.mutationField("createEvent", (t) =>
 							role: true,
 							name: true,
 						},
-						where: (fields, operators) =>
+						where: (fields: any, operators: any) =>
 							operators.eq(fields.id, currentUserId),
 					}),
 					ctx.drizzleClient.query.organizationsTable.findFirst({
@@ -253,11 +253,11 @@ builder.mutationField("createEvent", (t) =>
 								columns: {
 									role: true,
 								},
-								where: (fields, operators) =>
+								where: (fields: any, operators: any) =>
 									operators.eq(fields.memberId, currentUserId),
 							},
 						},
-						where: (fields, operators) =>
+						where: (fields: any, operators: any) =>
 							operators.eq(fields.id, parsedArgs.input.organizationId),
 					}),
 				]);
@@ -302,6 +302,24 @@ builder.mutationField("createEvent", (t) =>
 				const createdEventResult = await ctx.drizzleClient.transaction(
 					async (tx) => {
 						// Create the base event (template for recurring, or standalone event)
+						const isAllDay = parsedArgs.input.allDay ?? false;
+
+						let startAt: Date | null = null;
+						let endAt: Date | null = null;
+						let startDate: string | null = null;
+						let endDate: string | null = null;
+
+						if (isAllDay && parsedArgs.input.startDate && parsedArgs.input.endDate) {
+							startAt = new Date(`${parsedArgs.input.startDate}T00:00:00.000Z`);
+							endAt = new Date(`${parsedArgs.input.endDate}T23:59:59.999Z`);
+
+							startDate = parsedArgs.input.startDate;
+							endDate = parsedArgs.input.endDate;
+						} else {
+							startAt = parsedArgs.input.startAt ?? null;
+							endAt = parsedArgs.input.endAt ?? null;
+						}
+
 						const [createdEvent] = await tx
 							.insert(eventsTable)
 							.values({
@@ -309,26 +327,16 @@ builder.mutationField("createEvent", (t) =>
 								description: parsedArgs.input.description,
 								name: parsedArgs.input.name,
 								organizationId: parsedArgs.input.organizationId,
-								allDay: parsedArgs.input.allDay ?? false,
+								allDay: isAllDay,
 								isPublic: parsedArgs.input.isPublic ?? false,
 								isRegisterable: parsedArgs.input.isRegisterable ?? false,
 								isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
 								location: parsedArgs.input.location,
 								isRecurringEventTemplate: !!parsedArgs.input.recurrence,
-								// Timed event fields (allDay = false)
-								...(parsedArgs.input.allDay === true
-									? { startAt: null, endAt: null }
-									: {
-											startAt: parsedArgs.input.startAt ?? null,
-											endAt: parsedArgs.input.endAt ?? null,
-										}),
-								// All-day event fields (allDay = true)
-								...(parsedArgs.input.allDay === true
-									? {
-											startDate: parsedArgs.input.startDate ?? null,
-											endDate: parsedArgs.input.endDate ?? null,
-										}
-									: { startDate: null, endDate: null }),
+								startAt,
+								endAt,
+								startDate,
+								endDate,
 							})
 							.returning();
 
@@ -449,11 +457,11 @@ builder.mutationField("createEvent", (t) =>
 							let windowConfig =
 								await ctx.drizzleClient.query.eventGenerationWindowsTable.findFirst(
 									{
-										where: (fields, operators) =>
-											operators.eq(
-												fields.organizationId,
-												parsedArgs.input.organizationId,
-											),
+										where: (fields: any, operators: any) =>
+												operators.eq(
+													fields.organizationId,
+													parsedArgs.input.organizationId,
+												),
 									},
 								);
 
