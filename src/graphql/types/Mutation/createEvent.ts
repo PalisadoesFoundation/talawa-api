@@ -314,8 +314,9 @@ builder.mutationField("createEvent", (t) =>
 							parsedArgs.input.startDate &&
 							parsedArgs.input.endDate
 						) {
-							startAt = new Date(`${parsedArgs.input.startDate}T00:00:00.000Z`);
-							endAt = new Date(`${parsedArgs.input.endDate}T23:59:59.999Z`);
+							// Database constraint requires startAt/endAt to be NULL for all-day events.
+							startAt = null;
+							endAt = null;
 
 							startDate = parsedArgs.input.startDate;
 							endDate = parsedArgs.input.endDate;
