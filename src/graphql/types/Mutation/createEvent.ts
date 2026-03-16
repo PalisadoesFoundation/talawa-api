@@ -240,7 +240,7 @@ builder.mutationField("createEvent", (t) =>
 							role: true,
 							name: true,
 						},
-						where: (fields: any, operators: any) =>
+						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
 					ctx.drizzleClient.query.organizationsTable.findFirst({
@@ -253,11 +253,11 @@ builder.mutationField("createEvent", (t) =>
 								columns: {
 									role: true,
 								},
-								where: (fields: any, operators: any) =>
+								where: (fields, operators) =>
 									operators.eq(fields.memberId, currentUserId),
 							},
 						},
-						where: (fields: any, operators: any) =>
+						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.organizationId),
 					}),
 				]);
@@ -309,7 +309,11 @@ builder.mutationField("createEvent", (t) =>
 						let startDate: string | null = null;
 						let endDate: string | null = null;
 
-						if (isAllDay && parsedArgs.input.startDate && parsedArgs.input.endDate) {
+						if (
+							isAllDay &&
+							parsedArgs.input.startDate &&
+							parsedArgs.input.endDate
+						) {
 							startAt = new Date(`${parsedArgs.input.startDate}T00:00:00.000Z`);
 							endAt = new Date(`${parsedArgs.input.endDate}T23:59:59.999Z`);
 
@@ -457,11 +461,11 @@ builder.mutationField("createEvent", (t) =>
 							let windowConfig =
 								await ctx.drizzleClient.query.eventGenerationWindowsTable.findFirst(
 									{
-										where: (fields: any, operators: any) =>
-												operators.eq(
-													fields.organizationId,
-													parsedArgs.input.organizationId,
-												),
+										where: (fields, operators) =>
+											operators.eq(
+												fields.organizationId,
+												parsedArgs.input.organizationId,
+											),
 									},
 								);
 
