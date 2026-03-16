@@ -498,7 +498,7 @@ builder.mutationField("createEvent", (t) =>
 								{
 									eventStartAt: recurrenceStart.toISOString(),
 								},
-								"FIXED: Window calculation",
+								"recurrence window calculated",
 							);
 
 							if (parsedArgs.input.recurrence.endDate) {

@@ -161,7 +161,6 @@ export const eventsTable = pgTable(
 				CASE
 					WHEN ${self.allDay} = true THEN
 						${self.startDate} IS NOT NULL AND ${self.endDate} IS NOT NULL
-						AND ${self.startAt} IS NULL AND ${self.endAt} IS NULL
 					WHEN ${self.allDay} = false THEN
 						${self.startAt} IS NOT NULL AND ${self.endAt} IS NOT NULL
 						AND ${self.startDate} IS NULL AND ${self.endDate} IS NULL
@@ -213,12 +212,7 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 }).refine(
 	(data) => {
 		if (data.allDay === true) {
-			return (
-				data.startDate != null &&
-				data.endDate != null &&
-				data.startAt == null &&
-				data.endAt == null
-			);
+			return data.startDate != null && data.endDate != null;
 		}
 
 		return (
