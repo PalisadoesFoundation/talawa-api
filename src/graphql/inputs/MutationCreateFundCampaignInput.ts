@@ -17,7 +17,7 @@ export const mutationCreateFundCampaignInputSchema =
 			if (arg.endAt <= arg.startAt) {
 				ctx.addIssue({
 					code: "custom",
-					message: "End time must be after start time.",
+					message: `End time must be after start time: ${arg.startAt.toISOString()}.`,
 					path: ["endAt"],
 				});
 			}
