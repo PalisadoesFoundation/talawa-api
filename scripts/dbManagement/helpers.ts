@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
@@ -644,60 +645,44 @@ export async function insertCollections(
 				}
 
 				case "recurring_event_templates": {
-					// PR2: Insert template events only. recurrence_rules and
-					// recurring_event_instances are populated in a follow-up (PR3).
 					const now = new Date();
-					type TemplateRow = {
-						id: string;
-						createdAt: string | number | Date;
-						updatedAt: string | null;
-						updaterId: string | null;
-						startAt: string | number | Date;
-						endAt: string | number | Date;
-						creatorId: string;
-						description: string | null;
-						name: string;
-						organizationId: string;
-						allDay: boolean;
-						isPublic?: boolean;
-						isRecurringEventTemplate?: boolean;
-						isRegisterable?: boolean;
-					};
-					const templates = JSON.parse(fileContent).map(
-						(template: TemplateRow) => {
-							const startRef = parseDate(template.startAt);
-							const endRef = parseDate(template.endAt);
-							const start =
-								startRef != null
-									? getNextOccurrenceOfWeekdayTime(now, startRef)
-									: new Date(now.getTime());
-							let end: Date;
-							if (startRef != null && endRef != null) {
-								const durationMs = endRef.getTime() - startRef.getTime();
-								end = new Date(start.getTime() + durationMs);
-							} else if (endRef != null) {
-								end = getNextOccurrenceOfWeekdayTime(now, endRef);
-								if (end.getTime() < start.getTime()) {
-									end = new Date(end.getTime() + 7 * 24 * 60 * 60 * 1000);
-								}
-							} else {
-								end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-							}
-							const createdAt = parseDate(template.createdAt) ?? start;
+					const sourceTemplates = parseRecurringTemplates(fileContent);
+					const organizations = await db
+						.select({ id: schema.organizationsTable.id })
+						.from(schema.organizationsTable);
+
+					const templates = organizations.flatMap((organization) =>
+						sourceTemplates.map((template) => {
+							const deterministicTemplateId = deterministicUuid(
+								`template:${organization.id}:${template.id}`,
+							);
+							const templateTiming = buildTemplateTimingFromSource(
+								template,
+								now,
+							);
+							const createdAt = parseDate(template.createdAt) ?? now;
+
 							return {
-								...template,
-								allDay: false,
+								id: deterministicTemplateId,
+								name: template.name,
+								description: template.description,
+								location: template.location,
 								createdAt,
-								startAt: start,
-								endAt: end,
-								startDate: null,
-								endDate: null,
 								updatedAt: null,
 								updaterId: null,
-								isPublic: true,
+								creatorId: template.creatorId,
+								organizationId: organization.id,
+								allDay: templateTiming.allDay,
+								startAt: templateTiming.startAt,
+								endAt: templateTiming.endAt,
+								startDate: templateTiming.startDate,
+								endDate: templateTiming.endDate,
+								isPublic: template.isPublic,
+								isInviteOnly: template.isInviteOnly,
+								isRegisterable: template.isRegisterable,
 								isRecurringEventTemplate: true,
 							};
-						},
+						}),
 					) as (typeof schema.eventsTable.$inferInsert)[];
 
 					await checkAndInsertData(
@@ -709,6 +694,248 @@ export async function insertCollections(
 
 					console.log(
 						"\x1b[35mAdded: Recurring event templates (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurrence_rules": {
+					const now = new Date();
+					const sourceRules = parseRecurrenceRules(fileContent);
+					const organizations = await db
+						.select({ id: schema.organizationsTable.id })
+						.from(schema.organizationsTable);
+
+					const templates = await db
+						.select({
+							id: schema.eventsTable.id,
+							allDay: schema.eventsTable.allDay,
+							startAt: schema.eventsTable.startAt,
+							endAt: schema.eventsTable.endAt,
+							startDate: schema.eventsTable.startDate,
+							endDate: schema.eventsTable.endDate,
+							isRegisterable: schema.eventsTable.isRegisterable,
+							organizationId: schema.eventsTable.organizationId,
+						})
+						.from(schema.eventsTable)
+						.where(sql`${schema.eventsTable.isRecurringEventTemplate} = true`);
+					const templateById = new Map(
+						templates.map((template) => [template.id, template]),
+					);
+
+					const rules = organizations.flatMap((organization) =>
+						sourceRules
+							.map((rule) => {
+								const baseRecurringEventId = deterministicUuid(
+									`template:${organization.id}:${rule.baseRecurringEventId}`,
+								);
+								const template = templateById.get(baseRecurringEventId);
+								if (!template) return null;
+
+								const recurrenceStartDate =
+									template.startAt != null
+										? template.startAt
+										: (parseDate(`${template.startDate}T00:00:00.000Z`) ?? now);
+
+								const ruleId = deterministicUuid(
+									`rule:${organization.id}:${rule.id}`,
+								);
+
+								return {
+									id: ruleId,
+									recurrenceRuleString: rule.recurrenceRuleString,
+									frequency: rule.frequency,
+									interval: rule.interval,
+									recurrenceStartDate,
+									recurrenceEndDate: rule.recurrenceEndDate
+										? (parseDate(rule.recurrenceEndDate) ?? null)
+										: null,
+									count: rule.count,
+									latestInstanceDate: recurrenceStartDate,
+									byDay: rule.byDay,
+									byMonth: rule.byMonth,
+									byMonthDay: rule.byMonthDay,
+									baseRecurringEventId,
+									originalSeriesId: deterministicUuid(
+										`series:${organization.id}:${rule.originalSeriesId ?? rule.id}`,
+									),
+									organizationId: organization.id,
+									creatorId: rule.creatorId,
+									updaterId: null,
+									createdAt: parseDate(rule.createdAt) ?? now,
+									updatedAt: null,
+								};
+							})
+							.filter((rule): rule is NonNullable<typeof rule> => rule != null),
+					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.recurrenceRulesTable,
+						rules,
+						schema.recurrenceRulesTable.id,
+						1000,
+					);
+
+					const instances: (typeof schema.recurringEventInstancesTable.$inferInsert)[] =
+						[];
+					for (const rule of rules) {
+						if (!rule.id) continue;
+
+						const template = templateById.get(rule.baseRecurringEventId);
+						if (!template) continue;
+
+						const recurrenceRuleId = rule.id;
+						const originalSeriesId = rule.originalSeriesId ?? recurrenceRuleId;
+
+						const windowEndDate = calculateMutationStyleWindowEndDate(
+							rule.recurrenceStartDate,
+							rule.recurrenceEndDate ?? null,
+							12,
+						);
+
+						const generatedStarts = generateWeeklyInstanceStarts(
+							rule.recurrenceStartDate,
+							rule.byDay ?? null,
+							template.allDay,
+							windowEndDate,
+							rule.interval ?? 1,
+							rule.count ?? null,
+						);
+
+						const timedDurationMs =
+							template.startAt != null && template.endAt != null
+								? template.endAt.getTime() - template.startAt.getTime()
+								: 60 * 60 * 1000;
+						const durationMs =
+							timedDurationMs > 0 ? timedDurationMs : 60 * 60 * 1000;
+
+						const allDayDurationDays =
+							template.startDate != null && template.endDate != null
+								? Math.max(
+										1,
+										Math.ceil(
+											(new Date(`${template.endDate}T00:00:00.000Z`).getTime() -
+												new Date(
+													`${template.startDate}T00:00:00.000Z`,
+												).getTime()) /
+												(24 * 60 * 60 * 1000),
+										),
+									)
+								: 1;
+
+						for (const [sequenceIndex, start] of generatedStarts.entries()) {
+							const timedEnd = new Date(start.getTime() + durationMs);
+							const actualStartDate = toDateOnlyString(start);
+							const actualEndDate = toDateOnlyString(
+								new Date(
+									start.getTime() + allDayDurationDays * 24 * 60 * 60 * 1000,
+								),
+							);
+
+							instances.push({
+								id: deterministicUuid(
+									`instance:${recurrenceRuleId}:${start.toISOString()}`,
+								),
+								baseRecurringEventId: rule.baseRecurringEventId,
+								recurrenceRuleId,
+								originalSeriesId,
+								originalInstanceStartTime: template.allDay ? null : start,
+								originalInstanceStartDate: template.allDay
+									? actualStartDate
+									: null,
+								actualStartTime: template.allDay ? null : start,
+								actualEndTime: template.allDay ? null : timedEnd,
+								actualStartDate: template.allDay ? actualStartDate : null,
+								actualEndDate: template.allDay ? actualEndDate : null,
+								isCancelled: false,
+								organizationId: rule.organizationId,
+								generatedAt: now,
+								lastUpdatedAt: null,
+								version: "1",
+								sequenceNumber: sequenceIndex + 1,
+								totalCount: rule.count,
+							});
+						}
+					}
+
+					await checkAndInsertData(
+						schema.recurringEventInstancesTable,
+						instances,
+						schema.recurringEventInstancesTable.id,
+						1000,
+					);
+
+					const regularUsers = await db
+						.select({ id: schema.usersTable.id })
+						.from(schema.usersTable)
+						.where(sql`${schema.usersTable.role} = 'regular'`);
+
+					const scheduleByUser = new Map<
+						string,
+						Array<{ start: Date; end: Date }>
+					>();
+					for (const user of regularUsers) {
+						scheduleByUser.set(user.id, []);
+					}
+
+					const attendees: (typeof schema.eventAttendeesTable.$inferInsert)[] =
+						[];
+					const registerableTemplateIds = new Set(
+						templates
+							.filter((template) => template.isRegisterable)
+							.map((template) => template.id),
+					);
+
+					for (const instance of instances) {
+						if (!registerableTemplateIds.has(instance.baseRecurringEventId))
+							continue;
+
+						const intervalStart =
+							instance.actualStartTime ??
+							new Date(`${instance.actualStartDate}T00:00:00.000Z`);
+						const intervalEnd =
+							instance.actualEndTime ??
+							new Date(`${instance.actualEndDate}T00:00:00.000Z`);
+
+						let assigned = 0;
+						for (const user of regularUsers) {
+							if (assigned >= 4) break;
+
+							const schedule = scheduleByUser.get(user.id) ?? [];
+							const hasConflict = schedule.some(
+								(slot) => intervalStart < slot.end && intervalEnd > slot.start,
+							);
+							if (hasConflict) continue;
+
+							schedule.push({ start: intervalStart, end: intervalEnd });
+							scheduleByUser.set(user.id, schedule);
+
+							attendees.push({
+								id: deterministicUuid(`attendee:${instance.id}:${user.id}`),
+								userId: user.id,
+								eventId: null,
+								recurringEventInstanceId: instance.id,
+								isRegistered: true,
+								isInvited: false,
+								isCheckedIn: false,
+								isCheckedOut: false,
+								feedbackSubmitted: false,
+								createdAt: now,
+								updatedAt: null,
+							});
+
+							assigned += 1;
+						}
+					}
+
+					await checkAndInsertData(
+						schema.eventAttendeesTable,
+						attendees,
+						schema.eventAttendeesTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurrence rules, recurring instances, and pre-registrations (skipping duplicates)\x1b[0m",
 					);
 					break;
 				}
@@ -942,6 +1169,342 @@ export function getNextOccurrenceOfWeekdayTime(
 	return ref;
 }
 
+type SourceRecurringTemplate = {
+	id: string;
+	createdAt: string | number | Date;
+	creatorId: string;
+	description: string | null;
+	endAt: string | null;
+	name: string;
+	organizationId: string;
+	startAt: string | null;
+	allDay: boolean;
+	isPublic: boolean;
+	isRegisterable: boolean;
+	location: string | null;
+	updatedAt: string | null;
+	updaterId: string | null;
+	isRecurringEventTemplate: boolean;
+	isInviteOnly: boolean;
+	startDate: string | null;
+	endDate: string | null;
+};
+
+type SourceRecurrenceRule = {
+	id: string;
+	recurrenceRuleString: string;
+	frequency: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+	interval: number;
+	recurrenceStartDate: string;
+	recurrenceEndDate: string | null;
+	count: number | null;
+	latestInstanceDate: string;
+	byDay: string[] | null;
+	byMonth: number[] | null;
+	byMonthDay: number[] | null;
+	baseRecurringEventId: string;
+	originalSeriesId: string | null;
+	organizationId: string;
+	creatorId: string;
+	updaterId: string | null;
+	createdAt: string;
+	updatedAt: string;
+};
+
+function parseRecurringTemplates(
+	fileContent: string,
+): SourceRecurringTemplate[] {
+	const parsed = JSON.parse(fileContent) as
+		| { events?: Record<string, unknown>[] }
+		| Record<string, unknown>[];
+	const rows = Array.isArray(parsed) ? parsed : (parsed.events ?? []);
+
+	return rows.map((row) => ({
+		id: String(row.id),
+		createdAt: (row.createdAt ?? row.created_at ?? new Date().toISOString()) as
+			| string
+			| number
+			| Date,
+		creatorId: String(row.creatorId ?? row.creator_id),
+		description: (row.description ?? null) as string | null,
+		endAt: (row.endAt ?? row.end_at ?? null) as string | null,
+		name: String(row.name),
+		organizationId: String(row.organizationId ?? row.organization_id),
+		startAt: (row.startAt ?? row.start_at ?? null) as string | null,
+		allDay: Boolean(row.allDay ?? row.all_day),
+		isPublic: Boolean(row.isPublic ?? row.is_public),
+		isRegisterable: Boolean(row.isRegisterable ?? row.is_registerable),
+		location: (row.location ?? null) as string | null,
+		updatedAt: (row.updatedAt ?? row.updated_at ?? null) as string | null,
+		updaterId: (row.updaterId ?? row.updater_id ?? null) as string | null,
+		isRecurringEventTemplate: Boolean(
+			row.isRecurringEventTemplate ?? row.is_recurring_template ?? true,
+		),
+		isInviteOnly: Boolean(row.isInviteOnly ?? row.is_invite_only),
+		startDate: (row.startDate ?? row.start_date ?? null) as string | null,
+		endDate: (row.endDate ?? row.end_date ?? null) as string | null,
+	}));
+}
+
+function parseRecurrenceRules(fileContent: string): SourceRecurrenceRule[] {
+	const parsed = JSON.parse(fileContent) as
+		| { recurrence_rules?: Record<string, unknown>[] }
+		| Record<string, unknown>[];
+	const rows = Array.isArray(parsed) ? parsed : (parsed.recurrence_rules ?? []);
+
+	return rows.map((row) => ({
+		id: String(row.id),
+		recurrenceRuleString: String(
+			row.recurrenceRuleString ?? row.recurrence_rule_string,
+		),
+		frequency: String(row.frequency) as SourceRecurrenceRule["frequency"],
+		interval: Number(row.interval ?? 1),
+		recurrenceStartDate: String(
+			row.recurrenceStartDate ?? row.recurrence_start_date,
+		),
+		recurrenceEndDate: (row.recurrenceEndDate ??
+			row.recurrence_end_date ??
+			null) as string | null,
+		count: (row.count ?? null) as number | null,
+		latestInstanceDate: String(
+			row.latestInstanceDate ?? row.latest_instance_date,
+		),
+		byDay: normalizeByDay(row.byDay ?? row.by_day),
+		byMonth: (row.byMonth ?? row.by_month ?? null) as number[] | null,
+		byMonthDay: (row.byMonthDay ?? row.by_month_day ?? null) as number[] | null,
+		baseRecurringEventId: String(
+			row.baseRecurringEventId ?? row.base_recurring_event_id,
+		),
+		originalSeriesId: (row.originalSeriesId ??
+			row.original_series_id ??
+			null) as string | null,
+		organizationId: String(row.organizationId ?? row.organization_id),
+		creatorId: String(row.creatorId ?? row.creator_id),
+		updaterId: (row.updaterId ?? row.updater_id ?? null) as string | null,
+		createdAt: String(row.createdAt ?? row.created_at),
+		updatedAt: String(row.updatedAt ?? row.updated_at),
+	}));
+}
+
+function normalizeByDay(value: unknown): string[] | null {
+	if (value == null) return null;
+	if (Array.isArray(value)) {
+		const days = value.map((entry) => String(entry).trim()).filter(Boolean);
+		return days.length > 0 ? days : null;
+	}
+
+	const input = String(value).trim();
+	if (input === "") return null;
+	if (input.startsWith("{") && input.endsWith("}")) {
+		const days = input
+			.slice(1, -1)
+			.split(",")
+			.map((entry) => entry.trim())
+			.filter(Boolean);
+		return days.length > 0 ? days : null;
+	}
+
+	return [input];
+}
+
+function buildTemplateTimingFromSource(
+	template: SourceRecurringTemplate,
+	referenceDate: Date,
+): {
+	allDay: boolean;
+	startAt: Date | null;
+	endAt: Date | null;
+	startDate: string | null;
+	endDate: string | null;
+} {
+	if (template.allDay) {
+		const sourceStartDate = template.startDate
+			? parseDate(`${template.startDate}T00:00:00.000Z`)
+			: null;
+		const sourceEndDate = template.endDate
+			? parseDate(`${template.endDate}T00:00:00.000Z`)
+			: null;
+
+		const startRef = sourceStartDate ?? referenceDate;
+		const start = getNextOccurrenceOfWeekdayTime(referenceDate, startRef);
+		const durationDays =
+			sourceStartDate != null && sourceEndDate != null
+				? Math.max(
+						1,
+						Math.ceil(
+							(sourceEndDate.getTime() - sourceStartDate.getTime()) /
+								(24 * 60 * 60 * 1000),
+						),
+					)
+				: 1;
+		const end = new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+		return {
+			allDay: true,
+			startAt: null,
+			endAt: null,
+			startDate: toDateOnlyString(start),
+			endDate: toDateOnlyString(end),
+		};
+	}
+
+	const sourceStartAt = template.startAt
+		? parseDate(template.startAt)
+		: parseDate(referenceDate);
+	const sourceEndAt = template.endAt ? parseDate(template.endAt) : null;
+
+	const start = getNextOccurrenceOfWeekdayTime(
+		referenceDate,
+		sourceStartAt ?? referenceDate,
+	);
+	const durationMs =
+		sourceStartAt != null && sourceEndAt != null
+			? sourceEndAt.getTime() - sourceStartAt.getTime()
+			: 60 * 60 * 1000;
+	const boundedDurationMs = durationMs > 0 ? durationMs : 60 * 60 * 1000;
+	const end = new Date(start.getTime() + boundedDurationMs);
+
+	return {
+		allDay: false,
+		startAt: start,
+		endAt: end,
+		startDate: null,
+		endDate: null,
+	};
+}
+
+export function generateWeeklyInstanceStarts(
+	recurrenceStartDate: Date,
+	byDay: string[] | null,
+	isAllDay: boolean,
+	windowEndDate: Date,
+	intervalWeeks: number,
+	countLimit: number | null,
+): Date[] {
+	const days = byDay?.length
+		? byDay
+		: [WEEKDAY_CODES[recurrenceStartDate.getUTCDay()] ?? "MO"];
+	const normalizedIntervalWeeks = Math.max(1, intervalWeeks);
+	const [hours, minutes, seconds, milliseconds] = isAllDay
+		? [0, 0, 0, 0]
+		: [
+				recurrenceStartDate.getUTCHours(),
+				recurrenceStartDate.getUTCMinutes(),
+				recurrenceStartDate.getUTCSeconds(),
+				recurrenceStartDate.getUTCMilliseconds(),
+			];
+
+	const starts = new Set<number>();
+	for (const day of days) {
+		const weekday = WEEKDAY_TO_INDEX[day] ?? recurrenceStartDate.getUTCDay();
+		const first = getNextOccurrenceForWeekdayTime(
+			recurrenceStartDate,
+			weekday,
+			hours,
+			minutes,
+			seconds,
+			milliseconds,
+		);
+
+		for (
+			let occurrence = new Date(first.getTime());
+			occurrence.getTime() <= windowEndDate.getTime();
+			occurrence = new Date(
+				occurrence.getTime() +
+					normalizedIntervalWeeks * 7 * 24 * 60 * 60 * 1000,
+			)
+		) {
+			starts.add(occurrence.getTime());
+		}
+	}
+
+	const sortedStarts = Array.from(starts)
+		.sort((left, right) => left - right)
+		.map((timestamp) => new Date(timestamp));
+
+	if (countLimit != null && countLimit > 0) {
+		return sortedStarts.slice(0, countLimit);
+	}
+
+	return sortedStarts;
+}
+
+export function calculateMutationStyleWindowEndDate(
+	recurrenceStartDate: Date,
+	recurrenceEndDate: Date | null,
+	hotWindowMonthsAhead: number,
+): Date {
+	const defaultWindowEnd = new Date(recurrenceStartDate.getTime());
+	defaultWindowEnd.setUTCMonth(
+		defaultWindowEnd.getUTCMonth() + hotWindowMonthsAhead,
+	);
+
+	if (recurrenceEndDate != null && recurrenceEndDate < defaultWindowEnd) {
+		return recurrenceEndDate;
+	}
+
+	return defaultWindowEnd;
+}
+
+const WEEKDAY_TO_INDEX: Record<string, number> = {
+	SU: 0,
+	MO: 1,
+	TU: 2,
+	WE: 3,
+	TH: 4,
+	FR: 5,
+	SA: 6,
+};
+
+const WEEKDAY_CODES = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+function getNextOccurrenceForWeekdayTime(
+	referenceDate: Date,
+	weekday: number,
+	hours: number,
+	minutes: number,
+	seconds: number,
+	milliseconds: number,
+): Date {
+	const reference = new Date(
+		Date.UTC(
+			referenceDate.getUTCFullYear(),
+			referenceDate.getUTCMonth(),
+			referenceDate.getUTCDate(),
+			hours,
+			minutes,
+			seconds,
+			milliseconds,
+		),
+	);
+
+	const dayDelta = (weekday - reference.getUTCDay() + 7) % 7;
+	reference.setUTCDate(reference.getUTCDate() + dayDelta);
+	if (reference.getTime() < referenceDate.getTime()) {
+		reference.setUTCDate(reference.getUTCDate() + 7);
+	}
+
+	return reference;
+}
+
+function deterministicUuid(seed: string): string {
+	const hash = createHash("sha1").update(seed).digest("hex");
+	const hex = hash.slice(0, 32).split("");
+	hex[12] = "5";
+	hex[16] = ((Number.parseInt(hex[16] ?? "0", 16) & 0x3) | 0x8).toString(16);
+	const compact = hex.join("");
+
+	return `${compact.slice(0, 8)}-${compact.slice(8, 12)}-${compact.slice(12, 16)}-${compact.slice(16, 20)}-${compact.slice(20, 32)}`;
+}
+
+function toDateOnlyString(date: Date): string {
+	return [
+		date.getUTCFullYear(),
+		String(date.getUTCMonth() + 1).padStart(2, "0"),
+		String(date.getUTCDate()).padStart(2, "0"),
+	].join("-");
+}
+
 /**
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
@@ -966,6 +1529,12 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
+			{
+				name: "recurring_event_instances",
+				table: schema.recurringEventInstancesTable,
+			},
+			{ name: "event_attendees", table: schema.eventAttendeesTable },
 			{ name: "event_volunteers", table: schema.eventVolunteersTable },
 			{
 				name: "event_volunteer_memberships",
