@@ -226,447 +226,456 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 
 			try {
 				return await ctx.drizzleClient.transaction(async (tx) => {
-				// Always split for "this and following" updates
-				// Step 1: Delete all instances from this one forward (including this instance)
+					// Always split for "this and following" updates
+					// Step 1: Delete all instances from this one forward (including this instance)
 
-				// For deleting old instances, use the OLD allDay value (how they were stored)
-				const oldIsAllDay = existingInstance.baseRecurringEvent.allDay;
+					// For deleting old instances, use the OLD allDay value (how they were stored)
+					const oldIsAllDay = existingInstance.baseRecurringEvent.allDay;
 
-				// For creating new instances, use the NEW allDay value if provided
-				const newIsAllDay =
-					parsedArgs.input.allDay ?? existingInstance.baseRecurringEvent.allDay;
+					// For creating new instances, use the NEW allDay value if provided
+					const newIsAllDay =
+						parsedArgs.input.allDay ??
+						existingInstance.baseRecurringEvent.allDay;
 
-				// For all-day events compare dates; for timed events compare timestamps.
-				// Use OLD value because we're querying existing instances
-				if (oldIsAllDay && !existingInstance.actualStartDate) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-							message: "All-day event instance missing actualStartDate.",
-						},
-					});
-				}
-				if (!oldIsAllDay && !existingInstance.actualStartTime) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-							message: "Timed event instance missing actualStartTime.",
-						},
-					});
-				}
+					// For all-day events compare dates; for timed events compare timestamps.
+					// Use OLD value because we're querying existing instances
+					if (oldIsAllDay && !existingInstance.actualStartDate) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+								message: "All-day event instance missing actualStartDate.",
+							},
+						});
+					}
+					if (!oldIsAllDay && !existingInstance.actualStartTime) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+								message: "Timed event instance missing actualStartTime.",
+							},
+						});
+					}
 
-				const startCondition = oldIsAllDay
-					? gte(
-							recurringEventInstancesTable.actualStartDate,
-							existingInstance.actualStartDate ?? "1970-01-01",
-						)
-					: gte(
-							recurringEventInstancesTable.actualStartTime,
-							existingInstance.actualStartTime ?? new Date(),
-						);
+					const startCondition = oldIsAllDay
+						? gte(
+								recurringEventInstancesTable.actualStartDate,
+								existingInstance.actualStartDate ?? "1970-01-01",
+							)
+						: gte(
+								recurringEventInstancesTable.actualStartTime,
+								existingInstance.actualStartTime ?? new Date(),
+							);
 
-				const instancesToDelete = await tx
-					.select({ id: recurringEventInstancesTable.id })
-					.from(recurringEventInstancesTable)
-					.where(
-						and(
-							eq(
-								recurringEventInstancesTable.baseRecurringEventId,
-								existingInstance.baseRecurringEventId,
-							),
-							startCondition,
-						),
-					);
-
-				if (instancesToDelete.length > 0) {
-					const instanceIdsToDelete = instancesToDelete.map(
-						(instance) => instance.id,
-					);
-
-					// Delete action items associated with the instances first
-					await tx
-						.delete(actionItemsTable)
+					const instancesToDelete = await tx
+						.select({ id: recurringEventInstancesTable.id })
+						.from(recurringEventInstancesTable)
 						.where(
-							inArray(
-								actionItemsTable.recurringEventInstanceId,
-								instanceIdsToDelete,
+							and(
+								eq(
+									recurringEventInstancesTable.baseRecurringEventId,
+									existingInstance.baseRecurringEventId,
+								),
+								startCondition,
 							),
 						);
 
-					// Now delete the instances
-					await tx
-						.delete(recurringEventInstancesTable)
-						.where(
-							inArray(recurringEventInstancesTable.id, instanceIdsToDelete),
+					if (instancesToDelete.length > 0) {
+						const instanceIdsToDelete = instancesToDelete.map(
+							(instance) => instance.id,
 						);
-				}
 
-				ctx.log.info(
-					{
-						baseRecurringEventId: existingInstance.baseRecurringEventId,
-						deletedCount: instancesToDelete.length,
-						fromStart: oldIsAllDay
-							? existingInstance.actualStartDate
-							: existingInstance.actualStartTime?.toISOString(),
-					},
-					"Deleted old instances and their action items",
-				);
+						// Delete action items associated with the instances first
+						await tx
+							.delete(actionItemsTable)
+							.where(
+								inArray(
+									actionItemsTable.recurringEventInstanceId,
+									instanceIdsToDelete,
+								),
+							);
 
-				// Truncate the old recurrence rule to end just before this instance.
-				// For all-day: use midnight UTC of the start date. For timed: subtract 1 ms.
-				// Note: the guards above guarantee actualStartDate/actualStartTime are non-null
-				// before we reach here; the `as Date` cast reflects that invariant.
-				const splitEndDate = oldIsAllDay
-					? new Date(`${existingInstance.actualStartDate}T00:00:00.000Z`)
-					: new Date((existingInstance.actualStartTime as Date).getTime() - 1);
+						// Now delete the instances
+						await tx
+							.delete(recurringEventInstancesTable)
+							.where(
+								inArray(recurringEventInstancesTable.id, instanceIdsToDelete),
+							);
+					}
 
-				await tx
-					.update(recurrenceRulesTable)
-					.set({
-						recurrenceEndDate: splitEndDate,
-						updaterId: currentUserId,
-					})
-					.where(
-						eq(recurrenceRulesTable.id, existingInstance.recurrenceRuleId),
+					ctx.log.info(
+						{
+							baseRecurringEventId: existingInstance.baseRecurringEventId,
+							deletedCount: instancesToDelete.length,
+							fromStart: oldIsAllDay
+								? existingInstance.actualStartDate
+								: existingInstance.actualStartTime?.toISOString(),
+						},
+						"Deleted old instances and their action items",
 					);
 
-				// Step 2: Create new event with updated properties (implementing createEvent logic)
-				const originalEvent = existingInstance.baseRecurringEvent;
-				const originalRecurrence = existingInstance.recurrenceRule;
+					// Truncate the old recurrence rule to end just before this instance.
+					// For all-day: use midnight UTC of the start date. For timed: subtract 1 ms.
+					// Note: the guards above guarantee actualStartDate/actualStartTime are non-null
+					// before we reach here; the `as Date` cast reflects that invariant.
+					const splitEndDate = oldIsAllDay
+						? new Date(`${existingInstance.actualStartDate}T00:00:00.000Z`)
+						: new Date(
+								(existingInstance.actualStartTime as Date).getTime() - 1,
+							);
 
-				// Calculate timing - prefer input over existing instance to allow changes.
-				// For all-day events use startDate/endDate; for timed events use startAt/endAt.
-				const originalDuration =
-					existingInstance.actualStartTime && existingInstance.actualEndTime
-						? existingInstance.actualEndTime.getTime() -
-							existingInstance.actualStartTime.getTime()
-						: 0;
+					await tx
+						.update(recurrenceRulesTable)
+						.set({
+							recurrenceEndDate: splitEndDate,
+							updaterId: currentUserId,
+						})
+						.where(
+							eq(recurrenceRulesTable.id, existingInstance.recurrenceRuleId),
+						);
 
-				// For timing, prefer template timing over instance timing to avoid unintended shifts
-				// Only use input timing if explicitly provided and different from template
+					// Step 2: Create new event with updated properties (implementing createEvent logic)
+					const originalEvent = existingInstance.baseRecurringEvent;
+					const originalRecurrence = existingInstance.recurrenceRule;
 
-				const newStartTime: Date | null = newIsAllDay
-					? null
-					: parsedArgs.input.startAt
-						? new Date(parsedArgs.input.startAt)
-						: (existingInstance.actualStartTime ?? null);
+					// Calculate timing - prefer input over existing instance to allow changes.
+					// For all-day events use startDate/endDate; for timed events use startAt/endAt.
+					const originalDuration =
+						existingInstance.actualStartTime && existingInstance.actualEndTime
+							? existingInstance.actualEndTime.getTime() -
+								existingInstance.actualStartTime.getTime()
+							: 0;
 
-				const newEndTime: Date | null = newIsAllDay
-					? null
-					: parsedArgs.input.endAt
-						? new Date(parsedArgs.input.endAt)
-						: newStartTime
-							? new Date(newStartTime.getTime() + originalDuration)
-							: null;
+					// For timing, prefer template timing over instance timing to avoid unintended shifts
+					// Only use input timing if explicitly provided and different from template
 
-				const newStartDate: string | null = newIsAllDay
-					? (parsedArgs.input.startDate ??
-						existingInstance.actualStartDate ??
-						null)
-					: null;
+					const newStartTime: Date | null = newIsAllDay
+						? null
+						: parsedArgs.input.startAt
+							? new Date(parsedArgs.input.startAt)
+							: (existingInstance.actualStartTime ?? null);
 
-				const newEndDate: string | null = newIsAllDay
-					? (parsedArgs.input.endDate ?? existingInstance.actualEndDate ?? null)
-					: null;
+					const newEndTime: Date | null = newIsAllDay
+						? null
+						: parsedArgs.input.endAt
+							? new Date(parsedArgs.input.endAt)
+							: newStartTime
+								? new Date(newStartTime.getTime() + originalDuration)
+								: null;
 
-				// Anchor for recurrence: midnight UTC for all-day, actual Date for timed.
-				if (newIsAllDay && !newStartDate) {
+					const newStartDate: string | null = newIsAllDay
+						? (parsedArgs.input.startDate ??
+							existingInstance.actualStartDate ??
+							null)
+						: null;
+
+					const newEndDate: string | null = newIsAllDay
+						? (parsedArgs.input.endDate ??
+							existingInstance.actualEndDate ??
+							null)
+						: null;
+
+					// Anchor for recurrence: midnight UTC for all-day, actual Date for timed.
+					if (newIsAllDay && !newStartDate) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input", "startDate"],
+										message: "startDate is required for all-day events.",
+									},
+								],
+							},
+						});
+					}
+
+					const recurrenceStart: Date = newIsAllDay
+						? new Date(
+								`${newStartDate ?? new Date().toISOString().split("T")[0]}T00:00:00.000Z`,
+							)
+						: (newStartTime ?? new Date());
+					// Apply calendar-style override logic for recurrence
+					// For all-day events, derive the date from startDate; for timed events, use startAt
+					const startForRecurrenceOverride =
+						newIsAllDay && parsedArgs.input.startDate
+							? new Date(`${parsedArgs.input.startDate}T00:00:00.000Z`)
+							: parsedArgs.input.startAt;
+
+					const recurrenceInput = applyRecurrenceOverrides(
+						startForRecurrenceOverride,
+						originalRecurrence,
+						parsedArgs.input.recurrence,
+					);
+
+					ctx.log.info(
+						{
+							originalRecurrence: {
+								frequency: originalRecurrence.frequency,
+								interval: originalRecurrence.interval,
+								byDay: originalRecurrence.byDay,
+								byMonth: originalRecurrence.byMonth,
+								byMonthDay: originalRecurrence.byMonthDay,
+							},
+							inputRecurrence: parsedArgs.input.recurrence,
+							newStartAt: parsedArgs.input.startAt?.toISOString(),
+							newStartDate: parsedArgs.input.startDate,
+							startForRecurrenceOverride:
+								startForRecurrenceOverride?.toISOString(),
+							resultingRecurrence: recurrenceInput,
+						},
+						"Recurrence override applied",
+					);
+
+					const validationResult = validateRecurrenceInput(
+						recurrenceInput,
+						recurrenceStart,
+					);
+
+					if (!validationResult.isValid) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: validationResult.errors.map((error) => ({
+									argumentPath: ["input", "recurrence"],
+									message: error,
+								})),
+							},
+						});
+					}
+
+					// Create the new base event
+					const [createdEvent] = await tx
+						.insert(eventsTable)
+						.values({
+							creatorId: currentUserId,
+							description:
+								parsedArgs.input.description ?? originalEvent.description,
+							name: parsedArgs.input.name ?? originalEvent.name,
+							organizationId: originalEvent.organizationId,
+							allDay: parsedArgs.input.allDay ?? originalEvent.allDay,
+							isPublic: parsedArgs.input.isPublic ?? originalEvent.isPublic,
+							isRegisterable:
+								parsedArgs.input.isRegisterable ?? originalEvent.isRegisterable,
+							isInviteOnly:
+								parsedArgs.input.isInviteOnly ?? originalEvent.isInviteOnly,
+							location: parsedArgs.input.location ?? originalEvent.location,
+							isRecurringEventTemplate: true,
+							// Use timed or all-day fields depending on event type
+							...(newIsAllDay
+								? {
+										startDate: newStartDate,
+										endDate: newEndDate,
+										startAt: null,
+										endAt: null,
+									}
+								: {
+										startAt: newStartTime,
+										endAt: newEndTime,
+										startDate: null,
+										endDate: null,
+									}),
+						})
+						.returning();
+
+					if (!createdEvent) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+								message: "Failed to create the new event template.",
+							},
+						});
+					}
+
+					ctx.log.info(
+						{
+							newEventId: createdEvent.id,
+							newStart: newIsAllDay
+								? newStartDate
+								: newStartTime?.toISOString(),
+							newEnd: newIsAllDay ? newEndDate : newEndTime?.toISOString(),
+						},
+						"Created new base event",
+					);
+
+					// Build RRULE string
+					const rruleString = buildRRuleString({
+						...recurrenceInput,
+						startDate: recurrenceStart,
+					});
+
+					// Create recurrence rule
+					const [createdRecurrenceRule] = await tx
+						.insert(recurrenceRulesTable)
+						.values({
+							recurrenceRuleString: rruleString,
+							frequency: recurrenceInput.frequency,
+							interval: recurrenceInput.interval || 1,
+							recurrenceStartDate: recurrenceStart,
+							recurrenceEndDate: recurrenceInput.endDate || null,
+							count: recurrenceInput.count || null,
+							latestInstanceDate: recurrenceStart,
+							byDay: recurrenceInput.byDay,
+							byMonth: recurrenceInput.byMonth,
+							byMonthDay: recurrenceInput.byMonthDay,
+							baseRecurringEventId: createdEvent.id,
+							organizationId: originalEvent.organizationId,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdRecurrenceRule === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					// Set the originalSeriesId to the new recurrence rule's ID
+					await tx
+						.update(recurrenceRulesTable)
+						.set({
+							originalSeriesId: createdRecurrenceRule.id,
+						})
+						.where(eq(recurrenceRulesTable.id, createdRecurrenceRule.id));
+
+					// Get existing window config or create one
+					let windowConfig =
+						await tx.query.eventGenerationWindowsTable.findFirst({
+							where: (fields, operators) =>
+								operators.eq(
+									fields.organizationId,
+									originalEvent.organizationId,
+								),
+						});
+
+					if (!windowConfig) {
+						// Initialize generation window for the organization
+						windowConfig = await initializeGenerationWindow(
+							{
+								organizationId: originalEvent.organizationId,
+								createdById: currentUserId,
+							},
+							tx,
+							ctx.log,
+						);
+					}
+
+					// Calculate window dates
+					const now = new Date();
+					const windowStartDate = new Date(
+						Math.min(recurrenceStart.getTime(), now.getTime()),
+					);
+					const windowEndDate = new Date(windowStartDate);
+					windowEndDate.setMonth(
+						windowEndDate.getMonth() + windowConfig.hotWindowMonthsAhead,
+					);
+
+					// Generate instances for the new recurring event
+					const newInstancesCount = await generateInstancesForRecurringEvent(
+						{
+							baseRecurringEventId: createdEvent.id,
+							organizationId: originalEvent.organizationId,
+							windowStartDate,
+							windowEndDate,
+						},
+						tx,
+						ctx.log,
+					);
+
+					ctx.log.info(
+						{
+							newBaseEventId: createdEvent.id,
+							generatedInstancesCount: newInstancesCount,
+							windowStart: windowStartDate.toISOString(),
+							windowEnd: windowEndDate.toISOString(),
+						},
+						"Generated new instances",
+					);
+
+					// Return the first instance (which represents the updated target instance)
+					const firstInstance =
+						await tx.query.recurringEventInstancesTable.findFirst({
+							columns: {
+								id: true,
+								actualStartTime: true,
+								actualEndTime: true,
+								actualStartDate: true,
+								actualEndDate: true,
+								originalInstanceStartTime: true,
+								originalInstanceStartDate: true,
+								baseRecurringEventId: true,
+								isCancelled: true,
+								organizationId: true,
+								generatedAt: true,
+								lastUpdatedAt: true,
+								version: true,
+								sequenceNumber: true,
+								totalCount: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.baseRecurringEventId, createdEvent.id),
+							orderBy: (fields, operators) => [
+								operators.asc(fields.actualStartTime),
+							],
+						});
+
+					if (firstInstance === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					// Return a formatted event object that matches the Event type
+					return {
+						...firstInstance,
+						...createdEvent,
+						id: firstInstance.id,
+						baseRecurringEventId: firstInstance.baseRecurringEventId,
+						originalInstanceStartTime:
+							firstInstance.originalInstanceStartTime ?? null,
+						originalInstanceStartDate:
+							firstInstance.originalInstanceStartDate ?? null,
+						actualStartTime: firstInstance.actualStartTime ?? null,
+						actualEndTime: firstInstance.actualEndTime ?? null,
+						actualStartDate: firstInstance.actualStartDate ?? null,
+						actualEndDate: firstInstance.actualEndDate ?? null,
+						originalSeriesId: createdRecurrenceRule.id,
+						hasExceptions: false,
+						appliedExceptionData: null,
+						exceptionCreatedBy: null,
+						exceptionCreatedAt: null,
+						attachments: [],
+					};
+				});
+			} catch (error) {
+				// Detect Postgres check constraint violation: 23514
+				if (
+					typeof error === "object" &&
+					error !== null &&
+					"code" in error &&
+					error.code === "23514" &&
+					"constraint" in error &&
+					error.constraint === "all_day_consistency_check"
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "invalid_arguments",
 							issues: [
 								{
-									argumentPath: ["input", "startDate"],
-									message: "startDate is required for all-day events.",
+									argumentPath: ["input", "allDay"],
+									message:
+										"If allDay is true, provide startDate and endDate (startAt and endAt must be null). If false, provide startAt and endAt (startDate and endDate must be null).",
 								},
 							],
 						},
 					});
 				}
 
-				const recurrenceStart: Date = newIsAllDay
-					? new Date(
-							`${newStartDate ?? new Date().toISOString().split("T")[0]}T00:00:00.000Z`,
-						)
-					: (newStartTime ?? new Date());
-				// Apply calendar-style override logic for recurrence
-				// For all-day events, derive the date from startDate; for timed events, use startAt
-				const startForRecurrenceOverride =
-					newIsAllDay && parsedArgs.input.startDate
-						? new Date(`${parsedArgs.input.startDate}T00:00:00.000Z`)
-						: parsedArgs.input.startAt;
-
-				const recurrenceInput = applyRecurrenceOverrides(
-					startForRecurrenceOverride,
-					originalRecurrence,
-					parsedArgs.input.recurrence,
-				);
-
-				ctx.log.info(
-					{
-						originalRecurrence: {
-							frequency: originalRecurrence.frequency,
-							interval: originalRecurrence.interval,
-							byDay: originalRecurrence.byDay,
-							byMonth: originalRecurrence.byMonth,
-							byMonthDay: originalRecurrence.byMonthDay,
-						},
-						inputRecurrence: parsedArgs.input.recurrence,
-						newStartAt: parsedArgs.input.startAt?.toISOString(),
-						newStartDate: parsedArgs.input.startDate,
-						startForRecurrenceOverride:
-							startForRecurrenceOverride?.toISOString(),
-						resultingRecurrence: recurrenceInput,
-					},
-					"Recurrence override applied",
-				);
-
-				const validationResult = validateRecurrenceInput(
-					recurrenceInput,
-					recurrenceStart,
-				);
-
-				if (!validationResult.isValid) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: validationResult.errors.map((error) => ({
-								argumentPath: ["input", "recurrence"],
-								message: error,
-							})),
-						},
-					});
-				}
-
-				// Create the new base event
-				const [createdEvent] = await tx
-					.insert(eventsTable)
-					.values({
-						creatorId: currentUserId,
-						description:
-							parsedArgs.input.description ?? originalEvent.description,
-						name: parsedArgs.input.name ?? originalEvent.name,
-						organizationId: originalEvent.organizationId,
-						allDay: parsedArgs.input.allDay ?? originalEvent.allDay,
-						isPublic: parsedArgs.input.isPublic ?? originalEvent.isPublic,
-						isRegisterable:
-							parsedArgs.input.isRegisterable ?? originalEvent.isRegisterable,
-						isInviteOnly:
-							parsedArgs.input.isInviteOnly ?? originalEvent.isInviteOnly,
-						location: parsedArgs.input.location ?? originalEvent.location,
-						isRecurringEventTemplate: true,
-						// Use timed or all-day fields depending on event type
-						...(newIsAllDay
-							? {
-									startDate: newStartDate,
-									endDate: newEndDate,
-									startAt: null,
-									endAt: null,
-								}
-							: {
-									startAt: newStartTime,
-									endAt: newEndTime,
-									startDate: null,
-									endDate: null,
-								}),
-					})
-					.returning();
-
-				if (!createdEvent) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-							message: "Failed to create the new event template.",
-						},
-					});
-				}
-
-				ctx.log.info(
-					{
-						newEventId: createdEvent.id,
-						newStart: newIsAllDay ? newStartDate : newStartTime?.toISOString(),
-						newEnd: newIsAllDay ? newEndDate : newEndTime?.toISOString(),
-					},
-					"Created new base event",
-				);
-
-				// Build RRULE string
-				const rruleString = buildRRuleString({
-					...recurrenceInput,
-					startDate: recurrenceStart,
-				});
-
-				// Create recurrence rule
-				const [createdRecurrenceRule] = await tx
-					.insert(recurrenceRulesTable)
-					.values({
-						recurrenceRuleString: rruleString,
-						frequency: recurrenceInput.frequency,
-						interval: recurrenceInput.interval || 1,
-						recurrenceStartDate: recurrenceStart,
-						recurrenceEndDate: recurrenceInput.endDate || null,
-						count: recurrenceInput.count || null,
-						latestInstanceDate: recurrenceStart,
-						byDay: recurrenceInput.byDay,
-						byMonth: recurrenceInput.byMonth,
-						byMonthDay: recurrenceInput.byMonthDay,
-						baseRecurringEventId: createdEvent.id,
-						organizationId: originalEvent.organizationId,
-						creatorId: currentUserId,
-					})
-					.returning();
-
-				if (createdRecurrenceRule === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				// Set the originalSeriesId to the new recurrence rule's ID
-				await tx
-					.update(recurrenceRulesTable)
-					.set({
-						originalSeriesId: createdRecurrenceRule.id,
-					})
-					.where(eq(recurrenceRulesTable.id, createdRecurrenceRule.id));
-
-				// Get existing window config or create one
-				let windowConfig = await tx.query.eventGenerationWindowsTable.findFirst(
-					{
-						where: (fields, operators) =>
-							operators.eq(fields.organizationId, originalEvent.organizationId),
-					},
-				);
-
-				if (!windowConfig) {
-					// Initialize generation window for the organization
-					windowConfig = await initializeGenerationWindow(
-						{
-							organizationId: originalEvent.organizationId,
-							createdById: currentUserId,
-						},
-						tx,
-						ctx.log,
-					);
-				}
-
-				// Calculate window dates
-				const now = new Date();
-				const windowStartDate = new Date(
-					Math.min(recurrenceStart.getTime(), now.getTime()),
-				);
-				const windowEndDate = new Date(windowStartDate);
-				windowEndDate.setMonth(
-					windowEndDate.getMonth() + windowConfig.hotWindowMonthsAhead,
-				);
-
-				// Generate instances for the new recurring event
-				const newInstancesCount = await generateInstancesForRecurringEvent(
-					{
-						baseRecurringEventId: createdEvent.id,
-						organizationId: originalEvent.organizationId,
-						windowStartDate,
-						windowEndDate,
-					},
-					tx,
-					ctx.log,
-				);
-
-				ctx.log.info(
-					{
-						newBaseEventId: createdEvent.id,
-						generatedInstancesCount: newInstancesCount,
-						windowStart: windowStartDate.toISOString(),
-						windowEnd: windowEndDate.toISOString(),
-					},
-					"Generated new instances",
-				);
-
-				// Return the first instance (which represents the updated target instance)
-				const firstInstance =
-					await tx.query.recurringEventInstancesTable.findFirst({
-						columns: {
-							id: true,
-							actualStartTime: true,
-							actualEndTime: true,
-							actualStartDate: true,
-							actualEndDate: true,
-							originalInstanceStartTime: true,
-							originalInstanceStartDate: true,
-							baseRecurringEventId: true,
-							isCancelled: true,
-							organizationId: true,
-							generatedAt: true,
-							lastUpdatedAt: true,
-							version: true,
-							sequenceNumber: true,
-							totalCount: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(fields.baseRecurringEventId, createdEvent.id),
-						orderBy: (fields, operators) => [
-							operators.asc(fields.actualStartTime),
-						],
-					});
-
-				if (firstInstance === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				// Return a formatted event object that matches the Event type
-				return {
-					...firstInstance,
-					...createdEvent,
-					id: firstInstance.id,
-					baseRecurringEventId: firstInstance.baseRecurringEventId,
-					originalInstanceStartTime:
-						firstInstance.originalInstanceStartTime ?? null,
-					originalInstanceStartDate:
-						firstInstance.originalInstanceStartDate ?? null,
-					actualStartTime: firstInstance.actualStartTime ?? null,
-					actualEndTime: firstInstance.actualEndTime ?? null,
-					actualStartDate: firstInstance.actualStartDate ?? null,
-					actualEndDate: firstInstance.actualEndDate ?? null,
-					originalSeriesId: createdRecurrenceRule.id,
-					hasExceptions: false,
-					appliedExceptionData: null,
-					exceptionCreatedBy: null,
-					exceptionCreatedAt: null,
-					attachments: [],
-				};
-			});
-		} catch (error) {
-			// Detect Postgres check constraint violation: 23514
-			if (
-				typeof error === "object" &&
-				error !== null &&
-				"code" in error &&
-				error.code === "23514" &&
-				"constraint" in error &&
-				error.constraint === "all_day_consistency_check"
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "allDay"],
-								message:
-									"If allDay is true, provide startDate and endDate (startAt and endAt must be null). If false, provide startAt and endAt (startDate and endDate must be null).",
-							},
-						],
-					},
-				});
+				throw error;
 			}
-
-			throw error;
-		}
 		},
 		type: Event,
 	}),

@@ -4,7 +4,7 @@
 
 # Function: buildRRuleString()
 
-> **buildRRuleString**(`recurrence`, `_startDate`): `string`
+> **buildRRuleString**(`params`): `string`
 
 Defined in: [src/utilities/recurringEvent/formatting.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/formatting.ts#L13)
 
@@ -14,47 +14,9 @@ interval, end date, count, and other recurrence properties.
 
 ## Parameters
 
-### recurrence
+### params
 
-The recurrence input object, conforming to the recurrenceInputSchema.
-
-#### byDay?
-
-`string`[] = `...`
-
-#### byMonth?
-
-`number`[] = `...`
-
-#### byMonthDay?
-
-`number`[] = `...`
-
-#### count?
-
-`number` = `...`
-
-#### endDate?
-
-`Date` = `...`
-
-#### frequency
-
-`"DAILY"` \| `"WEEKLY"` \| `"MONTHLY"` \| `"YEARLY"` = `recurrenceFrequencyEnum`
-
-#### interval?
-
-`number` = `...`
-
-#### never?
-
-`boolean` = `...`
-
-### \_startDate
-
-`Date`
-
-Reserved for future use; currently unused but maintained for API compatibility.
+`object` & `object`
 
 ## Returns
 
