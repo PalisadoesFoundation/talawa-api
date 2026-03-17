@@ -196,7 +196,116 @@ export const EVENT_DESCRIPTION_MAX_LENGTH = 2048;
 export const EVENT_NAME_MAX_LENGTH = 256;
 export const EVENT_LOCATION_MAX_LENGTH = 1024;
 
-export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
+export const validateEventConsistency = (
+	arg: {
+		allDay?: boolean | null;
+		startAt?: Date | null;
+		endAt?: Date | null;
+		startDate?: string | null;
+		endDate?: string | null;
+	},
+	ctx: z.RefinementCtx,
+) => {
+	// Check for mixed representations (startAt with startDate or endAt with endDate)
+	if (arg.startAt !== undefined && arg.startDate !== undefined) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message:
+				"Cannot provide both startAt (timed) and startDate (all-day) in the same payload.",
+			path: ["startAt"],
+		});
+	}
+	if (arg.endAt !== undefined && arg.endDate !== undefined) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message:
+				"Cannot provide both endAt (timed) and endDate (all-day) in the same payload.",
+			path: ["endAt"],
+		});
+	}
+
+	if (arg.allDay === true) {
+		// All-day event: startDate and endDate must be provided, forbid timed fields
+		if (!arg.startDate) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "startDate is required for all-day events",
+				path: ["startDate"],
+			});
+		}
+		if (!arg.endDate) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "endDate is required for all-day events",
+				path: ["endDate"],
+			});
+		}
+		if (arg.startAt !== undefined && arg.startAt !== null) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"Cannot provide startAt when allDay is true. Use startDate instead.",
+				path: ["startAt"],
+			});
+		}
+		if (arg.endAt !== undefined && arg.endAt !== null) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"Cannot provide endAt when allDay is true. Use endDate instead.",
+				path: ["endAt"],
+			});
+		}
+		if (arg.startDate && arg.endDate && arg.endDate <= arg.startDate) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `Must be greater than the value: ${arg.startDate}.`,
+				path: ["endDate"],
+			});
+		}
+	} else {
+		// Timed event (allDay = false or undefined): startAt and endAt must be provided, forbid all-day fields
+		if (!arg.startAt) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "startAt is required for timed events",
+				path: ["startAt"],
+			});
+		}
+		if (!arg.endAt) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "endAt is required for timed events",
+				path: ["endAt"],
+			});
+		}
+		if (arg.startDate !== undefined && arg.startDate !== null) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"Cannot provide startDate when allDay is false or omitted. Use startAt instead.",
+				path: ["startDate"],
+			});
+		}
+		if (arg.endDate !== undefined && arg.endDate !== null) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"Cannot provide endDate when allDay is false or omitted. Use endAt instead.",
+				path: ["endDate"],
+			});
+		}
+		if (arg.startAt && arg.endAt && arg.endAt <= arg.startAt) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `Must be greater than the value: ${arg.startAt.toISOString()}.`,
+				path: ["endAt"],
+			});
+		}
+	}
+};
+
+export const baseEventsTableInsertSchema = createInsertSchema(eventsTable, {
 	description: (schema) =>
 		schema.min(1).max(EVENT_DESCRIPTION_MAX_LENGTH).optional(),
 	name: (schema) => schema.min(1).max(EVENT_NAME_MAX_LENGTH),
@@ -211,6 +320,10 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	endDate: (schema) => schema.optional(),
 	isRecurringEventTemplate: z.boolean().optional(),
 });
+
+export const eventsTableInsertSchema = baseEventsTableInsertSchema.superRefine(
+	validateEventConsistency,
+);
 
 export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	agendaFoldersWhereEvent: many(agendaFoldersTable, {

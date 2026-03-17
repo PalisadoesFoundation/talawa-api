@@ -374,19 +374,41 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 							null)
 						: null;
 
-					// Anchor for recurrence: midnight UTC for all-day, actual Date for timed.
-					if (newIsAllDay && !newStartDate) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "invalid_arguments",
-								issues: [
-									{
-										argumentPath: ["input", "startDate"],
-										message: "startDate is required for all-day events.",
-									},
-								],
-							},
-						});
+					// Explicitly validate the target time model pair before insertion
+					if (newIsAllDay) {
+						if (!newStartDate || !newEndDate) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "invalid_arguments",
+									issues: [
+										{
+											argumentPath: [
+												"input",
+												!newStartDate ? "startDate" : "endDate",
+											],
+											message: `${!newStartDate ? "startDate" : "endDate"} is required for all-day events.`,
+										},
+									],
+								},
+							});
+						}
+					} else {
+						if (!newStartTime || !newEndTime) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "invalid_arguments",
+									issues: [
+										{
+											argumentPath: [
+												"input",
+												!newStartTime ? "startAt" : "endAt",
+											],
+											message: `${!newStartTime ? "startAt" : "endAt"} is required for timed events.`,
+										},
+									],
+								},
+							});
+						}
 					}
 
 					const recurrenceStart: Date = newIsAllDay

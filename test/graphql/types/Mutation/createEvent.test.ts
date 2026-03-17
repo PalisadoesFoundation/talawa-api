@@ -1,11 +1,15 @@
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import {
+	actionItemsTable,
 	agendaCategoriesTable,
 	agendaFoldersTable,
 	eventsTable,
+	organizationsTable,
+	usersTable,
 } from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
@@ -51,18 +55,73 @@ assertToBeNonNullish(adminUserId);
 const createEvent = async (
 	variables: VariablesOf<typeof Mutation_createEvent>,
 	token = adminAuthToken,
-): Promise<CreateEventMutationResponse> =>
-	mercuriusClient.mutate(Mutation_createEvent, {
+): Promise<CreateEventMutationResponse> => {
+	const result = await mercuriusClient.mutate(Mutation_createEvent, {
 		headers: { authorization: `bearer ${token}` },
 		variables,
 	});
+	if (result.data?.createEvent?.id) {
+		createdEventIds.push(result.data.createEvent.id);
+		// If it's a recurring event, we might need to track the rule too.
+		// Since we don't always have it in the response, we'll query it in afterEach or here.
+	}
+	return result;
+};
 
-const RUN_UTC_BASE_DATE = (() => {
-	const now = new Date();
-	return new Date(
-		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-	);
-})();
+const RUN_UTC_BASE_DATE = new Date("2026-03-17T00:00:00Z");
+
+let createdEventIds: string[] = [];
+let createdRecurrenceRuleIds: string[] = [];
+let createdOrganizationIds: string[] = [];
+let createdUserIds: string[] = [];
+
+const scopedCleanup = async () => {
+	vi.restoreAllMocks();
+
+	if (createdRecurrenceRuleIds.length > 0) {
+		await server.drizzleClient
+			.delete(recurrenceRulesTable)
+			.where(inArray(recurrenceRulesTable.id, createdRecurrenceRuleIds));
+	}
+
+	if (createdEventIds.length > 0) {
+		// Delete child rows first
+		await server.drizzleClient
+			.delete(recurrenceRulesTable)
+			.where(
+				inArray(recurrenceRulesTable.baseRecurringEventId, createdEventIds),
+			);
+		await server.drizzleClient
+			.delete(agendaFoldersTable)
+			.where(inArray(agendaFoldersTable.eventId, createdEventIds));
+		await server.drizzleClient
+			.delete(agendaCategoriesTable)
+			.where(inArray(agendaCategoriesTable.eventId, createdEventIds));
+		await server.drizzleClient
+			.delete(actionItemsTable)
+			.where(inArray(actionItemsTable.eventId, createdEventIds));
+		await server.drizzleClient
+			.delete(eventsTable)
+			.where(inArray(eventsTable.id, createdEventIds));
+	}
+
+	if (createdOrganizationIds.length > 0) {
+		await server.drizzleClient
+			.delete(organizationsTable)
+			.where(inArray(organizationsTable.id, createdOrganizationIds));
+	}
+
+	if (createdUserIds.length > 0) {
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, createdUserIds));
+	}
+
+	createdEventIds = [];
+	createdRecurrenceRuleIds = [];
+	createdOrganizationIds = [];
+	createdUserIds = [];
+};
 
 const addUtcDays = (baseDate: Date, dayOffset: number) => {
 	const shifted = new Date(baseDate);
@@ -149,6 +208,7 @@ const createTestOrganization = async () => {
 	);
 	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
 	const orgId = createOrgResult.data.createOrganization.id;
+	createdOrganizationIds.push(orgId);
 
 	// Add admin as organization member
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -171,6 +231,7 @@ const createOrganizationMember = async (
 	role: "administrator" | "regular" = "regular",
 ) => {
 	const { userId, authToken } = await createRegularUserUsingAdmin();
+	createdUserIds.push(userId);
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: { input: { organizationId, memberId: userId, role } },
@@ -194,9 +255,7 @@ const expectSuccessfulEvent = (
 
 suite("Mutation field createEvent", () => {
 	afterEach(async () => {
-		vi.restoreAllMocks();
-		await server.drizzleClient.delete(eventsTable);
-		await server.drizzleClient.delete(recurrenceRulesTable);
+		await scopedCleanup();
 	});
 
 	suite("Authentication and Authorization", () => {
@@ -2500,8 +2559,8 @@ suite("Mutation field createEvent", () => {
 });
 
 suite("Default Agenda Folder and Category Creation", () => {
-	afterEach(() => {
-		vi.restoreAllMocks();
+	afterEach(async () => {
+		await scopedCleanup();
 	});
 	test("creates default agenda folder and category for standalone events", async () => {
 		const organizationId = await createTestOrganization();
@@ -2699,8 +2758,8 @@ suite("Default Agenda Folder and Category Creation", () => {
 });
 
 suite("Event Attachment Uploads", () => {
-	afterEach(() => {
-		vi.restoreAllMocks();
+	afterEach(async () => {
+		await scopedCleanup();
 	});
 
 	test("creates attachment records when valid FileMetadataInput is provided and file exists in MinIO", async () => {

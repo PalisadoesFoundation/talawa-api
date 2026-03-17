@@ -7,6 +7,7 @@ import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { builder } from "~/src/graphql/builder";
+import type { fileMetadataInputSchema } from "~/src/graphql/inputs/FileMetadataInput";
 import {
 	MutationCreateEventInput,
 	mutationCreateEventInputSchema,
@@ -39,35 +40,25 @@ const DEFAULT_AGENDA_CATEGORY_CONFIG = {
 } as const;
 
 export const mutationCreateEventArgumentsSchema = z.object({
-	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
-		// For timed events, validate that startAt is not in the past
-		if (arg.allDay !== true && arg.startAt) {
-			const now = new Date();
-			const gracePeriod = 2000; // 2 seconds for clock skew
-			if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["startAt"],
-					message:
-						"Start date must be in the future or within the next few seconds",
-				});
+	input: mutationCreateEventInputSchema.transform(
+		async (arg: z.infer<typeof mutationCreateEventInputSchema>, ctx) => {
+			// For timed events, validate that startAt is not in the past
+			if (arg.allDay !== true && arg.startAt) {
+				const now = new Date();
+				const gracePeriod = 2000; // 2 seconds for clock skew
+				if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
+					ctx.addIssue({
+						code: "custom",
+						path: ["startAt"],
+						message:
+							"Start date must be in the future or within the next few seconds",
+					});
+				}
 			}
-		}
 
-		if (arg.allDay === true && arg.startDate) {
-			const today = new Date().toISOString().slice(0, 10);
-
-			if (arg.startDate < today) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["startDate"],
-					message: "Start date must not be in the past",
-				});
-			}
-		}
-
-		return arg;
-	}),
+			return arg;
+		},
+	),
 });
 
 builder.mutationField("createEvent", (t) =>
@@ -321,30 +312,90 @@ builder.mutationField("createEvent", (t) =>
 								// Rely on validation layer to ensure these are provided when isAllDay=true.
 								startDate = parsedArgs.input.startDate ?? null;
 								endDate = parsedArgs.input.endDate ?? null;
+
+								if (!startDate || !endDate) {
+									throw new TalawaGraphQLError({
+										extensions: {
+											code: "invalid_arguments",
+											issues: [
+												{
+													argumentPath: [
+														"input",
+														!startDate ? "startDate" : "endDate",
+													],
+													message: `${!startDate ? "startDate" : "endDate"} is required for all-day events.`,
+												},
+											],
+										},
+									});
+								}
 							} else {
 								startAt = parsedArgs.input.startAt ?? null;
 								endAt = parsedArgs.input.endAt ?? null;
+
+								if (!startAt || !endAt) {
+									throw new TalawaGraphQLError({
+										extensions: {
+											code: "invalid_arguments",
+											issues: [
+												{
+													argumentPath: [
+														"input",
+														!startAt ? "startAt" : "endAt",
+													],
+													message: `${!startAt ? "startAt" : "endAt"} is required for timed events.`,
+												},
+											],
+										},
+									});
+								}
 							}
 
-							const [createdEvent] = await tx
-								.insert(eventsTable)
-								.values({
-									creatorId: currentUserId,
-									description: parsedArgs.input.description,
-									name: parsedArgs.input.name,
-									organizationId: parsedArgs.input.organizationId,
-									allDay: isAllDay,
-									isPublic: parsedArgs.input.isPublic ?? false,
-									isRegisterable: parsedArgs.input.isRegisterable ?? false,
-									isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
-									location: parsedArgs.input.location,
-									isRecurringEventTemplate: !!parsedArgs.input.recurrence,
-									startAt,
-									endAt,
-									startDate,
-									endDate,
-								})
-								.returning();
+							let createdEvent: typeof eventsTable.$inferSelect | undefined;
+
+							try {
+								const [insertedEvent] = await tx
+									.insert(eventsTable)
+									.values({
+										creatorId: currentUserId,
+										description: parsedArgs.input.description,
+										name: parsedArgs.input.name,
+										organizationId: parsedArgs.input.organizationId,
+										allDay: isAllDay,
+										isPublic: parsedArgs.input.isPublic ?? false,
+										isRegisterable: parsedArgs.input.isRegisterable ?? false,
+										isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
+										location: parsedArgs.input.location,
+										isRecurringEventTemplate: !!parsedArgs.input.recurrence,
+										startAt,
+										endAt,
+										startDate,
+										endDate,
+									})
+									.returning();
+								createdEvent = insertedEvent;
+							} catch (error) {
+								if (
+									error &&
+									typeof error === "object" &&
+									"constraint" in error &&
+									error.constraint === "all_day_consistency_check"
+								) {
+									throw new TalawaGraphQLError({
+										extensions: {
+											code: "invalid_arguments",
+											issues: [
+												{
+													argumentPath: ["input", "allDay"],
+													message:
+														"Invalid combination of allDay, startAt, endAt, startDate, and endDate.",
+												},
+											],
+										},
+									});
+								}
+								throw error;
+							}
 
 							// Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 							if (createdEvent === undefined) {
@@ -569,89 +620,98 @@ builder.mutationField("createEvent", (t) =>
 
 								// Verify all files exist in MinIO BEFORE database insert
 								await Promise.all(
-									attachments.map(async (attachment, i) => {
-										try {
-											const stat = await ctx.minio.client.statObject(
-												ctx.minio.bucketName,
-												attachment.objectName,
-											);
+									attachments.map(
+										async (
+											attachment: z.infer<typeof fileMetadataInputSchema>,
+											i: number,
+										) => {
+											try {
+												const stat = await ctx.minio.client.statObject(
+													ctx.minio.bucketName,
+													attachment.objectName,
+												);
 
-											const minioMimeType = stat.metaData?.["content-type"];
+												const minioMimeType = stat.metaData?.["content-type"];
 
-											if (
-												minioMimeType &&
-												minioMimeType !== attachment.mimeType
-											) {
+												if (
+													minioMimeType &&
+													minioMimeType !== attachment.mimeType
+												) {
+													throw new TalawaGraphQLError({
+														extensions: {
+															code: "invalid_arguments",
+															issues: [
+																{
+																	argumentPath: [
+																		"input",
+																		"attachments",
+																		i,
+																		"mimeType",
+																	],
+																	message: `Mime type "${attachment.mimeType}" does not match the file in storage ("${minioMimeType}").`,
+																},
+															],
+														},
+													});
+												}
+											} catch (error) {
+												if (error instanceof TalawaGraphQLError) {
+													throw error;
+												}
+
+												// Only treat NotFound as user error
+												if (
+													error instanceof Error &&
+													(error.name === "NotFound" ||
+														error.message.includes("Not Found") ||
+														(error as { code?: string }).code === "NotFound")
+												) {
+													throw new TalawaGraphQLError({
+														extensions: {
+															code: "invalid_arguments",
+															issues: [
+																{
+																	argumentPath: [
+																		"input",
+																		"attachments",
+																		i,
+																		"objectName",
+																	],
+																	message:
+																		"File not found in storage. Please upload the file first.",
+																},
+															],
+														},
+													});
+												}
+												// For other errors, throw unexpected
+												ctx.log.error(
+													`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
+												);
 												throw new TalawaGraphQLError({
 													extensions: {
-														code: "invalid_arguments",
-														issues: [
-															{
-																argumentPath: [
-																	"input",
-																	"attachments",
-																	i,
-																	"mimeType",
-																],
-																message: `Mime type "${attachment.mimeType}" does not match the file in storage ("${minioMimeType}").`,
-															},
-														],
+														code: "unexpected",
 													},
 												});
 											}
-										} catch (error) {
-											if (error instanceof TalawaGraphQLError) {
-												throw error;
-											}
-
-											// Only treat NotFound as user error
-											if (
-												error instanceof Error &&
-												(error.name === "NotFound" ||
-													error.message.includes("Not Found") ||
-													(error as { code?: string }).code === "NotFound")
-											) {
-												throw new TalawaGraphQLError({
-													extensions: {
-														code: "invalid_arguments",
-														issues: [
-															{
-																argumentPath: [
-																	"input",
-																	"attachments",
-																	i,
-																	"objectName",
-																],
-																message:
-																	"File not found in storage. Please upload the file first.",
-															},
-														],
-													},
-												});
-											}
-											// For other errors, throw unexpected
-											ctx.log.error(
-												`Unexpected MinIO error: ${error instanceof Error ? error.message : String(error)}`,
-											);
-											throw new TalawaGraphQLError({
-												extensions: {
-													code: "unexpected",
-												},
-											});
-										}
-									}),
+										},
+									),
 								);
 
 								createdEventAttachments = await tx
 									.insert(eventAttachmentsTable)
 									.values(
-										attachments.map((attachment) => ({
-											creatorId: currentUserId,
-											eventId: createdEvent.id,
-											mimeType: attachment.mimeType,
-											name: attachment.name,
-											objectName: attachment.objectName,
-										})),
+										attachments.map(
+											(
+												attachment: z.infer<typeof fileMetadataInputSchema>,
+											) => ({
+												creatorId: currentUserId,
+												eventId: createdEvent.id,
+												mimeType: attachment.mimeType,
+												name: attachment.name,
+												objectName: attachment.objectName,
+											}),
+										),
 									)
 									.returning();
 							}
