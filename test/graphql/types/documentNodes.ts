@@ -661,6 +661,7 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         endAt
         startDate
         endDate
+        allDay
         isInviteOnly
         creator {
             id
@@ -683,6 +684,7 @@ export const Mutation_createEvent =
         endAt
         startDate
         endDate
+        allDay
         createdAt
         creator{
             id

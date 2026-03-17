@@ -727,6 +727,9 @@ suite("Mutation field createEvent", () => {
 					name: "Past All-Day Event",
 					startDate: getPastDateString(1),
 					endDate: getTodayDateString(),
+					allDay: true,
+					startAt: null,
+					endAt: null,
 				}),
 			);
 		});
@@ -751,6 +754,9 @@ suite("Mutation field createEvent", () => {
 					name: "Today All-Day Event",
 					startDate: getTodayDateString(),
 					endDate: getFutureDateString(1),
+					allDay: true,
+					startAt: null,
+					endAt: null,
 				}),
 			);
 		});
@@ -775,6 +781,9 @@ suite("Mutation field createEvent", () => {
 					name: "Future All-Day Event",
 					startDate: getFutureDateString(5),
 					endDate: getFutureDateString(6),
+					allDay: true,
+					startAt: null,
+					endAt: null,
 				}),
 			);
 		});
