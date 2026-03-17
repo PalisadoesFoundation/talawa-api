@@ -740,6 +740,24 @@ export async function insertCollections(
 									`rule:${organization.id}:${rule.id}`,
 								);
 
+								const seededWindowEndDate = calculateMutationStyleWindowEndDate(
+									recurrenceStartDate,
+									rule.recurrenceEndDate
+										? (parseDate(rule.recurrenceEndDate) ?? null)
+										: null,
+									12,
+								);
+								const seededInstanceStarts = generateWeeklyInstanceStarts(
+									recurrenceStartDate,
+									rule.byDay ?? null,
+									template.allDay,
+									seededWindowEndDate,
+									rule.interval ?? 1,
+									rule.count ?? null,
+								);
+								const latestInstanceDate =
+									seededInstanceStarts.at(-1) ?? recurrenceStartDate;
+
 								return {
 									id: ruleId,
 									recurrenceRuleString: rule.recurrenceRuleString,
@@ -750,7 +768,7 @@ export async function insertCollections(
 										? (parseDate(rule.recurrenceEndDate) ?? null)
 										: null,
 									count: rule.count,
-									latestInstanceDate: recurrenceStartDate,
+									latestInstanceDate,
 									byDay: rule.byDay,
 									byMonth: rule.byMonth,
 									byMonthDay: rule.byMonthDay,
