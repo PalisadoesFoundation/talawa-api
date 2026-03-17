@@ -42,10 +42,10 @@ describe("recurringEventHelpers", () => {
 				"RRULE:FREQ=MONTHLY;INTERVAL=3;COUNT=10;BYMONTH=1,2,3;BYMONTHDAY=1,15",
 			],
 		])("should build the correct RRULE string for various inputs", (recurrence, expected) => {
-			const rrule = buildRRuleString(
-				recurrence as z.infer<typeof recurrenceInputSchema>,
+			const rrule = buildRRuleString({
+				...(recurrence as z.infer<typeof recurrenceInputSchema>),
 				startDate,
-			);
+			});
 			expect(rrule).toBe(expected);
 		});
 	});

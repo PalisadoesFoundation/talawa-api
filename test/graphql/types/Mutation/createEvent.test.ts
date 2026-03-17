@@ -5,6 +5,7 @@ import { afterEach, expect, suite, test, vi } from "vitest";
 import {
 	agendaCategoriesTable,
 	agendaFoldersTable,
+	eventsTable,
 } from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
@@ -79,18 +80,18 @@ const getFutureDateString = (daysFromBase: number) =>
 const getPastDateString = (daysBeforeBase: number) =>
 	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, -daysBeforeBase));
 
-// Helper to generate a future date
+// Helper to generate a future date tied to RUN_UTC_BASE_DATE for consistency
 const getFutureDate = (daysFromNow: number, hours = 10) => {
-	const date = new Date();
-	date.setDate(date.getDate() + daysFromNow);
+	const date = new Date(RUN_UTC_BASE_DATE);
+	date.setUTCDate(date.getUTCDate() + daysFromNow);
 	date.setUTCHours(hours, 0, 0, 0);
 	return date.toISOString();
 };
 
-// Helper to generate a past date
+// Helper to generate a past date tied to RUN_UTC_BASE_DATE for consistency
 const getPastDate = (daysAgo: number, hours = 10) => {
-	const date = new Date();
-	date.setDate(date.getDate() - daysAgo);
+	const date = new Date(RUN_UTC_BASE_DATE);
+	date.setUTCDate(date.getUTCDate() - daysAgo);
 	date.setUTCHours(hours, 0, 0, 0);
 	return date.toISOString();
 };
@@ -192,8 +193,10 @@ const expectSuccessfulEvent = (
 };
 
 suite("Mutation field createEvent", () => {
-	afterEach(() => {
+	afterEach(async () => {
 		vi.restoreAllMocks();
+		await server.drizzleClient.delete(eventsTable);
+		await server.drizzleClient.delete(recurrenceRulesTable);
 	});
 
 	suite("Authentication and Authorization", () => {

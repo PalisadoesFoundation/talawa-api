@@ -98,7 +98,7 @@ export const mutationUpdateEventInputSchema = z
 		) {
 			ctx.addIssue({
 				code: "custom",
-				message: `Must be greater than the value: ${remainingArg.startAt.toISOString()}.`,
+				message: "End time must be after start time.",
 				path: ["endAt"],
 			});
 		}
@@ -110,7 +110,7 @@ export const mutationUpdateEventInputSchema = z
 		) {
 			ctx.addIssue({
 				code: "custom",
-				message: `Must be greater than the value: ${remainingArg.startDate}.`,
+				message: "End date must be after start date.",
 				path: ["endDate"],
 			});
 		}

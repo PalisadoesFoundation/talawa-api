@@ -224,7 +224,8 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			try {
+				return await ctx.drizzleClient.transaction(async (tx) => {
 				// Always split for "this and following" updates
 				// Step 1: Delete all instances from this one forward (including this instance)
 
@@ -490,7 +491,10 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 				);
 
 				// Build RRULE string
-				const rruleString = buildRRuleString(recurrenceInput, recurrenceStart);
+				const rruleString = buildRRuleString({
+					...recurrenceInput,
+					startDate: recurrenceStart,
+				});
 
 				// Create recurrence rule
 				const [createdRecurrenceRule] = await tx
@@ -637,6 +641,32 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 					attachments: [],
 				};
 			});
+		} catch (error) {
+			// Detect Postgres check constraint violation: 23514
+			if (
+				typeof error === "object" &&
+				error !== null &&
+				"code" in error &&
+				error.code === "23514" &&
+				"constraint" in error &&
+				error.constraint === "all_day_consistency_check"
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "allDay"],
+								message:
+									"If allDay is true, provide startDate and endDate (startAt and endAt must be null). If false, provide startAt and endAt (startDate and endDate must be null).",
+							},
+						],
+					},
+				});
+			}
+
+			throw error;
+		}
 		},
 		type: Event,
 	}),

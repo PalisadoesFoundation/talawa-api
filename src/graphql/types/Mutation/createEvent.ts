@@ -299,8 +299,11 @@ builder.mutationField("createEvent", (t) =>
 					});
 				}
 
-				const createdEventResult = await ctx.drizzleClient.transaction(
-					async (tx) => {
+				let createdEventResult;
+
+				try {
+					createdEventResult = await ctx.drizzleClient.transaction(
+						async (tx) => {
 						// Create the base event (template for recurring, or standalone event)
 						const isAllDay = parsedArgs.input.allDay ?? false;
 
@@ -309,17 +312,14 @@ builder.mutationField("createEvent", (t) =>
 						let startDate: string | null = null;
 						let endDate: string | null = null;
 
-						if (
-							isAllDay &&
-							parsedArgs.input.startDate &&
-							parsedArgs.input.endDate
-						) {
+						if (isAllDay) {
 							// Database constraint requires startAt/endAt to be NULL for all-day events.
 							startAt = null;
 							endAt = null;
 
-							startDate = parsedArgs.input.startDate;
-							endDate = parsedArgs.input.endDate;
+							// Rely on validation layer to ensure these are provided when isAllDay=true.
+							startDate = parsedArgs.input.startDate ?? null;
+							endDate = parsedArgs.input.endDate ?? null;
 						} else {
 							startAt = parsedArgs.input.startAt ?? null;
 							endAt = parsedArgs.input.endAt ?? null;
@@ -416,10 +416,10 @@ builder.mutationField("createEvent", (t) =>
 									? new Date(`${parsedArgs.input.startDate}T00:00:00Z`)
 									: (parsedArgs.input.startAt as Date);
 
-							const rruleString = buildRRuleString(
-								parsedArgs.input.recurrence,
-								recurrenceStart,
-							);
+							const rruleString = buildRRuleString({
+								...parsedArgs.input.recurrence,
+								startDate: recurrenceStart,
+							});
 
 							// Create recurrence rule
 							// For new events, the originalSeriesId is set to the rule's own generated ID after insert
@@ -666,6 +666,32 @@ builder.mutationField("createEvent", (t) =>
 						return finalEvent;
 					},
 				);
+			} catch (error) {
+				// Detect Postgres check constraint violation: 23514
+				if (
+					typeof error === "object" &&
+					error !== null &&
+					"code" in error &&
+					error.code === "23514" &&
+					"constraint" in error &&
+					error.constraint === "all_day_consistency_check"
+				) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "allDay"],
+									message:
+										"If allDay is true, provide startDate and endDate (startAt and endAt must be null). If false, provide startAt and endAt (startDate and endDate must be null).",
+								},
+							],
+						},
+					});
+				}
+
+				throw error;
+			}
 
 				// Notification enqueue runs AFTER the transaction commits (fire-and-forget).
 				// If enqueue fails, DB changes are NOT rolled back. Document/ADR if this is a concern.

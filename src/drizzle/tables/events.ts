@@ -210,30 +210,7 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	startDate: (schema) => schema.optional(),
 	endDate: (schema) => schema.optional(),
 	isRecurringEventTemplate: z.boolean().optional(),
-}).refine(
-	(data) => {
-		if (data.allDay === true) {
-			return (
-				data.startDate != null &&
-				data.endDate != null &&
-				data.startAt == null &&
-				data.endAt == null
-			);
-		}
-
-		return (
-			data.startAt != null &&
-			data.endAt != null &&
-			data.startDate == null &&
-			data.endDate == null
-		);
-	},
-	{
-		message:
-			"If allDay=true, provide startDate/endDate only. If allDay=false, provide startAt/endAt only.",
-		path: ["allDay"],
-	},
-);
+});
 
 export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	agendaFoldersWhereEvent: many(agendaFoldersTable, {
