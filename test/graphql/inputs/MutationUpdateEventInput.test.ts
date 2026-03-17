@@ -99,7 +99,7 @@ describe("MutationUpdateEventInput Schema", () => {
 				(issue) => issue.path[0] === "endAt",
 			);
 			expect(endAtIssue?.message).toBe(
-				`Must be greater than the value: ${startAt.toISOString()}.`,
+				"End time must be after start time.",
 			);
 		}
 	});
@@ -132,7 +132,7 @@ describe("MutationUpdateEventInput Schema", () => {
 				(issue) => issue.path[0] === "endDate",
 			);
 			expect(endDateIssue?.message).toBe(
-				"Must be greater than the value: 2025-06-10.",
+				"End date must be after start date for all-day events.",
 			);
 		}
 	});
@@ -149,6 +149,9 @@ describe("MutationUpdateEventInput Schema", () => {
 				(issue) => issue.path[0] === "endDate",
 			);
 			expect(endDateIssue).toBeDefined();
+			expect(endDateIssue?.message).toBe(
+				"End date must be after start date for all-day events.",
+			);
 		}
 	});
 

@@ -68,7 +68,12 @@ const createEvent = async (
 	return result;
 };
 
-const RUN_UTC_BASE_DATE = new Date("2026-03-17T00:00:00Z");
+const getUTCBaseDate = () => {
+	const now = new Date();
+	return new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+	);
+};
 
 let createdEventIds: string[] = [];
 let createdRecurrenceRuleIds: string[] = [];
@@ -131,25 +136,25 @@ const addUtcDays = (baseDate: Date, dayOffset: number) => {
 
 const toUtcDateString = (date: Date) => date.toISOString().slice(0, 10);
 
-const getTodayDateString = () => toUtcDateString(RUN_UTC_BASE_DATE);
+const getTodayDateString = () => toUtcDateString(getUTCBaseDate());
 
 const getFutureDateString = (daysFromBase: number) =>
-	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, daysFromBase));
+	toUtcDateString(addUtcDays(getUTCBaseDate(), daysFromBase));
 
 const getPastDateString = (daysBeforeBase: number) =>
-	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, -daysBeforeBase));
+	toUtcDateString(addUtcDays(getUTCBaseDate(), -daysBeforeBase));
 
-// Helper to generate a future date tied to RUN_UTC_BASE_DATE for consistency
+// Helper to generate a future date tied to getUTCBaseDate() for consistency
 const getFutureDate = (daysFromNow: number, hours = 10) => {
-	const date = new Date(RUN_UTC_BASE_DATE);
+	const date = new Date(getUTCBaseDate());
 	date.setUTCDate(date.getUTCDate() + daysFromNow);
 	date.setUTCHours(hours, 0, 0, 0);
 	return date.toISOString();
 };
 
-// Helper to generate a past date tied to RUN_UTC_BASE_DATE for consistency
+// Helper to generate a past date tied to getUTCBaseDate() for consistency
 const getPastDate = (daysAgo: number, hours = 10) => {
-	const date = new Date(RUN_UTC_BASE_DATE);
+	const date = new Date(getUTCBaseDate());
 	date.setUTCDate(date.getUTCDate() - daysAgo);
 	date.setUTCHours(hours, 0, 0, 0);
 	return date.toISOString();
@@ -720,6 +725,8 @@ suite("Mutation field createEvent", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					name: "Past All-Day Event",
+					startDate: getPastDateString(1),
+					endDate: getTodayDateString(),
 				}),
 			);
 		});
@@ -742,6 +749,8 @@ suite("Mutation field createEvent", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					name: "Today All-Day Event",
+					startDate: getTodayDateString(),
+					endDate: getFutureDateString(1),
 				}),
 			);
 		});
@@ -764,8 +773,36 @@ suite("Mutation field createEvent", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					name: "Future All-Day Event",
+					startDate: getFutureDateString(5),
+					endDate: getFutureDateString(6),
 				}),
 			);
+		});
+		test("rejects all-day events where endDate equals startDate", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					name: "Same-Day Invalid",
+					organizationId,
+					allDay: true,
+					startDate: getFutureDateString(5),
+					endDate: getFutureDateString(5), // same as startDate
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "endDate"],
+							message: "End date must be after start date for all-day events.",
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
 		test("still validates timed events for past startAt (all-day flag not set)", async () => {

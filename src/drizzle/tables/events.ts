@@ -259,7 +259,7 @@ export const validateEventConsistency = (
 		if (arg.startDate && arg.endDate && arg.endDate <= arg.startDate) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: `Must be greater than the value: ${arg.startDate}.`,
+				message: "End date must be after start date for all-day events.",
 				path: ["endDate"],
 			});
 		}
@@ -298,7 +298,7 @@ export const validateEventConsistency = (
 		if (arg.startAt && arg.endAt && arg.endAt <= arg.startAt) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: `Must be greater than the value: ${arg.startAt.toISOString()}.`,
+				message: "End time must be after start time.",
 				path: ["endAt"],
 			});
 		}

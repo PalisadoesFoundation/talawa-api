@@ -659,6 +659,8 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         description
         startAt
         endAt
+        startDate
+        endDate
         isInviteOnly
         creator {
             id
@@ -679,6 +681,8 @@ export const Mutation_createEvent =
         description
         startAt
         endAt
+        startDate
+        endDate
         createdAt
         creator{
             id
@@ -2011,6 +2015,8 @@ export const Mutation_updateStandaloneEvent = gql(`
       location
       startAt
       endAt
+      startDate
+      endDate
       allDay
       isPublic
       isRegisterable
