@@ -177,7 +177,8 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "endDate"],
-								message: "End date must be after start date for all-day events.",
+								message:
+									"End date must be after start date for all-day events.",
 							},
 						],
 					},
@@ -197,7 +198,8 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "startDate"],
-								message: "Start date must be before end date for all-day events.",
+								message:
+									"Start date must be before end date for all-day events.",
 							},
 						],
 					},

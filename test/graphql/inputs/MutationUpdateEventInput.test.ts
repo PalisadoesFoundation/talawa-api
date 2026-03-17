@@ -98,9 +98,7 @@ describe("MutationUpdateEventInput Schema", () => {
 			const endAtIssue = result.error.issues.find(
 				(issue) => issue.path[0] === "endAt",
 			);
-			expect(endAtIssue?.message).toBe(
-				"End time must be after start time.",
-			);
+			expect(endAtIssue?.message).toBe("End time must be after start time.");
 		}
 	});
 
