@@ -805,7 +805,9 @@ suite("Mutation field createEvent", () => {
 					issues: expect.arrayContaining([
 						{
 							argumentPath: ["input", "endDate"],
-							message: "End date must be after start date for all-day events.",
+							message: expect.stringContaining(
+								"End date must be after start date for all-day events",
+							),
 						},
 					]),
 				}),
