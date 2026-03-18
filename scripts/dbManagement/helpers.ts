@@ -747,14 +747,17 @@ export async function insertCollections(
 										: null,
 									12,
 								);
-								const seededInstanceStarts = generateWeeklyInstanceStarts(
-									recurrenceStartDate,
-									rule.byDay ?? null,
-									template.allDay,
-									seededWindowEndDate,
-									rule.interval ?? 1,
-									rule.count ?? null,
-								);
+								const seededInstanceStarts =
+									rule.frequency === "WEEKLY"
+										? generateWeeklyInstanceStarts(
+												recurrenceStartDate,
+												rule.byDay ?? null,
+												template.allDay,
+												seededWindowEndDate,
+												rule.interval ?? 1,
+												rule.count ?? null,
+											)
+										: throwUnsupportedSeedRecurrenceFrequency(rule.frequency);
 								const latestInstanceDate =
 									seededInstanceStarts.at(-1) ?? recurrenceStartDate;
 
@@ -810,14 +813,17 @@ export async function insertCollections(
 							12,
 						);
 
-						const generatedStarts = generateWeeklyInstanceStarts(
-							rule.recurrenceStartDate,
-							rule.byDay ?? null,
-							template.allDay,
-							windowEndDate,
-							rule.interval ?? 1,
-							rule.count ?? null,
-						);
+						const generatedStarts =
+							rule.frequency === "WEEKLY"
+								? generateWeeklyInstanceStarts(
+										rule.recurrenceStartDate,
+										rule.byDay ?? null,
+										template.allDay,
+										windowEndDate,
+										rule.interval ?? 1,
+										rule.count ?? null,
+									)
+								: throwUnsupportedSeedRecurrenceFrequency(rule.frequency);
 
 						const timedDurationMs =
 							template.startAt != null && template.endAt != null
@@ -1475,6 +1481,12 @@ const WEEKDAY_TO_INDEX: Record<string, number> = {
 };
 
 const WEEKDAY_CODES = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+function throwUnsupportedSeedRecurrenceFrequency(frequency: string): never {
+	throw new Error(
+		`NotImplemented: Unsupported recurrence frequency in seed data: ${frequency}`,
+	);
+}
 
 function getNextOccurrenceForWeekdayTime(
 	referenceDate: Date,
