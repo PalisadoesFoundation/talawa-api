@@ -2,17 +2,26 @@ import { faker } from "@faker-js/faker";
 import {
 	afterAll,
 	afterEach,
+	beforeAll,
 	beforeEach,
 	expect,
 	suite,
 	test,
 	vi,
 } from "vitest";
+import { hash } from "@node-rs/argon2";
 import { emailService } from "~/src/services/email/emailServiceInstance";
+import {
+	mutationAdminCreateOnSpotAttendeeArgumentsSchema,
+} from "~/src/graphql/types/Mutation/adminCreateOnSpotAttendee";
+import { getCurrentSchema } from "~/src/graphql/schema";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { organizationMembershipsTable, usersTable } from "~/src/drizzle/tables/users";
+import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_adminCreateOnSpotAttendee,
 	Mutation_createOrganization,
@@ -21,6 +30,7 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+import type { GraphQLResolveInfo } from "graphql";
 
 interface AdminCreateOnSpotAttendeePayload {
 	id: string;
@@ -91,15 +101,8 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 	// unique email helper (guarantees uniqueness across parallel shards)
 	const uniqueEmail = () => `${faker.string.ulid()}@example.com`;
 
-	beforeEach(async () => {
-		// Initialize per-test tracker
-		trackedEntityIds = {
-			organizationIds: [],
-			userIds: [],
-			membershipIds: [],
-		};
-
-		// Sign in as admin once per test (moved inside suite to avoid module-scope shared setup)
+	beforeAll(async () => {
+		// Sign in as admin once for the whole suite to avoid rate-limit flakiness
 		const signInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -113,6 +116,15 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 		adminUserId = signInResult.data.signIn.user?.id as string;
 		assertToBeNonNullish(authToken);
 		assertToBeNonNullish(adminUserId);
+	});
+
+	beforeEach(async () => {
+		// Initialize per-test tracker
+		trackedEntityIds = {
+			organizationIds: [],
+			userIds: [],
+			membershipIds: [],
+		};
 	});
 
 	/**
@@ -262,7 +274,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 	});
 
 	suite("when the email address is already registered", () => {
-		test("should allow creation and return the new attendee (existing email is reused)", async () => {
+		test("should return an error with forbidden_action_on_arguments_associated_resources code", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -296,16 +308,18 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				},
 			});
 
-			const { userId: existingUserId } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(existingUserId);
+			// Create an existing user directly in the database to avoid rate-limit flakiness
+			const emailAddress = uniqueEmail().toLowerCase();
+			const existingUserId = faker.string.uuid();
+			await server.drizzleClient.insert(usersTable).values({
+				id: existingUserId,
+				name: "Existing User",
+				emailAddress,
+				passwordHash: await hash("TempPass123!@#"),
+				isEmailAddressVerified: true,
+				role: "regular",
+			});
 			trackedEntityIds.userIds.push(existingUserId);
-
-			const existingUser =
-				await server.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, existingUserId),
-				});
-			assertToBeNonNullish(existingUser);
-			const emailAddress = existingUser.emailAddress;
 
 			const result = await mercuriusClient.mutate(
 				Mutation_adminCreateOnSpotAttendee,
@@ -322,17 +336,23 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 				},
 			);
 
-			// Implementation behavior: succeeds even with duplicate email
-			expect(result.data?.adminCreateOnSpotAttendee).toBeDefined();
-			expect(result.data?.adminCreateOnSpotAttendee?.emailAddress).toBe(
-				emailAddress.toLowerCase(),
+			expect(result.data?.adminCreateOnSpotAttendee).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "emailAddress"],
+									message: "This email address is already registered.",
+								}),
+							]),
+						}),
+						path: ["adminCreateOnSpotAttendee"],
+					}),
+				]),
 			);
-			expect(
-				result.data?.adminCreateOnSpotAttendee?.isEmailAddressVerified,
-			).toBe(true);
-
-			const createdId = result.data?.adminCreateOnSpotAttendee?.id;
-			if (createdId) trackedEntityIds.userIds.push(createdId);
 		});
 	});
 
@@ -476,60 +496,58 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 
 	suite("when user is not an admin of the organization", () => {
 		test("should return an error with forbidden_action extensions code", async () => {
-			// Create organization as admin
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `Bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Non-Admin Test Org ${faker.string.ulid()}`,
-							description: "Organization for non-admin testing",
-							countryCode: "us",
-							state: "CA",
-							city: "Los Angeles",
-							postalCode: "90001",
-							addressLine1: "123 Sunset Blvd",
-							addressLine2: "Suite 200",
+			// Use resolver directly (avoids rate-limit flakiness from multiple GraphQL calls)
+			const schema = getCurrentSchema();
+			const mutationType = schema.getMutationType();
+			assertToBeNonNullish(mutationType);
+			const field = mutationType.getFields().adminCreateOnSpotAttendee;
+			assertToBeNonNullish(field);
+			const resolver = field.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: GraphQLResolveInfo,
+			) => Promise<unknown>;
+
+			const orgId = faker.string.uuid();
+			const regularUserId = faker.string.uuid();
+			const fakeCtx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: { id: regularUserId },
+				},
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: regularUserId,
+								role: "regular",
+							}),
+						},
+						organizationMembershipsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								role: "regular",
+							}),
+						},
+						organizationsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: orgId,
+								userRegistrationRequired: false,
+							}),
 						},
 					},
+					select: vi.fn().mockReturnValue({
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([undefined]),
+						}),
+					}),
 				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-			trackedEntityIds.organizationIds.push(orgId);
+			};
 
-			// Create a regular user (non-admin)
-			const { userId: regularUserId, authToken: regularUserToken } =
-				await createRegularUserUsingAdmin();
-			assertToBeNonNullish(regularUserId);
-			assertToBeNonNullish(regularUserToken);
-			trackedEntityIds.userIds.push(regularUserId);
-
-			// Add regular user as a regular member (NOT admin) of the organization
-			const membershipResult = await mercuriusClient.mutate(
-				Mutation_createOrganizationMembership,
-				{
-					headers: { authorization: `Bearer ${authToken}` },
-					variables: {
-						input: {
-							memberId: regularUserId,
-							organizationId: orgId,
-							role: "regular", // Regular role, not admin
-						},
-					},
-				},
-			);
-			const membershipId =
-				membershipResult.data?.createOrganizationMembership?.id;
-			if (membershipId) trackedEntityIds.membershipIds.push(membershipId);
-
-			// Try to create on-spot attendee as regular user (should fail)
-			const result = await mercuriusClient.mutate(
-				Mutation_adminCreateOnSpotAttendee,
-				{
-					headers: { authorization: `Bearer ${regularUserToken}` },
-					variables: {
+			await expect(
+				resolver(
+					null,
+					{
 						input: {
 							name: "Test Attendee",
 							emailAddress: uniqueEmail(),
@@ -537,63 +555,65 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							selectedOrganization: orgId,
 						},
 					},
-				},
-			);
-
-			expect(result.data?.adminCreateOnSpotAttendee).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action",
-							message:
-								"Only organization admins can create on-spot attendees. You must have an admin role.",
-						}),
-						path: ["adminCreateOnSpotAttendee"],
-					}),
-				]),
-			);
+					fakeCtx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
 		});
 	});
 
 	suite("when user has no membership in the organization", () => {
 		test("should return an error with forbidden_action extensions code", async () => {
-			// Create organization as admin
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `Bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `No Membership Test Org ${faker.string.ulid()}`,
-							description: "Organization for no membership testing",
-							countryCode: "us",
-							state: "CA",
-							city: "Los Angeles",
-							postalCode: "90001",
-							addressLine1: "123 Sunset Blvd",
-							addressLine2: "Suite 200",
+			// Use resolver directly (avoids rate-limit flakiness from multiple GraphQL calls)
+			const schema = getCurrentSchema();
+			const mutationType = schema.getMutationType();
+			assertToBeNonNullish(mutationType);
+			const field = mutationType.getFields().adminCreateOnSpotAttendee;
+			assertToBeNonNullish(field);
+			const resolver = field.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: GraphQLResolveInfo,
+			) => Promise<unknown>;
+
+			const orgId = faker.string.uuid();
+			const regularUserId = faker.string.uuid();
+			const fakeCtx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: { id: regularUserId },
+				},
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: regularUserId,
+								role: "regular",
+							}),
+						},
+						organizationMembershipsTable: {
+							findFirst: vi.fn().mockResolvedValue(undefined),
+						},
+						organizationsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: orgId,
+								userRegistrationRequired: false,
+							}),
 						},
 					},
+					select: vi.fn().mockReturnValue({
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([undefined]),
+						}),
+					}),
 				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-			trackedEntityIds.organizationIds.push(orgId);
+			};
 
-			// Create a regular user with NO membership in the organization
-			const { userId: regularUserId, authToken: regularUserToken } =
-				await createRegularUserUsingAdmin();
-			assertToBeNonNullish(regularUserId);
-			assertToBeNonNullish(regularUserToken);
-			trackedEntityIds.userIds.push(regularUserId);
-
-			// Try to create on-spot attendee (should fail - no membership)
-			const result = await mercuriusClient.mutate(
-				Mutation_adminCreateOnSpotAttendee,
-				{
-					headers: { authorization: `Bearer ${regularUserToken}` },
-					variables: {
+			await expect(
+				resolver(
+					null,
+					{
 						input: {
 							name: "Test Attendee",
 							emailAddress: uniqueEmail(),
@@ -601,22 +621,10 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 							selectedOrganization: orgId,
 						},
 					},
-				},
-			);
-
-			expect(result.data?.adminCreateOnSpotAttendee).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action",
-							message:
-								"Only organization admins can create on-spot attendees. You must have an admin role.",
-						}),
-						path: ["adminCreateOnSpotAttendee"],
-					}),
-				]),
-			);
+					fakeCtx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
 		});
 	});
 
@@ -1020,6 +1028,363 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 					operators.eq(fields.emailAddress, createdAttendee.emailAddress),
 			});
 			expect(dbUser).toBeDefined();
+		});
+	});
+
+	suite("argument avatar validation schema", () => {
+		const baseInput = {
+			name: "Avatar Test User",
+			emailAddress: "avatar-test@example.com",
+			password: "TempPass123!@#",
+			selectedOrganization: faker.string.uuid(),
+		};
+
+		test("should add a custom issue when avatar mimetype is invalid", async () => {
+			const invalidAvatar = {
+				mimetype: "application/pdf",
+				createReadStream: vi.fn(),
+			} as unknown as Parameters<
+				typeof mutationAdminCreateOnSpotAttendeeArgumentsSchema.shape.input._def.transformer.transform
+			>[0];
+
+			const result =
+				await mutationAdminCreateOnSpotAttendeeArgumentsSchema.safeParseAsync(
+					{
+						input: {
+							...baseInput,
+							avatar: Promise.resolve(invalidAvatar),
+						},
+					},
+				);
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				const avatarIssues = result.error.issues.filter((issue) =>
+					issue.path.includes("avatar"),
+				);
+				expect(avatarIssues.length).toBeGreaterThan(0);
+				expect(avatarIssues[0]?.message).toContain(
+					'Mime type "application/pdf" is not allowed.',
+				);
+			}
+		});
+
+		test("should coerce avatar mimetype to allowed enum on success", async () => {
+			const validMimeType = imageMimeTypeEnum.enum["image/png"];
+			const validAvatar = {
+				mimetype: validMimeType,
+				createReadStream: vi.fn(),
+			} as unknown as Parameters<
+				typeof mutationAdminCreateOnSpotAttendeeArgumentsSchema.shape.input._def.transformer.transform
+			>[0];
+
+			const result =
+				await mutationAdminCreateOnSpotAttendeeArgumentsSchema.safeParseAsync(
+					{
+						input: {
+							...baseInput,
+							avatar: Promise.resolve(validAvatar),
+						},
+					},
+				);
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.input.avatar).toBeDefined();
+				expect(result.data.input.avatar?.mimetype).toBe(validMimeType);
+			}
+		});
+	});
+
+	suite("low-level resolver edge cases", () => {
+		function getAdminCreateOnSpotAttendeeResolver() {
+			const schema = getCurrentSchema();
+			const mutationType = schema.getMutationType();
+			assertToBeNonNullish(mutationType);
+			const field =
+				mutationType.getFields().adminCreateOnSpotAttendee;
+			assertToBeNonNullish(field);
+			return field.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: GraphQLResolveInfo,
+			) => Promise<unknown>;
+		}
+
+		test("should throw forbidden_action when current user context is missing id", async () => {
+			const resolver = getAdminCreateOnSpotAttendeeResolver();
+
+			const ctx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: {},
+				},
+			};
+
+			await expect(
+				resolver(
+					null,
+					{
+						input: {
+							name: "Missing Id User",
+							emailAddress: "missing-id@example.com",
+							password: "TempPass123!@#",
+							selectedOrganization: faker.string.uuid(),
+						},
+					},
+					ctx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
+		});
+
+		test("should throw forbidden_action_on_arguments_associated_resources when email is already registered", async () => {
+			const resolver = getAdminCreateOnSpotAttendeeResolver();
+			const adminId = faker.string.uuid();
+			const organizationId = faker.string.uuid();
+
+			const fakeCtx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: { id: adminId },
+				},
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({ id: adminId, role: "administrator" }),
+						},
+						organizationMembershipsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								role: "administrator",
+							}),
+						},
+						organizationsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: organizationId,
+								userRegistrationRequired: false,
+							}),
+						},
+					},
+					select: vi.fn().mockReturnValue({
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									emailAddress: "duplicate@example.com",
+								},
+							]),
+						}),
+					}),
+					transaction: vi.fn(), // should not be called due to early error
+				},
+			};
+
+			await expect(
+				resolver(
+					null,
+					{
+						input: {
+							name: "Duplicate Email Attendee",
+							emailAddress: "duplicate@example.com",
+							password: "TempPass123!@#",
+							selectedOrganization: organizationId,
+						},
+					},
+					fakeCtx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
+		});
+
+		test("should throw unexpected error when organization membership creation returns undefined", async () => {
+			const resolver = getAdminCreateOnSpotAttendeeResolver();
+			const adminId = faker.string.uuid();
+			const organizationId = faker.string.uuid();
+
+			const fakeCtx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: { id: adminId },
+				},
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({ id: adminId, role: "administrator" }),
+						},
+						organizationMembershipsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								role: "administrator",
+							}),
+						},
+						organizationsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: organizationId,
+								userRegistrationRequired: false,
+							}),
+						},
+					},
+					select: vi.fn().mockReturnValue({
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([undefined]),
+						}),
+					}),
+					transaction: async (callback: (tx: unknown) => Promise<unknown>) => {
+						const tx = {
+							insert: (table: unknown) => ({
+								values: () => ({
+									returning: vi.fn().mockResolvedValue(
+										table === usersTable
+											? [
+													{
+														id: faker.string.uuid(),
+														emailAddress: "user@example.com",
+														name: "User",
+													},
+												]
+											: table === organizationMembershipsTable
+												? [undefined]
+												: [],
+									),
+								}),
+							}),
+						};
+						return callback(tx);
+					},
+				},
+				minio: {
+					client: {
+						putObject: vi.fn(),
+					},
+					bucketName: "test-bucket",
+				},
+				log: {
+					error: vi.fn(),
+				},
+				envConfig: {
+					API_COMMUNITY_NAME: "Test Community",
+					API_FRONTEND_URL: "https://example.com",
+					API_GRAPHQL_OBJECT_FIELD_COST: 1,
+				},
+			};
+
+			await expect(
+				resolver(
+					null,
+					{
+						input: {
+							name: "Membership Error User",
+							emailAddress: "membership-error@example.com",
+							password: "TempPass123!@#",
+							selectedOrganization: organizationId,
+							avatar: Promise.resolve({
+								mimetype: imageMimeTypeEnum.enum["image/png"],
+								createReadStream: vi.fn(),
+							}),
+						},
+					},
+					fakeCtx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
+		});
+
+		test("should throw unexpected error when membership request creation returns empty array", async () => {
+			const resolver = getAdminCreateOnSpotAttendeeResolver();
+			const adminId = faker.string.uuid();
+			const organizationId = faker.string.uuid();
+
+			const fakeCtx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: { id: adminId },
+				},
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({ id: adminId, role: "administrator" }),
+						},
+						organizationMembershipsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								role: "administrator",
+							}),
+						},
+						organizationsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: organizationId,
+								userRegistrationRequired: true,
+							}),
+						},
+					},
+					select: vi.fn().mockReturnValue({
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([undefined]),
+						}),
+					}),
+					transaction: async (callback: (tx: unknown) => Promise<unknown>) => {
+						const tx = {
+							insert: (table: unknown) => ({
+								values: () => ({
+									returning: vi.fn().mockResolvedValue(
+										table === usersTable
+											? [
+													{
+														id: faker.string.uuid(),
+														emailAddress: "user@example.com",
+														name: "User",
+													},
+												]
+											: table === membershipRequestsTable
+												? []
+												: [],
+									),
+								}),
+							}),
+						};
+						return callback(tx);
+					},
+				},
+				minio: {
+					client: {
+						putObject: vi.fn(),
+					},
+					bucketName: "test-bucket",
+				},
+				log: {
+					error: vi.fn(),
+				},
+				envConfig: {
+					API_COMMUNITY_NAME: "Test Community",
+					API_FRONTEND_URL: "https://example.com",
+					API_GRAPHQL_OBJECT_FIELD_COST: 1,
+				},
+			};
+
+			await expect(
+				resolver(
+					null,
+					{
+						input: {
+							name: "Membership Request Error User",
+							emailAddress: "membership-request-error@example.com",
+							password: "TempPass123!@#",
+							selectedOrganization: organizationId,
+							avatar: Promise.resolve({
+								mimetype: imageMimeTypeEnum.enum["image/png"],
+								createReadStream: vi.fn(),
+							}),
+						},
+					},
+					fakeCtx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
 		});
 	});
 

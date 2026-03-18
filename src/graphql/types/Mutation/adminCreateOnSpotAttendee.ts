@@ -32,7 +32,7 @@ const adminCreateOnSpotAttendeeInputSchema = mutationSignUpInputSchema.omit({
 	recaptchaToken: true, // Admin doesn't need reCAPTCHA
 });
 
-const mutationAdminCreateOnSpotAttendeeArgumentsSchema = z.object({
+export const mutationAdminCreateOnSpotAttendeeArgumentsSchema = z.object({
 	input: adminCreateOnSpotAttendeeInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
