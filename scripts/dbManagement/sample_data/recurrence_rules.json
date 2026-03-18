@@ -540,26 +540,7 @@
 			"created_at": "2026-03-16T16:46:34.358Z",
 			"updated_at": "2026-03-16T16:46:34.368Z"
 		},
-		{
-			"id": "019cf78b-17fd-7e9e-9edf-31f9d90e413a",
-			"recurrence_rule_string": "RRULE:FREQ=WEEKLY;BYDAY=MO",
-			"frequency": "WEEKLY",
-			"interval": 1,
-			"recurrence_start_date": "2026-03-16T00:00:00.000Z",
-			"recurrence_end_date": null,
-			"count": null,
-			"latest_instance_date": "2026-03-16T00:00:00.000Z",
-			"by_day": "{MO}",
-			"by_month": null,
-			"by_month_day": null,
-			"base_recurring_event_id": "019cf78b-17f8-714d-9f63-9776e7070b3c",
-			"original_series_id": "019cf78b-17fd-7e9e-9edf-31f9d90e413a",
-			"organization_id": "01960b81-bfed-7369-ae96-689dbd4281ba",
-			"creator_id": "0194e194-c6b3-7802-b074-362efea24dbc",
-			"updater_id": null,
-			"created_at": "2026-03-16T16:46:53.944Z",
-			"updated_at": "2026-03-16T16:46:53.950Z"
-		},
+
 		{
 			"id": "019cf78b-17fd-7e9e-9edf-31fa56429ae4",
 			"recurrence_rule_string": "RRULE:FREQ=WEEKLY;BYDAY=MO",

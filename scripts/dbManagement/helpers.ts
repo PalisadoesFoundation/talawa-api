@@ -1239,9 +1239,14 @@ function parseRecurringTemplates(
 	fileContent: string,
 ): SourceRecurringTemplate[] {
 	const parsed = JSON.parse(fileContent) as
-		| { events?: Record<string, unknown>[] }
+		| {
+				events?: Record<string, unknown>[];
+				recurring_event_templates?: Record<string, unknown>[];
+		  }
 		| Record<string, unknown>[];
-	const rows = Array.isArray(parsed) ? parsed : (parsed.events ?? []);
+	const rows = Array.isArray(parsed)
+		? parsed
+		: (parsed.recurring_event_templates ?? parsed.events ?? []);
 
 	return rows.map((row) => ({
 		id: String(row.id),

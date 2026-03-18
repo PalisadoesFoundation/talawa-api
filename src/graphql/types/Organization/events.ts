@@ -30,13 +30,13 @@ const eventsConnectionArgumentsSchema = z.object({
 	first: z
 		.number()
 		.min(1)
-		.max(200)
+		.max(199)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 	last: z
 		.number()
 		.min(1)
-		.max(200)
+		.max(199)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 });
