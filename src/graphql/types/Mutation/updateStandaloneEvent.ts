@@ -137,7 +137,7 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "endAt"],
-								message: `Must be greater than the value: ${existingEvent.startAt.toISOString()}.`,
+								message: "End time must be after start time.",
 							},
 						],
 					},
@@ -157,7 +157,7 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "startAt"],
-								message: `Must be smaller than the value: ${existingEvent.endAt.toISOString()}.`,
+								message: "Start time must be before end time.",
 							},
 						],
 					},
@@ -177,7 +177,8 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "endDate"],
-								message: `Must be greater than the value: ${existingEvent.startDate}.`,
+								message:
+									"End date must be after start date for all-day events.",
 							},
 						],
 					},
@@ -197,7 +198,8 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "startDate"],
-								message: `Must be smaller than the value: ${existingEvent.endDate}.`,
+								message:
+									"Start date must be before end date for all-day events.",
 							},
 						],
 					},

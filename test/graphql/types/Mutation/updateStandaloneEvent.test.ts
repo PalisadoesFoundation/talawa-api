@@ -378,7 +378,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 								expect.objectContaining({
 									argumentPath: ["input", "endAt"],
 									message: expect.stringContaining(
-										"Must be greater than the value",
+										"End time must be after start time",
 									),
 								}),
 							]),
@@ -699,7 +699,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 									expect.objectContaining({
 										argumentPath: ["input", "endAt"],
 										message: expect.stringContaining(
-											"Must be greater than the value",
+											"End time must be after start time",
 										),
 									}),
 								]),
@@ -760,7 +760,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 									expect.objectContaining({
 										argumentPath: ["input", "startAt"],
 										message: expect.stringContaining(
-											"Must be smaller than the value",
+											"Start time must be before end time",
 										),
 									}),
 								]),
@@ -823,7 +823,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 									expect.objectContaining({
 										argumentPath: ["input", "endDate"],
 										message: expect.stringContaining(
-											"Must be greater than the value",
+											"End date must be after start date for all-day events",
 										),
 									}),
 								]),
@@ -886,7 +886,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 									expect.objectContaining({
 										argumentPath: ["input", "startDate"],
 										message: expect.stringContaining(
-											"Must be smaller than the value",
+											"Start date must be before end date for all-day events",
 										),
 									}),
 								]),

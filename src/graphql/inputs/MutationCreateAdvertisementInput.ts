@@ -24,7 +24,7 @@ export const mutationCreateAdvertisementInputSchema =
 			if (arg.endAt <= arg.startAt) {
 				ctx.addIssue({
 					code: "custom",
-					message: `Must be greater than the value: ${arg.startAt.toISOString()}`,
+					message: `End time must be after start time: ${arg.startAt.toISOString()}.`,
 					path: ["endAt"],
 				});
 			}

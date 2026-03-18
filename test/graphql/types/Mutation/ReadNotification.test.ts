@@ -83,21 +83,36 @@ async function createTestUser(): Promise<TestUser> {
 		},
 	});
 
+	if (orgResult.errors) {
+		throw new Error(
+			`Failed to create test org: ${JSON.stringify(orgResult.errors)}`,
+		);
+	}
+
 	const organizationId = orgResult.data?.createOrganization?.id;
 	if (!organizationId) {
 		throw new Error("Failed to create test organization");
 	}
 
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${adminToken}` },
-		variables: {
-			input: {
-				organizationId,
-				memberId: regularUser.userId,
-				role: "regular",
+	const membershipResult = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					organizationId,
+					memberId: regularUser.userId,
+					role: "regular",
+				},
 			},
 		},
-	});
+	);
+
+	if (membershipResult.errors) {
+		throw new Error(
+			`Failed to create test org membership: ${JSON.stringify(membershipResult.errors)}`,
+		);
+	}
 
 	return {
 		userId: regularUser.userId,
@@ -474,6 +489,11 @@ suite("Mutation readNotification", () => {
 						(n: GraphQLNotification | null | undefined) =>
 							n?.id === firstNotification.id,
 					);
+				console.log(
+					"updatedNotificationsResult:",
+					JSON.stringify(updatedNotificationsResult, null, 2),
+				);
+				console.log("firstNotification.id:", firstNotification.id);
 				expect(updatedNotification).toBeDefined();
 				assertToBeNonNullish(updatedNotification);
 				expect(updatedNotification.isRead).toBe(true);

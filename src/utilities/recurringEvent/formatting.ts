@@ -6,14 +6,15 @@ import type { recurrenceInputSchema } from "~/src/graphql/inputs/RecurrenceInput
  * This function constructs a recurrence rule string based on the provided frequency,
  * interval, end date, count, and other recurrence properties.
  *
- * @param recurrence - The recurrence input object, conforming to the recurrenceInputSchema.
- * @param _startDate - Reserved for future use; currently unused but maintained for API compatibility.
+ * @param params - An object containing:
+ *   - recurrence properties from recurrenceInputSchema (frequency, interval, byDay, etc.)
+ *   - startDate: Date required for RRULE anchor calculations.
  * @returns - A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".
  */
 export const buildRRuleString = (
-	recurrence: z.infer<typeof recurrenceInputSchema>,
-	_startDate: Date,
+	params: z.infer<typeof recurrenceInputSchema> & { startDate: Date },
 ): string => {
+	const { startDate: _startDate, ...recurrence } = params;
 	let rrule = `FREQ=${recurrence.frequency}`;
 
 	// Add interval
