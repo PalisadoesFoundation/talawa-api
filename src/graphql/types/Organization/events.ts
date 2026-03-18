@@ -15,7 +15,7 @@ import { Organization } from "./Organization";
 
 /**
  * Zod schema for validating and parsing connection arguments for events,
- * with bounded limits (up to 100) chosen to balance pagination needs and performance,
+ * with bounded limits (up to 200) chosen to balance pagination needs and performance,
  * including recurring event instances.
  */
 const eventsConnectionArgumentsSchema = z.object({
@@ -30,13 +30,13 @@ const eventsConnectionArgumentsSchema = z.object({
 	first: z
 		.number()
 		.min(1)
-		.max(100)
+		.max(199)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 	last: z
 		.number()
 		.min(1)
-		.max(100)
+		.max(199)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 });

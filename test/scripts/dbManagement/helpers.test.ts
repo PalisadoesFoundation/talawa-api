@@ -669,6 +669,151 @@ suite.concurrent("insertCollections", () => {
 	});
 });
 
+suite.concurrent("generateWeeklyInstanceStarts", () => {
+	test.concurrent("falls back to recurrenceStartDate weekday when byDay is null", async () => {
+		const recurrenceStartDate = new Date("2026-03-18T15:45:30.250Z"); // Wednesday
+		const windowEndDate = new Date("2026-03-31T23:59:59.999Z");
+
+		const starts = helpers.generateWeeklyInstanceStarts(
+			recurrenceStartDate,
+			null,
+			false,
+			windowEndDate,
+			1,
+			null,
+		);
+
+		expect(starts.map((date) => date.toISOString())).toEqual([
+			"2026-03-18T15:45:30.250Z",
+			"2026-03-25T15:45:30.250Z",
+		]);
+	});
+
+	test.concurrent("fans out multiple BYDAY entries, deduplicates and sorts", async () => {
+		const starts = helpers.generateWeeklyInstanceStarts(
+			new Date("2026-03-16T10:00:00.000Z"), // Monday
+			["WE", "MO", "MO"],
+			false,
+			new Date("2026-03-30T23:59:59.999Z"),
+			1,
+			null,
+		);
+
+		expect(starts.map((date) => date.toISOString())).toEqual([
+			"2026-03-16T10:00:00.000Z",
+			"2026-03-18T10:00:00.000Z",
+			"2026-03-23T10:00:00.000Z",
+			"2026-03-25T10:00:00.000Z",
+			"2026-03-30T10:00:00.000Z",
+		]);
+	});
+
+	test.concurrent("normalizes intervalWeeks <= 0 to 1", async () => {
+		const starts = helpers.generateWeeklyInstanceStarts(
+			new Date("2026-03-16T09:00:00.000Z"),
+			["MO"],
+			false,
+			new Date("2026-04-06T23:59:59.999Z"),
+			0,
+			null,
+		);
+
+		expect(starts.map((date) => date.toISOString())).toEqual([
+			"2026-03-16T09:00:00.000Z",
+			"2026-03-23T09:00:00.000Z",
+			"2026-03-30T09:00:00.000Z",
+			"2026-04-06T09:00:00.000Z",
+		]);
+	});
+
+	test.concurrent("zeros time components when isAllDay is true", async () => {
+		const starts = helpers.generateWeeklyInstanceStarts(
+			new Date("2026-03-17T13:27:45.987Z"),
+			["TU"],
+			true,
+			new Date("2026-03-24T23:59:59.999Z"),
+			1,
+			null,
+		);
+
+		expect(starts.map((date) => date.toISOString())).toEqual([
+			"2026-03-24T00:00:00.000Z",
+		]);
+	});
+
+	test.concurrent("applies countLimit truncation", async () => {
+		const starts = helpers.generateWeeklyInstanceStarts(
+			new Date("2026-03-16T10:00:00.000Z"),
+			["MO", "WE"],
+			false,
+			new Date("2026-04-15T23:59:59.999Z"),
+			1,
+			3,
+		);
+
+		expect(starts.map((date) => date.toISOString())).toEqual([
+			"2026-03-16T10:00:00.000Z",
+			"2026-03-18T10:00:00.000Z",
+			"2026-03-23T10:00:00.000Z",
+		]);
+	});
+
+	test.concurrent("stops generation at windowEndDate cutoff", async () => {
+		const starts = helpers.generateWeeklyInstanceStarts(
+			new Date("2026-03-16T10:00:00.000Z"),
+			["MO"],
+			false,
+			new Date("2026-03-22T23:59:59.999Z"),
+			1,
+			null,
+		);
+
+		expect(starts.map((date) => date.toISOString())).toEqual([
+			"2026-03-16T10:00:00.000Z",
+		]);
+	});
+});
+
+suite.concurrent("calculateMutationStyleWindowEndDate", () => {
+	test.concurrent("returns recurrenceEndDate when it is before default hot window", async () => {
+		const recurrenceStartDate = new Date("2026-03-16T10:00:00.000Z");
+		const recurrenceEndDate = new Date("2026-08-01T10:00:00.000Z");
+
+		const result = helpers.calculateMutationStyleWindowEndDate(
+			recurrenceStartDate,
+			recurrenceEndDate,
+			12,
+		);
+
+		expect(result.toISOString()).toBe("2026-08-01T10:00:00.000Z");
+	});
+
+	test.concurrent("returns default hot window end when recurrenceEndDate is after it", async () => {
+		const recurrenceStartDate = new Date("2026-03-16T10:00:00.000Z");
+		const recurrenceEndDate = new Date("2028-01-01T10:00:00.000Z");
+
+		const result = helpers.calculateMutationStyleWindowEndDate(
+			recurrenceStartDate,
+			recurrenceEndDate,
+			12,
+		);
+
+		expect(result.toISOString()).toBe("2027-03-16T10:00:00.000Z");
+	});
+
+	test.concurrent("returns default hot window end when recurrenceEndDate is null", async () => {
+		const recurrenceStartDate = new Date("2026-03-16T10:00:00.000Z");
+
+		const result = helpers.calculateMutationStyleWindowEndDate(
+			recurrenceStartDate,
+			null,
+			12,
+		);
+
+		expect(result.toISOString()).toBe("2027-03-16T10:00:00.000Z");
+	});
+});
+
 suite.concurrent("checkDataSize integration test", () => {
 	test.concurrent("should return a boolean indicating record existence", async () => {
 		const result = await helpers.checkDataSize("Test Stage");
