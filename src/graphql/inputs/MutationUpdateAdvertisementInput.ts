@@ -32,9 +32,7 @@ export const mutationUpdateAdvertisementInputSchema =
 			) {
 				ctx.addIssue({
 					code: "custom",
-					message: `End time must be after start time: ${(
-						remainingArg.startAt as Date
-					).toISOString()}.`,
+					message: `Must be greater than the value: ${remainingArg.startAt.toISOString()}.`,
 					path: ["endAt"],
 				});
 			}

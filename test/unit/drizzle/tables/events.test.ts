@@ -484,8 +484,8 @@ describe("src/drizzle/tables/events.ts", () => {
 			const validEvent = {
 				name: "Test Event",
 				organizationId: "123e4567-e89b-12d3-a456-426614174000",
-				startAt: new Date("2025-01-01T10:00:00Z"),
-				endAt: new Date("2025-01-01T11:00:00Z"),
+				startAt: new Date(),
+				endAt: new Date(),
 				description: "A description",
 				location: "A location",
 			};
@@ -506,8 +506,8 @@ describe("src/drizzle/tables/events.ts", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
 				organizationId: "123e4567-e89b-12d3-a456-426614174000",
-				startAt: new Date("2025-01-01T10:00:00Z"),
-				endAt: new Date("2025-01-01T11:00:00Z"),
+				startAt: new Date(),
+				endAt: new Date(),
 				description: longDescription,
 			});
 			expect(result.success).toBe(false);
@@ -529,8 +529,8 @@ describe("src/drizzle/tables/events.ts", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: maxName,
 				organizationId: "123e4567-e89b-12d3-a456-426614174000",
-				startAt: new Date("2025-01-01T10:00:00Z"),
-				endAt: new Date("2025-01-01T11:00:00Z"),
+				startAt: new Date(),
+				endAt: new Date(),
 			});
 			expect(result.success).toBe(true);
 		});
@@ -540,8 +540,8 @@ describe("src/drizzle/tables/events.ts", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
 				organizationId: "123e4567-e89b-12d3-a456-426614174000",
-				startAt: new Date("2025-01-01T10:00:00Z"),
-				endAt: new Date("2025-01-01T11:00:00Z"),
+				startAt: new Date(),
+				endAt: new Date(),
 				description: maxDescription,
 			});
 			expect(result.success).toBe(true);
@@ -552,8 +552,8 @@ describe("src/drizzle/tables/events.ts", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
 				organizationId: "123e4567-e89b-12d3-a456-426614174000",
-				startAt: new Date("2025-01-01T10:00:00Z"),
-				endAt: new Date("2025-01-01T11:00:00Z"),
+				startAt: new Date(),
+				endAt: new Date(),
 				location: maxLocation,
 			});
 			expect(result.success).toBe(true);
@@ -575,8 +575,8 @@ describe("src/drizzle/tables/events.ts", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "",
 				organizationId: "123e4567-e89b-12d3-a456-426614174000",
-				startAt: new Date("2025-01-01T10:00:00Z"),
-				endAt: new Date("2025-01-01T11:00:00Z"),
+				startAt: new Date(),
+				endAt: new Date(),
 			});
 			expect(result.success).toBe(false);
 		});
