@@ -186,7 +186,7 @@ describe("MutationUpdateFundCampaignInput Schema", () => {
 				);
 				expect(endAtIssue).toBeDefined();
 				expect(endAtIssue?.message).toContain(
-					"End time must be after start time",
+					"Must be greater than the value:",
 				);
 			}
 		});

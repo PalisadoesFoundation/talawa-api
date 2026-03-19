@@ -4,9 +4,9 @@
 
 # Function: buildRRuleString()
 
-> **buildRRuleString**(`params`): `string`
+> **buildRRuleString**(`recurrence`, `_startDate`): `string`
 
-Defined in: [src/utilities/recurringEvent/formatting.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/formatting.ts#L14)
+Defined in: [src/utilities/recurringEvent/formatting.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/formatting.ts#L13)
 
 Converts a recurrence input object into an RRULE string compliant with RFC 5545.
 This function constructs a recurrence rule string based on the provided frequency,
@@ -14,13 +14,47 @@ interval, end date, count, and other recurrence properties.
 
 ## Parameters
 
-### params
+### recurrence
 
-`object` & `object`
+The recurrence input object, conforming to the recurrenceInputSchema.
 
-An object containing:
-  - recurrence properties from recurrenceInputSchema (frequency, interval, byDay, etc.)
-  - startDate: Date required for RRULE anchor calculations.
+#### byDay?
+
+`string`[] = `...`
+
+#### byMonth?
+
+`number`[] = `...`
+
+#### byMonthDay?
+
+`number`[] = `...`
+
+#### count?
+
+`number` = `...`
+
+#### endDate?
+
+`Date` = `...`
+
+#### frequency
+
+`"DAILY"` \| `"WEEKLY"` \| `"MONTHLY"` \| `"YEARLY"` = `recurrenceFrequencyEnum`
+
+#### interval?
+
+`number` = `...`
+
+#### never?
+
+`boolean` = `...`
+
+### \_startDate
+
+`Date`
+
+Reserved for future use; currently unused but maintained for API compatibility.
 
 ## Returns
 

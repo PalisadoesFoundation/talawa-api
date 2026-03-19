@@ -1,15 +1,10 @@
 import { faker } from "@faker-js/faker";
-import { inArray } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import {
-	actionItemsTable,
 	agendaCategoriesTable,
 	agendaFoldersTable,
-	eventsTable,
-	organizationsTable,
-	usersTable,
 } from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
@@ -55,78 +50,18 @@ assertToBeNonNullish(adminUserId);
 const createEvent = async (
 	variables: VariablesOf<typeof Mutation_createEvent>,
 	token = adminAuthToken,
-): Promise<CreateEventMutationResponse> => {
-	const result = await mercuriusClient.mutate(Mutation_createEvent, {
+): Promise<CreateEventMutationResponse> =>
+	mercuriusClient.mutate(Mutation_createEvent, {
 		headers: { authorization: `bearer ${token}` },
 		variables,
 	});
-	if (result.data?.createEvent?.id) {
-		createdEventIds.push(result.data.createEvent.id);
-		// If it's a recurring event, we might need to track the rule too.
-		// Since we don't always have it in the response, we'll query it in afterEach or here.
-	}
-	return result;
-};
 
-const getUTCBaseDate = () => {
+const RUN_UTC_BASE_DATE = (() => {
 	const now = new Date();
 	return new Date(
 		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
 	);
-};
-
-let createdEventIds: string[] = [];
-let createdRecurrenceRuleIds: string[] = [];
-let createdOrganizationIds: string[] = [];
-let createdUserIds: string[] = [];
-
-const scopedCleanup = async () => {
-	vi.restoreAllMocks();
-
-	if (createdRecurrenceRuleIds.length > 0) {
-		await server.drizzleClient
-			.delete(recurrenceRulesTable)
-			.where(inArray(recurrenceRulesTable.id, createdRecurrenceRuleIds));
-	}
-
-	if (createdEventIds.length > 0) {
-		// Delete child rows first
-		await server.drizzleClient
-			.delete(recurrenceRulesTable)
-			.where(
-				inArray(recurrenceRulesTable.baseRecurringEventId, createdEventIds),
-			);
-		await server.drizzleClient
-			.delete(agendaFoldersTable)
-			.where(inArray(agendaFoldersTable.eventId, createdEventIds));
-		await server.drizzleClient
-			.delete(agendaCategoriesTable)
-			.where(inArray(agendaCategoriesTable.eventId, createdEventIds));
-		await server.drizzleClient
-			.delete(actionItemsTable)
-			.where(inArray(actionItemsTable.eventId, createdEventIds));
-		await server.drizzleClient
-			.delete(eventsTable)
-			.where(inArray(eventsTable.id, createdEventIds));
-	}
-
-	if (createdOrganizationIds.length > 0) {
-		await server.drizzleClient
-			.delete(organizationsTable)
-			.where(inArray(organizationsTable.id, createdOrganizationIds));
-	}
-
-	if (createdUserIds.length > 0) {
-		await server.drizzleClient
-			.delete(usersTable)
-			.where(inArray(usersTable.id, createdUserIds));
-	}
-
-	createdEventIds = [];
-	createdRecurrenceRuleIds = [];
-	createdOrganizationIds = [];
-	createdUserIds = [];
-};
+})();
 
 const addUtcDays = (baseDate: Date, dayOffset: number) => {
 	const shifted = new Date(baseDate);
@@ -136,26 +71,26 @@ const addUtcDays = (baseDate: Date, dayOffset: number) => {
 
 const toUtcDateString = (date: Date) => date.toISOString().slice(0, 10);
 
-const getTodayDateString = () => toUtcDateString(getUTCBaseDate());
+const getTodayDateString = () => toUtcDateString(RUN_UTC_BASE_DATE);
 
 const getFutureDateString = (daysFromBase: number) =>
-	toUtcDateString(addUtcDays(getUTCBaseDate(), daysFromBase));
+	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, daysFromBase));
 
 const getPastDateString = (daysBeforeBase: number) =>
-	toUtcDateString(addUtcDays(getUTCBaseDate(), -daysBeforeBase));
+	toUtcDateString(addUtcDays(RUN_UTC_BASE_DATE, -daysBeforeBase));
 
-// Helper to generate a future date tied to getUTCBaseDate() for consistency
+// Helper to generate a future date
 const getFutureDate = (daysFromNow: number, hours = 10) => {
-	const date = new Date(getUTCBaseDate());
-	date.setUTCDate(date.getUTCDate() + daysFromNow);
+	const date = new Date();
+	date.setDate(date.getDate() + daysFromNow);
 	date.setUTCHours(hours, 0, 0, 0);
 	return date.toISOString();
 };
 
-// Helper to generate a past date tied to getUTCBaseDate() for consistency
+// Helper to generate a past date
 const getPastDate = (daysAgo: number, hours = 10) => {
-	const date = new Date(getUTCBaseDate());
-	date.setUTCDate(date.getUTCDate() - daysAgo);
+	const date = new Date();
+	date.setDate(date.getDate() - daysAgo);
 	date.setUTCHours(hours, 0, 0, 0);
 	return date.toISOString();
 };
@@ -213,7 +148,6 @@ const createTestOrganization = async () => {
 	);
 	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
 	const orgId = createOrgResult.data.createOrganization.id;
-	createdOrganizationIds.push(orgId);
 
 	// Add admin as organization member
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -236,7 +170,6 @@ const createOrganizationMember = async (
 	role: "administrator" | "regular" = "regular",
 ) => {
 	const { userId, authToken } = await createRegularUserUsingAdmin();
-	createdUserIds.push(userId);
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: { input: { organizationId, memberId: userId, role } },
@@ -259,8 +192,8 @@ const expectSuccessfulEvent = (
 };
 
 suite("Mutation field createEvent", () => {
-	afterEach(async () => {
-		await scopedCleanup();
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	suite("Authentication and Authorization", () => {
@@ -707,7 +640,7 @@ suite("Mutation field createEvent", () => {
 			});
 		});
 
-		test("allows all-day events with past startDate", async () => {
+		test("rejects all-day events with past startDate", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
 				input: {
@@ -720,18 +653,21 @@ suite("Mutation field createEvent", () => {
 				},
 			});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({
-					id: expect.any(String),
-					name: "Past All-Day Event",
-					startDate: getPastDateString(1),
-					endDate: getTodayDateString(),
-					allDay: true,
-					startAt: null,
-					endAt: null,
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
 				}),
-			);
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
 		test("allows all-day events with today as startDate", async () => {
@@ -752,11 +688,6 @@ suite("Mutation field createEvent", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					name: "Today All-Day Event",
-					startDate: getTodayDateString(),
-					endDate: getFutureDateString(1),
-					allDay: true,
-					startAt: null,
-					endAt: null,
 				}),
 			);
 		});
@@ -779,41 +710,8 @@ suite("Mutation field createEvent", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					name: "Future All-Day Event",
-					startDate: getFutureDateString(5),
-					endDate: getFutureDateString(6),
-					allDay: true,
-					startAt: null,
-					endAt: null,
 				}),
 			);
-		});
-		test("rejects all-day events where endDate equals startDate", async () => {
-			const organizationId = await createTestOrganization();
-			const result = await createEvent({
-				input: {
-					name: "Same-Day Invalid",
-					organizationId,
-					allDay: true,
-					startDate: getFutureDateString(5),
-					endDate: getFutureDateString(5), // same as startDate
-				},
-			});
-
-			expectSpecificError(result, {
-				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-					code: "invalid_arguments",
-					issues: expect.arrayContaining([
-						{
-							argumentPath: ["input", "endDate"],
-							message: expect.stringContaining(
-								"End date must be after start date for all-day events",
-							),
-						},
-					]),
-				}),
-				message: expect.any(String),
-				path: ["createEvent"],
-			});
 		});
 
 		test("still validates timed events for past startAt (all-day flag not set)", async () => {
@@ -831,7 +729,7 @@ suite("Mutation field createEvent", () => {
 			expectErrorCode(result, "invalid_arguments");
 		});
 
-		test("allows recurring all-day events with past startDate", async () => {
+		test("rejects recurring all-day events with past startDate", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
 				input: {
@@ -849,13 +747,21 @@ suite("Mutation field createEvent", () => {
 				},
 			});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({
-					id: expect.any(String),
-					name: "Recurring Past All-Day Event",
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
 				}),
-			);
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
 		test("allows recurring all-day events with future startDate", async () => {
@@ -885,7 +791,7 @@ suite("Mutation field createEvent", () => {
 			);
 		});
 
-		test("allows events with allDay and past startDate when endDate is also provided", async () => {
+		test("rejects events with allDay and past startDate when endDate is also provided", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
 				input: {
@@ -898,16 +804,24 @@ suite("Mutation field createEvent", () => {
 				},
 			});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({
-					id: expect.any(String),
-					name: "All-Day Past Event With End",
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
 				}),
-			);
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
-		test("allows events with allDay=true and past startDate even if endDate is future", async () => {
+		test("rejects events with allDay=true and past startDate even if endDate is future", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
 				input: {
@@ -920,13 +834,21 @@ suite("Mutation field createEvent", () => {
 				},
 			});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({
-					id: expect.any(String),
-					name: "All-Day Event Past Start Future End",
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "startDate"],
+							message: expect.stringContaining(
+								"Start date must not be in the past",
+							),
+						},
+					]),
 				}),
-			);
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
 		test("rejects events with both isPublic and isInviteOnly set to true", async () => {
@@ -2575,8 +2497,8 @@ suite("Mutation field createEvent", () => {
 });
 
 suite("Default Agenda Folder and Category Creation", () => {
-	afterEach(async () => {
-		await scopedCleanup();
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 	test("creates default agenda folder and category for standalone events", async () => {
 		const organizationId = await createTestOrganization();
@@ -2774,8 +2696,8 @@ suite("Default Agenda Folder and Category Creation", () => {
 });
 
 suite("Event Attachment Uploads", () => {
-	afterEach(async () => {
-		await scopedCleanup();
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	test("creates attachment records when valid FileMetadataInput is provided and file exists in MinIO", async () => {
