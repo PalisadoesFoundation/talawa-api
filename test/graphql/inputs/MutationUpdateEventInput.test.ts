@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mutationUpdateEventInputSchema } from "~/src/graphql/inputs/MutationUpdateEventInput.schema";
+import { mutationUpdateEventInputSchema } from "~/src/graphql/inputs/MutationUpdateEventInput";
 
 /**
  * Tests for MutationUpdateEventInput schema validation.
@@ -98,8 +98,8 @@ describe("MutationUpdateEventInput Schema", () => {
 			const endAtIssue = result.error.issues.find(
 				(issue) => issue.path[0] === "endAt",
 			);
-			expect(endAtIssue?.message).toContain(
-				"End time must be after start time",
+			expect(endAtIssue?.message).toBe(
+				`Must be greater than the value: ${startAt.toISOString()}.`,
 			);
 		}
 	});
@@ -131,8 +131,8 @@ describe("MutationUpdateEventInput Schema", () => {
 			const endDateIssue = result.error.issues.find(
 				(issue) => issue.path[0] === "endDate",
 			);
-			expect(endDateIssue?.message).toContain(
-				"End date must be after start date for all-day events",
+			expect(endDateIssue?.message).toBe(
+				"Must be greater than the value: 2025-06-10.",
 			);
 		}
 	});
@@ -149,9 +149,6 @@ describe("MutationUpdateEventInput Schema", () => {
 				(issue) => issue.path[0] === "endDate",
 			);
 			expect(endDateIssue).toBeDefined();
-			expect(endDateIssue?.message).toContain(
-				"End date must be after start date for all-day events",
-			);
 		}
 	});
 

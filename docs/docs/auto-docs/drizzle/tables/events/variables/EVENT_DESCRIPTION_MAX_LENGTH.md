@@ -6,4 +6,4 @@
 
 > `const` **EVENT\_DESCRIPTION\_MAX\_LENGTH**: `2048` = `2048`
 
-Defined in: [src/drizzle/tables/events.ts:195](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/events.ts#L195)
+Defined in: [src/drizzle/tables/events.ts:237](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/events.ts#L237)
