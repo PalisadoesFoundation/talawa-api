@@ -1,4 +1,6 @@
 import { faker } from "@faker-js/faker";
+import { hash } from "@node-rs/argon2";
+import type { GraphQLResolveInfo } from "graphql";
 import {
 	afterAll,
 	afterEach,
@@ -9,15 +11,13 @@ import {
 	test,
 	vi,
 } from "vitest";
-import { hash } from "@node-rs/argon2";
-import { emailService } from "~/src/services/email/emailServiceInstance";
-import {
-	mutationAdminCreateOnSpotAttendeeArgumentsSchema,
-} from "~/src/graphql/types/Mutation/adminCreateOnSpotAttendee";
-import { getCurrentSchema } from "~/src/graphql/schema";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
-import { organizationMembershipsTable, usersTable } from "~/src/drizzle/tables/users";
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { usersTable } from "~/src/drizzle/tables/users";
+import { getCurrentSchema } from "~/src/graphql/schema";
+import { mutationAdminCreateOnSpotAttendeeArgumentsSchema } from "~/src/graphql/types/Mutation/adminCreateOnSpotAttendee";
+import { emailService } from "~/src/services/email/emailServiceInstance";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -30,7 +30,6 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
-import type { GraphQLResolveInfo } from "graphql";
 
 interface AdminCreateOnSpotAttendeePayload {
 	id: string;
@@ -1043,19 +1042,15 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const invalidAvatar = {
 				mimetype: "application/pdf",
 				createReadStream: vi.fn(),
-			} as unknown as Parameters<
-				typeof mutationAdminCreateOnSpotAttendeeArgumentsSchema.shape.input._def.transformer.transform
-			>[0];
+			} as unknown as { mimetype: string; createReadStream: () => unknown };
 
 			const result =
-				await mutationAdminCreateOnSpotAttendeeArgumentsSchema.safeParseAsync(
-					{
-						input: {
-							...baseInput,
-							avatar: Promise.resolve(invalidAvatar),
-						},
+				await mutationAdminCreateOnSpotAttendeeArgumentsSchema.safeParseAsync({
+					input: {
+						...baseInput,
+						avatar: Promise.resolve(invalidAvatar),
 					},
-				);
+				});
 
 			expect(result.success).toBe(false);
 			if (!result.success) {
@@ -1074,19 +1069,15 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const validAvatar = {
 				mimetype: validMimeType,
 				createReadStream: vi.fn(),
-			} as unknown as Parameters<
-				typeof mutationAdminCreateOnSpotAttendeeArgumentsSchema.shape.input._def.transformer.transform
-			>[0];
+			} as unknown as { mimetype: string; createReadStream: () => unknown };
 
 			const result =
-				await mutationAdminCreateOnSpotAttendeeArgumentsSchema.safeParseAsync(
-					{
-						input: {
-							...baseInput,
-							avatar: Promise.resolve(validAvatar),
-						},
+				await mutationAdminCreateOnSpotAttendeeArgumentsSchema.safeParseAsync({
+					input: {
+						...baseInput,
+						avatar: Promise.resolve(validAvatar),
 					},
-				);
+				});
 
 			expect(result.success).toBe(true);
 			if (result.success) {
@@ -1101,8 +1092,7 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			const schema = getCurrentSchema();
 			const mutationType = schema.getMutationType();
 			assertToBeNonNullish(mutationType);
-			const field =
-				mutationType.getFields().adminCreateOnSpotAttendee;
+			const field = mutationType.getFields().adminCreateOnSpotAttendee;
 			assertToBeNonNullish(field);
 			return field.resolve as (
 				parent: unknown,
