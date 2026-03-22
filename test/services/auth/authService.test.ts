@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import type { CookieConfigOptions } from "~/src/utilities/cookieConfig";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 const mockHashPassword = vi.fn();
@@ -300,7 +301,7 @@ describe("authService", () => {
 				password: "pwd",
 			});
 
-			expect(result).toEqual({ error: "invalid_credentials" });
+			expect(result).toEqual({ error: ErrorCode.INVALID_CREDENTIALS });
 			expect(mockVerifyPassword).not.toHaveBeenCalled();
 		});
 
@@ -318,7 +319,7 @@ describe("authService", () => {
 				password: "pwd",
 			});
 
-			expect(result).toEqual({ error: "invalid_credentials" });
+			expect(result).toEqual({ error: ErrorCode.INVALID_CREDENTIALS });
 			expect(mockVerifyPassword).not.toHaveBeenCalled();
 		});
 
@@ -337,7 +338,7 @@ describe("authService", () => {
 				password: "wrong",
 			});
 
-			expect(result).toEqual({ error: "invalid_credentials" });
+			expect(result).toEqual({ error: ErrorCode.INVALID_CREDENTIALS });
 			expect(mockPersistRefreshToken).not.toHaveBeenCalled();
 		});
 

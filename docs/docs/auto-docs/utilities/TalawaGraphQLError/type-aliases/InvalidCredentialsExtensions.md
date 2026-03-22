@@ -31,7 +31,7 @@ throw new TalawaGraphQLError({
 
 ### code
 
-> **code**: `"invalid_credentials"`
+> **code**: [`INVALID_CREDENTIALS`](../../errors/errorCodes/enumerations/ErrorCode.md#invalid_credentials)
 
 Defined in: [src/utilities/TalawaGraphQLError.ts:167](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L167)
 

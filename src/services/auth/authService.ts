@@ -130,7 +130,7 @@ export type SignInResult =
 			access: string;
 			refresh: string;
 	  }
-	| { error: "invalid_credentials" };
+	| { error: ErrorCode.INVALID_CREDENTIALS };
 
 /**
  * Authenticates a user by email and password.
@@ -149,12 +149,12 @@ export async function signIn(
 		where: eq(usersTable.emailAddress, input.email),
 	});
 	if (!user?.passwordHash) {
-		return { error: "invalid_credentials" };
+		return { error: ErrorCode.INVALID_CREDENTIALS };
 	}
 
 	const ok = await verifyPassword(user.passwordHash, input.password);
 	if (!ok) {
-		return { error: "invalid_credentials" };
+		return { error: ErrorCode.INVALID_CREDENTIALS };
 	}
 
 	const access = await signAccessToken({
