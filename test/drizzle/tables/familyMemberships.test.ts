@@ -889,69 +889,88 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 		});
 
 		it("should cascade delete when family is deleted", async () => {
-			// Create a temporary family and membership
 			const tempOrgId = await createTestOrganization();
-			const tempFamilyId = await createTestFamily(tempOrgId, testUserId1);
+			const tempFamilyId = await createTestFamily(testUserId1);
 
-			await server.drizzleClient.insert(familyMembershipsTable).values({
-				familyId: tempFamilyId,
-				memberId: testUserId2,
-				organizationId: tempOrgId,
-				role: "adult",
-			});
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: tempFamilyId,
+					memberId: testUserId2,
+					organizationId: tempOrgId,
+					role: "adult",
+				});
 
-			// Delete the family
-			await server.drizzleClient
-				.delete(familiesTable)
-				.where(eq(familiesTable.id, tempFamilyId));
+				// Delete the family
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
 
-			// Verify membership was cascade deleted
-			const memberships = await server.drizzleClient
-				.select()
-				.from(familyMembershipsTable)
-				.where(eq(familyMembershipsTable.familyId, tempFamilyId));
+				// Verify cascade delete
+				const memberships = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
 
-			expect(memberships).toHaveLength(0);
+				expect(memberships).toHaveLength(0);
+			} finally {
+				// cleanup
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
 
-			// Cleanup
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, tempOrgId));
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
+
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, tempOrgId));
+			}
 		});
 
 		it("should cascade delete when member (user) is deleted", async () => {
-			// Create a temporary user and membership
 			const tempUserId = await createTestUser();
 			const tempOrgId = await createTestOrganization();
-			const tempFamilyId = await createTestFamily(tempOrgId, testUserId1);
+			const tempFamilyId = await createTestFamily(testUserId1);
 
-			await server.drizzleClient.insert(familyMembershipsTable).values({
-				familyId: tempFamilyId,
-				memberId: tempUserId,
-				organizationId: tempOrgId,
-				role: "child",
-			});
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: tempFamilyId,
+					memberId: tempUserId,
+					organizationId: tempOrgId,
+					role: "child",
+				});
 
-			// Delete the user (member)
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, tempUserId));
+				// Delete the user (member)
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, tempUserId));
 
-			// Verify membership was cascade deleted
-			const memberships = await server.drizzleClient
-				.select()
-				.from(familyMembershipsTable)
-				.where(eq(familyMembershipsTable.memberId, tempUserId));
+				// Verify cascade delete
+				const memberships = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.memberId, tempUserId));
 
-			expect(memberships).toHaveLength(0);
+				expect(memberships).toHaveLength(0);
+			} finally {
+				// Cleanup
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
 
-			// Cleanup
-			await server.drizzleClient
-				.delete(familiesTable)
-				.where(eq(familiesTable.id, tempFamilyId));
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, tempOrgId));
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
+
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, tempOrgId));
+
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, tempUserId));
+			}
 		});
 
 		it("should cascade delete when organization is deleted", async () => {

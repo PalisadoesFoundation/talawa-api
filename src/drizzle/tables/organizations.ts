@@ -16,7 +16,6 @@ import { actionItemsTable } from "./actionItems";
 import { advertisementsTable } from "./advertisements";
 import { chatsTable } from "./chats";
 import { eventsTable } from "./events";
-import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { postsTable } from "./posts";
@@ -167,12 +166,6 @@ export const organizationsTableRelations = relations(
 		 */
 		eventsWhereOrganization: many(eventsTable, {
 			relationName: "events.organization_id:organizations.id",
-		}),
-		/**
-		 * One to many relationship from `organizations` table to `families` table.
-		 */
-		familiesWhereOrganization: many(familiesTable, {
-			relationName: "families.organization_id:organizations.id",
 		}),
 		/**
 		 * One to many relationship from `organizations` table to `funds` table.
