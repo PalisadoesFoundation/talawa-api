@@ -771,9 +771,8 @@ describe("Organization Events Resolver Tests", () => {
 		});
 
 		it("should filter results to the target day when onlyStartOnDay is true", async () => {
-			const targetDay = "2024-07-21";
-			const startDate = new Date("2024-07-21T00:00:00.000Z");
-			const endDate = new Date("2024-07-21T23:59:59.999Z");
+			const startDate = new Date("2024-07-20T00:00:00.000Z");
+			const endDate = new Date("2024-07-22T23:59:59.999Z");
 			const baseTimedEvent = mockEvents[0];
 			if (!baseTimedEvent) {
 				throw new Error("Expected mock event at index 0");
@@ -782,15 +781,15 @@ describe("Organization Events Resolver Tests", () => {
 			const dayStartEvent = {
 				...baseTimedEvent,
 				id: "day-start-event",
-				startAt: new Date("2024-07-21T10:00:00.000Z"),
+				startAt: new Date("2024-07-20T10:00:00.000Z"),
 				allDay: false,
 			};
 
 			const overlapOnlyEvent = {
 				...baseTimedEvent,
 				id: "overlap-only-event",
-				startAt: new Date("2024-07-20T23:30:00.000Z"),
-				endAt: new Date("2024-07-21T01:00:00.000Z"),
+				startAt: new Date("2024-07-21T09:30:00.000Z"),
+				endAt: new Date("2024-07-21T10:30:00.000Z"),
 				allDay: false,
 			};
 
@@ -818,8 +817,8 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 			}
 
-			expect(callArgs.startDate.toISOString().slice(0, 10)).toBe(targetDay);
-			expect(callArgs.endDate.toISOString().slice(0, 10)).toBe(targetDay);
+			expect(callArgs.startDate.getTime()).toBe(startDate.getTime());
+			expect(callArgs.endDate.getTime()).toBe(endDate.getTime());
 		});
 	});
 
@@ -833,6 +832,10 @@ describe("Organization Events Resolver Tests", () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
 		});
 
 		it("should throw unauthenticated for preview when client is not authenticated", async () => {
@@ -1031,41 +1034,43 @@ describe("Organization Events Resolver Tests", () => {
 
 		it("should apply preview defaults and call unified events query with computed limit", async () => {
 			vi.useFakeTimers();
-			vi.setSystemTime(new Date("2026-03-22T10:00:00.000Z"));
+			try {
+				vi.setSystemTime(new Date("2026-03-22T10:00:00.000Z"));
 
-			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
+				mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
 
-			await eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo);
+				await eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo);
 
-			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
-			if (!callArgs) {
-				throw new Error("Expected getUnifiedEventsInDateRange to be called");
+				const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
+				if (!callArgs) {
+					throw new Error("Expected getUnifiedEventsInDateRange to be called");
+				}
+
+				expect(callArgs.includeRecurring).toBe(true);
+				expect(callArgs.startDate).toBeInstanceOf(Date);
+				expect(callArgs.startDate.getHours()).toBe(0);
+				expect(callArgs.startDate.getMinutes()).toBe(0);
+				expect(callArgs.startDate.getSeconds()).toBe(0);
+				expect(callArgs.startDate.getMilliseconds()).toBe(0);
+
+				const expectedEnd = new Date(callArgs.startDate);
+				expectedEnd.setMonth(expectedEnd.getMonth() + 1);
+				expectedEnd.setHours(23, 59, 59, 999);
+				expect(callArgs.endDate.getTime()).toBe(expectedEnd.getTime());
+
+				const rangeMs = Math.max(
+					0,
+					callArgs.endDate.getTime() - callArgs.startDate.getTime(),
+				);
+				const dayCount = Math.max(
+					1,
+					Math.floor(rangeMs / (24 * 60 * 60 * 1000)) + 1,
+				);
+				const expectedFetchLimit = Math.min(Math.max(dayCount * 2 * 8, 100), 500);
+				expect(callArgs.limit).toBe(expectedFetchLimit);
+			} finally {
+				vi.useRealTimers();
 			}
-
-			expect(callArgs.includeRecurring).toBe(true);
-			expect(callArgs.startDate).toBeInstanceOf(Date);
-			expect(callArgs.startDate.getHours()).toBe(0);
-			expect(callArgs.startDate.getMinutes()).toBe(0);
-			expect(callArgs.startDate.getSeconds()).toBe(0);
-			expect(callArgs.startDate.getMilliseconds()).toBe(0);
-
-			const expectedEnd = new Date(callArgs.startDate);
-			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
-			expectedEnd.setHours(23, 59, 59, 999);
-			expect(callArgs.endDate.getTime()).toBe(expectedEnd.getTime());
-
-			const rangeMs = Math.max(
-				0,
-				callArgs.endDate.getTime() - callArgs.startDate.getTime(),
-			);
-			const dayCount = Math.max(
-				1,
-				Math.floor(rangeMs / (24 * 60 * 60 * 1000)) + 1,
-			);
-			const expectedFetchLimit = Math.min(Math.max(dayCount * 2 * 8, 100), 500);
-			expect(callArgs.limit).toBe(expectedFetchLimit);
-
-			vi.useRealTimers();
 		});
 
 		it("should skip events with empty dayKey while building preview groups", async () => {
@@ -1433,18 +1438,8 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected callArgs to be defined");
 			}
 
-			// When upcomingOnly is true, it currently overrides the explicit endDate
-			// and sets a default 1-year window.
-			const expectedEndDate = new Date();
-			expectedEndDate.setFullYear(expectedEndDate.getFullYear() + 1);
-
-			// Verify end date is set to approximately 1 year from now
 			expect(callArgs.endDate).toBeInstanceOf(Date);
-			expect(callArgs.endDate.getFullYear()).toBe(
-				expectedEndDate.getFullYear(),
-			);
-			expect(callArgs.endDate.getMonth()).toBe(expectedEndDate.getMonth());
-			expect(callArgs.endDate.getDate()).toBe(expectedEndDate.getDate());
+			expect(callArgs.endDate.getTime()).toBe(futureDate.getTime());
 
 			// Start date should be recent
 			const expectedStart = new Date("2024-01-01T12:00:00Z");
@@ -1472,27 +1467,7 @@ describe("Organization Events Resolver Tests", () => {
 			);
 		});
 
-		it("should use pre-calculated end date when it's in the future", async () => {
-			vi.useFakeTimers();
-			const t1 = new Date("2025-01-01T12:00:00Z");
-			vi.setSystemTime(t1);
-
-			// Mock findFirst to rewind time. This simulates a scenario where
-			// dateRange.end (calculated earlier based on t1) is in the future relative to the
-			// time when the check runs (rewound time), ensuring the else block is covered.
-			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				async (..._args: unknown[]) => {
-					vi.setSystemTime(new Date("2025-01-01T11:00:00Z")); // Rewind 1 hour
-					return {
-						id: "user-123",
-						role: "member",
-						organizationMembershipsWhereMember: [
-							{ role: "member", organizationId: mockOrganization.id },
-						],
-					};
-				},
-			);
-
+		it("should keep default computed future endDate when upcomingOnly=true", async () => {
 			await eventsResolver(
 				mockOrganization,
 				{ first: 10, upcomingOnly: true },
@@ -1505,10 +1480,8 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected callArgs to be defined");
 			}
 
-			// Should use the T1 date as end date because we hit the else block
-			expect(callArgs.endDate).toEqual(t1);
-
-			vi.useRealTimers();
+			const expectedEnd = new Date("2024-02-01T23:59:59.999Z");
+			expect(callArgs.endDate.getTime()).toBe(expectedEnd.getTime());
 		});
 	});
 
@@ -1645,16 +1618,17 @@ describe("Organization Events Resolver Tests", () => {
 			expect(callArgs.startDate.getMonth()).toBe(expectedStart.getMonth());
 			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
 
-			// effectiveEndDate should be 1 year from now
+			// With upcomingOnly, default transformed endDate remains one month from now at end of day.
 			const expectedEnd = new Date();
-			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
+			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
+			expectedEnd.setHours(23, 59, 59, 999);
 			expect(callArgs.endDate).toBeInstanceOf(Date);
 			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
 			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
 		});
 
-		it("should ignore provided endDate when upcomingOnly is true", async () => {
+		it("should respect provided endDate when upcomingOnly is true", async () => {
 			const futureDate = new Date();
 			futureDate.setFullYear(futureDate.getFullYear() + 2);
 
@@ -1670,13 +1644,8 @@ describe("Organization Events Resolver Tests", () => {
 			if (!callArgs)
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
-			// Should be default 1 year from now, ignoring the 2 year future date
-			const expectedEnd = new Date();
-			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
 			expect(callArgs.endDate).toBeInstanceOf(Date);
-			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
-			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
-			expect(callArgs.endDate.getDate()).toBe(expectedEnd.getDate());
+			expect(callArgs.endDate.getTime()).toBe(futureDate.getTime());
 		});
 
 		it("should report error on 'before' when using 'last' with invalid cursor", async () => {

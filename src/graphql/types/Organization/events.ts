@@ -42,6 +42,18 @@ const eventsConnectionArgumentsSchema = z.object({
 		.transform((arg) => (arg === null ? undefined : arg)),
 });
 
+const PREVIEW_FETCH_OVERFLOW_MULTIPLIER = 8;
+
+const getEventStartDay = (
+	event: Pick<EventWithAttachments, "allDay" | "startDate" | "startAt">,
+): string => {
+	if (event.allDay) {
+		return event.startDate ? String(event.startDate) : "";
+	}
+
+	return event.startAt ? event.startAt.toISOString().slice(0, 10) : "";
+};
+
 /**
  * Transforms and validates the connection arguments for event queries,
  * handling pagination logic and setting default date ranges.
@@ -141,12 +153,7 @@ const transformEventsConnectionArguments = (
 		transformedArg.dateRange.start.setHours(0, 0, 0, 0);
 	}
 
-	if (upcomingOnly) {
-		// When upcomingOnly is true, override endDate to current time
-		// This ensures we only get events that haven't ended yet
-		transformedArg.dateRange.end = new Date();
-		transformedArg.upcomingOnly = true;
-	} else if (endDate) {
+	if (endDate) {
 		transformedArg.dateRange.end = endDate;
 	} else {
 		// Default end: 1 months from now at end of day
@@ -368,8 +375,12 @@ Organization.implement({
 					1,
 					Math.floor(rangeMs / (24 * 60 * 60 * 1000)) + 1,
 				);
+				// Over-fetch enough records to keep per-day buckets full after filtering.
 				const fetchLimit = Math.min(
-					Math.max(dayCount * perDayLimit * 8, 100),
+					Math.max(
+						dayCount * perDayLimit * PREVIEW_FETCH_OVERFLOW_MULTIPLIER,
+						100,
+					),
 					500,
 				);
 
@@ -396,11 +407,7 @@ Organization.implement({
 				const dayMap = new Map<string, EventPreviewDay>();
 
 				for (const event of allEvents) {
-					const dayKey = event.allDay
-						? (event.startDate?.toString() ?? "")
-						: event.startAt
-							? event.startAt.toISOString().slice(0, 10)
-							: "";
+					const dayKey = getEventStartDay(event);
 
 					if (dayKey === "") {
 						continue;
@@ -599,18 +606,10 @@ Organization.implement({
 						});
 
 						if (onlyStartOnDay) {
-							const targetDay = new Date(
-								(effectiveStartDate.getTime() + effectiveEndDate.getTime()) / 2,
-							)
-								.toISOString()
-								.slice(0, 10);
+							const targetDay = effectiveStartDate.toISOString().slice(0, 10);
 
 							allEvents = allEvents.filter((event) => {
-								const eventStartDay = event.allDay
-									? (event.startDate?.toString() ?? "")
-									: event.startAt
-										? event.startAt.toISOString().slice(0, 10)
-										: "";
+								const eventStartDay = getEventStartDay(event);
 
 								return eventStartDay !== "" && eventStartDay === targetDay;
 							});
@@ -658,7 +657,9 @@ Organization.implement({
 
 							// Normalize event start time
 							const eventStartTime: Date | string | null = event.allDay
-								? (event.startDate?.toString() ?? "")
+								? event.startDate
+									? String(event.startDate)
+									: ""
 								: event.startAt
 									? new Date(event.startAt)
 									: null;
