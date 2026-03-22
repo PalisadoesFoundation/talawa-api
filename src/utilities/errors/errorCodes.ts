@@ -29,6 +29,9 @@ export enum ErrorCode {
 	/** JWT token is malformed or invalid (HTTP 401) */
 	TOKEN_INVALID = "token_invalid",
 
+	/** Invalid email or password provided during authentication (HTTP 401) */
+	INVALID_CREDENTIALS = "invalid_credentials",
+
 	/** User lacks permission to perform this action (HTTP 403) */
 	UNAUTHORIZED = "unauthorized",
 	/** User role is insufficient for the requested action (HTTP 403) */
@@ -96,6 +99,8 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, number> = {
 
 	[ErrorCode.INVALID_ARGUMENTS]: 400,
 	[ErrorCode.INVALID_INPUT]: 400,
+
+	[ErrorCode.INVALID_CREDENTIALS]: 401,
 
 	[ErrorCode.NOT_FOUND]: 404,
 

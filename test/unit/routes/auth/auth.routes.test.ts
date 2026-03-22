@@ -260,7 +260,7 @@ describe("auth REST routes", () => {
 			});
 
 			expect(res.statusCode).toBe(401);
-			expect(res.json().error.code).toBe(ErrorCode.UNAUTHENTICATED);
+			expect(res.json().error.code).toBe(ErrorCode.INVALID_CREDENTIALS);
 			expect(res.json().error.message).toBe("Invalid credentials");
 		});
 

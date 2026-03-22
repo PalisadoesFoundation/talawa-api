@@ -11,6 +11,7 @@ describe("ErrorCode enum", () => {
 			"unauthenticated",
 			"token_expired",
 			"token_invalid",
+			"invalid_credentials",
 			"unauthorized",
 			"insufficient_permissions",
 			"invalid_arguments",
@@ -143,5 +144,13 @@ describe("StandardErrorPayload type", () => {
 		expect(payload.error.message).toBe("Something went wrong");
 		expect(payload.error.details).toBeUndefined();
 		expect(payload.error.correlationId).toBeUndefined();
+	});
+
+	it("should map authentication errors to 401", () => {
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.UNAUTHENTICATED]).toBe(401);
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.TOKEN_EXPIRED]).toBe(401);
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.TOKEN_INVALID]).toBe(401);
+
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.INVALID_CREDENTIALS]).toBe(401);
 	});
 });

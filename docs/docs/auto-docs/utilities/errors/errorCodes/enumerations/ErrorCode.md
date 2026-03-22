@@ -35,7 +35,7 @@ throw new TalawaGraphQLError({
 
 > **ALREADY\_EXISTS**: `"already_exists"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L45)
+Defined in: [src/utilities/errors/errorCodes.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L48)
 
 Resource already exists and cannot be created again (HTTP 409)
 
@@ -45,7 +45,7 @@ Resource already exists and cannot be created again (HTTP 409)
 
 > **ARGUMENTS\_ASSOCIATED\_RESOURCES\_NOT\_FOUND**: `"arguments_associated_resources_not_found"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L50)
+Defined in: [src/utilities/errors/errorCodes.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L53)
 
 Required associated resources were not found (HTTP 404)
 
@@ -55,7 +55,7 @@ Required associated resources were not found (HTTP 404)
 
 > **CONFLICT**: `"conflict"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L47)
+Defined in: [src/utilities/errors/errorCodes.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L50)
 
 Request conflicts with current resource state (HTTP 409)
 
@@ -65,7 +65,7 @@ Request conflicts with current resource state (HTTP 409)
 
 > **DATABASE\_ERROR**: `"database_error"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:60](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L60)
+Defined in: [src/utilities/errors/errorCodes.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L63)
 
 Database operation failed (HTTP 500)
 
@@ -75,7 +75,7 @@ Database operation failed (HTTP 500)
 
 > **DEPRECATED**: `"deprecated"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L55)
+Defined in: [src/utilities/errors/errorCodes.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L58)
 
 Using deprecated API features (HTTP 400)
 
@@ -85,7 +85,7 @@ Using deprecated API features (HTTP 400)
 
 > **EXTERNAL\_SERVICE\_ERROR**: `"external_service_error"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L62)
+Defined in: [src/utilities/errors/errorCodes.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L65)
 
 External service is unavailable (HTTP 502)
 
@@ -95,7 +95,7 @@ External service is unavailable (HTTP 502)
 
 > **FORBIDDEN\_ACTION**: `"forbidden_action"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L67)
+Defined in: [src/utilities/errors/errorCodes.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L70)
 
 Legacy error code for forbidden action (HTTP 403)
 
@@ -105,7 +105,7 @@ Legacy error code for forbidden action (HTTP 403)
 
 > **FORBIDDEN\_ACTION\_ON\_ARGUMENTS\_ASSOCIATED\_RESOURCES**: `"forbidden_action_on_arguments_associated_resources"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L65)
+Defined in: [src/utilities/errors/errorCodes.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L68)
 
 Action is failing because the user is not allowed to perform it on the resources associated to the provided arguments (HTTP 403)
 
@@ -115,7 +115,7 @@ Action is failing because the user is not allowed to perform it on the resources
 
 > **INSUFFICIENT\_PERMISSIONS**: `"insufficient_permissions"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L35)
+Defined in: [src/utilities/errors/errorCodes.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L38)
 
 User role is insufficient for the requested action (HTTP 403)
 
@@ -125,7 +125,7 @@ User role is insufficient for the requested action (HTTP 403)
 
 > **INTERNAL\_SERVER\_ERROR**: `"internal_server_error"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L58)
+Defined in: [src/utilities/errors/errorCodes.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L61)
 
 Unexpected server error occurred (HTTP 500)
 
@@ -135,9 +135,19 @@ Unexpected server error occurred (HTTP 500)
 
 > **INVALID\_ARGUMENTS**: `"invalid_arguments"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L38)
+Defined in: [src/utilities/errors/errorCodes.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L41)
 
 Request arguments failed validation (HTTP 400)
+
+***
+
+### INVALID\_CREDENTIALS
+
+> **INVALID\_CREDENTIALS**: `"invalid_credentials"`
+
+Defined in: [src/utilities/errors/errorCodes.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L33)
+
+Invalid email or password provided during authentication (HTTP 401)
 
 ***
 
@@ -145,7 +155,7 @@ Request arguments failed validation (HTTP 400)
 
 > **INVALID\_INPUT**: `"invalid_input"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L40)
+Defined in: [src/utilities/errors/errorCodes.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L43)
 
 Input data validation failed (HTTP 400)
 
@@ -155,7 +165,7 @@ Input data validation failed (HTTP 400)
 
 > **NOT\_FOUND**: `"not_found"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L43)
+Defined in: [src/utilities/errors/errorCodes.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L46)
 
 Requested resource does not exist (HTTP 404)
 
@@ -165,7 +175,7 @@ Requested resource does not exist (HTTP 404)
 
 > **RATE\_LIMIT\_EXCEEDED**: `"rate_limit_exceeded"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L53)
+Defined in: [src/utilities/errors/errorCodes.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L56)
 
 Too many requests from client (HTTP 429)
 
@@ -205,7 +215,7 @@ User must be authenticated to access this resource (HTTP 401)
 
 > **UNAUTHORIZED**: `"unauthorized"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L33)
+Defined in: [src/utilities/errors/errorCodes.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L36)
 
 User lacks permission to perform this action (HTTP 403)
 
@@ -215,7 +225,7 @@ User lacks permission to perform this action (HTTP 403)
 
 > **UNAUTHORIZED\_ACTION\_ON\_ARGUMENTS\_ASSOCIATED\_RESOURCES**: `"unauthorized_action_on_arguments_associated_resources"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L71)
+Defined in: [src/utilities/errors/errorCodes.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L74)
 
 Legacy error code for unauthorized action on associated resources (HTTP 403)
 
@@ -225,6 +235,6 @@ Legacy error code for unauthorized action on associated resources (HTTP 403)
 
 > **UNEXPECTED**: `"unexpected"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L69)
+Defined in: [src/utilities/errors/errorCodes.ts:72](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L72)
 
 Legacy error code for unexpected server error (HTTP 500)

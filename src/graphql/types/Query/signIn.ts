@@ -8,6 +8,7 @@ import {
 	querySignInInputSchema,
 } from "~/src/graphql/inputs/QuerySignInInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import envConfig from "~/src/utilities/graphqLimits";
 import { validateRecaptchaIfRequired } from "~/src/utilities/recaptchaUtils";
 import {
@@ -147,7 +148,7 @@ builder.queryField("signIn", (t) =>
 
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_credentials",
+						code: ErrorCode.INVALID_CREDENTIALS,
 						issues: [
 							{
 								argumentPath: ["input"],
