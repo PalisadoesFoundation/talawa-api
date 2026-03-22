@@ -4,12 +4,12 @@ import { builder } from "~/src/graphql/builder";
 import { FamilyMembershipRole } from "~/src/graphql/enums/FamilyMembershipRole";
 
 const memberSchema = z.object({
-	memberId: z.string(),
+	memberId: z.uuid(),
 	role: familyMembershipsTableInsertSchema.shape.role,
 });
 
 export const mutationCreateFamilyInputSchema = z.object({
-	organizationId: z.string(),
+	organizationId: z.uuid(),
 	members: z.array(memberSchema).min(2),
 });
 
