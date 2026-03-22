@@ -33,6 +33,7 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
 suite("Query field signIn", () => {
 	let user1Email = "";
@@ -221,7 +222,7 @@ suite("Query field signIn", () => {
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
 								{
-									code: "invalid_credentials",
+									code: ErrorCode.INVALID_CREDENTIALS,
 									issues: expect.arrayContaining<
 										InvalidCredentialsExtensions["issues"][number]
 									>([
@@ -256,7 +257,7 @@ suite("Query field signIn", () => {
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
 								{
-									code: "invalid_credentials",
+									code: ErrorCode.INVALID_CREDENTIALS,
 									issues: expect.arrayContaining<
 										InvalidCredentialsExtensions["issues"][number]
 									>([
@@ -353,7 +354,7 @@ suite("Query field signIn", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
-							code: "invalid_credentials",
+							code: ErrorCode.INVALID_CREDENTIALS,
 							issues: expect.arrayContaining<
 								InvalidCredentialsExtensions["issues"][number]
 							>([
@@ -754,7 +755,7 @@ suite("Query field signIn", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
-							code: "invalid_credentials",
+							code: ErrorCode.INVALID_CREDENTIALS,
 							issues: expect.any(Array),
 						}),
 						message: expect.any(String),
@@ -907,7 +908,7 @@ suite("Query field signIn", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
-							code: "invalid_credentials",
+							code: ErrorCode.INVALID_CREDENTIALS,
 							issues: expect.arrayContaining([
 								{
 									argumentPath: ["input"],
