@@ -1066,7 +1066,10 @@ describe("Organization Events Resolver Tests", () => {
 					1,
 					Math.floor(rangeMs / (24 * 60 * 60 * 1000)) + 1,
 				);
-				const expectedFetchLimit = Math.min(Math.max(dayCount * 2 * 8, 100), 500);
+				const expectedFetchLimit = Math.min(
+					Math.max(dayCount * 2 * 8, 100),
+					500,
+				);
 				expect(callArgs.limit).toBe(expectedFetchLimit);
 			} finally {
 				vi.useRealTimers();
