@@ -4536,6 +4536,11 @@ type Organization {
     includeRecurring: Boolean
     last: Int
 
+    """
+    When true, return only events whose start day matches the requested day window.
+    """
+    onlyStartOnDay: Boolean
+
     """Start date for filtering events (defaults to today)"""
     startDate: DateTime
 
@@ -4547,6 +4552,23 @@ type Organization {
 
   """Total number of events in the organization."""
   eventsCount: Int
+
+  """
+  Calendar preview grouped by day with a capped number of events per day.
+  """
+  eventsPreview(
+    """End date for preview filtering (defaults to one month from start date)"""
+    endDate: DateTime
+
+    """Whether recurring event instances should be included in preview."""
+    includeRecurring: Boolean
+
+    """Maximum events returned per day in preview."""
+    perDayLimit: Int
+
+    """Start date for preview filtering (defaults to current day)"""
+    startDate: DateTime
+  ): [OrganizationEventPreviewDay!]
 
   """
   GraphQL connection to traverse through the funds belonging to the organization.
@@ -4689,6 +4711,16 @@ type OrganizationChatsConnection {
 type OrganizationChatsConnectionEdge {
   cursor: String!
   node: Chat
+}
+
+"""
+Preview data for one calendar day, including capped events and whether more events exist.
+"""
+type OrganizationEventPreviewDay {
+  date: String
+  events: [Event!]
+  hasMore: Boolean
+  totalCount: Int
 }
 
 """"""

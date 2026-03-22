@@ -52,11 +52,19 @@ type EventsResolver = GraphQLFieldResolver<
 	unknown
 >;
 
+type EventsPreviewResolver = GraphQLFieldResolver<
+	OrganizationType,
+	GraphQLContext,
+	Record<string, unknown>,
+	unknown
+>;
+
 describe("Organization Events Resolver Tests", () => {
 	let mockOrganization: OrganizationType;
 	let ctx: GraphQLContext;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 	let eventsResolver: EventsResolver;
+	let eventsPreviewResolver: EventsPreviewResolver;
 
 	const mockEvents = [
 		{
@@ -139,6 +147,15 @@ describe("Organization Events Resolver Tests", () => {
 		const organizationType = schema.getType(
 			"Organization",
 		) as GraphQLObjectType;
+		const eventsPreviewField = organizationType.getFields().eventsPreview;
+		if (!eventsPreviewField) {
+			throw new Error("eventsPreview field not found on Organization type");
+		}
+		eventsPreviewResolver = eventsPreviewField.resolve as EventsPreviewResolver;
+		if (!eventsPreviewResolver) {
+			throw new Error("eventsPreview resolver not found on Organization type");
+		}
+
 		const eventsField = organizationType.getFields().events;
 		if (!eventsField) {
 			throw new Error("Events field not found on Organization type");
@@ -751,6 +768,437 @@ describe("Organization Events Resolver Tests", () => {
 					},
 				}),
 			);
+		});
+
+		it("should filter results to the target day when onlyStartOnDay is true", async () => {
+			const targetDay = "2024-07-21";
+			const startDate = new Date("2024-07-21T00:00:00.000Z");
+			const endDate = new Date("2024-07-21T23:59:59.999Z");
+			const baseTimedEvent = mockEvents[0];
+			if (!baseTimedEvent) {
+				throw new Error("Expected mock event at index 0");
+			}
+
+			const dayStartEvent = {
+				...baseTimedEvent,
+				id: "day-start-event",
+				startAt: new Date("2024-07-21T10:00:00.000Z"),
+				allDay: false,
+			};
+
+			const overlapOnlyEvent = {
+				...baseTimedEvent,
+				id: "overlap-only-event",
+				startAt: new Date("2024-07-20T23:30:00.000Z"),
+				endAt: new Date("2024-07-21T01:00:00.000Z"),
+				allDay: false,
+			};
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				dayStartEvent,
+				overlapOnlyEvent,
+			]);
+
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, startDate, endDate, onlyStartOnDay: true },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const connection = result as {
+				edges: Array<{ node: { id: string; startAt: Date | null } }>;
+			};
+
+			expect(connection.edges).toHaveLength(1);
+			expect(connection.edges[0]?.node.id).toBe("day-start-event");
+
+			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
+			if (!callArgs) {
+				throw new Error("Expected getUnifiedEventsInDateRange to be called");
+			}
+
+			expect(callArgs.startDate.toISOString().slice(0, 10)).toBe(targetDay);
+			expect(callArgs.endDate.toISOString().slice(0, 10)).toBe(targetDay);
+		});
+	});
+
+	describe("eventsPreview Resolver", () => {
+		beforeEach(() => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
+		});
+
+		it("should throw unauthenticated for preview when client is not authenticated", async () => {
+			ctx.currentClient.isAuthenticated = false;
+
+			await expect(
+				eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				}),
+			);
+		});
+
+		it("should execute preview user query predicates with currentUserId and parent.id", async () => {
+			const eqSpy = vi.fn();
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				(...funcArgs: unknown[]) => {
+					const args = funcArgs[0] as {
+						where?: (fields: unknown, operators: unknown) => void;
+						with?: {
+							organizationMembershipsWhereMember?: {
+								where?: (fields: unknown, operators: unknown) => void;
+							};
+						};
+					};
+
+					if (args?.where) {
+						const fields = { id: "users.id" };
+						const operators = { eq: eqSpy };
+						args.where(fields, operators);
+					}
+
+					if (args?.with?.organizationMembershipsWhereMember?.where) {
+						const fields = {
+							organizationId: "organizationMemberships.organizationId",
+						};
+						const operators = { eq: eqSpy };
+						args.with.organizationMembershipsWhereMember.where(
+							fields,
+							operators,
+						);
+					}
+
+					return Promise.resolve(mockUserData);
+				},
+			);
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
+
+			await eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo);
+
+			expect(eqSpy).toHaveBeenCalledWith("users.id", "user-123");
+			expect(eqSpy).toHaveBeenCalledWith(
+				"organizationMemberships.organizationId",
+				mockOrganization.id,
+			);
+		});
+
+		it("should throw unauthenticated for preview when current user is undefined", async () => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				}),
+			);
+		});
+
+		it("should throw unauthorized_action for preview when non-admin has no organization membership", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [],
+			};
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
+
+			await expect(
+				eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments for preview when perDayLimit is out of range", async () => {
+			try {
+				await eventsPreviewResolver(
+					mockOrganization,
+					{ perDayLimit: 0 },
+					ctx,
+					mockResolveInfo,
+				);
+				throw new Error("Expected resolver to throw invalid_arguments");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const graphQLError = error as TalawaGraphQLError;
+				expect(graphQLError.extensions.code).toBe("invalid_arguments");
+				expect(graphQLError.extensions.issues).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["perDayLimit"],
+							message: expect.stringMatching(/(>=\s*1|equal to 1)/i),
+						}),
+					]),
+				);
+			}
+		});
+
+		it("should group preview events by day and set hasMore when per-day cap is exceeded", async () => {
+			const baseTimedEvent = mockEvents[0];
+			if (!baseTimedEvent) {
+				throw new Error("Expected mock event at index 0");
+			}
+			const baseAllDayEvent = mockEvents[1];
+			if (!baseAllDayEvent) {
+				throw new Error("Expected mock event at index 1");
+			}
+
+			const dayOneEventA = {
+				...baseTimedEvent,
+				id: "day1-a",
+				startAt: new Date("2024-07-21T09:00:00.000Z"),
+			};
+			const dayOneEventB = {
+				...baseTimedEvent,
+				id: "day1-b",
+				startAt: new Date("2024-07-21T10:00:00.000Z"),
+			};
+			const dayOneEventC = {
+				...baseTimedEvent,
+				id: "day1-c",
+				startAt: new Date("2024-07-21T11:00:00.000Z"),
+			};
+			const dayTwoAllDay = {
+				...baseAllDayEvent,
+				id: "day2-all-day",
+				startDate: "2024-07-22",
+				endDate: "2024-07-23",
+				allDay: true,
+			};
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				dayTwoAllDay,
+				dayOneEventA,
+				dayOneEventB,
+				dayOneEventC,
+			]);
+
+			const result = await eventsPreviewResolver(
+				mockOrganization,
+				{ perDayLimit: 2 },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const days = result as Array<{
+				date: string;
+				totalCount: number;
+				hasMore: boolean;
+				events: Array<{ id: string }>;
+			}>;
+
+			expect(days).toHaveLength(2);
+			expect(days[0]?.date).toBe("2024-07-21");
+			expect(days[1]?.date).toBe("2024-07-22");
+
+			expect(days[0]).toEqual(
+				expect.objectContaining({
+					totalCount: 3,
+					hasMore: true,
+				}),
+			);
+			expect(days[0]?.events).toHaveLength(2);
+			expect(days[1]).toEqual(
+				expect.objectContaining({
+					totalCount: 1,
+					hasMore: false,
+				}),
+			);
+			expect(days[1]?.events).toHaveLength(1);
+		});
+
+		it("should apply preview defaults and call unified events query with computed limit", async () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date("2026-03-22T10:00:00.000Z"));
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
+
+			await eventsPreviewResolver(mockOrganization, {}, ctx, mockResolveInfo);
+
+			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
+			if (!callArgs) {
+				throw new Error("Expected getUnifiedEventsInDateRange to be called");
+			}
+
+			expect(callArgs.includeRecurring).toBe(true);
+			expect(callArgs.startDate).toBeInstanceOf(Date);
+			expect(callArgs.startDate.getHours()).toBe(0);
+			expect(callArgs.startDate.getMinutes()).toBe(0);
+			expect(callArgs.startDate.getSeconds()).toBe(0);
+			expect(callArgs.startDate.getMilliseconds()).toBe(0);
+
+			const expectedEnd = new Date(callArgs.startDate);
+			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
+			expectedEnd.setHours(23, 59, 59, 999);
+			expect(callArgs.endDate.getTime()).toBe(expectedEnd.getTime());
+
+			const rangeMs = Math.max(
+				0,
+				callArgs.endDate.getTime() - callArgs.startDate.getTime(),
+			);
+			const dayCount = Math.max(
+				1,
+				Math.floor(rangeMs / (24 * 60 * 60 * 1000)) + 1,
+			);
+			const expectedFetchLimit = Math.min(Math.max(dayCount * 2 * 8, 100), 500);
+			expect(callArgs.limit).toBe(expectedFetchLimit);
+
+			vi.useRealTimers();
+		});
+
+		it("should skip events with empty dayKey while building preview groups", async () => {
+			const baseAllDayEvent = mockEvents[1];
+			if (!baseAllDayEvent) {
+				throw new Error("Expected mock event at index 1");
+			}
+			const baseTimedEvent = mockEvents[0];
+			if (!baseTimedEvent) {
+				throw new Error("Expected mock event at index 0");
+			}
+
+			const invalidAllDay = {
+				...baseAllDayEvent,
+				id: "invalid-all-day-no-start-date",
+				allDay: true,
+				startDate: null,
+				endDate: null,
+			};
+
+			const invalidTimed = {
+				...baseTimedEvent,
+				id: "invalid-timed-no-start-at",
+				allDay: false,
+				startAt: null,
+				endAt: null,
+			};
+
+			const validTimed = {
+				...baseTimedEvent,
+				id: "valid-timed",
+				allDay: false,
+				startAt: new Date("2024-07-24T09:00:00.000Z"),
+				endAt: new Date("2024-07-24T10:00:00.000Z"),
+			};
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([
+				invalidAllDay,
+				invalidTimed,
+				validTimed,
+			]);
+
+			const result = await eventsPreviewResolver(
+				mockOrganization,
+				{ perDayLimit: 2 },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const days = result as Array<{
+				date: string;
+				totalCount: number;
+				hasMore: boolean;
+				events: Array<{ id: string }>;
+			}>;
+
+			expect(days).toHaveLength(1);
+			expect(days[0]?.date).toBe("2024-07-24");
+			expect(days[0]?.totalCount).toBe(1);
+			expect(days[0]?.events).toHaveLength(1);
+			expect(days[0]?.events[0]?.id).toBe("valid-timed");
+		});
+
+		it("should derive dayKey from all-day startDate using toString branch", async () => {
+			const baseAllDayEvent = mockEvents[1];
+			if (!baseAllDayEvent) {
+				throw new Error("Expected mock event at index 1");
+			}
+
+			const allDayEvent = {
+				...baseAllDayEvent,
+				id: "all-day-to-string-branch",
+				allDay: true,
+				startDate: "2024-08-01",
+				endDate: "2024-08-02",
+				startAt: null,
+				endAt: null,
+			};
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([allDayEvent]);
+
+			const result = await eventsPreviewResolver(
+				mockOrganization,
+				{ perDayLimit: 2 },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const days = result as Array<{
+				date: string;
+				totalCount: number;
+				hasMore: boolean;
+				events: Array<{ id: string }>;
+			}>;
+
+			expect(days).toHaveLength(1);
+			expect(days[0]?.date).toBe("2024-08-01");
+			expect(days[0]?.events[0]?.id).toBe("all-day-to-string-branch");
+		});
+
+		it("should derive dayKey from timed startAt using ISO date slice branch", async () => {
+			const baseTimedEvent = mockEvents[0];
+			if (!baseTimedEvent) {
+				throw new Error("Expected mock event at index 0");
+			}
+
+			const timedEvent = {
+				...baseTimedEvent,
+				id: "timed-iso-slice-branch",
+				allDay: false,
+				startAt: new Date("2024-08-03T18:45:00.000Z"),
+				endAt: new Date("2024-08-03T19:45:00.000Z"),
+			};
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([timedEvent]);
+
+			const result = await eventsPreviewResolver(
+				mockOrganization,
+				{ perDayLimit: 2 },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const days = result as Array<{
+				date: string;
+				totalCount: number;
+				hasMore: boolean;
+				events: Array<{ id: string }>;
+			}>;
+
+			expect(days).toHaveLength(1);
+			expect(days[0]?.date).toBe("2024-08-03");
+			expect(days[0]?.events[0]?.id).toBe("timed-iso-slice-branch");
 		});
 	});
 
