@@ -166,7 +166,7 @@ describe("TalawaGraphQLError", () => {
 		it("should handle invalid_credentials", () => {
 			const error = new TalawaGraphQLError({
 				extensions: {
-					code: "invalid_credentials",
+					code: ErrorCode.INVALID_CREDENTIALS,
 					issues: [
 						{
 							argumentPath: ["input"],

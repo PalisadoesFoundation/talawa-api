@@ -140,7 +140,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 			});
 			if ("error" in result) {
 				throw new TalawaRestError({
-					code: ErrorCode.UNAUTHENTICATED,
+					code: ErrorCode.INVALID_CREDENTIALS,
 					message: "Invalid credentials",
 				});
 			}

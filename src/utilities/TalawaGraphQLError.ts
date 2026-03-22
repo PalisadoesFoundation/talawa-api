@@ -164,7 +164,7 @@ export type InvalidArgumentsExtensions = {
  * });
  */
 export type InvalidCredentialsExtensions = {
-	code: "invalid_credentials";
+	code: ErrorCode.INVALID_CREDENTIALS;
 	issues: {
 		argumentPath: JSONArgumentPathKey[];
 		message: string;
