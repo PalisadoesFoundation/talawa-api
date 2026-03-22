@@ -1402,33 +1402,34 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			const testUserId = await createTestUser();
 			const testFamilyId = await createTestFamily(testOrgId, testUserId);
 
-			await server.drizzleClient.insert(familyMembershipsTable).values({
-				familyId: testFamilyId,
-				memberId: testUserId,
-				organizationId: testOrgId,
-				role: "head_of_household",
-			});
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: testFamilyId,
+					memberId: testUserId,
+					organizationId: testOrgId,
+					role: "head_of_household",
+				});
 
-			const results = await server.drizzleClient
-				.select()
-				.from(familyMembershipsTable)
-				.where(eq(familyMembershipsTable.organizationId, testOrgId));
+				const results = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.organizationId, testOrgId));
 
-			expect(results.length).toBeGreaterThan(0);
-
-			// Cleanup
-			await server.drizzleClient
-				.delete(familyMembershipsTable)
-				.where(eq(familyMembershipsTable.familyId, testFamilyId));
-			await server.drizzleClient
-				.delete(familiesTable)
-				.where(eq(familiesTable.id, testFamilyId));
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, testOrgId));
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, testUserId));
+				expect(results.length).toBeGreaterThan(0);
+			} finally {
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, testFamilyId));
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, testFamilyId));
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, testOrgId));
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, testUserId));
+			}
 		});
 	});
 
