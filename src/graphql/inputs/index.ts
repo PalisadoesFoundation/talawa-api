@@ -127,3 +127,4 @@ import "./MutationUpdateAgendaCategoryInput";
 import "./MutationOAuthLoginInput";
 import "./MetricsInput";
 import "./MetricsFilterInput";
+import "./MutationCreateFamilyInput";

@@ -1279,7 +1279,12 @@ input EventsByOrganizationIdInput {
   organizationId: ID!
 }
 
-"""Possible variants of the role assigned to a user within an family."""
+input FamilyMemberInput {
+  memberId: ID!
+  role: FamilyMembershipRole!
+}
+
+"""Possible variants of the role assigned to a user within a family."""
 enum FamilyMembershipRole {
   adult
   child
@@ -3075,18 +3080,12 @@ input MutationCreateEventInput {
   startDate: String
 }
 
-"""Input for creating a family."""
+"""Input for creating a family with at least two members."""
 input MutationCreateFamilyInput {
-  """ID of the user to add to the family."""
-  memberId: ID!
+  members: [FamilyMemberInput!]!
 
-  """
-  Global identifier of the organization in which the family relationship is being created.
-  """
+  """ID of the organization context."""
   organizationId: ID!
-
-  """Role of the user in the family."""
-  role: FamilyMembershipRole!
 }
 
 """"""

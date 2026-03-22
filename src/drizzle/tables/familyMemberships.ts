@@ -103,7 +103,7 @@ export const familyMembershipsTableRelations = relations(
 		organization: one(organizationsTable, {
 			fields: [familyMembershipsTable.organizationId],
 			references: [organizationsTable.id],
-			relationName: "families.organization_id:organizations.id",
+			relationName: "family_memberships.organization_id:organizations.id",
 		}),
 
 		updater: one(usersTable, {

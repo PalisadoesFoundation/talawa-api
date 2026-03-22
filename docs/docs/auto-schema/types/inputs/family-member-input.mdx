@@ -1,6 +1,6 @@
 ---
-id: mutation-create-family-input
-title: MutationCreateFamilyInput
+id: family-member-input
+title: FamilyMemberInput
 ---
 
 export const Bullet = () => (
@@ -71,19 +71,21 @@ export const Details = ({
   );
 };
 
-Input for creating a family with at least two members.
+No description
 
 ```graphql
-input MutationCreateFamilyInput {
-  members: [FamilyMemberInput!]!
-  organizationId: ID!
+input FamilyMemberInput {
+  memberId: ID!
+  role: FamilyMembershipRole!
 }
 ```
 
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>MutationCreateFamilyInput.<b>members</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FamilyMemberInput!]!</b></code>](/auto-schema/types/inputs/family-member-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/>
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMemberInput.<b>memberId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>MutationCreateFamilyInput.<b>organizationId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMemberInput.<b>role</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>FamilyMembershipRole!</b></code>](/auto-schema/types/enums/family-membership-role.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="enum"/>
 
-ID of the organization context.
+### Member Of
+
+[`MutationCreateFamilyInput`](/auto-schema/types/inputs/mutation-create-family-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>

@@ -1,37 +1,47 @@
-import type z from "zod";
+import { z } from "zod";
 import { familyMembershipsTableInsertSchema } from "~/src/drizzle/tables/familyMemberships";
 import { builder } from "~/src/graphql/builder";
 import { FamilyMembershipRole } from "~/src/graphql/enums/FamilyMembershipRole";
 
-export const mutationCreateFamilyInputSchema =
-	familyMembershipsTableInsertSchema
-		.pick({
-			organizationId: true,
-			memberId: true,
-		})
-		.extend({
-			role: familyMembershipsTableInsertSchema.shape.role,
-		});
+const memberSchema = z.object({
+	memberId: z.string(),
+	role: familyMembershipsTableInsertSchema.shape.role,
+});
+
+export const mutationCreateFamilyInputSchema = z.object({
+	organizationId: z.string(),
+	members: z.array(memberSchema).min(2),
+});
 
 export const MutationCreateFamilyInput = builder
 	.inputRef<z.infer<typeof mutationCreateFamilyInputSchema>>(
 		"MutationCreateFamilyInput",
 	)
 	.implement({
-		description: "Input for creating a family.",
+		description: "Input for creating a family with at least two members.",
 		fields: (t) => ({
 			organizationId: t.id({
-				description:
-					"Global identifier of the organization in which the family relationship is being created.",
+				description: "ID of the organization context.",
 				required: true,
 			}),
-			memberId: t.id({
-				description: "ID of the user to add to the family.",
-				required: true,
-			}),
-			role: t.field({
-				description: "Role of the user in the family.",
-				type: FamilyMembershipRole,
+
+			members: t.field({
+				type: [
+					builder
+						.inputRef<{
+							memberId: string;
+							role: typeof FamilyMembershipRole.$inferType;
+						}>("FamilyMemberInput")
+						.implement({
+							fields: (t) => ({
+								memberId: t.id({ required: true }),
+								role: t.field({
+									type: FamilyMembershipRole,
+									required: true,
+								}),
+							}),
+						}),
+				],
 				required: true,
 			}),
 		}),
