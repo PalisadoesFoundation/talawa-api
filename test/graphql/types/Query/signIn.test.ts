@@ -14,6 +14,7 @@ import {
 	vi,
 } from "vitest";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import type {
 	AccountLockedExtensions,
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -33,7 +34,6 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
-import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
 suite("Query field signIn", () => {
 	let user1Email = "";
