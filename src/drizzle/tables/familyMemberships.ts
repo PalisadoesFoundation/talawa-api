@@ -7,8 +7,10 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { familyMembershipRoleEnum } from "~/src/drizzle/enums/familyMembershipRole";
 import { familiesTable } from "./families";
+import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 export const familyMembershipsTable = pgTable(
@@ -41,6 +43,13 @@ export const familyMembershipsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 
+		organizationId: uuid("organization_id")
+			.notNull()
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
+
 		role: text("role", {
 			enum: familyMembershipRoleEnum.options as [string, ...string[]],
 		}).notNull(),
@@ -66,6 +75,7 @@ export const familyMembershipsTable = pgTable(
 		index().on(self.creatorId),
 		index().on(self.familyId),
 		index().on(self.memberId),
+		index().on(self.organizationId),
 	],
 );
 
@@ -90,10 +100,20 @@ export const familyMembershipsTableRelations = relations(
 			relationName: "family_memberships.member_id:users.id",
 		}),
 
+		organization: one(organizationsTable, {
+			fields: [familyMembershipsTable.organizationId],
+			references: [organizationsTable.id],
+			relationName: "families.organization_id:organizations.id",
+		}),
+
 		updater: one(usersTable, {
 			fields: [familyMembershipsTable.updaterId],
 			references: [usersTable.id],
 			relationName: "family_memberships.updater_id:users.id",
 		}),
 	}),
+);
+
+export const familyMembershipsTableInsertSchema = createInsertSchema(
+	familyMembershipsTable,
 );
