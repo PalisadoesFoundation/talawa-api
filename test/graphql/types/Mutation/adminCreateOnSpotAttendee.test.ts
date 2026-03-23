@@ -1283,6 +1283,91 @@ suite("Mutation field adminCreateOnSpotAttendee", () => {
 			).rejects.toBeInstanceOf(TalawaGraphQLError);
 		});
 
+		test("should throw unexpected error when user creation returns undefined", async () => {
+			const resolver = getAdminCreateOnSpotAttendeeResolver();
+			const adminId = faker.string.uuid();
+			const organizationId = faker.string.uuid();
+			const logErrorSpy = vi.fn();
+
+			const fakeCtx = {
+				currentClient: {
+					isAuthenticated: true,
+					user: { id: adminId },
+				},
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({ id: adminId, role: "administrator" }),
+						},
+						organizationMembershipsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								role: "administrator",
+							}),
+						},
+						organizationsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: organizationId,
+								userRegistrationRequired: false,
+							}),
+						},
+					},
+					select: vi.fn().mockReturnValue({
+						from: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([undefined]),
+						}),
+					}),
+					transaction: async (callback: (tx: unknown) => Promise<unknown>) => {
+						const tx = {
+							insert: (table: unknown) => ({
+								values: () => ({
+									returning: vi
+										.fn()
+										.mockResolvedValue(table === usersTable ? [undefined] : []),
+								}),
+							}),
+						};
+						return callback(tx);
+					},
+				},
+				minio: {
+					client: {
+						putObject: vi.fn(),
+					},
+					bucketName: "test-bucket",
+				},
+				log: {
+					error: logErrorSpy,
+				},
+				envConfig: {
+					API_COMMUNITY_NAME: "Test Community",
+					API_FRONTEND_URL: "https://example.com",
+					API_GRAPHQL_OBJECT_FIELD_COST: 1,
+				},
+			};
+
+			await expect(
+				resolver(
+					null,
+					{
+						input: {
+							name: "Created User Undefined",
+							emailAddress: "created-user-undefined@example.com",
+							password: "TempPass123!@#",
+							selectedOrganization: organizationId,
+						},
+					},
+					fakeCtx,
+					{} as GraphQLResolveInfo,
+				),
+			).rejects.toBeInstanceOf(TalawaGraphQLError);
+
+			expect(logErrorSpy).toHaveBeenCalledWith(
+				"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+			);
+		});
+
 		test("should throw unexpected error when membership request creation returns empty array", async () => {
 			const resolver = getAdminCreateOnSpotAttendeeResolver();
 			const adminId = faker.string.uuid();
