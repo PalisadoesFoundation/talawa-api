@@ -27,8 +27,6 @@ export async function cachingSetup(answers: SetupAnswers): Promise<SetupAnswers>
 
 		return answers;
 	} catch (err) {
-		console.error(err);
-		await handlePromptError(err);
-		throw err;
+		return handlePromptError(err);
 	}
 }

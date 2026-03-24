@@ -18,10 +18,11 @@ vi.mock("scripts/setup/validators", () => ({
 }));
 
 // Mock sharedSetup's handlePromptError
+const mockHandlePromptError = vi.fn(async (err: unknown) => {
+	throw err;
+});
 vi.mock("scripts/setup/services/sharedSetup", () => ({
-	handlePromptError: vi.fn(async (err: unknown) => {
-		throw err;
-	}),
+	handlePromptError: (err: unknown) => mockHandlePromptError(err),
 }));
 
 import type { SetupAnswers } from "scripts/setup/services/sharedSetup";
@@ -150,15 +151,12 @@ describe("Setup -> cachingSetup", () => {
 		);
 		const answers: SetupAnswers = {};
 
-		mockPromptList.mockRejectedValue(new Error("Prompt failed"));
-		const consoleErrorSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
+		const err = new Error("Prompt failed");
+		mockPromptList.mockRejectedValue(err);
 
 		await expect(cachingSetup(answers)).rejects.toThrow();
 
-		expect(consoleErrorSpy).toHaveBeenCalled();
-		consoleErrorSpy.mockRestore();
+		expect(mockHandlePromptError).toHaveBeenCalledWith(err);
 	});
 
 	it("should handle errors when retrieving count input", async () => {
@@ -168,15 +166,12 @@ describe("Setup -> cachingSetup", () => {
 		const answers: SetupAnswers = {};
 
 		mockPromptList.mockResolvedValue("true");
-		mockPromptInput.mockRejectedValue(new Error("Input failed"));
-		const consoleErrorSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
+		const err = new Error("Input failed");
+		mockPromptInput.mockRejectedValue(err);
 
 		await expect(cachingSetup(answers)).rejects.toThrow();
 
-		expect(consoleErrorSpy).toHaveBeenCalled();
-		consoleErrorSpy.mockRestore();
+		expect(mockHandlePromptError).toHaveBeenCalledWith(err);
 	});
 
 	it("should return updated answers object", async () => {
