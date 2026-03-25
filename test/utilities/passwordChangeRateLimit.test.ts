@@ -141,7 +141,6 @@ describe("passwordChangeRateLimit (Redis-backed)", () => {
 				await checkPasswordChangeRateLimit(mockCache.cache, userId, mockLogger);
 			}
 
-			// Simulate TTL expiration by clearing the store entry
 			mockCache.store.delete("rate_limit:password_change:user-7");
 
 			await expect(
