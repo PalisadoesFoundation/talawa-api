@@ -596,6 +596,28 @@ export const envConfigSchema = Type.Object({
 	}),
 
 	/**
+	 * Maximum number of password changes allowed per rate limit window.
+	 * Default: 3
+	 */
+	API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 3,
+		}),
+	),
+
+	/**
+	 * Rate limit window duration in seconds for password changes.
+	 * Default: 3600 (1 hour)
+	 */
+	API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 60,
+			default: 3600,
+		}),
+	),
+
+	/**
 	 * Enables the background email queue processor. Default should be false in tests / local unless explicitly needed.
 	 */
 	API_ENABLE_EMAIL_QUEUE: Type.Optional(Type.Boolean()),

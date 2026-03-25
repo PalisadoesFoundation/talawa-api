@@ -58,9 +58,6 @@ builder.mutationField("updateUserPassword", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// Rate limit password changes to prevent abuse
-			await checkPasswordChangeRateLimit(ctx.cache, currentUserId);
-
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),
 			});
@@ -134,6 +131,12 @@ builder.mutationField("updateUserPassword", (t) =>
 					},
 				});
 			}
+
+			await checkPasswordChangeRateLimit(ctx.cache, currentUserId, ctx.log, {
+				maxChanges: ctx.envConfig.API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES,
+				windowSeconds:
+					ctx.envConfig.API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS,
+			});
 
 			const newPasswordHash = await hash(parsedArgs.input.newPassword);
 			await ctx.drizzleClient

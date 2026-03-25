@@ -4,12 +4,12 @@
 
 # Function: checkPasswordChangeRateLimit()
 
-> **checkPasswordChangeRateLimit**(`cache`, `userId`): `Promise`\<`void`\>
+> **checkPasswordChangeRateLimit**(`cache`, `userId`, `logger`, `config?`): `Promise`\<`void`\>
 
-Defined in: [src/utilities/passwordChangeRateLimit.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L32)
+Defined in: [src/utilities/passwordChangeRateLimit.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L49)
 
 Checks if a user has exceeded the rate limit for password changes.
-Uses Redis via CacheService with automatic TTL-based expiration.
+Uses Redis via CacheService with a fixed time window.
 
 ## Parameters
 
@@ -17,7 +17,7 @@ Uses Redis via CacheService with automatic TTL-based expiration.
 
 [`RateLimitCache`](../type-aliases/RateLimitCache.md)
 
-The CacheService instance (Redis-backed)
+The cache instance (Redis-backed)
 
 ### userId
 
@@ -25,10 +25,22 @@ The CacheService instance (Redis-backed)
 
 The user ID to check
 
+### logger
+
+[`RateLimitLogger`](../type-aliases/RateLimitLogger.md)
+
+Logger for violation logging
+
+### config?
+
+[`PasswordChangeRateLimitConfig`](../interfaces/PasswordChangeRateLimitConfig.md)
+
+Optional configurable limits
+
 ## Returns
 
 `Promise`\<`void`\>
 
 ## Throws
 
-TalawaGraphQLError with code "too_many_requests" if rate limit exceeded
+TalawaGraphQLError with code "too_many_requests" and httpStatus 429

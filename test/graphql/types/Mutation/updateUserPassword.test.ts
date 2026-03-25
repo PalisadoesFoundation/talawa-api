@@ -9,10 +9,12 @@ import { Mutation_updateUserPassword } from "../documentNodes";
 
 suite("Mutation field updateUserPassword", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
+	const createdUserIds: string[] = [];
 
 	const createUserWithCleanup = async () => {
 		const user = await createRegularUserUsingAdmin();
 
+		createdUserIds.push(user.userId);
 		cleanupFns.push(async () => {
 			try {
 				await server.drizzleClient
@@ -28,8 +30,11 @@ suite("Mutation field updateUserPassword", () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
-		// Clear rate limit entries from Redis cache
-		await server.cache.clearByPattern("rate_limit:password_change:*");
+		// Scoped cleanup: only clear rate limit keys for users created in this test
+		for (const userId of createdUserIds) {
+			await server.cache.del(`rate_limit:password_change:${userId}`);
+		}
+		createdUserIds.length = 0;
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
@@ -240,7 +245,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(updatedUser?.lockedUntil).toBeNull();
 	});
 
-	test("Allows login with new password after update", async () => {
+	test("Allows chained password update using new password", async () => {
 		const user = await createUserWithCleanup();
 
 		await mercuriusClient.mutate(Mutation_updateUserPassword, {

@@ -6,7 +6,7 @@
 
 > **RateLimitCache** = `object`
 
-Defined in: [src/utilities/passwordChangeRateLimit.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L11)
+Defined in: [src/utilities/passwordChangeRateLimit.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L14)
 
 Minimal cache interface needed for rate limiting (compatible with ctx.cache).
 
@@ -16,7 +16,7 @@ Minimal cache interface needed for rate limiting (compatible with ctx.cache).
 
 > **get**\<`T`\>(`key`): `Promise`\<`T` \| `null`\>
 
-Defined in: [src/utilities/passwordChangeRateLimit.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L12)
+Defined in: [src/utilities/passwordChangeRateLimit.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L15)
 
 #### Type Parameters
 
@@ -40,7 +40,7 @@ Defined in: [src/utilities/passwordChangeRateLimit.ts:12](https://github.com/Pal
 
 > **set**\<`T`\>(`key`, `value`, `ttlSeconds`): `Promise`\<`unknown`\>
 
-Defined in: [src/utilities/passwordChangeRateLimit.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L13)
+Defined in: [src/utilities/passwordChangeRateLimit.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L16)
 
 #### Type Parameters
 
