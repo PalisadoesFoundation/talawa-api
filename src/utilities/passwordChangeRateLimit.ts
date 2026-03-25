@@ -71,7 +71,7 @@ export async function checkPasswordChangeRateLimit(
 	const now = Date.now();
 	const remainingMs = entry.expiresAt - now;
 
-	// If the fixed window has expired (cache TTL race), treat as new window
+	// If the fixed window has expired (cache TTL race), treat it as new window
 	if (remainingMs <= 0) {
 		const expiresAt = Date.now() + windowSeconds * 1000;
 		await cache.set<RateLimitEntry>(
