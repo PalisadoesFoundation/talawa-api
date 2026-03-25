@@ -118,10 +118,17 @@ type Organization {
     first: Int
     includeRecurring: Boolean
     last: Int
+    onlyStartOnDay: Boolean
     startDate: DateTime
     upcomingOnly: Boolean
   ): OrganizationEventsConnection
   eventsCount: Int
+  eventsPreview(
+    endDate: DateTime
+    includeRecurring: Boolean
+    perDayLimit: Int
+    startDate: DateTime
+  ): [OrganizationEventPreviewDay!]
   funds(
     after: String
     before: String
@@ -304,6 +311,10 @@ Whether to include materialized instances from recurring events (default: true)
 
 ##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>onlyStartOnDay</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+When true, return only events whose start day matches the requested day window.
+
 ##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Start date for filtering events (defaults to today)
@@ -315,6 +326,26 @@ Filter to only show upcoming events (events that haven't ended yet). When true, 
 #### [<code style={{ fontWeight: 'normal' }}>Organization.<b>eventsCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Total number of events in the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>eventsPreview</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[OrganizationEventPreviewDay!]</b></code>](/auto-schema/types/objects/organization-event-preview-day.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+Calendar preview grouped by day with a capped number of events per day.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.eventsPreview.<b>endDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+End date for preview filtering (defaults to one month from start date)
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.eventsPreview.<b>includeRecurring</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Whether recurring event instances should be included in preview.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.eventsPreview.<b>perDayLimit</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Maximum events returned per day in preview.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.eventsPreview.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Start date for preview filtering (defaults to current day)
 
 #### [<code style={{ fontWeight: 'normal' }}>Organization.<b>funds</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationFundsConnection</b></code>](/auto-schema/types/objects/organization-funds-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
 
