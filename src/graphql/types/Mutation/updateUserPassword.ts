@@ -8,6 +8,7 @@ import {
 	mutationUpdateUserPasswordInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserPasswordInput";
 import envConfig from "~/src/utilities/graphqLimits";
+import { checkPasswordChangeRateLimit } from "~/src/utilities/passwordChangeRateLimit";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -57,6 +58,15 @@ builder.mutationField("updateUserPassword", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
+			// Rate limit password changes to prevent abuse
+			if (!checkPasswordChangeRateLimit(currentUserId)) {
+				throw new TalawaGraphQLError({
+					message: "Too many password change attempts. Please try again later.",
+					extensions: {
+						code: "too_many_requests",
+					},
+				});
+			}
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),
 			});

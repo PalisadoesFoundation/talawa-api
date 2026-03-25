@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/tables/users";
+import { PASSWORD_CHANGE_RATE_LIMITS } from "~/src/utilities/passwordChangeRateLimit";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -28,6 +29,7 @@ suite("Mutation field updateUserPassword", () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
+		PASSWORD_CHANGE_RATE_LIMITS.clear();
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
@@ -265,5 +267,49 @@ suite("Mutation field updateUserPassword", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateUserPassword).toBe(true);
+	});
+
+	test("Returns too_many_requests when rate limit is exceeded", async () => {
+		const user = await createUserWithCleanup();
+		[
+			{ old: "password", new: "newPassword1xx" },
+			{ old: "newPassword1xx", new: "newPassword2xx" },
+			{ old: "newPassword2xx", new: "newPassword3xx" },
+		];
+
+		for (const pw of passwords) {
+			const res = await mercuriusClient.mutate(Mutation_updateUserPassword, {
+				headers: { authorization: `bearer ${user.authToken}` },
+				variables: {
+					input: {
+						oldPassword: pw.old,
+						newPassword: pw.new,
+						confirmNewPassword: pw.new,
+					},
+				},
+			});
+			expect(res.errors).toBeUndefined();
+			expect(res.data?.updateUserPassword).toBe(true);
+		}
+
+		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
+			headers: { authorization: `bearer ${user.authToken}` },
+			variables: {
+				input: {
+					oldPassword: "newPassword3xx",
+					newPassword: "newPassword4xx",
+					confirmNewPassword: "newPassword4xx",
+				},
+			},
+		});
+
+		expect(result.data?.updateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "too_many_requests" }),
+				}),
+			]),
+		);
 	});
 });
