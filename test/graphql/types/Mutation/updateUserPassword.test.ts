@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/tables/users";
-import { PASSWORD_CHANGE_RATE_LIMITS } from "~/src/utilities/passwordChangeRateLimit";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -29,7 +28,8 @@ suite("Mutation field updateUserPassword", () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
-		PASSWORD_CHANGE_RATE_LIMITS.clear();
+		// Clear rate limit entries from Redis cache
+		await server.cache.clearByPattern("rate_limit:password_change:*");
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
@@ -271,12 +271,14 @@ suite("Mutation field updateUserPassword", () => {
 
 	test("Returns too_many_requests when rate limit is exceeded", async () => {
 		const user = await createUserWithCleanup();
-		[
+		// Passwords cycle: password -> pw1 -> pw2 -> pw3 -> pw4 (blocked)
+		const passwords = [
 			{ old: "password", new: "newPassword1xx" },
 			{ old: "newPassword1xx", new: "newPassword2xx" },
 			{ old: "newPassword2xx", new: "newPassword3xx" },
 		];
 
+		// Make 3 successful password changes (exhausts rate limit)
 		for (const pw of passwords) {
 			const res = await mercuriusClient.mutate(Mutation_updateUserPassword, {
 				headers: { authorization: `bearer ${user.authToken}` },

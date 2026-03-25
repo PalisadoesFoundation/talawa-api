@@ -1,94 +1,64 @@
 /**
- * Simple in-memory rate limiter for password change requests.
+ * Redis-backed rate limiter for password change requests.
  *
- * Note: This is an in-memory solution that won't work across multiple server instances.
- * For production multi-instance deployments, consider using Redis-based rate limiting.
+ * Uses the CacheService (Redis) to store rate limit state, which works
+ * across multiple server instances in production deployments.
  */
+
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+/** Minimal cache interface needed for rate limiting (compatible with ctx.cache). */
+export type RateLimitCache = {
+	get<T>(key: string): Promise<T | null>;
+	set<T>(key: string, value: T, ttlSeconds: number): Promise<unknown>;
+};
+
+const RATE_LIMIT_WINDOW_SECONDS = 60 * 60; // 1 hour
+const MAX_CHANGES_PER_WINDOW = 3;
+const CACHE_KEY_PREFIX = "rate_limit:password_change:";
 
 interface RateLimitEntry {
 	count: number;
-	windowStart: number;
 }
 
-export const PASSWORD_CHANGE_RATE_LIMITS = new Map<string, RateLimitEntry>();
-
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_CHANGES_PER_WINDOW = 3;
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
-let lastCleanupAt = 0;
-
 /**
- * Checks if a user has exceeded the rate limit for password change requests.
- * Uses a fixed window approach (entire window resets when it expires).
+ * Checks if a user has exceeded the rate limit for password changes.
+ * Uses Redis via CacheService with automatic TTL-based expiration.
  *
+ * @param cache - The CacheService instance (Redis-backed)
  * @param userId - The user ID to check
- * @returns true if request is allowed, false if rate limit exceeded
+ * @throws TalawaGraphQLError with code "too_many_requests" if rate limit exceeded
  */
-export function checkPasswordChangeRateLimit(userId: string): boolean {
-	const now = Date.now();
-	const entry = PASSWORD_CHANGE_RATE_LIMITS.get(userId);
-
-	// Perform time-based cleanup every CLEANUP_INTERVAL_MS
-	if (now - lastCleanupAt >= CLEANUP_INTERVAL_MS) {
-		cleanupOldEntries(now);
-		lastCleanupAt = now;
-	}
+export async function checkPasswordChangeRateLimit(
+	cache: RateLimitCache,
+	userId: string,
+): Promise<void> {
+	const key = `${CACHE_KEY_PREFIX}${userId}`;
+	const entry = await cache.get<RateLimitEntry>(key);
 
 	if (!entry) {
-		// First request
-		PASSWORD_CHANGE_RATE_LIMITS.set(userId, {
-			count: 1,
-			windowStart: now,
-		});
-		return true;
+		// First request in window — start tracking
+		await cache.set<RateLimitEntry>(
+			key,
+			{ count: 1 },
+			RATE_LIMIT_WINDOW_SECONDS,
+		);
+		return;
 	}
 
-	// Check if window has expired
-	if (now - entry.windowStart >= RATE_LIMIT_WINDOW_MS) {
-		// Reset window
-		PASSWORD_CHANGE_RATE_LIMITS.set(userId, {
-			count: 1,
-			windowStart: now,
-		});
-		return true;
-	}
-
-	// Within window - check count
 	if (entry.count >= MAX_CHANGES_PER_WINDOW) {
-		return false; // Rate limit exceeded
+		throw new TalawaGraphQLError({
+			message: "Too many password change attempts. Please try again later.",
+			extensions: {
+				code: "too_many_requests",
+			},
+		});
 	}
 
-	// Increment count
-	entry.count++;
-	return true;
-}
-
-/**
- * Cleans up rate limit entries older than the rate limit window.
- * @param now - Current timestamp
- */
-function cleanupOldEntries(now: number): void {
-	for (const [userId, entry] of PASSWORD_CHANGE_RATE_LIMITS.entries()) {
-		if (now - entry.windowStart >= RATE_LIMIT_WINDOW_MS * 2) {
-			PASSWORD_CHANGE_RATE_LIMITS.delete(userId);
-		}
-	}
-}
-
-/**
- * Resets the rate limit for a specific user (useful for testing).
- * @param userId - The user ID to reset
- */
-export function resetPasswordChangeRateLimit(userId: string): void {
-	PASSWORD_CHANGE_RATE_LIMITS.delete(userId);
-}
-
-/**
- * Resets the last cleanup timestamp (useful for testing).
- * @param value - The value to set lastCleanupAt to (default 0)
- * @internal This function is for testing purposes only.
- */
-export function __resetLastCleanupAtForTests(value = 0): void {
-	lastCleanupAt = value;
+	// Increment count, preserve remaining TTL by re-setting with same window
+	await cache.set<RateLimitEntry>(
+		key,
+		{ count: entry.count + 1 },
+		RATE_LIMIT_WINDOW_SECONDS,
+	);
 }
