@@ -21,15 +21,16 @@ import type { CurrentClient } from "../../context";
 import { AuthenticationPayload } from "../AuthenticationPayload";
 
 /**
- * Sign in or sign up using an OAuth provider.
- * Exchanges an authorization code for tokens, creates/links user, and returns AuthenticationPayload.
+ * Sign in using an OAuth provider.
+ * Requires a pre-linked OAuth account row in oauthAccountsTable and returns AuthenticationPayload.
+ * New OAuth links are created via linkOAuthAccount for authenticated users.
  */
 builder.mutationField("signInWithOAuth", (t) =>
 	t.field({
 		type: AuthenticationPayload,
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
-			"Sign in or sign up using an OAuth provider. Exchanges an authorization code for tokens, creates/links user, and returns AuthenticationPayload.",
+			"Sign in with a pre-linked OAuth account by exchanging an authorization code for tokens. This is sign-in-only and requires an existing oauthAccountsTable record; onboarding/linking is handled via linkOAuthAccount for authenticated users.",
 		args: {
 			input: t.arg({
 				type: MutationOAuthLoginInput,
@@ -154,7 +155,7 @@ builder.mutationField("signInWithOAuth", (t) =>
 				});
 			}
 
-			// Use transaction for atomicity: find/create user and link OAuth account
+			// Use transaction for atomicity: find linked OAuth account and user
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// Try to find existing OAuth account
 				const [existingOAuthAccount] = await tx

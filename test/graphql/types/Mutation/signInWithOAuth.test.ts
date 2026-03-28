@@ -289,103 +289,112 @@ suite("Mutation signInWithOAuth", () => {
 
 		test("should set HTTP-Only cookies when cookie helper is available", async () => {
 			const testEmail = `cookie-test-${randomUUID()}@example.com`;
+			let testUserId: string | undefined;
+			let oauthAccountId: string | undefined;
 
-			// Setup: Create user and OAuth account first
-			const [testUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					emailAddress: testEmail,
-					name: "Cookie Test User",
-					passwordHash: "test-hash",
-					role: "regular",
-					isEmailAddressVerified: true,
-				})
-				.returning();
+			try {
+				// Setup: Create user and OAuth account first
+				const [testUser] = await server.drizzleClient
+					.insert(usersTable)
+					.values({
+						emailAddress: testEmail,
+						name: "Cookie Test User",
+						passwordHash: "test-hash",
+						role: "regular",
+						isEmailAddressVerified: true,
+					})
+					.returning();
 
-			if (!testUser) {
-				throw new Error("Failed to create test user");
-			}
+				if (!testUser) {
+					throw new Error("Failed to create test user");
+				}
+				testUserId = testUser.id;
 
-			const [oauthAccount] = await server.drizzleClient
-				.insert(oauthAccountsTable)
-				.values({
-					userId: testUser.id,
-					provider: "google",
+				const [oauthAccount] = await server.drizzleClient
+					.insert(oauthAccountsTable)
+					.values({
+						userId: testUser.id,
+						provider: "google",
+						providerId: "google-cookie-test",
+						email: testEmail,
+						profile: {
+							name: "Cookie Test User",
+							picture: "https://example.com/cookie.jpg",
+						},
+					})
+					.returning();
+
+				if (!oauthAccount) {
+					throw new Error("Failed to create OAuth account");
+				}
+				oauthAccountId = oauthAccount.id;
+
+				// Mock OAuth provider responses
+				mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+					access_token: "mock-access-token",
+					token_type: "Bearer",
+				});
+
+				mockProvider.getUserProfile.mockResolvedValueOnce({
 					providerId: "google-cookie-test",
 					email: testEmail,
-					profile: {
-						name: "Cookie Test User",
-						picture: "https://example.com/cookie.jpg",
-					},
-				})
-				.returning();
+					name: "Cookie Test User",
+					picture: "https://example.com/cookie.jpg",
+					emailVerified: true,
+				} as OAuthUserProfile);
 
-			if (!oauthAccount) {
-				throw new Error("Failed to create OAuth account");
-			}
-
-			// Mock OAuth provider responses
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-cookie-test",
-				email: testEmail,
-				name: "Cookie Test User",
-				picture: "https://example.com/cookie.jpg",
-				emailVerified: true,
-			} as OAuthUserProfile);
-
-			// Use server.inject to make direct HTTP request
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				payload: {
-					query: print(Mutation_signInWithOAuth),
-					variables: {
-						input: {
-							provider: "GOOGLE",
-							authorizationCode: "valid-auth-code",
-							redirectUri: "http://localhost:3000/callback",
+				// Use server.inject to make direct HTTP request
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					payload: {
+						query: print(Mutation_signInWithOAuth),
+						variables: {
+							input: {
+								provider: "GOOGLE",
+								authorizationCode: "valid-auth-code",
+								redirectUri: "http://localhost:3000/callback",
+							},
 						},
 					},
-				},
-			});
+				});
 
-			// Assert: HTTP response is successful
-			expect(response.statusCode).toBe(200);
+				// Assert: HTTP response is successful
+				expect(response.statusCode).toBe(200);
 
-			// Assert: Cookies are set correctly
-			const cookies = response.cookies;
-			expect(cookies).toBeDefined();
-			expect(cookies.length).toBeGreaterThanOrEqual(2);
+				// Assert: Cookies are set correctly
+				const cookies = response.cookies;
+				expect(cookies).toBeDefined();
+				expect(cookies.length).toBeGreaterThanOrEqual(2);
 
-			const accessTokenCookie = cookies.find(
-				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
-			);
-			const refreshTokenCookie = cookies.find(
-				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
-			);
+				const accessTokenCookie = cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				const refreshTokenCookie = cookies.find(
+					(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+				);
 
-			expect(accessTokenCookie).toBeDefined();
-			expect(accessTokenCookie?.httpOnly).toBe(true);
-			expect(accessTokenCookie?.path).toBe("/");
-			expect(accessTokenCookie?.sameSite).toBe("Lax");
+				expect(accessTokenCookie).toBeDefined();
+				expect(accessTokenCookie?.httpOnly).toBe(true);
+				expect(accessTokenCookie?.path).toBe("/");
+				expect(accessTokenCookie?.sameSite).toBe("Lax");
 
-			expect(refreshTokenCookie).toBeDefined();
-			expect(refreshTokenCookie?.httpOnly).toBe(true);
-			expect(refreshTokenCookie?.path).toBe("/");
-			expect(refreshTokenCookie?.sameSite).toBe("Lax");
-
-			// Cleanup
-			await server.drizzleClient
-				.delete(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.id, oauthAccount.id));
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, testUser.id));
+				expect(refreshTokenCookie).toBeDefined();
+				expect(refreshTokenCookie?.httpOnly).toBe(true);
+				expect(refreshTokenCookie?.path).toBe("/");
+				expect(refreshTokenCookie?.sameSite).toBe("Lax");
+			} finally {
+				if (oauthAccountId) {
+					await server.drizzleClient
+						.delete(oauthAccountsTable)
+						.where(eq(oauthAccountsTable.id, oauthAccountId));
+				}
+				if (testUserId) {
+					await server.drizzleClient
+						.delete(usersTable)
+						.where(eq(usersTable.id, testUserId));
+				}
+			}
 		});
 	});
 
