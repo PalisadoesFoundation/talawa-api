@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">assertSecretsPresent | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="assertSecretsPresent | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"assertSecretsPresent","item":"https://docs-api.talawa.io/docs/auto-docs/createServer/functions/assertSecretsPresent"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.e0d42ace.js" defer="defer"></script>
-<script src="/assets/js/main.d33dd6a1.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b05b9027.js" defer="defer"></script>
+<script src="/assets/js/main.5953e488.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -265,6 +265,14 @@ Default: 1 (sample all traces)</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="api_otel_service_name">API_OTEL_SERVICE_NAME?<a href="#api_otel_service_name" class="hash-link" aria-label="Direct link to API_OTEL_SERVICE_NAME?" title="Direct link to API_OTEL_SERVICE_NAME?" translate="no">​</a></h4>
 <p><code>string</code> = <code>...</code></p>
 <p>Service name for OpenTelemetry.</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="api_password_change_rate_limit_max_changes">API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES?<a href="#api_password_change_rate_limit_max_changes" class="hash-link" aria-label="Direct link to API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES?" title="Direct link to API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES?" translate="no">​</a></h4>
+<p><code>number</code> = <code>...</code></p>
+<p>Maximum number of password changes allowed per rate limit window.
+Default: 3</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="api_password_change_rate_limit_window_seconds">API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS?<a href="#api_password_change_rate_limit_window_seconds" class="hash-link" aria-label="Direct link to API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS?" title="Direct link to API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS?" translate="no">​</a></h4>
+<p><code>number</code> = <code>...</code></p>
+<p>Rate limit window duration in seconds for password changes.
+Default: 3600 (1 hour)</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="api_password_reset_admin_token_expires_seconds">API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS?<a href="#api_password_reset_admin_token_expires_seconds" class="hash-link" aria-label="Direct link to API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS?" title="Direct link to API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS?" translate="no">​</a></h4>
 <p><code>number</code> = <code>...</code></p>
 <p>Password reset token expiry for Admin Portal in seconds.
