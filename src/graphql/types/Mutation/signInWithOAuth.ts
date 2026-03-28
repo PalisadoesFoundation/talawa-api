@@ -1,6 +1,4 @@
-import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
 import { oauthAccountsTable } from "~/src/drizzle/tables/oauthAccount";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
@@ -202,126 +200,13 @@ builder.mutationField("signInWithOAuth", (t) =>
 						.set({ lastUsedAt: new Date() })
 						.where(eq(oauthAccountsTable.id, existingOAuthAccount.id));
 				} else {
-					// No existing OAuth account - check if user exists by email
-					let userByEmail: typeof usersTable.$inferSelect | undefined;
-					if (userProfile.email) {
-						[userByEmail] = await tx
-							.select()
-							.from(usersTable)
-							.where(eq(usersTable.emailAddress, userProfile.email));
-					}
-
-					if (userByEmail) {
-						// Path 2: User exists with matching email - link OAuth account
-						// SECURITY: Only link by email if the OAuth provider has verified the email
-						// to prevent account takeover attacks
-						if (!userProfile.emailVerified) {
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "forbidden_action",
-								},
-								message:
-									"A user with this email already exists. Please verify your email with the OAuth provider or sign in directly to link your account.",
-							});
-						}
-
-						user = userByEmail;
-
-						await tx.insert(oauthAccountsTable).values({
-							id: uuidv7(),
-							userId: user.id,
-							provider: args.input.provider.toLowerCase(),
-							providerId: userProfile.providerId,
-							email: userProfile.email,
-							profile: {
-								name: userProfile.name,
-								picture: userProfile.picture,
-								emailVerified: userProfile.emailVerified,
-							},
-							linkedAt: new Date(),
-							lastUsedAt: new Date(),
-						});
-
-						// If OAuth email is verified, mark user email as verified
-						if (userProfile.emailVerified && !user.isEmailAddressVerified) {
-							await tx
-								.update(usersTable)
-								.set({ isEmailAddressVerified: true })
-								.where(eq(usersTable.id, user.id));
-
-							// Update local user object to reflect change
-							user.isEmailAddressVerified = true;
-						}
-					} else {
-						// Path 3: New user - create user and link OAuth account
-						if (!userProfile.email) {
-							// We need an email to create a user
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "forbidden_action",
-								},
-								message:
-									"Your OAuth provider did not share your email address. Please grant email access or use a different sign-in method.",
-							});
-						}
-
-						if (!userProfile.name) {
-							// We need a name to create a user
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "forbidden_action",
-								},
-								message:
-									"Your OAuth provider did not share your name. Please update your profile on the provider or use a different sign-in method.",
-							});
-						}
-
-						const userId = uuidv7();
-
-						// Create the new user
-						const [createdUser] = await tx
-							.insert(usersTable)
-							.values({
-								id: userId,
-								creatorId: userId,
-								emailAddress: userProfile.email,
-								name: userProfile.name,
-								isEmailAddressVerified: userProfile.emailVerified ?? false,
-								role: "regular",
-								// Generate a cryptographically random placeholder that cannot be used for login
-								passwordHash: `$oauth$${randomBytes(32).toString("hex")}`,
-							})
-							.returning();
-
-						if (!createdUser) {
-							ctx.log.error(
-								"Postgres insert operation unexpectedly returned an empty array",
-							);
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "unexpected",
-								},
-							});
-						}
-
-						user = createdUser;
-
-						// Link the OAuth account
-						await tx.insert(oauthAccountsTable).values({
-							id: uuidv7(),
-							userId: user.id,
-							provider: args.input.provider.toLowerCase(),
-							providerId: userProfile.providerId,
-							email: userProfile.email,
-							profile: {
-								name: userProfile.name,
-								picture: userProfile.picture,
-								emailVerified: userProfile.emailVerified,
-							},
-							linkedAt: new Date(),
-							lastUsedAt: new Date(),
-						});
-					}
+					// Throw error if OAuth account is not linked
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action",
+						},
+						message: "OAuth account not found.",
+					});
 				}
 
 				// Reset failed login attempts on successful OAuth authentication
