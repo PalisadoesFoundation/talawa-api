@@ -15,3 +15,4 @@ import "./UserNatalSex";
 import "./UserRole";
 import "./membershipRequestStatus";
 import "./OAuthProvider";
+import "./FamilyMembershipRole";

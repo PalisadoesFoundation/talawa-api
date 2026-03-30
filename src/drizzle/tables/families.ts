@@ -1,15 +1,7 @@
 import { relations, sql } from "drizzle-orm";
-import {
-	index,
-	pgTable,
-	text,
-	timestamp,
-	uniqueIndex,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
 import { familyMembershipsTable } from "./familyMemberships";
-import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 export const familiesTable = pgTable(
@@ -30,15 +22,6 @@ export const familiesTable = pgTable(
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		name: text("name", {}).notNull(),
-
-		organizationId: uuid("organization_id")
-			.notNull()
-			.references(() => organizationsTable.id, {
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			}),
-
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
@@ -52,13 +35,7 @@ export const familiesTable = pgTable(
 			onUpdate: "cascade",
 		}),
 	},
-	(self) => [
-		index().on(self.createdAt),
-		index().on(self.creatorId),
-		index().on(self.name),
-		index().on(self.organizationId),
-		uniqueIndex().on(self.name, self.organizationId),
-	],
+	(self) => [index().on(self.createdAt), index().on(self.creatorId)],
 );
 
 export const familiesTableRelations = relations(
@@ -72,12 +49,6 @@ export const familiesTableRelations = relations(
 
 		familyMembershipsWhereFamily: many(familyMembershipsTable, {
 			relationName: "families.id:family_memberships.family_id",
-		}),
-
-		organization: one(organizationsTable, {
-			fields: [familiesTable.organizationId],
-			references: [organizationsTable.id],
-			relationName: "families.organization_id:organizations.id",
 		}),
 
 		updater: one(usersTable, {

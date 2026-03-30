@@ -1279,6 +1279,19 @@ input EventsByOrganizationIdInput {
   organizationId: ID!
 }
 
+input FamilyMemberInput {
+  memberId: ID!
+  role: FamilyMembershipRole!
+}
+
+"""Possible variants of the role assigned to a user within a family."""
+enum FamilyMembershipRole {
+  adult
+  child
+  head_of_household
+  spouse
+}
+
 """Metadata for files uploaded via presigned URL"""
 input FileMetadataInput {
   """
@@ -3065,6 +3078,14 @@ input MutationCreateEventInput {
   Inclusive start date for all-day events (YYYY-MM-DD). Required when allDay is true.
   """
   startDate: String
+}
+
+"""Input for creating a family with at least two members."""
+input MutationCreateFamilyInput {
+  members: [FamilyMemberInput!]!
+
+  """ID of the organization context."""
+  organizationId: ID!
 }
 
 """"""
