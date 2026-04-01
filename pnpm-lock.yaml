@@ -72,8 +72,8 @@ importers:
         specifier: ^4.1.2
         version: 4.1.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
       '@pothos/plugin-relay':
-        specifier: ^4.3.0
-        version: 4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
+        specifier: ^4.7.0
+        version: 4.7.0(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -1786,8 +1786,8 @@ packages:
       '@pothos/core': '*'
       graphql: ^16.10.0
 
-  '@pothos/plugin-relay@4.6.2':
-    resolution: {integrity: sha512-9aweCv9T53z4+CmE+JF8QoXeAEd+wT/rZflZNzrvH6ln2Lj6qy/EVEcL5BMr6en3/IYHH+ROyHAAsy12t4uIUQ==}
+  '@pothos/plugin-relay@4.7.0':
+    resolution: {integrity: sha512-IQ7f7WLu7uXxiZBcJgUTdspjIVzX3bgvd8XjnzxGJUbn/uE5HlVyCFmvhJffHIIS2OKSHhOOJRMwIwVwauwnSg==}
     peerDependencies:
       '@pothos/core': '*'
       graphql: ^16.10.0
@@ -6177,7 +6177,7 @@ snapshots:
       '@pothos/core': 4.12.0(graphql@16.12.0)
       graphql: 16.12.0
 
-  '@pothos/plugin-relay@4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)':
+  '@pothos/plugin-relay@4.7.0(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)':
     dependencies:
       '@pothos/core': 4.12.0(graphql@16.12.0)
       graphql: 16.12.0
