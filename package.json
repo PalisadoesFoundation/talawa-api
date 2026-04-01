@@ -19,7 +19,7 @@
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.208.0",
     "@opentelemetry/instrumentation-fastify": "^0.55.0",
     "@opentelemetry/instrumentation-http": "^0.211.0",
-    "@opentelemetry/resources": "^2.2.0",
+    "@opentelemetry/resources": "^2.6.1",
     "@opentelemetry/sdk-metrics": "^2.5.0",
     "@opentelemetry/sdk-node": "^0.208.0",
     "@opentelemetry/sdk-trace-base": "^2.2.0",
