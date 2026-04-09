@@ -1457,8 +1457,12 @@ suite("Query field eventsByVolunteer", () => {
 							description: "all-day recurring for specific instance test",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "3027-04-01",
-							endDate: "3027-04-02",
+							startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
+							endDate: new Date(Date.now() + 48 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
 							recurrence: { frequency: "DAILY", count: 3 },
 						},
 					},
@@ -1596,8 +1600,12 @@ suite("Query field eventsByVolunteer", () => {
 							description: "all-day recurring for template instances test",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "3027-05-01",
-							endDate: "3027-05-02",
+							startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
+							endDate: new Date(Date.now() + 48 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
@@ -1700,8 +1708,12 @@ suite("Query field eventsByVolunteer", () => {
 								"far future all-day recurring for fallback startDate branch",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "2040-01-01",
-							endDate: "2040-01-02",
+							startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
+							endDate: new Date(Date.now() + 48 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
