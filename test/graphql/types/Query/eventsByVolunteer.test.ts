@@ -1067,6 +1067,28 @@ suite("Query field eventsByVolunteer", () => {
 			const { userId: freshUserId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(freshUserId);
 
+			// Replace hardcoded dates near line 1103 with dynamic offsets
+			const baseNow = new Date();
+
+			// Main recurring event: 6 days from now
+			const eventStartDt = new Date(baseNow);
+			eventStartDt.setDate(baseNow.getDate() + 6);
+			eventStartDt.setUTCHours(10, 0, 0, 0);
+			const eventStart = eventStartDt.toISOString(); // e.g. "2026-04-15T10:00:00.000Z"
+
+			const eventEndDt = new Date(eventStartDt);
+			eventEndDt.setUTCHours(11, 0, 0, 0);
+			const eventEnd = eventEndDt.toISOString(); // e.g. "2026-04-15T11:00:00.000Z"
+
+			// Neighbor event: 1 day before the main event (preserves ordering assertion)
+			const neighborStartDt = new Date(eventStartDt);
+			neighborStartDt.setDate(eventStartDt.getDate() - 1);
+			const neighborStart = neighborStartDt.toISOString(); // e.g. "2026-04-14T10:00:00.000Z"
+
+			const neighborEndDt = new Date(neighborStartDt);
+			neighborEndDt.setUTCHours(11, 0, 0, 0);
+			const neighborEnd = neighborEndDt.toISOString(); // e.g. "2026-04-14T11:00:00.000Z"
+
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -1100,9 +1122,6 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create a timed recurring event (isRecurringEventTemplate=true, startAt is non-null)
-			const eventStart = "2026-04-15T10:00:00.000Z";
-			const eventEnd = "2026-04-15T11:00:00.000Z";
-
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
@@ -1142,8 +1161,8 @@ suite("Query field eventsByVolunteer", () => {
 							name: "Neighbor Earlier Timed Event",
 							description: "Neighbor event to verify deterministic ordering",
 							organizationId: orgId,
-							startAt: "2026-04-14T10:00:00.000Z",
-							endAt: "2026-04-14T11:00:00.000Z",
+							startAt: neighborStart,
+							endAt: neighborEnd,
 						},
 					},
 				},
@@ -1447,6 +1466,13 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create an all-day recurring event with near-future dates so instances get generated
+			const formatDate = (d: Date): string => d.toISOString().slice(0, 10);
+			const allDayBase2 = new Date();
+			const allDayStart2 = new Date(allDayBase2);
+			allDayStart2.setDate(allDayBase2.getDate() + 1); // tomorrow
+			const allDayEnd2 = new Date(allDayBase2);
+			allDayEnd2.setDate(allDayBase2.getDate() + 2); // day after tomorrow
+
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
@@ -1457,8 +1483,8 @@ suite("Query field eventsByVolunteer", () => {
 							description: "all-day recurring for specific instance test",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "2026-04-01",
-							endDate: "2026-04-02",
+							startDate: formatDate(allDayStart2),
+							endDate: formatDate(allDayEnd2),
 							recurrence: { frequency: "DAILY", count: 3 },
 						},
 					},
@@ -1586,6 +1612,13 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create an all-day recurring event with near-future dates so instances get generated
+			const formatDate = (d: Date): string => d.toISOString().slice(0, 10);
+			const allDayBase2 = new Date();
+			const allDayStart2 = new Date(allDayBase2);
+			allDayStart2.setDate(allDayBase2.getDate() + 1); // tomorrow
+			const allDayEnd2 = new Date(allDayBase2);
+			allDayEnd2.setDate(allDayBase2.getDate() + 2); // day after tomorrow
+
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
@@ -1596,8 +1629,8 @@ suite("Query field eventsByVolunteer", () => {
 							description: "all-day recurring for template instances test",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "2026-05-01",
-							endDate: "2026-05-02",
+							startDate: formatDate(allDayStart2),
+							endDate: formatDate(allDayEnd2),
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
