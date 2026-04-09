@@ -1447,6 +1447,9 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create an all-day recurring event with near-future dates so instances get generated
+			// Note: Dynamic dates required because instance generation only works within
+			// the server's materialization window (~12 months). Fixed far-future dates
+			// would result in zero generated instances.
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
