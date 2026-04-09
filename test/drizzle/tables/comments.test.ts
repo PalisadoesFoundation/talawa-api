@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { faker } from "@faker-js/faker";
 import { hash } from "@node-rs/argon2";
 import { eq, getTableName, type Table } from "drizzle-orm";
@@ -13,7 +14,6 @@ import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { server } from "../../server";
-import { randomUUID } from "node:crypto";
 
 /**
  * Tests for commentsTable definition - validates table schema, relations,
