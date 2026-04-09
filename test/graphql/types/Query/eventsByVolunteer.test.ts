@@ -1708,12 +1708,8 @@ suite("Query field eventsByVolunteer", () => {
 								"far future all-day recurring for fallback startDate branch",
 							organizationId: orgId,
 							allDay: true,
-							startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
-								.toISOString()
-								.slice(0, 10),
-							endDate: new Date(Date.now() + 48 * 60 * 60 * 1000)
-								.toISOString()
-								.slice(0, 10),
+							startDate: "3027-04-01",
+							endDate: "3027-04-02",
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
