@@ -741,6 +741,8 @@ jobs:
         Generate-Schema-Docs,
         Python-Compliance,
       ]
+    # Ignore skipped tests (Required for Dependabot)
+    if: ${{ !cancelled() && !failure() }}
     steps:
       - name: This job intentionally does nothing
         run: echo "This job intentionally does nothing"

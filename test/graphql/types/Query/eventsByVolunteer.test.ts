@@ -1100,8 +1100,8 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create a timed recurring event (isRecurringEventTemplate=true, startAt is non-null)
-			const eventStart = "2026-04-15T10:00:00.000Z";
-			const eventEnd = "2026-04-15T11:00:00.000Z";
+			const eventStart = "3027-04-15T10:00:00.000Z";
+			const eventEnd = "3027-04-15T11:00:00.000Z";
 
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
@@ -1142,8 +1142,8 @@ suite("Query field eventsByVolunteer", () => {
 							name: "Neighbor Earlier Timed Event",
 							description: "Neighbor event to verify deterministic ordering",
 							organizationId: orgId,
-							startAt: "2026-04-14T10:00:00.000Z",
-							endAt: "2026-04-14T11:00:00.000Z",
+							startAt: "3027-04-14T10:00:00.000Z",
+							endAt: "3027-04-14T11:00:00.000Z",
 						},
 					},
 				},
@@ -1447,6 +1447,9 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Create an all-day recurring event with near-future dates so instances get generated
+			// Note: Dynamic dates required because instance generation only works within
+			// the server's materialization window (~12 months). Fixed far-future dates
+			// would result in zero generated instances.
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
@@ -1457,8 +1460,12 @@ suite("Query field eventsByVolunteer", () => {
 							description: "all-day recurring for specific instance test",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "2026-04-01",
-							endDate: "2026-04-02",
+							startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
+							endDate: new Date(Date.now() + 48 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
 							recurrence: { frequency: "DAILY", count: 3 },
 						},
 					},
@@ -1596,8 +1603,12 @@ suite("Query field eventsByVolunteer", () => {
 							description: "all-day recurring for template instances test",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "2026-05-01",
-							endDate: "2026-05-02",
+							startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
+							endDate: new Date(Date.now() + 48 * 60 * 60 * 1000)
+								.toISOString()
+								.slice(0, 10),
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
@@ -1700,8 +1711,8 @@ suite("Query field eventsByVolunteer", () => {
 								"far future all-day recurring for fallback startDate branch",
 							organizationId: orgId,
 							allDay: true,
-							startDate: "2040-01-01",
-							endDate: "2040-01-02",
+							startDate: "3027-04-01",
+							endDate: "3027-04-02",
 							recurrence: { frequency: "DAILY", count: 2 },
 						},
 					},
