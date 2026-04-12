@@ -1,6 +1,6 @@
 ---
-id: sign-in-with-oauth
-title: signInWithOAuth
+id: family-member-input
+title: FamilyMemberInput
 ---
 
 export const Bullet = () => (
@@ -71,20 +71,21 @@ export const Details = ({
   );
 };
 
-Sign in with a pre-linked OAuth account by exchanging an authorization code for tokens. This is sign-in-only and requires an existing oauthAccountsTable record; onboarding/linking is handled via linkOAuthAccount for authenticated users.
+No description
 
 ```graphql
-signInWithOAuth(
-  input: OAuthLoginInput!
-): AuthenticationPayload
+input FamilyMemberInput {
+  memberId: ID!
+  role: FamilyMembershipRole!
+}
 ```
 
-### Arguments
+### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>signInWithOAuth.<b>input</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OAuthLoginInput!</b></code>](/auto-schema/types/inputs/oauth-login-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/>
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMemberInput.<b>memberId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-Input containing OAuth provider details and authorization code.
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMemberInput.<b>role</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>FamilyMembershipRole!</b></code>](/auto-schema/types/enums/family-membership-role.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="enum"/>
 
-### Type
+### Member Of
 
-#### [<code style={{ fontWeight: 'normal' }}><b>AuthenticationPayload</b></code>](/auto-schema/types/objects/authentication-payload.mdx) <Badge class="badge badge--secondary " text="object"/>
+[`MutationCreateFamilyInput`](/auto-schema/types/inputs/mutation-create-family-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>

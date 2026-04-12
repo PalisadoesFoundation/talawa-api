@@ -88,240 +88,102 @@ suite("Mutation signInWithOAuth", () => {
 		test("should sign in existing user with linked OAuth account", async () => {
 			// Setup: Create a user with linked OAuth account
 			const testEmail = `test-${randomUUID()}@example.com`;
-			const [existingUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					emailAddress: testEmail,
-					name: "Existing User",
-					passwordHash: "test-hash",
-					role: "regular",
-					isEmailAddressVerified: true,
-				})
-				.returning();
-
-			if (!existingUser) {
-				throw new Error("Failed to create test user");
-			}
-
+			const uniqueProviderId = `google-${randomUUID()}`;
 			const seedLastUsedAt = new Date("2000-01-01T00:00:00.000Z");
-			const [existingOAuthAccount] = await server.drizzleClient
-				.insert(oauthAccountsTable)
-				.values({
-					userId: existingUser.id,
-					provider: "google",
-					providerId: "google-123",
-					email: testEmail,
-					profile: {
+			let existingUserId: string | undefined;
+			let existingOAuthAccountId: string | undefined;
+
+			try {
+				const [existingUser] = await server.drizzleClient
+					.insert(usersTable)
+					.values({
+						emailAddress: testEmail,
 						name: "Existing User",
-						picture: "https://example.com/pic.jpg",
+						passwordHash: "test-hash",
+						role: "regular",
+						isEmailAddressVerified: true,
+					})
+					.returning();
+
+				if (!existingUser) {
+					throw new Error("Failed to create test user");
+				}
+				existingUserId = existingUser.id;
+
+				const [existingOAuthAccount] = await server.drizzleClient
+					.insert(oauthAccountsTable)
+					.values({
+						userId: existingUser.id,
+						provider: "google",
+						providerId: uniqueProviderId,
+						email: testEmail,
+						profile: {
+							name: "Existing User",
+							picture: "https://example.com/pic.jpg",
+						},
+						lastUsedAt: seedLastUsedAt,
+					})
+					.returning();
+
+				if (!existingOAuthAccount) {
+					throw new Error("Failed to create OAuth account");
+				}
+				existingOAuthAccountId = existingOAuthAccount.id;
+
+				// Mock OAuth provider responses
+				mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+					access_token: "mock-access-token",
+					token_type: "Bearer",
+				});
+
+				mockProvider.getUserProfile.mockResolvedValueOnce({
+					providerId: uniqueProviderId,
+					email: testEmail,
+					name: "Existing User",
+					emailVerified: true,
+				} as OAuthUserProfile);
+
+				const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
+					variables: {
+						input: {
+							provider: "GOOGLE",
+							authorizationCode: "valid-auth-code",
+							redirectUri: "http://localhost:3000/callback",
+						},
 					},
-					lastUsedAt: seedLastUsedAt,
-				})
-				.returning();
+				});
 
-			// Mock OAuth provider responses
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
+				expect(res.errors).toBeUndefined();
+				expect(res.data?.signInWithOAuth).toBeDefined();
+				expect(res.data?.signInWithOAuth?.authenticationToken).toBeDefined();
+				expect(res.data?.signInWithOAuth?.refreshToken).toBeDefined();
+				expect(res.data?.signInWithOAuth?.user?.id).toBe(existingUser?.id);
+				expect(res.data?.signInWithOAuth?.user?.emailAddress).toBe(testEmail);
 
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-123",
-				email: testEmail,
-				name: "Existing User",
-				emailVerified: true,
-			} as OAuthUserProfile);
+				const [updatedOAuthAccount] = await server.drizzleClient
+					.select()
+					.from(oauthAccountsTable)
+					.where(eq(oauthAccountsTable.id, existingOAuthAccount.id));
 
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
+				if (!updatedOAuthAccount) {
+					throw new Error("Failed to find updated OAuth account");
+				}
 
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.signInWithOAuth).toBeDefined();
-			expect(res.data?.signInWithOAuth?.authenticationToken).toBeDefined();
-			expect(res.data?.signInWithOAuth?.refreshToken).toBeDefined();
-			expect(res.data?.signInWithOAuth?.user?.id).toBe(existingUser?.id);
-			expect(res.data?.signInWithOAuth?.user?.emailAddress).toBe(testEmail);
-
-			// Verify lastUsedAt was updated
-			if (!existingOAuthAccount) {
-				throw new Error("Failed to create OAuth account");
+				expect(updatedOAuthAccount.lastUsedAt.getTime()).toBeGreaterThan(
+					seedLastUsedAt.getTime(),
+				);
+			} finally {
+				if (existingOAuthAccountId) {
+					await server.drizzleClient
+						.delete(oauthAccountsTable)
+						.where(eq(oauthAccountsTable.id, existingOAuthAccountId));
+				}
+				if (existingUserId) {
+					await server.drizzleClient
+						.delete(usersTable)
+						.where(eq(usersTable.id, existingUserId));
+				}
 			}
-
-			const [updatedOAuthAccount] = await server.drizzleClient
-				.select()
-				.from(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.id, existingOAuthAccount.id));
-
-			if (!updatedOAuthAccount) {
-				throw new Error("Failed to find updated OAuth account");
-			}
-
-			expect(updatedOAuthAccount.lastUsedAt.getTime()).toBeGreaterThan(
-				seedLastUsedAt.getTime(),
-			);
-
-			// Cleanup
-			await server.drizzleClient
-				.delete(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.id, existingOAuthAccount.id));
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, existingUser.id));
-		});
-
-		test("should link OAuth account to existing user with matching email", async () => {
-			// Setup: Create user WITHOUT OAuth account
-			const testEmail = `test-link-${randomUUID()}@example.com`;
-			const [existingUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					emailAddress: testEmail,
-					name: "User To Link",
-					passwordHash: "test-hash",
-					role: "regular",
-					isEmailAddressVerified: false,
-				})
-				.returning();
-			if (!existingUser) {
-				throw new Error("Failed to create test user");
-			}
-			// Mock OAuth provider responses
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-456",
-				email: testEmail,
-				name: "User To Link",
-				emailVerified: true,
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.signInWithOAuth).toBeDefined();
-			expect(res.data?.signInWithOAuth?.user?.id).toBe(existingUser?.id);
-			expect(res.data?.signInWithOAuth?.user?.isEmailAddressVerified).toBe(
-				true,
-			);
-
-			// Verify OAuth account was created
-			const [createdOAuthAccount] = await server.drizzleClient
-				.select()
-				.from(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.userId, existingUser.id));
-
-			expect(createdOAuthAccount).toBeDefined();
-			expect(createdOAuthAccount?.userId).toBe(existingUser?.id);
-			expect(createdOAuthAccount?.email).toBe(testEmail);
-
-			// Verify user email was marked as verified
-			const [updatedUser] = await server.drizzleClient
-				.select()
-				.from(usersTable)
-				.where(eq(usersTable.id, existingUser.id));
-
-			expect(updatedUser).toBeDefined();
-			expect(updatedUser?.isEmailAddressVerified).toBe(true);
-
-			// Cleanup
-			if (createdOAuthAccount) {
-				await server.drizzleClient
-					.delete(oauthAccountsTable)
-					.where(eq(oauthAccountsTable.id, createdOAuthAccount.id));
-			}
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, existingUser.id));
-		});
-
-		test("should create new user and link OAuth account", async () => {
-			const testEmail = `newuser-${randomUUID()}@example.com`;
-
-			// Mock OAuth provider responses
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-789",
-				email: testEmail,
-				name: "New OAuth User",
-				picture: "https://example.com/newuser.jpg",
-				emailVerified: true,
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-auth-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.signInWithOAuth).toBeDefined();
-			expect(res.data?.signInWithOAuth?.authenticationToken).toBeDefined();
-			expect(res.data?.signInWithOAuth?.refreshToken).toBeDefined();
-			expect(res.data?.signInWithOAuth?.user?.emailAddress).toBe(testEmail);
-			expect(res.data?.signInWithOAuth?.user?.name).toBe("New OAuth User");
-			expect(res.data?.signInWithOAuth?.user?.isEmailAddressVerified).toBe(
-				true,
-			);
-
-			const userId = res.data?.signInWithOAuth?.user?.id;
-
-			expect(userId).toBeDefined();
-			if (!userId) throw new Error("User ID is undefined");
-
-			// Verify user was created
-			const [createdUser] = await server.drizzleClient
-				.select()
-				.from(usersTable)
-				.where(eq(usersTable.id, userId));
-
-			expect(createdUser).toBeDefined();
-			expect(createdUser?.emailAddress).toBe(testEmail);
-			expect(createdUser?.isEmailAddressVerified).toBe(true);
-
-			// Verify OAuth account was created
-			const [createdOAuthAccount] = await server.drizzleClient
-				.select()
-				.from(oauthAccountsTable)
-				.where(eq(oauthAccountsTable.userId, userId));
-
-			expect(createdOAuthAccount).toBeDefined();
-			expect(createdOAuthAccount?.userId).toBe(userId);
-
-			// Cleanup
-			if (createdOAuthAccount) {
-				await server.drizzleClient
-					.delete(oauthAccountsTable)
-					.where(eq(oauthAccountsTable.id, createdOAuthAccount.id));
-			}
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, userId));
 		});
 
 		test("should upgrade user role from regular to administrator when user has admin membership", async () => {
@@ -331,10 +193,6 @@ suite("Mutation signInWithOAuth", () => {
 			await server.drizzleClient.execute(
 				sql`INSERT INTO organizations (id, name, description) VALUES (${organizationId}, ${orgName}, 'Organization for role upgrade test')`,
 			);
-
-			if (!organizationId) {
-				throw new Error("Failed to create test organization");
-			}
 
 			// Setup: Create user with regular role
 			const testEmail = `admin-upgrade-${randomUUID()}@example.com`;
@@ -437,74 +295,112 @@ suite("Mutation signInWithOAuth", () => {
 
 		test("should set HTTP-Only cookies when cookie helper is available", async () => {
 			const testEmail = `cookie-test-${randomUUID()}@example.com`;
+			const cookieProviderId = `google-cookie-test-${randomUUID()}`;
+			let testUserId: string | undefined;
+			let oauthAccountId: string | undefined;
 
-			// Mock OAuth provider responses
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
+			try {
+				// Setup: Create user and OAuth account first
+				const [testUser] = await server.drizzleClient
+					.insert(usersTable)
+					.values({
+						emailAddress: testEmail,
+						name: "Cookie Test User",
+						passwordHash: "test-hash",
+						role: "regular",
+						isEmailAddressVerified: true,
+					})
+					.returning();
 
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-cookie-test",
-				email: testEmail,
-				name: "Cookie Test User",
-				picture: "https://example.com/cookie.jpg",
-				emailVerified: true,
-			} as OAuthUserProfile);
+				if (!testUser) {
+					throw new Error("Failed to create test user");
+				}
+				testUserId = testUser.id;
 
-			// Use server.inject to make direct HTTP request
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				payload: {
-					query: print(Mutation_signInWithOAuth),
-					variables: {
-						input: {
-							provider: "GOOGLE",
-							authorizationCode: "valid-auth-code",
-							redirectUri: "http://localhost:3000/callback",
+				const [oauthAccount] = await server.drizzleClient
+					.insert(oauthAccountsTable)
+					.values({
+						userId: testUser.id,
+						provider: "google",
+						providerId: cookieProviderId,
+						email: testEmail,
+						profile: {
+							name: "Cookie Test User",
+							picture: "https://example.com/cookie.jpg",
+						},
+					})
+					.returning();
+
+				if (!oauthAccount) {
+					throw new Error("Failed to create OAuth account");
+				}
+				oauthAccountId = oauthAccount.id;
+
+				// Mock OAuth provider responses
+				mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
+					access_token: "mock-access-token",
+					token_type: "Bearer",
+				});
+
+				mockProvider.getUserProfile.mockResolvedValueOnce({
+					providerId: cookieProviderId,
+					email: testEmail,
+					name: "Cookie Test User",
+					picture: "https://example.com/cookie.jpg",
+					emailVerified: true,
+				} as OAuthUserProfile);
+
+				// Use server.inject to make direct HTTP request
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					payload: {
+						query: print(Mutation_signInWithOAuth),
+						variables: {
+							input: {
+								provider: "GOOGLE",
+								authorizationCode: "valid-auth-code",
+								redirectUri: "http://localhost:3000/callback",
+							},
 						},
 					},
-				},
-			});
+				});
 
-			// Assert: HTTP response is successful
-			expect(response.statusCode).toBe(200);
+				// Assert: HTTP response is successful
+				expect(response.statusCode).toBe(200);
 
-			// Assert: Cookies are set correctly
-			const cookies = response.cookies;
-			expect(cookies).toBeDefined();
-			expect(cookies.length).toBeGreaterThanOrEqual(2);
+				// Assert: Cookies are set correctly
+				const cookies = response.cookies;
+				expect(cookies).toBeDefined();
+				expect(cookies.length).toBeGreaterThanOrEqual(2);
 
-			const accessTokenCookie = cookies.find(
-				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
-			);
-			const refreshTokenCookie = cookies.find(
-				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
-			);
+				const accessTokenCookie = cookies.find(
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+				);
+				const refreshTokenCookie = cookies.find(
+					(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+				);
 
-			expect(accessTokenCookie).toBeDefined();
-			expect(accessTokenCookie?.httpOnly).toBe(true);
-			expect(accessTokenCookie?.path).toBe("/");
-			expect(accessTokenCookie?.sameSite).toBe("Lax");
+				expect(accessTokenCookie).toBeDefined();
+				expect(accessTokenCookie?.httpOnly).toBe(true);
+				expect(accessTokenCookie?.path).toBe("/");
+				expect(accessTokenCookie?.sameSite).toBe("Lax");
 
-			expect(refreshTokenCookie).toBeDefined();
-			expect(refreshTokenCookie?.httpOnly).toBe(true);
-			expect(refreshTokenCookie?.path).toBe("/");
-			expect(refreshTokenCookie?.sameSite).toBe("Lax");
-
-			// Parse response to get user info for cleanup
-			const responseData = JSON.parse(response.payload);
-			const userId = responseData.data?.signInWithOAuth?.user?.id;
-
-			if (userId) {
-				// Cleanup: Delete OAuth account and user
-				await server.drizzleClient
-					.delete(oauthAccountsTable)
-					.where(eq(oauthAccountsTable.userId, userId));
-				await server.drizzleClient
-					.delete(usersTable)
-					.where(eq(usersTable.id, userId));
+				expect(refreshTokenCookie).toBeDefined();
+				expect(refreshTokenCookie?.httpOnly).toBe(true);
+				expect(refreshTokenCookie?.path).toBe("/");
+				expect(refreshTokenCookie?.sameSite).toBe("Lax");
+			} finally {
+				if (oauthAccountId) {
+					await server.drizzleClient
+						.delete(oauthAccountsTable)
+						.where(eq(oauthAccountsTable.id, oauthAccountId));
+				}
+				if (testUserId) {
+					await server.drizzleClient
+						.delete(usersTable)
+						.where(eq(usersTable.id, testUserId));
+				}
 			}
 		});
 	});
@@ -705,15 +601,19 @@ suite("Mutation signInWithOAuth", () => {
 			expect(res.errors?.[0]?.message).toContain("Invalid user profile");
 		});
 
-		test("should throw error when creating new user without email", async () => {
+		test("should throw error when OAuth account is not linked", async () => {
+			const unlinkedProviderId = `google-unlinked-${randomUUID()}`;
+
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
 				access_token: "mock-access-token",
 				token_type: "Bearer",
 			});
 
 			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-no-email",
-				name: "User Without Email",
+				providerId: unlinkedProviderId,
+				email: `unlinked-${randomUUID()}@example.com`,
+				name: "Unlinked OAuth User",
+				emailVerified: true,
 			} as OAuthUserProfile);
 
 			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
@@ -728,33 +628,7 @@ suite("Mutation signInWithOAuth", () => {
 
 			expect(res.errors).toBeDefined();
 			expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
-			expect(res.errors?.[0]?.message).toContain("did not share your email");
-		});
-
-		test("should throw error when creating new user without name", async () => {
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-no-name",
-				email: "noname@example.com",
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeDefined();
-			expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
-			expect(res.errors?.[0]?.message).toContain("did not share your name");
+			expect(res.errors?.[0]?.message).toContain("OAuth account not found.");
 		});
 
 		test("should handle database anomaly - OAuth account without user", async () => {
@@ -782,11 +656,16 @@ suite("Mutation signInWithOAuth", () => {
 					})),
 				})),
 			};
+			type TransactionCallback = Parameters<
+				typeof server.drizzleClient.transaction
+			>[0];
+			type TransactionClient = Parameters<TransactionCallback>[0];
 
-			const originalTransaction = server.drizzleClient.transaction;
-			server.drizzleClient.transaction = vi.fn(async (callback) =>
-				callback(mockTx),
-			);
+			const transactionSpy = vi
+				.spyOn(server.drizzleClient, "transaction")
+				.mockImplementationOnce(async (callback: TransactionCallback) =>
+					callback(mockTx as unknown as TransactionClient),
+				);
 
 			try {
 				// Test with mock OAuth provider
@@ -814,83 +693,7 @@ suite("Mutation signInWithOAuth", () => {
 
 				expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
 			} finally {
-				server.drizzleClient.transaction = originalTransaction;
-			}
-		});
-
-		test("should handle empty insert result with mock", async () => {
-			const testEmail = `mock-empty-${randomUUID()}@example.com`;
-
-			// Save original drizzleClient
-			const originalClient = server.drizzleClient;
-
-			// Mock server.drizzleClient to force empty insert result edge case for Mutation_signInWithOAuth.
-			// insertCallCount tracks insert calls to return empty array on first user insert, triggering
-			// the error path. DB-level mock required since this edge case is difficult to reproduce with
-			// real database. server.drizzleClient restored in finally to prevent test pollution.
-			let insertCallCount = 0;
-			const mockClient = {
-				...originalClient,
-				transaction: vi.fn(async (callback) => {
-					const mockTx = {
-						...originalClient,
-						select: vi.fn(() => ({
-							from: vi.fn(() => ({
-								where: vi.fn(async () => {
-									// Return empty array for all selects to simulate new user scenario
-									return [];
-								}),
-							})),
-						})),
-						insert: vi.fn(() => ({
-							values: vi.fn(() => ({
-								returning: vi.fn(async () => {
-									insertCallCount++;
-									// First insert is for user - return empty to trigger error
-									if (insertCallCount === 1) {
-										return [];
-									}
-									// Shouldn't get here but return something to avoid further errors
-									return [{ id: "test-id" }];
-								}),
-							})),
-						})),
-					};
-					return callback(mockTx);
-				}),
-			};
-
-			// Temporarily replace drizzleClient
-			server.drizzleClient =
-				mockClient as unknown as typeof server.drizzleClient;
-
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-empty-insert",
-				email: testEmail,
-				name: "Empty Insert User",
-				emailVerified: true,
-			} as OAuthUserProfile);
-
-			try {
-				const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-					variables: {
-						input: {
-							provider: "GOOGLE",
-							authorizationCode: "valid-code",
-							redirectUri: "http://localhost:3000/callback",
-						},
-					},
-				});
-				expect(res.errors).toBeDefined();
-				expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
-			} finally {
-				// Restore original client
-				server.drizzleClient = originalClient;
+				transactionSpy.mockRestore();
 			}
 		});
 	});
@@ -898,11 +701,50 @@ suite("Mutation signInWithOAuth", () => {
 	describe("edge cases", () => {
 		test("should use default refresh token expiry when not configured", async () => {
 			const testEmail = `default-expiry-${randomUUID()}@example.com`;
+			const defaultExpiryProviderId = `google-default-expiry-${randomUUID()}`;
+			let testUserId: string | undefined;
+			let oauthAccountId: string | undefined;
 
 			// Temporarily remove the config value
 			const originalExpiry = server.envConfig.API_REFRESH_TOKEN_EXPIRES_IN;
 
 			try {
+				// Setup: Create user and OAuth account first
+				const [testUser] = await server.drizzleClient
+					.insert(usersTable)
+					.values({
+						emailAddress: testEmail,
+						name: "Default Expiry User",
+						passwordHash: "test-hash",
+						role: "regular",
+						isEmailAddressVerified: true,
+					})
+					.returning();
+
+				if (!testUser) {
+					throw new Error("Failed to create test user");
+				}
+				testUserId = testUser.id;
+
+				const [oauthAccount] = await server.drizzleClient
+					.insert(oauthAccountsTable)
+					.values({
+						userId: testUser.id,
+						provider: "google",
+						providerId: defaultExpiryProviderId,
+						email: testEmail,
+						profile: {
+							name: "Default Expiry User",
+							picture: "https://example.com/pic.jpg",
+						},
+					})
+					.returning();
+
+				if (!oauthAccount) {
+					throw new Error("Failed to create OAuth account");
+				}
+				oauthAccountId = oauthAccount.id;
+
 				delete (server.envConfig as { API_REFRESH_TOKEN_EXPIRES_IN?: number })
 					.API_REFRESH_TOKEN_EXPIRES_IN;
 				mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
@@ -910,7 +752,7 @@ suite("Mutation signInWithOAuth", () => {
 					token_type: "Bearer",
 				});
 				mockProvider.getUserProfile.mockResolvedValueOnce({
-					providerId: "google-default-expiry",
+					providerId: defaultExpiryProviderId,
 					email: testEmail,
 					name: "Default Expiry User",
 					emailVerified: true,
@@ -927,129 +769,24 @@ suite("Mutation signInWithOAuth", () => {
 				expect(res.errors).toBeUndefined();
 				expect(res.data?.signInWithOAuth?.authenticationToken).toBeDefined();
 				expect(res.data?.signInWithOAuth?.refreshToken).toBeDefined();
-				const userId = res.data?.signInWithOAuth?.user?.id;
-				if (!userId) {
-					throw new Error("User ID is undefined");
-				}
-				// Cleanup
-				await server.drizzleClient
-					.delete(oauthAccountsTable)
-					.where(eq(oauthAccountsTable.userId, userId));
-				await server.drizzleClient
-					.delete(usersTable)
-					.where(eq(usersTable.id, userId));
 			} finally {
+				if (oauthAccountId) {
+					await server.drizzleClient
+						.delete(oauthAccountsTable)
+						.where(eq(oauthAccountsTable.id, oauthAccountId));
+				}
+				if (testUserId) {
+					await server.drizzleClient
+						.delete(usersTable)
+						.where(eq(usersTable.id, testUserId));
+				}
 				// Restore config
 				server.envConfig.API_REFRESH_TOKEN_EXPIRES_IN = originalExpiry;
 			}
 		});
-
-		test("should handle user with unverified email linking verified OAuth account", async () => {
-			const testEmail = `unverified-${randomUUID()}@example.com`;
-			const [existingUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					emailAddress: testEmail,
-					name: "Unverified User",
-					passwordHash: "test-hash",
-					role: "regular",
-					isEmailAddressVerified: false,
-				})
-				.returning();
-
-			if (!existingUser) {
-				throw new Error("Failed to create test user");
-			}
-
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-verified",
-				email: testEmail,
-				name: "Unverified User",
-				emailVerified: true,
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.signInWithOAuth?.user?.isEmailAddressVerified).toBe(
-				true,
-			);
-
-			// Cleanup
-			if (existingUser) {
-				await server.drizzleClient
-					.delete(oauthAccountsTable)
-					.where(eq(oauthAccountsTable.userId, existingUser.id));
-				await server.drizzleClient
-					.delete(usersTable)
-					.where(eq(usersTable.id, existingUser.id));
-			}
-		});
-		test("should not update email verification if user already verified", async () => {
-			const testEmail = `already-verified-${randomUUID()}@example.com`;
-			const [existingUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					emailAddress: testEmail,
-					name: "Already Verified User",
-					passwordHash: "test-hash",
-					role: "regular",
-					isEmailAddressVerified: true, // Already verified
-				})
-				.returning();
-
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-already-verified",
-				email: testEmail,
-				name: "Already Verified User",
-				emailVerified: true, // OAuth also verified
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeUndefined();
-			expect(res.data?.signInWithOAuth?.user?.isEmailAddressVerified).toBe(
-				true,
-			);
-
-			// Cleanup
-			if (existingUser) {
-				await server.drizzleClient
-					.delete(oauthAccountsTable)
-					.where(eq(oauthAccountsTable.userId, existingUser.id));
-				await server.drizzleClient
-					.delete(usersTable)
-					.where(eq(usersTable.id, existingUser.id));
-			}
-		});
 		test("should reset failed login attempts on successful OAuth authentication", async () => {
 			const testEmail = `locked-${randomUUID()}@example.com`;
+			const lockedProviderId = `google-unlock-${randomUUID()}`;
 			const futureDate = new Date(Date.now() + 60000); // 1 minute from now
 
 			const [lockedUser] = await server.drizzleClient
@@ -1070,13 +807,29 @@ suite("Mutation signInWithOAuth", () => {
 				throw new Error("Failed to create test user");
 			}
 
+			// Setup: Create OAuth account
+			const [oauthAccount] = await server.drizzleClient
+				.insert(oauthAccountsTable)
+				.values({
+					userId: lockedUser.id,
+					provider: "google",
+					providerId: lockedProviderId,
+					email: testEmail,
+					profile: { name: "Locked User" },
+				})
+				.returning();
+
+			if (!oauthAccount) {
+				throw new Error("Failed to create OAuth account");
+			}
+
 			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
 				access_token: "mock-access-token",
 				token_type: "Bearer",
 			});
 
 			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-unlock",
+				providerId: lockedProviderId,
 				email: testEmail,
 				name: "Locked User",
 				emailVerified: true,
@@ -1113,57 +866,6 @@ suite("Mutation signInWithOAuth", () => {
 			await server.drizzleClient
 				.delete(usersTable)
 				.where(eq(usersTable.id, lockedUser.id));
-		});
-
-		test("should reject linking unverified OAuth email to existing user", async () => {
-			const testEmail = `verified-${randomUUID()}@example.com`;
-			const [existingUser] = await server.drizzleClient
-				.insert(usersTable)
-				.values({
-					emailAddress: testEmail,
-					name: "Verified User",
-					passwordHash: "test-hash",
-					role: "regular",
-					isEmailAddressVerified: true,
-				})
-				.returning();
-
-			if (!existingUser) {
-				throw new Error("Failed to create test user");
-			}
-
-			mockProvider.exchangeCodeForTokens.mockResolvedValueOnce({
-				access_token: "mock-access-token",
-				token_type: "Bearer",
-			});
-
-			mockProvider.getUserProfile.mockResolvedValueOnce({
-				providerId: "google-unverified",
-				email: testEmail,
-				name: "Verified User",
-				emailVerified: false,
-			} as OAuthUserProfile);
-
-			const res = await mercuriusClient.mutate(Mutation_signInWithOAuth, {
-				variables: {
-					input: {
-						provider: "GOOGLE",
-						authorizationCode: "valid-code",
-						redirectUri: "http://localhost:3000/callback",
-					},
-				},
-			});
-
-			expect(res.errors).toBeDefined();
-			expect(res.errors?.[0]?.extensions?.code).toBe("forbidden_action");
-			expect(res.errors?.[0]?.message).toContain(
-				"A user with this email already exists. Please verify your email with the OAuth provider",
-			);
-
-			// Cleanup
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, existingUser.id));
 		});
 	});
 });

@@ -22,6 +22,7 @@ import "./EventVolunteerGroupInput";
 import "./UpdateEventVolunteerGroupInput";
 import "./DeleteEventVolunteerGroupForInstanceInput";
 import "./EventVolunteerGroupWhereInput";
+import "./MutationCreateFamilyInput";
 import "./MutationCreateFundCampaignInput";
 import "./MutationCreateFundCampaignPledgeInput";
 import "./MutationCreateFundInput";

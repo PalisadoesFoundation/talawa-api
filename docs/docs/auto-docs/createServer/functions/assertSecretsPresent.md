@@ -456,6 +456,20 @@ Default: 1 (sample all traces)
 
 Service name for OpenTelemetry.
 
+#### API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES?
+
+`number` = `...`
+
+Maximum number of password changes allowed per rate limit window.
+Default: 3
+
+#### API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS?
+
+`number` = `...`
+
+Rate limit window duration in seconds for password changes.
+Default: 3600 (1 hour)
+
 #### API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS?
 
 `number` = `...`

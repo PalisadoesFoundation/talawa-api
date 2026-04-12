@@ -9,10 +9,12 @@ import { Mutation_updateUserPassword } from "../documentNodes";
 
 suite("Mutation field updateUserPassword", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
+	const createdUserIds: string[] = [];
 
 	const createUserWithCleanup = async () => {
 		const user = await createRegularUserUsingAdmin();
 
+		createdUserIds.push(user.userId);
 		cleanupFns.push(async () => {
 			try {
 				await server.drizzleClient
@@ -28,6 +30,11 @@ suite("Mutation field updateUserPassword", () => {
 
 	afterEach(async () => {
 		vi.restoreAllMocks();
+		// Scoped cleanup: only clear rate limit keys for users created in this test
+		for (const userId of createdUserIds) {
+			await server.cache.del(`rate_limit:password_change:${userId}`);
+		}
+		createdUserIds.length = 0;
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
@@ -238,7 +245,7 @@ suite("Mutation field updateUserPassword", () => {
 		expect(updatedUser?.lockedUntil).toBeNull();
 	});
 
-	test("Allows login with new password after update", async () => {
+	test("Allows chained password update using new password", async () => {
 		const user = await createUserWithCleanup();
 
 		await mercuriusClient.mutate(Mutation_updateUserPassword, {
@@ -265,5 +272,51 @@ suite("Mutation field updateUserPassword", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateUserPassword).toBe(true);
+	});
+
+	test("Returns too_many_requests when rate limit is exceeded", async () => {
+		const user = await createUserWithCleanup();
+		// Passwords cycle: password -> pw1 -> pw2 -> pw3 -> pw4 (blocked)
+		const passwords = [
+			{ old: "password", new: "newPassword1xx" },
+			{ old: "newPassword1xx", new: "newPassword2xx" },
+			{ old: "newPassword2xx", new: "newPassword3xx" },
+		];
+
+		// Make 3 successful password changes (exhausts rate limit)
+		for (const pw of passwords) {
+			const res = await mercuriusClient.mutate(Mutation_updateUserPassword, {
+				headers: { authorization: `bearer ${user.authToken}` },
+				variables: {
+					input: {
+						oldPassword: pw.old,
+						newPassword: pw.new,
+						confirmNewPassword: pw.new,
+					},
+				},
+			});
+			expect(res.errors).toBeUndefined();
+			expect(res.data?.updateUserPassword).toBe(true);
+		}
+
+		const result = await mercuriusClient.mutate(Mutation_updateUserPassword, {
+			headers: { authorization: `bearer ${user.authToken}` },
+			variables: {
+				input: {
+					oldPassword: "newPassword3xx",
+					newPassword: "newPassword4xx",
+					confirmNewPassword: "newPassword4xx",
+				},
+			},
+		});
+
+		expect(result.data?.updateUserPassword ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "too_many_requests" }),
+				}),
+			]),
+		);
 	});
 });

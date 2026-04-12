@@ -1279,6 +1279,19 @@ input EventsByOrganizationIdInput {
   organizationId: ID!
 }
 
+input FamilyMemberInput {
+  memberId: ID!
+  role: FamilyMembershipRole!
+}
+
+"""Possible variants of the role assigned to a user within a family."""
+enum FamilyMembershipRole {
+  adult
+  child
+  head_of_household
+  spouse
+}
+
 """Metadata for files uploaded via presigned URL"""
 input FileMetadataInput {
   """
@@ -2600,7 +2613,7 @@ type Mutation {
   sendVerificationEmail: SendEmailVerificationPayload
 
   """
-  Sign in or sign up using an OAuth provider. Exchanges an authorization code for tokens, creates/links user, and returns AuthenticationPayload.
+  Sign in with a pre-linked OAuth account by exchanging an authorization code for tokens. This is sign-in-only and requires an existing oauthAccountsTable record; onboarding/linking is handled via linkOAuthAccount for authenticated users.
   """
   signInWithOAuth(
     """Input containing OAuth provider details and authorization code."""
@@ -3065,6 +3078,14 @@ input MutationCreateEventInput {
   Inclusive start date for all-day events (YYYY-MM-DD). Required when allDay is true.
   """
   startDate: String
+}
+
+"""Input for creating a family with at least two members."""
+input MutationCreateFamilyInput {
+  members: [FamilyMemberInput!]!
+
+  """ID of the organization context."""
+  organizationId: ID!
 }
 
 """"""

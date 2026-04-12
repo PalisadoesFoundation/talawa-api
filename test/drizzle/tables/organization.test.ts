@@ -15,7 +15,6 @@ import {
 	advertisementsTable,
 	chatsTable,
 	eventsTable,
-	familiesTable,
 	fundsTable,
 	organizationMembershipsTable,
 	postsTable,
@@ -222,7 +221,6 @@ describe("src/drizzle/tables/organizations.ts", () => {
 			expect(relationsResult.chatsWhereOrganization).toBeDefined();
 			expect(relationsResult.creator).toBeDefined();
 			expect(relationsResult.eventsWhereOrganization).toBeDefined();
-			expect(relationsResult.familiesWhereOrganization).toBeDefined();
 			expect(relationsResult.fundsWhereOrganization).toBeDefined();
 			expect(relationsResult.membershipsWhereOrganization).toBeDefined();
 			expect(relationsResult.postsWhereOrganization).toBeDefined();
@@ -298,16 +296,6 @@ describe("src/drizzle/tables/organizations.ts", () => {
 				relationsResult.eventsWhereOrganization as unknown as RelationCall;
 			expect(organization.type).toBe("many");
 			expect(organization.table).toBe(eventsTable);
-		});
-
-		it("should define familiesWhereOrganization as a one-to-many relation with familiesTable", () => {
-			const { one, many } = createMockBuilders();
-			const relationsResult = organizationsTableRelations.config({ one, many });
-
-			const organization =
-				relationsResult.familiesWhereOrganization as unknown as RelationCall;
-			expect(organization.type).toBe("many");
-			expect(organization.table).toBe(familiesTable);
 		});
 
 		it("should define fundsWhereOrganization as a one-to-many relation with fundsTable", () => {

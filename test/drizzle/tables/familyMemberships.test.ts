@@ -82,12 +82,10 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 	/**
 	 * Helper function to create a test family for foreign key references.
 	 */
-	async function createTestFamily(organizationId: string, creatorId?: string) {
+	async function createTestFamily(_organizationId: string, creatorId?: string) {
 		const [familyRow] = await server.drizzleClient
 			.insert(familiesTable)
 			.values({
-				name: `${faker.person.lastName()} Family-${faker.string.uuid()}`,
-				organizationId,
 				creatorId,
 			})
 			.returning({ id: familiesTable.id });
@@ -110,6 +108,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			expect(columns).toContain("creatorId");
 			expect(columns).toContain("familyId");
 			expect(columns).toContain("memberId");
+			expect(columns).toContain("organizationId");
 			expect(columns).toContain("role");
 			expect(columns).toContain("updatedAt");
 			expect(columns).toContain("updaterId");
@@ -134,6 +133,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 		it("should have required fields configured as not null", () => {
 			expect(familyMembershipsTable.familyId.notNull).toBe(true);
 			expect(familyMembershipsTable.memberId.notNull).toBe(true);
+			expect(familyMembershipsTable.organizationId.notNull).toBe(true);
 			expect(familyMembershipsTable.role.notNull).toBe(true);
 			expect(familyMembershipsTable.createdAt.notNull).toBe(true);
 		});
@@ -153,6 +153,8 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			expect(familyMembershipsTable.familyId.columnType).toBe("PgUUID");
 			expect(familyMembershipsTable.memberId.dataType).toBe("string");
 			expect(familyMembershipsTable.memberId.columnType).toBe("PgUUID");
+			expect(familyMembershipsTable.organizationId.dataType).toBe("string");
+			expect(familyMembershipsTable.organizationId.columnType).toBe("PgUUID");
 			expect(familyMembershipsTable.role.dataType).toBe("string");
 			expect(familyMembershipsTable.role.columnType).toBe("PgText");
 			expect(familyMembershipsTable.createdAt.dataType).toBe("date");
@@ -161,7 +163,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 
 		it("should have correct foreign key relationships", () => {
 			const tableConfig = getTableConfig(familyMembershipsTable);
-			expect(tableConfig.foreignKeys).toHaveLength(4);
+			expect(tableConfig.foreignKeys).toHaveLength(5);
 
 			// Test creatorId foreign key
 			const creatorFk = tableConfig.foreignKeys.find(
@@ -210,6 +212,22 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			const memberRef = memberFk?.reference();
 			expect(memberRef?.foreignTable).toBe(usersTable);
 			expect(memberRef?.foreignColumns[0]?.name).toBe("id");
+
+			// Test organizationId foreign key
+			const organizationFk = tableConfig.foreignKeys.find(
+				(fk: { reference: () => { columns: Array<{ name: string }> } }) => {
+					const ref = fk.reference();
+					return ref.columns.some(
+						(col: { name: string }) => col.name === "organization_id",
+					);
+				},
+			);
+			expect(organizationFk).toBeDefined();
+			expect(organizationFk?.onDelete).toBe("cascade");
+			expect(organizationFk?.onUpdate).toBe("cascade");
+			const organizationRef = organizationFk?.reference();
+			expect(organizationRef?.foreignTable).toBe(organizationsTable);
+			expect(organizationRef?.foreignColumns[0]?.name).toBe("id");
 
 			// Test updaterId foreign key
 			const updaterFk = tableConfig.foreignKeys.find(
@@ -311,7 +329,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				};
 			};
 
-			it("should define four relations", () => {
+			it("should define five relations", () => {
 				const { one, many } = createMockBuilders();
 				const relationsResult = familyMembershipsTableRelations.config({
 					one,
@@ -321,6 +339,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				expect(relationsResult.creator).toBeDefined();
 				expect(relationsResult.family).toBeDefined();
 				expect(relationsResult.member).toBeDefined();
+				expect(relationsResult.organization).toBeDefined();
 				expect(relationsResult.updater).toBeDefined();
 			});
 
@@ -343,22 +362,23 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				expect(member.type).toBe("one");
 				expect(member.table).toBe(usersTable);
 
+				const organization =
+					relationsResult.organization as unknown as RelationCall;
+				expect(organization.type).toBe("one");
+				expect(organization.table).toBe(organizationsTable);
+
 				const updater = relationsResult.updater as unknown as RelationCall;
 				expect(updater.type).toBe("one");
 				expect(updater.table).toBe(usersTable);
 			});
 
 			it("should use 'one' builder for all relations", () => {
-				// Verify that all relations are created using the 'one' builder
-				// by checking that they are instances of RelationCall with type "one"
 				const { one, many } = createMockBuilders();
 				const relationsResult = familyMembershipsTableRelations.config({
 					one,
 					many,
 				});
 
-				// All relations should be one-to-one (using 'one' builder)
-				// Verify by checking the type property and that they were created by 'one'
 				const creator = relationsResult.creator as unknown as RelationCall;
 				expect(creator.type).toBe("one");
 				expect(creator).toBeDefined();
@@ -370,6 +390,11 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				const member = relationsResult.member as unknown as RelationCall;
 				expect(member.type).toBe("one");
 				expect(member).toBeDefined();
+
+				const organization =
+					relationsResult.organization as unknown as RelationCall;
+				expect(organization.type).toBe("one");
+				expect(organization).toBeDefined();
 
 				const updater = relationsResult.updater as unknown as RelationCall;
 				expect(updater.type).toBe("one");
@@ -404,6 +429,13 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 					"family_memberships.member_id:users.id",
 				);
 
+				const organizationConfig = relationsResult.organization as unknown as {
+					config: { relationName?: string };
+				};
+				expect(organizationConfig.config.relationName).toBe(
+					"family_memberships.organization_id:organizations.id",
+				);
+
 				const updaterConfig = relationsResult.updater as unknown as {
 					config: { relationName?: string };
 				};
@@ -429,14 +461,12 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				expect(creatorConfig.config.fields).toBeDefined();
 				expect(Array.isArray(creatorConfig.config.fields)).toBe(true);
 				expect(creatorConfig.config.fields?.length).toBe(1);
-				// Access the actual field column object to ensure coverage
 				expect(creatorConfig.config.fields?.[0]).toBe(
 					familyMembershipsTable.creatorId,
 				);
 				expect(creatorConfig.config.references).toBeDefined();
 				expect(Array.isArray(creatorConfig.config.references)).toBe(true);
 				expect(creatorConfig.config.references?.length).toBe(1);
-				// Access the actual reference column object to ensure coverage
 				expect(creatorConfig.config.references?.[0]).toBe(usersTable.id);
 
 				// Test family relation fields and references
@@ -449,14 +479,12 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				expect(familyConfig.config.fields).toBeDefined();
 				expect(Array.isArray(familyConfig.config.fields)).toBe(true);
 				expect(familyConfig.config.fields?.length).toBe(1);
-				// Access the actual field column object to ensure coverage
 				expect(familyConfig.config.fields?.[0]).toBe(
 					familyMembershipsTable.familyId,
 				);
 				expect(familyConfig.config.references).toBeDefined();
 				expect(Array.isArray(familyConfig.config.references)).toBe(true);
 				expect(familyConfig.config.references?.length).toBe(1);
-				// Access the actual reference column object to ensure coverage
 				expect(familyConfig.config.references?.[0]).toBe(familiesTable.id);
 
 				// Test member relation fields and references
@@ -469,15 +497,33 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				expect(memberConfig.config.fields).toBeDefined();
 				expect(Array.isArray(memberConfig.config.fields)).toBe(true);
 				expect(memberConfig.config.fields?.length).toBe(1);
-				// Access the actual field column object to ensure coverage
 				expect(memberConfig.config.fields?.[0]).toBe(
 					familyMembershipsTable.memberId,
 				);
 				expect(memberConfig.config.references).toBeDefined();
 				expect(Array.isArray(memberConfig.config.references)).toBe(true);
 				expect(memberConfig.config.references?.length).toBe(1);
-				// Access the actual reference column object to ensure coverage
 				expect(memberConfig.config.references?.[0]).toBe(usersTable.id);
+
+				// Test organization relation fields and references
+				const organizationConfig = relationsResult.organization as unknown as {
+					config: {
+						fields?: unknown[];
+						references?: unknown[];
+					};
+				};
+				expect(organizationConfig.config.fields).toBeDefined();
+				expect(Array.isArray(organizationConfig.config.fields)).toBe(true);
+				expect(organizationConfig.config.fields?.length).toBe(1);
+				expect(organizationConfig.config.fields?.[0]).toBe(
+					familyMembershipsTable.organizationId,
+				);
+				expect(organizationConfig.config.references).toBeDefined();
+				expect(Array.isArray(organizationConfig.config.references)).toBe(true);
+				expect(organizationConfig.config.references?.length).toBe(1);
+				expect(organizationConfig.config.references?.[0]).toBe(
+					organizationsTable.id,
+				);
 
 				// Test updater relation fields and references
 				const updaterConfig = relationsResult.updater as unknown as {
@@ -489,14 +535,12 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				expect(updaterConfig.config.fields).toBeDefined();
 				expect(Array.isArray(updaterConfig.config.fields)).toBe(true);
 				expect(updaterConfig.config.fields?.length).toBe(1);
-				// Access the actual field column object to ensure coverage
 				expect(updaterConfig.config.fields?.[0]).toBe(
 					familyMembershipsTable.updaterId,
 				);
 				expect(updaterConfig.config.references).toBeDefined();
 				expect(Array.isArray(updaterConfig.config.references)).toBe(true);
 				expect(updaterConfig.config.references?.length).toBe(1);
-				// Access the actual reference column object to ensure coverage
 				expect(updaterConfig.config.references?.[0]).toBe(usersTable.id);
 			});
 		});
@@ -541,7 +585,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			// Test that missing required fields are rejected
 			await expect(
 				server.drizzleClient.insert(familyMembershipsTable).values({
-					// Missing familyId, memberId, role
+					// Missing familyId, memberId, organizationId, role
 				} as never),
 			).rejects.toThrow();
 		});
@@ -562,6 +606,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "adult",
 				})
 				.returning();
@@ -569,6 +614,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			expect(membership).toBeDefined();
 			expect(membership?.familyId).toBe(testFamilyId);
 			expect(membership?.memberId).toBe(testUserId2);
+			expect(membership?.organizationId).toBe(testOrgId);
 			expect(membership?.role).toBe("adult");
 		});
 
@@ -578,6 +624,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				server.drizzleClient.insert(familyMembershipsTable).values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "invalid_role" as never,
 				}),
 			).rejects.toThrow();
@@ -588,6 +635,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				server.drizzleClient.insert(familyMembershipsTable).values({
 					familyId: invalidFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "adult",
 				}),
 			).rejects.toThrow();
@@ -598,6 +646,18 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				server.drizzleClient.insert(familyMembershipsTable).values({
 					familyId: testFamilyId,
 					memberId: invalidMemberId,
+					organizationId: testOrgId,
+					role: "adult",
+				}),
+			).rejects.toThrow();
+
+			// Test invalid foreign key (organizationId)
+			const invalidOrganizationId = faker.string.uuid();
+			await expect(
+				server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: testFamilyId,
+					memberId: testUserId2,
+					organizationId: invalidOrganizationId,
 					role: "adult",
 				}),
 			).rejects.toThrow();
@@ -615,6 +675,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId2,
+				organizationId: testOrgId,
 				role: "adult",
 			});
 
@@ -623,6 +684,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				server.drizzleClient.insert(familyMembershipsTable).values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "child",
 				}),
 			).rejects.toThrow();
@@ -686,15 +748,16 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "adult",
 					creatorId: testUserId1,
 				})
 				.returning();
 
 			expect(membership).toBeDefined();
-			// This table uses composite primary key (familyId + memberId), not an id column
 			expect(membership?.familyId).toBe(testFamilyId);
 			expect(membership?.memberId).toBe(testUserId2);
+			expect(membership?.organizationId).toBe(testOrgId);
 			expect(membership?.role).toBe("adult");
 			expect(membership?.creatorId).toBe(testUserId1);
 			expect(membership?.createdAt).toBeInstanceOf(Date);
@@ -711,6 +774,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId2,
+				organizationId: testOrgId,
 				role: "adult",
 				creatorId: testUserId1,
 			});
@@ -725,6 +789,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			expect(results.length).toBe(1);
 			expect(results[0]?.familyId).toBe(testFamilyId);
 			expect(results[0]?.memberId).toBe(testUserId2);
+			expect(results[0]?.organizationId).toBe(testOrgId);
 			expect(results[0]?.role).toBe("adult");
 		});
 
@@ -744,6 +809,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId3,
+					organizationId: testOrgId,
 					role: "child",
 				})
 				.returning();
@@ -790,6 +856,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId3,
+				organizationId: testOrgId,
 				role: "spouse",
 			});
 
@@ -822,67 +889,124 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 		});
 
 		it("should cascade delete when family is deleted", async () => {
-			// Create a temporary family and membership
 			const tempOrgId = await createTestOrganization();
-			const tempFamilyId = await createTestFamily(tempOrgId, testUserId1);
+			const tempFamilyId = await createTestFamily(testUserId1);
 
-			await server.drizzleClient.insert(familyMembershipsTable).values({
-				familyId: tempFamilyId,
-				memberId: testUserId2,
-				role: "adult",
-			});
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: tempFamilyId,
+					memberId: testUserId2,
+					organizationId: tempOrgId,
+					role: "adult",
+				});
 
-			// Delete the family
-			await server.drizzleClient
-				.delete(familiesTable)
-				.where(eq(familiesTable.id, tempFamilyId));
+				// Delete the family
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
 
-			// Verify membership was cascade deleted
-			const memberships = await server.drizzleClient
-				.select()
-				.from(familyMembershipsTable)
-				.where(eq(familyMembershipsTable.familyId, tempFamilyId));
+				// Verify cascade delete
+				const memberships = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
 
-			expect(memberships).toHaveLength(0);
+				expect(memberships).toHaveLength(0);
+			} finally {
+				// cleanup
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
 
-			// Cleanup
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, tempOrgId));
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
+
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, tempOrgId));
+			}
 		});
 
 		it("should cascade delete when member (user) is deleted", async () => {
-			// Create a temporary user and membership
 			const tempUserId = await createTestUser();
+			const tempOrgId = await createTestOrganization();
+			const tempFamilyId = await createTestFamily(testUserId1);
+
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: tempFamilyId,
+					memberId: tempUserId,
+					organizationId: tempOrgId,
+					role: "child",
+				});
+
+				// Delete the user (member)
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, tempUserId));
+
+				// Verify cascade delete
+				const memberships = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.memberId, tempUserId));
+
+				expect(memberships).toHaveLength(0);
+			} finally {
+				// Cleanup
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
+
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
+
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, tempOrgId));
+
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, tempUserId));
+			}
+		});
+
+		it("should cascade delete when organization is deleted", async () => {
+			// Create a temporary org, family, and membership
 			const tempOrgId = await createTestOrganization();
 			const tempFamilyId = await createTestFamily(tempOrgId, testUserId1);
 
-			await server.drizzleClient.insert(familyMembershipsTable).values({
-				familyId: tempFamilyId,
-				memberId: tempUserId,
-				role: "child",
-			});
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: tempFamilyId,
+					memberId: testUserId2,
+					organizationId: tempOrgId,
+					role: "adult",
+				});
 
-			// Delete the user (member)
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, tempUserId));
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, tempOrgId));
 
-			// Verify membership was cascade deleted
-			const memberships = await server.drizzleClient
-				.select()
-				.from(familyMembershipsTable)
-				.where(eq(familyMembershipsTable.memberId, tempUserId));
+				const memberships = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.organizationId, tempOrgId));
 
-			expect(memberships).toHaveLength(0);
-
-			// Cleanup
-			await server.drizzleClient
-				.delete(familiesTable)
-				.where(eq(familiesTable.id, tempFamilyId));
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, tempOrgId));
+				expect(memberships).toHaveLength(0);
+			} finally {
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, tempFamilyId));
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, tempFamilyId));
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, tempOrgId));
+			}
 		});
 
 		it("should set creatorId to null when creator is deleted", async () => {
@@ -904,6 +1028,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "adult",
 					creatorId: tempCreatorId,
 				})
@@ -949,6 +1074,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId2,
+				organizationId: testOrgId,
 				role: "adult",
 			});
 
@@ -991,7 +1117,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			const invalidCreatorId = faker.string.uuid();
 
 			// Clean up any existing membership with the same composite key
-			// to ensure the test fails for the correct reason (invalid FK, not PK conflict)
 			await server.drizzleClient
 				.delete(familyMembershipsTable)
 				.where(
@@ -1005,6 +1130,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				server.drizzleClient.insert(familyMembershipsTable).values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "adult",
 					creatorId: invalidCreatorId,
 				}),
@@ -1028,6 +1154,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId2,
+				organizationId: testOrgId,
 				role: "adult",
 			});
 
@@ -1063,8 +1190,8 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 		};
 
 		it("should have appropriate indexes defined", () => {
-			// Should have 4 indexes: createdAt, creatorId, familyId, memberId
-			expect(tableConfig.indexes).toHaveLength(4);
+			// Should have 5 indexes: createdAt, creatorId, familyId, memberId, organizationId
+			expect(tableConfig.indexes).toHaveLength(5);
 		});
 
 		it("should have an index on createdAt column", () => {
@@ -1103,6 +1230,15 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			expect(memberIdIndex).toBeDefined();
 		});
 
+		it("should have an index on organizationId column", () => {
+			const organizationIdIndex = tableConfig.indexes.find(
+				(idx) =>
+					idx.config.columns.length === 1 &&
+					getColumnName(idx.config.columns[0]) === "organization_id",
+			);
+			expect(organizationIdIndex).toBeDefined();
+		});
+
 		it("should efficiently query using indexed createdAt column", async () => {
 			const testOrgId = await createTestOrganization();
 			const testUserId = await createTestUser();
@@ -1112,6 +1248,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId,
+					organizationId: testOrgId,
 					role: "head_of_household",
 				})
 				.returning({ createdAt: familyMembershipsTable.createdAt });
@@ -1131,7 +1268,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				);
 
 			expect(results.length).toBeGreaterThan(0);
-			// Verify createdAt is within expected range (indexed column was used)
 			expect(results[0]?.createdAt).toBeInstanceOf(Date);
 			if (results[0]?.createdAt) {
 				expect(results[0].createdAt.getTime()).toBe(
@@ -1163,6 +1299,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId2,
+				organizationId: testOrgId,
 				role: "adult",
 				creatorId: testUserId1,
 			});
@@ -1200,6 +1337,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId,
+				organizationId: testOrgId,
 				role: "head_of_household",
 			});
 
@@ -1233,6 +1371,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient.insert(familyMembershipsTable).values({
 				familyId: testFamilyId,
 				memberId: testUserId,
+				organizationId: testOrgId,
 				role: "adult",
 			});
 
@@ -1256,6 +1395,41 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			await server.drizzleClient
 				.delete(usersTable)
 				.where(eq(usersTable.id, testUserId));
+		});
+
+		it("should efficiently query using indexed organizationId column", async () => {
+			const testOrgId = await createTestOrganization();
+			const testUserId = await createTestUser();
+			const testFamilyId = await createTestFamily(testOrgId, testUserId);
+
+			try {
+				await server.drizzleClient.insert(familyMembershipsTable).values({
+					familyId: testFamilyId,
+					memberId: testUserId,
+					organizationId: testOrgId,
+					role: "head_of_household",
+				});
+
+				const results = await server.drizzleClient
+					.select()
+					.from(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.organizationId, testOrgId));
+
+				expect(results.length).toBeGreaterThan(0);
+			} finally {
+				await server.drizzleClient
+					.delete(familyMembershipsTable)
+					.where(eq(familyMembershipsTable.familyId, testFamilyId));
+				await server.drizzleClient
+					.delete(familiesTable)
+					.where(eq(familiesTable.id, testFamilyId));
+				await server.drizzleClient
+					.delete(organizationsTable)
+					.where(eq(organizationsTable.id, testOrgId));
+				await server.drizzleClient
+					.delete(usersTable)
+					.where(eq(usersTable.id, testUserId));
+			}
 		});
 	});
 
@@ -1295,9 +1469,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 		});
 
 		it("should enforce enum values for enum columns", () => {
-			// Test that invalid enum values are rejected at the schema level
-			// Note: The enum constraint is enforced at TypeScript/Drizzle level,
-			// not at the PostgreSQL database level, so we test using the enum schema
 			const invalidRoles = [
 				"invalid_role",
 				"admin",
@@ -1327,6 +1498,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "adult",
 				})
 				.returning();
@@ -1349,6 +1521,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "child",
 				})
 				.returning();
@@ -1371,6 +1544,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "head_of_household",
 				})
 				.returning();
@@ -1393,6 +1567,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.values({
 					familyId: testFamilyId,
 					memberId: testUserId2,
+					organizationId: testOrgId,
 					role: "spouse",
 				})
 				.returning();

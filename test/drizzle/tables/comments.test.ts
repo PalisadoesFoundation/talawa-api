@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { faker } from "@faker-js/faker";
 import { hash } from "@node-rs/argon2";
 import { eq, getTableName, type Table } from "drizzle-orm";
@@ -391,7 +392,7 @@ describe("src/drizzle/tables/comments.ts - Table Definition Tests", () => {
 			const [org] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${randomUUID()}`,
 					description: faker.lorem.sentence(),
 					creatorId: null,
 					updaterId: null,
@@ -450,7 +451,7 @@ describe("src/drizzle/tables/comments.ts - Table Definition Tests", () => {
 			const [org] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${randomUUID()}`,
 					description: faker.lorem.sentence(),
 					creatorId: null,
 					updaterId: null,
@@ -491,7 +492,7 @@ describe("src/drizzle/tables/comments.ts - Table Definition Tests", () => {
 			const [org] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${randomUUID()}`,
 					description: faker.lorem.sentence(),
 					creatorId: null,
 					updaterId: null,
@@ -536,7 +537,7 @@ describe("src/drizzle/tables/comments.ts - Table Definition Tests", () => {
 			const [org] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${randomUUID()}`,
 					description: faker.lorem.sentence(),
 					creatorId: null,
 					updaterId: null,
@@ -586,7 +587,7 @@ describe("src/drizzle/tables/comments.ts - Table Definition Tests", () => {
 			const [org] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${randomUUID()}`,
 					description: faker.lorem.sentence(),
 					creatorId: null,
 					updaterId: null,

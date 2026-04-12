@@ -8,6 +8,7 @@ import {
 	mutationUpdateUserPasswordInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserPasswordInput";
 import envConfig from "~/src/utilities/graphqLimits";
+import { checkPasswordChangeRateLimit } from "~/src/utilities/passwordChangeRateLimit";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -130,6 +131,12 @@ builder.mutationField("updateUserPassword", (t) =>
 					},
 				});
 			}
+
+			await checkPasswordChangeRateLimit(ctx.cache, currentUserId, ctx.log, {
+				maxChanges: ctx.envConfig.API_PASSWORD_CHANGE_RATE_LIMIT_MAX_CHANGES,
+				windowSeconds:
+					ctx.envConfig.API_PASSWORD_CHANGE_RATE_LIMIT_WINDOW_SECONDS,
+			});
 
 			const newPasswordHash = await hash(parsedArgs.input.newPassword);
 			await ctx.drizzleClient

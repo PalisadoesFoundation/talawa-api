@@ -1,6 +1,6 @@
 ---
-id: sign-in-with-oauth
-title: signInWithOAuth
+id: family-membership-role
+title: FamilyMembershipRole
 ---
 
 export const Bullet = () => (
@@ -71,20 +71,27 @@ export const Details = ({
   );
 };
 
-Sign in with a pre-linked OAuth account by exchanging an authorization code for tokens. This is sign-in-only and requires an existing oauthAccountsTable record; onboarding/linking is handled via linkOAuthAccount for authenticated users.
+Possible variants of the role assigned to a user within a family.
 
 ```graphql
-signInWithOAuth(
-  input: OAuthLoginInput!
-): AuthenticationPayload
+enum FamilyMembershipRole {
+  adult
+  child
+  head_of_household
+  spouse
+}
 ```
 
-### Arguments
+### Values
 
-#### [<code style={{ fontWeight: 'normal' }}>signInWithOAuth.<b>input</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OAuthLoginInput!</b></code>](/auto-schema/types/inputs/oauth-login-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/>
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMembershipRole.<b>adult</b></code>](#)
 
-Input containing OAuth provider details and authorization code.
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMembershipRole.<b>child</b></code>](#)
 
-### Type
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMembershipRole.<b>head_of_household</b></code>](#)
 
-#### [<code style={{ fontWeight: 'normal' }}><b>AuthenticationPayload</b></code>](/auto-schema/types/objects/authentication-payload.mdx) <Badge class="badge badge--secondary " text="object"/>
+#### [<code style={{ fontWeight: 'normal' }}>FamilyMembershipRole.<b>spouse</b></code>](#)
+
+### Member Of
+
+[`FamilyMemberInput`](/auto-schema/types/inputs/family-member-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>
