@@ -62,9 +62,7 @@ describe("updateEnvVariable", () => {
 
 		await expect(
 			updateEnvVariable({ EXISTING_VAR: "new_value" }),
-		).rejects.toThrow(
-			"Write failed",
-		);
+		).rejects.toThrow("Write failed");
 	});
 
 	it("should create .env if it does not exist", async () => {

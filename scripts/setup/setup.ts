@@ -748,7 +748,9 @@ function registerCleanupHandlers(): () => void {
 	};
 }
 
-async function maybeReconfigureExistingEnv(hasExistingEnv: boolean): Promise<void> {
+async function maybeReconfigureExistingEnv(
+	hasExistingEnv: boolean,
+): Promise<void> {
 	if (!hasExistingEnv) {
 		return;
 	}
@@ -811,7 +813,9 @@ async function maybeCreateEnvBackup(
 	}
 }
 
-async function runCoreSetupPrompts(answers: SetupAnswers): Promise<SetupAnswers> {
+async function runCoreSetupPrompts(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
 	answers = await setCI(answers);
 	await initializeEnvFile(answers);
 

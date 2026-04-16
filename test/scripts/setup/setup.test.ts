@@ -318,9 +318,9 @@ describe("Setup", () => {
 			throw new Error(`process.exit called:${code}`);
 		});
 
-		await expect(SetupModule.gracefulCleanup(undefined, exitFn)).rejects.toThrow(
-			"process.exit called:0",
-		);
+		await expect(
+			SetupModule.gracefulCleanup(undefined, exitFn),
+		).rejects.toThrow("process.exit called:0");
 
 		// Check that atomic restore was called (.env.backup -> .env)
 		expect(fsCopyFileSpy).toHaveBeenCalledWith(".env.backup", ".env");
@@ -356,9 +356,9 @@ describe("Setup", () => {
 			throw new Error(`process.exit called:${code}`);
 		});
 
-		await expect(SetupModule.gracefulCleanup(undefined, exitFn)).rejects.toThrow(
-			"process.exit called:1",
-		);
+		await expect(
+			SetupModule.gracefulCleanup(undefined, exitFn),
+		).rejects.toThrow("process.exit called:1");
 
 		// Check that error message is shown
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
