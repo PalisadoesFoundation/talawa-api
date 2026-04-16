@@ -94,8 +94,8 @@ describe("gracefulCleanup", () => {
 			"✅ Original configuration restored successfully",
 		);
 
-		// Assert exitFn was called with 0 (success)
-		expect(exitFnMock).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 1 for signal-driven interrupt
+		expect(exitFnMock).toHaveBeenCalledWith(1);
 	});
 
 	it("should handle cleanupTemp throwing error and continue to restore backup", async () => {
@@ -317,7 +317,7 @@ describe("gracefulCleanup", () => {
 			"✅ Original configuration restored successfully",
 		);
 
-		// Assert exitFn was called with 0 (success)
-		expect(exitFnMock).toHaveBeenCalledWith(0);
+		// Assert exitFn was called with 1 for signal-driven interrupt
+		expect(exitFnMock).toHaveBeenCalledWith(1);
 	});
 });
