@@ -1,5 +1,5 @@
-import fs from "node:fs";
 import inquirer from "inquirer";
+import * as EnvFileManager from "scripts/setup/envFileManager";
 import * as SetupModule from "scripts/setup/setup";
 import { checkEnvFile, initializeEnvFile, setCI } from "scripts/setup/setup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -24,19 +24,19 @@ describe("checkEnvFile", () => {
 		vi.resetAllMocks();
 	});
 
-	it("should return true if .env file exists", () => {
-		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+	it("should return true if .env file exists", async () => {
+		vi.spyOn(EnvFileManager, "checkEnvFile").mockResolvedValue(true);
 
-		const result = checkEnvFile();
-		expect(fs.existsSync).toHaveBeenCalledWith(envFileName);
+		const result = await checkEnvFile();
+		expect(EnvFileManager.checkEnvFile).toHaveBeenCalledWith(envFileName);
 		expect(result).toBe(true);
 	});
 
-	it("should return false if .env file does not exist", () => {
-		vi.spyOn(fs, "existsSync").mockReturnValue(false);
+	it("should return false if .env file does not exist", async () => {
+		vi.spyOn(EnvFileManager, "checkEnvFile").mockResolvedValue(false);
 
-		const result = checkEnvFile();
-		expect(fs.existsSync).toHaveBeenCalledWith(envFileName);
+		const result = await checkEnvFile();
+		expect(EnvFileManager.checkEnvFile).toHaveBeenCalledWith(envFileName);
 		expect(result).toBe(false);
 	});
 });
@@ -58,32 +58,40 @@ describe("initializeEnvFile", () => {
 	it("should read from .env.devcontainer when answers.CI is 'false'", async () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "false" });
 		const answers = await setCI({});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("KEY1=VAL1\nKEY2=VAL2");
+		vi.spyOn(EnvFileManager, "initializeEnvFile").mockResolvedValue(undefined);
 
-		initializeEnvFile(answers);
+		await initializeEnvFile(answers);
 
-		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.devcontainer");
+		expect(EnvFileManager.initializeEnvFile).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ci: false,
+				envFile: ".env",
+				backupFile: ".env.backup",
+				tempFile: ".env.tmp",
+				templateCiFile: "envFiles/.env.ci",
+				templateDevcontainerFile: "envFiles/.env.devcontainer",
+			}),
+		);
 	});
 
 	it("should throw an error if the environment file is missing", async () => {
-		vi.spyOn(fs, "existsSync").mockImplementation(() => false);
+		vi.spyOn(EnvFileManager, "initializeEnvFile").mockRejectedValue(
+			new Error(
+				"Configuration file 'envFiles/.env.devcontainer' is missing. Please create the file or use a different environment configuration.",
+			),
+		);
 
-		expect(() => initializeEnvFile({})).toThrow(
+		await expect(initializeEnvFile({})).rejects.toThrow(
 			"Configuration file 'envFiles/.env.devcontainer' is missing. Please create the file or use a different environment configuration.",
 		);
 	});
 
 	it("should catch errors if reading the env file fails", async () => {
-		vi.spyOn(fs, "existsSync").mockImplementation(
-			(path) => path === devEnvFile,
+		vi.spyOn(EnvFileManager, "initializeEnvFile").mockRejectedValue(
+			new Error("File read error"),
 		);
-		vi.spyOn(fs, "readFileSync").mockImplementation(() => {
-			throw new Error("File read error");
-		});
 
-		expect(() => initializeEnvFile({})).toThrow(
-			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
-		);
+		await expect(initializeEnvFile({})).rejects.toThrow("File read error");
 
 		expect(console.error).toHaveBeenCalledWith(
 			`❌ Error: Failed to load environment file '${devEnvFile}'.`,
@@ -94,11 +102,20 @@ describe("initializeEnvFile", () => {
 	it("should read from .env.ci when answers.CI is 'true'", async () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "true" });
 		const answers = await setCI({});
-		vi.spyOn(fs, "readFileSync").mockReturnValue("FOO=bar");
+		vi.spyOn(EnvFileManager, "initializeEnvFile").mockResolvedValue(undefined);
 
-		initializeEnvFile(answers);
+		await initializeEnvFile(answers);
 
-		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.ci");
+		expect(EnvFileManager.initializeEnvFile).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ci: true,
+				envFile: ".env",
+				backupFile: ".env.backup",
+				tempFile: ".env.tmp",
+				templateCiFile: "envFiles/.env.ci",
+				templateDevcontainerFile: "envFiles/.env.devcontainer",
+			}),
+		);
 	});
 
 	it("should log error and exit with code 1 if inquirer fails", async () => {

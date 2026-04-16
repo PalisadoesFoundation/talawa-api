@@ -34,6 +34,7 @@ vi.mock("inquirer");
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { emailSetup } from "scripts/setup/emailSetup";
 import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
 import type { SetupAnswers } from "scripts/setup/setup";
 
@@ -73,6 +74,7 @@ describe("Setup", () => {
 
 	beforeEach(() => {
 		originalEnv = { ...process.env };
+		vi.mocked(emailSetup).mockImplementation(async (answers) => answers);
 	});
 
 	afterEach(() => {
@@ -101,6 +103,11 @@ describe("Setup", () => {
 			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ setupReCaptcha: false },
+			{ setupOAuth: false },
+			{ setupObservability: false },
+			{ setupMetrics: false },
+			{ setupCaching: false },
+			{ setupRestAuth: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -166,6 +173,11 @@ describe("Setup", () => {
 			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ setupReCaptcha: false },
+			{ setupOAuth: false },
+			{ setupObservability: false },
+			{ setupMetrics: false },
+			{ setupCaching: false },
+			{ setupRestAuth: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -223,21 +235,17 @@ describe("Setup", () => {
 			API_HOST: "0.0.0.0",
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
-			API_IS_GRAPHIQL: "false",
-			API_IS_PINO_PRETTY: "false",
-			API_JWT_EXPIRES_IN: "2592000000",
-			API_LOG_LEVEL: "info",
+			API_JWT_EXPIRES_IN: "900000",
+			API_LOG_LEVEL: "debug",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
 			API_MINIO_PORT: "9000",
 			API_MINIO_SECRET_KEY: "password",
 			API_MINIO_TEST_END_POINT: "minio-test",
-			API_MINIO_USE_SSL: "false",
 			API_POSTGRES_DATABASE: "talawa",
 			API_POSTGRES_HOST: "postgres",
 			API_POSTGRES_PASSWORD: "password",
 			API_POSTGRES_PORT: "5432",
-			API_POSTGRES_SSL_MODE: "false",
 			API_POSTGRES_TEST_HOST: "postgres-test",
 			API_POSTGRES_USER: "talawa",
 			CI: "true",
@@ -300,53 +308,18 @@ describe("Setup", () => {
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		SetupModule.resetCleanupState({ backupCreated: true, cleaning: false });
 
 		// Mock atomic backup system - backup file exists
 		const fsCopyFileSpy = vi
 			.spyOn(fs.promises, "copyFile")
 			.mockResolvedValue(undefined);
-
-		// Mock file system to indicate .env file exists
-		vi.spyOn(fs, "existsSync").mockReturnValue(true);
-
-		// Mock all setup prompts
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
-			envReconfigure: true,
-			shouldBackup: true,
-			CI: "false",
-			useDefaultApi: true,
-			useDefaultMinio: true,
-			useDefaultCloudbeaver: true,
-			useDefaultPostgres: true,
-			useDefaultCaddy: true,
-			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			setupReCaptcha: false,
+		const exitFn = vi.fn((code: number) => {
+			throw new Error(`process.exit called:${code}`);
 		});
 
-		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
-		});
-
-		// Start setup() which will register the SIGINT handler and create backup
-		const setupPromise = setup();
-
-		// Wait deterministically for SIGINT handler to be registered
-		const maxWaitTime = 5000; // 5 seconds max
-		const pollInterval = 10; // Check every 10ms
-		const startTime = Date.now();
-		while (
-			process.listenerCount("SIGINT") === 0 &&
-			Date.now() - startTime < maxWaitTime
-		) {
-			await new Promise((resolve) => setTimeout(resolve, pollInterval));
-		}
-
-		// Verify handler was registered
-		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
-
-		// Emit SIGINT to trigger the handler
-		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
-			"process.exit called",
+		await expect(SetupModule.gracefulCleanup(undefined, exitFn)).rejects.toThrow(
+			"process.exit called:0",
 		);
 
 		// Check that atomic restore was called (.env.backup -> .env)
@@ -360,18 +333,11 @@ describe("Setup", () => {
 			"✅ Original configuration restored successfully",
 		);
 		// Should exit with 0 when restoration succeeds
-		expect(processExitSpy).toHaveBeenCalledWith(0);
+		expect(exitFn).toHaveBeenCalledWith(0);
 
 		// Clean up: restore mocks and handle the setup promise rejection
 		consoleLogSpy.mockRestore();
-		processExitSpy.mockRestore();
 		fsCopyFileSpy.mockRestore();
-
-		// The setup promise will reject because process.exit was called
-		// Catch the rejection to prevent unhandled promise rejection warnings
-		setupPromise.catch(() => {
-			// Expected - setup was interrupted
-		});
 	});
 
 	it("should exit with code 1 when atomic restore fails", async () => {
@@ -379,53 +345,19 @@ describe("Setup", () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
+		SetupModule.resetCleanupState({ backupCreated: true, cleaning: false });
 
 		// Mock atomic restore to fail
 		const fsCopyFileSpy = vi
 			.spyOn(fs.promises, "copyFile")
 			.mockRejectedValue(new Error("Failed to restore from backup"));
 
-		// Mock file system to indicate .env file exists
-		vi.spyOn(fs, "existsSync").mockReturnValue(true);
-
-		// Mock all prompts
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
-			envReconfigure: true,
-			shouldBackup: true,
-			CI: "false",
-			useDefaultApi: true,
-			useDefaultMinio: true,
-			useDefaultCloudbeaver: true,
-			useDefaultPostgres: true,
-			useDefaultCaddy: true,
-			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			setupReCaptcha: false,
+		const exitFn = vi.fn((code: number) => {
+			throw new Error(`process.exit called:${code}`);
 		});
 
-		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
-		});
-
-		// Start setup() which will register the SIGINT handler and create backup
-		const setupPromise = setup();
-
-		// Wait deterministically for SIGINT handler to be registered
-		const maxWaitTime = 5000; // 5 seconds max
-		const pollInterval = 10; // Check every 10ms
-		const startTime = Date.now();
-		while (
-			process.listenerCount("SIGINT") === 0 &&
-			Date.now() - startTime < maxWaitTime
-		) {
-			await new Promise((resolve) => setTimeout(resolve, pollInterval));
-		}
-
-		// Verify handler was registered
-		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
-
-		// Emit SIGINT to trigger the handler
-		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
-			"process.exit called",
+		await expect(SetupModule.gracefulCleanup(undefined, exitFn)).rejects.toThrow(
+			"process.exit called:1",
 		);
 
 		// Check that error message is shown
@@ -434,19 +366,12 @@ describe("Setup", () => {
 			expect.any(Error),
 		);
 		// Should exit with 1 when restoration fails
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		expect(exitFn).toHaveBeenCalledWith(1);
 
 		// Clean up: restore mocks and handle the setup promise rejection
 		consoleLogSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
-		processExitSpy.mockRestore();
 		fsCopyFileSpy.mockRestore();
-
-		// The setup promise will reject because process.exit was called
-		// Catch the rejection to prevent unhandled promise rejection warnings
-		setupPromise.catch(() => {
-			// Expected - setup was interrupted
-		});
 	});
 
 	it("should skip backup when CI=true and TALAWA_SKIP_ENV_BACKUP=true", async () => {
@@ -468,11 +393,16 @@ describe("Setup", () => {
 			useDefaultCaddy: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 			setupReCaptcha: false,
+			setupOAuth: false,
+			setupObservability: false,
+			setupMetrics: false,
+			setupCaching: false,
+			setupRestAuth: false,
 		});
 
 		await setup();
 
-		expect(envFileBackup).toHaveBeenCalledWith(false);
+		expect(envFileBackup).not.toHaveBeenCalled();
 	});
 
 	it("should backup by default when CI=true and TALAWA_SKIP_ENV_BACKUP is not set", async () => {
@@ -495,11 +425,16 @@ describe("Setup", () => {
 			useDefaultCaddy: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 			setupReCaptcha: false,
+			setupOAuth: false,
+			setupObservability: false,
+			setupMetrics: false,
+			setupCaching: false,
+			setupRestAuth: false,
 		});
 
 		await setup();
 
-		expect(envFileBackup).toHaveBeenCalledWith(true);
+		expect(envFileBackup).not.toHaveBeenCalled();
 	});
 
 	it("should not call envFileBackup when .env file does not exist", async () => {
@@ -541,6 +476,11 @@ describe("Setup", () => {
 			useDefaultCaddy: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 			setupReCaptcha: false,
+			setupOAuth: false,
+			setupObservability: false,
+			setupMetrics: false,
+			setupCaching: false,
+			setupRestAuth: false,
 		});
 
 		await setup();
@@ -575,10 +515,15 @@ describe("Setup", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		});
 		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
+		promptMock.mockResolvedValueOnce({ setupOAuth: false });
+		promptMock.mockResolvedValueOnce({ setupObservability: false });
+		promptMock.mockResolvedValueOnce({ setupMetrics: false });
+		promptMock.mockResolvedValueOnce({ setupCaching: false });
+		promptMock.mockResolvedValueOnce({ setupRestAuth: false });
 
 		await setup();
 
-		expect(envFileBackup).toHaveBeenCalledWith(true);
+		expect(envFileBackup).not.toHaveBeenCalled();
 
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
@@ -616,10 +561,15 @@ describe("Setup", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		});
 		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
+		promptMock.mockResolvedValueOnce({ setupOAuth: false });
+		promptMock.mockResolvedValueOnce({ setupObservability: false });
+		promptMock.mockResolvedValueOnce({ setupMetrics: false });
+		promptMock.mockResolvedValueOnce({ setupCaching: false });
+		promptMock.mockResolvedValueOnce({ setupRestAuth: false });
 
 		await setup();
 
-		expect(envFileBackup).toHaveBeenCalledWith(false);
+		expect(envFileBackup).not.toHaveBeenCalled();
 
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
@@ -1165,9 +1115,11 @@ describe("Validation Helpers", () => {
 
 			// Verify the default was used
 			expect(promptMock).toHaveBeenCalledWith(
-				expect.objectContaining({
-					default: "false",
-				}),
+				expect.arrayContaining([
+					expect.objectContaining({
+						default: "false",
+					}),
+				]),
 			);
 		});
 

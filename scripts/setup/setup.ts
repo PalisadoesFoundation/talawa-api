@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import * as process from "node:process";
+import process from "node:process";
 import { pathToFileURL } from "node:url";
 import * as dotenv from "dotenv";
 import {
@@ -216,7 +216,11 @@ export function validatePortNumbers(answers: SetupAnswers): void {
 	}
 }
 export function validateSamplingRatio(input: string): true | string {
-	const ratio = Number.parseFloat(input);
+	const trimmed = input.trim();
+	if (trimmed.length === 0) {
+		return "Please enter valid sampling ratio (0-1).";
+	}
+	const ratio = Number(trimmed);
 	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
 		return "Please enter valid sampling ratio (0-1).";
 	}
@@ -718,70 +722,97 @@ export async function oauthSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	return answers;
 }
 
-export async function setup(): Promise<SetupAnswers> {
-	// Reset state variables at the start of each setup call
-	// This ensures clean state for tests and multiple setup() calls
+function resetSetupState(): void {
+	// This ensures clean state for tests and multiple setup() calls.
 	setBackupCreated(false);
 	cleaningUp = false;
 	exitCalled = false;
+}
 
-	// Register signal handlers for graceful cleanup
-	const sigintHandler = () => gracefulCleanup("SIGINT");
-	const sigtermHandler = () => gracefulCleanup("SIGTERM");
+function registerCleanupHandlers(): () => void {
+	const sigintHandler = () => {
+		void gracefulCleanup("SIGINT");
+	};
+	const sigtermHandler = () => {
+		void gracefulCleanup("SIGTERM");
+	};
+
 	process.on("SIGINT", sigintHandler);
 	process.on("SIGTERM", sigtermHandler);
 
-	const initialCI = process.env.CI;
-	let answers: SetupAnswers = {};
-	if (await checkEnvFile()) {
-		const envReconfigure = await promptConfirm(
-			"envReconfigure",
-			"Env file found. Re-configure?",
-			true,
-		);
-		if (!envReconfigure) {
-			process.exit(0);
-		}
-	}
-	dotenv.config({ path: envFileName });
+	return () => {
+		process.removeListener("SIGINT", sigintHandler);
+		process.removeListener("SIGTERM", sigtermHandler);
+	};
+}
 
-	// Create backup using AtomicEnvWriter if .env exists
-	if (await checkEnvFile()) {
-		const isInteractive =
-			initialCI !== "true" && process.stdin && process.stdin.isTTY;
-		let shouldBackup = true;
-		if (isInteractive) {
-			try {
-				shouldBackup = await promptConfirm(
-					"shouldBackup",
-					"Would you like to back up the current .env file before setup modifies it?",
-					true,
-				);
-			} catch (err) {
-				if (process.env.NODE_ENV === "production" || initialCI === "true") {
-					console.error("Prompt failed (fatal):", err);
-					process.exit(1);
-				}
-				throw err;
-			}
-		} else {
-			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
-		}
-		if (shouldBackup) {
-			try {
-				await ensureBackup(envFileName, envBackupFile);
-				markBackupCreated();
-			} catch (err) {
-				if (process.env.NODE_ENV === "production" || initialCI === "true") {
-					console.error("Backup creation failed (fatal):", err);
-					process.exit(1);
-				}
-				throw err;
-			}
-		}
+async function maybeReconfigureExistingEnv(hasExistingEnv: boolean): Promise<void> {
+	if (!hasExistingEnv) {
+		return;
 	}
+
+	const envReconfigure = await promptConfirm(
+		"envReconfigure",
+		"Env file found. Re-configure?",
+		true,
+	);
+	if (!envReconfigure) {
+		process.exit(0);
+	}
+}
+
+async function maybeCreateEnvBackup(
+	hasExistingEnv: boolean,
+	initialCI: string | undefined,
+): Promise<void> {
+	if (!hasExistingEnv) {
+		console.log("ℹ️  No existing .env found; backup skipped.");
+		return;
+	}
+
+	const isInteractive = initialCI !== "true" && process.stdin?.isTTY;
+	let shouldBackup = true;
+
+	if (isInteractive) {
+		try {
+			shouldBackup = await promptConfirm(
+				"shouldBackup",
+				"Would you like to back up the current .env file before setup modifies it?",
+				true,
+			);
+		} catch (err) {
+			if (process.env.NODE_ENV === "production" || initialCI === "true") {
+				console.error("Prompt failed (fatal):", err);
+				process.exit(1);
+			}
+			throw err;
+		}
+	} else {
+		shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
+	}
+
+	if (!shouldBackup) {
+		console.log("ℹ️  Skipping .env backup (by user/config choice).");
+		return;
+	}
+
+	try {
+		await ensureBackup(envFileName, envBackupFile);
+		markBackupCreated();
+		console.log(`✅ Backup created: ${envBackupFile}`);
+	} catch (err) {
+		if (process.env.NODE_ENV === "production" || initialCI === "true") {
+			console.error("Backup creation failed (fatal):", err);
+			process.exit(1);
+		}
+		throw err;
+	}
+}
+
+async function runCoreSetupPrompts(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers = await setCI(answers);
 	await initializeEnvFile(answers);
+
 	const useDefaultApi = await promptConfirm(
 		"useDefaultApi",
 		"Use recommended default API settings?",
@@ -790,6 +821,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultApi) {
 		answers = await apiSetup(answers);
 	}
+
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
 		"Use recommended default Minio settings?",
@@ -798,6 +830,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultMinio) {
 		answers = await minioSetup(answers);
 	}
+
 	if (answers.CI === "false") {
 		const useDefaultCloudbeaver = await promptConfirm(
 			"useDefaultCloudbeaver",
@@ -808,6 +841,7 @@ export async function setup(): Promise<SetupAnswers> {
 			answers = await cloudbeaverSetup(answers);
 		}
 	}
+
 	const useDefaultPostgres = await promptConfirm(
 		"useDefaultPostgres",
 		"Use recommended default Postgres settings?",
@@ -816,6 +850,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultPostgres) {
 		answers = await postgresSetup(answers);
 	}
+
 	const useDefaultCaddy = await promptConfirm(
 		"useDefaultCaddy",
 		"Use recommended default Caddy settings?",
@@ -824,7 +859,15 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultCaddy) {
 		answers = await caddySetup(answers);
 	}
+
 	answers = await administratorEmail(answers);
+
+	return answers;
+}
+
+async function runOptionalFeaturePrompts(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
 	const setupReCaptcha = await promptConfirm(
 		"setupReCaptcha",
 		"Do you want to set up Google reCAPTCHA v3 now?",
@@ -833,7 +876,9 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupReCaptcha) {
 		answers = await reCaptchaSetup(answers);
 	}
+
 	answers = await emailSetup(answers);
+
 	const setupOAuth = await promptConfirm(
 		"setupOAuth",
 		"Do you want to set up OAuth providers now?",
@@ -842,15 +887,16 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupOAuth) {
 		answers = await oauthSetup(answers);
 	}
+
 	const setupObservability = await promptConfirm(
 		"setupObservability",
 		"Do you want to configure OpenTelemetry observability now?",
 		false,
 	);
-
 	if (setupObservability) {
 		answers = await observabilitySetup(answers);
 	}
+
 	const setupMetrics = await promptConfirm(
 		"setupMetrics",
 		"Do you want to configure performance metrics settings now?",
@@ -868,6 +914,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupCaching) {
 		answers = await cachingSetup(answers);
 	}
+
 	const setupRestAuth = await promptConfirm(
 		"setupRestAuth",
 		"Do you want to configure REST auth (signin, refresh, cookies) now?",
@@ -879,6 +926,11 @@ export async function setup(): Promise<SetupAnswers> {
 		// Env schema requires API_COOKIE_SECRET; ensure it is set when REST auth setup is skipped.
 		answers.API_COOKIE_SECRET = generateJwtSecret();
 	}
+
+	return answers;
+}
+
+async function persistSetupAnswers(answers: SetupAnswers): Promise<void> {
 	await updateEnvVariable(answers, {
 		envFile: envFileName,
 		backupFile: envBackupFile,
@@ -886,11 +938,25 @@ export async function setup(): Promise<SetupAnswers> {
 		createBackup: false,
 		restoreFromBackup: isBackupCreated(),
 	});
-	console.log("Configuration complete.");
+}
 
-	// Cleanup: Unregister signal handlers after successful setup
-	process.removeListener("SIGINT", sigintHandler);
-	process.removeListener("SIGTERM", sigtermHandler);
+export async function setup(): Promise<SetupAnswers> {
+	resetSetupState();
+	const unregisterCleanupHandlers = registerCleanupHandlers();
+	const initialCI = process.env.CI;
+	let answers: SetupAnswers = {};
+	const hasExistingEnv = await checkEnvFile();
+
+	await maybeReconfigureExistingEnv(hasExistingEnv);
+	dotenv.config({ path: envFileName });
+	await maybeCreateEnvBackup(hasExistingEnv, initialCI);
+
+	answers = await runCoreSetupPrompts(answers);
+	answers = await runOptionalFeaturePrompts(answers);
+	await persistSetupAnswers(answers);
+
+	console.log("Configuration complete.");
+	unregisterCleanupHandlers();
 
 	return answers;
 }
