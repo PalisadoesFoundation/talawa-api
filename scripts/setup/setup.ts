@@ -88,7 +88,8 @@ export async function gracefulCleanup(
 ): Promise<void> {
 	// Atomic check-and-set to prevent race conditions
 	if (cleaningUp) {
-		return; // Already cleaning up, exit silently
+		console.log("\nAlready cleaning up, please wait...");
+		return;
 	}
 	cleaningUp = true;
 
@@ -98,7 +99,8 @@ export async function gracefulCleanup(
 			: `\n\n⚠️  Setup interrupted by signal ${signal}. Cleaning up...`,
 	);
 
-	let exitCode = 0;
+	// Interrupt-driven cleanup should always exit non-zero.
+	let exitCode = signal === undefined ? 0 : 1;
 	try {
 		// Clean up temporary file
 		try {
@@ -965,7 +967,11 @@ if (
 	import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
 	setup().catch((err) => {
-		console.error("Setup failed:", err);
+		if (err instanceof Error && err.name === "ExitPromptError") {
+			console.error("Setup interrupted by user.");
+		} else {
+			console.error("Setup failed:", err);
+		}
 		process.exit(1);
 	});
 }
