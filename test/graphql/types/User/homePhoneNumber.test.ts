@@ -199,4 +199,22 @@ describe("homePhoneNumberResolver", () => {
 			}),
 		);
 	});
+
+	it("throws error when database query fails", async () => {
+		const { context, mocks, parent } = createSetup(true, DEFAULT_PHONE, false);
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			new Error("db error"),
+		);
+
+		await expect(runResolver(parent, context)).rejects.toThrowError("db error");
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
+	});
 });
