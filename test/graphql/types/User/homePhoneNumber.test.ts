@@ -69,9 +69,14 @@ describe("homePhoneNumberResolver", () => {
 				}),
 			}),
 		);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	it("throws unauthorized_action error when regular user accesses another user's data", async () => {
@@ -88,9 +93,14 @@ describe("homePhoneNumberResolver", () => {
 				}),
 			}),
 		);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	it("returns homePhoneNumber when user accesses their own data", async () => {
@@ -103,9 +113,14 @@ describe("homePhoneNumberResolver", () => {
 
 		const result = await runResolver(parent, context);
 		expect(result).toBe(expectedPhone);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	it("returns homePhoneNumber when administrator accesses another user's data", async () => {
@@ -118,9 +133,14 @@ describe("homePhoneNumberResolver", () => {
 
 		const result = await runResolver(parent, context);
 		expect(result).toBe(expectedPhone);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	it("returns null when homePhoneNumber is null", async () => {
@@ -132,9 +152,14 @@ describe("homePhoneNumberResolver", () => {
 
 		const result = await runResolver(parent, context);
 		expect(result).toBeNull();
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	it("returns empty string when homePhoneNumber is empty string", async () => {
@@ -146,9 +171,14 @@ describe("homePhoneNumberResolver", () => {
 
 		const result = await runResolver(parent, context);
 		expect(result).toBe("");
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	it("returns undefined when homePhoneNumber is undefined", async () => {
@@ -160,8 +190,13 @@ describe("homePhoneNumberResolver", () => {
 
 		const result = await runResolver(parent, context);
 		expect(result).toBeUndefined();
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledOnce();
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				columns: expect.objectContaining({
+					role: expect.anything(),
+				}),
+				where: expect.any(Function),
+			}),
+		);
 	});
 });
