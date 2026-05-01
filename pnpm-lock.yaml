@@ -91,10 +91,10 @@ importers:
         version: 17.2.3
       drizzle-orm:
         specifier: ^0.44.1
-        version: 0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8)
+        version: 0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8))(zod@4.3.6)
+        version: 0.8.3(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9))(zod@4.3.6)
       env-schema:
         specifier: ^7.0.0
         version: 7.0.0
@@ -141,8 +141,8 @@ importers:
         specifier: ^9.14.0
         version: 9.14.0
       postgres:
-        specifier: ^3.4.7
-        version: 3.4.8
+        specifier: ^3.4.9
+        version: 3.4.9
       typebox:
         specifier: ^1.0.0
         version: 1.0.81
@@ -194,7 +194,7 @@ importers:
         version: 0.31.8
       drizzle-seed:
         specifier: ^0.3.1
-        version: 0.3.1(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8))
+        version: 0.3.1(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9))
       glob:
         specifier: ^13.0.0
         version: 13.0.1
@@ -3865,8 +3865,8 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postgres@3.4.8:
-    resolution: {integrity: sha512-d+JFcLM17njZaOLkv6SCev7uoLaBtfK86vMUXhW1Z4glPWh4jozno9APvW/XKFJ3CCxVoC7OL38BqRydtu5nGg==}
+  postgres@3.4.9:
+    resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
     engines: {node: '>=12'}
 
   process-on-spawn@1.1.0:
@@ -4367,6 +4367,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuidv7@1.1.0:
@@ -7187,20 +7188,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8):
+  drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
-      postgres: 3.4.8
+      postgres: 3.4.9
 
-  drizzle-seed@0.3.1(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8)):
+  drizzle-seed@0.3.1(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9)):
     dependencies:
       pure-rand: 6.1.0
     optionalDependencies:
-      drizzle-orm: 0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8)
+      drizzle-orm: 0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9)
 
-  drizzle-zod@0.8.3(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8))(zod@4.3.6):
+  drizzle-zod@0.8.3(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9))(zod@4.3.6):
     dependencies:
-      drizzle-orm: 0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.8)
+      drizzle-orm: 0.44.7(@opentelemetry/api@1.9.0)(postgres@3.4.9)
       zod: 4.3.6
 
   dunder-proto@1.0.1:
@@ -8422,7 +8423,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postgres@3.4.8: {}
+  postgres@3.4.9: {}
 
   process-on-spawn@1.1.0:
     dependencies:
