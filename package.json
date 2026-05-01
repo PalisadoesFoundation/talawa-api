@@ -77,7 +77,7 @@
     "nyc": "^17.1.0",
     "pino-pretty": "^13.0.0",
     "tsx": "^4.20.3",
-    "typedoc": "^0.28.15",
+    "typedoc": "^0.28.19",
     "typedoc-plugin-markdown": "^4.7.0",
     "typescript": "^5.7.3",
     "vite-tsconfig-paths": "^5.1.4",
