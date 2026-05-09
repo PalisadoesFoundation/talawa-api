@@ -10,7 +10,7 @@ Post.implement({
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: (parent, _args, ctx) => {
 				// Check if there's an attachment available
-				if (!parent.attachments || !parent.attachments[0]) {
+				if (!parent.attachments?.[0]) {
 					return null;
 				}
 

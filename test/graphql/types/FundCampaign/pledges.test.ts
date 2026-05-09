@@ -450,11 +450,7 @@ describe("FundCampaign Resolver - pledges Field", () => {
 				"FundCampaign",
 			) as GraphQLObjectType;
 			const pledgesField = fundCampaignType.getFields().pledges;
-			if (
-				!pledgesField ||
-				!pledgesField.extensions ||
-				!pledgesField.extensions.complexity
-			) {
+			if (!pledgesField?.extensions?.complexity) {
 				throw new Error(
 					"Complexity function not found on FundCampaign.pledges field",
 				);

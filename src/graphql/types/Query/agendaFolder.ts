@@ -64,6 +64,7 @@ builder.queryField("agendaFolder", (t) =>
 						event: {
 							columns: {
 								startAt: true,
+								creatorId: true,
 							},
 							with: {
 								organization: {
@@ -112,10 +113,15 @@ builder.queryField("agendaFolder", (t) =>
 			const currentUserOrganizationMembership =
 				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				currentUserOrganizationMembership === undefined
-			) {
+			const isGlobalAdmin = currentUser.role === "administrator";
+
+			const isOrganizationMember =
+				currentUserOrganizationMembership !== undefined;
+
+			const isEventCreator =
+				existingAgendaFolder.event.creatorId === currentUserId;
+
+			if (!isGlobalAdmin && !isOrganizationMember && !isEventCreator) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",

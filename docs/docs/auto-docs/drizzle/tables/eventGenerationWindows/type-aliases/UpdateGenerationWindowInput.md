@@ -14,7 +14,7 @@ Input for updating generation window configuration.
 
 ### configurationNotes?
 
-> `optional` **configurationNotes**: `string`
+> `optional` **configurationNotes?**: `string`
 
 Defined in: [src/drizzle/tables/eventGenerationWindows.ts:294](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L294)
 
@@ -22,7 +22,7 @@ Defined in: [src/drizzle/tables/eventGenerationWindows.ts:294](https://github.co
 
 ### historyRetentionMonths?
 
-> `optional` **historyRetentionMonths**: `number`
+> `optional` **historyRetentionMonths?**: `number`
 
 Defined in: [src/drizzle/tables/eventGenerationWindows.ts:290](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L290)
 
@@ -30,7 +30,7 @@ Defined in: [src/drizzle/tables/eventGenerationWindows.ts:290](https://github.co
 
 ### hotWindowMonthsAhead?
 
-> `optional` **hotWindowMonthsAhead**: `number`
+> `optional` **hotWindowMonthsAhead?**: `number`
 
 Defined in: [src/drizzle/tables/eventGenerationWindows.ts:289](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L289)
 
@@ -38,7 +38,7 @@ Defined in: [src/drizzle/tables/eventGenerationWindows.ts:289](https://github.co
 
 ### isEnabled?
 
-> `optional` **isEnabled**: `boolean`
+> `optional` **isEnabled?**: `boolean`
 
 Defined in: [src/drizzle/tables/eventGenerationWindows.ts:293](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L293)
 
@@ -54,7 +54,7 @@ Defined in: [src/drizzle/tables/eventGenerationWindows.ts:295](https://github.co
 
 ### maxInstancesPerRun?
 
-> `optional` **maxInstancesPerRun**: `number`
+> `optional` **maxInstancesPerRun?**: `number`
 
 Defined in: [src/drizzle/tables/eventGenerationWindows.ts:292](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L292)
 
@@ -62,7 +62,7 @@ Defined in: [src/drizzle/tables/eventGenerationWindows.ts:292](https://github.co
 
 ### processingPriority?
 
-> `optional` **processingPriority**: `number`
+> `optional` **processingPriority?**: `number`
 
 Defined in: [src/drizzle/tables/eventGenerationWindows.ts:291](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L291)
 

@@ -12,7 +12,7 @@ Defined in: [src/config/rateLimits.ts:26](https://github.com/PalisadoesFoundatio
 
 ### name
 
-`"open"` | `"normal"` | `"burst"` | `"auth"` | `"healthcheck"`
+`"open"` \| `"normal"` \| `"burst"` \| `"auth"` \| `"healthcheck"`
 
 ## Returns
 

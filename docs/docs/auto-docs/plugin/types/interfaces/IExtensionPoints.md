@@ -10,7 +10,7 @@ Defined in: [src/plugin/types.ts:32](https://github.com/PalisadoesFoundation/tal
 
 ### database?
 
-> `optional` **database**: [`IDatabaseExtension`](IDatabaseExtension.md)[]
+> `optional` **database?**: [`IDatabaseExtension`](IDatabaseExtension.md)[]
 
 Defined in: [src/plugin/types.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L34)
 
@@ -18,7 +18,7 @@ Defined in: [src/plugin/types.ts:34](https://github.com/PalisadoesFoundation/tal
 
 ### graphql?
 
-> `optional` **graphql**: [`IGraphQLExtension`](IGraphQLExtension.md)[]
+> `optional` **graphql?**: [`IGraphQLExtension`](IGraphQLExtension.md)[]
 
 Defined in: [src/plugin/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L33)
 
@@ -26,7 +26,7 @@ Defined in: [src/plugin/types.ts:33](https://github.com/PalisadoesFoundation/tal
 
 ### hooks?
 
-> `optional` **hooks**: [`IHookExtension`](IHookExtension.md)[]
+> `optional` **hooks?**: [`IHookExtension`](IHookExtension.md)[]
 
 Defined in: [src/plugin/types.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L35)
 
@@ -34,6 +34,6 @@ Defined in: [src/plugin/types.ts:35](https://github.com/PalisadoesFoundation/tal
 
 ### webhooks?
 
-> `optional` **webhooks**: [`IWebhookExtension`](IWebhookExtension.md)[]
+> `optional` **webhooks?**: [`IWebhookExtension`](IWebhookExtension.md)[]
 
 Defined in: [src/plugin/types.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L36)

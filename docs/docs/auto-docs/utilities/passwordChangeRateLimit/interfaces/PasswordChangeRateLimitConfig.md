@@ -10,7 +10,7 @@ Defined in: [src/utilities/passwordChangeRateLimit.ts:34](https://github.com/Pal
 
 ### maxChanges?
 
-> `optional` **maxChanges**: `number`
+> `optional` **maxChanges?**: `number`
 
 Defined in: [src/utilities/passwordChangeRateLimit.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L35)
 
@@ -18,6 +18,6 @@ Defined in: [src/utilities/passwordChangeRateLimit.ts:35](https://github.com/Pal
 
 ### windowSeconds?
 
-> `optional` **windowSeconds**: `number`
+> `optional` **windowSeconds?**: `number`
 
 Defined in: [src/utilities/passwordChangeRateLimit.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordChangeRateLimit.ts#L36)

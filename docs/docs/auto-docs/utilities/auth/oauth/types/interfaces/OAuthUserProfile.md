@@ -12,7 +12,7 @@ Normalized user profile from OAuth provider
 
 ### email?
 
-> `optional` **email**: `string`
+> `optional` **email?**: `string`
 
 Defined in: [src/utilities/auth/oauth/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L18)
 
@@ -20,7 +20,7 @@ Defined in: [src/utilities/auth/oauth/types.ts:18](https://github.com/Palisadoes
 
 ### emailVerified?
 
-> `optional` **emailVerified**: `boolean`
+> `optional` **emailVerified?**: `boolean`
 
 Defined in: [src/utilities/auth/oauth/types.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L21)
 
@@ -28,7 +28,7 @@ Defined in: [src/utilities/auth/oauth/types.ts:21](https://github.com/Palisadoes
 
 ### name?
 
-> `optional` **name**: `string`
+> `optional` **name?**: `string`
 
 Defined in: [src/utilities/auth/oauth/types.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L19)
 
@@ -36,7 +36,7 @@ Defined in: [src/utilities/auth/oauth/types.ts:19](https://github.com/Palisadoes
 
 ### picture?
 
-> `optional` **picture**: `string`
+> `optional` **picture?**: `string`
 
 Defined in: [src/utilities/auth/oauth/types.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L20)
 

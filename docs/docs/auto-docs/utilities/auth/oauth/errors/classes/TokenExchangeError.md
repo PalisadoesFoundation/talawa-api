@@ -16,13 +16,13 @@ Error thrown when token exchange fails
 
 ### Constructor
 
-> **new TokenExchangeError**(`message`, `details?`): `TokenExchangeError`
+> **new TokenExchangeError**(`message?`, `details?`): `TokenExchangeError`
 
 Defined in: [src/utilities/auth/oauth/errors.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L31)
 
 #### Parameters
 
-##### message
+##### message?
 
 `string` = `"Token exchange failed"`
 
@@ -54,7 +54,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/Palisadoes
 
 ### statusCode?
 
-> `optional` **statusCode**: `number`
+> `optional` **statusCode?**: `number`
 
 Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L8)
 

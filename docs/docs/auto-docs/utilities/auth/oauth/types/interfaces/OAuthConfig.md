@@ -28,6 +28,6 @@ Defined in: [src/utilities/auth/oauth/types.ts:29](https://github.com/Palisadoes
 
 ### requestTimeoutMs?
 
-> `optional` **requestTimeoutMs**: `number`
+> `optional` **requestTimeoutMs?**: `number`
 
 Defined in: [src/utilities/auth/oauth/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L30)

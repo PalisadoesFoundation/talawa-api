@@ -23,7 +23,7 @@ export function wrapBatchWithMetrics<K, V>(
 	return async (keys: readonly K[]) => {
 		// Validate operation name before prepending "db:" prefix
 		// This ensures the error is thrown when the wrapped function is called
-		if (!op || !op.trim()) {
+		if (!op?.trim()) {
 			throw new Error("Operation name cannot be empty or whitespace");
 		}
 		return perf.time(`db:${op}`, async () => batchFn(keys));

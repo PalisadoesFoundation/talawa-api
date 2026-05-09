@@ -957,7 +957,7 @@ suite("Query field event", () => {
 					`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
 				);
 			}
-			if (!createEventResult.data || !createEventResult.data.createEvent) {
+			if (!createEventResult.data?.createEvent) {
 				throw new Error(
 					`createEvent returned no data. full response: ${JSON.stringify(createEventResult, null, 2)}`,
 				);

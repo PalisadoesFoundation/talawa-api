@@ -44,13 +44,13 @@ Standardized error code from ErrorCode enum
 
 #### correlationId?
 
-> `optional` **correlationId**: `string`
+> `optional` **correlationId?**: `string`
 
 Request correlation ID for tracing
 
 #### details?
 
-> `optional` **details**: `unknown`
+> `optional` **details?**: `unknown`
 
 Optional additional error context and details
 

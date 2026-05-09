@@ -112,7 +112,7 @@ async function createTestOrganization(
 	);
 
 	// Check for errors before asserting
-	if (!createOrgResult.data || !createOrgResult.data.createOrganization) {
+	if (!createOrgResult.data?.createOrganization) {
 		throw new Error(
 			`Failed to create test organization: ${
 				createOrgResult.errors?.[0]?.message || "Unknown error"
@@ -528,10 +528,7 @@ suite("Mutation joinPublicOrganization", () => {
 			expect(joinPublicOrganizationResult.data).toBeDefined();
 
 			// Check if the data exists before asserting
-			if (
-				!joinPublicOrganizationResult.data ||
-				!joinPublicOrganizationResult.data.joinPublicOrganization
-			) {
+			if (!joinPublicOrganizationResult.data?.joinPublicOrganization) {
 				throw new Error("Join public organization mutation returned no data");
 			}
 

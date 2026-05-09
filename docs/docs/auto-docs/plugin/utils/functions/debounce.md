@@ -28,14 +28,4 @@ Debounces a function call
 
 ## Returns
 
-> (...`args`): `void`
-
-### Parameters
-
-#### args
-
-...`Parameters`\<`T`\>
-
-### Returns
-
-`void`
+(...`args`) => `void`

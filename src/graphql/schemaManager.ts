@@ -117,7 +117,7 @@ class GraphQLSchemaManager {
 	 */
 	private async registerActivePluginExtensions(): Promise<void> {
 		const pluginManager = getPluginManagerInstance();
-		if (!pluginManager || !pluginManager.isSystemInitialized()) {
+		if (!pluginManager?.isSystemInitialized()) {
 			rootLogger.info("Plugin Manager Not Available or Not Initialized");
 			return;
 		}

@@ -88,10 +88,13 @@ builder.queryField("agendaCategoriesByEventId", (t) =>
 				});
 			}
 
-			if (
-				currentUser.role !== "administrator" &&
-				membership?.role !== "administrator"
-			) {
+			const isGlobalAdmin = currentUser.role === "administrator";
+
+			const isOrganizationAdmin = membership?.role === "administrator";
+
+			const isEventCreator = event.creatorId === currentUserId;
+
+			if (!isGlobalAdmin && !isOrganizationAdmin && !isEventCreator) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",

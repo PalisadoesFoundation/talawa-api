@@ -20,7 +20,7 @@ Defined in: [src/services/eventGeneration/types.ts:72](https://github.com/Palisa
 
 ### exception?
 
-> `optional` **exception**: `object`
+> `optional` **exception?**: `object`
 
 Defined in: [src/services/eventGeneration/types.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L73)
 

@@ -85,11 +85,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 		beforeAll(() => {
 			const tagFolderType = schema.getType("TagFolder") as GraphQLObjectType;
 			const tagsField = tagFolderType.getFields().tags;
-			if (
-				!tagsField ||
-				!tagsField.extensions ||
-				!tagsField.extensions.complexity
-			) {
+			if (!tagsField?.extensions?.complexity) {
 				throw new Error(
 					"Complexity function not found on TagFolder.tags field",
 				);

@@ -60,7 +60,7 @@ describe("TagFolder Resolver - ParentFolder Field", () => {
 		).getFields();
 		const parentFolderField = fields.parentFolder;
 
-		if (!parentFolderField || !parentFolderField.resolve) {
+		if (!parentFolderField?.resolve) {
 			throw new Error("parentFolder field or resolver not found");
 		}
 
@@ -113,7 +113,7 @@ describe("TagFolder Resolver - ParentFolder Field", () => {
 		).getFields();
 		const parentFolderField = fields.parentFolder;
 
-		if (!parentFolderField || !parentFolderField.resolve) {
+		if (!parentFolderField?.resolve) {
 			throw new Error("parentFolder field or resolver not found");
 		}
 
@@ -157,7 +157,7 @@ describe("TagFolder Resolver - ParentFolder Field", () => {
 		).getFields();
 		const parentFolderField = fields.parentFolder;
 
-		if (!parentFolderField || !parentFolderField.resolve) {
+		if (!parentFolderField?.resolve) {
 			throw new Error("parentFolder field or resolver not found");
 		}
 
@@ -214,7 +214,7 @@ describe("TagFolder Resolver - ParentFolder Field", () => {
 		).getFields();
 		const parentFolderField = fields.parentFolder;
 
-		if (!parentFolderField || !parentFolderField.resolve) {
+		if (!parentFolderField?.resolve) {
 			throw new Error("parentFolder field or resolver not found");
 		}
 
@@ -230,7 +230,7 @@ describe("TagFolder Resolver - ParentFolder Field", () => {
 		const findFirstCall = mocks.drizzleClient.query.tagFoldersTable.findFirst
 			.mock.calls[0] as [{ where?: unknown }] | undefined;
 
-		if (!findFirstCall || !findFirstCall[0]) {
+		if (!findFirstCall?.[0]) {
 			throw new Error("findFirst was not called with expected arguments");
 		}
 

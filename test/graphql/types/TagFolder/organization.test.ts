@@ -66,7 +66,7 @@ describe("TagFolder Resolver - Organization Field", () => {
 			}
 		).getFields();
 
-		if (!fields.organization || !fields.organization.resolve) {
+		if (!fields.organization?.resolve) {
 			throw new Error("Organization field or resolver not found");
 		}
 		organizationField = fields.organization;

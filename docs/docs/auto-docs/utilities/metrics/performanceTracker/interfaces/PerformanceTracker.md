@@ -46,11 +46,7 @@ Name of the operation being timed
 
 Function to call when the operation completes
 
-> (): `void`
-
-##### Returns
-
-`void`
+() => `void`
 
 ***
 

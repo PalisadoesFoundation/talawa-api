@@ -97,7 +97,7 @@ The standardized error code
 
 ### details?
 
-> `readonly` `optional` **details**: `unknown`
+> `readonly` `optional` **details?**: `unknown`
 
 Defined in: [src/utilities/errors/TalawaRestError.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/TalawaRestError.ts#L42)
 

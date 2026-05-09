@@ -92,7 +92,7 @@ export function formatRecurrenceDescription(
 
 		// Extract ordinal (1MO -> 1, -1FR -> -1) and day (MO, FR)
 		const match = byDayRule.match(/^(-?\d+)([A-Z]{2})$/);
-		if (!match || !match[1] || !match[2]) {
+		if (!match?.[1] || !match[2]) {
 			return byDayRule;
 		}
 

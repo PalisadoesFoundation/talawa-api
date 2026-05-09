@@ -199,7 +199,7 @@ export async function rotateRefresh(
 	log: FastifyBaseLogger,
 	token: string,
 ): Promise<RotateRefreshResult> {
-	if (!token || !token.trim()) {
+	if (!token?.trim()) {
 		return { error: "invalid_refresh" };
 	}
 	let payload: RefreshClaims;

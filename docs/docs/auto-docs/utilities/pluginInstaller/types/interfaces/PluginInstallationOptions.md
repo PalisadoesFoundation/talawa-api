@@ -10,7 +10,7 @@ Defined in: [src/utilities/pluginInstaller/types.ts:8](https://github.com/Palisa
 
 ### activate?
 
-> `optional` **activate**: `boolean`
+> `optional` **activate?**: `boolean`
 
 Defined in: [src/utilities/pluginInstaller/types.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L11)
 

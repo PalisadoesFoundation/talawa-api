@@ -34,7 +34,7 @@ Defined in: [src/plugin/types.ts:140](https://github.com/PalisadoesFoundation/ta
 
 ### pluginManager?
 
-> `optional` **pluginManager**: `unknown`
+> `optional` **pluginManager?**: `unknown`
 
 Defined in: [src/plugin/types.ts:141](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L141)
 

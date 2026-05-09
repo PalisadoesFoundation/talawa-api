@@ -60,7 +60,7 @@ export function withQueryMetrics<
 	const { operationName } = options;
 
 	// Validate operation name at wrapper creation time (once) instead of runtime (every call)
-	if (!operationName || !operationName.trim()) {
+	if (!operationName?.trim()) {
 		throw new Error("Operation name cannot be empty or whitespace");
 	}
 
@@ -109,7 +109,7 @@ export async function executeWithMetrics<
 	resolver: () => Promise<TResult>,
 ): Promise<TResult> {
 	// Validate operation name is not empty or whitespace (always, regardless of perf availability)
-	if (!operationName || !operationName.trim()) {
+	if (!operationName?.trim()) {
 		throw new Error("Operation name cannot be empty or whitespace");
 	}
 

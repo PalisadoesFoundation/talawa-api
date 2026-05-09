@@ -10,7 +10,7 @@ Defined in: [src/utilities/pluginInstaller/types.ts:15](https://github.com/Palis
 
 ### apiManifest?
 
-> `optional` **apiManifest**: [`IPluginManifest`](../../../../plugin/types/interfaces/IPluginManifest.md)
+> `optional` **apiManifest?**: [`IPluginManifest`](../../../../plugin/types/interfaces/IPluginManifest.md)
 
 Defined in: [src/utilities/pluginInstaller/types.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L17)
 
@@ -26,6 +26,6 @@ Defined in: [src/utilities/pluginInstaller/types.ts:16](https://github.com/Palis
 
 ### pluginId?
 
-> `optional` **pluginId**: `string`
+> `optional` **pluginId?**: `string`
 
 Defined in: [src/utilities/pluginInstaller/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L18)

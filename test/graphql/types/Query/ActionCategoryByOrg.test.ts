@@ -155,7 +155,7 @@ suite("Query field actionCategoriesByOrganization", () => {
 						authorization: `Bearer ${adminToken2}`,
 					});
 
-					if (!createdUser || !createdUser.id) {
+					if (!createdUser?.id) {
 						throw new Error("No user ID found to delete");
 					}
 					await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -276,7 +276,7 @@ suite("Query field actionCategoriesByOrganization", () => {
 						authorization: `Bearer ${adminToken2}`,
 					});
 
-					if (!createdUser || !createdUser.id) {
+					if (!createdUser?.id) {
 						throw new Error("No user ID found to delete");
 					}
 					await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -383,7 +383,7 @@ suite("Query field actionCategoriesByOrganization", () => {
 					authorization: `Bearer ${adminToken2}`,
 				});
 
-				if (!createdUser || !createdUser.id) {
+				if (!createdUser?.id) {
 					throw new Error("No user ID found to delete");
 				}
 				await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -505,7 +505,7 @@ suite("Query field actionCategoriesByOrganization", () => {
 						authorization: `Bearer ${adminToken2}`,
 					});
 
-					if (!createdUser || !createdUser.id) {
+					if (!createdUser?.id) {
 						throw new Error("No user ID found to delete");
 					}
 					await mercuriusClient.mutate(Mutation_deleteUser, {

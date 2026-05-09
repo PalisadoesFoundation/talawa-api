@@ -14,7 +14,7 @@ Type for creating a new event attendee record.
 
 ### eventId?
 
-> `optional` **eventId**: `string`
+> `optional` **eventId?**: `string`
 
 Defined in: [src/drizzle/tables/eventAttendees.ts:253](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L253)
 
@@ -22,7 +22,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:253](https://github.com/Palisa
 
 ### isInvited?
 
-> `optional` **isInvited**: `boolean`
+> `optional` **isInvited?**: `boolean`
 
 Defined in: [src/drizzle/tables/eventAttendees.ts:255](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L255)
 
@@ -30,7 +30,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:255](https://github.com/Palisa
 
 ### isRegistered?
 
-> `optional` **isRegistered**: `boolean`
+> `optional` **isRegistered?**: `boolean`
 
 Defined in: [src/drizzle/tables/eventAttendees.ts:256](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L256)
 
@@ -38,7 +38,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:256](https://github.com/Palisa
 
 ### recurringEventInstanceId?
 
-> `optional` **recurringEventInstanceId**: `string`
+> `optional` **recurringEventInstanceId?**: `string`
 
 Defined in: [src/drizzle/tables/eventAttendees.ts:254](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L254)
 

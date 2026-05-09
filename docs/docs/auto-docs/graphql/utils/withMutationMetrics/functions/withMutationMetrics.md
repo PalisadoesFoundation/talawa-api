@@ -64,25 +64,7 @@ The original resolver function to wrap.
 
 A wrapped resolver function with performance tracking behavior.
 
-> (`parent`, `args`, `context`): `Promise`\<`TResult`\>
-
-### Parameters
-
-#### parent
-
-`TParent`
-
-#### args
-
-`TArgs`
-
-#### context
-
-`TContext`
-
-### Returns
-
-`Promise`\<`TResult`\>
+(`parent`, `args`, `context`) => `Promise`\<`TResult`\>
 
 ## Example
 

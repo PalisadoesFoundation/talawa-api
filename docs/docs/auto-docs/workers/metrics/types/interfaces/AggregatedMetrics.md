@@ -26,7 +26,7 @@ Aggregated cache metrics
 
 ### complexity?
 
-> `optional` **complexity**: `object`
+> `optional` **complexity?**: `object`
 
 Defined in: [src/workers/metrics/types.ts:91](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L91)
 

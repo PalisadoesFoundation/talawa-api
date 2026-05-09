@@ -23,9 +23,9 @@ The Drizzle client instance for database operations.
 
 ### cache
 
-Optional cache service for cache-first lookups. Pass null to disable caching.
+[`CacheService`](../../../services/caching/CacheService/interfaces/CacheService.md) \| `null`
 
-[`CacheService`](../../../services/caching/CacheService/interfaces/CacheService.md) | `null`
+Optional cache service for cache-first lookups. Pass null to disable caching.
 
 ### perf?
 

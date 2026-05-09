@@ -14,7 +14,7 @@ Input type for creating new recurring event instances.
 
 ### actualEndDate?
 
-> `optional` **actualEndDate**: `string` \| `null`
+> `optional` **actualEndDate?**: `string` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:406](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L406)
 
@@ -22,7 +22,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:406](https://github.c
 
 ### actualEndTime?
 
-> `optional` **actualEndTime**: `Date` \| `null`
+> `optional` **actualEndTime?**: `Date` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:402](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L402)
 
@@ -30,7 +30,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:402](https://github.c
 
 ### actualStartDate?
 
-> `optional` **actualStartDate**: `string` \| `null`
+> `optional` **actualStartDate?**: `string` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:405](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L405)
 
@@ -38,7 +38,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:405](https://github.c
 
 ### actualStartTime?
 
-> `optional` **actualStartTime**: `Date` \| `null`
+> `optional` **actualStartTime?**: `Date` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:401](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L401)
 
@@ -54,7 +54,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:396](https://github.c
 
 ### isCancelled?
 
-> `optional` **isCancelled**: `boolean`
+> `optional` **isCancelled?**: `boolean`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:408](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L408)
 
@@ -70,7 +70,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:407](https://github.c
 
 ### originalInstanceStartDate?
 
-> `optional` **originalInstanceStartDate**: `string` \| `null`
+> `optional` **originalInstanceStartDate?**: `string` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:404](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L404)
 
@@ -78,7 +78,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:404](https://github.c
 
 ### originalInstanceStartTime?
 
-> `optional` **originalInstanceStartTime**: `Date` \| `null`
+> `optional` **originalInstanceStartTime?**: `Date` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:400](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L400)
 
@@ -110,6 +110,6 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:409](https://github.c
 
 ### totalCount?
 
-> `optional` **totalCount**: `number` \| `null`
+> `optional` **totalCount?**: `number` \| `null`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:410](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L410)

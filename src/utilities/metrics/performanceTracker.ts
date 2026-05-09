@@ -140,7 +140,7 @@ export function createPerformanceTracker(
 	 * Validates an operation name.
 	 */
 	const validateOp = (op: string): void => {
-		if (!op || !op.trim()) {
+		if (!op?.trim()) {
 			throw new Error("Operation name cannot be empty or whitespace");
 		}
 	};

@@ -61,6 +61,9 @@ builder.mutationField("createAgendaCategory", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.eventsTable.findFirst({
+					columns: {
+						creatorId: true,
+					},
 					with: {
 						organization: {
 							columns: {
@@ -114,11 +117,14 @@ builder.mutationField("createAgendaCategory", (t) =>
 			const currentUserOrganizationMembership =
 				existingEvent.organization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
+			const isGlobalAdmin = currentUser.role === "administrator";
+
+			const isOrganizationAdmin =
+				currentUserOrganizationMembership?.role === "administrator";
+
+			const isEventCreator = existingEvent.creatorId === currentUserId;
+
+			if (!isGlobalAdmin && !isOrganizationAdmin && !isEventCreator) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",

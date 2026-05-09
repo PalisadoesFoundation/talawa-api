@@ -157,7 +157,7 @@ export class SMTPProvider implements IEmailProvider {
 
 			// Validate that the recipient email is not empty/invalid
 			// We explicitly check for CR/LF in the original input to prevent injection
-			if (!safeTo || !safeTo.trim() || /[\r\n]/.test(job.email)) {
+			if (!safeTo?.trim() || /[\r\n]/.test(job.email)) {
 				throw new TalawaRestError({
 					code: ErrorCode.INVALID_ARGUMENTS,
 					message:

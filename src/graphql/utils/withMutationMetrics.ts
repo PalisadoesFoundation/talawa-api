@@ -64,7 +64,7 @@ export function withMutationMetrics<
 	const { operationName } = options;
 
 	// Validate operation name at wrapper creation time (once) instead of runtime (every call)
-	if (!operationName || !operationName.trim()) {
+	if (!operationName?.trim()) {
 		throw new Error("Operation name cannot be empty or whitespace");
 	}
 

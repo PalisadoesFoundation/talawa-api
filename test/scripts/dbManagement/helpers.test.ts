@@ -659,7 +659,7 @@ suite.concurrent("insertCollections", () => {
 
 		expect(capturedData.length).toBeGreaterThan(0);
 		const firstItem = capturedData[0];
-		if (!firstItem || !firstItem.id) {
+		if (!firstItem?.id) {
 			throw new Error("Expected action item with ID");
 		}
 		expect(firstItem.id).not.toBe("short-id");

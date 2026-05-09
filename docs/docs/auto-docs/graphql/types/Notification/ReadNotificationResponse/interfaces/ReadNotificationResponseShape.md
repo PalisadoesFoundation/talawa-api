@@ -10,7 +10,7 @@ Defined in: [src/graphql/types/Notification/ReadNotificationResponse.ts:3](https
 
 ### message?
 
-> `optional` **message**: `string`
+> `optional` **message?**: `string`
 
 Defined in: [src/graphql/types/Notification/ReadNotificationResponse.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/ReadNotificationResponse.ts#L5)
 

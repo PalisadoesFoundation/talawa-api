@@ -600,11 +600,7 @@ describe("Organization Members Resolver Tests", () => {
 				"Organization",
 			) as GraphQLObjectType;
 			const membersField = organizationType.getFields().members;
-			if (
-				!membersField ||
-				!membersField.extensions ||
-				!membersField.extensions.complexity
-			) {
+			if (!membersField?.extensions?.complexity) {
 				throw new Error(
 					"Complexity function not found on Organization.members field",
 				);

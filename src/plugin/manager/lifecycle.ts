@@ -368,7 +368,7 @@ export class PluginLifecycle {
 	 */
 	private async removePluginDatabases(pluginId: string): Promise<void> {
 		const plugin = this.loadedPlugins.get(pluginId);
-		if (!plugin || !plugin.databaseTables) return;
+		if (!plugin?.databaseTables) return;
 
 		try {
 			await dropPluginTables(

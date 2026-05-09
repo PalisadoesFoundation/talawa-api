@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:11](https://github.com/PalisadoesFoundation/tal
 
 ### dependencies?
 
-> `optional` **dependencies**: `Record`\<`string`, `string`\>
+> `optional` **dependencies?**: `Record`\<`string`, `string`\>
 
 Defined in: [src/plugin/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L18)
 
@@ -36,47 +36,47 @@ Defined in: [src/plugin/types.ts:10](https://github.com/PalisadoesFoundation/tal
 
 ### docker?
 
-> `optional` **docker**: `object`
+> `optional` **docker?**: `object`
 
 Defined in: [src/plugin/types.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L19)
 
 #### buildOnInstall?
 
-> `optional` **buildOnInstall**: `boolean`
+> `optional` **buildOnInstall?**: `boolean`
 
 #### composeFile?
 
-> `optional` **composeFile**: `string`
+> `optional` **composeFile?**: `string`
 
 #### downOnDeactivate?
 
-> `optional` **downOnDeactivate**: `boolean`
+> `optional` **downOnDeactivate?**: `boolean`
 
 #### enabled?
 
-> `optional` **enabled**: `boolean`
+> `optional` **enabled?**: `boolean`
 
 #### env?
 
-> `optional` **env**: `Record`\<`string`, `string`\>
+> `optional` **env?**: `Record`\<`string`, `string`\>
 
 #### removeOnUninstall?
 
-> `optional` **removeOnUninstall**: `boolean`
+> `optional` **removeOnUninstall?**: `boolean`
 
 #### service?
 
-> `optional` **service**: `string`
+> `optional` **service?**: `string`
 
 #### upOnActivate?
 
-> `optional` **upOnActivate**: `boolean`
+> `optional` **upOnActivate?**: `boolean`
 
 ***
 
 ### extensionPoints?
 
-> `optional` **extensionPoints**: [`IExtensionPoints`](IExtensionPoints.md)
+> `optional` **extensionPoints?**: [`IExtensionPoints`](IExtensionPoints.md)
 
 Defined in: [src/plugin/types.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L13)
 
@@ -84,7 +84,7 @@ Defined in: [src/plugin/types.ts:13](https://github.com/PalisadoesFoundation/tal
 
 ### homepage?
 
-> `optional` **homepage**: `string`
+> `optional` **homepage?**: `string`
 
 Defined in: [src/plugin/types.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L15)
 
@@ -92,7 +92,7 @@ Defined in: [src/plugin/types.ts:15](https://github.com/PalisadoesFoundation/tal
 
 ### icon?
 
-> `optional` **icon**: `string`
+> `optional` **icon?**: `string`
 
 Defined in: [src/plugin/types.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L14)
 
@@ -100,7 +100,7 @@ Defined in: [src/plugin/types.ts:14](https://github.com/PalisadoesFoundation/tal
 
 ### license?
 
-> `optional` **license**: `string`
+> `optional` **license?**: `string`
 
 Defined in: [src/plugin/types.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L16)
 
@@ -132,7 +132,7 @@ Defined in: [src/plugin/types.ts:8](https://github.com/PalisadoesFoundation/tala
 
 ### tags?
 
-> `optional` **tags**: `string`[]
+> `optional` **tags?**: `string`[]
 
 Defined in: [src/plugin/types.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L17)
 

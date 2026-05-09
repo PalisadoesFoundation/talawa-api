@@ -558,7 +558,7 @@ suite("Mutation field updateChatMessage", () => {
 			});
 
 			const userData = userSignInResult.data?.signIn;
-			if (!userData || !userData.authenticationToken || !userData.user?.id) {
+			if (!userData?.authenticationToken || !userData.user?.id) {
 				throw new Error("User authentication failed");
 			}
 

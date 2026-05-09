@@ -8,9 +8,9 @@ Defined in: [src/plugin/types.ts:169](https://github.com/PalisadoesFoundation/ta
 
 ## Properties
 
-### execute()?
+### execute?
 
-> `optional` **execute**: (`sql`) => `Promise`\<`unknown`\>
+> `optional` **execute?**: (`sql`) => `Promise`\<`unknown`\>
 
 Defined in: [src/plugin/types.ts:181](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L181)
 
@@ -26,7 +26,7 @@ Defined in: [src/plugin/types.ts:181](https://github.com/PalisadoesFoundation/ta
 
 ***
 
-### select()
+### select
 
 > **select**: (...`args`) => `object`
 
@@ -42,7 +42,7 @@ Defined in: [src/plugin/types.ts:170](https://github.com/PalisadoesFoundation/ta
 
 `object`
 
-##### from()
+##### from
 
 > **from**: (`table`) => `object`
 
@@ -56,9 +56,9 @@ Defined in: [src/plugin/types.ts:170](https://github.com/PalisadoesFoundation/ta
 
 `object`
 
-###### limit()?
+###### limit?
 
-> `optional` **limit**: (...`args`) => `Promise`\<`unknown`[]\>
+> `optional` **limit?**: (...`args`) => `Promise`\<`unknown`[]\>
 
 ###### Parameters
 
@@ -70,7 +70,7 @@ Defined in: [src/plugin/types.ts:170](https://github.com/PalisadoesFoundation/ta
 
 `Promise`\<`unknown`[]\>
 
-###### where()
+###### where
 
 > **where**: (...`args`) => `Promise`\<`unknown`[]\>
 
@@ -86,7 +86,7 @@ Defined in: [src/plugin/types.ts:170](https://github.com/PalisadoesFoundation/ta
 
 ***
 
-### update()
+### update
 
 > **update**: (...`args`) => `object`
 
@@ -102,7 +102,7 @@ Defined in: [src/plugin/types.ts:176](https://github.com/PalisadoesFoundation/ta
 
 `object`
 
-##### set()
+##### set
 
 > **set**: (...`args`) => `object`
 
@@ -116,7 +116,7 @@ Defined in: [src/plugin/types.ts:176](https://github.com/PalisadoesFoundation/ta
 
 `object`
 
-###### where()
+###### where
 
 > **where**: (...`args`) => `Promise`\<`void`\>
 

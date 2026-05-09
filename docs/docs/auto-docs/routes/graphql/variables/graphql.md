@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: graphql()
+# Variable: graphql
 
 > `const` **graphql**: (`fastify`) => `Promise`\<`void`\>
 

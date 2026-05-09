@@ -21,7 +21,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:41](htt
 
 ### includeRecurring?
 
-> `optional` **includeRecurring**: `boolean`
+> `optional` **includeRecurring?**: `boolean`
 
 Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L42)
 
@@ -29,7 +29,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:42](htt
 
 ### limit?
 
-> `optional` **limit**: `number`
+> `optional` **limit?**: `number`
 
 Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L43)
 

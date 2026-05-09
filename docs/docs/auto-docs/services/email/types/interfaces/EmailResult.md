@@ -12,7 +12,7 @@ Email result interface
 
 ### error?
 
-> `optional` **error**: `string`
+> `optional` **error?**: `string`
 
 Defined in: [src/services/email/types.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L25)
 
@@ -28,7 +28,7 @@ Defined in: [src/services/email/types.ts:22](https://github.com/PalisadoesFounda
 
 ### messageId?
 
-> `optional` **messageId**: `string`
+> `optional` **messageId?**: `string`
 
 Defined in: [src/services/email/types.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L24)
 

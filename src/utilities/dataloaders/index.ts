@@ -64,4 +64,4 @@ export function createDataloaders(
 }
 
 // Re-export types for convenience
-export type { UserRow, OrganizationRow, EventRow, ActionItemRow };
+export type { ActionItemRow, EventRow, OrganizationRow, UserRow };

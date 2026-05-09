@@ -124,7 +124,7 @@ async function createTestOrganization(
 	);
 
 	// Check for errors before asserting
-	if (!createOrgResult.data || !createOrgResult.data.createOrganization) {
+	if (!createOrgResult.data?.createOrganization) {
 		throw new Error(
 			`Failed to create test organization: ${
 				createOrgResult.errors?.[0]?.message || "Unknown error"

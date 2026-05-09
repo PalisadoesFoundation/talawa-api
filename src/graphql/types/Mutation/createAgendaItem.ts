@@ -130,6 +130,7 @@ builder.mutationField("createAgendaItem", (t) =>
 						event: {
 							columns: {
 								startAt: true,
+								creatorId: true,
 							},
 							with: {
 								organization: {
@@ -194,11 +195,15 @@ builder.mutationField("createAgendaItem", (t) =>
 			const currentUserOrganizationMembership =
 				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
+			const isGlobalAdmin = currentUser.role === "administrator";
+
+			const isOrganizationAdmin =
+				currentUserOrganizationMembership?.role === "administrator";
+
+			const isEventCreator =
+				existingAgendaFolder.event.creatorId === currentUserId;
+
+			if (!isGlobalAdmin && !isOrganizationAdmin && !isEventCreator) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
