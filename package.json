@@ -21,7 +21,7 @@
     "@opentelemetry/instrumentation-http": "^0.211.0",
     "@opentelemetry/resources": "^2.2.0",
     "@opentelemetry/sdk-metrics": "^2.5.0",
-    "@opentelemetry/sdk-node": "^0.208.0",
+    "@opentelemetry/sdk-node": "^0.217.0",
     "@opentelemetry/sdk-trace-base": "^2.2.0",
     "@pothos/core": "^4.5.0",
     "@pothos/plugin-complexity": "^4.1.2",
