@@ -1143,6 +1143,16 @@ type EventVolunteerGroup {
   """The leader of the volunteer group."""
   leader: User
 
+  """
+  Volunteer memberships attached to this group. Returns every status (invited, requested, accepted, rejected) by default — pass `status` to narrow it. This is the field clients should use when they need to render mixed-status lists like 'pending + accepted' invites.
+  """
+  memberships(
+    """
+    Optional membership status to filter by. When omitted, memberships of every status are returned.
+    """
+    status: VolunteerMembershipStatus
+  ): [VolunteerMembership!]
+
   """Name of the volunteer group."""
   name: String
 
@@ -1155,8 +1165,15 @@ type EventVolunteerGroup {
   """The user who last updated this volunteer group."""
   updater: User
 
-  """List of volunteers who have accepted invitations to this group."""
-  volunteers: [EventVolunteer!]
+  """
+  List of volunteers for this group. Defaults to volunteers whose membership has been accepted; pass a different status to read invited, requested, or rejected memberships.
+  """
+  volunteers(
+    """
+    Membership status to filter by. Defaults to 'accepted' so existing callers see the same behavior.
+    """
+    status: VolunteerMembershipStatus
+  ): [EventVolunteer!]
 
   """Number of volunteers required for this group."""
   volunteersRequired: Int

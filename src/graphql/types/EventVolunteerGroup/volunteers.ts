@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
+import { VolunteerMembershipStatus } from "~/src/graphql/enums/VolunteerMembershipStatus";
 import { EventVolunteer } from "~/src/graphql/types/EventVolunteer/EventVolunteer";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -8,9 +9,15 @@ import type { GraphQLContext } from "../../context";
 import type { EventVolunteerGroup as EventVolunteerGroupType } from "./EventVolunteerGroup";
 import { EventVolunteerGroup } from "./EventVolunteerGroup";
 
+type VolunteerMembershipStatusValue =
+	| "invited"
+	| "requested"
+	| "accepted"
+	| "rejected";
+
 export const EventVolunteerGroupVolunteersResolver = async (
 	parent: EventVolunteerGroupType,
-	_args: Record<string, never>,
+	args: { status?: VolunteerMembershipStatusValue | null },
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
@@ -21,9 +28,21 @@ export const EventVolunteerGroupVolunteersResolver = async (
 		});
 	}
 
-	// Get volunteers who have ACCEPTED invitations to this group
-	// This matches the old API behavior where volunteers array only includes accepted volunteers
-	const acceptedVolunteers = await ctx.drizzleClient
+	const status: VolunteerMembershipStatusValue = args.status ?? "accepted";
+
+	const whereConditions = [
+		eq(eventVolunteerMembershipsTable.groupId, parent.id),
+		eq(eventVolunteerMembershipsTable.status, status),
+	];
+
+	// For the "accepted" status, also enforce the volunteer-level hasAccepted
+	// flag — this preserves the original behavior for existing callers that
+	// rely on the implicit "accepted-only" semantics of this field.
+	if (status === "accepted") {
+		whereConditions.push(eq(eventVolunteersTable.hasAccepted, true));
+	}
+
+	const volunteers = await ctx.drizzleClient
 		.select({
 			volunteer: eventVolunteersTable,
 		})
@@ -32,23 +51,25 @@ export const EventVolunteerGroupVolunteersResolver = async (
 			eventVolunteerMembershipsTable,
 			eq(eventVolunteerMembershipsTable.volunteerId, eventVolunteersTable.id),
 		)
-		.where(
-			and(
-				eq(eventVolunteerMembershipsTable.groupId, parent.id),
-				eq(eventVolunteerMembershipsTable.status, "accepted"), // Only accepted volunteers
-				eq(eventVolunteersTable.hasAccepted, true), // Double check volunteer acceptance
-			),
-		)
+		.where(and(...whereConditions))
 		.execute();
 
-	return acceptedVolunteers.map((result) => result.volunteer);
+	return volunteers.map((result) => result.volunteer);
 };
 
 EventVolunteerGroup.implement({
 	fields: (t) => ({
 		volunteers: t.field({
 			description:
-				"List of volunteers who have accepted invitations to this group.",
+				"List of volunteers for this group. Defaults to volunteers whose membership has been accepted; pass a different status to read invited, requested, or rejected memberships.",
+			args: {
+				status: t.arg({
+					type: VolunteerMembershipStatus,
+					required: false,
+					description:
+						"Membership status to filter by. Defaults to 'accepted' so existing callers see the same behavior.",
+				}),
+			},
 			resolve: EventVolunteerGroupVolunteersResolver,
 			type: [EventVolunteer],
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,

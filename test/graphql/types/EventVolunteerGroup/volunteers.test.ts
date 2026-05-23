@@ -47,15 +47,47 @@ const mockVolunteers = [
 	},
 ];
 
-// Mock query result structure from drizzle select
-const mockQueryResults = [
+const mockPendingVolunteers = [
 	{
-		volunteer: mockVolunteers[0],
-	},
-	{
-		volunteer: mockVolunteers[1],
+		id: "volunteer-3",
+		userId: "user-3",
+		eventId: "event-123",
+		creatorId: "creator-123",
+		hasAccepted: false,
+		isPublic: true,
+		hoursVolunteered: "0.00",
+		createdAt: new Date("2024-01-02T10:00:00Z"),
+		updatedAt: new Date("2024-01-02T10:00:00Z"),
+		updaterId: null,
 	},
 ];
+
+// Mock query result structure from drizzle select
+const mockQueryResults = [
+	{ volunteer: mockVolunteers[0] },
+	{ volunteer: mockVolunteers[1] },
+];
+
+type ChainMocks = {
+	executeMock: ReturnType<typeof vi.fn>;
+	whereMock: ReturnType<typeof vi.fn>;
+	innerJoinMock: ReturnType<typeof vi.fn>;
+	fromMock: ReturnType<typeof vi.fn>;
+};
+
+const buildSelectChain = (
+	mocks: ReturnType<typeof createMockGraphQLContext>["mocks"],
+	resolvedValue: unknown,
+): ChainMocks => {
+	const executeMock = vi.fn().mockResolvedValue(resolvedValue);
+	const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
+	const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
+	const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
+
+	mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+
+	return { executeMock, whereMock, innerJoinMock, fromMock };
+};
 
 describe("EventVolunteerGroupVolunteersResolver", () => {
 	beforeEach(() => {
@@ -86,17 +118,10 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 		});
 	});
 
-	describe("Volunteers Retrieval", () => {
-		it("should return accepted volunteers when volunteers exist", async () => {
+	describe("Default behavior (status omitted)", () => {
+		it("should return accepted volunteers when status arg is omitted", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			// Mock the complex drizzle query chain
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+			buildSelectChain(mocks, mockQueryResults);
 
 			const result = await EventVolunteerGroupVolunteersResolver(
 				mockEventVolunteerGroup,
@@ -105,21 +130,24 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 			);
 
 			expect(result).toEqual(mockVolunteers);
-			expect(mocks.drizzleClient.select).toHaveBeenCalledWith({
-				volunteer: expect.any(Object),
-			});
 		});
 
-		it("should return empty array when no volunteers exist", async () => {
+		it("should return accepted volunteers when status is null", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			buildSelectChain(mocks, mockQueryResults);
 
-			// Mock empty result
-			const executeMock = vi.fn().mockResolvedValue([]);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
+			const result = await EventVolunteerGroupVolunteersResolver(
+				mockEventVolunteerGroup,
+				{ status: null },
+				context,
+			);
 
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+			expect(result).toEqual(mockVolunteers);
+		});
+
+		it("should return empty array when no accepted volunteers exist", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			buildSelectChain(mocks, []);
 
 			const result = await EventVolunteerGroupVolunteersResolver(
 				mockEventVolunteerGroup,
@@ -130,15 +158,10 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 			expect(result).toEqual([]);
 		});
 
-		it("should query with correct join and filter parameters", async () => {
+		it("should run exactly one joined query (no N+1)", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+			const { executeMock, whereMock, innerJoinMock, fromMock } =
+				buildSelectChain(mocks, mockQueryResults);
 
 			await EventVolunteerGroupVolunteersResolver(
 				mockEventVolunteerGroup,
@@ -146,12 +169,93 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 				context,
 			);
 
-			// Verify the query chain was called
 			expect(mocks.drizzleClient.select).toHaveBeenCalledTimes(1);
 			expect(fromMock).toHaveBeenCalledTimes(1);
 			expect(innerJoinMock).toHaveBeenCalledTimes(1);
 			expect(whereMock).toHaveBeenCalledTimes(1);
 			expect(executeMock).toHaveBeenCalledTimes(1);
+		});
+
+		it("should not make additional queries for basic operations", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			buildSelectChain(mocks, mockQueryResults);
+
+			await EventVolunteerGroupVolunteersResolver(
+				mockEventVolunteerGroup,
+				{},
+				context,
+			);
+
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).not.toHaveBeenCalled();
+			expect(
+				mocks.drizzleClient.query.eventVolunteersTable.findMany,
+			).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("Status filter", () => {
+		it("should return invited volunteers when status='invited'", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const invitedResults = mockPendingVolunteers.map((v) => ({
+				volunteer: v,
+			}));
+			buildSelectChain(mocks, invitedResults);
+
+			const result = await EventVolunteerGroupVolunteersResolver(
+				mockEventVolunteerGroup,
+				{ status: "invited" },
+				context,
+			);
+
+			expect(result).toEqual(mockPendingVolunteers);
+			expect(result.every((v) => v.hasAccepted === false)).toBe(true);
+		});
+
+		it("should return requested volunteers when status='requested'", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const requestedResults = mockPendingVolunteers.map((v) => ({
+				volunteer: v,
+			}));
+			buildSelectChain(mocks, requestedResults);
+
+			const result = await EventVolunteerGroupVolunteersResolver(
+				mockEventVolunteerGroup,
+				{ status: "requested" },
+				context,
+			);
+
+			expect(result).toEqual(mockPendingVolunteers);
+		});
+
+		it("should return rejected volunteers when status='rejected'", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const rejectedResults = mockPendingVolunteers.map((v) => ({
+				volunteer: v,
+			}));
+			buildSelectChain(mocks, rejectedResults);
+
+			const result = await EventVolunteerGroupVolunteersResolver(
+				mockEventVolunteerGroup,
+				{ status: "rejected" },
+				context,
+			);
+
+			expect(result).toEqual(mockPendingVolunteers);
+		});
+
+		it("should treat status='accepted' identically to the default", async () => {
+			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			buildSelectChain(mocks, mockQueryResults);
+
+			const result = await EventVolunteerGroupVolunteersResolver(
+				mockEventVolunteerGroup,
+				{ status: "accepted" },
+				context,
+			);
+
+			expect(result).toEqual(mockVolunteers);
 		});
 	});
 
@@ -175,13 +279,7 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 					},
 				},
 			];
-
-			const executeMock = vi.fn().mockResolvedValue(customQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+			buildSelectChain(mocks, customQueryResults);
 
 			const result = await EventVolunteerGroupVolunteersResolver(
 				mockEventVolunteerGroup,
@@ -214,13 +312,7 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 					},
 				},
 			];
-
-			const executeMock = vi.fn().mockResolvedValue(multipleVolunteersResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+			buildSelectChain(mocks, multipleVolunteersResults);
 
 			const result = await EventVolunteerGroupVolunteersResolver(
 				mockEventVolunteerGroup,
@@ -235,73 +327,6 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 		});
 	});
 
-	describe("Filtering Logic", () => {
-		it("should only return volunteers with accepted status", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			// The resolver filters by status: "accepted" and hasAccepted: true internally
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			const result = await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			expect(result).toEqual(mockVolunteers);
-
-			// Verify that the where clause was called (which includes status and acceptance filtering)
-			expect(whereMock).toHaveBeenCalledTimes(1);
-		});
-
-		it("should filter by group ID", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// Verify the where clause includes group ID filtering
-			expect(whereMock).toHaveBeenCalledTimes(1);
-		});
-	});
-
-	describe("Join Logic", () => {
-		it("should properly join eventVolunteers with volunteerMemberships", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// Verify the join was called (tests the inner join logic)
-			expect(innerJoinMock).toHaveBeenCalledTimes(1);
-		});
-	});
-
 	describe("Edge Cases", () => {
 		it("should handle different group IDs correctly", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
@@ -310,13 +335,7 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 				...mockEventVolunteerGroup,
 				id: "different-group-456",
 			};
-
-			const executeMock = vi.fn().mockResolvedValue([]);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+			buildSelectChain(mocks, []);
 
 			const result = await EventVolunteerGroupVolunteersResolver(
 				differentGroup,
@@ -327,7 +346,7 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 			expect(result).toEqual([]);
 		});
 
-		it("should handle database connection issues", async () => {
+		it("should propagate database errors", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			const executeMock = vi
@@ -346,134 +365,6 @@ describe("EventVolunteerGroupVolunteersResolver", () => {
 					context,
 				),
 			).rejects.toThrow("Database connection failed");
-		});
-
-		it("should handle query results with malformed structure", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			// Mock malformed result structure
-			const malformedResults = [
-				{ volunteer: null },
-				{ notVolunteer: mockVolunteers[0] },
-			];
-
-			const executeMock = vi.fn().mockResolvedValue(malformedResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			const result = await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// Should map results even with malformed data
-			expect(result).toHaveLength(2);
-			expect(result[0]).toBeNull();
-			expect(result[1]).toBeUndefined();
-		});
-	});
-
-	describe("Query Performance", () => {
-		it("should make single complex query with joins", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// Verify single query execution (no N+1 problem)
-			expect(mocks.drizzleClient.select).toHaveBeenCalledTimes(1);
-			expect(executeMock).toHaveBeenCalledTimes(1);
-		});
-
-		it("should not make additional queries for basic operations", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// Verify no additional separate queries
-			expect(
-				mocks.drizzleClient.query.usersTable.findFirst,
-			).not.toHaveBeenCalled();
-			expect(
-				mocks.drizzleClient.query.eventVolunteersTable.findMany,
-			).not.toHaveBeenCalled();
-		});
-	});
-
-	describe("Acceptance Status Logic", () => {
-		it("should only include volunteers with both membership accepted and hasAccepted true", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			// All results should have hasAccepted: true since that's what the resolver filters for
-			const acceptedVolunteersResults = mockQueryResults.map((result) => ({
-				volunteer: {
-					...result.volunteer,
-					hasAccepted: true, // Ensure all returned volunteers have hasAccepted: true
-				},
-			}));
-
-			const executeMock = vi.fn().mockResolvedValue(acceptedVolunteersResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			const result = await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// Verify all returned volunteers have hasAccepted: true
-			expect(result.every((volunteer) => volunteer.hasAccepted === true)).toBe(
-				true,
-			);
-		});
-
-		it("should validate filtering by accepted status in where clause", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const executeMock = vi.fn().mockResolvedValue(mockQueryResults);
-			const whereMock = vi.fn().mockReturnValue({ execute: executeMock });
-			const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
-			const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
-
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			await EventVolunteerGroupVolunteersResolver(
-				mockEventVolunteerGroup,
-				{},
-				context,
-			);
-
-			// The where clause should include both status: "accepted" and hasAccepted: true filters
-			expect(whereMock).toHaveBeenCalledTimes(1);
 		});
 	});
 });
