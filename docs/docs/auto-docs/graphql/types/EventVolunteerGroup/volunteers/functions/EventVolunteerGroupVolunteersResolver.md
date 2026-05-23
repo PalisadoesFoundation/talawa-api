@@ -4,9 +4,9 @@
 
 # Function: EventVolunteerGroupVolunteersResolver()
 
-> **EventVolunteerGroupVolunteersResolver**(`parent`, `_args`, `ctx`): `Promise`\<`object`[]\>
+> **EventVolunteerGroupVolunteersResolver**(`parent`, `args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: [src/graphql/types/EventVolunteerGroup/volunteers.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerGroup/volunteers.ts#L11)
+Defined in: [src/graphql/types/EventVolunteerGroup/volunteers.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerGroup/volunteers.ts#L18)
 
 ## Parameters
 
@@ -14,9 +14,11 @@ Defined in: [src/graphql/types/EventVolunteerGroup/volunteers.ts:11](https://git
 
 [`EventVolunteerGroup`](../../EventVolunteerGroup/type-aliases/EventVolunteerGroup.md)
 
-### \_args
+### args
 
-`Record`\<`string`, `never`\>
+#### status?
+
+`VolunteerMembershipStatusValue` \| `null`
 
 ### ctx
 
