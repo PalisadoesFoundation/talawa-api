@@ -10,7 +10,7 @@ Logger interface for cache wrapper operations.
 
 ## Properties
 
-### debug()
+### debug
 
 > **debug**: (`obj`, `msg?`) => `void`
 

@@ -18,7 +18,7 @@ Defined in: [src/services/auth/authService.ts:121](https://github.com/Palisadoes
 
 ### ip?
 
-> `optional` **ip**: `string`
+> `optional` **ip?**: `string`
 
 Defined in: [src/services/auth/authService.ts:123](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L123)
 
@@ -34,6 +34,6 @@ Defined in: [src/services/auth/authService.ts:122](https://github.com/Palisadoes
 
 ### userAgent?
 
-> `optional` **userAgent**: `string`
+> `optional` **userAgent?**: `string`
 
 Defined in: [src/services/auth/authService.ts:124](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/authService.ts#L124)

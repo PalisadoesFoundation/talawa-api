@@ -4,7 +4,7 @@
 
 # Function: loadOAuthConfig()
 
-> **loadOAuthConfig**(`env`): [`OAuthProvidersConfig`](../interfaces/OAuthProvidersConfig.md)
+> **loadOAuthConfig**(`env?`): [`OAuthProvidersConfig`](../interfaces/OAuthProvidersConfig.md)
 
 Defined in: [src/config/oauth.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/oauth.ts#L17)
 
@@ -13,7 +13,7 @@ Providers are disabled if required values are missing.
 
 ## Parameters
 
-### env
+### env?
 
 `ProcessEnv` = `process.env`
 

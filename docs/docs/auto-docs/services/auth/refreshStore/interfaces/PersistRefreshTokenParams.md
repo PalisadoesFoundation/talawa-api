@@ -16,7 +16,7 @@ Parameters for persisting a refresh token.
 
 ### ~~ip?~~
 
-> `optional` **ip**: `string`
+> `optional` **ip?**: `string`
 
 Defined in: [src/services/auth/refreshStore.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L30)
 
@@ -44,7 +44,7 @@ Defined in: [src/services/auth/refreshStore.ts:33](https://github.com/Palisadoes
 
 ### ~~userAgent?~~
 
-> `optional` **userAgent**: `string`
+> `optional` **userAgent?**: `string`
 
 Defined in: [src/services/auth/refreshStore.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/auth/refreshStore.ts#L32)
 

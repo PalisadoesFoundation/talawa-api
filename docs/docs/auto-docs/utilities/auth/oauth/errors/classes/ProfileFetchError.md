@@ -16,13 +16,13 @@ Error thrown when profile fetch fails
 
 ### Constructor
 
-> **new ProfileFetchError**(`message`): `ProfileFetchError`
+> **new ProfileFetchError**(`message?`): `ProfileFetchError`
 
 Defined in: [src/utilities/auth/oauth/errors.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L46)
 
 #### Parameters
 
-##### message
+##### message?
 
 `string` = `"Failed to fetch user profile"`
 
@@ -50,7 +50,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/Palisadoes
 
 ### statusCode?
 
-> `optional` **statusCode**: `number`
+> `optional` **statusCode?**: `number`
 
 Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L8)
 

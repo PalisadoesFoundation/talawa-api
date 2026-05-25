@@ -18,7 +18,7 @@ Defined in: [src/plugin/types.ts:73](https://github.com/PalisadoesFoundation/tal
 
 ### errorMessage?
 
-> `optional` **errorMessage**: `string`
+> `optional` **errorMessage?**: `string`
 
 Defined in: [src/plugin/types.ts:80](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L80)
 

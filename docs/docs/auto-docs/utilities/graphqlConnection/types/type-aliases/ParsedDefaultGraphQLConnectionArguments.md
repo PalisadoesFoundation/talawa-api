@@ -20,7 +20,7 @@ Type of the object containing the parsed default arguments of a graphql connecti
 
 ### cursor?
 
-> `optional` **cursor**: `Cursor`
+> `optional` **cursor?**: `Cursor`
 
 Defined in: [src/utilities/graphqlConnection/types.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/graphqlConnection/types.ts#L8)
 

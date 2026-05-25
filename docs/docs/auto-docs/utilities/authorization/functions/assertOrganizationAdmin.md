@@ -12,11 +12,11 @@ Defined in: [src/utilities/authorization.ts:7](https://github.com/PalisadoesFoun
 
 ### currentUser
 
-`HasRole` | `undefined`
+`HasRole` \| `undefined`
 
 ### membership
 
-`HasRole` | `undefined`
+`HasRole` \| `undefined`
 
 ### errorMessage
 

@@ -12,7 +12,7 @@ Options for creating a performance tracker.
 
 ### \_\_slowArray?
 
-> `optional` **\_\_slowArray**: `object`[]
+> `optional` **\_\_slowArray?**: `object`[]
 
 Defined in: [src/utilities/metrics/performanceTracker.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L102)
 
@@ -34,7 +34,7 @@ If provided, this array will be used instead of creating a new one.
 
 ### slowMs?
 
-> `optional` **slowMs**: `number`
+> `optional` **slowMs?**: `number`
 
 Defined in: [src/utilities/metrics/performanceTracker.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L96)
 

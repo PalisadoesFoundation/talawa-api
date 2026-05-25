@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: cacheService()
+# Variable: cacheService
 
 > `const` **cacheService**: (`fastify`) => `Promise`\<`void`\>
 

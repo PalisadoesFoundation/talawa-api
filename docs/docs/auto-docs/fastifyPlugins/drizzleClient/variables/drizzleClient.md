@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: drizzleClient()
+# Variable: drizzleClient
 
 > `const` **drizzleClient**: (`fastify`) => `Promise`\<`void`\>
 

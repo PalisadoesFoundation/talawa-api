@@ -10,7 +10,7 @@ Defined in: [src/plugin/types.ts:61](https://github.com/PalisadoesFoundation/tal
 
 ### description?
 
-> `optional` **description**: `string`
+> `optional` **description?**: `string`
 
 Defined in: [src/plugin/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L65)
 
@@ -26,7 +26,7 @@ Defined in: [src/plugin/types.ts:63](https://github.com/PalisadoesFoundation/tal
 
 ### method?
 
-> `optional` **method**: `"DELETE"` \| `"GET"` \| `"PATCH"` \| `"POST"` \| `"PUT"`
+> `optional` **method?**: `"DELETE"` \| `"GET"` \| `"PATCH"` \| `"POST"` \| `"PUT"`
 
 Defined in: [src/plugin/types.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L64)
 

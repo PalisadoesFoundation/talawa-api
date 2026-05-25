@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: routes()
+# Variable: routes
 
 > `const` **routes**: (`fastify`) => `Promise`\<`void`\>
 

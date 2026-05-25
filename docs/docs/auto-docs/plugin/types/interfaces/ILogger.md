@@ -8,9 +8,9 @@ Defined in: [src/plugin/types.ts:129](https://github.com/PalisadoesFoundation/ta
 
 ## Properties
 
-### debug()?
+### debug?
 
-> `optional` **debug**: (`messageOrObj`, ...`args`) => `void`
+> `optional` **debug?**: (`messageOrObj`, ...`args`) => `void`
 
 Defined in: [src/plugin/types.ts:133](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L133)
 
@@ -18,7 +18,7 @@ Defined in: [src/plugin/types.ts:133](https://github.com/PalisadoesFoundation/ta
 
 ##### messageOrObj
 
-`string` | `object`
+`string` \| `object`
 
 ##### args
 
@@ -30,9 +30,9 @@ Defined in: [src/plugin/types.ts:133](https://github.com/PalisadoesFoundation/ta
 
 ***
 
-### error()?
+### error?
 
-> `optional` **error**: (`messageOrObj`, ...`args`) => `void`
+> `optional` **error?**: (`messageOrObj`, ...`args`) => `void`
 
 Defined in: [src/plugin/types.ts:131](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L131)
 
@@ -40,7 +40,7 @@ Defined in: [src/plugin/types.ts:131](https://github.com/PalisadoesFoundation/ta
 
 ##### messageOrObj
 
-`string` | `object`
+`string` \| `object`
 
 ##### args
 
@@ -52,9 +52,9 @@ Defined in: [src/plugin/types.ts:131](https://github.com/PalisadoesFoundation/ta
 
 ***
 
-### info()?
+### info?
 
-> `optional` **info**: (`messageOrObj`, ...`args`) => `void`
+> `optional` **info?**: (`messageOrObj`, ...`args`) => `void`
 
 Defined in: [src/plugin/types.ts:130](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L130)
 
@@ -62,7 +62,7 @@ Defined in: [src/plugin/types.ts:130](https://github.com/PalisadoesFoundation/ta
 
 ##### messageOrObj
 
-`string` | `object`
+`string` \| `object`
 
 ##### args
 
@@ -74,9 +74,9 @@ Defined in: [src/plugin/types.ts:130](https://github.com/PalisadoesFoundation/ta
 
 ***
 
-### warn()?
+### warn?
 
-> `optional` **warn**: (`messageOrObj`, ...`args`) => `void`
+> `optional` **warn?**: (`messageOrObj`, ...`args`) => `void`
 
 Defined in: [src/plugin/types.ts:132](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L132)
 
@@ -84,7 +84,7 @@ Defined in: [src/plugin/types.ts:132](https://github.com/PalisadoesFoundation/ta
 
 ##### messageOrObj
 
-`string` | `object`
+`string` \| `object`
 
 ##### args
 

@@ -14,15 +14,15 @@ Validates reCAPTCHA token if required based on environment configuration.
 
 ### recaptchaToken
 
-The reCAPTCHA token to verify (optional)
+`string` \| `undefined`
 
-`string` | `undefined`
+The reCAPTCHA token to verify (optional)
 
 ### recaptchaSecretKey
 
-The secret key from environment config
+`string` \| `undefined`
 
-`string` | `undefined`
+The secret key from environment config
 
 ### argumentPath
 

@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: pluginWebhooks()
+# Variable: pluginWebhooks
 
 > `const` **pluginWebhooks**: (`fastify`) => `Promise`\<`void`\>
 

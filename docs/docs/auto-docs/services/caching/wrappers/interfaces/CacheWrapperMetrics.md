@@ -10,7 +10,7 @@ Metrics interface for cache wrapper operations.
 
 ## Properties
 
-### increment()
+### increment
 
 > **increment**: (`metric`, `tags?`) => `void`
 

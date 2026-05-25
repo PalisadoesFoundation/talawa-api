@@ -12,4 +12,4 @@ Defined in: [src/graphql/types/ActionItem/ActionItem.ts:4](https://github.com/Pa
 
 ### isInstanceException?
 
-> `optional` **isInstanceException**: `boolean`
+> `optional` **isInstanceException?**: `boolean`

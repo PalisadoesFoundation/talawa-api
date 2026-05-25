@@ -12,7 +12,7 @@ Minimal logger interface for rate limit violation logging.
 
 ## Properties
 
-### warn()
+### warn
 
 > **warn**: (`obj`, `msg?`) => `void`
 

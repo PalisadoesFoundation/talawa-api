@@ -71,7 +71,7 @@ Delete one or more keys from cache.
 
 ##### keys
 
-`string` | `string`[]
+`string` \| `string`[]
 
 #### Returns
 

@@ -27,7 +27,7 @@ Standardized error code
 
 ### details?
 
-> `optional` **details**: `unknown`
+> `optional` **details?**: `unknown`
 
 Defined in: [src/utilities/errors/errorTransformer.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L21)
 

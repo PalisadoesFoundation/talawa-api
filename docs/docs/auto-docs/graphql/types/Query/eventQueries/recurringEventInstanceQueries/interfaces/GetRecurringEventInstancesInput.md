@@ -20,7 +20,7 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 ### excludeInstanceIds?
 
-> `optional` **excludeInstanceIds**: `string`[]
+> `optional` **excludeInstanceIds?**: `string`[]
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L53)
 
@@ -32,7 +32,7 @@ such as instances that have already been processed or displayed.
 
 ### includeCancelled?
 
-> `optional` **includeCancelled**: `boolean`
+> `optional` **includeCancelled?**: `boolean`
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L37)
 
@@ -40,7 +40,7 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 ### limit?
 
-> `optional` **limit**: `number`
+> `optional` **limit?**: `number`
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L42)
 
@@ -51,7 +51,7 @@ Must be a positive integer.
 
 ### offset?
 
-> `optional` **offset**: `number`
+> `optional` **offset?**: `number`
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L47)
 

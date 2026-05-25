@@ -14,7 +14,7 @@ Check if installed version meets the required version
 
 ### installed
 
-`string` | `null`
+`string` \| `null`
 
 ### required
 
