@@ -46,9 +46,9 @@ Delete one or more keys from the cache.
 
 ##### keys
 
-`string` \| `string`[]
-
 Single key or array of keys to delete.
+
+`string` | `string`[]
 
 #### Returns
 

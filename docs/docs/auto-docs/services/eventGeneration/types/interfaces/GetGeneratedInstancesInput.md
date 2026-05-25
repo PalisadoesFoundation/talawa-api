@@ -20,7 +20,7 @@ Defined in: [src/services/eventGeneration/types.ts:16](https://github.com/Palisa
 
 ### includeCancelled?
 
-> `optional` **includeCancelled?**: `boolean`
+> `optional` **includeCancelled**: `boolean`
 
 Defined in: [src/services/eventGeneration/types.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L17)
 
@@ -28,7 +28,7 @@ Defined in: [src/services/eventGeneration/types.ts:17](https://github.com/Palisa
 
 ### limit?
 
-> `optional` **limit?**: `number`
+> `optional` **limit**: `number`
 
 Defined in: [src/services/eventGeneration/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L18)
 

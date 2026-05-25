@@ -20,7 +20,7 @@ Defined in: [src/install/types.ts:51](https://github.com/PalisadoesFoundation/ta
 
 ### error?
 
-> `optional` **error?**: `string`
+> `optional` **error**: `string`
 
 Defined in: [src/install/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/types.ts#L49)
 

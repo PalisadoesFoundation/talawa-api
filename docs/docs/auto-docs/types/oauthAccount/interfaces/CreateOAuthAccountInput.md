@@ -20,7 +20,7 @@ Defined in: [src/types/oauthAccount.ts:32](https://github.com/PalisadoesFoundati
 
 ### profile?
 
-> `optional` **profile?**: [`OAuthAccountProfile`](OAuthAccountProfile.md)
+> `optional` **profile**: [`OAuthAccountProfile`](OAuthAccountProfile.md)
 
 Defined in: [src/types/oauthAccount.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L33)
 

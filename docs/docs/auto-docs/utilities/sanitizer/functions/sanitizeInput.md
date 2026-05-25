@@ -40,9 +40,9 @@ This is for INPUT normalization, not OUTPUT escaping.
 
 #### str
 
-`string` \| `null`
-
 The string to sanitize.
+
+`string` | `null`
 
 ### Returns
 
@@ -63,9 +63,9 @@ This is for INPUT normalization, not OUTPUT escaping.
 
 #### str
 
-`string` \| `undefined`
-
 The string to sanitize.
+
+`string` | `undefined`
 
 ### Returns
 
@@ -86,9 +86,9 @@ This is for INPUT normalization, not OUTPUT escaping.
 
 #### str
 
-`string` \| `null` \| `undefined`
-
 The string to sanitize.
+
+`string` | `null` | `undefined`
 
 ### Returns
 

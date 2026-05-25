@@ -38,9 +38,9 @@ Escapes HTML characters in a string to prevent XSS attacks.
 
 #### str
 
-`string` \| `null`
-
 The string to escape.
+
+`string` | `null`
 
 ### Returns
 
@@ -60,9 +60,9 @@ Escapes HTML characters in a string to prevent XSS attacks.
 
 #### str
 
-`string` \| `undefined`
-
 The string to escape.
+
+`string` | `undefined`
 
 ### Returns
 
@@ -82,9 +82,9 @@ Escapes HTML characters in a string to prevent XSS attacks.
 
 #### str
 
-`string` \| `null` \| `undefined`
-
 The string to escape.
+
+`string` | `null` | `undefined`
 
 ### Returns
 

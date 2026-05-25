@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: plugins
+# Variable: plugins()
 
 > `const` **plugins**: (`fastify`) => `Promise`\<`void`\>
 

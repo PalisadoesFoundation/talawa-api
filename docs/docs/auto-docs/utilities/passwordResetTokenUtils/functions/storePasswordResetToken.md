@@ -32,9 +32,9 @@ The hashed password reset token
 
 ### expiresAt
 
-`Date` \| `null`
-
 The expiration date of the token, or null for tokens that never expire
+
+`Date` | `null`
 
 ## Returns
 

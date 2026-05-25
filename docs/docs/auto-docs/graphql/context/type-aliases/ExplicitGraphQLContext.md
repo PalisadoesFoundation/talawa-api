@@ -24,14 +24,14 @@ Redis-backed cache service for caching entities and query results.
 
 ### cookie?
 
-> `optional` **cookie?**: `object`
+> `optional` **cookie**: `object`
 
 Defined in: [src/graphql/context.ts:90](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L90)
 
 Cookie helper for setting HTTP-Only authentication cookies.
 Only available for HTTP requests (not WebSocket subscriptions).
 
-#### clearAuthCookies
+#### clearAuthCookies()
 
 > **clearAuthCookies**: () => `void`
 
@@ -41,7 +41,7 @@ Clears both authentication cookies (for logout).
 
 `void`
 
-#### getRefreshToken
+#### getRefreshToken()
 
 > **getRefreshToken**: () => `string` \| `undefined`
 
@@ -51,7 +51,7 @@ Gets the refresh token from cookies if present.
 
 `string` \| `undefined`
 
-#### setAuthCookies
+#### setAuthCookies()
 
 > **setAuthCookies**: (`accessToken`, `refreshToken`) => `void`
 
@@ -117,7 +117,7 @@ Defined in: [src/graphql/context.ts:58](https://github.com/PalisadoesFoundation/
 
 Defined in: [src/graphql/context.ts:83](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L83)
 
-#### sign
+#### sign()
 
 > **sign**: (`payload`) => `string`
 
@@ -151,16 +151,16 @@ Defined in: [src/graphql/context.ts:107](https://github.com/PalisadoesFoundation
 
 ### notification?
 
-> `optional` **notification?**: `object`
+> `optional` **notification**: `object`
 
 Defined in: [src/graphql/context.ts:116](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L116)
 
 Per-request notification helper. Implementations may enqueue notifications
 for delivery and support flush() to perform delivery after transaction commit.
 
-#### emitEventCreatedImmediate?
+#### emitEventCreatedImmediate()?
 
-> `optional` **emitEventCreatedImmediate?**: (`payload`, `ctx`) => `Promise`\<`void`\>
+> `optional` **emitEventCreatedImmediate**: (`payload`, `ctx`) => `Promise`\<`void`\>
 
 ##### Parameters
 
@@ -198,7 +198,7 @@ for delivery and support flush() to perform delivery after transaction commit.
 
 `Promise`\<`void`\>
 
-#### enqueueEventCreated
+#### enqueueEventCreated()
 
 > **enqueueEventCreated**: (`payload`) => `void`
 
@@ -234,7 +234,7 @@ for delivery and support flush() to perform delivery after transaction commit.
 
 `void`
 
-#### enqueueSendEventInvite
+#### enqueueSendEventInvite()
 
 > **enqueueSendEventInvite**: (`payload`) => `void`
 
@@ -278,7 +278,7 @@ for delivery and support flush() to perform delivery after transaction commit.
 
 `void`
 
-#### flush
+#### flush()
 
 > **flush**: (`ctx`) => `Promise`\<`void`\>
 
@@ -296,7 +296,7 @@ for delivery and support flush() to perform delivery after transaction commit.
 
 ### oauthProviderRegistry?
 
-> `optional` **oauthProviderRegistry?**: [`OAuthProviderRegistry`](../../../utilities/auth/oauth/OAuthProviderRegistry/classes/OAuthProviderRegistry.md)
+> `optional` **oauthProviderRegistry**: [`OAuthProviderRegistry`](../../../utilities/auth/oauth/OAuthProviderRegistry/classes/OAuthProviderRegistry.md)
 
 Defined in: [src/graphql/context.ts:111](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L111)
 
@@ -306,7 +306,7 @@ OAuth provider registry for accessing configured OAuth providers.
 
 ### perf?
 
-> `optional` **perf?**: [`PerformanceTracker`](../../../utilities/metrics/performanceTracker/interfaces/PerformanceTracker.md)
+> `optional` **perf**: [`PerformanceTracker`](../../../utilities/metrics/performanceTracker/interfaces/PerformanceTracker.md)
 
 Defined in: [src/graphql/context.ts:153](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L153)
 

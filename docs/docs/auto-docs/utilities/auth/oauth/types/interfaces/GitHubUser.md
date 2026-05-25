@@ -20,7 +20,7 @@ Defined in: [src/utilities/auth/oauth/types.ts:40](https://github.com/Palisadoes
 
 ### email?
 
-> `optional` **email?**: `string`
+> `optional` **email**: `string`
 
 Defined in: [src/utilities/auth/oauth/types.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L39)
 

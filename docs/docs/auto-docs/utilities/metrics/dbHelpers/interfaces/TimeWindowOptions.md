@@ -12,7 +12,7 @@ Options for generating time windows.
 
 ### alignToBoundaries?
 
-> `optional` **alignToBoundaries?**: `boolean`
+> `optional` **alignToBoundaries**: `boolean`
 
 Defined in: [src/utilities/metrics/dbHelpers.ts:202](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L202)
 
@@ -23,7 +23,7 @@ Defaults to false.
 
 ### windowSizeMs?
 
-> `optional` **windowSizeMs?**: `number`
+> `optional` **windowSizeMs**: `number`
 
 Defined in: [src/utilities/metrics/dbHelpers.ts:197](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L197)
 

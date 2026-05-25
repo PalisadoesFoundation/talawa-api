@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: errorHandlerPlugin
+# Variable: errorHandlerPlugin()
 
 > `const` **errorHandlerPlugin**: (`fastify`) => `Promise`\<`void`\>
 

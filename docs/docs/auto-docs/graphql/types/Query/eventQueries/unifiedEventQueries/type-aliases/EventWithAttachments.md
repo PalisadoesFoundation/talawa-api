@@ -19,7 +19,7 @@ to distinguish between standalone and generated events.
 
 ### baseRecurringEventId?
 
-> `optional` **baseRecurringEventId?**: `string`
+> `optional` **baseRecurringEventId**: `string`
 
 ### eventType
 
@@ -27,16 +27,16 @@ to distinguish between standalone and generated events.
 
 ### hasExceptions?
 
-> `optional` **hasExceptions?**: `boolean`
+> `optional` **hasExceptions**: `boolean`
 
 ### isGenerated?
 
-> `optional` **isGenerated?**: `boolean`
+> `optional` **isGenerated**: `boolean`
 
 ### sequenceNumber?
 
-> `optional` **sequenceNumber?**: `number`
+> `optional` **sequenceNumber**: `number`
 
 ### totalCount?
 
-> `optional` **totalCount?**: `number` \| `null`
+> `optional` **totalCount**: `number` \| `null`

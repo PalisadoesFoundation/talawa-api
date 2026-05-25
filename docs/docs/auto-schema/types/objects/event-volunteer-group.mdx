@@ -83,11 +83,12 @@ type EventVolunteerGroup {
   isInstanceException: Boolean
   isTemplate: Boolean
   leader: User
+  memberships(status: VolunteerMembershipStatus): [VolunteerMembership!]
   name: String
   recurringEventInstance: Event
   updatedAt: DateTime
   updater: User
-  volunteers: [EventVolunteer!]
+  volunteers(status: VolunteerMembershipStatus): [EventVolunteer!]
   volunteersRequired: Int
 }
 ```
@@ -126,6 +127,14 @@ Boolean indicating if this is a template volunteer group (for recurring events).
 
 The leader of the volunteer group.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>memberships</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[VolunteerMembership!]</b></code>](/auto-schema/types/objects/volunteer-membership.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+Volunteer memberships attached to this group. Returns every status (invited, requested, accepted, rejected) by default — pass `status` to narrow it. This is the field clients should use when they need to render mixed-status lists like 'pending + accepted' invites.
+
+##### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.memberships.<b>status</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>VolunteerMembershipStatus</b></code>](/auto-schema/types/enums/volunteer-membership-status.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Optional membership status to filter by. When omitted, memberships of every status are returned.
+
 #### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Name of the volunteer group.
@@ -144,7 +153,11 @@ The user who last updated this volunteer group.
 
 #### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>volunteers</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventVolunteer!]</b></code>](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
 
-List of volunteers who have accepted invitations to this group.
+List of volunteers for this group. Defaults to volunteers whose membership has been accepted; pass a different status to read invited, requested, or rejected memberships.
+
+##### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.volunteers.<b>status</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>VolunteerMembershipStatus</b></code>](/auto-schema/types/enums/volunteer-membership-status.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Membership status to filter by. Defaults to 'accepted' so existing callers see the same behavior.
 
 #### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>volunteersRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

@@ -12,7 +12,7 @@ OAuth account update input
 
 ### email?
 
-> `optional` **email?**: `string`
+> `optional` **email**: `string`
 
 Defined in: [src/types/oauthAccount.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L40)
 
@@ -20,7 +20,7 @@ Defined in: [src/types/oauthAccount.ts:40](https://github.com/PalisadoesFoundati
 
 ### lastUsedAt?
 
-> `optional` **lastUsedAt?**: `Date`
+> `optional` **lastUsedAt**: `Date`
 
 Defined in: [src/types/oauthAccount.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L42)
 
@@ -28,6 +28,6 @@ Defined in: [src/types/oauthAccount.ts:42](https://github.com/PalisadoesFoundati
 
 ### profile?
 
-> `optional` **profile?**: [`OAuthAccountProfile`](OAuthAccountProfile.md)
+> `optional` **profile**: [`OAuthAccountProfile`](OAuthAccountProfile.md)
 
 Defined in: [src/types/oauthAccount.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L41)

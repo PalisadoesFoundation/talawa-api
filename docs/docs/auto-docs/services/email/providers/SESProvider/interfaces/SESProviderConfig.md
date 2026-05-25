@@ -12,7 +12,7 @@ Configuration for AWS SES Email Provider.
 
 ### accessKeyId?
 
-> `optional` **accessKeyId?**: `string`
+> `optional` **accessKeyId**: `string`
 
 Defined in: [src/services/email/providers/SESProvider.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L18)
 
@@ -22,7 +22,7 @@ AWS Access Key ID. Optional if using default credential chain (e.g. IAM roles).
 
 ### fromEmail?
 
-> `optional` **fromEmail?**: `string`
+> `optional` **fromEmail**: `string`
 
 Defined in: [src/services/email/providers/SESProvider.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L22)
 
@@ -32,7 +32,7 @@ Default sender email address.
 
 ### fromName?
 
-> `optional` **fromName?**: `string`
+> `optional` **fromName**: `string`
 
 Defined in: [src/services/email/providers/SESProvider.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L24)
 
@@ -52,7 +52,7 @@ AWS region (e.g., 'us-east-1'). Required.
 
 ### secretAccessKey?
 
-> `optional` **secretAccessKey?**: `string`
+> `optional` **secretAccessKey**: `string`
 
 Defined in: [src/services/email/providers/SESProvider.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L20)
 

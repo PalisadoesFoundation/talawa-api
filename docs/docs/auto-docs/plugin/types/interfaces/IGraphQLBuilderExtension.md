@@ -8,7 +8,7 @@ Defined in: [src/plugin/types.ts:84](https://github.com/PalisadoesFoundation/tal
 
 ## Properties
 
-### builderFunction
+### builderFunction()
 
 > **builderFunction**: (`builder`) => `void`
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:88](https://github.com/PalisadoesFoundation/tal
 
 ### description?
 
-> `optional` **description?**: `string`
+> `optional` **description**: `string`
 
 Defined in: [src/plugin/types.ts:89](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L89)
 

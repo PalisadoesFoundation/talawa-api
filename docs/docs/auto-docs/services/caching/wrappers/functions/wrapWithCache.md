@@ -39,7 +39,17 @@ Caching options.
 
 A wrapped batch function that checks cache first.
 
-(`keys`) => `Promise`\<(`V` \| `null`)[]\>
+> (`keys`): `Promise`\<(`V` \| `null`)[]\>
+
+### Parameters
+
+#### keys
+
+readonly `K`[]
+
+### Returns
+
+`Promise`\<(`V` \| `null`)[]\>
 
 ## Example
 

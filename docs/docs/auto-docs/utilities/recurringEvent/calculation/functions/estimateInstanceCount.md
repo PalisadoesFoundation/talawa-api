@@ -4,7 +4,7 @@
 
 # Function: estimateInstanceCount()
 
-> **estimateInstanceCount**(`rule`, `estimationWindowMonths?`): `number`
+> **estimateInstanceCount**(`rule`, `estimationWindowMonths`): `number`
 
 Defined in: [src/utilities/recurringEvent/calculation.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/calculation.ts#L64)
 
@@ -91,7 +91,7 @@ The recurrence rule to estimate.
 
 `string` \| `null`
 
-### estimationWindowMonths?
+### estimationWindowMonths
 
 `number` = `12`
 

@@ -28,6 +28,6 @@ Defined in: [src/utilities/auth/oauth/types.ts:48](https://github.com/Palisadoes
 
 ### verified?
 
-> `optional` **verified?**: `boolean`
+> `optional` **verified**: `boolean`
 
 Defined in: [src/utilities/auth/oauth/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L49)

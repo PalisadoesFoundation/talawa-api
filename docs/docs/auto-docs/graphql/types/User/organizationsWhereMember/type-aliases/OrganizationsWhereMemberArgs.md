@@ -12,4 +12,4 @@ Defined in: [src/graphql/types/User/organizationsWhereMember.ts:42](https://gith
 
 ### filter?
 
-> `optional` **filter?**: `string` \| `null`
+> `optional` **filter**: `string` \| `null`

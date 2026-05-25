@@ -30,16 +30,16 @@ Retrieves the current status of the background worker service, including schedul
 
 ### metricsEnabled?
 
-> `optional` **metricsEnabled?**: `boolean`
+> `optional` **metricsEnabled**: `boolean`
 
 ### metricsSchedule?
 
-> `optional` **metricsSchedule?**: `string`
+> `optional` **metricsSchedule**: `string`
 
 ### nextCleanupRun?
 
-> `optional` **nextCleanupRun?**: `Date`
+> `optional` **nextCleanupRun**: `Date`
 
 ### nextMaterializationRun?
 
-> `optional` **nextMaterializationRun?**: `Date`
+> `optional` **nextMaterializationRun**: `Date`

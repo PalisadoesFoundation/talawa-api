@@ -19,9 +19,9 @@ This function implements the following rules:
 
 ### newStartAt
 
-`Date` \| `undefined`
-
 The new start time for the event (if provided)
+
+`Date` | `undefined`
 
 ### originalRecurrence
 
@@ -73,23 +73,23 @@ The recurrence input from the user (if provided)
 
 ### byDay?
 
-> `optional` **byDay?**: `string`[]
+> `optional` **byDay**: `string`[]
 
 ### byMonth?
 
-> `optional` **byMonth?**: `number`[]
+> `optional` **byMonth**: `number`[]
 
 ### byMonthDay?
 
-> `optional` **byMonthDay?**: `number`[]
+> `optional` **byMonthDay**: `number`[]
 
 ### count?
 
-> `optional` **count?**: `number`
+> `optional` **count**: `number`
 
 ### endDate?
 
-> `optional` **endDate?**: `Date`
+> `optional` **endDate**: `Date`
 
 ### frequency
 
@@ -97,8 +97,8 @@ The recurrence input from the user (if provided)
 
 ### interval?
 
-> `optional` **interval?**: `number`
+> `optional` **interval**: `number`
 
 ### never?
 
-> `optional` **never?**: `boolean`
+> `optional` **never**: `boolean`

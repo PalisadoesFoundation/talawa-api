@@ -45,7 +45,17 @@ The original batch function that fetches data
 
 A wrapped batch function that tracks performance
 
-(`keys`) => `Promise`\<(`V` \| `null`)[]\>
+> (`keys`): `Promise`\<(`V` \| `null`)[]\>
+
+### Parameters
+
+#### keys
+
+readonly `K`[]
+
+### Returns
+
+`Promise`\<(`V` \| `null`)[]\>
 
 ## Example
 

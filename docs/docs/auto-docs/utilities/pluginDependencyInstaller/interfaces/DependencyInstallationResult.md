@@ -10,7 +10,7 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:14](https://github.com/P
 
 ### error?
 
-> `optional` **error?**: `string`
+> `optional` **error**: `string`
 
 Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L16)
 
@@ -18,7 +18,7 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/P
 
 ### output?
 
-> `optional` **output?**: `string`
+> `optional` **output**: `string`
 
 Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L17)
 

@@ -12,7 +12,7 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:161](https://github.com/Pali
 
 ### metadata?
 
-> `optional` **metadata?**: `unknown`
+> `optional` **metadata**: `unknown`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:165](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L165)
 
@@ -20,7 +20,7 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:165](https://github.com/Pali
 
 ### respondedAt?
 
-> `optional` **respondedAt?**: `Date`
+> `optional` **respondedAt**: `Date`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:164](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L164)
 
@@ -28,7 +28,7 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:164](https://github.com/Pali
 
 ### status?
 
-> `optional` **status?**: `string`
+> `optional` **status**: `string`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:163](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L163)
 
@@ -36,6 +36,6 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:163](https://github.com/Pali
 
 ### userId?
 
-> `optional` **userId?**: `string` \| `null`
+> `optional` **userId**: `string` \| `null`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:162](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L162)

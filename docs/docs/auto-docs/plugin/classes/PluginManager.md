@@ -79,7 +79,7 @@ Clear plugin errors
 
 ### deactivatePlugin()
 
-> **deactivatePlugin**(`pluginId`, `dropTables?`): `Promise`\<`boolean`\>
+> **deactivatePlugin**(`pluginId`, `dropTables`): `Promise`\<`boolean`\>
 
 Defined in: [src/plugin/manager/core.ts:336](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L336)
 
@@ -91,7 +91,7 @@ Deactivate a plugin
 
 `string`
 
-##### dropTables?
+##### dropTables
 
 `boolean` = `false`
 

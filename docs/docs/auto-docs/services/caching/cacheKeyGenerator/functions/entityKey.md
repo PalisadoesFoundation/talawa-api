@@ -21,9 +21,9 @@ The entity type (e.g., "user", "organization").
 
 ### id
 
-`string` \| `number`
-
 The entity ID.
+
+`string` | `number`
 
 ## Returns
 

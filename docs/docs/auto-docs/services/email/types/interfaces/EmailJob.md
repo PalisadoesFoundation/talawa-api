@@ -44,7 +44,7 @@ Defined in: [src/services/email/types.ts:12](https://github.com/PalisadoesFounda
 
 ### textBody?
 
-> `optional` **textBody?**: `string`
+> `optional` **textBody**: `string`
 
 Defined in: [src/services/email/types.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L14)
 

@@ -13,7 +13,7 @@ These options ensure cookies are protected from XSS attacks.
 
 ### domain?
 
-> `optional` **domain?**: `string`
+> `optional` **domain**: `string`
 
 Defined in: [src/utilities/cookieConfig.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/cookieConfig.ts#L32)
 
@@ -33,7 +33,7 @@ Whether the application is running in a secure (HTTPS) environment.
 
 ### path?
 
-> `optional` **path?**: `string`
+> `optional` **path**: `string`
 
 Defined in: [src/utilities/cookieConfig.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/cookieConfig.ts#L37)
 

@@ -4,7 +4,7 @@
 
 # Function: getRecurringEventInstancesByBaseIds()
 
-> **getRecurringEventInstancesByBaseIds**(`baseRecurringEventIds`, `drizzleClient`, `logger`, `options?`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
+> **getRecurringEventInstancesByBaseIds**(`baseRecurringEventIds`, `drizzleClient`, `logger`, `options`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:326](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L326)
 
@@ -31,7 +31,7 @@ The Drizzle ORM client.
 
 The logger.
 
-### options?
+### options
 
 #### excludeInstanceIds?
 

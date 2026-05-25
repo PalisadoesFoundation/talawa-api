@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: minioClient
+# Variable: minioClient()
 
 > `const` **minioClient**: (`fastify`) => `Promise`\<`void`\>
 

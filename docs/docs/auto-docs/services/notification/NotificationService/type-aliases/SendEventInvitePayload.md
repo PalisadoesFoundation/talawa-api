@@ -12,7 +12,7 @@ Defined in: [src/services/notification/NotificationService.ts:13](https://github
 
 ### eventId?
 
-> `optional` **eventId?**: `string`
+> `optional` **eventId**: `string`
 
 Defined in: [src/services/notification/NotificationService.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L16)
 
@@ -20,7 +20,7 @@ Defined in: [src/services/notification/NotificationService.ts:16](https://github
 
 ### eventName?
 
-> `optional` **eventName?**: `string`
+> `optional` **eventName**: `string`
 
 Defined in: [src/services/notification/NotificationService.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L17)
 
@@ -52,7 +52,7 @@ Defined in: [src/services/notification/NotificationService.ts:14](https://github
 
 ### inviteeName?
 
-> `optional` **inviteeName?**: `string`
+> `optional` **inviteeName**: `string`
 
 Defined in: [src/services/notification/NotificationService.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L15)
 

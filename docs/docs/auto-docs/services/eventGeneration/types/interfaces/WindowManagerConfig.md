@@ -12,7 +12,7 @@ Configuration for window management
 
 ### historyRetentionMonths?
 
-> `optional` **historyRetentionMonths?**: `number`
+> `optional` **historyRetentionMonths**: `number`
 
 Defined in: [src/services/eventGeneration/types.ts:82](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L82)
 
@@ -20,7 +20,7 @@ Defined in: [src/services/eventGeneration/types.ts:82](https://github.com/Palisa
 
 ### hotWindowMonthsAhead?
 
-> `optional` **hotWindowMonthsAhead?**: `number`
+> `optional` **hotWindowMonthsAhead**: `number`
 
 Defined in: [src/services/eventGeneration/types.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L81)
 
@@ -28,7 +28,7 @@ Defined in: [src/services/eventGeneration/types.ts:81](https://github.com/Palisa
 
 ### maxInstancesPerRun?
 
-> `optional` **maxInstancesPerRun?**: `number`
+> `optional` **maxInstancesPerRun**: `number`
 
 Defined in: [src/services/eventGeneration/types.ts:84](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L84)
 
@@ -44,6 +44,6 @@ Defined in: [src/services/eventGeneration/types.ts:80](https://github.com/Palisa
 
 ### processingPriority?
 
-> `optional` **processingPriority?**: `number`
+> `optional` **processingPriority**: `number`
 
 Defined in: [src/services/eventGeneration/types.ts:83](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L83)

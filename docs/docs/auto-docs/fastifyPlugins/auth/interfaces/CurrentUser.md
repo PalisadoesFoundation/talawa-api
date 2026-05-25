@@ -12,7 +12,7 @@ Authenticated user set on the request by the auth plugin. Single authoritative s
 
 ### email?
 
-> `optional` **email?**: `string`
+> `optional` **email**: `string`
 
 Defined in: [src/fastifyPlugins/auth.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/auth.ts#L20)
 

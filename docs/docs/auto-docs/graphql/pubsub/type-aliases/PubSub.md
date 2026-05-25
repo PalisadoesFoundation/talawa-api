@@ -66,7 +66,7 @@ This method is used to subscribe to events.
 
 ##### topics
 
-`TKey` \| `TKey`[]
+`TKey` | `TKey`[]
 
 #### Returns
 

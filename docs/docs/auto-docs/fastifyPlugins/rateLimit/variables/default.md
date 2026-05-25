@@ -2,7 +2,7 @@
 
 ***
 
-# Variable: default
+# Variable: default()
 
 > **default**: (`app`) => `Promise`\<`void`\>
 

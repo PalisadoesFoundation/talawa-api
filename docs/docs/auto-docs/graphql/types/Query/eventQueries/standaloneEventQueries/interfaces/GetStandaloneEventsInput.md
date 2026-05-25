@@ -20,7 +20,7 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:28](
 
 ### eventIds?
 
-> `optional` **eventIds?**: `string`[]
+> `optional` **eventIds**: `string`[]
 
 Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L32)
 
@@ -30,7 +30,7 @@ An optional array of event IDs to filter by.
 
 ### limit?
 
-> `optional` **limit?**: `number`
+> `optional` **limit**: `number`
 
 Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L36)
 

@@ -34,7 +34,7 @@ Number of cache misses
 
 ### complexityScore?
 
-> `optional` **complexityScore?**: `number`
+> `optional` **complexityScore**: `number`
 
 Defined in: [src/utilities/metrics/performanceTracker.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L36)
 

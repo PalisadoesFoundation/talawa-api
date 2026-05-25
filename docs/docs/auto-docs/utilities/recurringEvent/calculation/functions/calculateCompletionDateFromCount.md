@@ -4,7 +4,7 @@
 
 # Function: calculateCompletionDateFromCount()
 
-> **calculateCompletionDateFromCount**(`startDate`, `count`, `frequency`, `interval?`): `Date`
+> **calculateCompletionDateFromCount**(`startDate`, `count`, `frequency`, `interval`): `Date`
 
 Defined in: [src/utilities/recurringEvent/calculation.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/calculation.ts#L19)
 
@@ -33,7 +33,7 @@ The total number of occurrences.
 
 The frequency of the recurrence (e.g., "DAILY", "WEEKLY").
 
-### interval?
+### interval
 
 `number` = `1`
 

@@ -100,9 +100,9 @@ The aggregated metrics to cache
 
 ##### windowType
 
-`"hourly"` \| `"daily"`
-
 Type of time window ('hourly' or 'daily')
+
+`"hourly"` | `"daily"`
 
 ##### date
 
@@ -179,9 +179,9 @@ Retrieve cached aggregated metrics by time window (hourly or daily).
 
 ##### windowType
 
-`"hourly"` \| `"daily"`
-
 Type of time window ('hourly' or 'daily')
+
+`"hourly"` | `"daily"`
 
 ##### date
 

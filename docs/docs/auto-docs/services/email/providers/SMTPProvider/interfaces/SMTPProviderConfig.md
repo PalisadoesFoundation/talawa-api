@@ -12,7 +12,7 @@ Configuration for SMTP Email Provider.
 
 ### fromEmail?
 
-> `optional` **fromEmail?**: `string`
+> `optional` **fromEmail**: `string`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L26)
 
@@ -22,7 +22,7 @@ Default sender email address.
 
 ### fromName?
 
-> `optional` **fromName?**: `string`
+> `optional` **fromName**: `string`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L28)
 
@@ -42,7 +42,7 @@ SMTP server hostname. Required.
 
 ### localAddress?
 
-> `optional` **localAddress?**: `string`
+> `optional` **localAddress**: `string`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L32)
 
@@ -52,7 +52,7 @@ Local IP address to bind to for outgoing SMTP connections.
 
 ### name?
 
-> `optional` **name?**: `string`
+> `optional` **name**: `string`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L30)
 
@@ -62,7 +62,7 @@ Client hostname to greet the SMTP server with.
 
 ### password?
 
-> `optional` **password?**: `string`
+> `optional` **password**: `string`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L22)
 
@@ -82,7 +82,7 @@ SMTP server port. Required.
 
 ### secure?
 
-> `optional` **secure?**: `boolean`
+> `optional` **secure**: `boolean`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L24)
 
@@ -92,7 +92,7 @@ Whether to use SSL/TLS (true for port 465, false for port 587 with STARTTLS).
 
 ### user?
 
-> `optional` **user?**: `string`
+> `optional` **user**: `string`
 
 Defined in: [src/services/email/providers/SMTPProvider.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L20)
 

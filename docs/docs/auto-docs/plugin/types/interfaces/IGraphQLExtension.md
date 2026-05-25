@@ -18,7 +18,7 @@ Defined in: [src/plugin/types.ts:45](https://github.com/PalisadoesFoundation/tal
 
 ### description?
 
-> `optional` **description?**: `string`
+> `optional` **description**: `string`
 
 Defined in: [src/plugin/types.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L43)
 

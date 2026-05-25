@@ -2,7 +2,7 @@
 
 ***
 
-# Type Alias: CreateContext
+# Type Alias: CreateContext()
 
 > **CreateContext** = (`initialContext`) => `Promise`\<[`ExplicitGraphQLContext`](../../../graphql/context/type-aliases/ExplicitGraphQLContext.md)\>
 

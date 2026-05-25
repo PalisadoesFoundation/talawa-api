@@ -4,7 +4,7 @@
 
 # Function: \_\_resetLastCleanupAtForTests()
 
-> **\_\_resetLastCleanupAtForTests**(`value?`): `void`
+> **\_\_resetLastCleanupAtForTests**(`value`): `void`
 
 Defined in: [src/utilities/passwordResetRateLimit.ts:93](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetRateLimit.ts#L93)
 
@@ -14,7 +14,7 @@ Resets the last cleanup timestamp (useful for testing).
 
 ## Parameters
 
-### value?
+### value
 
 `number` = `0`
 

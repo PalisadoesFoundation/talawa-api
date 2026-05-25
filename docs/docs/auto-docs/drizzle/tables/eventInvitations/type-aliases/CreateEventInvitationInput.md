@@ -12,7 +12,7 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:151](https://github.com/Pali
 
 ### eventId?
 
-> `optional` **eventId?**: `string`
+> `optional` **eventId**: `string`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:152](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L152)
 
@@ -44,7 +44,7 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:155](https://github.com/Pali
 
 ### inviteeName?
 
-> `optional` **inviteeName?**: `string`
+> `optional` **inviteeName**: `string`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:156](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L156)
 
@@ -52,7 +52,7 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:156](https://github.com/Pali
 
 ### metadata?
 
-> `optional` **metadata?**: `unknown`
+> `optional` **metadata**: `unknown`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:158](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L158)
 
@@ -60,6 +60,6 @@ Defined in: [src/drizzle/tables/eventInvitations.ts:158](https://github.com/Pali
 
 ### recurringEventInstanceId?
 
-> `optional` **recurringEventInstanceId?**: `string`
+> `optional` **recurringEventInstanceId**: `string`
 
 Defined in: [src/drizzle/tables/eventInvitations.ts:153](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L153)

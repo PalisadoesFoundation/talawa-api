@@ -24,7 +24,7 @@ Defined in: [src/workers/eventGeneration/types.ts:39](https://github.com/Palisad
 
 ### error?
 
-> `optional` **error?**: `string`
+> `optional` **error**: `string`
 
 Defined in: [src/workers/eventGeneration/types.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L40)
 

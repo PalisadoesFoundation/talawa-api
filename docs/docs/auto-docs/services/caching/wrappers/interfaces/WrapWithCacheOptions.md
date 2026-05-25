@@ -40,7 +40,7 @@ Entity type for cache key generation.
 
 ***
 
-### keyFn
+### keyFn()
 
 > **keyFn**: (`key`) => `string` \| `number`
 
@@ -66,7 +66,7 @@ String representation for the cache key.
 
 ### logger?
 
-> `optional` **logger?**: [`CacheWrapperLogger`](CacheWrapperLogger.md)
+> `optional` **logger**: [`CacheWrapperLogger`](CacheWrapperLogger.md)
 
 Defined in: [src/services/caching/wrappers.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L43)
 
@@ -76,7 +76,7 @@ Optional logger for recording cache operation failures.
 
 ### metrics?
 
-> `optional` **metrics?**: [`CacheWrapperMetrics`](CacheWrapperMetrics.md)
+> `optional` **metrics**: [`CacheWrapperMetrics`](CacheWrapperMetrics.md)
 
 Defined in: [src/services/caching/wrappers.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L47)
 

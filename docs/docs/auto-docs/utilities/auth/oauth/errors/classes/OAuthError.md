@@ -60,6 +60,6 @@ Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/Palisadoes
 
 ### statusCode?
 
-> `optional` **statusCode?**: `number`
+> `optional` **statusCode**: `number`
 
 Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L8)

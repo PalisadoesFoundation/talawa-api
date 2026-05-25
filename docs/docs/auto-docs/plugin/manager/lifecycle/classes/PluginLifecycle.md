@@ -60,7 +60,7 @@ Activate a plugin - trigger schema rebuild
 
 ### deactivatePlugin()
 
-> **deactivatePlugin**(`pluginId`, `pluginManager`, `dropTables?`): `Promise`\<`boolean`\>
+> **deactivatePlugin**(`pluginId`, `pluginManager`, `dropTables`): `Promise`\<`boolean`\>
 
 Defined in: [src/plugin/manager/lifecycle.ts:196](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L196)
 
@@ -76,7 +76,7 @@ Deactivate a plugin - trigger schema rebuild
 
 `IPluginManager`
 
-##### dropTables?
+##### dropTables
 
 `boolean` = `false`
 

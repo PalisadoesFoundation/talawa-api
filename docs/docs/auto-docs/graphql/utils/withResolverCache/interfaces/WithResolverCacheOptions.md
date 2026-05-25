@@ -38,7 +38,7 @@ The GraphQL context type (must include `cache`).
 
 ## Properties
 
-### keyFactory
+### keyFactory()
 
 > **keyFactory**: (`parent`, `args`, `context`) => `string`
 
@@ -77,7 +77,7 @@ A unique cache key string.
 
 ### logger?
 
-> `optional` **logger?**: [`CacheWrapperLogger`](../../../../services/caching/wrappers/interfaces/CacheWrapperLogger.md)
+> `optional` **logger**: [`CacheWrapperLogger`](../../../../services/caching/wrappers/interfaces/CacheWrapperLogger.md)
 
 Defined in: [src/graphql/utils/withResolverCache.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L41)
 
@@ -87,7 +87,7 @@ Optional logger for recording cache operation failures.
 
 ### metrics?
 
-> `optional` **metrics?**: [`CacheWrapperMetrics`](../../../../services/caching/wrappers/interfaces/CacheWrapperMetrics.md)
+> `optional` **metrics**: [`CacheWrapperMetrics`](../../../../services/caching/wrappers/interfaces/CacheWrapperMetrics.md)
 
 Defined in: [src/graphql/utils/withResolverCache.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L46)
 
@@ -95,9 +95,9 @@ Optional metrics client for tracking cache operation failures.
 
 ***
 
-### skip?
+### skip()?
 
-> `optional` **skip?**: (`parent`, `args`, `context`) => `boolean`
+> `optional` **skip**: (`parent`, `args`, `context`) => `boolean`
 
 Defined in: [src/graphql/utils/withResolverCache.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L57)
 
