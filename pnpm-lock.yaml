@@ -67,13 +67,13 @@ importers:
         version: 2.5.0(@opentelemetry/api@1.9.0)
       '@pothos/core':
         specifier: ^4.5.0
-        version: 4.12.0(graphql@16.12.0)
+        version: 4.12.0(graphql@16.14.0)
       '@pothos/plugin-complexity':
         specifier: ^4.1.2
-        version: 4.1.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
+        version: 4.1.2(@pothos/core@4.12.0(graphql@16.14.0))(graphql@16.14.0)
       '@pothos/plugin-relay':
         specifier: ^4.3.0
-        version: 4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
+        version: 4.6.2(@pothos/core@4.12.0(graphql@16.14.0))(graphql@16.14.0)
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -105,17 +105,17 @@ importers:
         specifier: ^5.0.1
         version: 5.1.0
       graphql:
-        specifier: ^16.10.0
-        version: 16.12.0
+        specifier: ^16.14.0
+        version: 16.14.0
       graphql-scalars:
         specifier: ^1.24.2
-        version: 1.25.0(graphql@16.12.0)
+        version: 1.25.0(graphql@16.14.0)
       graphql-tag:
         specifier: ^2.12.6
-        version: 2.12.6(graphql@16.12.0)
+        version: 2.12.6(graphql@16.14.0)
       graphql-upload-minimal:
         specifier: ^1.6.1
-        version: 1.6.4(graphql@16.12.0)
+        version: 1.6.4(graphql@16.14.0)
       inquirer:
         specifier: ^12.9.0
         version: 12.11.1(@types/node@22.19.9)
@@ -124,10 +124,10 @@ importers:
         version: 5.10.0
       mercurius:
         specifier: ^16.2.0
-        version: 16.7.0(graphql@16.12.0)
+        version: 16.7.0(graphql@16.14.0)
       mercurius-upload:
         specifier: ^8.0.0
-        version: 8.0.0(graphql@16.12.0)
+        version: 8.0.0(graphql@16.14.0)
       minio:
         specifier: ^8.0.5
         version: 8.0.6
@@ -200,7 +200,7 @@ importers:
         version: 13.0.1
       gql.tada:
         specifier: ^1.8.12
-        version: 1.9.0(graphql@16.12.0)(typescript@5.9.3)
+        version: 1.9.0(graphql@16.14.0)(typescript@5.9.3)
       knip:
         specifier: ^5.67.0
         version: 5.83.0(@types/node@22.19.9)(typescript@5.9.3)
@@ -209,7 +209,7 @@ importers:
         version: 2.1.0
       mercurius-integration-testing:
         specifier: ^9.0.1
-        version: 9.0.1(fastify@5.7.4)(graphql@16.12.0)(mercurius@16.7.0(graphql@16.12.0))
+        version: 9.0.1(fastify@5.7.4)(graphql@16.14.0)(mercurius@16.7.0(graphql@16.14.0))
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -3206,8 +3206,8 @@ packages:
     peerDependencies:
       graphql: 0.13.1 - 16
 
-  graphql@16.12.0:
-    resolution: {integrity: sha512-DKKrynuQRne0PNpEbzuEdHlYOMksHSUI8Zc9Unei5gTsMNA2/vMpoMz/yKba50pejK56qj98qM0SjYxAKi13gQ==}
+  graphql@16.14.0:
+    resolution: {integrity: sha512-BBvQ/406p+4CZbTpCbVPSxfzrZrbnuWSP1ELYgyS6B+hNeKzgrdB4JczCa5VZUBQrDa9hUngm0KnexY6pJRN5Q==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
   has-flag@4.0.0:
@@ -4367,6 +4367,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuidv7@1.1.0:
@@ -4564,14 +4565,14 @@ packages:
 
 snapshots:
 
-  '@0no-co/graphql.web@1.2.0(graphql@16.12.0)':
+  '@0no-co/graphql.web@1.2.0(graphql@16.14.0)':
     optionalDependencies:
-      graphql: 16.12.0
+      graphql: 16.14.0
 
-  '@0no-co/graphqlsp@1.15.2(graphql@16.12.0)(typescript@5.9.3)':
+  '@0no-co/graphqlsp@1.15.2(graphql@16.14.0)(typescript@5.9.3)':
     dependencies:
-      '@gql.tada/internal': 1.0.8(graphql@16.12.0)(typescript@5.9.3)
-      graphql: 16.12.0
+      '@gql.tada/internal': 1.0.8(graphql@16.14.0)(typescript@5.9.3)
+      graphql: 16.14.0
       typescript: 5.9.3
 
   '@ampproject/remapping@2.3.0':
@@ -5453,22 +5454,22 @@ snapshots:
       '@shikijs/types': 3.22.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@gql.tada/cli-utils@1.7.2(@0no-co/graphqlsp@1.15.2(graphql@16.12.0)(typescript@5.9.3))(graphql@16.12.0)(typescript@5.9.3)':
+  '@gql.tada/cli-utils@1.7.2(@0no-co/graphqlsp@1.15.2(graphql@16.14.0)(typescript@5.9.3))(graphql@16.14.0)(typescript@5.9.3)':
     dependencies:
-      '@0no-co/graphqlsp': 1.15.2(graphql@16.12.0)(typescript@5.9.3)
-      '@gql.tada/internal': 1.0.8(graphql@16.12.0)(typescript@5.9.3)
-      graphql: 16.12.0
+      '@0no-co/graphqlsp': 1.15.2(graphql@16.14.0)(typescript@5.9.3)
+      '@gql.tada/internal': 1.0.8(graphql@16.14.0)(typescript@5.9.3)
+      graphql: 16.14.0
       typescript: 5.9.3
 
-  '@gql.tada/internal@1.0.8(graphql@16.12.0)(typescript@5.9.3)':
+  '@gql.tada/internal@1.0.8(graphql@16.14.0)(typescript@5.9.3)':
     dependencies:
-      '@0no-co/graphql.web': 1.2.0(graphql@16.12.0)
-      graphql: 16.12.0
+      '@0no-co/graphql.web': 1.2.0(graphql@16.14.0)
+      graphql: 16.14.0
       typescript: 5.9.3
 
-  '@graphql-typed-document-node/core@3.2.0(graphql@16.12.0)':
+  '@graphql-typed-document-node/core@3.2.0(graphql@16.14.0)':
     dependencies:
-      graphql: 16.12.0
+      graphql: 16.14.0
 
   '@grpc/grpc-js@1.14.3':
     dependencies:
@@ -6168,19 +6169,19 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@pothos/core@4.12.0(graphql@16.12.0)':
+  '@pothos/core@4.12.0(graphql@16.14.0)':
     dependencies:
-      graphql: 16.12.0
+      graphql: 16.14.0
 
-  '@pothos/plugin-complexity@4.1.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)':
+  '@pothos/plugin-complexity@4.1.2(@pothos/core@4.12.0(graphql@16.14.0))(graphql@16.14.0)':
     dependencies:
-      '@pothos/core': 4.12.0(graphql@16.12.0)
-      graphql: 16.12.0
+      '@pothos/core': 4.12.0(graphql@16.14.0)
+      graphql: 16.14.0
 
-  '@pothos/plugin-relay@4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)':
+  '@pothos/plugin-relay@4.6.2(@pothos/core@4.12.0(graphql@16.14.0))(graphql@16.14.0)':
     dependencies:
-      '@pothos/core': 4.12.0(graphql@16.12.0)
-      graphql: 16.12.0
+      '@pothos/core': 4.12.0(graphql@16.14.0)
+      graphql: 16.14.0
 
   '@protobufjs/aspromise@1.1.2': {}
 
@@ -7665,12 +7666,12 @@ snapshots:
       p-cancelable: 3.0.0
       responselike: 3.0.0
 
-  gql.tada@1.9.0(graphql@16.12.0)(typescript@5.9.3):
+  gql.tada@1.9.0(graphql@16.14.0)(typescript@5.9.3):
     dependencies:
-      '@0no-co/graphql.web': 1.2.0(graphql@16.12.0)
-      '@0no-co/graphqlsp': 1.15.2(graphql@16.12.0)(typescript@5.9.3)
-      '@gql.tada/cli-utils': 1.7.2(@0no-co/graphqlsp@1.15.2(graphql@16.12.0)(typescript@5.9.3))(graphql@16.12.0)(typescript@5.9.3)
-      '@gql.tada/internal': 1.0.8(graphql@16.12.0)(typescript@5.9.3)
+      '@0no-co/graphql.web': 1.2.0(graphql@16.14.0)
+      '@0no-co/graphqlsp': 1.15.2(graphql@16.14.0)(typescript@5.9.3)
+      '@gql.tada/cli-utils': 1.7.2(@0no-co/graphqlsp@1.15.2(graphql@16.14.0)(typescript@5.9.3))(graphql@16.14.0)(typescript@5.9.3)
+      '@gql.tada/internal': 1.0.8(graphql@16.14.0)(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
@@ -7679,32 +7680,32 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  graphql-jit@0.8.7(graphql@16.12.0):
+  graphql-jit@0.8.7(graphql@16.14.0):
     dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.0)
       fast-json-stringify: 5.16.1
       generate-function: 2.3.1
-      graphql: 16.12.0
+      graphql: 16.14.0
       lodash.memoize: 4.1.2
       lodash.merge: 4.6.2
       lodash.mergewith: 4.6.2
 
-  graphql-scalars@1.25.0(graphql@16.12.0):
+  graphql-scalars@1.25.0(graphql@16.14.0):
     dependencies:
-      graphql: 16.12.0
+      graphql: 16.14.0
       tslib: 2.8.1
 
-  graphql-tag@2.12.6(graphql@16.12.0):
+  graphql-tag@2.12.6(graphql@16.14.0):
     dependencies:
-      graphql: 16.12.0
+      graphql: 16.14.0
       tslib: 2.8.1
 
-  graphql-upload-minimal@1.6.4(graphql@16.12.0):
+  graphql-upload-minimal@1.6.4(graphql@16.14.0):
     dependencies:
       busboy: 1.6.0
-      graphql: 16.12.0
+      graphql: 16.14.0
 
-  graphql@16.12.0: {}
+  graphql@16.14.0: {}
 
   has-flag@4.0.0: {}
 
@@ -8094,32 +8095,32 @@ snapshots:
 
   mdurl@2.0.0: {}
 
-  mercurius-integration-testing@9.0.1(fastify@5.7.4)(graphql@16.12.0)(mercurius@16.7.0(graphql@16.12.0)):
+  mercurius-integration-testing@9.0.1(fastify@5.7.4)(graphql@16.14.0)(mercurius@16.7.0(graphql@16.14.0)):
     dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.0)
       cookie: 1.1.1
       fastify: 5.7.4
-      graphql: 16.12.0
-      mercurius: 16.7.0(graphql@16.12.0)
+      graphql: 16.14.0
+      mercurius: 16.7.0(graphql@16.14.0)
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  mercurius-upload@8.0.0(graphql@16.12.0):
+  mercurius-upload@8.0.0(graphql@16.14.0):
     dependencies:
       fastify-plugin: 5.1.0
-      graphql: 16.12.0
-      graphql-upload-minimal: 1.6.4(graphql@16.12.0)
+      graphql: 16.14.0
+      graphql-upload-minimal: 1.6.4(graphql@16.14.0)
 
-  mercurius@16.7.0(graphql@16.12.0):
+  mercurius@16.7.0(graphql@16.14.0):
     dependencies:
       '@fastify/error': 4.2.0
       '@fastify/static': 9.0.0
       '@fastify/websocket': 11.2.0
       fastify-plugin: 5.1.0
-      graphql: 16.12.0
-      graphql-jit: 0.8.7(graphql@16.12.0)
+      graphql: 16.14.0
+      graphql-jit: 0.8.7(graphql@16.14.0)
       mqemitter: 7.1.0
       p-map: 4.0.0
       quick-lru: 7.3.0
