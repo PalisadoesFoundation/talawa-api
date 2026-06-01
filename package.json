@@ -9,7 +9,7 @@
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.2",
     "@fastify/jwt": "^10.0.0",
-    "@fastify/otel": "^0.16.0",
+    "@fastify/otel": "^0.18.1",
     "@fastify/redis": "^7.0.2",
     "@fastify/type-provider-typebox": "^6.1.0",
     "@node-rs/argon2": "^2.0.2",
