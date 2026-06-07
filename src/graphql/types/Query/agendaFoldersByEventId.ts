@@ -5,6 +5,7 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isEventCreatorOrAdmin } from "~/src/utilities/isEventCreatorOrAdmin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryGetAgendaFolderByEventIdArgumentsSchema = z.object({
@@ -92,8 +93,12 @@ builder.queryField("agendaFoldersByEventId", (t) =>
 			}
 
 			if (
-				currentUser.role !== "administrator" &&
-				membership?.role !== "administrator"
+				!isEventCreatorOrAdmin(
+					currentUserId,
+					currentUser.role,
+					membership,
+					event.creatorId
+				)
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

@@ -8,6 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isEventCreatorOrAdmin } from "~/src/utilities/isEventCreatorOrAdmin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteAgendaItemArgumentsSchema = z.object({
@@ -71,6 +72,7 @@ builder.mutationField("deleteAgendaItem", (t) =>
 								event: {
 									columns: {
 										startAt: true,
+										creatorId: true,
 									},
 									with: {
 										organization: {
@@ -123,9 +125,12 @@ builder.mutationField("deleteAgendaItem", (t) =>
 					.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+				!isEventCreatorOrAdmin(
+					currentUserId,
+					currentUser.role,
+					currentUserOrganizationMembership,
+					existingAgendaItem.folder.event.creatorId,
+				)
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

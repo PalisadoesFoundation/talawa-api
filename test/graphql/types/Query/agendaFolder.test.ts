@@ -634,8 +634,7 @@ suite("Query field agendaFolder", () => {
 		expect(queriedAgendaFolder.organization.id).toBe(organizationId);
 	});
 
-	test("results in an empty 'errors' field and the expected value for the 'data.agendaFolder' field when accessed by an organization member", async () => {
-		// Step 1: Admin Sign-in
+	test("results in an empty 'errors' field when accessed by the event creator who is a regular org member", async () => {
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -648,45 +647,37 @@ suite("Query field agendaFolder", () => {
 		const adminToken = adminSignInResult.data?.signIn?.authenticationToken;
 		if (!adminToken) throw new Error("Admin authentication failed");
 
-		// Step 2: Create Regular User
-		const regularUserResult = await mercuriusClient.mutate(
-			Mutation_createUser,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						emailAddress: `${faker.string.uuid()}@test.com`,
-						password: "password123",
-						name: "Regular User",
-						role: "regular",
-						isEmailAddressVerified: true,
-					},
+		// Create regular user
+		const regularUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					password: "password123",
+					name: "Event Creator",
+					role: "regular",
+					isEmailAddressVerified: true,
 				},
 			},
-		);
+		});
 		const regularUserId = regularUserResult.data?.createUser?.user?.id;
-		const regularUserToken =
-			regularUserResult.data?.createUser?.authenticationToken;
-		if (!regularUserToken || !regularUserId)
-			throw new Error("Regular user creation failed");
+		const regularUserToken = regularUserResult.data?.createUser?.authenticationToken;
+		if (!regularUserToken || !regularUserId) throw new Error("Regular user creation failed");
 		createdUserIds.push(regularUserId);
 
-		// Step 3: Create Organization
-		const organizationResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						name: `Test Org ${faker.string.uuid()}`,
-						addressLine1: "123 Main St",
-						city: "New York",
-						countryCode: "us",
-						description: "Test Description",
-					},
+		// Create organization
+		const organizationResult = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: `Test Org ${faker.string.uuid()}`,
+					addressLine1: "123 Main St",
+					city: "New York",
+					countryCode: "us",
+					description: "Test Description",
 				},
 			},
-		);
+		});
 		const organizationId = organizationResult.data?.createOrganization?.id;
 		if (!organizationId) throw new Error("Organization creation failed");
 		createdOrganizationIds.push(organizationId);
@@ -694,45 +685,27 @@ suite("Query field agendaFolder", () => {
 		const adminUserId = adminSignInResult.data?.signIn?.user?.id;
 		if (!adminUserId) throw new Error("Admin User ID not found");
 
-		const membershipResult = await mercuriusClient.mutate(
-			Mutation_createOrganizationMembership,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						organizationId,
-						memberId: adminUserId,
-						role: "administrator",
-					},
-				},
-			},
-		);
-		if (membershipResult.data?.createOrganizationMembership?.id) {
+		// Make admin an org admin
+		const adminMembership = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { organizationId, memberId: adminUserId, role: "administrator" } },
+		});
+		if (adminMembership.data?.createOrganizationMembership?.id) {
 			createdMemberships.push({ organizationId, memberId: adminUserId });
 		}
 
-		// Step 4: Add regular user to organization
-		const userMembershipResult = await mercuriusClient.mutate(
-			Mutation_createOrganizationMembership,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						organizationId,
-						memberId: regularUserId,
-					},
-				},
-			},
-		);
-		if (userMembershipResult.data?.createOrganizationMembership?.id) {
+		// Make regular user an org admin so they can create events
+		const regularMembership = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { organizationId, memberId: regularUserId, role: "administrator" } },
+		});
+		if (regularMembership.data?.createOrganizationMembership?.id) {
 			createdMemberships.push({ organizationId, memberId: regularUserId });
 		}
 
-		// Step 5: Create Event
+		// Regular user creates the event — creatorId is set to regularUserId
 		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-			headers: {
-				authorization: `bearer ${adminToken}`,
-			},
+			headers: { authorization: `bearer ${regularUserToken}` },
 			variables: {
 				input: {
 					organizationId,
@@ -747,42 +720,50 @@ suite("Query field agendaFolder", () => {
 		if (!eventId) throw new Error("Event creation failed");
 		createdEventIds.push(eventId);
 
-		// Step 6: Create Agenda Folder
-		const agendaFolderCreationResult = await mercuriusClient.mutate(
-			Mutation_createAgendaFolder,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						name: "Test Agenda Folder",
-						organizationId,
-						eventId,
-						description: "Test Description",
-						sequence: 1,
-					},
+		// Admin creates agenda folder for the event
+		const agendaFolderCreationResult = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: "Test Agenda Folder",
+					organizationId,
+					eventId,
+					description: "Test Description",
+					sequence: 1,
 				},
 			},
-		);
-		const agendaFolderId =
-			agendaFolderCreationResult.data?.createAgendaFolder?.id;
+		});
+		const agendaFolderId = agendaFolderCreationResult.data?.createAgendaFolder?.id;
 		if (!agendaFolderId) throw new Error("Agenda folder creation failed");
 		createdAgendaFolderIds.push(agendaFolderId);
 
-		// Step 7: Query Agenda Folder as Regular User (who is org member)
-		const agendaFolderQueryResult = await mercuriusClient.query(
-			Query_agendaFolder_Restricted,
-			{
-				headers: { authorization: `bearer ${regularUserToken}` },
-				variables: { input: { id: agendaFolderId } },
-			},
-		);
+		// Now downgrade regular user to regular member
+		// (so they are no longer org admin, only event creator)
+		await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { organizationId, memberId: regularUserId } },
+		});
+		createdMemberships.splice(createdMemberships.findIndex(
+			m => m.memberId === regularUserId && m.organizationId === organizationId
+		), 1);
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { organizationId, memberId: regularUserId, role: "regular" } },
+		});
+		createdMemberships.push({ organizationId, memberId: regularUserId });
+
+		// Query agenda folder as event creator (now a regular member) — should succeed
+		const agendaFolderQueryResult = await mercuriusClient.query(Query_agendaFolder_Restricted, {
+			headers: { authorization: `bearer ${regularUserToken}` },
+			variables: { input: { id: agendaFolderId } },
+		});
 
 		expect(agendaFolderQueryResult.errors).toBeUndefined();
 		assertToBeNonNullish(agendaFolderQueryResult.data.agendaFolder);
-		const queriedAgendaFolder = agendaFolderQueryResult.data.agendaFolder;
-		expect(queriedAgendaFolder).toMatchObject({
+		expect(agendaFolderQueryResult.data.agendaFolder).toMatchObject({
 			id: agendaFolderId,
 			name: "Test Agenda Folder",
 		});
-	});
+});
 });

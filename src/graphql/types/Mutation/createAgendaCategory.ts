@@ -7,6 +7,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateAgendaCategoryInput";
 import { AgendaCategory } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isEventCreatorOrAdmin } from "~/src/utilities/isEventCreatorOrAdmin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateAgendaCategoryArgumentsSchema = z.object({
@@ -61,6 +62,9 @@ builder.mutationField("createAgendaCategory", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.eventsTable.findFirst({
+					columns: {
+						creatorId: true,
+					},
 					with: {
 						organization: {
 							columns: {
@@ -115,9 +119,12 @@ builder.mutationField("createAgendaCategory", (t) =>
 				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+				!isEventCreatorOrAdmin(
+					currentUserId,
+					currentUser.role,
+					currentUserOrganizationMembership,
+					existingEvent.creatorId,
+				)
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

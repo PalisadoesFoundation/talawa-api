@@ -6,6 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isEventCreatorOrAdmin } from "~/src/utilities/isEventCreatorOrAdmin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryAgendaFolderArgumentsSchema = z.object({
@@ -64,6 +65,7 @@ builder.queryField("agendaFolder", (t) =>
 						event: {
 							columns: {
 								startAt: true,
+								creatorId: true,
 							},
 							with: {
 								organization: {
@@ -113,8 +115,12 @@ builder.queryField("agendaFolder", (t) =>
 				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
-				currentUserOrganizationMembership === undefined
+				!isEventCreatorOrAdmin(
+					currentUserId,
+					currentUser.role,
+					currentUserOrganizationMembership,
+					existingAgendaFolder.event.creatorId
+				)
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
