@@ -2,6 +2,8 @@
 
 ARG API_GID=1000
 ARG API_UID=1000
+ARG NODE_VERSION=24.12.0
+ARG PNPM_VERSION=10.28.1
 
 # https://github.com/devcontainers/templates/tree/main/src/debian
 # This build stage sets up and switches to the `talawa` non root user, sets up fnm 
@@ -10,6 +12,8 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm AS devcontainer
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
 ARG API_UID
+ARG NODE_VERSION
+ARG PNPM_VERSION
 # For the subsequent shell commands makes the shell exit immediately if any command exits with a non zero exit code, makes the shell consider the exit code of the first command amongst the commands connected using the pipe operator `|` that exits with a non zero exit code for it to exit immediately(by default the shell considers the exit code of the last command amongst the commands connected with a pipe operator `|` for it to determine whether the operation was successful), tells the shell that following strings passed to it are commands to be executed and not paths to script files. 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
@@ -45,15 +49,18 @@ USER talawa
 # Installs fnm.
 RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
-# Install Node.js 24.12.0 LTS using fnm
-RUN /home/talawa/.local/share/fnm/fnm install 24.12.0 && /home/talawa/.local/share/fnm/fnm default 24.12.0
+# Install Node.js using fnm with version from ARG
+RUN /home/talawa/.local/share/fnm/fnm install ${NODE_VERSION} && /home/talawa/.local/share/fnm/fnm default ${NODE_VERSION}
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 WORKDIR /home/talawa/api
 
-FROM node:24.12.0-bookworm-slim AS base
+FROM node:${NODE_VERSION}-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
 ARG API_UID
+ARG NODE_VERSION
+ARG PNPM_VERSION
 # For the subsequent shell commands makes the shell exit immediately if any command exits with a non zero exit code, makes the shell consider the exit code of the first command amongst the commands connected using the pipe operator `|` that exits with a non zero exit code for it to exit immediately(by default the shell considers the exit code of the last command amongst the commands connected with a pipe operator `|` for it to determine whether the operation was successful), tells the shell that following strings passed to it are commands to be executed and not paths to script files. 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Deletes the pre-included "node" user along with its home directory.
@@ -62,7 +69,7 @@ RUN userdel -r node \
     && groupadd -g ${API_GID} talawa \
     # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
     && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
-    && corepack enable
+    && corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 USER talawa
 WORKDIR /home/talawa/api
 
