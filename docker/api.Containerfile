@@ -70,7 +70,7 @@ RUN userdel -r node \
     # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
     && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
     && corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
-ENV COREPACK_DEFAULT_TO_LATEST=0
+ENV COREPACK_DEFAULT_TO_LATEST=
 USER talawa
 WORKDIR /home/talawa/api
 
