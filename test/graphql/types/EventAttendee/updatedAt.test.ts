@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeUpdatedAtResolver } from "~/src/graphql/types/EventAttendee/updatedAt";
@@ -67,6 +67,93 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 			).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
+		});
+	});
+
+	describe("Authorization", () => {
+		it("should throw unauthorized error if user is not a global admin and has no membership in the organization", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId: "org-123",
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "regular",
+				organizationMembershipsWhereMember: [],
+			});
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+
+			// Call database where callback manually to cover Drizzle query arguments
+			const userCall =
+				mocks.drizzleClient.query.usersTable.findFirst.mock.calls[0][0];
+			const mockOperators = { eq: vi.fn() };
+			const mockFields = { organizationId: "org-123", id: "user-123" };
+			userCall.where(mockFields, mockOperators);
+			userCall.with.organizationMembershipsWhereMember.where(
+				mockFields,
+				mockOperators,
+			);
+		});
+
+		it("should throw unauthorized error if user is not a global admin and organization membership is not administrator", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId: "org-123",
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "regular",
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: "org-123" },
+				],
+			});
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+		});
+
+		it("should succeed and return updatedAt if user is a global administrator", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId: "org-123",
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			});
+
+			const result = await eventAttendeeUpdatedAtResolver(
+				mockEventAttendee,
+				{},
+				ctx,
+			);
+			expect(result).toEqual(mockEventAttendee.updatedAt);
+		});
+
+		it("should succeed and return updatedAt if user is an organization administrator", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId: "org-123",
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "regular",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: "org-123" },
+				],
+			});
+
+			const result = await eventAttendeeUpdatedAtResolver(
+				mockEventAttendee,
+				{},
+				ctx,
+			);
+			expect(result).toEqual(mockEventAttendee.updatedAt);
 		});
 	});
 
@@ -152,6 +239,13 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				ctx,
 			);
 			expect(result).toEqual(mockEventAttendee.updatedAt);
+
+			// Call where callback manually to cover Drizzle query arguments
+			const eventCall =
+				mocks.drizzleClient.query.eventsTable.findFirst.mock.calls[0][0];
+			const mockOperators = { eq: vi.fn() };
+			const mockFields = { id: "event-456" };
+			eventCall.where(mockFields, mockOperators);
 		});
 
 		it("should handle recurring instance organization lookup", async () => {
@@ -183,6 +277,14 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				ctx,
 			);
 			expect(result).toEqual(recurringAttendee.updatedAt);
+
+			// Call where callback manually to cover Drizzle query arguments
+			const instanceCall =
+				mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mock
+					.calls[0][0];
+			const mockOperators = { eq: vi.fn() };
+			const mockFields = { id: "instance-789" };
+			instanceCall.where(mockFields, mockOperators);
 		});
 
 		it("should throw unexpected error for missing event context", async () => {
@@ -194,6 +296,36 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 
 			await expect(
 				eventAttendeeUpdatedAtResolver(invalidAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
+		it("should throw unexpected error if standalone event is not found", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
+		it("should throw unexpected error if recurring event instance is not found", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(recurringAttendee, {}, ctx),
 			).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 			);
