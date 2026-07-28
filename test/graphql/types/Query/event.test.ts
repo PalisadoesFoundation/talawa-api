@@ -901,22 +901,20 @@ suite("Query field event", () => {
 		});
 
 		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
-			// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
-			vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
-
-			// Calculate dates within the materialization window
-			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
+			// Dates must be derived from the real current time: the server rejects a
+			// startAt in the past, and it calculates the materialization window as
+			// current_date + N months (12 by default). A fixed calendar date would
+			// eventually fall on the wrong side of one of those two bounds, so keep
+			// the offset relative — 1 month ahead is future-dated and well inside the
+			// window.
 			const baseDate = new Date();
-			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
+			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1);
 			baseDate.setUTCHours(10, 0, 0, 0);
 			const startAt = baseDate.toISOString();
 
 			const endDate = new Date(baseDate);
 			endDate.setUTCHours(11, 0, 0, 0);
 			const endAt = endDate.toISOString();
-
-			// Restore real timers before making async API calls
-			vi.useRealTimers();
 
 			const { authToken, userId } = await getAdminTokenAndUserId();
 
