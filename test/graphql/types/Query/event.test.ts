@@ -901,12 +901,19 @@ suite("Query field event", () => {
 		});
 
 		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
-			// Dates must be derived from the real current time: the server rejects a
-			// startAt in the past, and it calculates the materialization window as
-			// current_date + N months (12 by default). A fixed calendar date would
-			// eventually fall on the wrong side of one of those two bounds, so keep
-			// the offset relative — 1 month ahead is future-dated and well inside the
-			// window.
+			// Freeze the clock at a fixed mid-month UTC instant. The GraphQL client
+			// injects into the in-process server, so the resolver observes this same
+			// clock: it validates startAt against it and derives the materialization
+			// window from it (now + hotWindowMonthsAhead, 12 by default).
+			// Only `Date` is faked — stubbing setTimeout/setInterval as well would
+			// stall the real Postgres/Redis I/O these mutations perform.
+			// Real timers are restored by the suite's afterEach.
+			vi.useFakeTimers({
+				now: new Date("2026-06-15T12:00:00Z"),
+				toFake: ["Date"],
+			});
+
+			// Mid-month keeps the +1 month arithmetic free of end-of-month rollover.
 			const baseDate = new Date();
 			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1);
 			baseDate.setUTCHours(10, 0, 0, 0);
