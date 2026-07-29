@@ -16,7 +16,6 @@ on:
       - "**"
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
-  CI: true
 
 jobs:
   check_base_branch:
