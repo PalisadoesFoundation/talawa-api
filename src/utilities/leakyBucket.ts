@@ -188,7 +188,13 @@ export async function complexityLeakyBucket(
 	}
 	logger.debug({ tokens, lastUpdate }, "Leaky bucket state");
 	const now = Date.now();
-	const elapsed = (now - lastUpdate) / 1000;
+	// `lastUpdate` is wall-clock time written by whichever process served the
+	// previous request, so it can sit ahead of `now` after an NTP step backwards
+	// or across instances with skewed clocks. Left unclamped, the negative
+	// elapsed drives `tokens` negative, and because the rejection path below
+	// returns without rewriting `lastUpdate`, the bucket stays locked until real
+	// time catches up. Treat a backwards clock as no elapsed time instead.
+	const elapsed = Math.max(0, (now - lastUpdate) / 1000);
 	// Refill tokens based on elapsed time and refill rate
 	tokens = Math.min(capacity, tokens + elapsed * refillRate);
 

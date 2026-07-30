@@ -901,19 +901,6 @@ suite("Query field event", () => {
 		});
 
 		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
-			// The GraphQL rate limiter is a token bucket persisted in Redis and shared
-			// across the whole run, storing `lastUpdate` as a wall-clock timestamp
-			// (src/utilities/leakyBucket.ts). Once the clock below is frozen to an
-			// earlier instant, an existing bucket yields a negative `elapsed`, which
-			// drives the token count negative and rejects every request. Dropping the
-			// buckets first makes the next request initialise one against the frozen
-			// clock instead. Safe for other files: a missing bucket is re-created at
-			// full capacity.
-			const rateLimitKeys = await server.redis.keys("rate-limit:*");
-			if (rateLimitKeys.length > 0) {
-				await server.redis.del(...rateLimitKeys);
-			}
-
 			// Freeze the clock at a fixed mid-month UTC instant. The GraphQL client
 			// injects into the in-process server, so the resolver observes this same
 			// clock: it validates startAt against it and derives the materialization

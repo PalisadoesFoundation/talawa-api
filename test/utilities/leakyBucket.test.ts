@@ -811,6 +811,34 @@ describe("complexityLeakyBucket", () => {
 			const bucket = await redis.hgetall(`${testKeyPrefix}-5`);
 			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(45); // 50 - 5, no refill
 		});
+
+		it("should not drain tokens when lastUpdate is ahead of the current clock", async () => {
+			// `lastUpdate` is written by whichever process served the previous
+			// request, so a backwards NTP step or a skewed peer can leave it in the
+			// future. The negative elapsed must not be applied as a refill: doing so
+			// drives tokens negative and, since rejection never rewrites
+			// `lastUpdate`, locks the bucket out until real time catches up.
+			const lastUpdate = Date.now() + 5000; // 5 seconds into the future
+
+			redis.setHash(`${testKeyPrefix}-5b`, {
+				tokens: "50",
+				lastUpdate: lastUpdate.toString(),
+			});
+
+			const result = await complexityLeakyBucket(
+				fastify,
+				`${testKeyPrefix}-5b`,
+				100,
+				10,
+				5,
+				logger,
+			);
+
+			expect(result).toBe(true);
+
+			const bucket = await redis.hgetall(`${testKeyPrefix}-5b`);
+			expect(Number.parseFloat(bucket.tokens ?? "0")).toBe(45); // 50 - 5, no drain
+		});
 	});
 
 	describe("request allowed (sufficient tokens)", () => {
