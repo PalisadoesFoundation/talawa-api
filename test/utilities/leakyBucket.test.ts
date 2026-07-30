@@ -82,7 +82,12 @@ class FakeRedisZ {
 							results.push([null, res]);
 						}
 					} catch (err) {
-						results.push([err, null]);
+						// ioredis reports per-command failures as [Error, null] tuples
+						// rather than rejecting, so surface the failure in that shape.
+						results.push([
+							err instanceof Error ? err : new Error(String(err)),
+							null,
+						]);
 					}
 				}
 

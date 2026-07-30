@@ -71,7 +71,14 @@ export async function leakyBucket(
 		const results = await pipeline.exec();
 
 		if (!results) {
-			throw new Error("Redis pipeline failed");
+			// Degrade open, same as the catch below: rate limiting must never take
+			// the API down with it.
+			logger?.warn({
+				msg: "leakyBucket failure; allowing request",
+				key,
+				reason: "redis pipeline returned no results",
+			});
+			return { allowed: true, remaining: max, resetAt: now + windowMs };
 		}
 
 		// check for errors in results
@@ -113,7 +120,12 @@ export async function leakyBucket(
 		const results2 = await pipeline2.exec();
 
 		if (!results2) {
-			throw new Error("Redis pipeline failed");
+			logger?.warn({
+				msg: "leakyBucket failure; allowing request",
+				key,
+				reason: "redis pipeline returned no results",
+			});
+			return { allowed: true, remaining: max, resetAt: now + windowMs };
 		}
 
 		// check for errors in results2
