@@ -66,14 +66,14 @@ importers:
         specifier: ^2.2.0
         version: 2.5.0(@opentelemetry/api@1.9.0)
       '@pothos/core':
-        specifier: ^4.5.0
-        version: 4.12.0(graphql@16.12.0)
+        specifier: ^4.13.1
+        version: 4.13.1(graphql@16.12.0)
       '@pothos/plugin-complexity':
         specifier: ^4.1.2
-        version: 4.1.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
+        version: 4.1.2(@pothos/core@4.13.1(graphql@16.12.0))(graphql@16.12.0)
       '@pothos/plugin-relay':
         specifier: ^4.3.0
-        version: 4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
+        version: 4.6.2(@pothos/core@4.13.1(graphql@16.12.0))(graphql@16.12.0)
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -517,11 +517,11 @@ packages:
 
   '@esbuild-kit/core-utils@3.3.2':
     resolution: {integrity: sha512-sPRAnw9CdSsRmEtnsl2WXWdyquogVpB3yZ3dgwJfe8zrOzTsV7cJvmwrKVa+0ma5BoiGJ+BoqkMvawbayKUsqQ==}
-    deprecated: 'Merged into tsx: https://tsx.is'
+    deprecated: 'Merged into tsx: https://tsx.hirok.io'
 
   '@esbuild-kit/esm-loader@2.6.5':
     resolution: {integrity: sha512-FxEMIkJKnodyA1OaCUoEvbYRkoZlLZ4d/eXFu9Fh8CbBBgP5EmZxrfTRyN0qpXZ4vOvqnE5YdRdcrmUUXuU+dA==}
-    deprecated: 'Merged into tsx: https://tsx.is'
+    deprecated: 'Merged into tsx: https://tsx.hirok.io'
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -1775,10 +1775,10 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@pothos/core@4.12.0':
-    resolution: {integrity: sha512-PeiODrj3GjQ7Nbs/5p65DEyBWZTSGGjgGO/BgaMEqS1jBNX/2zJTEQJA9zM5uPmCHUCDjE7Qn2U7lOi0ALp/8A==}
+  '@pothos/core@4.13.1':
+    resolution: {integrity: sha512-2hkLxmvrT7VnbiWAfYhfF09PjaHeflZ5HrBHYzU6Tn/P9tDviuZS7IS5xO4k/KnK5GkRo3YxDzXyn+HnkEkVNw==}
     peerDependencies:
-      graphql: ^16.10.0
+      graphql: ^16.10.0 || ^17.0.0
 
   '@pothos/plugin-complexity@4.1.2':
     resolution: {integrity: sha512-0RUiYvhcR7bWlcnr49nK1rbT7nTlfjUaL+ISrDZ+aB5E5Te1iUbY1tcaukA/NRPV4vEd4Pwt+CmgIPvGml7gOA==}
@@ -4293,6 +4293,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0
@@ -4367,6 +4368,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuidv7@1.1.0:
@@ -6168,18 +6170,18 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@pothos/core@4.12.0(graphql@16.12.0)':
+  '@pothos/core@4.13.1(graphql@16.12.0)':
     dependencies:
       graphql: 16.12.0
 
-  '@pothos/plugin-complexity@4.1.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)':
+  '@pothos/plugin-complexity@4.1.2(@pothos/core@4.13.1(graphql@16.12.0))(graphql@16.12.0)':
     dependencies:
-      '@pothos/core': 4.12.0(graphql@16.12.0)
+      '@pothos/core': 4.13.1(graphql@16.12.0)
       graphql: 16.12.0
 
-  '@pothos/plugin-relay@4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)':
+  '@pothos/plugin-relay@4.6.2(@pothos/core@4.13.1(graphql@16.12.0))(graphql@16.12.0)':
     dependencies:
-      '@pothos/core': 4.12.0(graphql@16.12.0)
+      '@pothos/core': 4.13.1(graphql@16.12.0)
       graphql: 16.12.0
 
   '@protobufjs/aspromise@1.1.2': {}
