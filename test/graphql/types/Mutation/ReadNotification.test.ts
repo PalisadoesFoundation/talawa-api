@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { and, eq } from "drizzle-orm";
-import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import { inArray } from "drizzle-orm";
+import { afterAll, afterEach, beforeAll, expect, suite, test } from "vitest";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
@@ -88,16 +88,27 @@ async function createTestUser(): Promise<TestUser> {
 		throw new Error("Failed to create test organization");
 	}
 
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${adminToken}` },
-		variables: {
-			input: {
-				organizationId,
-				memberId: regularUser.userId,
-				role: "regular",
+	// Notifications fan out to organization members, so an unnoticed failure here
+	// surfaces later as an empty notification list rather than as a setup error.
+	const membershipResult = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					organizationId,
+					memberId: regularUser.userId,
+					role: "regular",
+				},
 			},
 		},
-	});
+	);
+
+	if (membershipResult.errors) {
+		throw new Error(
+			`Failed to add test user to organization: ${JSON.stringify(membershipResult.errors)}`,
+		);
+	}
 
 	return {
 		userId: regularUser.userId,
@@ -122,6 +133,11 @@ async function createNotificationViaEventBus(
 	_userId: string,
 	organizationId: string,
 ): Promise<void> {
+	// emitPostCreated catches every failure and only reports it through ctx.log,
+	// so a discarded logger would turn a broken notification into an empty list
+	// and an unexplained assertion failure. Capture instead and rethrow.
+	const failures: unknown[] = [];
+
 	await notificationEventBus.emitPostCreated(
 		{
 			postId: faker.string.uuid(),
@@ -133,8 +149,10 @@ async function createNotificationViaEventBus(
 		{
 			log: {
 				info: () => {},
-				warn: () => {},
-				error: () => {},
+				// "No users found for in-app notification" arrives here, meaning the
+				// audience resolved to nobody and no notification row was written.
+				warn: (message: unknown) => failures.push(message),
+				error: (error: unknown) => failures.push(error),
 			},
 			drizzleClient: server.drizzleClient,
 			currentClient: {
@@ -143,6 +161,16 @@ async function createNotificationViaEventBus(
 			},
 		} as unknown as GraphQLContext,
 	);
+
+	if (failures.length > 0) {
+		throw new Error(
+			`Notification creation failed: ${failures
+				.map((failure) =>
+					failure instanceof Error ? failure.message : String(failure),
+				)
+				.join("; ")}`,
+		);
+	}
 }
 
 /**
@@ -156,54 +184,56 @@ const LONG_TEST_TIMEOUT = parseInt(
 	10,
 );
 
+/** Ids of the templates seeded by this file, removed again in afterAll. */
+const seededTemplateIds: string[] = [];
+
 beforeAll(async () => {
 	await ensureAdminAuth();
-	// Ensure notification templates exist (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
 
-	// Seed post_created template (used by this test suite)
-	const [existingPost] = await server.drizzleClient
-		.select()
-		.from(notificationTemplatesTable)
-		.where(
-			and(
-				eq(notificationTemplatesTable.eventType, "post_created"),
-				eq(notificationTemplatesTable.channelType, "in_app"),
-			),
-		)
-		.limit(1);
-	if (!existingPost) {
-		await server.drizzleClient.insert(notificationTemplatesTable).values({
-			name: "New Post Created",
-			eventType: "post_created",
-			title: "New post by {authorName}",
-			body: '{authorName} has created a new post in {organizationName}: "{postCaption}"',
-			channelType: "in_app",
-			linkedRouteName: "/post/{postId}",
-		});
-	}
+	// Templates are seeded unconditionally rather than only-if-absent. Test files
+	// run in parallel threads against one shared database, and other files insert
+	// their own "post_created"/"in_app" rows and delete them again during cleanup
+	// (see test/graphql/types/Query/Notification.test.ts). A check-then-skip would
+	// let this file adopt a row owned by another file and then lose it mid-run,
+	// leaving NotificationEngine with no template. The table has no uniqueness
+	// constraint on (eventType, channelType) and the engine resolves via
+	// findFirst, so an extra row is harmless.
+	// API-level create via drizzle is allowed here because the template table
+	// lacks an exposed mutation.
+	const inserted = await server.drizzleClient
+		.insert(notificationTemplatesTable)
+		.values([
+			{
+				name: `New Post Created ${faker.string.uuid()}`,
+				eventType: "post_created",
+				title: "New post by {authorName}",
+				body: '{authorName} has created a new post in {organizationName}: "{postCaption}"',
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			},
+			// event_created prevents "No notification template found" errors from
+			// other tests in the same shard that create events, which can block or
+			// slow down the shared notification queue.
+			{
+				name: `New Event Created ${faker.string.uuid()}`,
+				eventType: "event_created",
+				title: "New event: {eventName}",
+				body: '{creatorName} created "{eventName}" in {organizationName}',
+				channelType: "in_app",
+				linkedRouteName: "/event/{eventId}",
+			},
+		])
+		.returning({ id: notificationTemplatesTable.id });
 
-	// Seed event_created template to prevent "No notification template found"
-	// errors from other tests in the same shard that create events, which can
-	// block or slow down the shared notification queue.
-	const [existingEvent] = await server.drizzleClient
-		.select()
-		.from(notificationTemplatesTable)
-		.where(
-			and(
-				eq(notificationTemplatesTable.eventType, "event_created"),
-				eq(notificationTemplatesTable.channelType, "in_app"),
-			),
-		)
-		.limit(1);
-	if (!existingEvent) {
-		await server.drizzleClient.insert(notificationTemplatesTable).values({
-			name: "New Event Created",
-			eventType: "event_created",
-			title: "New event: {eventName}",
-			body: '{creatorName} created "{eventName}" in {organizationName}',
-			channelType: "in_app",
-			linkedRouteName: "/event/{eventId}",
-		});
+	seededTemplateIds.push(...inserted.map((template) => template.id));
+});
+
+afterAll(async () => {
+	if (seededTemplateIds.length > 0) {
+		await server.drizzleClient
+			.delete(notificationTemplatesTable)
+			.where(inArray(notificationTemplatesTable.id, seededTemplateIds));
+		seededTemplateIds.length = 0;
 	}
 });
 
