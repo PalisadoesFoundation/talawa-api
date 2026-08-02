@@ -901,22 +901,27 @@ suite("Query field event", () => {
 		});
 
 		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
-			// Freeze time at a fixed mid-month UTC timestamp for deterministic date calculations
-			vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z") });
+			// Freeze the clock at a fixed mid-month UTC instant. The GraphQL client
+			// injects into the in-process server, so the resolver observes this same
+			// clock: it validates startAt against it and derives the materialization
+			// window from it (now + hotWindowMonthsAhead, 12 by default).
+			// Only `Date` is faked — stubbing setTimeout/setInterval as well would
+			// stall the real Postgres/Redis I/O these mutations perform.
+			// Real timers are restored by the suite's afterEach.
+			vi.useFakeTimers({
+				now: new Date("2026-06-15T12:00:00Z"),
+				toFake: ["Date"],
+			});
 
-			// Calculate dates within the materialization window
-			// Note: Cannot use fixed future dates (e.g., 2099) because the server calculates the materialization window as current_date + N months. If the event starts after this window, no instances are generated (windowStart > windowEnd), causing the test to fail.
+			// Mid-month keeps the +1 month arithmetic free of end-of-month rollover.
 			const baseDate = new Date();
-			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1); // Start event 1 month from now
+			baseDate.setUTCMonth(baseDate.getUTCMonth() + 1);
 			baseDate.setUTCHours(10, 0, 0, 0);
 			const startAt = baseDate.toISOString();
 
 			const endDate = new Date(baseDate);
 			endDate.setUTCHours(11, 0, 0, 0);
 			const endAt = endDate.toISOString();
-
-			// Restore real timers before making async API calls
-			vi.useRealTimers();
 
 			const { authToken, userId } = await getAdminTokenAndUserId();
 
