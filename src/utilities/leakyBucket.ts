@@ -71,7 +71,14 @@ export async function leakyBucket(
 		const results = await pipeline.exec();
 
 		if (!results) {
-			throw new Error("Redis pipeline failed");
+			// Degrade open, same as the catch below: rate limiting must never take
+			// the API down with it.
+			logger?.warn({
+				msg: "leakyBucket failure; allowing request",
+				key,
+				reason: "redis pipeline returned no results",
+			});
+			return { allowed: true, remaining: max, resetAt: now + windowMs };
 		}
 
 		// check for errors in results
@@ -113,7 +120,12 @@ export async function leakyBucket(
 		const results2 = await pipeline2.exec();
 
 		if (!results2) {
-			throw new Error("Redis pipeline failed");
+			logger?.warn({
+				msg: "leakyBucket failure; allowing request",
+				key,
+				reason: "redis pipeline returned no results",
+			});
+			return { allowed: true, remaining: max, resetAt: now + windowMs };
 		}
 
 		// check for errors in results2
@@ -188,7 +200,13 @@ export async function complexityLeakyBucket(
 	}
 	logger.debug({ tokens, lastUpdate }, "Leaky bucket state");
 	const now = Date.now();
-	const elapsed = (now - lastUpdate) / 1000;
+	// `lastUpdate` is wall-clock time written by whichever process served the
+	// previous request, so it can sit ahead of `now` after an NTP step backwards
+	// or across instances with skewed clocks. Left unclamped, the negative
+	// elapsed drives `tokens` negative, and because the rejection path below
+	// returns without rewriting `lastUpdate`, the bucket stays locked until real
+	// time catches up. Treat a backwards clock as no elapsed time instead.
+	const elapsed = Math.max(0, (now - lastUpdate) / 1000);
 	// Refill tokens based on elapsed time and refill rate
 	tokens = Math.min(capacity, tokens + elapsed * refillRate);
 
