@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
@@ -131,6 +132,18 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 	});
 
 	describe("Organization Context Resolution", () => {
+		it("should throw unexpected error if standalone event is not found", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
 		it("should handle standalone event organization lookup", async () => {
 			const mockEvent = { organizationId: "org-123" };
 			const mockAdmin: MockUser = {
@@ -185,6 +198,24 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 			expect(result).toEqual(recurringAttendee.updatedAt);
 		});
 
+		it("should throw unexpected error if recurring instance is not found", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: faker.string.uuid(),
+			} as EventAttendeeType;
+
+			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(recurringAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
 		it("should throw unexpected error for missing event context", async () => {
 			const invalidAttendee = {
 				...mockEventAttendee,
@@ -197,6 +228,88 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 			).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 			);
+		});
+	});
+
+	describe("Authorization", () => {
+		it("should throw unauthorized_action for regular user without admin rights", async () => {
+			const organizationId = faker.string.uuid();
+			const mockRegularUser: MockUser = {
+				id: faker.string.uuid(),
+				role: "regular",
+				organizationMembershipsWhereMember: [
+					{ role: "regular", organizationId },
+				],
+			};
+
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId,
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockRegularUser,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
+
+		it("should throw unauthorized_action for user without organization membership", async () => {
+			const organizationId = faker.string.uuid();
+			const mockUserWithoutMembership: MockUser = {
+				id: faker.string.uuid(),
+				role: "regular",
+				organizationMembershipsWhereMember: [],
+			};
+
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId,
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserWithoutMembership,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
+	});
+
+	describe("Nullable UpdatedAt", () => {
+		it("should return null updatedAt for system administrator", async () => {
+			const organizationId = faker.string.uuid();
+			const attendeeWithNullUpdatedAt = {
+				...mockEventAttendee,
+				updatedAt: null,
+			} as EventAttendeeType;
+			const mockAdmin: MockUser = {
+				id: faker.string.uuid(),
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId,
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockAdmin,
+			);
+
+			const result = await eventAttendeeUpdatedAtResolver(
+				attendeeWithNullUpdatedAt,
+				{},
+				ctx,
+			);
+
+			expect(result).toBeNull();
 		});
 	});
 });
