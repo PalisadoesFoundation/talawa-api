@@ -30,7 +30,7 @@
     "axios": "^1.13.5",
     "close-with-grace": "^2.3.0",
     "dataloader": "^2.2.3",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.1",
     "drizzle-zod": "^0.8.3",
     "env-schema": "^7.0.0",
