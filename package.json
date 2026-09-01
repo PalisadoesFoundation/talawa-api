@@ -67,7 +67,7 @@
     "@types/nodemailer": "^7.0.10",
     "@types/yauzl": "^2.10.3",
     "@vitest/coverage-v8": "^3.1.1",
-    "drizzle-kit": "^0.31.4",
+    "drizzle-kit": "^0.31.10",
     "drizzle-seed": "^0.3.1",
     "glob": "^13.0.0",
     "gql.tada": "^1.8.12",
