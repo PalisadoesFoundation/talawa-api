@@ -198,5 +198,61 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 			);
 		});
+
+		it("should throw unexpected error if event is not found", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
+		it("should throw unexpected error if recurring event instance is not found", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: "instance-789",
+			} as EventAttendeeType;
+
+			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(recurringAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+	});
+
+	describe("Authorization", () => {
+		it("should throw unauthorized_action if user is not system or org administrator", async () => {
+			const mockEvent = { organizationId: "org-123" };
+			const mockRegularUser: MockUser = {
+				id: "user-123",
+				role: "regular",
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: "org-123" },
+				],
+			};
+
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+				mockEvent,
+			);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockRegularUser,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+		});
 	});
 });
