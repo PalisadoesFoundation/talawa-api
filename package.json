@@ -62,7 +62,7 @@
     "@microsoft/tsdoc": "^0.16.0",
     "@swc/cli": "0.7.9",
     "@swc/core": "^1.15.3",
-    "@types/node": "^22.13.17",
+    "@types/node": "^26.6.6",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.10",
     "@types/yauzl": "^2.10.3",
