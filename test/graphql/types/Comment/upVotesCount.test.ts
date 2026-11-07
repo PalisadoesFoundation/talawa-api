@@ -315,3 +315,66 @@ suite("Comment: upVotesCount field", () => {
 		expect(response.data?.comment?.upVotesCount).toBe(0);
 	});
 });
+
+// --- Unit Tests for 100% Resolver Coverage ---
+import type { GraphQLObjectType } from "graphql";
+import type { GraphQLContext } from "~/src/graphql/context";
+import { schema } from "~/src/graphql/schema";
+import type { Comment } from "~/src/graphql/types/Comment/Comment";
+import "~/src/graphql/types/Comment/upVotesCount";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+
+const commentType = schema.getType("Comment") as GraphQLObjectType;
+const upVotesCountField = commentType.getFields().upVotesCount;
+if (!upVotesCountField) {
+	throw new Error("upVotesCount field not found on Comment type");
+}
+const upVotesCountResolver = upVotesCountField.resolve as (
+	parent: Comment,
+	args: Record<string, never>,
+	ctx: GraphQLContext,
+) => Promise<number>;
+
+suite("Comment.upVotesCount field resolver - Unit tests", () => {
+	test("should return 0 when select query returns empty result (commentVote is undefined)", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, `user-${faker.string.uuid()}`);
+		const mockComment: Comment = {
+			id: faker.string.uuid(),
+			postId: faker.string.uuid(),
+			creatorId: faker.string.uuid(),
+			body: "Unit test comment",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		mocks.drizzleClient.select.mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue([]),
+			}),
+		} as unknown as ReturnType<typeof mocks.drizzleClient.select>);
+
+		const result = await upVotesCountResolver(mockComment, {}, context);
+		expect(result).toBe(0);
+	});
+
+	test("should return count when select query returns a vote count row", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, `user-${faker.string.uuid()}`);
+		const mockComment: Comment = {
+			id: faker.string.uuid(),
+			postId: faker.string.uuid(),
+			creatorId: faker.string.uuid(),
+			body: "Unit test comment with votes",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		mocks.drizzleClient.select.mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue([{ count: 5 }]),
+			}),
+		} as unknown as ReturnType<typeof mocks.drizzleClient.select>);
+
+		const result = await upVotesCountResolver(mockComment, {}, context);
+		expect(result).toBe(5);
+	});
+});
