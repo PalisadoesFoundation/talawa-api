@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
@@ -185,6 +186,58 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 			expect(result).toEqual(recurringAttendee.updatedAt);
 		});
 
+		it("should query recurring instance and user membership with correct ids", async () => {
+			const instanceId = faker.string.uuid();
+			const organizationId = faker.string.uuid();
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: instanceId,
+			} as EventAttendeeType;
+			const eq = (a: unknown, b: unknown) => ({ a, b });
+			type WhereFn = (fields: unknown, operators: unknown) => unknown;
+
+			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockImplementation(
+				(...funcArgs: unknown[]) => {
+					const args = funcArgs[0] as { where: WhereFn };
+					expect(args.where({ id: "id" }, { eq })).toEqual({
+						a: "id",
+						b: instanceId,
+					});
+					return Promise.resolve({ organizationId });
+				},
+			);
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				(...funcArgs: unknown[]) => {
+					const args = funcArgs[0] as {
+						where: WhereFn;
+						with: { organizationMembershipsWhereMember: { where: WhereFn } };
+					};
+					expect(args.where({ id: "id" }, { eq })).toEqual({
+						a: "id",
+						b: "user-123",
+					});
+					expect(
+						args.with.organizationMembershipsWhereMember.where(
+							{ organizationId: "organizationId" },
+							{ eq },
+						),
+					).toEqual({ a: "organizationId", b: organizationId });
+					return Promise.resolve({
+						role: "regular",
+						organizationMembershipsWhereMember: [{ role: "administrator" }],
+					});
+				},
+			);
+
+			const result = await eventAttendeeUpdatedAtResolver(
+				recurringAttendee,
+				{},
+				ctx,
+			);
+			expect(result).toEqual(recurringAttendee.updatedAt);
+		});
+
 		it("should throw unexpected error for missing event context", async () => {
 			const invalidAttendee = {
 				...mockEventAttendee,
@@ -196,6 +249,76 @@ describe("EventAttendee UpdatedAt Resolver Tests", () => {
 				eventAttendeeUpdatedAtResolver(invalidAttendee, {}, ctx),
 			).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+		});
+
+		it("should throw unexpected error if standalone event is not found", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).not.toHaveBeenCalled();
+		});
+
+		it("should throw unexpected error if recurring instance is not found", async () => {
+			const recurringAttendee = {
+				...mockEventAttendee,
+				eventId: null,
+				recurringEventInstanceId: faker.string.uuid(),
+			} as EventAttendeeType;
+
+			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(recurringAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+			);
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("Authorization", () => {
+		it("should throw unauthorized_action for regular user without organization membership", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId: faker.string.uuid(),
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+				organizationMembershipsWhereMember: [],
+			});
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+		});
+
+		it("should throw unauthorized_action for regular user with non-admin organization membership", async () => {
+			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+				organizationId: faker.string.uuid(),
+			});
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				role: "regular",
+				organizationMembershipsWhereMember: [{ role: "regular" }],
+			});
+
+			await expect(
+				eventAttendeeUpdatedAtResolver(mockEventAttendee, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
 	});
