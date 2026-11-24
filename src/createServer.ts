@@ -201,7 +201,8 @@ export const createServer = async (options?: {
 	fastify.register(fastifyJwt, {
 		secret: fastify.envConfig.API_JWT_SECRET,
 		sign: {
-			expiresIn: fastify.envConfig.API_JWT_EXPIRES_IN,
+			// Convert API_JWT_EXPIRES_IN (milliseconds) to seconds for @fastify/jwt
+			expiresIn: Math.floor(fastify.envConfig.API_JWT_EXPIRES_IN / 1000),
 		},
 	});
 
